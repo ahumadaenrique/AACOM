@@ -37,7 +37,9 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer
+  ResponsiveContainer,
+  ReferenceArea,
+  ReferenceLine
 } from "recharts"
 
 // Form Interface
@@ -574,6 +576,14 @@ export default function CotizadorPage() {
   const pprRentabilidadReal = pprAhorroRealEfectivo > 0 
     ? (summaryMetrics.totalAhorroPesos / pprAhorroRealEfectivo) * 100 
     : 0
+
+  // Find the exact age when the payments stop (indicator marker)
+  const paymentDurationNum = parseInt(formData.duracion)
+  const endPaymentRow = calculatedData.find(r => 
+    !isNaN(paymentDurationNum) ? r.anio === paymentDurationNum : r.edad === 65
+  )
+  const endPaymentAge = endPaymentRow ? endPaymentRow.edad : null
+  const startAge = calculatedData[0]?.edad || null
 
   return (
     <div className="flex flex-col gap-6 w-full max-w-6xl mx-auto">
@@ -1293,7 +1303,40 @@ export default function CotizadorPage() {
                         </linearGradient>
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0"/>
-                      <XAxis dataKey="anio" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+                      {/* Shading/ReferenceArea for payment period */}
+                      {endPaymentAge && startAge && (
+                        <ReferenceArea
+                          x1={startAge}
+                          x2={endPaymentAge}
+                          fill="#3b82f6"
+                          fillOpacity={0.06}
+                          label={{
+                            value: "Periodo de Pago",
+                            position: "insideBottomLeft",
+                            fill: "#1e3a8a",
+                            fontSize: 10,
+                            fontWeight: "bold",
+                            opacity: 0.6
+                          }}
+                        />
+                      )}
+                      {/* Vertical line marker at Fin de Aportaciones */}
+                      {endPaymentAge && (
+                        <ReferenceLine
+                          x={endPaymentAge}
+                          stroke="#1e3a8a"
+                          strokeWidth={2}
+                          strokeDasharray="4 4"
+                          label={{
+                            value: `Fin de Aportaciones (Edad ${endPaymentAge})`,
+                            position: "top",
+                            fill: "#1e3a8a",
+                            fontSize: 10,
+                            fontWeight: "black"
+                          }}
+                        />
+                      )}
+                      <XAxis dataKey="edad" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
                       <YAxis 
                         tickLine={false} 
                         axisLine={false} 
@@ -1304,7 +1347,10 @@ export default function CotizadorPage() {
                           return `$${v}`
                         }} 
                       />
-                      <Tooltip formatter={(value: any) => [`$${value.toLocaleString("es-MX", {maximumFractionDigits:0})}`, ""]} />
+                      <Tooltip 
+                        labelFormatter={(label) => `Edad: ${label}`}
+                        formatter={(value: any) => [`$${value.toLocaleString("es-MX", {maximumFractionDigits:0})}`, ""]} 
+                      />
                       <Legend iconSize={8} wrapperStyle={{ fontSize: 10 }} />
                       <Area name="Ahorro Garantizado ($)" type="monotone" dataKey="valoresPesos" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorAhorro)" />
                       <Area name="Aportación Acumulada ($)" type="monotone" dataKey="accumulatedPremiumPesos" stroke="#64748b" strokeWidth={1.5} fillOpacity={1} fill="url(#colorAportado)" />

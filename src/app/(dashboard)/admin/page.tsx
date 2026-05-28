@@ -40,7 +40,9 @@ import {
   Legend,
   ResponsiveContainer,
   BarChart,
-  Bar
+  Bar,
+  ReferenceArea,
+  ReferenceLine
 } from "recharts"
 
 export default function AdminPage() {
@@ -1059,6 +1061,14 @@ export default function AdminPage() {
                     const rowY30 = parsedRows.find((r: any) => r.anio === 30) || parsedRows[parsedRows.length - 1]
                     const saY30 = rowY30 ? rowY30.saPesos : 0
 
+                    // Find the exact age when the payments stop (indicator marker)
+                    const paymentDurationNum = parseInt(selectedQuote.duracion)
+                    const endPaymentRow = parsedRows.find((r: any) => 
+                      !isNaN(paymentDurationNum) ? r.anio === paymentDurationNum : r.edad === 65
+                    )
+                    const endPaymentAge = endPaymentRow ? endPaymentRow.edad : null
+                    const startAge = parsedRows[0]?.edad || null
+
                     return (
                       <>
                         {/* Top Summary Metrics */}
@@ -1228,12 +1238,63 @@ export default function AdminPage() {
                                       <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
                                       <stop offset="95%" stopColor="#10b981" stopOpacity={0.01}/>
                                     </linearGradient>
+                                    <linearGradient id="adminColorAportado" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="#64748b" stopOpacity={0.1}/>
+                                      <stop offset="95%" stopColor="#64748b" stopOpacity={0.01}/>
+                                    </linearGradient>
                                   </defs>
                                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0"/>
-                                  <XAxis dataKey="anio" tickLine={false} axisLine={false} tick={{ fontSize: 9 }} />
-                                  <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 9 }} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
-                                  <Tooltip formatter={(value: any) => [`$${value.toLocaleString("es-MX", {maximumFractionDigits:0})}`, ""]} />
-                                  <Area name="Ahorro Garantizado ($)" type="monotone" dataKey="valoresPesos" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#adminColorAhorro)" />
+                                  {/* Shading/ReferenceArea for payment period */}
+                                  {endPaymentAge && startAge && (
+                                    <ReferenceArea
+                                      x1={startAge}
+                                      x2={endPaymentAge}
+                                      fill="#3b82f6"
+                                      fillOpacity={0.06}
+                                      label={{
+                                        value: "Periodo de Pago",
+                                        position: "insideBottomLeft",
+                                        fill: "#1e3a8a",
+                                        fontSize: 9,
+                                        fontWeight: "bold",
+                                        opacity: 0.6
+                                      }}
+                                    />
+                                  )}
+                                  {/* Vertical line marker at Fin de Aportaciones */}
+                                  {endPaymentAge && (
+                                    <ReferenceLine
+                                      x={endPaymentAge}
+                                      stroke="#1e3a8a"
+                                      strokeWidth={2}
+                                      strokeDasharray="4 4"
+                                      label={{
+                                        value: `Fin de Pagos (Edad ${endPaymentAge})`,
+                                        position: "top",
+                                        fill: "#1e3a8a",
+                                        fontSize: 9,
+                                        fontWeight: "black"
+                                      }}
+                                    />
+                                  )}
+                                  <XAxis dataKey="edad" tickLine={false} axisLine={false} tick={{ fontSize: 9 }} />
+                                  <YAxis 
+                                    tickLine={false} 
+                                    axisLine={false} 
+                                    tick={{ fontSize: 9 }} 
+                                    tickFormatter={(v) => {
+                                      if (v >= 1000000) return `$${(v/1000000).toFixed(1)}M`
+                                      if (v >= 1000) return `$${(v/1000).toFixed(0)}k`
+                                      return `$${v}`
+                                    }} 
+                                  />
+                                  <Tooltip 
+                                    labelFormatter={(label) => `Edad: ${label}`}
+                                    formatter={(value: any) => [`$${value.toLocaleString("es-MX", {maximumFractionDigits:0})}`, ""]} 
+                                  />
+                                  <Legend iconSize={8} wrapperStyle={{ fontSize: 9 }} />
+                                  <Area name="Ahorro Garantizado ($)" type="monotone" dataKey="valoresPesos" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#adminColorAhorro)" />
+                                  <Area name="Aportación Acumulada ($)" type="monotone" dataKey="accumulatedPremiumPesos" stroke="#64748b" strokeWidth={1.5} fillOpacity={1} fill="url(#adminColorAportado)" />
                                 </AreaChart>
                               </ResponsiveContainer>
                             </div>
