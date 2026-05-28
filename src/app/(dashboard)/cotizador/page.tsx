@@ -47,6 +47,7 @@ interface FormData {
   cliente: string
   agente: string
   telefono: string
+  edadCliente: number
   producto: string
   duracion: string
   valorUdi: number
@@ -79,6 +80,7 @@ export default function CotizadorPage() {
     cliente: "",
     agente: "",
     telefono: "",
+    edadCliente: 30,
     producto: "VPL",
     duracion: "15",
     valorUdi: 8.25, // default
@@ -177,7 +179,7 @@ export default function CotizadorPage() {
     const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: name === "valorUdi" || name === "inflacionUdi" || name === "isr" 
+      [name]: name === "valorUdi" || name === "inflacionUdi" || name === "isr" || name === "edadCliente"
         ? parseFloat(value) || 0 
         : value
     }))
@@ -322,7 +324,8 @@ export default function CotizadorPage() {
 
     validRows.forEach((row, idx) => {
       const anio = parseInt(row[mapping.anios]) || idx + 1
-      const edad = parseInt(row[mapping.edad]) || 0
+      // Always calculate age from edadCliente + year - 1 for reliability
+      const edad = formData.edadCliente + anio - 1
       const primaPesos = parseNumericValue(row[mapping.prima])
       const saPesos = parseNumericValue(row[mapping.sa])
       const valoresPesos = parseNumericValue(row[mapping.valores])
@@ -482,6 +485,7 @@ export default function CotizadorPage() {
       cliente: "Eduardo Mendoza Garza",
       agente: "Miguel Angel Cruz",
       telefono: "8119098765", // 10-digit number
+      edadCliente: 35,
       producto: "VPL PPR",
       duracion: "10",
       valorUdi: 8.25,
@@ -515,6 +519,7 @@ export default function CotizadorPage() {
       cliente: "",
       agente: "", // Reset back to placeholder
       telefono: "",
+      edadCliente: 30,
       producto: "VPL",
       duracion: "15",
       valorUdi: formData.valorUdi, // Keep initial default UDI value
@@ -695,6 +700,22 @@ export default function CotizadorPage() {
                   value={formData.telefono} 
                   onChange={handleInputChange} 
                   placeholder="Ej. 8119098765" 
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center justify-between">
+                  <span>Edad del Cliente</span>
+                  <span className="text-[10px] text-teal-600 bg-teal-50 px-1 py-0.5 rounded font-normal border">años</span>
+                </label>
+                <Input 
+                  type="number" 
+                  min="18" 
+                  max="70" 
+                  name="edadCliente" 
+                  value={formData.edadCliente} 
+                  onChange={handleInputChange} 
+                  placeholder="Ej. 35" 
                 />
               </div>
 
@@ -1336,7 +1357,14 @@ export default function CotizadorPage() {
                           }}
                         />
                       )}
-                      <XAxis dataKey="edad" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
+                      <XAxis 
+                        dataKey="edad" 
+                        tickLine={false} 
+                        axisLine={false} 
+                        tick={{ fontSize: 10 }} 
+                        label={{ value: 'Edad del Cliente', position: 'insideBottom', offset: -2, fontSize: 10, fill: '#64748b' }}
+                        tickFormatter={(v) => `${v}`}
+                      />
                       <YAxis 
                         tickLine={false} 
                         axisLine={false} 
