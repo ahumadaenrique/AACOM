@@ -1,0 +1,1300 @@
+"use client"
+
+import React, { useState, useEffect } from "react"
+import { getCotizaciones, saveUdiSetting, getUdiSetting } from "@/app/actions"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { 
+  FileSpreadsheet, 
+  Search, 
+  TrendingUp, 
+  Users, 
+  DollarSign, 
+  Calendar, 
+  ShieldCheck, 
+  FilterX, 
+  RefreshCw,
+  Lock,
+  Coins,
+  CheckCircle2,
+  BarChart3,
+  BookOpen,
+  Eye,
+  Download,
+  X,
+  Sparkles,
+  Percent,
+  Check
+} from "lucide-react"
+
+// Recharts for Agent Weekly performance chart & Quote Rescue Area chart
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+  BarChart,
+  Bar
+} from "recharts"
+
+export default function AdminPage() {
+  // Password Security (Correction 3: Password lock)
+  const [isAuthorized, setIsAuthorized] = useState<boolean>(false)
+  const [passwordInput, setPasswordInput] = useState<string>("")
+  const [passwordError, setPasswordError] = useState<string>("")
+
+  // Admin Data states
+  const [cotizaciones, setCotizaciones] = useState<any[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+  const [searchQuery, setSearchQuery] = useState<string>("")
+  const [productFilter, setProductFilter] = useState<string>("todos")
+  const [error, setError] = useState<string>("")
+
+  // Admin Dashboard Tabs
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad">("productividad")
+
+  // Rescued quote state
+  const [selectedQuote, setSelectedQuote] = useState<any | null>(null)
+
+  // UDI Settings states (Correction 5: Admin sets UDI rate)
+  const [defaultUdi, setDefaultUdi] = useState<number>(8.25)
+  const [udiSaving, setUdiSaving] = useState<string>("")
+
+  // Handle password submit
+  const handlePasswordSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (passwordInput === "Saldivar0" || passwordInput === "Mike0") {
+      setIsAuthorized(true)
+      setPasswordError("")
+    } else {
+      setPasswordError("Contraseña incorrecta. Acceso denegado.")
+    }
+  }
+
+  // Load cotizaciones and UDI setting from DB
+  const loadData = async () => {
+    setLoading(true)
+    setError("")
+    try {
+      // 1. Get quotes
+      const res = await getCotizaciones()
+      if (res.success && res.cotizaciones) {
+        setCotizaciones(res.cotizaciones)
+      } else {
+        setError(res.message || "Error al cargar los datos.")
+      }
+
+      // 2. Get UDI default setting
+      const udiRes = await getUdiSetting()
+      if (udiRes.success && udiRes.value) {
+        setDefaultUdi(udiRes.value)
+      }
+    } catch (err) {
+      console.error(err)
+      setError("Fallo al conectar con el servidor.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    if (isAuthorized) {
+      loadData()
+    }
+  }, [isAuthorized])
+
+  // Save UDI default setting
+  const handleSaveUdi = async () => {
+    setUdiSaving("Guardando...")
+    try {
+      const res = await saveUdiSetting(defaultUdi)
+      if (res.success) {
+        setUdiSaving("¡Guardado!")
+        setTimeout(() => setUdiSaving(""), 3000)
+      } else {
+        setUdiSaving("Error")
+      }
+    } catch (err) {
+      console.error(err)
+      setUdiSaving("Error")
+    }
+  }
+
+  // Filter cotizaciones based on search and dropdown
+  const filteredCotizaciones = cotizaciones.filter(item => {
+    const matchesSearch = 
+      item.cliente.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.telefono.includes(searchQuery) ||
+      item.agente.toLowerCase().includes(searchQuery.toLowerCase())
+    
+    const matchesProduct = productFilter === "todos" || item.producto === productFilter
+    
+    return matchesSearch && matchesProduct
+  })
+
+  // Date utilities
+  const now = new Date()
+  const currentYear = now.getFullYear()
+  const currentMonth = now.getMonth() // 0-indexed
+
+  const isThisMonth = (date: Date) => {
+    return date.getFullYear() === currentYear && date.getMonth() === currentMonth
+  }
+
+  const isLastMonth = (date: Date) => {
+    const targetYear = currentMonth === 0 ? currentYear - 1 : currentYear
+    const targetMonth = currentMonth === 0 ? 11 : currentMonth - 1
+    return date.getFullYear() === targetYear && date.getMonth() === targetMonth
+  }
+
+  const isThisYear = (date: Date) => {
+    return date.getFullYear() === currentYear
+  }
+
+  const getWeekDiff = (date: Date) => {
+    const diffTime = now.getTime() - date.getTime()
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+    return Math.floor(diffDays / 7)
+  }
+
+  // AGENT PRODUCTIVITY CALCULATIONS
+  const agentStatsMap: {
+    [agentName: string]: {
+      name: string
+      total: number
+      thisMonth: number
+      lastMonth: number
+      thisYear: number
+      totalPremium: number
+      avgPremium: number
+      mostCotizedProduct: string
+      weeklyCounts: number[] // [semanaActual, hace1Sem, hace2Sem, hace3Sem]
+    }
+  } = {}
+
+  const agentProductCounts: { [agentName: string]: { [product: string]: number } } = {}
+  const globalProductCounts: { [product: string]: number } = {}
+
+  cotizaciones.forEach(item => {
+    const agentName = item.agente || "Sin Agente"
+    const date = new Date(item.createdAt)
+    const prod = item.producto
+
+    // Global counts
+    globalProductCounts[prod] = (globalProductCounts[prod] || 0) + 1
+
+    // Agent counts
+    if (!agentProductCounts[agentName]) {
+      agentProductCounts[agentName] = {}
+    }
+    agentProductCounts[agentName][prod] = (agentProductCounts[agentName][prod] || 0) + 1
+
+    if (!agentStatsMap[agentName]) {
+      agentStatsMap[agentName] = {
+        name: agentName,
+        total: 0,
+        thisMonth: 0,
+        lastMonth: 0,
+        thisYear: 0,
+        totalPremium: 0,
+        avgPremium: 0,
+        mostCotizedProduct: "",
+        weeklyCounts: [0, 0, 0, 0]
+      }
+    }
+
+    const stats = agentStatsMap[agentName]
+    stats.total += 1
+    stats.totalPremium += item.primaAnual
+
+    if (isThisMonth(date)) stats.thisMonth += 1
+    if (isLastMonth(date)) stats.lastMonth += 1
+    if (isThisYear(date)) stats.thisYear += 1
+
+    const weekDiff = getWeekDiff(date)
+    if (weekDiff >= 0 && weekDiff < 4) {
+      stats.weeklyCounts[weekDiff] += 1
+    }
+  })
+
+  // Finalize averages and favorite products
+  const agentStatsList = Object.values(agentStatsMap).map(stats => {
+    stats.avgPremium = stats.total > 0 ? stats.totalPremium / stats.total : 0
+    
+    // Find favorite product
+    const counts = agentProductCounts[stats.name]
+    let favoriteProduct = "Ninguno"
+    let maxCount = -1
+    if (counts) {
+      Object.entries(counts).forEach(([prod, count]) => {
+        if (count > maxCount) {
+          maxCount = count
+          favoriteProduct = prod
+        }
+      })
+    }
+    stats.mostCotizedProduct = favoriteProduct
+    return stats
+  }).sort((a, b) => b.total - a.total) // Sort by total quotes desc
+
+  // Calculate Global Metrics
+  const totalCount = filteredCotizaciones.length
+  const totalPrimasPesos = filteredCotizaciones.reduce((acc, item) => acc + item.primaAnual, 0)
+  const totalAhorroPesos = filteredCotizaciones.reduce((acc, item) => acc + item.ahorro, 0)
+  const avgPrimasPesos = totalCount > 0 ? totalPrimasPesos / totalCount : 0
+
+  // Download rescued PDF dynamically with html2pdf.js
+  const handleDownloadRescuedPdf = async () => {
+    if (!selectedQuote) return
+    const html2pdf = (await import("html2pdf.js")).default
+    const element = document.getElementById("admin-printable-report")
+    if (!element) return
+
+    const sanitizedClientName = (selectedQuote.cliente || "Cotizacion").replace(/[^a-zA-Z0-9]/g, "_")
+    
+    const opt = {
+      margin:       8,
+      filename:     `Cotizacion_${sanitizedClientName}_${new Date(selectedQuote.createdAt).toISOString().slice(0,10)}.pdf`,
+      image:        { type: 'jpeg' as const, quality: 0.98 },
+      html2canvas:  { scale: 2.5, useCORS: true, letterRendering: true },
+      jsPDF:        { unit: 'mm' as const, format: 'letter' as const, orientation: 'portrait' as const }
+    }
+
+    html2pdf().from(element).set(opt).save()
+  }
+
+  // RENDER PASSWORD SCREEN IF NOT AUTHORIZED
+  if (!isAuthorized) {
+    return (
+      <div className="flex min-h-[70vh] items-center justify-center p-4">
+        <Card className="w-full max-w-md shadow-lg border-t-4 border-t-teal-600 animate-in fade-in duration-300">
+          <CardHeader className="text-center space-y-2">
+            <div className="h-12 w-12 bg-teal-50 dark:bg-zinc-800 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center mx-auto shadow-sm">
+              <Lock className="h-5 w-5" />
+            </div>
+            <CardTitle className="text-xl font-black">Acceso de Propietario</CardTitle>
+            <CardDescription>
+              Introduce tu contraseña de administrador para consultar el historial de cotizaciones.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Contraseña Administrador</label>
+                <Input
+                  type="password"
+                  placeholder="••••••••"
+                  value={passwordInput}
+                  onChange={(e) => setPasswordInput(e.target.value)}
+                  className="p-3 text-center tracking-widest text-lg"
+                />
+              </div>
+
+              {passwordError && (
+                <p className="text-xs text-red-500 font-semibold text-center mt-2 animate-bounce">
+                  {passwordError}
+                </p>
+              )}
+
+              <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5">
+                Verificar Contraseña
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // RENDER MAIN ADMIN PAGE IF AUTHORIZED
+  return (
+    <div className="flex flex-col gap-6 w-full max-w-6xl mx-auto animate-in fade-in duration-300">
+      {/* Header Area */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <img src="/logo.png" alt="AACOM Seguros" className="h-10 w-auto object-contain" />
+          <div className="h-8 w-px bg-slate-300 dark:bg-zinc-700 hidden sm:block"></div>
+          <div>
+            <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
+              Administración de Cotizaciones <ShieldCheck className="h-5 w-5 text-teal-600" />
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              Auditoría, rescatado de propuestas y análisis de productividad comercial de tus agentes.
+            </p>
+          </div>
+        </div>
+
+        <Button variant="outline" onClick={loadData} disabled={loading} className="border-slate-200 shrink-0">
+          <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} /> Actualizar Datos
+        </Button>
+      </div>
+
+      {/* Config Card: Default UDI Exchange Rate (Correction 5) */}
+      <Card className="border shadow-sm bg-gradient-to-r from-teal-50/20 to-emerald-50/20 dark:from-zinc-900/30 dark:to-zinc-800/10">
+        <CardContent className="p-5 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 bg-teal-100 dark:bg-teal-950 text-teal-700 dark:text-teal-400 rounded-full flex items-center justify-center">
+              <Coins className="h-5 w-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Valor de la UDI Predeterminado</h3>
+              <p className="text-xs text-muted-foreground">
+                Define el tipo de cambio que se mostrará en el formulario inicial del agente.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <div className="relative w-full md:w-40">
+              <span className="absolute left-3 top-2 text-xs font-bold text-slate-400">$</span>
+              <Input
+                type="number"
+                step="0.0001"
+                value={defaultUdi}
+                onChange={(e) => setDefaultUdi(parseFloat(e.target.value) || 0)}
+                className="pl-7 font-bold text-slate-800 dark:text-slate-100"
+              />
+            </div>
+            <Button onClick={handleSaveUdi} className="bg-teal-600 hover:bg-teal-700 text-white font-bold shrink-0">
+              Fijar Tasa
+            </Button>
+            {udiSaving && (
+              <span className="text-xs font-bold text-teal-600 bg-teal-50 px-2 py-1 rounded border border-teal-200 flex items-center gap-1">
+                <CheckCircle2 className="h-3 w-3" /> {udiSaving}
+              </span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Tabs Selector Navigation */}
+      <div className="flex border-b">
+        <button
+          onClick={() => setActiveTab("productividad")}
+          className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === "productividad"
+              ? "border-teal-600 text-teal-600 dark:text-teal-400"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <BarChart3 className="h-4.5 w-4.5" /> Productividad de Agentes
+        </button>
+        <button
+          onClick={() => setActiveTab("historico")}
+          className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === "historico"
+              ? "border-teal-600 text-teal-600 dark:text-teal-400"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <BookOpen className="h-4.5 w-4.5" /> Historial de Cotizaciones
+        </button>
+      </div>
+
+      {/* TAB CONTENT 1: AGENT PRODUCTIVITY DASHBOARD */}
+      {activeTab === "productividad" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          
+          {/* Global Statistics Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Global product mix bar card */}
+            <Card className="md:col-span-2 border shadow-sm">
+              <CardHeader className="py-4 border-b bg-slate-50/50">
+                <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <BarChart3 className="h-4 w-4 text-teal-600" /> Mix de Productos Cotizados (Global)
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Participación del volumen de cotizaciones acumulado por producto
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-6 space-y-4">
+                {Object.keys(globalProductCounts).length === 0 ? (
+                  <div className="text-center py-6 text-muted-foreground text-xs">Sin registros de productos</div>
+                ) : (
+                  Object.entries(globalProductCounts).map(([prod, count]) => {
+                    const pct = totalCount > 0 ? (count / totalCount) * 100 : 0
+                    return (
+                      <div key={prod} className="space-y-1">
+                        <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
+                          <span>{prod}</span>
+                          <span>{count} cotizaciones ({pct.toFixed(1)}%)</span>
+                        </div>
+                        <div className="h-3 w-full bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden border">
+                          <div 
+                            className="h-full bg-teal-600 rounded-full transition-all duration-500" 
+                            style={{ width: `${pct}%` }}
+                          ></div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
+              </CardContent>
+            </Card>
+
+            {/* General metrics summaries */}
+            <div className="flex flex-col gap-4">
+              <Card className="shadow-sm border border-slate-100 flex-1">
+                <CardContent className="p-5 flex items-center justify-between h-full">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Agentes Activos</span>
+                    <span className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-1 block">
+                      {agentStatsList.length}
+                    </span>
+                    <span className="text-xs text-slate-400 block mt-1">Con al menos 1 cotización</span>
+                  </div>
+                  <div className="h-12 w-12 bg-teal-50 dark:bg-zinc-800 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center">
+                    <Users className="h-6 w-6" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="shadow-sm border border-slate-100 flex-1">
+                <CardContent className="p-5 flex items-center justify-between h-full">
+                  <div>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Volumen Primas Global</span>
+                    <span className="text-2xl font-black text-teal-600 dark:text-teal-400 mt-1 block leading-tight">
+                      ${totalPrimasPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                    </span>
+                    <span className="text-xs text-slate-400 block mt-1">Suma de primas anuales</span>
+                  </div>
+                  <div className="h-12 w-12 bg-emerald-50 dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center">
+                    <DollarSign className="h-6 w-6" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          {/* Productivity Table/Grid of Agents */}
+          <Card className="border shadow-sm overflow-hidden">
+            <CardHeader className="py-4 border-b">
+              <CardTitle className="text-base font-bold text-slate-800 dark:text-slate-200">
+                Tabla de Productividad de Agentes
+              </CardTitle>
+              <CardDescription>
+                Resumen analítico detallado del desempeño, volumen cotizado y métricas temporales de cada agente.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              {loading ? (
+                <div className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
+                  <RefreshCw className="h-8 w-8 animate-spin text-teal-600" />
+                  <span>Calculando estadísticas...</span>
+                </div>
+              ) : agentStatsList.length === 0 ? (
+                <div className="p-12 text-center text-muted-foreground text-xs flex flex-col items-center justify-center gap-2">
+                  <Users className="h-8 w-8 text-slate-400" />
+                  <span>No hay agentes registrados en el sistema de cotizaciones aún.</span>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table className="text-xs">
+                    <TableHeader className="bg-slate-50 dark:bg-zinc-800">
+                      <TableRow>
+                        <TableHead className="font-bold py-3 pl-4">Agente</TableHead>
+                        <TableHead className="font-bold py-3 text-center">Total Cotizaciones</TableHead>
+                        <TableHead className="font-bold py-3 text-center bg-teal-50/30">Este Mes</TableHead>
+                        <TableHead className="font-bold py-3 text-center">Mes Pasado</TableHead>
+                        <TableHead className="font-bold py-3 text-center">Este Año</TableHead>
+                        <TableHead className="font-bold py-3 text-right">Prima Promedio</TableHead>
+                        <TableHead className="font-bold py-3 text-center">Producto Más Cotizado</TableHead>
+                        <TableHead className="font-bold py-3 text-center pr-4">Estadística de Cotizaciones (4 semanas)</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {agentStatsList.map((agent) => (
+                        <TableRow key={agent.name} className="hover:bg-slate-50/50">
+                          {/* Agent Name */}
+                          <TableCell className="font-bold text-slate-800 dark:text-slate-200 py-3.5 pl-4">
+                            <div className="flex items-center gap-2">
+                              <span className="h-7 w-7 rounded-full bg-teal-600 text-white flex items-center justify-center font-black text-[10px] shadow-sm uppercase">
+                                {agent.name.split(" ").map(w => w[0]).slice(0, 2).join("")}
+                              </span>
+                              <span>{agent.name}</span>
+                            </div>
+                          </TableCell>
+                          
+                          {/* Quote Counts */}
+                          <TableCell className="text-center py-3.5 font-bold text-slate-700 dark:text-slate-300">
+                            {agent.total}
+                          </TableCell>
+                          
+                          <TableCell className="text-center py-3.5 font-black text-teal-700 dark:text-teal-400 bg-teal-50/20">
+                            {agent.thisMonth}
+                          </TableCell>
+                          
+                          <TableCell className="text-center py-3.5 font-medium text-slate-600 dark:text-slate-400">
+                            {agent.lastMonth}
+                          </TableCell>
+                          
+                          <TableCell className="text-center py-3.5 font-bold text-slate-700 dark:text-slate-300">
+                            {agent.thisYear}
+                          </TableCell>
+                          
+                          {/* Average Premium */}
+                          <TableCell className="text-right py-3.5 font-bold text-slate-800 dark:text-slate-200">
+                            ${agent.avgPremium.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                          </TableCell>
+                          
+                          {/* Favorite Product */}
+                          <TableCell className="text-center py-3.5">
+                            <span className="inline-block px-2.5 py-0.5 rounded-full font-bold text-[9px] bg-emerald-50 dark:bg-zinc-800 text-emerald-800 dark:text-emerald-300 border border-emerald-200/50">
+                              {agent.mostCotizedProduct}
+                            </span>
+                          </TableCell>
+                          
+                          {/* Weekly Sparkline/Indicator */}
+                          <TableCell className="py-3.5 pr-4">
+                            <div className="flex items-center justify-center gap-1.5">
+                              {agent.weeklyCounts.map((count, wIdx) => {
+                                const labels = ["Act", "Sem1", "Sem2", "Sem3"]
+                                return (
+                                  <div 
+                                    key={wIdx} 
+                                    className="flex flex-col items-center justify-center p-1 rounded border min-w-10 bg-slate-50 dark:bg-zinc-800/50"
+                                    title={`Hace ${wIdx} semanas: ${count} cotizaciones`}
+                                  >
+                                    <span className="text-[8px] text-slate-400 uppercase font-bold">{labels[wIdx]}</span>
+                                    <span className={`text-[10px] font-black ${count > 0 ? "text-teal-600" : "text-slate-400"}`}>{count}</span>
+                                  </div>
+                                )
+                              })}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* TAB CONTENT 2: GENERAL HISTORY TABLE & ACTION TO RESCUE QUOTE */}
+      {activeTab === "historico" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          
+          {/* Top Aggregation Cards */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <Card className="shadow-sm border-slate-100">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Cotizaciones Filtradas</span>
+                  <span className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 block mt-1">
+                    {totalCount}
+                  </span>
+                </div>
+                <div className="h-10 w-10 bg-teal-50 dark:bg-zinc-800 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center">
+                  <Users className="h-5 w-5" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm border-slate-100">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Volumen Primas</span>
+                  <span className="text-xl md:text-2xl font-black text-teal-600 dark:text-teal-400 block mt-1">
+                    ${totalPrimasPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                  </span>
+                </div>
+                <div className="h-10 w-10 bg-emerald-50 dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center">
+                  <DollarSign className="h-5 w-5" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm border-slate-100">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Ahorro Proyectado</span>
+                  <span className="text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400 block mt-1">
+                    ${totalAhorroPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                  </span>
+                </div>
+                <div className="h-10 w-10 bg-emerald-50 dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center">
+                  <TrendingUp className="h-5 w-5" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm border-slate-100">
+              <CardContent className="p-4 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Prima Promedio</span>
+                  <span className="text-xl md:text-2xl font-black text-slate-800 dark:text-slate-100 block mt-1">
+                    ${avgPrimasPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                  </span>
+                </div>
+                <div className="h-10 w-10 bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-slate-400 rounded-full flex items-center justify-center">
+                  <FileSpreadsheet className="h-5 w-5" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Filters Bar */}
+          <Card className="shadow-sm border-slate-100">
+            <CardContent className="p-4 flex flex-col md:flex-row gap-4 items-center">
+              <div className="relative flex-1 w-full">
+                <Search className="absolute left-3 top-2.5 h-4.5 w-4.5 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por cliente, teléfono o agente..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <div className="flex gap-4 w-full md:w-auto">
+                <select
+                  value={productFilter}
+                  onChange={(e) => setProductFilter(e.target.value)}
+                  className="flex h-10 w-full md:w-56 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                >
+                  <option value="todos">Todos los Productos</option>
+                  <option value="VPL">VPL</option>
+                  <option value="VPL PPR">VPL PPR</option>
+                </select>
+
+                {(searchQuery !== "" || productFilter !== "todos") && (
+                  <Button 
+                    variant="ghost" 
+                    onClick={() => { setSearchQuery(""); setProductFilter("todos"); }} 
+                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                  >
+                    <FilterX className="mr-1.5 h-4 w-4" /> Limpiar
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Database History Table */}
+          <Card className="shadow-sm border-slate-100 overflow-hidden">
+            <CardHeader className="py-4 border-b">
+              <CardTitle className="text-base font-bold text-slate-800 dark:text-slate-200">
+                Registro Histórico de Cotizaciones
+              </CardTitle>
+              <CardDescription>
+                Lista completa de cotizaciones con capacidad de rescatado visual e impresión inmediata.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              {loading ? (
+                <div className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
+                  <RefreshCw className="h-8 w-8 animate-spin text-teal-600" />
+                  <span>Cargando cotizaciones...</span>
+                </div>
+              ) : filteredCotizaciones.length === 0 ? (
+                <div className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
+                  <FileSpreadsheet className="h-8 w-8 text-slate-400" />
+                  <span>No se encontraron cotizaciones.</span>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table className="text-xs">
+                    <TableHeader className="bg-slate-50 dark:bg-zinc-800">
+                      <TableRow>
+                        <TableHead className="font-bold py-3 pl-4">Cliente</TableHead>
+                        <TableHead className="font-bold py-3">Teléfono</TableHead>
+                        <TableHead className="font-bold py-3 text-center">Producto</TableHead>
+                        <TableHead className="font-bold py-3 text-right">Prima Anual</TableHead>
+                        <TableHead className="font-bold py-3 text-right">Prima Total</TableHead>
+                        <TableHead className="font-bold py-3 text-right">Ahorro Proyectado (65)</TableHead>
+                        <TableHead className="font-bold py-3 text-center">Rendimiento (65)</TableHead>
+                        <TableHead className="font-bold py-3">Agente</TableHead>
+                        <TableHead className="font-bold py-3 text-center">Fecha</TableHead>
+                        <TableHead className="font-bold py-3 text-center pr-4">Rescatar</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredCotizaciones.map((item) => (
+                        <TableRow key={item.id} className="hover:bg-slate-50/50">
+                          <TableCell className="font-bold text-slate-700 dark:text-slate-300 py-3.5 pl-4">{item.cliente}</TableCell>
+                          <TableCell className="text-slate-600 dark:text-slate-400 py-3.5">{item.telefono}</TableCell>
+                          <TableCell className="text-center py-3.5">
+                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 dark:bg-zinc-800 text-teal-800 dark:text-teal-200 border">
+                              {item.producto}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right font-medium py-3.5">
+                            ${item.primaAnual.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                          </TableCell>
+                          <TableCell className="text-right text-slate-600 dark:text-slate-400 py-3.5">
+                            ${item.totalPrima.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                          </TableCell>
+                          <TableCell className="text-right font-bold text-emerald-600 py-3.5">
+                            ${item.ahorro.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                          </TableCell>
+                          <TableCell className="text-center font-bold text-teal-600 py-3.5">
+                            {item.rendimiento.toFixed(1)}%
+                          </TableCell>
+                          <TableCell className="text-slate-700 dark:text-slate-300 font-medium py-3.5">{item.agente}</TableCell>
+                          <TableCell className="text-center text-slate-500 py-3.5">
+                            <span className="flex items-center justify-center gap-1">
+                              <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                              {new Date(item.createdAt).toLocaleDateString("es-MX")}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center py-3.5 pr-4">
+                            <Button
+                              onClick={() => setSelectedQuote(item)}
+                              size="sm"
+                              className="bg-teal-600 hover:bg-teal-700 text-white font-bold h-7 px-2.5 flex items-center gap-1 mx-auto text-[10px]"
+                            >
+                              <Eye className="h-3.5 w-3.5" /> Ver Propuesta
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* DETAILED VIEW MODAL: RESCUE AND RECREATE QUOTE SHEET */}
+      {selectedQuote && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-950 w-full max-w-5xl rounded-2xl border shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
+            
+            {/* Modal Header */}
+            <div className="bg-slate-100 dark:bg-zinc-900 border-b p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src="/logo.png" alt="AACOM" className="h-7 w-auto object-contain" />
+                <div className="h-5 w-px bg-slate-300"></div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-800 dark:text-slate-100">
+                    Propuesta Rescatada: {selectedQuote.cliente}
+                  </h3>
+                  <p className="text-[10px] text-muted-foreground">
+                    Cotizado por {selectedQuote.agente} el {new Date(selectedQuote.createdAt).toLocaleDateString("es-MX")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                {/* Print button inside Modal */}
+                <Button 
+                  onClick={handleDownloadRescuedPdf} 
+                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold h-8 px-4 text-xs flex items-center gap-1.5 shadow"
+                >
+                  <Download className="h-4 w-4" /> Descargar PDF
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSelectedQuote(null)} 
+                  className="h-8 w-8 p-0 text-slate-500 hover:text-slate-900 shrink-0"
+                >
+                  <X className="h-4.5 w-4.5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Modal Body / Projection Re-render Area */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              
+              {!selectedQuote.projectionData ? (
+                <div className="p-12 text-center space-y-3 bg-amber-50 rounded-xl border border-amber-200">
+                  <ShieldCheck className="h-10 w-10 text-amber-500 mx-auto" />
+                  <h4 className="font-bold text-amber-800 text-sm">Rescatado Parcial</h4>
+                  <p className="text-xs text-amber-700 max-w-md mx-auto">
+                    Esta propuesta fue generada con una versión anterior del cotizador que no guardaba el desglose anual completo en base de datos. Solo se pueden consultar las métricas generales.
+                  </p>
+                  <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto pt-4 text-xs">
+                    <div className="border bg-white p-3 rounded-lg text-center">
+                      <span className="font-semibold text-slate-500 block">Prima Anual</span>
+                      <span className="font-bold text-slate-800 block mt-0.5">${selectedQuote.primaAnual.toLocaleString("es-MX")}</span>
+                    </div>
+                    <div className="border bg-white p-3 rounded-lg text-center">
+                      <span className="font-semibold text-slate-500 block">Ahorro Proyectado</span>
+                      <span className="font-bold text-emerald-600 block mt-0.5">${selectedQuote.ahorro.toLocaleString("es-MX")}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* RECREATION CONTAINER START */
+                <div id="admin-printable-report" className="space-y-6 bg-white dark:bg-zinc-950 p-2 text-slate-800">
+                  
+                  {/* Print Title Header */}
+                  <div className="border-b-2 border-teal-500 pb-4 flex flex-row items-center justify-between gap-4">
+                    <div>
+                      <span className="text-[10px] font-bold text-teal-600 uppercase tracking-widest block">
+                        Propuesta Rescatada
+                      </span>
+                      <h2 className="text-xl font-extrabold text-slate-800">
+                        Análisis Financiero de {selectedQuote.producto}
+                      </h2>
+                      <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[11px] text-slate-500">
+                        <span><strong>Cliente:</strong> {selectedQuote.cliente}</span>
+                        <span>•</span>
+                        <span><strong>Teléfono:</strong> {selectedQuote.telefono}</span>
+                        <span>•</span>
+                        <span><strong>Fecha original:</strong> {new Date(selectedQuote.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" })}</span>
+                      </div>
+                    </div>
+                    <div className="text-right flex flex-col items-end">
+                      <img src="/logo.png" alt="AACOM Seguros" className="h-8 w-auto object-contain mb-1" />
+                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-wide">AACOM cotizador</span>
+                      <span className="text-[9px] text-slate-400"><strong>Agente:</strong> {selectedQuote.agente}</span>
+                    </div>
+                  </div>
+
+                  {/* Calculations and Metrics Cards */}
+                  {(() => {
+                    const parsedCoverages = selectedQuote.coberturas ? JSON.parse(selectedQuote.coberturas) : { itp: false, epp: false, ma: false }
+                    const parsedRows = JSON.parse(selectedQuote.projectionData)
+                    
+                    // Recompute ppr calculations inside Modal Scope
+                    const benefitFiscalTotal = selectedQuote.producto === "VPL PPR" 
+                      ? selectedQuote.totalPrima * ((selectedQuote.isr || 35) / 100)
+                      : 0
+                    
+                    const benefitFiscalAnual = selectedQuote.producto === "VPL PPR"
+                      ? selectedQuote.primaAnual * ((selectedQuote.isr || 35) / 100)
+                      : 0
+
+                    const pprAhorroRealEfectivo = selectedQuote.totalPrima - benefitFiscalTotal
+                    const pprRentabilidadReal = pprAhorroRealEfectivo > 0 
+                      ? (selectedQuote.ahorro / pprAhorroRealEfectivo) * 100 
+                      : 0
+
+                    // SA progression computations
+                    const saY1 = parsedRows[0]?.saPesos || 0
+                    const rowY10 = parsedRows.find((r: any) => r.anio === 10) || parsedRows[parsedRows.length - 1]
+                    const saY10 = rowY10 ? rowY10.saPesos : 0
+                    const rowY20 = parsedRows.find((r: any) => r.anio === 20) || parsedRows[parsedRows.length - 1]
+                    const saY20 = rowY20 ? rowY20.saPesos : 0
+                    const rowY30 = parsedRows.find((r: any) => r.anio === 30) || parsedRows[parsedRows.length - 1]
+                    const saY30 = rowY30 ? rowY30.saPesos : 0
+
+                    return (
+                      <>
+                        {/* Top Summary Metrics */}
+                        <div className={`grid gap-4 ${selectedQuote.producto.includes("PPR") ? "grid-cols-2 lg:grid-cols-5" : "grid-cols-2 lg:grid-cols-4"}`}>
+                          <Card className="shadow-none border border-slate-100 bg-slate-50/50">
+                            <CardContent className="p-3">
+                              <span className="text-[9px] font-bold text-slate-500 uppercase block">Ahorro a Edad 65</span>
+                              <span className="text-lg font-black text-emerald-600 block mt-1">
+                                ${selectedQuote.ahorro.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                              </span>
+                            </CardContent>
+                          </Card>
+
+                          <Card className="shadow-none border border-slate-100 bg-slate-50/50">
+                            <CardContent className="p-3">
+                              <span className="text-[9px] font-bold text-slate-500 uppercase block">Aportación Total</span>
+                              <span className="text-lg font-black text-slate-800 block mt-1">
+                                ${selectedQuote.totalPrima.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                              </span>
+                            </CardContent>
+                          </Card>
+
+                          <Card className="shadow-none border border-slate-100 bg-slate-50/50">
+                            <CardContent className="p-3">
+                              <span className="text-[9px] font-bold text-slate-500 uppercase block">Rendimiento (65)</span>
+                              <span className="text-lg font-black text-teal-600 block mt-1">
+                                {selectedQuote.rendimiento.toFixed(1)}%
+                              </span>
+                            </CardContent>
+                          </Card>
+
+                          {selectedQuote.producto.includes("PPR") && (
+                            <>
+                              <Card className="shadow-none border border-slate-100 bg-slate-50/50">
+                                <CardContent className="p-3">
+                                  <span className="text-[9px] font-bold text-slate-500 uppercase block">Beneficio Fiscal PPR</span>
+                                  <span className="text-lg font-black text-teal-700 block mt-1">
+                                    ${benefitFiscalTotal.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                  </span>
+                                </CardContent>
+                              </Card>
+
+                              <Card className="shadow-none border border-teal-200 bg-teal-50/30">
+                                <CardContent className="p-3">
+                                  <span className="text-[9px] font-bold text-slate-500 uppercase block">Ahorro real efectivo</span>
+                                  <span className="text-lg font-black text-teal-800 block mt-1">
+                                    ${pprAhorroRealEfectivo.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                  </span>
+                                  <span className="text-[8px] font-bold text-emerald-600 block mt-0.5">
+                                    % Real de Rentabilidad: {pprRentabilidadReal.toFixed(1)}%
+                                  </span>
+                                </CardContent>
+                              </Card>
+                            </>
+                          )}
+                        </div>
+
+                        {/* Mid Section: Params & SA Growth Timeline & Recharts */}
+                        <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+                          
+                          {/* Params and Suma Asegurada cards */}
+                          <div className="md:col-span-5 space-y-4 flex flex-col">
+                            <Card className="border shadow-none flex-1">
+                              <CardHeader className="py-2.5 px-3 bg-slate-50 border-b">
+                                <CardTitle className="text-[10px] font-black text-slate-700 uppercase tracking-widest">
+                                  Parámetros Originales
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="p-3 text-[11px] space-y-1.5">
+                                <div className="flex justify-between border-b pb-1">
+                                  <span className="text-slate-500 font-medium">Producto</span>
+                                  <span className="font-bold text-slate-800">{selectedQuote.producto}</span>
+                                </div>
+                                <div className="flex justify-between border-b pb-1">
+                                  <span className="text-slate-500 font-medium">Duración de Pagos</span>
+                                  <span className="font-bold text-slate-800">
+                                    {selectedQuote.duracion === "EA65" ? "Edad Alcanzada 65 Años" : `${selectedQuote.duracion} Años`}
+                                  </span>
+                                </div>
+                                <div className="flex justify-between border-b pb-1">
+                                  <span className="text-slate-500 font-medium">UDI Inicial</span>
+                                  <span className="font-bold text-slate-800">${(selectedQuote.valorUdi || 8.25).toFixed(4)}</span>
+                                </div>
+                                <div className="flex justify-between border-b pb-1">
+                                  <span className="text-slate-500 font-medium">Inflación UDI Anual</span>
+                                  <span className="font-bold text-teal-600">{(selectedQuote.inflacionUdi || 5.0).toFixed(1)}%</span>
+                                </div>
+                                {selectedQuote.producto.includes("PPR") && (
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-500 font-medium">ISR Deductible</span>
+                                    <span className="font-bold text-slate-800">{selectedQuote.isr || 35}%</span>
+                                  </div>
+                                )}
+                              </CardContent>
+                            </Card>
+
+                            <Card className="border shadow-none">
+                              <CardHeader className="py-2.5 px-3 bg-slate-50 border-b">
+                                <CardTitle className="text-[10px] font-black text-slate-700 uppercase tracking-widest flex items-center gap-1">
+                                  <Sparkles className="h-3.5 w-3.5 text-teal-600" /> Crecimiento Suma Asegurada
+                                </CardTitle>
+                              </CardHeader>
+                              <CardContent className="p-3 text-[11px]">
+                                <div className="relative border-l border-teal-200 pl-4 space-y-1.5">
+                                  <div className="relative">
+                                    <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-teal-600"></span>
+                                    <div className="flex justify-between text-[10px]">
+                                      <span className="text-slate-500">Año 1</span>
+                                      <span className="font-bold text-slate-800">${saY1.toLocaleString("es-MX", {maximumFractionDigits:0})}</span>
+                                    </div>
+                                  </div>
+                                  {saY10 > 0 && (
+                                    <div className="relative">
+                                      <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-teal-600"></span>
+                                      <div className="flex justify-between text-[10px]">
+                                        <span className="text-slate-500">Año 10</span>
+                                        <span className="font-bold text-slate-800">${saY10.toLocaleString("es-MX", {maximumFractionDigits:0})}</span>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {saY20 > 0 && (
+                                    <div className="relative">
+                                      <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-teal-600"></span>
+                                      <div className="flex justify-between text-[10px]">
+                                        <span className="text-slate-500">Año 20</span>
+                                        <span className="font-bold text-slate-800">${saY20.toLocaleString("es-MX", {maximumFractionDigits:0})}</span>
+                                      </div>
+                                    </div>
+                                  )}
+                                  {saY30 > 0 && (
+                                    <div className="relative">
+                                      <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-teal-600"></span>
+                                      <div className="flex justify-between text-[10px]">
+                                        <span className="text-slate-500">Año 30</span>
+                                        <span className="font-bold text-slate-800">${saY30.toLocaleString("es-MX", {maximumFractionDigits:0})}</span>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                                <div className="text-[9px] text-slate-500 font-medium mt-2.5 border-t pt-1.5 flex items-center gap-1.5">
+                                  <span className="text-[8px] bg-teal-600 text-white font-extrabold px-1.5 py-0.5 rounded tracking-widest uppercase">
+                                    PROTECCIÓN
+                                  </span>
+                                  <span>Monto por fallecimiento garantizado.</span>
+                                </div>
+                              </CardContent>
+                            </Card>
+                          </div>
+
+                          {/* Recharts Area Chart */}
+                          <div className="md:col-span-7 border rounded-2xl p-4 flex flex-col justify-between min-h-56 shadow-none">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">
+                                Proyección del Ahorro Garantizado
+                              </span>
+                              <span className="text-[9px] text-muted-foreground">Valores en Pesos</span>
+                            </div>
+                            
+                            <div className="h-44 w-full">
+                              <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart
+                                  data={parsedRows}
+                                  margin={{ top: 2, right: 2, left: 2, bottom: 2 }}
+                                >
+                                  <defs>
+                                    <linearGradient id="adminColorAhorro" x1="0" y1="0" x2="0" y2="1">
+                                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.2}/>
+                                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.01}/>
+                                    </linearGradient>
+                                  </defs>
+                                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0"/>
+                                  <XAxis dataKey="anio" tickLine={false} axisLine={false} tick={{ fontSize: 9 }} />
+                                  <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 9 }} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
+                                  <Tooltip formatter={(value: any) => [`$${value.toLocaleString("es-MX", {maximumFractionDigits:0})}`, ""]} />
+                                  <Area name="Ahorro Garantizado ($)" type="monotone" dataKey="valoresPesos" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#adminColorAhorro)" />
+                                </AreaChart>
+                              </ResponsiveContainer>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Projection Table */}
+                        <div className="space-y-2">
+                          <h4 className="text-[10px] font-black text-slate-700 uppercase tracking-widest">
+                            Tabla Completa de Beneficios Garantizados
+                          </h4>
+                          <div className="border rounded-xl overflow-hidden max-h-80 overflow-y-auto">
+                            <Table className="w-full text-xs">
+                              <TableHeader className="bg-[#87D1B5] sticky top-0 z-10">
+                                <TableRow>
+                                  <TableHead className="font-bold text-white text-center py-2">Año</TableHead>
+                                  <TableHead className="font-bold text-white text-center py-2">Edad</TableHead>
+                                  <TableHead className="font-bold text-white text-center py-2">Valor UDI</TableHead>
+                                  <TableHead className="font-bold text-white text-center py-2">Prima UDIS</TableHead>
+                                  <TableHead className="font-bold text-white text-center py-2">Prima Pesos</TableHead>
+                                  <TableHead className="font-bold text-white text-center py-2">SA UDIS</TableHead>
+                                  <TableHead className="font-bold text-white text-center py-2">SA Pesos</TableHead>
+                                  <TableHead className="font-bold text-white text-center py-2">Ahorro UDIS</TableHead>
+                                  <TableHead className="font-bold text-white text-center py-2">Ahorro Pesos</TableHead>
+                                  <TableHead className="font-bold text-white text-center py-2">Rendimiento</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {parsedRows.map((row: any, idx: number) => {
+                                  let rowStyle = "bg-white text-slate-800"
+                                  if (idx % 2 === 0) rowStyle = "bg-slate-50/40 text-slate-800"
+
+                                  const paymentDurationNum = parseInt(selectedQuote.duracion || "")
+                                  const isPaymentEndRow = !isNaN(paymentDurationNum)
+                                    ? row.anio === paymentDurationNum
+                                    : (selectedQuote.duracion === "EA65" && row.edad === 65)
+
+                                  const isGreenRow = row.edad === 65 && !isPaymentEndRow
+
+                                  if (isPaymentEndRow) {
+                                    rowStyle = "bg-[#1e3a8a] text-white font-black"
+                                  } else if (isGreenRow) {
+                                    rowStyle = "bg-[#77ac52] text-white font-bold"
+                                  }
+
+                                  const cellClass = (baseClass: string, colorClass: string) => {
+                                    if (isPaymentEndRow || isGreenRow) {
+                                      return `${baseClass} text-white font-bold`
+                                    }
+                                    return `${baseClass} ${colorClass}`
+                                  }
+
+                                  return (
+                                    <TableRow key={idx} className={`border-b ${rowStyle}`}>
+                                      <TableCell className={cellClass("text-center py-1.5 font-medium", "text-slate-800")}>{row.anio}</TableCell>
+                                      <TableCell className={cellClass("text-center py-1.5", "text-slate-800")}>{row.edad}</TableCell>
+                                      <TableCell className={cellClass("text-center py-1.5", "text-slate-600")}>{row.udiValue.toFixed(4)}</TableCell>
+                                      <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-slate-800")}>
+                                        {row.primaUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                      </TableCell>
+                                      <TableCell className={cellClass("text-center py-1.5 font-medium", "text-slate-800")}>
+                                        ${row.primaPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                      </TableCell>
+                                      <TableCell className={cellClass("text-center py-1.5", "text-slate-800")}>
+                                        {row.saUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                      </TableCell>
+                                      <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-slate-800")}>
+                                        ${row.saPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                      </TableCell>
+                                      <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-teal-700")}>
+                                        {row.ahorroUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                      </TableCell>
+                                      <TableCell className={cellClass("text-center py-1.5 font-bold", "text-emerald-600")}>
+                                        ${row.valoresPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                      </TableCell>
+                                      <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-slate-700")}>
+                                        {(row.rendimiento * 100).toFixed(1)}%
+                                      </TableCell>
+                                    </TableRow>
+                                  )
+                                })}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+
+                        {/* Dynamic Coverages Table */}
+                        <div className="bg-slate-50 border p-4 rounded-xl">
+                          <span className="text-[9px] font-black text-slate-500 uppercase block tracking-wider mb-2">
+                            Resumen de Coberturas Contratadas
+                          </span>
+                          <div className="border rounded-lg overflow-hidden bg-white shadow-sm">
+                            <Table className="w-full text-xs">
+                              <TableHeader className="bg-slate-100">
+                                <TableRow>
+                                  <TableHead className="font-bold text-slate-700 py-1.5">Cobertura</TableHead>
+                                  <TableHead className="font-bold text-slate-700 py-1.5 text-center">Tipo</TableHead>
+                                  <TableHead className="font-bold text-slate-700 py-1.5 text-center">Suma Asegurada Inicial</TableHead>
+                                  <TableHead className="font-bold text-slate-700 py-1.5 text-center">Estado</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                <TableRow className="border-b">
+                                  <TableCell className="font-bold py-1.5">Fallecimiento (Cobertura Base)</TableCell>
+                                  <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-slate-100 text-[9px] font-semibold">Básica</span></TableCell>
+                                  <TableCell className="text-center py-1.5 font-semibold">${saY1.toLocaleString("es-MX", {maximumFractionDigits:0})} MXN</TableCell>
+                                  <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold">Amparada</span></TableCell>
+                                </TableRow>
+                                {parsedCoverages.itp && (
+                                  <TableRow className="border-b">
+                                    <TableCell className="font-bold py-1.5">Invalidez Total y Permanente (ITP)</TableCell>
+                                    <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-teal-50 text-teal-700 text-[9px] font-semibold">Adicional</span></TableCell>
+                                    <TableCell className="text-center py-1.5 font-semibold">${saY1.toLocaleString("es-MX", {maximumFractionDigits:0})} MXN</TableCell>
+                                    <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold">Amparada</span></TableCell>
+                                  </TableRow>
+                                )}
+                                {parsedCoverages.epp && (
+                                  <TableRow className="border-b">
+                                    <TableCell className="font-bold py-1.5">Exención de Pago de Primas por ITP (EPP)</TableCell>
+                                    <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-teal-50 text-teal-700 text-[9px] font-semibold">Adicional</span></TableCell>
+                                    <TableCell className="text-center py-1.5 font-semibold">Exención de Aportaciones</TableCell>
+                                    <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold">Amparada</span></TableCell>
+                                  </TableRow>
+                                )}
+                                {parsedCoverages.ma && (
+                                  <TableRow>
+                                    <TableCell className="font-bold py-1.5">Muerte Accidental (MA)</TableCell>
+                                    <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-teal-50 text-teal-700 text-[9px] font-semibold">Adicional</span></TableCell>
+                                    <TableCell className="text-center py-1.5 font-semibold">${saY1.toLocaleString("es-MX", {maximumFractionDigits:0})} MXN</TableCell>
+                                    <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold">Amparada</span></TableCell>
+                                  </TableRow>
+                                )}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </div>
+
+                        {/* Fiscal Benefit Section */}
+                        {selectedQuote.producto.includes("PPR") && (
+                          <div className="bg-teal-50/40 border border-teal-200 p-4 rounded-xl space-y-2">
+                            <div className="flex items-center gap-2">
+                              <Percent className="h-4.5 w-4.5 text-teal-700" />
+                              <h4 className="text-xs font-black text-teal-800 uppercase tracking-wider">
+                                Detalle del Beneficio Fiscal Especial (PPR - Art 151 LISR)
+                              </h4>
+                            </div>
+                            <p className="text-[11px] text-slate-600">
+                              Estrategia de deducción anual acumulada basada en la tasa fiscal marginal recomendada de **{selectedQuote.isr || 35}%**:
+                            </p>
+                            <div className="grid grid-cols-2 gap-4 pt-1">
+                              <div className="border bg-white p-2.5 rounded-lg text-center text-xs">
+                                <span className="text-[9px] font-bold text-slate-500 block">Ahorro Fiscal Declaración Anual</span>
+                                <span className="text-sm font-extrabold text-teal-700 block mt-0.5">
+                                  ${benefitFiscalAnual.toLocaleString("es-MX", { maximumFractionDigits: 0 })} pesos
+                                </span>
+                              </div>
+                              <div className="border bg-white p-2.5 rounded-lg text-center text-xs">
+                                <span className="text-[9px] font-bold text-slate-500 block">Ahorro Fiscal Acumulado Total</span>
+                                <span className="text-sm font-extrabold text-emerald-600 block mt-0.5">
+                                  ${benefitFiscalTotal.toLocaleString("es-MX", { maximumFractionDigits: 0 })} pesos
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Modal disclaimer footer */}
+                        <div className="border-t pt-3 flex justify-between items-center text-[9px] text-slate-400">
+                          <span>* Cotización rescatada desde el registro histórico central de la promotoría.</span>
+                          <span className="font-semibold text-slate-500">AACOM cotizador</span>
+                        </div>
+                      </>
+                    )
+                  })()}
+
+                </div>
+                /* RECREATION CONTAINER END */
+              )}
+
+            </div>
+
+            {/* Modal Footer actions */}
+            <div className="bg-slate-50 dark:bg-zinc-900 border-t p-4 flex justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setSelectedQuote(null)} 
+                className="h-9 px-4 text-xs font-bold"
+              >
+                Cerrar Vista
+              </Button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Styles inject for print layout within Admin preview */}
+      <style jsx global>{`
+        @media print {
+          /* Admin Printable Report overlay overrides */
+          body * {
+            visibility: hidden !important;
+          }
+          #admin-printable-report, #admin-printable-report * {
+            visibility: visible !important;
+          }
+          #admin-printable-report {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 100% !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            border: none !important;
+            box-shadow: none !important;
+            background-color: white !important;
+          }
+          /* Ensure headers color */
+          th {
+            background-color: #87D1B5 !important;
+            color: white !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          tr.bg-\\[\\#1e3a8a\\] td {
+            background-color: #1e3a8a !important;
+            color: white !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          tr.bg-\\[\\#77ac52\\] td {
+            background-color: #77ac52 !important;
+            color: white !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+        }
+      `}</style>
+
+    </div>
+  )
+}

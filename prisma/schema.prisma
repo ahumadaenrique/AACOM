@@ -1,0 +1,124 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// SQLite does not support Enums, so we use String validation in app logic
+// enum Role { ... } replaced by Strings
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String    @unique
+  password      String?
+  image         String?
+  role          String    @default("AGENTE") // Changed from Enum Role to String
+  
+  // Hierarchy
+  reportsToId   String?
+  reportsTo     User?     @relation("Hierarchy", fields: [reportsToId], references: [id])
+  subordinates  User[]    @relation("Hierarchy")
+
+  // For Double Promotoria or shared access (Simple implementation: Secondary access list)
+  // This could be a many-to-many relation if needed
+  
+  // Data
+  dailyRecords  DailyRecord[]
+  policies      Policy[]
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Activity {
+  id          String        @id @default(cuid())
+  name        String
+  value       Int           // Points value
+  dailyRecords DailyRecord[]
+}
+
+model DailyRecord {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  
+  activityId  String
+  activity    Activity  @relation(fields: [activityId], references: [id])
+  
+  date        DateTime  // Use Date part only in logic
+  planned     Int       @default(0)
+  real        Int       @default(0)
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([userId, activityId, date]) // One record per activity per user per day
+}
+
+model Policy {
+  id            String    @id @default(cuid())
+  
+  policyNumber  String    @unique
+  contractor    String    // Contratante
+  insured       String    // Asegurado
+  paymentMethod String
+  renewalDate   DateTime
+  
+  pdfUrl        String?   // GCS URL
+  
+  userId        String
+  user          User      @relation(fields: [userId], references: [id])
+  
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Indexed for search performance (trigram indices would be added in raw SQL migration usually)
+}
+
+model Content {
+  id        String   @id @default(cuid())
+  type      String   // 'HOME_AD', 'LINK_BANNER'
+  
+  imageUrl  String
+  linkUrl   String?  // For banners
+  
+  active    Boolean  @default(true)
+  order     Int      @default(0)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CompanyRules {
+  id        String   @id @default(cuid())
+  content   String   // SQLite treats String as TEXT by default. invoke @db.Text is not needed/supported
+  updatedAt DateTime @updatedAt
+}
+
+model Cotizacion {
+  id             String   @id @default(cuid())
+  cliente        String
+  telefono       String
+  agente         String
+  producto       String
+  primaAnual     Float
+  totalPrima     Float
+  ahorro         Float
+  rendimiento    Float
+  valorUdi       Float?
+  inflacionUdi   Float?
+  duracion       String?
+  isr            Float?
+  coberturas     String?  // JSON string
+  projectionData String?  // JSON string
+  createdAt      DateTime @default(now())
+}
+
+model Setting {
+  key   String @id
+  value String
+}
