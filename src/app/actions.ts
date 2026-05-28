@@ -220,3 +220,56 @@ export async function getUdiSetting() {
         return { success: false, value: 8.25 };
     }
 }
+
+export async function getAgents() {
+    try {
+        const agents = await prisma.agent.findMany({
+            orderBy: {
+                name: 'asc'
+            }
+        });
+        return { success: true, agents };
+    } catch (error: any) {
+        console.error("Error fetching agents:", error);
+        return { success: false, message: error.message || "Error al obtener agentes", agents: [] };
+    }
+}
+
+export async function createAgent(name: string) {
+    try {
+        const trimmedName = name.trim();
+        if (!trimmedName) {
+            return { success: false, message: "El nombre del agente no puede estar vacío" };
+        }
+        
+        // Check for duplicates (case insensitive search or direct unique key handle)
+        const existing = await prisma.agent.findUnique({
+            where: { name: trimmedName }
+        });
+        
+        if (existing) {
+            return { success: false, message: "Este agente ya se encuentra registrado" };
+        }
+
+        const newAgent = await prisma.agent.create({
+            data: { name: trimmedName }
+        });
+        return { success: true, agent: newAgent };
+    } catch (error: any) {
+        console.error("Error creating agent:", error);
+        return { success: false, message: error.message || "Error al registrar el agente" };
+    }
+}
+
+export async function deleteAgent(id: string) {
+    try {
+        const deleted = await prisma.agent.delete({
+            where: { id }
+        });
+        return { success: true, agent: deleted };
+    } catch (error: any) {
+        console.error("Error deleting agent:", error);
+        return { success: false, message: error.message || "Error al eliminar el agente" };
+    }
+}
+

@@ -122,3 +122,10 @@ model Setting {
   key   String @id
   value String
 }
+
+model Agent {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+}
+

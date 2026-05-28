@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, saveUdiSetting, getUdiSetting } from "@/app/actions"
+import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -57,10 +57,17 @@ export default function AdminPage() {
   const [error, setError] = useState<string>("")
 
   // Admin Dashboard Tabs
-  const [activeTab, setActiveTab] = useState<"historico" | "productividad">("productividad")
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes">("productividad")
 
   // Rescued quote state
   const [selectedQuote, setSelectedQuote] = useState<any | null>(null)
+
+  // Agent Management states
+  const [dbAgentsList, setDbAgentsList] = useState<any[]>([])
+  const [newAgentName, setNewAgentName] = useState<string>("")
+  const [submittingAgent, setSubmittingAgent] = useState<boolean>(false)
+  const [loadingAgents, setLoadingAgents] = useState<boolean>(false)
+  const [agentMessage, setAgentMessage] = useState<string>("")
 
   // UDI Settings states (Correction 5: Admin sets UDI rate)
   const [defaultUdi, setDefaultUdi] = useState<number>(8.25)
@@ -74,6 +81,21 @@ export default function AdminPage() {
       setPasswordError("")
     } else {
       setPasswordError("Contraseña incorrecta. Acceso denegado.")
+    }
+  }
+
+  // Fetch agents list
+  const fetchAgentsList = async () => {
+    setLoadingAgents(true)
+    try {
+      const res = await getAgents()
+      if (res.success && res.agents) {
+        setDbAgentsList(res.agents)
+      }
+    } catch (err) {
+      console.error("Error fetching agents in admin:", err)
+    } finally {
+      setLoadingAgents(false)
     }
   }
 
@@ -95,6 +117,9 @@ export default function AdminPage() {
       if (udiRes.success && udiRes.value) {
         setDefaultUdi(udiRes.value)
       }
+
+      // 3. Fetch agents
+      await fetchAgentsList()
     } catch (err) {
       console.error(err)
       setError("Fallo al conectar con el servidor.")
@@ -123,6 +148,44 @@ export default function AdminPage() {
     } catch (err) {
       console.error(err)
       setUdiSaving("Error")
+    }
+  }
+
+  // Create new Agent
+  const handleAddAgent = async () => {
+    if (!newAgentName.trim()) return
+    setSubmittingAgent(true)
+    setAgentMessage("")
+    try {
+      const res = await createAgent(newAgentName.trim())
+      if (res.success) {
+        setNewAgentName("")
+        setAgentMessage("¡Agente registrado con éxito!")
+        setTimeout(() => setAgentMessage(""), 5000)
+        fetchAgentsList()
+      } else {
+        setAgentMessage(res.message || "Error al registrar el agente")
+      }
+    } catch (err: any) {
+      setAgentMessage(`Error: ${err.message || 'Fallo de red'}`)
+    } finally {
+      setSubmittingAgent(false)
+    }
+  }
+
+  // Delete an Agent
+  const handleDeleteAgent = async (id: string) => {
+    if (!confirm("¿Estás seguro de que deseas eliminar a este agente? Esto no borrará sus cotizaciones históricas, pero ya no aparecerá como opción para nuevas cotizaciones.")) return
+    try {
+      const res = await deleteAgent(id)
+      if (res.success) {
+        fetchAgentsList()
+      } else {
+        alert(res.message || "Error al eliminar agente")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error al conectar para eliminar agente")
     }
   }
 
@@ -394,6 +457,16 @@ export default function AdminPage() {
           }`}
         >
           <BookOpen className="h-4.5 w-4.5" /> Historial de Cotizaciones
+        </button>
+        <button
+          onClick={() => setActiveTab("agentes")}
+          className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === "agentes"
+              ? "border-teal-600 text-teal-600 dark:text-teal-400"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <Users className="h-4.5 w-4.5" /> Gestión de Agentes
         </button>
       </div>
 
@@ -763,6 +836,111 @@ export default function AdminPage() {
               )}
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {activeTab === "agentes" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            {/* Form to add a new Agent */}
+            <Card className="border shadow-sm">
+              <CardHeader className="py-4 border-b bg-slate-50/50">
+                <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider">
+                  Dar de Alta Nuevo Agente
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Agrega un agente a la lista oficial para habilitarlo en el cotizador.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-5 space-y-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Nombre del Agente</label>
+                  <Input
+                    placeholder="Ej. Sofía Martínez Rivera"
+                    value={newAgentName}
+                    onChange={(e) => setNewAgentName(e.target.value)}
+                  />
+                </div>
+                <Button 
+                  onClick={handleAddAgent} 
+                  disabled={submittingAgent || !newAgentName.trim()} 
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold"
+                >
+                  {submittingAgent ? "Agregando..." : "Dar de Alta Agente"}
+                </Button>
+                {agentMessage && (
+                  <p className={`text-xs font-semibold text-center mt-2 ${agentMessage.includes("error") || agentMessage.includes("Error") ? "text-red-500" : "text-emerald-600"}`}>
+                    {agentMessage}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* List of Registered Agents */}
+            <Card className="md:col-span-2 border shadow-sm overflow-hidden">
+              <CardHeader className="py-4 border-b bg-slate-50/50">
+                <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider">
+                  Lista Oficial de Agentes
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Agentes autorizados para cotizar propuestas técnicas en la plataforma.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-0">
+                {loadingAgents ? (
+                  <div className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
+                    <RefreshCw className="h-6 w-6 animate-spin text-teal-600" />
+                    <span>Cargando lista de agentes...</span>
+                  </div>
+                ) : dbAgentsList.length === 0 ? (
+                  <div className="p-12 text-center text-muted-foreground text-xs flex flex-col items-center justify-center gap-2">
+                    <Users className="h-8 w-8 text-slate-400" />
+                    <span>No hay agentes registrados en la base de datos aún.</span>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table className="text-xs">
+                      <TableHeader className="bg-slate-50 dark:bg-zinc-800">
+                        <TableRow>
+                          <TableHead className="font-bold py-3 pl-4">Agente</TableHead>
+                          <TableHead className="font-bold py-3">Fecha de Alta</TableHead>
+                          <TableHead className="font-bold py-3 text-center pr-4">Acciones</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {dbAgentsList.map((agent) => (
+                          <TableRow key={agent.id} className="hover:bg-slate-50/50 border-b">
+                            <TableCell className="font-bold text-slate-800 dark:text-slate-200 py-3 pl-4">
+                              <div className="flex items-center gap-2">
+                                <span className="h-7 w-7 rounded-full bg-teal-600 text-white flex items-center justify-center font-black text-[10px] uppercase shadow-sm">
+                                  {agent.name.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
+                                </span>
+                                <span>{agent.name}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-slate-500 py-3">
+                              {new Date(agent.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" })}
+                            </TableCell>
+                            <TableCell className="text-center py-3 pr-4">
+                              <Button
+                                onClick={() => handleDeleteAgent(agent.id)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-xs"
+                              >
+                                Eliminar
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
       )}
 

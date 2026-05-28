@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react"
 import * as XLSX from "xlsx"
-import { saveCotizacion, getUdiSetting } from "@/app/actions"
+import { saveCotizacion, getUdiSetting, getAgents } from "@/app/actions"
 import { 
   FileSpreadsheet, 
   Upload, 
@@ -19,7 +19,8 @@ import {
   PiggyBank,
   CheckSquare,
   Sparkles,
-  Download
+  Download,
+  RefreshCw
 } from "lucide-react"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -52,6 +53,7 @@ interface FormData {
     itp: boolean
     epp: boolean
     ma: boolean
+    mapo: boolean
   }
   isr: number
 }
@@ -82,12 +84,25 @@ export default function CotizadorPage() {
     coberturas: {
       itp: false,
       epp: false,
-      ma: false
+      ma: false,
+      mapo: false
     },
     isr: 35 // Recommended 35% ISR
   })
 
-  // Load default UDI rate set by Admin from DB on mount (Correction 5)
+  // Load default UDI rate set by Admin from DB on mount (Correction 5) and agents list
+  const [agents, setAgents] = useState<string[]>([
+    "Miguel Angel Cruz",
+    "Alejandra Ahumada",
+    "Jorge Antonio Araoz",
+    "Raul Alberto Coka",
+    "Dalia Sandoval",
+    "Samantha Ramos",
+    "Viridiana Habana",
+    "Claudia Quijada",
+    "Areli Arce"
+  ])
+
   useEffect(() => {
     const fetchDefaultUdi = async () => {
       try {
@@ -102,7 +117,20 @@ export default function CotizadorPage() {
         console.error("Error fetching UDI default rate:", err)
       }
     }
+    
+    const fetchAgents = async () => {
+      try {
+        const res = await getAgents()
+        if (res.success && res.agents && res.agents.length > 0) {
+          setAgents(res.agents.map((a: any) => a.name))
+        }
+      } catch (err) {
+        console.error("Error fetching agents:", err)
+      }
+    }
+
     fetchDefaultUdi()
+    fetchAgents()
   }, [])
 
   // Step 2: Upload Data
@@ -248,8 +276,8 @@ export default function CotizadorPage() {
       alert("Por favor, ingresa el nombre del cliente.")
       return
     }
-    if (!formData.agente.trim()) {
-      alert("Por favor, ingresa el nombre del agente.")
+    if (!formData.agente || formData.agente === "" || formData.agente === "Nombre de Agente") {
+      alert("Por favor, selecciona un agente válido de la lista.")
       return
     }
     
@@ -272,6 +300,17 @@ export default function CotizadorPage() {
     let currentUdi = formData.valorUdi
     let accumulatedPremiumPesos = 0
 
+    // Helper to parse currency/numeric values cleanly from Excel cells (resolves NaN and $ issues)
+    const parseNumericValue = (val: any): number => {
+      if (val === undefined || val === null) return 0
+      if (typeof val === 'number') return val
+      const str = String(val).trim()
+      if (!str) return 0
+      const cleaned = str.replace(/[$\s,]/g, "")
+      const parsed = parseFloat(cleaned)
+      return isNaN(parsed) ? 0 : parsed
+    }
+
     // Filter rows that have a valid year
     const validRows = fileRows.filter(row => {
       const yearVal = row[mapping.anios]
@@ -282,9 +321,9 @@ export default function CotizadorPage() {
     validRows.forEach((row, idx) => {
       const anio = parseInt(row[mapping.anios]) || idx + 1
       const edad = parseInt(row[mapping.edad]) || 0
-      const primaPesos = parseFloat(row[mapping.prima]) || 0
-      const saPesos = parseFloat(row[mapping.sa]) || 0
-      const valoresPesos = parseFloat(row[mapping.valores]) || 0
+      const primaPesos = parseNumericValue(row[mapping.prima])
+      const saPesos = parseNumericValue(row[mapping.sa])
+      const valoresPesos = parseNumericValue(row[mapping.valores])
 
       // UDI value projection (starts at valorUdi, increases compounded by inflation)
       const udiValue = idx === 0 ? currentUdi : currentUdi * (1 + formData.inflacionUdi / 100)
@@ -439,7 +478,7 @@ export default function CotizadorPage() {
     setFormData(prev => ({
       ...prev,
       cliente: "Eduardo Mendoza Garza",
-      agente: "Sofía Martínez Rivera",
+      agente: "Miguel Angel Cruz",
       telefono: "8119098765", // 10-digit number
       producto: "VPL PPR",
       duracion: "10",
@@ -449,7 +488,8 @@ export default function CotizadorPage() {
       coberturas: {
         itp: true,
         epp: true,
-        ma: true
+        ma: true,
+        mapo: true
       }
     }))
     setStep(3)
@@ -465,6 +505,48 @@ export default function CotizadorPage() {
   // Printable action
   const handlePrint = () => {
     window.print()
+  }
+
+  // Reset cotizador to step 1 and clean up state fields
+  const handleResetAndNewQuote = () => {
+    setFormData({
+      cliente: "",
+      agente: "", // Reset back to placeholder
+      telefono: "",
+      producto: "VPL",
+      duracion: "15",
+      valorUdi: formData.valorUdi, // Keep initial default UDI value
+      inflacionUdi: 5.0, // Default 5%
+      coberturas: {
+        itp: false,
+        epp: false,
+        ma: false,
+        mapo: false
+      },
+      isr: 35
+    })
+    setFile(null)
+    setFileHeaders([])
+    setFileRows([])
+    setMapping({
+      anios: -1,
+      edad: -1,
+      prima: -1,
+      sa: -1,
+      valores: -1
+    })
+    setCalculatedData([])
+    setSummaryMetrics({
+      totalPrimasPesos: 0,
+      totalAhorroPesos: 0,
+      totalAhorroUdis: 0,
+      beneficioFiscalAnual: 0,
+      beneficioFiscalTotal: 0,
+      rendimientoFinal65: 0
+    })
+    setSaProgression({ y1: 0, y10: 0, y20: 0, y30: 0 })
+    setHasCalculated(false)
+    setStep(1)
   }
 
   // Observation 1: Direct PDF download using html2pdf.js dynamically
@@ -578,12 +660,19 @@ export default function CotizadorPage() {
 
               <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Nombre del Agente</label>
-                <Input 
-                  name="agente" 
-                  value={formData.agente} 
-                  onChange={handleInputChange} 
-                  placeholder="Ej. Sofía Martínez Rivera" 
-                />
+                <select
+                  name="agente"
+                  value={formData.agente}
+                  onChange={handleInputChange}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="">Nombre de Agente</option>
+                  {agents.map((agentName) => (
+                    <option key={agentName} value={agentName}>
+                      {agentName}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="space-y-2">
@@ -685,11 +774,12 @@ export default function CotizadorPage() {
             {/* Checkboxes for Coverages */}
             <div className="space-y-3 pt-4 border-t">
               <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Coberturas Adicionales</label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   { key: "itp", label: "Invalidez Total y Permanente (ITP)", code: "ITP" },
                   { key: "epp", label: "Exención de Pago Primas por ITP (EPP)", code: "EPP" },
-                  { key: "ma", label: "Muerte Accidental (MA)", code: "MA" }
+                  { key: "ma", label: "Muerte Accidental (MA)", code: "MA" },
+                  { key: "mapo", label: "Muerte Accidental con Pérdidas Orgánicas (MAPO)", code: "MAPO" }
                 ].map((cov) => (
                   <div
                     key={cov.key}
@@ -948,9 +1038,19 @@ export default function CotizadorPage() {
           
           {/* Quick Toolbar - Hidden in Printing - Correction 10: Separated buttons */}
           <div className="flex justify-between items-center w-full bg-slate-100 dark:bg-zinc-800 p-3 rounded-xl border print:hidden">
-            <Button variant="outline" onClick={() => setStep(3)} className="px-5">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Reajustar Mapeo
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button variant="outline" onClick={() => setStep(3)} className="px-5">
+                <ArrowLeft className="mr-2 h-4 w-4" /> Reajustar Mapeo
+              </Button>
+              
+              <Button 
+                variant="secondary" 
+                onClick={handleResetAndNewQuote} 
+                className="bg-slate-200 hover:bg-slate-300 text-slate-800 dark:bg-zinc-700 dark:text-slate-200 px-5 font-bold flex items-center gap-1.5 border border-slate-300"
+              >
+                <RefreshCw className="h-4 w-4" /> Hacer nueva cotización
+              </Button>
+            </div>
             
             <div className="flex items-center gap-3">
               {/* Button 1: Download PDF (Direct Download - Observation 1) */}
@@ -1194,7 +1294,16 @@ export default function CotizadorPage() {
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0"/>
                       <XAxis dataKey="anio" tickLine={false} axisLine={false} tick={{ fontSize: 10 }} />
-                      <YAxis tickLine={false} axisLine={false} tick={{ fontSize: 10 }} tickFormatter={(v) => `$${(v/1000).toFixed(0)}k`} />
+                      <YAxis 
+                        tickLine={false} 
+                        axisLine={false} 
+                        tick={{ fontSize: 10 }} 
+                        tickFormatter={(v) => {
+                          if (v >= 1000000) return `$${(v/1000000).toFixed(1)}M`
+                          if (v >= 1000) return `$${(v/1000).toFixed(0)}k`
+                          return `$${v}`
+                        }} 
+                      />
                       <Tooltip formatter={(value: any) => [`$${value.toLocaleString("es-MX", {maximumFractionDigits:0})}`, ""]} />
                       <Legend iconSize={8} wrapperStyle={{ fontSize: 10 }} />
                       <Area name="Ahorro Garantizado ($)" type="monotone" dataKey="valoresPesos" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#colorAhorro)" />
@@ -1384,6 +1493,27 @@ export default function CotizadorPage() {
                       <TableRow className="hover:bg-slate-50 dark:hover:bg-zinc-800">
                         <TableCell className="font-bold py-2 text-slate-800 dark:text-slate-200">
                           Muerte Accidental (MA)
+                        </TableCell>
+                        <TableCell className="text-center py-2">
+                          <span className="px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 text-[10px] font-semibold border border-teal-200/50 dark:border-teal-900/50">
+                            Adicional
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-center py-2 font-semibold text-slate-700 dark:text-slate-300">
+                          ${saProgression.y1.toLocaleString("es-MX", {maximumFractionDigits:0})} MXN
+                        </TableCell>
+                        <TableCell className="text-center py-2">
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-400 text-[10px] font-bold">
+                            <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" /> Amparada
+                          </span>
+                        </TableCell>
+                      </TableRow>
+                    )}
+
+                    {formData.coberturas.mapo && (
+                      <TableRow className="hover:bg-slate-50 dark:hover:bg-zinc-800 border-t">
+                        <TableCell className="font-bold py-2 text-slate-800 dark:text-slate-200">
+                          Muerte Accidental con Pérdidas Orgánicas (MAPO)
                         </TableCell>
                         <TableCell className="text-center py-2">
                           <span className="px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 text-[10px] font-semibold border border-teal-200/50 dark:border-teal-900/50">
