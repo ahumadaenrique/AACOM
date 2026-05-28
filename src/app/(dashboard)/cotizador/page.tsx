@@ -321,9 +321,9 @@ export default function CotizadorPage() {
     })
 
     validRows.forEach((row, idx) => {
-      // ANOS column contains the client's age directly
-      const edad = parseInt(row[mapping.anios]) || idx + 1
-      const anio = idx + 1 // Policy year is simply the row index
+      // ANOS column = policy year, Edad column = client age
+      const anio = parseInt(row[mapping.anios]) || idx + 1
+      const edad = parseInt(row[mapping.edad]) || 0
       const primaPesos = parseNumericValue(row[mapping.prima])
       const saPesos = parseNumericValue(row[mapping.sa])
       const valoresPesos = parseNumericValue(row[mapping.valores])
