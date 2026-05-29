@@ -295,7 +295,13 @@ export default function AdnPage() {
       plazoAnios = Number(pprAniosPlazo)
     }
 
-    const projectedAccumulation = aporteAnual * plazoAnios
+    // Proyección acumulada inflacionada con tasa del 4% anual
+    let projectedAccumulation = 0
+    let tempAporte = aporteAnual
+    for (let i = 0; i < plazoAnios; i++) {
+      projectedAccumulation = (projectedAccumulation + tempAporte) * 1.04
+      tempAporte = tempAporte * 1.04
+    }
     const brechaRetiro = Math.max(0, retirementGoal - projectedAccumulation)
     const isSufficient = projectedAccumulation >= retirementGoal
 
@@ -2413,7 +2419,13 @@ export default function AdnPage() {
                   } else {
                     plazoAnios = Number(selectedSavedAdn.pprAniosPlazo || 10)
                   }
-                  const projectedPprAccumulation = pprAporteAnual * plazoAnios
+                  // Proyección acumulada inflacionada con tasa del 4% anual
+                  let projectedPprAccumulation = 0
+                  let tempAporte = pprAporteAnual
+                  for (let i = 0; i < plazoAnios; i++) {
+                    projectedPprAccumulation = (projectedPprAccumulation + tempAporte) * 1.04
+                    tempAporte = tempAporte * 1.04
+                  }
                   const brechaRetiro = Math.max(0, retirementGoal - projectedPprAccumulation)
                   const isPprSufficient = projectedPprAccumulation >= retirementGoal
 
@@ -2867,7 +2879,13 @@ export default function AdnPage() {
           } else {
             plazoAnios = Number(currentAdn.pprAniosPlazo || 10)
           }
-          const projectedPprAccumulation = pprAporteAnual * plazoAnios
+          // Proyección acumulada inflacionada con tasa del 4% anual
+          let projectedPprAccumulation = 0
+          let tempAporte = pprAporteAnual
+          for (let i = 0; i < plazoAnios; i++) {
+            projectedPprAccumulation = (projectedPprAccumulation + tempAporte) * 1.04
+            tempAporte = tempAporte * 1.04
+          }
           const brechaRetiro = Math.max(0, retirementGoal - projectedPprAccumulation)
           const isPprSufficient = projectedPprAccumulation >= retirementGoal
 

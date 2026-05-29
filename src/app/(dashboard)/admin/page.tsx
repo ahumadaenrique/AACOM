@@ -1387,7 +1387,13 @@ export default function AdminPage() {
                   } else {
                     plazoAnios = Number(selectedAdn.pprAniosPlazo || 10)
                   }
-                  const projectedPprAccumulation = pprAporteAnual * plazoAnios
+                  // Proyección acumulada inflacionada con tasa del 4% anual
+                  let projectedPprAccumulation = 0
+                  let tempAporte = pprAporteAnual
+                  for (let i = 0; i < plazoAnios; i++) {
+                    projectedPprAccumulation = (projectedPprAccumulation + tempAporte) * 1.04
+                    tempAporte = tempAporte * 1.04
+                  }
                   const brechaRetiro = Math.max(0, retirementGoal - projectedPprAccumulation)
                   const isPprSufficient = projectedPprAccumulation >= retirementGoal
                   const adicionalMensualSugerido = plazoAnios > 0 ? (brechaRetiro / plazoAnios) / 12 : 0
