@@ -605,3 +605,32 @@ export async function deleteUser(id: string) {
     }
 }
 
+export async function toggleAdnDiagnosticClosedStatus(id: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const adn = await prisma.adnDiagnostic.findUnique({
+            where: { id }
+        });
+
+        if (!adn) {
+            return { success: false, message: "Diagnóstico no encontrado" };
+        }
+
+        const updated = await prisma.adnDiagnostic.update({
+            where: { id },
+            data: { cerradaPagada: !adn.cerradaPagada }
+        });
+
+        revalidatePath('/adn');
+        revalidatePath('/admin');
+        return { success: true, diagnostic: updated };
+    } catch (error: any) {
+        console.error("Error toggling ADN closed status:", error);
+        return { success: false, message: error.message || "Error al actualizar estado" };
+    }
+}
+

@@ -139,6 +139,7 @@ model AdnDiagnostic {
   
   // Paso 0
   modalidad        String   // 'DETALLADO' | 'RESUMIDO' | 'BASICO'
+  cerradaPagada    Boolean  @default(false) // Nuevo: Propuesta cerrada/emitida y pagada
   
   // Paso 1: Perfil
   clienteNombre    String

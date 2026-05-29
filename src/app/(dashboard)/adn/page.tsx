@@ -13,7 +13,7 @@ import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, 
   Bar, XAxis, YAxis, Tooltip as ChartTooltip, Legend
 } from 'recharts'
-import { saveAdnDiagnostic, getAdnDiagnostics } from '@/app/actions'
+import { saveAdnDiagnostic, getAdnDiagnostics, toggleAdnDiagnosticClosedStatus } from '@/app/actions'
 
 // --- Interfaces ---
 interface Hijo {
@@ -98,17 +98,42 @@ export default function AdnPage() {
   const [searchAdnQuery, setSearchAdnQuery] = useState('')
   const [selectedSavedAdn, setSelectedSavedAdn] = useState<any | null>(null)
 
+  const fetchSavedAdns = async () => {
+    setLoadingSaved(true)
+    try {
+      const res = await getAdnDiagnostics()
+      if (res.success && res.diagnostics) {
+        setSavedAdns(res.diagnostics)
+      }
+    } catch (err) {
+      console.error("Error loading saved ADNs:", err)
+    } finally {
+      setLoadingSaved(false)
+    }
+  }
+
+  const handleToggleAdnClosed = async (id: string) => {
+    try {
+      // Optimistic UI update for fluid response
+      setSavedAdns(prev => prev.map(adn => 
+        adn.id === id ? { ...adn, cerradaPagada: !adn.cerradaPagada } : adn
+      ))
+
+      const res = await toggleAdnDiagnosticClosedStatus(id)
+      if (!res.success) {
+        alert(res.message || "Error al actualizar estado")
+        fetchSavedAdns()
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error de red al actualizar estado")
+      fetchSavedAdns()
+    }
+  }
+
   useEffect(() => {
     if (viewMode === 'HISTORIAL') {
-      setLoadingSaved(true)
-      getAdnDiagnostics()
-        .then(res => {
-          if (res.success && res.diagnostics) {
-            setSavedAdns(res.diagnostics)
-          }
-        })
-        .catch(err => console.error("Error loading saved ADNs:", err))
-        .finally(() => setLoadingSaved(false))
+      fetchSavedAdns()
     }
   }, [viewMode])
   
@@ -658,6 +683,7 @@ export default function AdnPage() {
                       <th className="py-3 px-4 text-center">Modalidad</th>
                       <th className="py-3 px-4 text-right">Ingresos Netos</th>
                       <th className="py-3 px-4 text-right">Egresos Totales</th>
+                      <th className="py-3 px-4 text-center">¿Cerrada y Pagada?</th>
                       <th className="py-3 px-4 text-center">Acciones</th>
                     </tr>
                   </thead>
@@ -683,6 +709,20 @@ export default function AdnPage() {
                           </td>
                           <td className="py-3.5 px-4 text-right font-semibold text-teal-700">
                             ${adn.totalGastos.toLocaleString('es-MX')}
+                          </td>
+                          <td className="py-3.5 px-4 text-center">
+                            <div className="flex items-center justify-center gap-2">
+                              <input
+                                type="checkbox"
+                                id={`cerrada-${adn.id}`}
+                                checked={adn.cerradaPagada || false}
+                                onChange={() => handleToggleAdnClosed(adn.id)}
+                                className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                              />
+                              <span className={`text-[10px] font-bold select-none ${adn.cerradaPagada ? "text-emerald-600" : "text-slate-400"}`}>
+                                {adn.cerradaPagada ? "Emitida y Pagada" : "Pendiente"}
+                              </span>
+                            </div>
                           </td>
                           <td className="py-3.5 px-4 text-center">
                             <button 

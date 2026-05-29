@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser } from "@/app/actions"
+import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -172,6 +172,32 @@ export default function AdminPage() {
     } catch (err) {
       console.error(err)
       alert("Error de red al eliminar usuario")
+    }
+  }
+
+  // Toggle ADN Diagnostic closed/paid status
+  const handleToggleAdnClosed = async (id: string) => {
+    try {
+      // Optimistic UI update
+      setAdnList(prev => prev.map(adn => 
+        adn.id === id ? { ...adn, cerradaPagada: !adn.cerradaPagada } : adn
+      ))
+
+      const res = await toggleAdnDiagnosticClosedStatus(id)
+      if (!res.success) {
+        alert(res.message || "Error al actualizar estado")
+        const adnRes = await getAdnDiagnostics()
+        if (adnRes.success && adnRes.diagnostics) {
+          setAdnList(adnRes.diagnostics)
+        }
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error de red al actualizar estado")
+      const adnRes = await getAdnDiagnostics()
+      if (adnRes.success && adnRes.diagnostics) {
+        setAdnList(adnRes.diagnostics)
+      }
     }
   }
 
@@ -1348,6 +1374,57 @@ export default function AdminPage() {
       {activeTab === "adn" && (
         <div className="space-y-6 animate-in fade-in duration-300">
           
+          {/* ADN Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <Card className="shadow-sm border-slate-100 bg-white dark:bg-zinc-900">
+              <CardContent className="p-5 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Total de ADNs Guardados</span>
+                  <span className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-1 block">
+                    {adnList.length}
+                  </span>
+                  <span className="text-xs text-slate-400 block mt-1">Diagnósticos patrimoniales</span>
+                </div>
+                <div className="h-12 w-12 bg-teal-50 dark:bg-zinc-800 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center">
+                  <Heart className="h-6 w-6" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm border-slate-100 bg-white dark:bg-zinc-900">
+              <CardContent className="p-5 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Cierres Exitosos (Pólizas)</span>
+                  <span className="text-3xl font-black text-emerald-600 mt-1 block">
+                    {adnList.filter(item => item.cerradaPagada).length}
+                  </span>
+                  <span className="text-xs text-slate-400 block mt-1">Propuestas aceptadas y pagadas</span>
+                </div>
+                <div className="h-12 w-12 bg-emerald-50 dark:bg-zinc-800 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center">
+                  <CheckCircle2 className="h-6 w-6" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm border-slate-100 bg-white dark:bg-zinc-900">
+              <CardContent className="p-5 flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Efectividad de Cierre</span>
+                  <span className="text-3xl font-black text-teal-600 mt-1 block">
+                    {adnList.length > 0 
+                      ? `${((adnList.filter(item => item.cerradaPagada).length / adnList.length) * 100).toFixed(1)}%`
+                      : "0.0%"
+                    }
+                  </span>
+                  <span className="text-xs text-slate-400 block mt-1">Ratio de éxito comercial</span>
+                </div>
+                <div className="h-12 w-12 bg-teal-50 dark:bg-zinc-800 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
           {/* ADN Diagnostics Table */}
           <Card className="border shadow-sm flex flex-col justify-between">
             <CardHeader className="py-4 border-b bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -1390,6 +1467,7 @@ export default function AdminPage() {
                         <TableHead className="font-bold py-3">Fecha</TableHead>
                         <TableHead className="font-bold py-3">Agente / Cuenta</TableHead>
                         <TableHead className="font-bold py-3">Modalidad</TableHead>
+                        <TableHead className="font-bold py-3 text-center">Estatus Cierre</TableHead>
                         <TableHead className="font-bold py-3 text-center pr-4">Acciones</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -1420,6 +1498,19 @@ export default function AdminPage() {
                             <span className="px-2 py-0.5 rounded bg-teal-50 text-teal-700 font-bold text-[9px] uppercase border">
                               {adn.modalidad}
                             </span>
+                          </TableCell>
+                          <TableCell className="py-3 text-center">
+                            <button
+                              onClick={() => handleToggleAdnClosed(adn.id)}
+                              className={`inline-block px-2.5 py-0.5 rounded-full font-bold text-[9px] uppercase border transition-colors ${
+                                adn.cerradaPagada 
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" 
+                                  : "bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100"
+                              }`}
+                              title="Haz clic para alternar estatus de cierre"
+                            >
+                              {adn.cerradaPagada ? "✓ Cerrada y Pagada" : "Pendiente"}
+                            </button>
                           </TableCell>
                           <TableCell className="text-center py-3 pr-4">
                             <Button
