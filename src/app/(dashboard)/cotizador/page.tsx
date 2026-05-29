@@ -603,12 +603,7 @@ export default function CotizadorPage() {
             </p>
           </div>
         </div>
-        
-        {step < 4 && (
-          <Button variant="outline" onClick={loadTestData} className="border-teal-500 text-teal-600 hover:bg-teal-50 dark:hover:bg-zinc-800">
-            <CheckSquare className="mr-2 h-4 w-4" /> Cargar Plantilla de Prueba (ANOS y Edad 65)
-          </Button>
-        )}
+
       </div>
 
       {/* Step Wizard Buttons - Hidden in printing */}
