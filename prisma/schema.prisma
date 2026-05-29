@@ -17,6 +17,8 @@ model User {
   password      String?
   image         String?
   role          String    @default("AGENTE") // Changed from Enum Role to String
+  phone         String?   // Teléfono del usuario/agente
+  active        Boolean   @default(true) // Estatus activo/inactivo para restringir acceso
   
   // Hierarchy
   reportsToId   String?

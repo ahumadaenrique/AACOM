@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser } from "@/app/actions"
+import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -89,6 +89,12 @@ export default function AdminPage() {
   const [agentRoleInput, setAgentRoleInput] = useState<string>("AGENTE")
   const [savingAgentUser, setSavingAgentUser] = useState<boolean>(false)
   const [userRegistrationMessage, setUserRegistrationMessage] = useState<string>("")
+  const [agentPhoneInput, setAgentPhoneInput] = useState<string>("")
+  const [syncToAgentCheckbox, setSyncToAgentCheckbox] = useState<boolean>(true)
+  const [usersList, setUsersList] = useState<any[]>([])
+  const [loadingUsers, setLoadingUsers] = useState<boolean>(false)
+  const [editingUserPasswordId, setEditingUserPasswordId] = useState<string | null>(null)
+  const [newPasswordInput, setNewPasswordInput] = useState<string>("")
 
   // Handle password submit
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -98,6 +104,74 @@ export default function AdminPage() {
       setPasswordError("")
     } else {
       setPasswordError("Contraseña incorrecta. Acceso denegado.")
+    }
+  }
+
+  // Fetch users list
+  const fetchUsersList = async () => {
+    setLoadingUsers(true)
+    try {
+      const res = await getUsers()
+      if (res.success && res.users) {
+        setUsersList(res.users)
+      }
+    } catch (err) {
+      console.error("Error fetching users:", err)
+    } finally {
+      setLoadingUsers(false)
+    }
+  }
+
+  // Toggle user active status
+  const handleToggleUserActive = async (id: string) => {
+    try {
+      const res = await toggleUserActiveStatus(id)
+      if (res.success) {
+        fetchUsersList()
+      } else {
+        alert(res.message || "Error al cambiar estatus")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error de red al cambiar estatus")
+    }
+  }
+
+  // Update user password
+  const handleUpdatePassword = async (id: string) => {
+    if (!newPasswordInput.trim()) {
+      alert("La contraseña no puede estar vacía")
+      return
+    }
+    try {
+      const res = await updateUserPassword(id, newPasswordInput.trim())
+      if (res.success) {
+        setEditingUserPasswordId(null)
+        setNewPasswordInput("")
+        alert("Contraseña actualizada con éxito")
+        fetchUsersList()
+      } else {
+        alert(res.message || "Error al actualizar contraseña")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error de red al actualizar contraseña")
+    }
+  }
+
+  // Delete user account
+  const handleDeleteUser = async (id: string) => {
+    if (!confirm("¿Estás seguro de que deseas eliminar a este usuario? Esto revocará su acceso por completo de manera permanente.")) return
+    try {
+      const res = await deleteUser(id)
+      if (res.success) {
+        fetchUsersList()
+      } else {
+        alert(res.message || "Error al eliminar usuario")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error de red al eliminar usuario")
     }
   }
 
@@ -144,6 +218,9 @@ export default function AdminPage() {
       if (adnRes.success && adnRes.diagnostics) {
         setAdnList(adnRes.diagnostics)
       }
+
+      // 5. Fetch all users
+      await fetchUsersList()
     } catch (err) {
       console.error(err)
       setError("Fallo al conectar con el servidor.")
@@ -228,12 +305,15 @@ export default function AdminPage() {
         name: agentNameInput.trim(),
         email: agentEmailInput.trim(),
         role: agentRoleInput,
-        password: agentPasswordInput
+        password: agentPasswordInput,
+        phone: agentPhoneInput.trim() || undefined,
+        syncToAgent: syncToAgentCheckbox
       })
       if (res.success) {
         setAgentNameInput("")
         setAgentEmailInput("")
         setAgentPasswordInput("")
+        setAgentPhoneInput("")
         setUserRegistrationMessage("¡Usuario de agente creado exitosamente!")
         setTimeout(() => setUserRegistrationMessage(""), 5000)
         loadData()
@@ -909,282 +989,456 @@ export default function AdminPage() {
 
       {activeTab === "agentes" && (
         <div className="space-y-6 animate-in fade-in duration-300">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          
+          {/* Main Grid: Columns layout */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             
-            {/* Form to add a new Agent */}
-            <Card className="border shadow-sm">
-              <CardHeader className="py-4 border-b bg-slate-50/50">
-                <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider">
-                  Dar de Alta Nuevo Agente
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Agrega un agente a la lista oficial para habilitarlo en el cotizador.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-5 space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Nombre del Agente</label>
-                  <Input
-                    placeholder="Ej. Sofía Martínez Rivera"
-                    value={newAgentName}
-                    onChange={(e) => setNewAgentName(e.target.value)}
-                  />
-                </div>
-                <Button 
-                  onClick={handleAddAgent} 
-                  disabled={submittingAgent || !newAgentName.trim()} 
-                  className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold"
-                >
-                  {submittingAgent ? "Agregando..." : "Dar de Alta Agente"}
-                </Button>
-                {agentMessage && (
-                  <p className={`text-xs font-semibold text-center mt-2 ${agentMessage.includes("error") || agentMessage.includes("Error") ? "text-red-500" : "text-emerald-600"}`}>
-                    {agentMessage}
-                  </p>
-                )}
-              </CardContent>
-            </Card>
+            {/* Left Column: Forms for Creation */}
+            <div className="flex flex-col gap-6">
+              
+              {/* Form to create a new user credentials account */}
+              <Card className="border shadow-sm bg-gradient-to-br from-white to-slate-50/30">
+                <CardHeader className="py-4 border-b bg-slate-50/50">
+                  <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <ShieldCheck className="h-4.5 w-4.5 text-teal-600 animate-pulse" /> Crear Cuenta de Usuario
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Crea credenciales oficiales (correo y contraseña) para permitir acceso a la plataforma.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-5">
+                  <form onSubmit={handleCreateAgentUser} className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-600 uppercase">Nombre Completo</label>
+                      <Input 
+                        type="text" 
+                        placeholder="Ej. Miguel Angel Cruz" 
+                        value={agentNameInput}
+                        onChange={e => setAgentNameInput(e.target.value)}
+                        className="text-xs h-9"
+                      />
+                    </div>
 
-            {/* List of Registered Agents */}
-            <Card className="md:col-span-2 border shadow-sm overflow-hidden">
-              <CardHeader className="py-4 border-b bg-slate-50/50">
-                <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider">
-                  Lista Oficial de Agentes
-                </CardTitle>
-                <CardDescription className="text-xs">
-                  Agentes autorizados para cotizar propuestas técnicas en la plataforma.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="p-0">
-                {loadingAgents ? (
-                  <div className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
-                    <RefreshCw className="h-6 w-6 animate-spin text-teal-600" />
-                    <span>Cargando lista de agentes...</span>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-600 uppercase">Correo Electrónico (Login)</label>
+                      <Input 
+                        type="email" 
+                        placeholder="ejemplo@aacommx.com" 
+                        value={agentEmailInput}
+                        onChange={e => setAgentEmailInput(e.target.value)}
+                        className="text-xs h-9"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-600 uppercase">Teléfono (Contacto)</label>
+                      <Input 
+                        type="tel" 
+                        placeholder="Ej. 5512345678" 
+                        value={agentPhoneInput}
+                        onChange={e => setAgentPhoneInput(e.target.value)}
+                        className="text-xs h-9"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-600 uppercase">Contraseña Acceso</label>
+                      <Input 
+                        type="password" 
+                        placeholder="Mínimo 6 caracteres" 
+                        value={agentPasswordInput}
+                        onChange={e => setAgentPasswordInput(e.target.value)}
+                        className="text-xs h-9"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-slate-600 uppercase">Rol de Acceso</label>
+                      <select 
+                        value={agentRoleInput}
+                        onChange={e => setAgentRoleInput(e.target.value)}
+                        className="border p-2 rounded-lg w-full text-xs bg-white focus:outline-teal-500 h-9"
+                      >
+                        <option value="AGENTE">Agente de Seguros</option>
+                        <option value="ADMIN">Administrador General</option>
+                      </select>
+                    </div>
+
+                    {/* Checkbox to sync with Agent list (Cotizador) */}
+                    <div className="flex items-center gap-2 py-1">
+                      <input
+                        type="checkbox"
+                        id="sync-to-agent-checkbox"
+                        checked={syncToAgentCheckbox}
+                        onChange={e => setSyncToAgentCheckbox(e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                      />
+                      <label htmlFor="sync-to-agent-checkbox" className="text-[11px] font-bold text-slate-600 cursor-pointer">
+                        Habilitar en el Cotizador (Nombre Agente)
+                      </label>
+                    </div>
+
+                    {userRegistrationMessage && (
+                      <p className={`text-xs font-bold text-center mt-2 ${userRegistrationMessage.includes("exitosamente") || userRegistrationMessage.includes("éxito") ? "text-teal-600" : "text-red-500"}`}>
+                        {userRegistrationMessage}
+                      </p>
+                    )}
+
+                    <Button 
+                      type="submit" 
+                      disabled={savingAgentUser}
+                      className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold h-9 text-xs"
+                    >
+                      {savingAgentUser ? "Creando..." : "Registrar Cuenta"}
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+
+              {/* Form to add a new Agent (Simple Name for Cotizador, no login) */}
+              <Card className="border shadow-sm bg-slate-50/20">
+                <CardHeader className="py-4 border-b">
+                  <CardTitle className="text-xs font-black text-slate-700 uppercase tracking-wider">
+                    Solo Nombre de Agente (Sin Login)
+                  </CardTitle>
+                  <CardDescription className="text-[10px]">
+                    Agrega un nombre rápido al Cotizador sin crear credenciales ni cuentas.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-5 space-y-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] font-bold text-slate-600 uppercase">Nombre del Agente</label>
+                    <Input
+                      placeholder="Ej. Sofía Martínez Rivera"
+                      value={newAgentName}
+                      onChange={(e) => setNewAgentName(e.target.value)}
+                      className="text-xs h-9"
+                    />
                   </div>
-                ) : dbAgentsList.length === 0 ? (
-                  <div className="p-12 text-center text-muted-foreground text-xs flex flex-col items-center justify-center gap-2">
-                    <Users className="h-8 w-8 text-slate-400" />
-                    <span>No hay agentes registrados en la base de datos aún.</span>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table className="text-xs">
-                      <TableHeader className="bg-slate-50 dark:bg-zinc-800">
-                        <TableRow>
-                          <TableHead className="font-bold py-3 pl-4">Agente</TableHead>
-                          <TableHead className="font-bold py-3">Fecha de Alta</TableHead>
-                          <TableHead className="font-bold py-3 text-center pr-4">Acciones</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {dbAgentsList.map((agent) => (
-                          <TableRow key={agent.id} className="hover:bg-slate-50/50 border-b">
-                            <TableCell className="font-bold text-slate-800 dark:text-slate-200 py-3 pl-4">
-                              <div className="flex items-center gap-2">
-                                <span className="h-7 w-7 rounded-full bg-teal-600 text-white flex items-center justify-center font-black text-[10px] uppercase shadow-sm">
-                                  {agent.name.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
-                                </span>
-                                <span>{agent.name}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-slate-500 py-3">
-                              {new Date(agent.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" })}
-                            </TableCell>
-                            <TableCell className="text-center py-3 pr-4">
-                              <Button
-                                onClick={() => handleDeleteAgent(agent.id)}
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-xs"
-                              >
-                                Eliminar
-                              </Button>
-                            </TableCell>
+                  <Button 
+                    onClick={handleAddAgent} 
+                    disabled={submittingAgent || !newAgentName.trim()} 
+                    className="w-full bg-slate-700 hover:bg-slate-800 text-white font-bold h-9 text-xs"
+                  >
+                    {submittingAgent ? "Agregando..." : "Dar de Alta Nombre"}
+                  </Button>
+                  {agentMessage && (
+                    <p className={`text-xs font-semibold text-center mt-2 ${agentMessage.includes("error") || agentMessage.includes("Error") ? "text-red-500" : "text-emerald-600"}`}>
+                      {agentMessage}
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+
+            </div>
+
+            {/* Right Column: Tables List (Credential accounts & Simple Cotizador list) */}
+            <div className="lg:col-span-2 flex flex-col gap-6">
+              
+              {/* User Accounts Dashboard (Credentials Table) */}
+              <Card className="border shadow-sm overflow-hidden flex flex-col justify-between">
+                <CardHeader className="py-4 border-b bg-slate-50/50">
+                  <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider">
+                    Cuentas de Usuarios con Acceso (Login)
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Administra el acceso del personal: activa/suspende cuentas, redefine contraseñas y elimina credenciales.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {loadingUsers ? (
+                    <div className="p-12 text-center text-slate-400 text-xs">
+                      <RefreshCw className="h-6 w-6 animate-spin text-teal-600 mx-auto mb-2" />
+                      Cargando cuentas de usuarios...
+                    </div>
+                  ) : usersList.length === 0 ? (
+                    <div className="p-12 text-center text-slate-400 text-xs italic">
+                      No hay cuentas de usuario registradas.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table className="text-xs">
+                        <TableHeader className="bg-slate-50 font-bold">
+                          <TableRow>
+                            <TableHead className="font-bold py-3 pl-4">Usuario</TableHead>
+                            <TableHead className="font-bold py-3">Contacto</TableHead>
+                            <TableHead className="font-bold py-3 text-center">Rol</TableHead>
+                            <TableHead className="font-bold py-3 text-center">Estatus</TableHead>
+                            <TableHead className="font-bold py-3 text-center pr-4">Acciones Administrativas</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                        </TableHeader>
+                        <TableBody>
+                          {usersList.map((user) => (
+                            <TableRow key={user.id} className="hover:bg-slate-50/50 border-b">
+                              {/* Name & Email */}
+                              <TableCell className="py-3 pl-4 font-bold text-slate-800">
+                                <div>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="h-6 w-6 rounded-full bg-teal-600 text-white flex items-center justify-center font-black text-[9px] uppercase shadow-sm">
+                                      {(user.name || "U").split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
+                                    </span>
+                                    <span>{user.name || "Usuario Sin Nombre"}</span>
+                                  </div>
+                                  <span className="text-[10px] text-slate-400 font-normal block pl-7.5 mt-0.5">{user.email}</span>
+                                </div>
+                              </TableCell>
+                              
+                              {/* Contact Phone */}
+                              <TableCell className="py-3 text-slate-600 font-medium">
+                                {user.phone || <span className="text-slate-400 italic">No registrado</span>}
+                              </TableCell>
+                              
+                              {/* Role */}
+                              <TableCell className="py-3 text-center">
+                                <span className={`inline-block px-2 py-0.5 rounded font-black text-[9px] uppercase border ${
+                                  user.role === 'ADMIN' 
+                                    ? "bg-purple-50 text-purple-700 border-purple-200" 
+                                    : "bg-blue-50 text-blue-700 border-blue-200"
+                                }`}>
+                                  {user.role}
+                                </span>
+                              </TableCell>
+                              
+                              {/* Status Badge */}
+                              <TableCell className="py-3 text-center">
+                                <span className={`inline-block px-2 py-0.5 rounded font-bold text-[9px] uppercase border ${
+                                  user.active 
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200" 
+                                    : "bg-red-50 text-red-700 border-red-200"
+                                }`}>
+                                  {user.active ? "Activo" : "Suspendido"}
+                                </span>
+                              </TableCell>
+                              
+                              {/* Administrative Actions */}
+                              <TableCell className="py-3 text-center pr-4">
+                                {editingUserPasswordId === user.id ? (
+                                  <div className="flex items-center justify-center gap-1.5 min-w-[200px] animate-in slide-in-from-right-1 duration-150">
+                                    <Input
+                                      type="password"
+                                      placeholder="Nueva contraseña"
+                                      value={newPasswordInput}
+                                      onChange={(e) => setNewPasswordInput(e.target.value)}
+                                      className="text-xs h-7 w-28 px-1.5 py-0.5 border-teal-400 focus-visible:ring-teal-400"
+                                    />
+                                    <Button
+                                      onClick={() => handleUpdatePassword(user.id)}
+                                      size="sm"
+                                      className="bg-emerald-600 hover:bg-emerald-700 text-white h-7 px-2 font-bold text-[10px]"
+                                    >
+                                      ✔ Guardar
+                                    </Button>
+                                    <Button
+                                      onClick={() => { setEditingUserPasswordId(null); setNewPasswordInput(""); }}
+                                      variant="outline"
+                                      size="sm"
+                                      className="h-7 px-2 text-slate-500 font-bold text-[10px]"
+                                    >
+                                      ✕
+                                    </Button>
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center justify-center gap-1.5">
+                                    <Button
+                                      onClick={() => { setEditingUserPasswordId(user.id); setNewPasswordInput(""); }}
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-slate-600 hover:text-slate-800 font-bold text-[10px] h-7 px-2.5"
+                                    >
+                                      Cambiar Pass
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleToggleUserActive(user.id)}
+                                      variant="outline"
+                                      size="sm"
+                                      className={`${user.active ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50" : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"} font-bold text-[10px] h-7 px-2.5`}
+                                    >
+                                      {user.active ? "Suspender" : "Activar"}
+                                    </Button>
+                                    <Button
+                                      onClick={() => handleDeleteUser(user.id)}
+                                      variant="ghost"
+                                      size="sm"
+                                      className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-[10px] h-7 px-2.5"
+                                    >
+                                      Eliminar
+                                    </Button>
+                                  </div>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Cotizador Agent List */}
+              <Card className="border shadow-sm overflow-hidden flex flex-col justify-between">
+                <CardHeader className="py-4 border-b bg-slate-50/50">
+                  <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider">
+                    Nombres Autorizados en Cotizador
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Lista oficial de nombres que aparecen en el dropdown del Cotizador de propuestas técnicas.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-0">
+                  {loadingAgents ? (
+                    <div className="p-12 text-center text-slate-400 text-xs">
+                      <RefreshCw className="h-6 w-6 animate-spin text-teal-600 mx-auto mb-2" />
+                      Cargando lista de agentes del cotizador...
+                    </div>
+                  ) : dbAgentsList.length === 0 ? (
+                    <div className="p-12 text-center text-slate-400 text-xs italic">
+                      No hay agentes registrados en la lista del Cotizador.
+                    </div>
+                  ) : (
+                    <div className="overflow-x-auto">
+                      <Table className="text-xs">
+                        <TableHeader className="bg-slate-50 font-bold">
+                          <TableRow>
+                            <TableHead className="font-bold py-3 pl-4">Nombre del Agente</TableHead>
+                            <TableHead className="font-bold py-3">Fecha de Alta</TableHead>
+                            <TableHead className="font-bold py-3 text-center pr-4">Acciones</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {dbAgentsList.map((agent) => (
+                            <TableRow key={agent.id} className="hover:bg-slate-50/50 border-b">
+                              <TableCell className="font-bold text-slate-800 py-3 pl-4">
+                                <div className="flex items-center gap-1.5">
+                                  <span className="h-6 w-6 rounded-full bg-slate-600 text-white flex items-center justify-center font-black text-[9px] uppercase shadow-sm">
+                                    {agent.name.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
+                                  </span>
+                                  <span>{agent.name}</span>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-slate-500 py-3 font-normal">
+                                {new Date(agent.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" })}
+                              </TableCell>
+                              <TableCell className="text-center py-3 pr-4">
+                                <Button
+                                  onClick={() => handleDeleteAgent(agent.id)}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-xs h-7 px-2.5"
+                                >
+                                  Eliminar
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+            </div>
+
           </div>
+
         </div>
       )}
 
       {activeTab === "adn" && (
         <div className="space-y-6 animate-in fade-in duration-300">
           
-          {/* Agent user credentials creation panel */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
-            {/* Create account form */}
-            <Card className="border shadow-sm">
-              <CardHeader className="py-4 border-b bg-slate-50/50">
+          {/* ADN Diagnostics Table */}
+          <Card className="border shadow-sm flex flex-col justify-between">
+            <CardHeader className="py-4 border-b bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div>
                 <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <ShieldCheck className="h-4.5 w-4.5 text-teal-600" /> Crear Cuenta de Agente
+                  <Heart className="h-4.5 w-4.5 text-teal-600 animate-pulse" /> Historial de ADN AACOM
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Crea credenciales oficiales (correo y contraseña) para tus agentes oficiales de base de datos.
+                  Consulta y descarga los diagnósticos patrimoniales de los clientes.
                 </CardDescription>
-              </CardHeader>
-              <CardContent className="p-5">
-                <form onSubmit={handleCreateAgentUser} className="space-y-4">
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-600 uppercase">Nombre Completo del Agente</label>
-                    <Input 
-                      type="text" 
-                      placeholder="Ej. Miguel Angel Cruz" 
-                      value={agentNameInput}
-                      onChange={e => setAgentNameInput(e.target.value)}
-                      className="text-xs h-9"
-                    />
-                  </div>
+              </div>
 
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-600 uppercase">Correo Electrónico (Login)</label>
-                    <Input 
-                      type="email" 
-                      placeholder="ejemplo@aacomedad.com" 
-                      value={agentEmailInput}
-                      onChange={e => setAgentEmailInput(e.target.value)}
-                      className="text-xs h-9"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-600 uppercase">Contraseña Acceso</label>
-                    <Input 
-                      type="password" 
-                      placeholder="Mínimo 6 caracteres" 
-                      value={agentPasswordInput}
-                      onChange={e => setAgentPasswordInput(e.target.value)}
-                      className="text-xs h-9"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-600 uppercase">Rol de Acceso</label>
-                    <select 
-                      value={agentRoleInput}
-                      onChange={e => setAgentRoleInput(e.target.value)}
-                      className="border p-2 rounded-lg w-full text-xs bg-white focus:outline-teal-500 h-9"
-                    >
-                      <option value="AGENTE">Agente de Seguros</option>
-                      <option value="ADMIN">Administrador General</option>
-                    </select>
-                  </div>
-
-                  {userRegistrationMessage && (
-                    <p className={`text-xs font-bold text-center mt-2 ${userRegistrationMessage.includes("éxito") ? "text-teal-600" : "text-red-500"}`}>
-                      {userRegistrationMessage}
-                    </p>
-                  )}
-
-                  <Button 
-                    type="submit" 
-                    disabled={savingAgentUser}
-                    className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold h-9 text-xs"
-                  >
-                    {savingAgentUser ? "Creando..." : "Registrar Cuenta"}
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            {/* ADN Diagnostics Table */}
-            <Card className="lg:col-span-2 border shadow-sm flex flex-col justify-between">
-              <CardHeader className="py-4 border-b bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
-                  <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                    <Heart className="h-4.5 w-4.5 text-teal-600 animate-pulse" /> Historial de ADN AACOM
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    Consulta y descarga los diagnósticos patrimoniales de los clientes.
-                  </CardDescription>
+              {/* Filter search box */}
+              <div className="relative w-full sm:w-64 shrink-0">
+                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                <Input 
+                  type="text" 
+                  placeholder="Buscar cliente/agente..." 
+                  value={searchAdnQuery}
+                  onChange={e => setSearchAdnQuery(e.target.value)}
+                  className="pl-8 text-xs h-8 rounded-lg"
+                />
+              </div>
+            </CardHeader>
+            <CardContent className="p-0 flex-1">
+              {loadingAdn ? (
+                <div className="text-center py-12 text-slate-400 text-xs">Cargando diagnósticos ADN de la base de datos...</div>
+              ) : adnList.length === 0 ? (
+                <div className="text-center py-12 text-slate-400 text-xs italic flex flex-col items-center gap-2">
+                  <Heart className="h-8 w-8 text-slate-300" />
+                  <span>No hay diagnósticos ADN registrados aún en base de datos.</span>
                 </div>
-
-                {/* Filter search box */}
-                <div className="relative w-full sm:w-48 shrink-0">
-                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
-                  <Input 
-                    type="text" 
-                    placeholder="Buscar cliente/agente..." 
-                    value={searchAdnQuery}
-                    onChange={e => setSearchAdnQuery(e.target.value)}
-                    className="pl-8 text-xs h-8 rounded-lg"
-                  />
-                </div>
-              </CardHeader>
-              <CardContent className="p-0 flex-1">
-                {loadingAdn ? (
-                  <div className="text-center py-12 text-slate-400 text-xs">Cargando diagnósticos ADN de la base de datos...</div>
-                ) : adnList.length === 0 ? (
-                  <div className="text-center py-12 text-slate-400 text-xs italic flex flex-col items-center gap-2">
-                    <Heart className="h-8 w-8 text-slate-300" />
-                    <span>No hay diagnósticos ADN registrados aún en base de datos.</span>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table className="text-xs">
-                      <TableHeader className="bg-slate-50 font-bold">
-                        <TableRow>
-                          <TableHead className="font-bold py-3 pl-4">Cliente</TableHead>
-                          <TableHead className="font-bold py-3">Edad</TableHead>
-                          <TableHead className="font-bold py-3">Fecha</TableHead>
-                          <TableHead className="font-bold py-3">Agente / Cuenta</TableHead>
-                          <TableHead className="font-bold py-3">Modalidad</TableHead>
-                          <TableHead className="font-bold py-3 text-center pr-4">Acciones</TableHead>
+              ) : (
+                <div className="overflow-x-auto">
+                  <Table className="text-xs">
+                    <TableHeader className="bg-slate-50 font-bold">
+                      <TableRow>
+                        <TableHead className="font-bold py-3 pl-4">Cliente</TableHead>
+                        <TableHead className="font-bold py-3">Edad</TableHead>
+                        <TableHead className="font-bold py-3">Fecha</TableHead>
+                        <TableHead className="font-bold py-3">Agente / Cuenta</TableHead>
+                        <TableHead className="font-bold py-3">Modalidad</TableHead>
+                        <TableHead className="font-bold py-3 text-center pr-4">Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {adnList.filter(item => {
+                        const query = searchAdnQuery.toLowerCase().trim()
+                        if (!query) return true
+                        return (
+                          item.clienteNombre.toLowerCase().includes(query) ||
+                          (item.user?.name || "").toLowerCase().includes(query) ||
+                          (item.user?.email || "").toLowerCase().includes(query)
+                        )
+                      }).map((adn) => (
+                        <TableRow key={adn.id} className="hover:bg-slate-50/50 border-b">
+                          <TableCell className="font-bold text-slate-800 py-3 pl-4">
+                            {adn.clienteNombre}
+                          </TableCell>
+                          <TableCell className="text-slate-700 py-3">
+                            {adn.clienteEdad} años
+                          </TableCell>
+                          <TableCell className="text-slate-500 py-3">
+                            {new Date(adn.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "numeric", year: "2-digit" })}
+                          </TableCell>
+                          <TableCell className="text-slate-700 py-3 font-semibold">
+                            {adn.user?.name || adn.user?.email || "N/A"}
+                          </TableCell>
+                          <TableCell className="py-3">
+                            <span className="px-2 py-0.5 rounded bg-teal-50 text-teal-700 font-bold text-[9px] uppercase border">
+                              {adn.modalidad}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-center py-3 pr-4">
+                            <Button
+                              onClick={() => setSelectedAdn(adn)}
+                              variant="ghost"
+                              size="sm"
+                              className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 font-black text-xs flex items-center gap-1 mx-auto"
+                            >
+                              <Eye className="h-3.5 w-3.5" /> Ver Diagnóstico
+                            </Button>
+                          </TableCell>
                         </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {adnList.filter(item => {
-                          const query = searchAdnQuery.toLowerCase().trim()
-                          if (!query) return true
-                          return (
-                            item.clienteNombre.toLowerCase().includes(query) ||
-                            (item.user?.name || "").toLowerCase().includes(query) ||
-                            (item.user?.email || "").toLowerCase().includes(query)
-                          )
-                        }).map((adn) => (
-                          <TableRow key={adn.id} className="hover:bg-slate-50/50 border-b">
-                            <TableCell className="font-bold text-slate-800 py-3 pl-4">
-                              {adn.clienteNombre}
-                            </TableCell>
-                            <TableCell className="text-slate-700 py-3">
-                              {adn.clienteEdad} años
-                            </TableCell>
-                            <TableCell className="text-slate-500 py-3">
-                              {new Date(adn.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "numeric", year: "2-digit" })}
-                            </TableCell>
-                            <TableCell className="text-slate-700 py-3 font-semibold">
-                              {adn.user?.name || adn.user?.email || "N/A"}
-                            </TableCell>
-                            <TableCell className="py-3">
-                              <span className="px-2 py-0.5 rounded bg-teal-50 text-teal-700 font-bold text-[9px] uppercase border">
-                                {adn.modalidad}
-                              </span>
-                            </TableCell>
-                            <TableCell className="text-center py-3 pr-4">
-                              <Button
-                                onClick={() => setSelectedAdn(adn)}
-                                variant="ghost"
-                                size="sm"
-                                className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 font-black text-xs flex items-center gap-1 mx-auto"
-                              >
-                                <Eye className="h-3.5 w-3.5" /> Ver Diagnóstico
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-          </div>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
         </div>
       )}

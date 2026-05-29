@@ -27,6 +27,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                         if (!user) return null;
 
+                        // Check if the account is suspended
+                        if (user.active === false) {
+                            console.log("[AUTH] User suspended:", email);
+                            return null;
+                        }
+
                         const passwordsMatch = password === user.password;
                         console.log("[AUTH] Password match:", passwordsMatch);
 

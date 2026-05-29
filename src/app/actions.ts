@@ -408,7 +408,7 @@ export async function getAdnDiagnostics() {
     }
 }
 
-export async function createAgentUser(data: { name: string; email: string; role: string; password?: string }) {
+export async function createAgentUser(data: { name: string; email: string; role: string; phone?: string; active?: boolean; password?: string; syncToAgent?: boolean }) {
     try {
         const session = await auth();
         if (!session?.user?.email) {
@@ -436,15 +436,154 @@ export async function createAgentUser(data: { name: string; email: string; role:
                 name: data.name,
                 email: data.email,
                 role: data.role,
+                phone: data.phone || null,
+                active: data.active !== undefined ? data.active : true,
                 password: data.password || "password123", // Simple plain text consistent with current auth config
             }
         });
+
+        // Sincronización con el modelo Agent para el Cotizador
+        if (data.syncToAgent) {
+            const trimmedName = data.name.trim();
+            const existingAgent = await prisma.agent.findUnique({
+                where: { name: trimmedName }
+            });
+            if (!existingAgent) {
+                await prisma.agent.create({
+                    data: { name: trimmedName }
+                });
+            }
+        }
 
         revalidatePath('/admin');
         return { success: true, user: newUser };
     } catch (error: any) {
         console.error("Error creating agent user:", error);
         return { success: false, message: error.message || "Error al crear usuario del agente" };
+    }
+}
+
+export async function getUsers() {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado", users: [] };
+        }
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || currentUser.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes", users: [] };
+        }
+
+        const users = await prisma.user.findMany({
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        return { success: true, users };
+    } catch (error: any) {
+        console.error("Error fetching users:", error);
+        return { success: false, message: error.message || "Error al obtener usuarios", users: [] };
+    }
+}
+
+export async function updateUserPassword(id: string, newPassword: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || currentUser.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { id },
+            data: { password: newPassword }
+        });
+
+        revalidatePath('/admin');
+        return { success: true, user: updatedUser };
+    } catch (error: any) {
+        console.error("Error updating user password:", error);
+        return { success: false, message: error.message || "Error al actualizar contraseña" };
+    }
+}
+
+export async function toggleUserActiveStatus(id: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || currentUser.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const targetUser = await prisma.user.findUnique({
+            where: { id }
+        });
+
+        if (!targetUser) {
+            return { success: false, message: "Usuario no encontrado" };
+        }
+
+        const updatedUser = await prisma.user.update({
+            where: { id },
+            data: { active: !targetUser.active }
+        });
+
+        revalidatePath('/admin');
+        return { success: true, user: updatedUser };
+    } catch (error: any) {
+        console.error("Error toggling user active status:", error);
+        return { success: false, message: error.message || "Error al cambiar estatus" };
+    }
+}
+
+export async function deleteUser(id: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || currentUser.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        // Evitar que el administrador se elimine a sí mismo
+        if (currentUser.id === id) {
+            return { success: false, message: "No puedes eliminar tu propia cuenta de administrador" };
+        }
+
+        const deleted = await prisma.user.delete({
+            where: { id }
+        });
+
+        revalidatePath('/admin');
+        return { success: true, user: deleted };
+    } catch (error: any) {
+        console.error("Error deleting user:", error);
+        return { success: false, message: error.message || "Error al eliminar el usuario" };
     }
 }
 
