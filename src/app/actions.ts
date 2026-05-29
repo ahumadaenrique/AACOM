@@ -664,24 +664,13 @@ export async function createAnnouncement(base64Data: string, fileName: string, l
 
         // Validate file type from name extension
         const allowedExts = ['.jpg', '.jpeg', '.png', '.gif'];
-        const fs = await import('fs');
         const path = await import('path');
         const ext = path.extname(fileName).toLowerCase();
         if (!allowedExts.includes(ext)) {
             return { success: false, message: "Tipo de archivo no permitido. Solo JPG, JPEG, PNG o GIF." };
         }
 
-        // Ensure public/uploads folder exists
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-
-        // Safe unique file name
-        const safeName = `${Date.now()}-${fileName.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
-        const filePath = path.join(uploadDir, safeName);
-
-        // Convert base64 data to buffer and write to disk
+        // Convert base64 data to buffer and validate size
         const base64Clean = base64Data.split(';base64,').pop() || base64Data;
         const buffer = Buffer.from(base64Clean, 'base64');
         
@@ -690,8 +679,9 @@ export async function createAnnouncement(base64Data: string, fileName: string, l
             return { success: false, message: "El tamaño del archivo supera los 5 MB permitidos." };
         }
 
-        fs.writeFileSync(filePath, buffer);
-        const imageUrl = `/uploads/${safeName}`;
+        // Save image as base64 data URI directly in database
+        // This is 100% serverless-friendly (e.g. Vercel) as it avoids read-only filesystem writes
+        const imageUrl = base64Data;
 
         const newAd = await prisma.content.create({
             data: {
@@ -772,15 +762,17 @@ export async function deleteAnnouncement(id: string) {
             return { success: false, message: "Comunicado no encontrado" };
         }
 
-        // Delete file from filesystem
-        const fs = await import('fs');
-        const path = await import('path');
-        const filePath = path.join(process.cwd(), 'public', ad.imageUrl);
-        if (fs.existsSync(filePath)) {
+        // Delete physical file only if it is a legacy file path (starts with /uploads/)
+        if (ad.imageUrl.startsWith('/uploads/')) {
             try {
-                fs.unlinkSync(filePath);
+                const fs = await import('fs');
+                const path = await import('path');
+                const filePath = path.join(process.cwd(), 'public', ad.imageUrl);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
             } catch (err) {
-                console.error("Failed to delete physical file:", err);
+                console.error("Failed to delete legacy physical file:", err);
             }
         }
 
