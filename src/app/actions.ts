@@ -423,6 +423,11 @@ export async function createAgentUser(data: { name: string; email: string; role:
             return { success: false, message: "Permisos insuficientes" };
         }
 
+        // Restricción: solo el propietario (enrique.ahumada@aacommx.com) puede dar de alta a otros administradores
+        if (data.role === 'ADMIN' && currentUser.email !== 'enrique.ahumada@aacommx.com') {
+            return { success: false, message: "Solo el administrador principal (Enrique Ahumada) está facultado para dar de alta cuentas administrativas." };
+        }
+
         const existingUser = await prisma.user.findUnique({
             where: { email: data.email }
         });
@@ -573,6 +578,19 @@ export async function deleteUser(id: string) {
         // Evitar que el administrador se elimine a sí mismo
         if (currentUser.id === id) {
             return { success: false, message: "No puedes eliminar tu propia cuenta de administrador" };
+        }
+
+        const targetUser = await prisma.user.findUnique({
+            where: { id }
+        });
+
+        if (!targetUser) {
+            return { success: false, message: "Usuario no encontrado" };
+        }
+
+        // Restricción: impedir la eliminación del propietario Enrique Ahumada
+        if (targetUser.email === "enrique.ahumada@aacommx.com") {
+            return { success: false, message: "No está permitido eliminar la cuenta principal del propietario (Enrique Ahumada)." };
         }
 
         const deleted = await prisma.user.delete({
