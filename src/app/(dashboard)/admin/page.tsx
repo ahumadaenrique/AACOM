@@ -1299,7 +1299,7 @@ export default function AdminPage() {
                   
                   let necesidades = 0
                   let deseos = 0
-                  let ahorro = selectedAdn.ahorroActual || 0
+                  let ahorro = 0
 
                   // Sumar aportes de seguros que son tipo Ahorro / PPR
                   if (selectedAdn.hasSeguroAhorro && selectedAdn.ahorroAporte) {
@@ -1596,7 +1596,7 @@ export default function AdminPage() {
                                       {!isPprSufficient ? (
                                         <span className="block mt-2 bg-red-50 text-red-800 p-2 rounded-md font-semibold border border-red-100">
                                           ⚠️ Brecha Financiera Detectada: Faltan <strong>${brechaRetiro.toLocaleString('es-MX')} pesos</strong> para alcanzar la meta. 
-                                          Se sugiere aumentar la aportación mensual en <strong>${adicionalMensualSugerido.toLocaleString('es-MX', {maximumFractionDigits: 0})} pesos</strong> para cerrar la brecha.
+                                          Se sugiere incrementar sustancialmente su aportación para lograr su meta de retiro.
                                         </span>
                                       ) : (
                                         <span className="block mt-2 bg-emerald-50 text-emerald-800 p-2 rounded-md font-semibold border border-emerald-100">
@@ -1623,17 +1623,17 @@ export default function AdminPage() {
                           </div>
 
                           {/* Pilar 3: Fondo de Emergencia */}
-                          <div className="border p-3 rounded-lg flex items-start gap-3 bg-white">
-                            <span className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${!p3_fondo_isOk ? 'bg-red-500' : 'bg-emerald-500'}`} />
-                            <div className="text-xs">
-                              <span className="font-extrabold text-[9px] tracking-wider text-slate-400 block uppercase">Pilar 3: Fondo de Emergencia</span>
-                              <p className="text-slate-600 mt-0.5">
-                                {!p3_fondo_isOk 
-                                  ? `⚠️ Insuficiente: Fondo de emergencia óptimo sugerido: $${fondoIdeal.toLocaleString('es-MX')} (equivalente a ${idealMonths} meses). Cuenta actualmente con $${(selectedAdn.ahorroActual || 0).toLocaleString('es-MX')} pesos (Faltante: $${p3_fondo_gap.toLocaleString('es-MX')} pesos).`
-                                  : `✅ Cubierto: Cuenta con fondo de emergencia ideal equivalente a ${idealMonths} meses.`}
-                              </p>
+                          {!p3_fondo_isOk && (
+                            <div className="border p-3 rounded-lg flex items-start gap-3 bg-white">
+                              <span className="h-2 w-2 rounded-full mt-1.5 shrink-0 bg-red-500" />
+                              <div className="text-xs">
+                                <span className="font-extrabold text-[9px] tracking-wider text-slate-400 block uppercase">Pilar 3: Fondo de Emergencia</span>
+                                <p className="text-slate-600 mt-0.5">
+                                  ⚠️ Insuficiente: Fondo de emergencia óptimo sugerido: ${fondoIdeal.toLocaleString('es-MX')} (equivalente a {idealMonths} meses). Cuenta actualmente con ${(selectedAdn.ahorroActual || 0).toLocaleString('es-MX')} pesos (Faltante: ${p3_fondo_gap.toLocaleString('es-MX')} pesos).
+                                </p>
+                              </div>
                             </div>
-                          </div>
+                          )}
 
                           {/* Pilar 4: Seguro Educativo */}
                           {tieneHijosChicos && (
