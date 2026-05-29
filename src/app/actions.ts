@@ -287,8 +287,10 @@ export interface AdnDiagnosticInput {
     hasPpr: boolean;
     pprAporte?: number;
     pprFrecuencia?: string;
+    pprAniosPlazo?: string;
     hasGmm: boolean;
     hasSeguroVida: boolean;
+    vidaSumaAsegurada?: number;
     ingresosTotales: number;
     ingresosNetos: number;
     ahorroActual: number;
@@ -327,8 +329,10 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
                 hasPpr: data.hasPpr,
                 pprAporte: data.pprAporte || null,
                 pprFrecuencia: data.pprFrecuencia || null,
+                pprAniosPlazo: data.pprAniosPlazo || null,
                 hasGmm: data.hasGmm,
                 hasSeguroVida: data.hasSeguroVida,
+                vidaSumaAsegurada: data.vidaSumaAsegurada || null,
                 ingresosTotales: data.ingresosTotales,
                 ingresosNetos: data.ingresosNetos,
                 ahorroActual: data.ahorroActual,

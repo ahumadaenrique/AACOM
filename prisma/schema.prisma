@@ -154,9 +154,11 @@ model AdnDiagnostic {
   hasPpr           Boolean  @default(false)
   pprAporte        Float?
   pprFrecuencia    String?  // 'MENSUAL' | 'ANUAL'
+  pprAniosPlazo    String?  // '10' | '15' | '20' | '65'
   
   hasGmm           Boolean  @default(false)
   hasSeguroVida    Boolean  @default(false)
+  vidaSumaAsegurada Float?
   
   // Paso 3: Diagnóstico Financiero
   ingresosTotales  Float

@@ -25,6 +25,7 @@ interface GastosDetallados {
   renta: number; hipoteca: number; mantenimiento: number; luz: number;
   gas: number; agua: number; telefono: number; internet: number;
   streamings: number; celular: number; otrosServicios: number;
+  predial: number; // NUEVO
   // Transporte
   mensualidadAuto: number; tenencia: number; verificacion: number;
   mantenimientoAuto: number; seguroAuto: number; gasolina: number;
@@ -42,7 +43,7 @@ interface GastosDetallados {
   // Cuidado Personal
   estetica: number; accesoriosBelleza: number; medicamentos: number; checkups: number;
   // Ahorro
-  inversiones: number; fondoEmergencia: number;
+  inversiones: number;
   // Mascotas
   comidaMascota: number; saludMascota: number; vacunasMascota: number;
   esteticaMascota: number; accesoriosMascota: number;
@@ -63,13 +64,14 @@ interface GastosResumidos {
 // Initial states
 const initialGastosDetallados: GastosDetallados = {
   renta: 0, hipoteca: 0, mantenimiento: 0, luz: 0, gas: 0, agua: 0, telefono: 0, internet: 0, streamings: 0, celular: 0, otrosServicios: 0,
+  predial: 0,
   mensualidadAuto: 0, tenencia: 0, verificacion: 0, mantenimientoAuto: 0, seguroAuto: 0, gasolina: 0, transportePublico: 0, uber: 0, estacionamientos: 0,
   escuelaHijos: 0, escuelaPropia: 0, utiles: 0, materiales: 0, libros: 0,
   prestamos: 0, creditos: 0,
   hobbies: 0, finDeSemana: 0, vacaciones: 0, cineTeatro: 0, comidasEsparcimiento: 0, baresRecreacion: 0, cafecitos: 0, clubSocial: 0, amazonCompras: 0,
   supermercado: 0, mercado: 0, accesoriosCasa: 0,
   estetica: 0, accesoriosBelleza: 0, medicamentos: 0, checkups: 0,
-  inversiones: 0, fondoEmergencia: 0,
+  inversiones: 0,
   comidaMascota: 0, saludMascota: 0, vacunasMascota: 0, esteticaMascota: 0, accesoriosMascota: 0
 }
 
@@ -108,9 +110,12 @@ export default function AdnPage() {
   const [hasPpr, setHasPpr] = useState(false)
   const [pprAporte, setPprAporte] = useState<number | ''>('')
   const [pprFrecuencia, setPprFrecuencia] = useState<'MENSUAL' | 'ANUAL'>('MENSUAL')
+  const [pprAniosPlazo, setPprAniosPlazo] = useState<string>('10') // AJUSTE 5: Años contratados
 
   const [hasGmm, setHasGmm] = useState(false)
+  
   const [hasSeguroVida, setHasSeguroVida] = useState(false)
+  const [vidaSumaAsegurada, setVidaSumaAsegurada] = useState<number | ''>('') // AJUSTE 1: Suma asegurada
 
   // Step 3: Finanzas (Ingresos y Ahorros)
   const [ingresosTotales, setIngresosTotales] = useState<number | ''>('')
@@ -145,84 +150,98 @@ export default function AdnPage() {
     setHijos(hijos.filter((_, i) => i !== idx))
   }
 
-  // --- Sumas y Cálculos Financieros ---
-  const totals = useMemo(() => {
-    const netIncome = Number(ingresosNetos) || 0
-    let necesidades = 0
-    let deseos = 0
-    let ahorroTotal = Number(ahorroActual) || 0 // Iniciamos con el fondo actual
+  // --- Sumas y Cálculos Financieros Desglosados por Ramo (AJUSTE 6) ---
+  const totalsByRamo = useMemo(() => {
+    let vivienda = 0
+    let transporte = 0
+    let educacion = 0
+    let deudas = 0
+    let entretenimiento = 0
+    let alimentacion = 0
+    let cuidadoPersonal = 0
+    let ahorro = Number(ahorroActual) || 0
+    let mascotas = 0
 
     // Sumar aportes de seguros que son tipo Ahorro / PPR
     if (hasSeguroAhorro && ahorroAporte) {
       const aporte = Number(ahorroAporte)
-      ahorroTotal += ahorroFrecuencia === 'MENSUAL' ? aporte : aporte / 12
+      ahorro += ahorroFrecuencia === 'MENSUAL' ? aporte : aporte / 12
     }
     if (hasPpr && pprAporte) {
       const aporte = Number(pprAporte)
-      ahorroTotal += pprFrecuencia === 'MENSUAL' ? aporte : aporte / 12
+      ahorro += pprFrecuencia === 'MENSUAL' ? aporte : aporte / 12
     }
-
-    let totalGastosCalc = 0
 
     if (modalidad === 'DETALLADO') {
       const g = gastosDet
-      // Necesidades (50%)
-      const vivienda = g.renta + g.hipoteca + g.mantenimiento + g.luz + g.gas + g.agua + g.telefono + g.internet + g.streamings + g.celular + g.otrosServicios
-      const transporte = g.mensualidadAuto + g.tenencia + g.verificacion + g.mantenimientoAuto + g.seguroAuto + g.gasolina + g.transportePublico + g.uber + g.estacionamientos
-      const educacion = g.escuelaHijos + g.escuelaPropia + g.utiles + g.materiales + g.libros
-      const deudas = g.prestamos + g.creditos
-      const alimentacion = g.supermercado + g.mercado + g.accesoriosCasa
-      const cuidado = g.estetica + g.accesoriosBelleza + g.medicamentos + g.checkups
-      const mascotas = g.comidaMascota + g.saludMascota + g.vacunasMascota + g.esteticaMascota + g.accesoriosMascota
+      
+      // AJUSTE 2 & 3: Mensualización (/12) de gastos anuales (Predial, Tenencia, Verificación, Mantenimiento Auto, Seguro Auto)
+      vivienda = g.renta + g.hipoteca + g.mantenimiento + g.luz + g.gas + g.agua + g.telefono + g.internet + g.streamings + g.celular + g.otrosServicios + (g.predial / 12)
+      
+      transporte = g.mensualidadAuto + (g.tenencia / 12) + (g.verificacion / 12) + (g.mantenimientoAuto / 12) + (g.seguroAuto / 12) + g.gasolina + g.transportePublico + g.uber + g.estacionamientos
+      
+      educacion = g.escuelaHijos + g.escuelaPropia + g.utiles + g.materiales + g.libros
+      deudas = g.prestamos + g.creditos
+      entretenimiento = g.hobbies + g.finDeSemana + g.vacaciones + g.cineTeatro + g.comidasEsparcimiento + g.baresRecreacion + g.cafecitos + g.clubSocial + g.amazonCompras
+      alimentacion = g.supermercado + g.mercado + g.accesoriosCasa
+      cuidadoPersonal = g.estetica + g.accesoriosBelleza + g.medicamentos + g.checkups
+      ahorro += g.inversiones // fondoEmergencia eliminado de la lista detallada
+      mascotas = g.comidaMascota + g.saludMascota + g.vacunasMascota + g.esteticaMascota + g.accesoriosMascota
 
-      necesidades = vivienda + transporte + educacion + deudas + alimentacion + cuidado + mascotas
-
-      // Deseos (20%)
-      deseos = g.hobbies + g.finDeSemana + g.vacaciones + g.cineTeatro + g.comidasEsparcimiento + g.baresRecreacion + g.cafecitos + g.clubSocial + g.amazonCompras
-
-      // Ahorro (30%)
-      const ahorroManual = g.inversiones + g.fondoEmergencia
-      ahorroTotal += ahorroManual
-
-      totalGastosCalc = necesidades + deseos + ahorroManual
-    } 
-    else if (modalidad === 'RESUMIDO') {
+    } else if (modalidad === 'RESUMIDO') {
       const r = gastosRes
-      necesidades = r.vivienda + r.transporte + r.educacion + r.deudas + r.alimentacion + r.cuidadoPersonal + r.mascotas
-      deseos = r.entretenimiento
-      ahorroTotal += r.ahorro
-
-      totalGastosCalc = necesidades + deseos + r.ahorro
-    } 
-    else {
+      vivienda = r.vivienda
+      transporte = r.transporte
+      educacion = r.educacion
+      deudas = r.deudas
+      entretenimiento = r.entretenimiento
+      alimentacion = r.alimentacion
+      cuidadoPersonal = r.cuidadoPersonal
+      ahorro += r.ahorro
+      mascotas = r.mascotas
+    } else {
       // BASICO
       const gTot = Number(gastosBasicosTotales) || 0
-      totalGastosCalc = gTot
-      // En modo básico no hay desglose, estimamos 50-30-20 con base en gastos totales como necesidades, resto como ahorro
-      necesidades = gTot * 0.7
-      deseos = gTot * 0.3
-      ahorroTotal = Math.max(0, netIncome - gTot)
+      vivienda = gTot * 0.4
+      transporte = gTot * 0.15
+      educacion = gTot * 0.1
+      deudas = gTot * 0.1
+      entretenimiento = gTot * 0.1
+      alimentacion = gTot * 0.1
+      cuidadoPersonal = gTot * 0.05
     }
 
+    const totalGastos = vivienda + transporte + educacion + deudas + entretenimiento + alimentacion + cuidadoPersonal + (modalidad === 'DETALLADO' ? gastosDet.inversiones : (modalidad === 'RESUMIDO' ? gastosRes.ahorro : 0)) + mascotas
+    const necesidades = vivienda + transporte + educacion + deudas + alimentacion + cuidadoPersonal + mascotas
+    const deseos = entretenimiento
+    const netIncome = Number(ingresosNetos) || 0
+    const remanente = Math.max(0, netIncome - totalGastos)
+
     return {
+      vivienda,
+      transporte,
+      educacion,
+      deudas,
+      entretenimiento,
+      alimentacion,
+      cuidadoPersonal,
+      ahorro,
+      mascotas,
+      totalGastos,
       necesidades,
       deseos,
-      ahorro: ahorroTotal,
-      totalGastos: totalGastosCalc,
-      remanente: Math.max(0, netIncome - totalGastosCalc)
+      remanente
     }
   }, [modalidad, gastosDet, gastosRes, gastosBasicosTotales, ingresosNetos, ahorroActual, hasSeguroAhorro, ahorroAporte, ahorroFrecuencia, hasPpr, pprAporte, pprFrecuencia])
 
   // --- Elizabeth Warren 50-30-20 Calculations ---
   const warrenMetrics = useMemo(() => {
-    const netIncome = Number(ingresosNetos) || 1 // Avoid division by zero
+    const netIncome = Number(ingresosNetos) || 1
     
-    // Real percentages
-    const pctNecesidades = Math.round((totals.necesidades / netIncome) * 100)
-    const pctDeseos = Math.round((totals.deseos / netIncome) * 100)
-    const pctAhorro = Math.round((totals.ahorro / netIncome) * 100)
+    const pctNecesidades = Math.round((totalsByRamo.necesidades / netIncome) * 100)
+    const pctDeseos = Math.round((totalsByRamo.deseos / netIncome) * 100)
+    const pctAhorro = Math.round((totalsByRamo.ahorro / netIncome) * 100)
 
-    // Recommended quantities
     const recNecesidades = Math.round(netIncome * 0.5)
     const recDeseos = Math.round(netIncome * 0.2)
     const recAhorro = Math.round(netIncome * 0.3)
@@ -235,7 +254,43 @@ export default function AdnPage() {
       recDeseos,
       recAhorro
     }
-  }, [totals, ingresosNetos])
+  }, [totalsByRamo, ingresosNetos])
+
+  // --- AJUSTE 5: Cálculo de Suficiencia Financiera del PPR ---
+  const pprSufficiency = useMemo(() => {
+    if (!hasPpr || !pprAporte) return null
+
+    const netIncome = Number(ingresosNetos) || 0
+    const retirementGoal = netIncome * 12 * 20 // 20 años de ingresos netos mensuales
+
+    // Calcular aportación anual
+    const aporteMensual = pprFrecuencia === 'MENSUAL' ? Number(pprAporte) : Number(pprAporte) / 12
+    const aporteAnual = aporteMensual * 12
+
+    // Plazo en años
+    let plazoAnios = 0
+    if (pprAniosPlazo === '65') {
+      plazoAnios = Math.max(0, 65 - Number(clienteEdad || 0))
+    } else {
+      plazoAnios = Number(pprAniosPlazo)
+    }
+
+    const projectedAccumulation = aporteAnual * plazoAnios
+    const brechaRetiro = Math.max(0, retirementGoal - projectedAccumulation)
+    const isSufficient = projectedAccumulation >= retirementGoal
+
+    // Sugerencia de aportación mensual adicional para cubrir brecha
+    const adicionalMensualSugerido = plazoAnios > 0 ? (brechaRetiro / plazoAnios) / 12 : 0
+
+    return {
+      retirementGoal,
+      plazoAnios,
+      projectedAccumulation,
+      brechaRetiro,
+      isSufficient,
+      adicionalMensualSugerido
+    }
+  }, [hasPpr, pprAporte, pprFrecuencia, pprAniosPlazo, clienteEdad, ingresosNetos])
 
   // --- Semáforo de Prioridades ---
   const prioridades = useMemo(() => {
@@ -259,9 +314,9 @@ export default function AdnPage() {
     if (modalidad === 'DETALLADO') {
       const g = gastosDet
       const hormigaSum = g.cafecitos + g.amazonCompras + g.baresRecreacion + g.comidasEsparcimiento
-      hasGastosHormigaHigh = hormigaSum > (income * 0.08) // Más del 8% de ingresos netos en gastos hormiga
+      hasGastosHormigaHigh = hormigaSum > (income * 0.08)
     } else if (modalidad === 'RESUMIDO') {
-      hasGastosHormigaHigh = totals.deseos > (income * 0.25)
+      hasGastosHormigaHigh = totalsByRamo.deseos > (income * 0.25)
     }
 
     return {
@@ -277,30 +332,30 @@ export default function AdnPage() {
       p5_hormiga: hasGastosHormigaHigh,
       tieneHijosChicos
     }
-  }, [hasPpr, hasGmm, ingresosNetos, ahorroActual, hijos, hasSeguroAhorro, modalidad, gastosDet, totals])
+  }, [hasPpr, hasGmm, ingresosNetos, ahorroActual, hijos, hasSeguroAhorro, modalidad, gastosDet, totalsByRamo])
 
   // --- Recharts data ---
   const pieData = [
-    { name: 'Gastos Fijos (Necesidades)', value: totals.necesidades, color: '#3b82f6' },
-    { name: 'Ahorro / Patrimonio', value: totals.ahorro, color: '#10b981' },
-    { name: 'Esparcimiento (Deseos)', value: totals.deseos, color: '#f59e0b' }
+    { name: 'Gastos Fijos (Necesidades)', value: totalsByRamo.necesidades, color: '#3b82f6' },
+    { name: 'Ahorro / Patrimonio', value: totalsByRamo.ahorro, color: '#10b981' },
+    { name: 'Esparcimiento (Deseos)', value: totalsByRamo.deseos, color: '#f59e0b' }
   ].filter(d => d.value > 0)
 
   const barData = [
     {
       name: 'Necesidades (50%)',
       Recomendado: warrenMetrics.recNecesidades,
-      Real: totals.necesidades
+      Real: totalsByRamo.necesidades
     },
     {
       name: 'Ahorro (30%)',
       Recomendado: warrenMetrics.recAhorro,
-      Real: totals.ahorro
+      Real: totalsByRamo.ahorro
     },
     {
       name: 'Deseos (20%)',
       Recomendado: warrenMetrics.recDeseos,
-      Real: totals.deseos
+      Real: totalsByRamo.deseos
     }
   ]
 
@@ -317,6 +372,9 @@ export default function AdnPage() {
       }
       if (hasPpr && (pprAporte === '' || Number(pprAporte) <= 0)) {
         return 'Por favor especifica cuánto aporta en su PPR'
+      }
+      if (hasSeguroVida && (vidaSumaAsegurada === '' || Number(vidaSumaAsegurada) <= 0)) {
+        return 'Por favor especifica la Suma Asegurada de tu seguro de Vida'
       }
     }
     if (step === 3) {
@@ -372,13 +430,15 @@ export default function AdnPage() {
       hasPpr,
       pprAporte: hasPpr && pprAporte !== '' ? Number(pprAporte) : undefined,
       pprFrecuencia: hasPpr ? pprFrecuencia : undefined,
+      pprAniosPlazo: hasPpr ? pprAniosPlazo : undefined,
       hasGmm,
       hasSeguroVida,
+      vidaSumaAsegurada: hasSeguroVida && vidaSumaAsegurada !== '' ? Number(vidaSumaAsegurada) : undefined,
       ingresosTotales: Number(ingresosTotales),
       ingresosNetos: Number(ingresosNetos),
       ahorroActual: Number(ahorroActual) || 0,
       gastosData: JSON.stringify(gastosObj),
-      totalGastos: totals.totalGastos
+      totalGastos: totalsByRamo.totalGastos
     }
 
     try {
@@ -412,8 +472,10 @@ export default function AdnPage() {
     setAhorroAporte('')
     setHasPpr(false)
     setPprAporte('')
+    setPprAniosPlazo('10')
     setHasGmm(false)
     setHasSeguroVida(false)
+    setVidaSumaAsegurada('')
     setIngresosTotales('')
     setIngresosNetos('')
     setAhorroActual('')
@@ -531,7 +593,7 @@ export default function AdnPage() {
         </div>
       )}
 
-      {/* --- STEPS CONTAINER (1 to 4) (HIDDEN IN PRINT) --- */}
+      {/* --- STEPS CONTAINER (1 to 3) (HIDDEN IN PRINT) --- */}
       {step > 0 && step <= 3 && (
         <div className="space-y-6 max-w-4xl mx-auto print:hidden">
           {/* Progress Bar */}
@@ -619,7 +681,7 @@ export default function AdnPage() {
                   </select>
                 </div>
 
-                {/* Hijos list */}
+                {/* Hijos list (AJUSTE 4: Capturar nombre y edad de cada hijo) */}
                 <div className="border border-slate-100 dark:border-zinc-800 p-5 rounded-2xl space-y-4">
                   <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
                     <Users className="h-4 w-4 text-teal-600" /> Estructura Familiar (Hijos)
@@ -688,13 +750,10 @@ export default function AdnPage() {
                   <h3 className="text-lg font-black text-slate-800 dark:text-slate-200 flex items-center gap-2 border-b pb-3">
                     <Shield className="h-5 w-5 text-teal-600" /> Paso 2: Seguros y Aportaciones Actuales
                   </h3>
-                  <p className="text-[10px] text-slate-400 mt-1">
-                    Selecciona las pólizas vigentes con las que cuenta actualmente el cliente.
-                  </p>
                 </div>
 
                 <div className="space-y-4">
-                  {/* PPR */}
+                  {/* PPR (AJUSTE 5: Preguntar plazo contratado) */}
                   <div className="border rounded-2xl p-4 bg-slate-50/50 space-y-4 border-slate-200/50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -712,9 +771,9 @@ export default function AdnPage() {
                       />
                     </div>
                     {hasPpr && (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2 border-t border-slate-100">
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-slate-600 uppercase">¿Cuánto aporta a su PPR?</label>
+                          <label className="text-[10px] font-bold text-slate-600 uppercase block">¿Cuánto aporta a su PPR?</label>
                           <input 
                             type="number" 
                             placeholder="Monto de aportación" 
@@ -724,7 +783,7 @@ export default function AdnPage() {
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-slate-600 uppercase">Frecuencia de Aportación</label>
+                          <label className="text-[10px] font-bold text-slate-600 uppercase block">Frecuencia de Aporte</label>
                           <select 
                             value={pprFrecuencia}
                             onChange={e => setPprFrecuencia(e.target.value as 'MENSUAL' | 'ANUAL')}
@@ -732,6 +791,19 @@ export default function AdnPage() {
                           >
                             <option value="MENSUAL">Mensual</option>
                             <option value="ANUAL">Anual</option>
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-600 uppercase block">Plazo Contratado PPR *</label>
+                          <select 
+                            value={pprAniosPlazo}
+                            onChange={e => setPprAniosPlazo(e.target.value)}
+                            className="border p-2.5 rounded-xl w-full text-xs bg-white focus:outline-teal-500 font-bold"
+                          >
+                            <option value="10">10 Años</option>
+                            <option value="15">15 Años</option>
+                            <option value="20">20 Años</option>
+                            <option value="65">Edad Alcanzada 65 Años</option>
                           </select>
                         </div>
                       </div>
@@ -758,7 +830,7 @@ export default function AdnPage() {
                     {hasSeguroAhorro && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-slate-600 uppercase">¿Cuánto aporta a su plan?</label>
+                          <label className="text-[10px] font-bold text-slate-600 uppercase block">¿Cuánto aporta a su plan?</label>
                           <input 
                             type="number" 
                             placeholder="Monto de aportación" 
@@ -768,7 +840,7 @@ export default function AdnPage() {
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-slate-600 uppercase">Frecuencia de Aportación</label>
+                          <label className="text-[10px] font-bold text-slate-600 uppercase block">Frecuencia de Aporte</label>
                           <select 
                             value={ahorroFrecuencia}
                             onChange={e => setAhorroFrecuencia(e.target.value as 'MENSUAL' | 'ANUAL')}
@@ -799,21 +871,37 @@ export default function AdnPage() {
                     />
                   </div>
 
-                  {/* Seguro de Vida */}
-                  <div className="border rounded-2xl p-4 bg-slate-50/50 flex justify-between items-center border-slate-200/50">
-                    <div className="flex items-center gap-3">
-                      <Shield className="h-5 w-5 text-teal-600" />
-                      <div>
-                        <h4 className="font-extrabold text-sm text-slate-800">Seguro de Vida</h4>
-                        <span className="text-[10px] text-slate-400 block">Protección por fallecimiento o invalidez</span>
+                  {/* Seguro de Vida (AJUSTE 1: Preguntar Suma Asegurada) */}
+                  <div className="border rounded-2xl p-4 bg-slate-50/50 space-y-4 border-slate-200/50">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <Shield className="h-5 w-5 text-teal-600" />
+                        <div>
+                          <h4 className="font-extrabold text-sm text-slate-800">Seguro de Vida</h4>
+                          <span className="text-[10px] text-slate-400 block">Protección por fallecimiento o invalidez</span>
+                        </div>
                       </div>
+                      <input 
+                        type="checkbox" 
+                        checked={hasSeguroVida}
+                        onChange={e => setHasSeguroVida(e.target.checked)}
+                        className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                      />
                     </div>
-                    <input 
-                      type="checkbox" 
-                      checked={hasSeguroVida}
-                      onChange={e => setHasSeguroVida(e.target.checked)}
-                      className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
-                    />
+                    {hasSeguroVida && (
+                      <div className="pt-2 border-t border-slate-100 max-w-md">
+                        <div className="space-y-1">
+                          <label className="text-[10px] font-bold text-slate-600 uppercase block">Suma Asegurada Seguro de Vida *</label>
+                          <input 
+                            type="number" 
+                            placeholder="Monto en pesos (Ej. 1000000)" 
+                            value={vidaSumaAsegurada}
+                            onChange={e => setVidaSumaAsegurada(e.target.value === '' ? '' : Number(e.target.value))}
+                            className="border p-2 rounded-xl w-full text-xs bg-white focus:outline-teal-500 font-semibold"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                 </div>
@@ -868,7 +956,7 @@ export default function AdnPage() {
                   <div className="space-y-6">
                     <h4 className="text-xs font-black text-teal-800 uppercase tracking-widest border-b pb-2">Gastos Mensuales Detallados</h4>
                     
-                    {/* Vivienda */}
+                    {/* Vivienda (AJUSTE 3: Agregar Predial a Vivienda y Servicios como anual) */}
                     <div className="space-y-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><Landmark className="h-4 w-4 text-teal-600" /> Vivienda y Servicios</span>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -884,25 +972,116 @@ export default function AdnPage() {
                             />
                           </div>
                         ))}
+                        {/* Campo Predial * (anual) */}
+                        <div className="space-y-1 border border-teal-200/60 p-1.5 rounded-xl bg-teal-50/10">
+                          <label className="text-[9px] font-extrabold text-teal-700 uppercase">Predial * (anual)</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.predial || ''}
+                            onChange={e => setGastosDet({...gastosDet, predial: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500 font-bold text-teal-800 bg-white"
+                          />
+                        </div>
                       </div>
                     </div>
 
-                    {/* Transporte */}
+                    {/* Transporte (AJUSTE 2: Asteriscos * (anual) en Tenencia, Verificación, Mantenimiento, Seguro) */}
                     <div className="space-y-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><ShoppingBag className="h-4 w-4 text-teal-600" /> Transporte y Auto</span>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {Object.keys(initialGastosDetallados).slice(11, 20).map((key) => (
-                          <div key={key} className="space-y-1">
-                            <label className="text-[9px] font-bold text-slate-500 uppercase">{key.replace(/([A-Z])/g, ' $1')}</label>
-                            <input 
-                              type="number" 
-                              placeholder="0" 
-                              value={gastosDet[key as keyof GastosDetallados] || ''}
-                              onChange={e => setGastosDet({...gastosDet, [key]: Number(e.target.value)})}
-                              className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500"
-                            />
-                          </div>
-                        ))}
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-slate-500 uppercase">Mensualidad Auto</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.mensualidadAuto || ''}
+                            onChange={e => setGastosDet({...gastosDet, mensualidadAuto: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500"
+                          />
+                        </div>
+                        {/* Anuales */}
+                        <div className="space-y-1 border border-teal-200/60 p-1.5 rounded-xl bg-teal-50/10">
+                          <label className="text-[9px] font-extrabold text-teal-700 uppercase">Tenencia * (anual)</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.tenencia || ''}
+                            onChange={e => setGastosDet({...gastosDet, tenencia: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500 font-bold bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1 border border-teal-200/60 p-1.5 rounded-xl bg-teal-50/10">
+                          <label className="text-[9px] font-extrabold text-teal-700 uppercase">Verificación * (anual)</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.verificacion || ''}
+                            onChange={e => setGastosDet({...gastosDet, verificacion: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500 font-bold bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1 border border-teal-200/60 p-1.5 rounded-xl bg-teal-50/10">
+                          <label className="text-[9px] font-extrabold text-teal-700 uppercase">Mantenimiento * (anual)</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.mantenimientoAuto || ''}
+                            onChange={e => setGastosDet({...gastosDet, mantenimientoAuto: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500 font-bold bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1 border border-teal-200/60 p-1.5 rounded-xl bg-teal-50/10">
+                          <label className="text-[9px] font-extrabold text-teal-700 uppercase">Seguro Auto * (anual)</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.seguroAuto || ''}
+                            onChange={e => setGastosDet({...gastosDet, seguroAuto: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500 font-bold bg-white"
+                          />
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-slate-500 uppercase">Gasolina</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.gasolina || ''}
+                            onChange={e => setGastosDet({...gastosDet, gasolina: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-slate-500 uppercase">Transporte Público</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.transportePublico || ''}
+                            onChange={e => setGastosDet({...gastosDet, transportePublico: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-slate-500 uppercase">Uber</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.uber || ''}
+                            onChange={e => setGastosDet({...gastosDet, uber: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-slate-500 uppercase">Estacionamientos</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.estacionamientos || ''}
+                            onChange={e => setGastosDet({...gastosDet, estacionamientos: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500"
+                          />
+                        </div>
                       </div>
                     </div>
 
@@ -910,7 +1089,7 @@ export default function AdnPage() {
                     <div className="space-y-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><GraduationCap className="h-4 w-4 text-teal-600" /> Educación</span>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {Object.keys(initialGastosDetallados).slice(20, 25).map((key) => (
+                        {Object.keys(initialGastosDetallados).slice(21, 26).map((key) => (
                           <div key={key} className="space-y-1">
                             <label className="text-[9px] font-bold text-slate-500 uppercase">{key.replace(/([A-Z])/g, ' $1')}</label>
                             <input 
@@ -929,7 +1108,7 @@ export default function AdnPage() {
                     <div className="space-y-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><Wallet className="h-4 w-4 text-teal-600" /> Deudas y Créditos</span>
                       <div className="grid grid-cols-2 gap-3">
-                        {Object.keys(initialGastosDetallados).slice(25, 27).map((key) => (
+                        {Object.keys(initialGastosDetallados).slice(26, 28).map((key) => (
                           <div key={key} className="space-y-1">
                             <label className="text-[9px] font-bold text-slate-500 uppercase">{key.replace(/([A-Z])/g, ' $1')}</label>
                             <input 
@@ -948,7 +1127,7 @@ export default function AdnPage() {
                     <div className="space-y-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><Coffee className="h-4 w-4 text-teal-600" /> Diversión, Hobbies y Compras</span>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {Object.keys(initialGastosDetallados).slice(27, 36).map((key) => (
+                        {Object.keys(initialGastosDetallados).slice(28, 37).map((key) => (
                           <div key={key} className="space-y-1">
                             <label className="text-[9px] font-bold text-slate-500 uppercase">{key.replace(/([A-Z])/g, ' $1')}</label>
                             <input 
@@ -967,7 +1146,7 @@ export default function AdnPage() {
                     <div className="space-y-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><ShoppingBag className="h-4 w-4 text-teal-600" /> Alimentación y Casa</span>
                       <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {Object.keys(initialGastosDetallados).slice(36, 39).map((key) => (
+                        {Object.keys(initialGastosDetallados).slice(37, 40).map((key) => (
                           <div key={key} className="space-y-1">
                             <label className="text-[9px] font-bold text-slate-500 uppercase">{key.replace(/([A-Z])/g, ' $1')}</label>
                             <input 
@@ -986,7 +1165,7 @@ export default function AdnPage() {
                     <div className="space-y-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><Heart className="h-4 w-4 text-teal-600" /> Cuidado Personal y Salud</span>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {Object.keys(initialGastosDetallados).slice(39, 43).map((key) => (
+                        {Object.keys(initialGastosDetallados).slice(40, 44).map((key) => (
                           <div key={key} className="space-y-1">
                             <label className="text-[9px] font-bold text-slate-500 uppercase">{key.replace(/([A-Z])/g, ' $1')}</label>
                             <input 
@@ -1020,22 +1199,18 @@ export default function AdnPage() {
                       </div>
                     </div>
 
-                    {/* Ahorro manual */}
+                    {/* Ahorro manual (AJUSTE 4: fondoEmergencia eliminado por duplicidad) */}
                     <div className="space-y-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><Wallet className="h-4 w-4 text-teal-600" /> Ahorros manuales e Inversiones</span>
-                      <div className="grid grid-cols-2 gap-3">
-                        {Object.keys(initialGastosDetallados).slice(43, 45).map((key) => (
-                          <div key={key} className="space-y-1">
-                            <label className="text-[9px] font-bold text-slate-500 uppercase">{key.replace(/([A-Z])/g, ' $1')}</label>
-                            <input 
-                              type="number" 
-                              placeholder="0" 
-                              value={gastosDet[key as keyof GastosDetallados] || ''}
-                              onChange={e => setGastosDet({...gastosDet, [key]: Number(e.target.value)})}
-                              className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500"
-                            />
-                          </div>
-                        ))}
+                      <div className="max-w-xs space-y-1">
+                        <label className="text-[9px] font-bold text-slate-500 uppercase">Inversiones</label>
+                        <input 
+                          type="number" 
+                          placeholder="0" 
+                          value={gastosDet.inversiones || ''}
+                          onChange={e => setGastosDet({...gastosDet, inversiones: Number(e.target.value)})}
+                          className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500"
+                        />
                       </div>
                     </div>
                   </div>
@@ -1079,27 +1254,27 @@ export default function AdnPage() {
                 {/* DINAMIC REALTIME CALCULATOR BOX */}
                 <div className="bg-teal-50/50 border border-teal-200 p-5 rounded-3xl grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
                   <div className="text-center md:text-left">
-                    <span className="text-[10px] font-black text-teal-800 uppercase tracking-widest">Egresos Totales</span>
+                    <span className="text-[10px] font-black text-teal-800 uppercase tracking-widest">Egresos Totales (Mensuales)</span>
                     <span className="text-2xl font-black text-teal-700 block mt-1">
-                      ${totals.totalGastos.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
+                      ${totalsByRamo.totalGastos.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
                     </span>
                   </div>
                   <div className="text-center md:text-left">
                     <span className="text-[10px] font-black text-teal-800 uppercase tracking-widest">Necesidades (Gastos Fijos)</span>
                     <span className="text-lg font-black text-slate-700 block mt-1">
-                      ${totals.necesidades.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
+                      ${totalsByRamo.necesidades.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
                     </span>
                   </div>
                   <div className="text-center md:text-left">
                     <span className="text-[10px] font-black text-teal-800 uppercase tracking-widest">Ahorro e Inversiones</span>
                     <span className="text-lg font-black text-emerald-600 block mt-1">
-                      ${totals.ahorro.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
+                      ${totalsByRamo.ahorro.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
                     </span>
                   </div>
                   <div className="text-center md:text-left">
                     <span className="text-[10px] font-black text-teal-800 uppercase tracking-widest">Remanente Final</span>
-                    <span className={`text-lg font-black block mt-1 ${totals.remanente > 0 ? 'text-teal-700' : 'text-red-500'}`}>
-                      ${totals.remanente.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
+                    <span className={`text-lg font-black block mt-1 ${totalsByRamo.remanente > 0 ? 'text-teal-700' : 'text-red-500'}`}>
+                      ${totalsByRamo.remanente.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
                     </span>
                   </div>
                 </div>
@@ -1261,7 +1436,7 @@ export default function AdnPage() {
                 <div className="absolute flex flex-col items-center">
                   <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Gasto Total</span>
                   <span className="text-xl font-black text-slate-800">
-                    ${totals.totalGastos.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
+                    ${totalsByRamo.totalGastos.toLocaleString('es-MX', { maximumFractionDigits: 0 })}
                   </span>
                 </div>
               </div>
@@ -1269,9 +1444,76 @@ export default function AdnPage() {
               <div className="bg-slate-50 dark:bg-zinc-800/40 p-4 rounded-2xl space-y-2 border">
                 <span className="text-[9px] font-black text-teal-800 uppercase tracking-widest block">Remanente de Ingresos</span>
                 <p className="text-xs text-slate-600 dark:text-slate-400">
-                  Tras pagar todos tus gastos mensuales e inversiones registradas, cuentas con un flujo de efectivo libre de **${totals.remanente.toLocaleString('es-MX', { maximumFractionDigits: 0 })} pesos** para ahorro adicional o emergencias.
+                  Tras pagar todos tus gastos mensuales e inversiones registradas, cuentas con un flujo de efectivo libre de **${totalsByRamo.remanente.toLocaleString('es-MX', { maximumFractionDigits: 0 })} pesos** para ahorro adicional o emergencias.
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* AJUSTE 6: Tabla Desglosada por Rubros Principales de Egresos */}
+          <div className="bg-white dark:bg-zinc-900 border rounded-3xl p-6 shadow-sm space-y-4 print:hidden">
+            <h3 className="text-lg font-black text-slate-800 dark:text-slate-200 border-b pb-3 flex items-center gap-2">
+              <ShoppingBag className="h-5 w-5 text-teal-600" /> Resumen de Gastos por Ramo Principal
+            </h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 dark:bg-zinc-800 text-slate-700 dark:text-slate-200 uppercase tracking-wider font-bold border-b">
+                    <th className="py-2.5 px-4">Ramo de Gasto</th>
+                    <th className="py-2.5 px-4 text-center">Gasto Mensualizado</th>
+                    <th className="py-2.5 px-4 text-center">Porcentaje del Ingreso</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+                  <tr className="hover:bg-slate-50/50">
+                    <td className="py-2 px-4 font-semibold">Vivienda y Servicios (incluye Predial)</td>
+                    <td className="py-2 px-4 text-center">${totalsByRamo.vivienda.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-4 text-center font-bold text-teal-600">{Math.round((totalsByRamo.vivienda / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50">
+                    <td className="py-2 px-4 font-semibold">Transporte y Auto (anuales mensualizados)</td>
+                    <td className="py-2 px-4 text-center">${totalsByRamo.transporte.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-4 text-center font-bold text-teal-600">{Math.round((totalsByRamo.transporte / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50">
+                    <td className="py-2 px-4 font-semibold">Educación</td>
+                    <td className="py-2 px-4 text-center">${totalsByRamo.educacion.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-4 text-center font-bold text-teal-600">{Math.round((totalsByRamo.educacion / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50">
+                    <td className="py-2 px-4 font-semibold">Deudas y Créditos</td>
+                    <td className="py-2 px-4 text-center">${totalsByRamo.deudas.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-4 text-center font-bold text-teal-600">{Math.round((totalsByRamo.deudas / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50">
+                    <td className="py-2 px-4 font-semibold">Diversión y Entretenimiento (Deseos)</td>
+                    <td className="py-2 px-4 text-center">${totalsByRamo.entretenimiento.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-4 text-center font-bold text-teal-600">{Math.round((totalsByRamo.entretenimiento / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50">
+                    <td className="py-2 px-4 font-semibold">Alimentación y Despensa</td>
+                    <td className="py-2 px-4 text-center">${totalsByRamo.alimentacion.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-4 text-center font-bold text-teal-600">{Math.round((totalsByRamo.alimentacion / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50/50">
+                    <td className="py-2 px-4 font-semibold">Cuidado Personal y Salud</td>
+                    <td className="py-2 px-4 text-center">${totalsByRamo.cuidadoPersonal.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-4 text-center font-bold text-teal-600">{Math.round((totalsByRamo.cuidadoPersonal / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  {totalsByRamo.mascotas > 0 && (
+                    <tr className="hover:bg-slate-50/50">
+                      <td className="py-2 px-4 font-semibold">Mascotas</td>
+                      <td className="py-2 px-4 text-center">${totalsByRamo.mascotas.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                      <td className="py-2 px-4 text-center font-bold text-teal-600">{Math.round((totalsByRamo.mascotas / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                    </tr>
+                  )}
+                  <tr className="hover:bg-slate-50/50 bg-teal-50/20 font-black">
+                    <td className="py-2.5 px-4 text-teal-800">Ahorro y Construcción Patrimonial (Seguros + Fondo)</td>
+                    <td className="py-2.5 px-4 text-center text-teal-800">${totalsByRamo.ahorro.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2.5 px-4 text-center text-emerald-600">{Math.round((totalsByRamo.ahorro / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
 
@@ -1281,28 +1523,56 @@ export default function AdnPage() {
               <h3 className="text-lg font-black text-slate-800 dark:text-slate-200 border-b pb-3 flex items-center gap-2">
                 <AlertTriangle className="h-5 w-5 text-teal-600" /> Pilares y Prioridades Financieras Recomendadas
               </h3>
-              <p className="text-[10px] text-slate-400 mt-2">
-                Evaluación integral de riesgos y blindaje patrimonial basada en la estructura personal y familiar del cliente:
-              </p>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               
-              {/* Prioridad 1: PPR */}
-              <div className={`p-5 rounded-2xl border flex items-start gap-4 transition-all ${prioridades.p1_retiro ? 'bg-red-50/55 border-red-200' : 'bg-emerald-50/40 border-emerald-200'}`}>
+              {/* Prioridad 1: PPR con Suficiencia e indicación de brecha (AJUSTE 5) */}
+              <div className={`p-5 rounded-2xl border flex items-start gap-4 transition-all md:col-span-2 ${prioridades.p1_retiro ? 'bg-red-50/55 border-red-200' : pprSufficiency && !pprSufficiency.isSufficient ? 'bg-amber-50/55 border-amber-200' : 'bg-emerald-50/40 border-emerald-200'}`}>
                 {prioridades.p1_retiro ? (
                   <AlertTriangle className="h-6 w-6 text-red-600 shrink-0" />
+                ) : pprSufficiency && !pprSufficiency.isSufficient ? (
+                  <AlertTriangle className="h-6 w-6 text-amber-600 shrink-0" />
                 ) : (
                   <CheckCircle className="h-6 w-6 text-emerald-600 shrink-0" />
                 )}
-                <div className="space-y-1">
+                <div className="space-y-2 w-full">
                   <span className="text-[9px] font-extrabold uppercase tracking-widest block text-slate-400">Prioridad 1</span>
                   <h4 className="font-extrabold text-sm text-slate-800">Plan Personal para Retiro (PPR)</h4>
-                  <p className="text-xs text-slate-600">
-                    {prioridades.p1_retiro 
-                      ? '⚠️ CRÍTICO: No cuentas con plan de retiro. Iniciar tu ahorro deducible para el retiro es el pilar de construcción patrimonial más importante para evitar dependencia a futuro.'
-                      : '✅ Excelente: Ya cuentas con un plan para retiro registrado, asegurando tu independencia en la etapa de plenitud.'}
-                  </p>
+                  
+                  {prioridades.p1_retiro ? (
+                    <p className="text-xs text-slate-600 leading-relaxed">
+                      ⚠️ CRÍTICO: No cuentas con plan de retiro. Iniciar tu ahorro deducible para el retiro es el pilar de construcción patrimonial más importante para evitar dependencia a futuro.
+                    </p>
+                  ) : pprSufficiency && (
+                    <div className="space-y-2 text-xs text-slate-600">
+                      <p>
+                        ✅ Tienes un plan de PPR contratado a <strong>{pprAniosPlazo === '65' ? 'Edad 65' : `${pprAniosPlazo} Años`}</strong> de aportaciones.
+                      </p>
+                      <div className="bg-white/80 p-3.5 rounded-xl border border-slate-200/60 grid grid-cols-1 sm:grid-cols-3 gap-4 text-center mt-2">
+                        <div>
+                          <span className="text-[9px] font-bold text-slate-400 block uppercase">Meta para Retiro (20 Años)</span>
+                          <span className="text-sm font-extrabold text-slate-800 block mt-0.5">${pprSufficiency.retirementGoal.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos</span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] font-bold text-slate-400 block uppercase">Tu Capital PPR Proyectado</span>
+                          <span className="text-sm font-extrabold text-teal-700 block mt-0.5">${pprSufficiency.projectedAccumulation.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos</span>
+                        </div>
+                        <div>
+                          <span className="text-[9px] font-bold text-slate-400 block uppercase">Brecha Faltante</span>
+                          <span className={`text-sm font-extrabold block mt-0.5 ${pprSufficiency.brechaRetiro > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                            ${pprSufficiency.brechaRetiro.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos
+                          </span>
+                        </div>
+                      </div>
+                      
+                      {pprSufficiency.brechaRetiro > 0 && (
+                        <div className="bg-red-50/50 p-2.5 rounded-xl border border-red-200/50 text-[11px] text-red-800 font-bold mt-2">
+                          ⚠️ Tu PPR actual acumulará ${pprSufficiency.projectedAccumulation.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos, pero tu meta de retiro para vivir 20 años de jubilación es de ${pprSufficiency.retirementGoal.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos. Tienes un faltante de **${pprSufficiency.brechaRetiro.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos**. Te sugerimos incrementar tu aportación en **${Math.round(pprSufficiency.adicionalMensualSugerido).toLocaleString('es-MX')} pesos mensuales** para lograr la meta.
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -1318,7 +1588,7 @@ export default function AdnPage() {
                   <h4 className="font-extrabold text-sm text-slate-800">Seguro de Gastos Médicos Mayores</h4>
                   <p className="text-xs text-slate-600">
                     {prioridades.p2_gmm 
-                      ? '⚠️ CRÍTICO: No tienes seguro de GMM. Un accidente o enfermedad grave puede consumir todo tu patrimonio y acabar con tus metas financieras de ahorro.'
+                      ? '⚠️ CRÍTICO: No tienes seguro de GMM. Un accidente o enfermedad grave puede consumir todo tu patrimonio y acabar con tus metas de ahorro.'
                       : '✅ Excelente: Tu salud y finanzas están protegidas ante siniestros de salud costosos con tu seguro de GMM.'}
                   </p>
                 </div>
@@ -1336,7 +1606,7 @@ export default function AdnPage() {
                   <h4 className="font-extrabold text-sm text-slate-800">Fondo de Emergencia Inmediato</h4>
                   <p className="text-xs text-slate-600">
                     {!prioridades.p3_fondo.isOk 
-                      ? `⚠️ REQUIERE ATENCIÓN: Tu fondo de emergencia sugerido es de $${prioridades.p3_fondo.fondoIdeal.toLocaleString('es-MX', { maximumFractionDigits: 0 })} pesos (${prioridades.p3_fondo.idealMonths} meses). Tu brecha faltante es de $${prioridades.p3_fondo.gap.toLocaleString('es-MX', { maximumFractionDigits: 0 })} pesos.`
+                      ? `⚠️ REQUIERE ATENCIÓN: Tu fondo sugerido es de $${prioridades.p3_fondo.fondoIdeal.toLocaleString('es-MX', { maximumFractionDigits: 0 })} (${prioridades.p3_fondo.idealMonths} meses). Tu brecha faltante es de $${prioridades.p3_fondo.gap.toLocaleString('es-MX', { maximumFractionDigits: 0 })}.`
                       : `✅ Completado: Cuentas con un fondo de emergencia óptimo equivalente a ${prioridades.p3_fondo.idealMonths} meses de tus ingresos netos.`}
                   </p>
                 </div>
@@ -1434,6 +1704,24 @@ export default function AdnPage() {
               </div>
             </div>
 
+            {/* Seguro de Vida Suma Asegurada if has GMM / Vida (AJUSTE 1) */}
+            {(hasSeguroVida || hasGmm) && (
+              <div className="border border-slate-200 p-4 rounded-xl grid grid-cols-2 gap-4">
+                {hasSeguroVida && (
+                  <div>
+                    <span className="text-[9px] font-black text-slate-500 uppercase block tracking-wider">Seguro de Vida Vigente</span>
+                    <span className="text-sm font-black text-slate-800 mt-0.5 block">Suma Asegurada: ${Number(vidaSumaAsegurada).toLocaleString('es-MX')} pesos</span>
+                  </div>
+                )}
+                {hasGmm && (
+                  <div>
+                    <span className="text-[9px] font-black text-slate-500 uppercase block tracking-wider">Seguro de Gastos Médicos Mayores</span>
+                    <span className="text-sm font-black text-slate-800 mt-0.5 block">Estatus: Activo / Amparado</span>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Family Structure if has kids */}
             {hijos.length > 0 && (
               <div className="border border-slate-200 p-4 rounded-xl space-y-2">
@@ -1467,19 +1755,19 @@ export default function AdnPage() {
                     </div>
                     <div className="flex justify-between border-b pb-1.5 text-xs">
                       <span className="font-bold text-slate-600">Gastos Fijos (Necesidades):</span>
-                      <span className="font-black text-slate-800">${totals.necesidades.toLocaleString('es-MX')} MXN ({warrenMetrics.pctNecesidades}%)</span>
+                      <span className="font-black text-slate-800">${totalsByRamo.necesidades.toLocaleString('es-MX')} MXN ({warrenMetrics.pctNecesidades}%)</span>
                     </div>
                     <div className="flex justify-between border-b pb-1.5 text-xs">
                       <span className="font-bold text-slate-600">Ahorro y Patrimonio:</span>
-                      <span className="font-black text-emerald-600">${totals.ahorro.toLocaleString('es-MX')} MXN ({warrenMetrics.pctAhorro}%)</span>
+                      <span className="font-black text-emerald-600">${totalsByRamo.ahorro.toLocaleString('es-MX')} MXN ({warrenMetrics.pctAhorro}%)</span>
                     </div>
                     <div className="flex justify-between border-b pb-1.5 text-xs">
                       <span className="font-bold text-slate-600">Deseos y Gustos:</span>
-                      <span className="font-black text-amber-600">${totals.deseos.toLocaleString('es-MX')} MXN ({warrenMetrics.pctDeseos}%)</span>
+                      <span className="font-black text-amber-600">${totalsByRamo.deseos.toLocaleString('es-MX')} MXN ({warrenMetrics.pctDeseos}%)</span>
                     </div>
                     <div className="flex justify-between pt-1 text-xs">
                       <span className="font-black text-teal-800">Flujo de Caja Libre (Remanente):</span>
-                      <span className="font-black text-teal-700">${totals.remanente.toLocaleString('es-MX')} MXN</span>
+                      <span className="font-black text-teal-700">${totalsByRamo.remanente.toLocaleString('es-MX')} MXN</span>
                     </div>
                   </div>
                 </div>
@@ -1496,7 +1784,7 @@ export default function AdnPage() {
                         <span>{warrenMetrics.pctNecesidades}% / 50%</span>
                       </div>
                       <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div className="bg-blue-500 h-full" style={{ width: `${Math.min(100, (totals.necesidades / (Number(ingresosNetos) || 1)) * 100)}%` }} />
+                        <div className="bg-blue-500 h-full" style={{ width: `${Math.min(100, (totalsByRamo.necesidades / (Number(ingresosNetos) || 1)) * 100)}%` }} />
                       </div>
                     </div>
 
@@ -1507,7 +1795,7 @@ export default function AdnPage() {
                         <span>{warrenMetrics.pctAhorro}% / 30%</span>
                       </div>
                       <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div className="bg-emerald-500 h-full" style={{ width: `${Math.min(100, (totals.ahorro / (Number(ingresosNetos) || 1)) * 100)}%` }} />
+                        <div className="bg-emerald-500 h-full" style={{ width: `${Math.min(100, (totalsByRamo.ahorro / (Number(ingresosNetos) || 1)) * 100)}%` }} />
                       </div>
                     </div>
 
@@ -1518,7 +1806,7 @@ export default function AdnPage() {
                         <span>{warrenMetrics.pctDeseos}% / 20%</span>
                       </div>
                       <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div className="bg-amber-500 h-full" style={{ width: `${Math.min(100, (totals.deseos / (Number(ingresosNetos) || 1)) * 100)}%` }} />
+                        <div className="bg-amber-500 h-full" style={{ width: `${Math.min(100, (totalsByRamo.deseos / (Number(ingresosNetos) || 1)) * 100)}%` }} />
                       </div>
                     </div>
                   </div>
@@ -1526,24 +1814,117 @@ export default function AdnPage() {
               </div>
             </div>
 
+            {/* AJUSTE 6: Desglose en PDF de subtotales por Ramo Principal */}
+            <div className="space-y-3 break-inside-avoid">
+              <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest border-b pb-2">Resumen de Gastos por Ramo Principal</h4>
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 uppercase font-bold border-b">
+                    <th className="py-2 px-3">Ramo de Gasto</th>
+                    <th className="py-2 px-3 text-center">Gasto Mensualizado</th>
+                    <th className="py-2 px-3 text-center">Porcentaje del Ingreso</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Vivienda y Servicios (Predial incluido)</td>
+                    <td className="py-2 px-3 text-center">${totalsByRamo.vivienda.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.vivienda / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Transporte y Auto (anuales mensualizados)</td>
+                    <td className="py-2 px-3 text-center">${totalsByRamo.transporte.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.transporte / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Educación</td>
+                    <td className="py-2 px-3 text-center">${totalsByRamo.educacion.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.educacion / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Deudas y Créditos</td>
+                    <td className="py-2 px-3 text-center">${totalsByRamo.deudas.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.deudas / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Diversión y Entretenimiento (Deseos)</td>
+                    <td className="py-2 px-3 text-center">${totalsByRamo.entretenimiento.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.entretenimiento / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Alimentación y Despensa</td>
+                    <td className="py-2 px-3 text-center">${totalsByRamo.alimentacion.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.alimentacion / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Cuidado Personal y Salud</td>
+                    <td className="py-2 px-3 text-center">${totalsByRamo.cuidadoPersonal.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.cuidadoPersonal / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                  {totalsByRamo.mascotas > 0 && (
+                    <tr>
+                      <td className="py-2 px-3 font-semibold">Mascotas</td>
+                      <td className="py-2 px-3 text-center">${totalsByRamo.mascotas.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                      <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.mascotas / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                    </tr>
+                  )}
+                  <tr className="bg-slate-50 font-black">
+                    <td className="py-2 px-3">Ahorro y Construcción Patrimonial (Seguros + Fondo)</td>
+                    <td className="py-2 px-3 text-center">${totalsByRamo.ahorro.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
+                    <td className="py-2 px-3 text-center text-teal-700">{Math.round((totalsByRamo.ahorro / (Number(ingresosNetos) || 1)) * 100)}%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
             {/* Shield and Protection Diagnostico (The 5 pillars detailed) */}
-            <div className="space-y-4 break-before-page">
+            <div className="space-y-4 break-before-page break-inside-avoid">
               <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest border-b pb-2 flex items-center gap-1.5">
                 <Shield className="h-4.5 w-4.5 text-teal-600" /> 2. Pilares de Protección y Prioridades Recomendadas
               </h3>
 
               <div className="space-y-4">
-                {/* Pilar 1: Retiro */}
+                {/* Pilar 1: Retiro con brecha de suficiencia (AJUSTE 5) */}
                 <div className="border p-4 rounded-xl space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className={`h-2.5 w-2.5 rounded-full ${prioridades.p1_retiro ? 'bg-red-500' : 'bg-emerald-500'}`} />
+                    <span className={`h-2.5 w-2.5 rounded-full ${prioridades.p1_retiro ? 'bg-red-500' : pprSufficiency && !pprSufficiency.isSufficient ? 'bg-amber-500' : 'bg-emerald-500'}`} />
                     <span className="text-xs font-black text-slate-800">PILAR 1: PLAN PERSONAL DE RETIRO (PPR)</span>
                   </div>
-                  <p className="text-xs text-slate-600 leading-relaxed pl-4">
-                    {prioridades.p1_retiro 
-                      ? '⚠️ CRÍTICO: No cuentas con plan de retiro. Construir tu fondo de retiro es la prioridad #1 en tu blindaje patrimonial para evitar que dependas de terceros en tu vejez. Contratar una póliza de retiro con aportaciones mensuales deducibles de impuestos te dará un beneficio fiscal inmediato (devolución del SAT) y te blindará ante la inflación.'
-                      : '✅ CUBIERTO: Cuentas con un plan para retiro contratado, lo que te garantiza un fondo sólido y blindado para tu vejez.'}
-                  </p>
+                  
+                  {prioridades.p1_retiro ? (
+                    <p className="text-xs text-slate-600 leading-relaxed pl-4">
+                      ⚠️ CRÍTICO: No cuentas con plan de retiro. Construir tu fondo de retiro es la prioridad #1 en tu blindaje patrimonial para evitar que dependas de terceros en tu vejez. Contratar una póliza de retiro con aportaciones mensuales deducibles te dará un beneficio fiscal inmediato y blindará tu futuro ante la inflación.
+                    </p>
+                  ) : pprSufficiency && (
+                    <div className="text-xs text-slate-600 pl-4 space-y-2">
+                      <p>
+                        El cliente ya cuenta con un plan de PPR contratado a <strong>{pprAniosPlazo === '65' ? 'Edad 65' : `${pprAniosPlazo} Años`}</strong> de aportaciones.
+                      </p>
+                      
+                      <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border text-center font-semibold text-[10px]">
+                        <div>
+                          <span>Meta Retiro (20 Años)</span>
+                          <span className="block text-slate-800 font-extrabold mt-0.5">${pprSufficiency.retirementGoal.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos</span>
+                        </div>
+                        <div>
+                          <span>Ahorro PPR Proyectado</span>
+                          <span className="block text-teal-700 font-extrabold mt-0.5">${pprSufficiency.projectedAccumulation.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos</span>
+                        </div>
+                        <div>
+                          <span>Brecha Faltante</span>
+                          <span className={`block font-extrabold mt-0.5 ${pprSufficiency.brechaRetiro > 0 ? 'text-red-600 animate-pulse' : 'text-emerald-600'}`}>
+                            ${pprSufficiency.brechaRetiro.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos
+                          </span>
+                        </div>
+                      </div>
+
+                      {pprSufficiency.brechaRetiro > 0 && (
+                        <div className="bg-red-50 p-2 rounded-xl text-[10px] text-red-800 font-bold border border-red-200 mt-2">
+                          ⚠️ FALTANTE DETECTADO: El PPR actual acumulará ${pprSufficiency.projectedAccumulation.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos, arrojando una brecha de **${pprSufficiency.brechaRetiro.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos** por debajo de la meta de retiro ideal. Recomendamos incrementar la aportación en **${Math.round(pprSufficiency.adicionalMensualSugerido).toLocaleString('es-MX')} pesos mensuales** para cerrar la brecha.
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Pilar 2: GMM */}
@@ -1595,7 +1976,7 @@ export default function AdnPage() {
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed pl-4">
                     {prioridades.p5_hormiga 
-                      ? '⚠️ RECOMENDACIÓN: Tu rubro de entretenimiento y compras cotidianas supera la regla recomendada. Reestructurar gastos menores superfluos (cafecitos, comidas fuera de casa recurrentes, suscripciones no usadas) te inyectará de inmediato el capital libre para fondear tus prioridades patrimoniales.'
+                      ? '⚠️ RECOMENDACIÓN: Tu rubro de entretenimiento y compras cotidianas supera la regla recomendada. Reestructurar gastos menores superfluos (cafecitos, comidas fuera de casa recurrentes, suscripciones no usadas) te inyectará de inmediato el capital libre para fonear tus prioridades patrimoniales.'
                       : '✅ CONTROLADO: Mantienes una disciplina intachable en tus gastos superfluos y de diversión cotidiana.'}
                   </p>
                 </div>
@@ -1642,6 +2023,18 @@ export default function AdnPage() {
           }
           .print\\:hidden {
             display: none !important;
+          }
+          /* Custom styling headers inside print */
+          th {
+            background-color: #87D1B5 !important;
+            color: white !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          tr.bg-slate-50 {
+            background-color: #f8fafc !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
           }
         }
       `}</style>
