@@ -8,7 +8,7 @@ export const authConfig = {
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
-            const isOnDashboard = nextUrl.pathname.startsWith('/activity') || nextUrl.pathname.startsWith('/policies'); // Protect specific routes
+            const isOnDashboard = nextUrl.pathname.startsWith('/activity') || nextUrl.pathname.startsWith('/policies') || nextUrl.pathname.startsWith('/adn'); // Protect specific routes
 
             if (isOnDashboard) {
                 if (isLoggedIn) return true;

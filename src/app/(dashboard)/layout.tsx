@@ -35,6 +35,12 @@ export default function DashboardLayout({
                         Cotizador
                     </Link>
                     <Link
+                        href="/adn"
+                        className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
+                    >
+                        ADN AACOM
+                    </Link>
+                    <Link
                         href="/admin"
                         className="text-muted-foreground transition-colors hover:text-foreground"
                     >
@@ -66,6 +72,12 @@ export default function DashboardLayout({
                                 className="text-muted-foreground hover:text-foreground"
                             >
                                 Cotizador
+                            </Link>
+                            <Link
+                                href="/adn"
+                                className="text-muted-foreground hover:text-foreground"
+                            >
+                                ADN AACOM
                             </Link>
                             <Link
                                 href="/admin"

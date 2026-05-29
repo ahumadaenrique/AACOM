@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent } from "@/app/actions"
+import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -26,7 +26,8 @@ import {
   X,
   Sparkles,
   Percent,
-  Check
+  Check,
+  Heart
 } from "lucide-react"
 
 // Recharts for Agent Weekly performance chart & Quote Rescue Area chart
@@ -59,7 +60,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string>("")
 
   // Admin Dashboard Tabs
-  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes">("productividad")
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn">("productividad")
 
   // Rescued quote state
   const [selectedQuote, setSelectedQuote] = useState<any | null>(null)
@@ -74,6 +75,20 @@ export default function AdminPage() {
   // UDI Settings states (Correction 5: Admin sets UDI rate)
   const [defaultUdi, setDefaultUdi] = useState<number>(8.25)
   const [udiSaving, setUdiSaving] = useState<string>("")
+  
+  // ADN AACOM states
+  const [adnList, setAdnList] = useState<any[]>([])
+  const [loadingAdn, setLoadingAdn] = useState<boolean>(false)
+  const [searchAdnQuery, setSearchAdnQuery] = useState<string>("")
+  const [selectedAdn, setSelectedAdn] = useState<any | null>(null)
+  
+  // Agent Credentials registration state
+  const [agentEmailInput, setAgentEmailInput] = useState<string>("")
+  const [agentNameInput, setAgentNameInput] = useState<string>("")
+  const [agentPasswordInput, setAgentPasswordInput] = useState<string>("")
+  const [agentRoleInput, setAgentRoleInput] = useState<string>("AGENTE")
+  const [savingAgentUser, setSavingAgentUser] = useState<boolean>(false)
+  const [userRegistrationMessage, setUserRegistrationMessage] = useState<string>("")
 
   // Handle password submit
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -122,11 +137,19 @@ export default function AdminPage() {
 
       // 3. Fetch agents
       await fetchAgentsList()
+
+      // 4. Fetch ADN diagnostics
+      setLoadingAdn(true)
+      const adnRes = await getAdnDiagnostics()
+      if (adnRes.success && adnRes.diagnostics) {
+        setAdnList(adnRes.diagnostics)
+      }
     } catch (err) {
       console.error(err)
       setError("Fallo al conectar con el servidor.")
     } finally {
       setLoading(false)
+      setLoadingAdn(false)
     }
   }
 
@@ -188,6 +211,39 @@ export default function AdminPage() {
     } catch (err) {
       console.error(err)
       alert("Error al conectar para eliminar agente")
+    }
+  }
+
+  // Create Agent User Credentials Account
+  const handleCreateAgentUser = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!agentNameInput.trim() || !agentEmailInput.trim() || !agentPasswordInput.trim()) {
+      setUserRegistrationMessage("Por favor rellena todos los campos obligatorios")
+      return
+    }
+    setSavingAgentUser(true)
+    setUserRegistrationMessage("")
+    try {
+      const res = await createAgentUser({
+        name: agentNameInput.trim(),
+        email: agentEmailInput.trim(),
+        role: agentRoleInput,
+        password: agentPasswordInput
+      })
+      if (res.success) {
+        setAgentNameInput("")
+        setAgentEmailInput("")
+        setAgentPasswordInput("")
+        setUserRegistrationMessage("¡Usuario de agente creado exitosamente!")
+        setTimeout(() => setUserRegistrationMessage(""), 5000)
+        loadData()
+      } else {
+        setUserRegistrationMessage(res.message || "Error al crear usuario de agente")
+      }
+    } catch (err: any) {
+      setUserRegistrationMessage(`Error: ${err.message || "Fallo de red"}`)
+    } finally {
+      setSavingAgentUser(false)
     }
   }
 
@@ -469,6 +525,16 @@ export default function AdminPage() {
           }`}
         >
           <Users className="h-4.5 w-4.5" /> Gestión de Agentes
+        </button>
+        <button
+          onClick={() => setActiveTab("adn")}
+          className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === "adn"
+              ? "border-teal-600 text-teal-600 dark:text-teal-400"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <Heart className="h-4.5 w-4.5" /> Diagnóstico ADN AACOM
         </button>
       </div>
 
@@ -946,7 +1012,506 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* DETAILED VIEW MODAL: RESCUE AND RECREATE QUOTE SHEET */}
+      {activeTab === "adn" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          
+          {/* Agent user credentials creation panel */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            
+            {/* Create account form */}
+            <Card className="border shadow-sm">
+              <CardHeader className="py-4 border-b bg-slate-50/50">
+                <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <ShieldCheck className="h-4.5 w-4.5 text-teal-600" /> Crear Cuenta de Agente
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Crea credenciales oficiales (correo y contraseña) para tus agentes oficiales de base de datos.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-5">
+                <form onSubmit={handleCreateAgentUser} className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-600 uppercase">Nombre Completo del Agente</label>
+                    <Input 
+                      type="text" 
+                      placeholder="Ej. Miguel Angel Cruz" 
+                      value={agentNameInput}
+                      onChange={e => setAgentNameInput(e.target.value)}
+                      className="text-xs h-9"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-600 uppercase">Correo Electrónico (Login)</label>
+                    <Input 
+                      type="email" 
+                      placeholder="ejemplo@aacomedad.com" 
+                      value={agentEmailInput}
+                      onChange={e => setAgentEmailInput(e.target.value)}
+                      className="text-xs h-9"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-600 uppercase">Contraseña Acceso</label>
+                    <Input 
+                      type="password" 
+                      placeholder="Mínimo 6 caracteres" 
+                      value={agentPasswordInput}
+                      onChange={e => setAgentPasswordInput(e.target.value)}
+                      className="text-xs h-9"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-600 uppercase">Rol de Acceso</label>
+                    <select 
+                      value={agentRoleInput}
+                      onChange={e => setAgentRoleInput(e.target.value)}
+                      className="border p-2 rounded-lg w-full text-xs bg-white focus:outline-teal-500 h-9"
+                    >
+                      <option value="AGENTE">Agente de Seguros</option>
+                      <option value="ADMIN">Administrador General</option>
+                    </select>
+                  </div>
+
+                  {userRegistrationMessage && (
+                    <p className={`text-xs font-bold text-center mt-2 ${userRegistrationMessage.includes("éxito") ? "text-teal-600" : "text-red-500"}`}>
+                      {userRegistrationMessage}
+                    </p>
+                  )}
+
+                  <Button 
+                    type="submit" 
+                    disabled={savingAgentUser}
+                    className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold h-9 text-xs"
+                  >
+                    {savingAgentUser ? "Creando..." : "Registrar Cuenta"}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* ADN Diagnostics Table */}
+            <Card className="lg:col-span-2 border shadow-sm flex flex-col justify-between">
+              <CardHeader className="py-4 border-b bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div>
+                  <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <Heart className="h-4.5 w-4.5 text-teal-600 animate-pulse" /> Historial de ADN AACOM
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Consulta y descarga los diagnósticos patrimoniales de los clientes.
+                  </CardDescription>
+                </div>
+
+                {/* Filter search box */}
+                <div className="relative w-full sm:w-48 shrink-0">
+                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                  <Input 
+                    type="text" 
+                    placeholder="Buscar cliente/agente..." 
+                    value={searchAdnQuery}
+                    onChange={e => setSearchAdnQuery(e.target.value)}
+                    className="pl-8 text-xs h-8 rounded-lg"
+                  />
+                </div>
+              </CardHeader>
+              <CardContent className="p-0 flex-1">
+                {loadingAdn ? (
+                  <div className="text-center py-12 text-slate-400 text-xs">Cargando diagnósticos ADN de la base de datos...</div>
+                ) : adnList.length === 0 ? (
+                  <div className="text-center py-12 text-slate-400 text-xs italic flex flex-col items-center gap-2">
+                    <Heart className="h-8 w-8 text-slate-300" />
+                    <span>No hay diagnósticos ADN registrados aún en base de datos.</span>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table className="text-xs">
+                      <TableHeader className="bg-slate-50 font-bold">
+                        <TableRow>
+                          <TableHead className="font-bold py-3 pl-4">Cliente</TableHead>
+                          <TableHead className="font-bold py-3">Edad</TableHead>
+                          <TableHead className="font-bold py-3">Fecha</TableHead>
+                          <TableHead className="font-bold py-3">Agente / Cuenta</TableHead>
+                          <TableHead className="font-bold py-3">Modalidad</TableHead>
+                          <TableHead className="font-bold py-3 text-center pr-4">Acciones</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {adnList.filter(item => {
+                          const query = searchAdnQuery.toLowerCase().trim()
+                          if (!query) return true
+                          return (
+                            item.clienteNombre.toLowerCase().includes(query) ||
+                            (item.user?.name || "").toLowerCase().includes(query) ||
+                            (item.user?.email || "").toLowerCase().includes(query)
+                          )
+                        }).map((adn) => (
+                          <TableRow key={adn.id} className="hover:bg-slate-50/50 border-b">
+                            <TableCell className="font-bold text-slate-800 py-3 pl-4">
+                              {adn.clienteNombre}
+                            </TableCell>
+                            <TableCell className="text-slate-700 py-3">
+                              {adn.clienteEdad} años
+                            </TableCell>
+                            <TableCell className="text-slate-500 py-3">
+                              {new Date(adn.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "numeric", year: "2-digit" })}
+                            </TableCell>
+                            <TableCell className="text-slate-700 py-3 font-semibold">
+                              {adn.user?.name || adn.user?.email || "N/A"}
+                            </TableCell>
+                            <TableCell className="py-3">
+                              <span className="px-2 py-0.5 rounded bg-teal-50 text-teal-700 font-bold text-[9px] uppercase border">
+                                {adn.modalidad}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-center py-3 pr-4">
+                              <Button
+                                onClick={() => setSelectedAdn(adn)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 font-black text-xs flex items-center gap-1 mx-auto"
+                              >
+                                <Eye className="h-3.5 w-3.5" /> Ver Diagnóstico
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+          </div>
+
+        </div>
+      )}
+
+      {/* DETAILED VIEW MODAL FOR SELECTED ADN DIAGNOSTIC */}
+      {selectedAdn && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-zinc-950 w-full max-w-5xl rounded-2xl border shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">
+            
+            {/* Modal Header */}
+            <div className="bg-slate-100 dark:bg-zinc-900 border-b p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src="/logo.png" alt="AACOM" className="h-7 w-auto object-contain" />
+                <div className="h-5 w-px bg-slate-300"></div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-800 dark:text-slate-100">
+                    ADN Digital Rescatado: {selectedAdn.clienteNombre}
+                  </h3>
+                  <p className="text-[10px] text-muted-foreground">
+                    Diagnosticado el {new Date(selectedAdn.createdAt).toLocaleDateString("es-MX")}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <Button 
+                  onClick={() => window.print()} 
+                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold h-8 px-4 text-xs flex items-center gap-1.5 shadow"
+                >
+                  <Download className="h-4 w-4" /> Descargar PDF
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => setSelectedAdn(null)} 
+                  className="h-8 w-8 p-0 text-slate-500 hover:text-slate-900 shrink-0"
+                >
+                  <X className="h-4.5 w-4.5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Modal Body / Projection Re-render Area */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-6">
+              
+              {/* RECREATION CONTAINER START */}
+              <div id="admin-printable-report" className="space-y-6 bg-white p-2 text-slate-800">
+                
+                {/* Print Title Header */}
+                <div className="border-b-2 border-teal-500 pb-4 flex flex-row items-center justify-between gap-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-teal-600 uppercase tracking-widest block">
+                      Diagnóstico Patrimonial Digital
+                    </span>
+                    <h2 className="text-xl font-extrabold text-slate-800">
+                      ADN DIGITAL AACOM
+                    </h2>
+                    <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[11px] text-slate-500">
+                      <span><strong>Cliente:</strong> {selectedAdn.clienteNombre}</span>
+                      <span>•</span>
+                      <span><strong>Edad:</strong> {selectedAdn.clienteEdad} años</span>
+                      <span>•</span>
+                      <span><strong>Fecha:</strong> {new Date(selectedAdn.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" })}</span>
+                    </div>
+                  </div>
+                  <div className="text-right flex flex-col items-end">
+                    <img src="/logo.png" alt="AACOM Seguros" className="h-8 w-auto object-contain mb-1" />
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wide">AACOM cotizador</span>
+                    <span className="text-[9px] text-slate-400"><strong>Agente:</strong> {selectedAdn.user?.name || selectedAdn.user?.email || "Sin Agente"}</span>
+                  </div>
+                </div>
+
+                {/* Profile detail */}
+                <div className="bg-slate-50 border p-4 rounded-xl grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Cliente</span>
+                    <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.clienteNombre}</span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Edad</span>
+                    <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.clienteEdad} años</span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Cónyuge</span>
+                    <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.conyugeNombre ? `${selectedAdn.conyugeNombre} (${selectedAdn.conyugeEdad} años)` : 'No registrado'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Situación Laboral</span>
+                    <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.situacionLaboral}</span>
+                  </div>
+                </div>
+
+                {/* Hijos list */}
+                {selectedAdn.hijosData && JSON.parse(selectedAdn.hijosData).length > 0 && (
+                  <div className="border border-slate-200 p-3.5 rounded-xl space-y-1.5">
+                    <span className="text-[9px] font-black text-slate-600 uppercase block tracking-wider">Estructura de Protección Familiar (Hijos)</span>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {JSON.parse(selectedAdn.hijosData).map((h: any, i: number) => (
+                        <div key={i} className="border-l-2 border-teal-500 pl-2">
+                          <span className="text-xs font-bold text-slate-800 block">{h.nombre}</span>
+                          <span className="text-[9px] text-slate-500 block">{h.edad} años</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Calculations metrics */}
+                {(() => {
+                  const parsedGastos = JSON.parse(selectedAdn.gastosData)
+                  const income = selectedAdn.ingresosNetos || 0
+                  const totalEgresos = selectedAdn.totalGastos || 0
+                  
+                  let necesidades = 0
+                  let deseos = 0
+                  let ahorro = selectedAdn.ahorroActual || 0
+
+                  // Sumar aportes de seguros que son tipo Ahorro / PPR
+                  if (selectedAdn.hasSeguroAhorro && selectedAdn.ahorroAporte) {
+                    const aporte = selectedAdn.ahorroAporte
+                    ahorro += selectedAdn.ahorroFrecuencia === 'MENSUAL' ? aporte : aporte / 12
+                  }
+                  if (selectedAdn.hasPpr && selectedAdn.pprAporte) {
+                    const aporte = selectedAdn.pprAporte
+                    ahorro += selectedAdn.pprFrecuencia === 'MENSUAL' ? aporte : aporte / 12
+                  }
+
+                  if (selectedAdn.modalidad === 'DETALLADO') {
+                    const g = parsedGastos
+                    const vivienda = (g.renta || 0) + (g.hipoteca || 0) + (g.mantenimiento || 0) + (g.luz || 0) + (g.gas || 0) + (g.agua || 0) + (g.telefono || 0) + (g.internet || 0) + (g.streamings || 0) + (g.celular || 0) + (g.otrosServicios || 0)
+                    const transporte = (g.mensualidadAuto || 0) + (g.tenencia || 0) + (g.verificacion || 0) + (g.mantenimientoAuto || 0) + (g.seguroAuto || 0) + (g.gasolina || 0) + (g.transportePublico || 0) + (g.uber || 0) + (g.estacionamientos || 0)
+                    const educacion = (g.escuelaHijos || 0) + (g.escuelaPropia || 0) + (g.utiles || 0) + (g.materiales || 0) + (g.libros || 0)
+                    const deudas = (g.prestamos || 0) + (g.creditos || 0)
+                    const alimentacion = (g.supermercado || 0) + (g.mercado || 0) + (g.accesoriosCasa || 0)
+                    const cuidado = (g.estetica || 0) + (g.accesoriosBelleza || 0) + (g.medicamentos || 0) + (g.checkups || 0)
+                    const mascotas = (g.comidaMascota || 0) + (g.saludMascota || 0) + (g.vacunasMascota || 0) + (g.esteticaMascota || 0) + (g.accesoriosMascota || 0)
+
+                    necesidades = vivienda + transporte + educacion + deudas + alimentacion + cuidado + mascotas
+                    deseos = (g.hobbies || 0) + (g.finDeSemana || 0) + (g.vacaciones || 0) + (g.cineTeatro || 0) + (g.comidasEsparcimiento || 0) + (g.baresRecreacion || 0) + (g.cafecitos || 0) + (g.clubSocial || 0) + (g.amazonCompras || 0)
+                    ahorro += (g.inversiones || 0) + (g.fondoEmergencia || 0)
+                  } else if (selectedAdn.modalidad === 'RESUMIDO') {
+                    const r = parsedGastos
+                    necesidades = (r.vivienda || 0) + (r.transporte || 0) + (r.educacion || 0) + (r.deudas || 0) + (r.alimentacion || 0) + (r.cuidadoPersonal || 0) + (r.mascotas || 0)
+                    deseos = r.entretenimiento || 0
+                    ahorro += r.ahorro || 0
+                  } else {
+                    necesidades = totalEgresos * 0.7
+                    deseos = totalEgresos * 0.3
+                    ahorro = Math.max(0, income - totalEgresos)
+                  }
+
+                  const pctNecesidades = Math.round((necesidades / (income || 1)) * 100)
+                  const pctDeseos = Math.round((deseos / (income || 1)) * 100)
+                  const pctAhorro = Math.round((ahorro / (income || 1)) * 100)
+
+                  const p1_retiro = !selectedAdn.hasPpr
+                  const p2_gmm = !selectedAdn.hasGmm
+                  const idealMonths = selectedAdn.hasGmm ? 1 : 3
+                  const fondoIdeal = income * idealMonths
+                  const p3_fondo_isOk = (selectedAdn.ahorroActual || 0) >= fondoIdeal
+                  const p3_fondo_gap = Math.max(0, fondoIdeal - (selectedAdn.ahorroActual || 0))
+
+                  const tieneHijosChicos = selectedAdn.hijosData && JSON.parse(selectedAdn.hijosData).some((h: any) => h.edad >= 0 && h.edad <= 9)
+                  const p4_educacion = tieneHijosChicos && !selectedAdn.hasSeguroAhorro
+
+                  return (
+                    <>
+                      {/* Financial 50-30-20 Summary */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="border p-4 rounded-xl space-y-3">
+                          <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Flujo Mensual de Efectivo</h4>
+                          <div className="space-y-2 text-xs">
+                            <div className="flex justify-between border-b pb-1">
+                              <span className="font-semibold text-slate-500">Ingresos Netos:</span>
+                              <span className="font-bold text-slate-800">${income.toLocaleString('es-MX')} MXN</span>
+                            </div>
+                            <div className="flex justify-between border-b pb-1">
+                              <span className="font-semibold text-slate-500">Gastos Necesidades (Fijos):</span>
+                              <span className="font-bold text-slate-800">${necesidades.toLocaleString('es-MX')} MXN ({pctNecesidades}%)</span>
+                            </div>
+                            <div className="flex justify-between border-b pb-1">
+                              <span className="font-semibold text-slate-500">Ahorro y Patrimonio:</span>
+                              <span className="font-bold text-emerald-600">${ahorro.toLocaleString('es-MX')} MXN ({pctAhorro}%)</span>
+                            </div>
+                            <div className="flex justify-between border-b pb-1">
+                              <span className="font-semibold text-slate-500">Deseos y Esparcimiento:</span>
+                              <span className="font-bold text-amber-600">${deseos.toLocaleString('es-MX')} MXN ({pctDeseos}%)</span>
+                            </div>
+                            <div className="flex justify-between pt-1">
+                              <span className="font-bold text-teal-800">Remanente de Caja:</span>
+                              <span className="font-bold text-teal-700">${Math.max(0, income - totalEgresos).toLocaleString('es-MX')} MXN</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Warren Percent progress bars */}
+                        <div className="border p-4 rounded-xl space-y-3.5 flex flex-col justify-between">
+                          <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Comparación Warren 50-30-20</h4>
+                          
+                          <div className="space-y-3">
+                            <div className="space-y-0.5">
+                              <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                                <span>Necesidades (Real / Óptimo)</span>
+                                <span>{pctNecesidades}% / 50%</span>
+                              </div>
+                              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div className="bg-blue-500 h-full" style={{ width: `${Math.min(100, pctNecesidades)}%` }} />
+                              </div>
+                            </div>
+
+                            <div className="space-y-0.5">
+                              <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                                <span>Ahorro (Real / Óptimo)</span>
+                                <span>{pctAhorro}% / 30%</span>
+                              </div>
+                              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div className="bg-emerald-500 h-full" style={{ width: `${Math.min(100, pctAhorro)}%` }} />
+                              </div>
+                            </div>
+
+                            <div className="space-y-0.5">
+                              <div className="flex justify-between text-[11px] font-bold text-slate-600">
+                                <span>Deseos (Real / Óptimo)</span>
+                                <span>{pctDeseos}% / 20%</span>
+                              </div>
+                              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                                <div className="bg-amber-500 h-full" style={{ width: `${Math.min(100, pctDeseos)}%` }} />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* 5 Priorities Semáforo Evaluation */}
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1">
+                          <ShieldCheck className="h-4 w-4 text-teal-600" /> Evaluación de Blindaje y Recomendaciones
+                        </h4>
+                        
+                        <div className="space-y-3">
+                          {/* PPR */}
+                          <div className="border p-3 rounded-lg flex items-start gap-3">
+                            <span className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${p1_retiro ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
+                            <div className="text-xs">
+                              <span className="font-extrabold text-slate-800 uppercase block text-[9px] tracking-wider text-slate-400">Pilar 1: Plan Personal para Retiro</span>
+                              <p className="text-slate-600 mt-0.5">
+                                {p1_retiro 
+                                  ? '⚠️ Alerta: El cliente no cuenta con plan para retiro. Es crítico iniciar un ahorro deducible bajo el Art. 151 LISR para construir su independencia a edad de retiro.'
+                                  : '✅ Cubierto: El cliente cuenta con PPR registrado en base de datos.'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* GMM */}
+                          <div className="border p-3 rounded-lg flex items-start gap-3">
+                            <span className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${p2_gmm ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
+                            <div className="text-xs">
+                              <span className="font-extrabold text-slate-800 uppercase block text-[9px] tracking-wider text-slate-400">Pilar 2: Gastos Médicos Mayores</span>
+                              <p className="text-slate-600 mt-0.5">
+                                {p2_gmm 
+                                  ? '⚠️ Alerta: Sin póliza de GMM. Un accidente o enfermedad grave extinguirá de inmediato sus fondos líquidos de emergencia e inversiones.'
+                                  : '✅ Cubierto: Salud y patrimonio blindados con póliza de Gastos Médicos Mayores.'}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Fondo de emergencia */}
+                          <div className="border p-3 rounded-lg flex items-start gap-3">
+                            <span className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${!p3_fondo_isOk ? 'bg-red-500' : 'bg-emerald-500'}`} />
+                            <div className="text-xs">
+                              <span className="font-extrabold text-slate-800 uppercase block text-[9px] tracking-wider text-slate-400">Pilar 3: Fondo de Emergencia</span>
+                              <p className="text-slate-600 mt-0.5">
+                                {!p3_fondo_isOk 
+                                  ? `⚠️ Insuficiente: Fondo de emergencia óptimo sugerido: $${fondoIdeal.toLocaleString('es-MX')} (equivalente a ${idealMonths} meses). Cuenta actualmente con $${(selectedAdn.ahorroActual || 0).toLocaleString('es-MX')} pesos (Faltante: $${p3_fondo_gap.toLocaleString('es-MX')} pesos).`
+                                  : `✅ Cubierto: Cuenta con fondo de emergencia ideal equivalente a ${idealMonths} meses.`}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Seguro Educativo */}
+                          {tieneHijosChicos && (
+                            <div className="border p-3 rounded-lg flex items-start gap-3">
+                              <span className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${p4_educacion ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                              <div className="text-xs">
+                                <span className="font-extrabold text-slate-800 uppercase block text-[9px] tracking-wider text-slate-400">Pilar 4: Seguro Educativo</span>
+                                <p className="text-slate-600 mt-0.5">
+                                  {p4_educacion 
+                                    ? '⚠️ Recomendación: Cuenta con hijos pequeños (0-9 años) sin plan educativo. Iniciar una póliza de ahorro universitario garantiza su carrera profesional y reduce sustancialmente el costo mensual.'
+                                    : '✅ Cubierto: Cuentas con un plan de ahorro educativo previsto.'}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )
+                })()}
+
+                {/* Modal footer signature */}
+                <div className="border-t pt-4 flex flex-row justify-between items-center text-[9px] text-slate-400 gap-2">
+                  <span>* Reporte de diagnóstico ilustrativo generado de forma segura desde la base de datos de desarrollo.</span>
+                  <div className="flex items-center gap-1 font-bold text-slate-600">
+                    <span>Respaldado por la plataforma</span>
+                    <img src="/logo.png" alt="AACOM" className="h-4.5 w-auto object-contain" />
+                    <span>AACOM cotizador</span>
+                  </div>
+                </div>
+
+              </div>
+              {/* RECREATION CONTAINER END */}
+
+            </div>
+
+            {/* Modal Footer actions */}
+            <div className="bg-slate-50 dark:bg-zinc-900 border-t p-4 flex justify-end gap-3">
+              <Button 
+                variant="outline" 
+                onClick={() => setSelectedAdn(null)} 
+                className="h-9 px-4 text-xs font-bold"
+              >
+                Cerrar Diagnóstico
+              </Button>
+            </div>
+
+          </div>
+        </div>
+      )}
       {selectedQuote && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-white dark:bg-zinc-950 w-full max-w-5xl rounded-2xl border shadow-2xl flex flex-col max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200">

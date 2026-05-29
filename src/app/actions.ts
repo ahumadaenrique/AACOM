@@ -273,3 +273,174 @@ export async function deleteAgent(id: string) {
     }
 }
 
+export interface AdnDiagnosticInput {
+    modalidad: string;
+    clienteNombre: string;
+    clienteEdad: number;
+    conyugeNombre?: string;
+    conyugeEdad?: number;
+    situacionLaboral: string;
+    hijosData?: string;
+    hasSeguroAhorro: boolean;
+    ahorroAporte?: number;
+    ahorroFrecuencia?: string;
+    hasPpr: boolean;
+    pprAporte?: number;
+    pprFrecuencia?: string;
+    hasGmm: boolean;
+    hasSeguroVida: boolean;
+    ingresosTotales: number;
+    ingresosNetos: number;
+    ahorroActual: number;
+    gastosData: string;
+    totalGastos: number;
+}
+
+export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!user) {
+            return { success: false, message: "Usuario no encontrado en base de datos" };
+        }
+
+        const newDiagnostic = await prisma.adnDiagnostic.create({
+            data: {
+                userId: user.id,
+                modalidad: data.modalidad,
+                clienteNombre: data.clienteNombre,
+                clienteEdad: data.clienteEdad,
+                conyugeNombre: data.conyugeNombre || null,
+                conyugeEdad: data.conyugeEdad || null,
+                situacionLaboral: data.situacionLaboral,
+                hijosData: data.hijosData || null,
+                hasSeguroAhorro: data.hasSeguroAhorro,
+                ahorroAporte: data.ahorroAporte || null,
+                ahorroFrecuencia: data.ahorroFrecuencia || null,
+                hasPpr: data.hasPpr,
+                pprAporte: data.pprAporte || null,
+                pprFrecuencia: data.pprFrecuencia || null,
+                hasGmm: data.hasGmm,
+                hasSeguroVida: data.hasSeguroVida,
+                ingresosTotales: data.ingresosTotales,
+                ingresosNetos: data.ingresosNetos,
+                ahorroActual: data.ahorroActual,
+                gastosData: data.gastosData,
+                totalGastos: data.totalGastos,
+            }
+        });
+
+        revalidatePath('/adn');
+        revalidatePath('/admin');
+        return { success: true, diagnostic: newDiagnostic };
+    } catch (error: any) {
+        console.error("Error saving ADN diagnostic:", error);
+        return { success: false, message: error.message || "Error al guardar el diagnóstico de ADN" };
+    }
+}
+
+export async function getAdnDiagnostics() {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!user) {
+            return { success: false, message: "Usuario no encontrado en base de datos" };
+        }
+
+        let diagnostics;
+        if (user.role === 'ADMIN') {
+            // Admin sees all diagnostics, including the agent's name
+            diagnostics = await prisma.adnDiagnostic.findMany({
+                include: {
+                    user: {
+                        select: {
+                            name: true,
+                            email: true
+                        }
+                    }
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            });
+        } else {
+            // Agent only sees their own diagnostics
+            diagnostics = await prisma.adnDiagnostic.findMany({
+                where: {
+                    userId: user.id
+                },
+                include: {
+                    user: {
+                        select: {
+                            name: true,
+                            email: true
+                        }
+                    }
+                },
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            });
+        }
+
+        return { success: true, diagnostics };
+    } catch (error: any) {
+        console.error("Error fetching ADN diagnostics:", error);
+        return { success: false, message: error.message || "Error al obtener diagnósticos de ADN" };
+    }
+}
+
+export async function createAgentUser(data: { name: string; email: string; role: string; password?: string }) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || currentUser.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const existingUser = await prisma.user.findUnique({
+            where: { email: data.email }
+        });
+
+        if (existingUser) {
+            return { success: false, message: "Ya existe un usuario registrado con este correo" };
+        }
+
+        const newUser = await prisma.user.create({
+            data: {
+                name: data.name,
+                email: data.email,
+                role: data.role,
+                password: data.password || "password123", // Simple plain text consistent with current auth config
+            }
+        });
+
+        revalidatePath('/admin');
+        return { success: true, user: newUser };
+    } catch (error: any) {
+        console.error("Error creating agent user:", error);
+        return { success: false, message: error.message || "Error al crear usuario del agente" };
+    }
+}
+

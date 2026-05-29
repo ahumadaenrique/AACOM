@@ -29,6 +29,7 @@ model User {
   // Data
   dailyRecords  DailyRecord[]
   policies      Policy[]
+  adnDiagnostics AdnDiagnostic[]
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -127,5 +128,48 @@ model Agent {
   id        String   @id @default(cuid())
   name      String   @unique
   createdAt DateTime @default(now())
+}
+
+model AdnDiagnostic {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  
+  // Paso 0
+  modalidad        String   // 'DETALLADO' | 'RESUMIDO' | 'BASICO'
+  
+  // Paso 1: Perfil
+  clienteNombre    String
+  clienteEdad      Int
+  conyugeNombre    String?
+  conyugeEdad      Int?
+  situacionLaboral String
+  hijosData        String?  // JSON string: [{nombre: string, edad: number}]
+  
+  // Paso 2: Seguros Existentes
+  hasSeguroAhorro  Boolean  @default(false)
+  ahorroAporte     Float?
+  ahorroFrecuencia String?  // 'MENSUAL' | 'ANUAL'
+  
+  hasPpr           Boolean  @default(false)
+  pprAporte        Float?
+  pprFrecuencia    String?  // 'MENSUAL' | 'ANUAL'
+  
+  hasGmm           Boolean  @default(false)
+  hasSeguroVida    Boolean  @default(false)
+  
+  // Paso 3: Diagnóstico Financiero
+  ingresosTotales  Float
+  ingresosNetos    Float
+  ahorroActual     Float    // Para cálculo de brecha de fondo de emergencia
+  
+  // Gastos desglosados (Guardado en JSON por flexibilidad de modalidades)
+  gastosData       String   // JSON string conteniendo rubros detallados o resumidos
+  
+  // Totales calculados
+  totalGastos      Float
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
