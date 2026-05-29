@@ -634,3 +634,166 @@ export async function toggleAdnDiagnosticClosedStatus(id: string) {
     }
 }
 
+export async function getAnnouncements() {
+    try {
+        const list = await prisma.content.findMany({
+            where: { type: 'HOME_AD' },
+            orderBy: { createdAt: 'desc' }
+        });
+        return { success: true, announcements: list };
+    } catch (error: any) {
+        console.error("Error fetching announcements:", error);
+        return { success: false, message: error.message || "Error al obtener comunicados", announcements: [] };
+    }
+}
+
+export async function createAnnouncement(base64Data: string, fileName: string, linkUrl?: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || currentUser.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        // Validate file type from name extension
+        const allowedExts = ['.jpg', '.jpeg', '.png', '.gif'];
+        const fs = await import('fs');
+        const path = await import('path');
+        const ext = path.extname(fileName).toLowerCase();
+        if (!allowedExts.includes(ext)) {
+            return { success: false, message: "Tipo de archivo no permitido. Solo JPG, JPEG, PNG o GIF." };
+        }
+
+        // Ensure public/uploads folder exists
+        const uploadDir = path.join(process.cwd(), 'public', 'uploads');
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
+
+        // Safe unique file name
+        const safeName = `${Date.now()}-${fileName.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+        const filePath = path.join(uploadDir, safeName);
+
+        // Convert base64 data to buffer and write to disk
+        const base64Clean = base64Data.split(';base64,').pop() || base64Data;
+        const buffer = Buffer.from(base64Clean, 'base64');
+        
+        // Double-check file size is under 5MB (5 * 1024 * 1024 bytes)
+        if (buffer.length > 5 * 1024 * 1024) {
+            return { success: false, message: "El tamaño del archivo supera los 5 MB permitidos." };
+        }
+
+        fs.writeFileSync(filePath, buffer);
+        const imageUrl = `/uploads/${safeName}`;
+
+        const newAd = await prisma.content.create({
+            data: {
+                type: 'HOME_AD',
+                imageUrl,
+                linkUrl: linkUrl || null,
+                active: true,
+                order: 0
+            }
+        });
+
+        revalidatePath('/');
+        revalidatePath('/admin');
+        return { success: true, announcement: newAd };
+    } catch (error: any) {
+        console.error("Error creating announcement:", error);
+        return { success: false, message: error.message || "Error al subir comunicado" };
+    }
+}
+
+export async function toggleAnnouncementActiveStatus(id: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || currentUser.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const ad = await prisma.content.findUnique({
+            where: { id }
+        });
+
+        if (!ad) {
+            return { success: false, message: "Comunicado no encontrado" };
+        }
+
+        const updated = await prisma.content.update({
+            where: { id },
+            data: { active: !ad.active }
+        });
+
+        revalidatePath('/');
+        revalidatePath('/admin');
+        return { success: true, announcement: updated };
+    } catch (error: any) {
+        console.error("Error toggling announcement active status:", error);
+        return { success: false, message: error.message || "Error al alternar estatus" };
+    }
+}
+
+export async function deleteAnnouncement(id: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || currentUser.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const ad = await prisma.content.findUnique({
+            where: { id }
+        });
+
+        if (!ad) {
+            return { success: false, message: "Comunicado no encontrado" };
+        }
+
+        // Delete file from filesystem
+        const fs = await import('fs');
+        const path = await import('path');
+        const filePath = path.join(process.cwd(), 'public', ad.imageUrl);
+        if (fs.existsSync(filePath)) {
+            try {
+                fs.unlinkSync(filePath);
+            } catch (err) {
+                console.error("Failed to delete physical file:", err);
+            }
+        }
+
+        const deleted = await prisma.content.delete({
+            where: { id }
+        });
+
+        revalidatePath('/');
+        revalidatePath('/admin');
+        return { success: true, announcement: deleted };
+    } catch (error: any) {
+        console.error("Error deleting announcement:", error);
+        return { success: false, message: error.message || "Error al eliminar comunicado" };
+    }
+}
+

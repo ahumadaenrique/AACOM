@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus } from "@/app/actions"
+import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -60,7 +60,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string>("")
 
   // Admin Dashboard Tabs
-  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn">("productividad")
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados">("productividad")
 
   // Rescued quote state
   const [selectedQuote, setSelectedQuote] = useState<any | null>(null)
@@ -95,6 +95,11 @@ export default function AdminPage() {
   const [loadingUsers, setLoadingUsers] = useState<boolean>(false)
   const [editingUserPasswordId, setEditingUserPasswordId] = useState<string | null>(null)
   const [newPasswordInput, setNewPasswordInput] = useState<string>("")
+  const [announcements, setAnnouncements] = useState<any[]>([])
+  const [loadingAnnouncements, setLoadingAnnouncements] = useState<boolean>(false)
+  const [announcementLinkInput, setAnnouncementLinkInput] = useState<string>("")
+  const [announcementMsg, setAnnouncementMsg] = useState<string>("")
+  const [savingAnnouncement, setSavingAnnouncement] = useState<boolean>(false)
 
   // Handle password submit
   const handlePasswordSubmit = (e: React.FormEvent) => {
@@ -201,6 +206,105 @@ export default function AdminPage() {
     }
   }
 
+  // Fetch announcements list
+  const fetchAnnouncementsList = async () => {
+    setLoadingAnnouncements(true)
+    try {
+      const res = await getAnnouncements()
+      if (res.success && res.announcements) {
+        setAnnouncements(res.announcements)
+      }
+    } catch (err) {
+      console.error("Error fetching announcements:", err)
+    } finally {
+      setLoadingAnnouncements(false)
+    }
+  }
+
+  // Toggle announcement active status
+  const handleToggleAnnouncementActive = async (id: string) => {
+    try {
+      // Optimistic update
+      setAnnouncements(prev => prev.map(ad => 
+        ad.id === id ? { ...ad, active: !ad.active } : ad
+      ))
+      const res = await toggleAnnouncementActiveStatus(id)
+      if (!res.success) {
+        alert(res.message || "Error al cambiar estatus")
+        fetchAnnouncementsList()
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error de red")
+      fetchAnnouncementsList()
+    }
+  }
+
+  // Delete announcement banner
+  const handleDeleteAnnouncement = async (id: string) => {
+    if (!confirm("¿Estás seguro de que deseas eliminar este comunicado de forma permanente? Se borrará el archivo de imagen de la plataforma.")) return
+    try {
+      const res = await deleteAnnouncement(id)
+      if (res.success) {
+        fetchAnnouncementsList()
+      } else {
+        alert(res.message || "Error al eliminar")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error de red")
+    }
+  }
+
+  // Upload new announcement banner
+  const handleUploadAnnouncement = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate size (< 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setAnnouncementMsg("Error: El archivo supera los 5 MB permitidos.")
+      return
+    }
+
+    // Validate type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+    if (!allowedTypes.includes(file.type)) {
+      setAnnouncementMsg("Error: Solo se permiten imágenes JPG, JPEG, PNG o GIF.")
+      return
+    }
+
+    setSavingAnnouncement(true)
+    setAnnouncementMsg("Subiendo imagen...")
+
+    try {
+      const reader = new FileReader()
+      reader.onloadend = async () => {
+        const base64 = reader.result as string
+        const res = await createAnnouncement(base64, file.name, announcementLinkInput.trim() || undefined)
+        if (res.success) {
+          setAnnouncementMsg("¡Imagen de comunicado subida con éxito!")
+          setAnnouncementLinkInput("")
+          // Clear input element
+          e.target.value = ""
+          fetchAnnouncementsList()
+          setTimeout(() => setAnnouncementMsg(""), 5000)
+        } else {
+          setAnnouncementMsg(res.message || "Error al subir comunicado")
+        }
+        setSavingAnnouncement(false)
+      }
+      reader.onerror = () => {
+        setAnnouncementMsg("Error al leer el archivo.")
+        setSavingAnnouncement(false)
+      }
+      reader.readAsDataURL(file)
+    } catch (err: any) {
+      setAnnouncementMsg(`Error: ${err.message || "Fallo de red"}`)
+      setSavingAnnouncement(false)
+    }
+  }
+
   // Fetch agents list
   const fetchAgentsList = async () => {
     setLoadingAgents(true)
@@ -247,6 +351,9 @@ export default function AdminPage() {
 
       // 5. Fetch all users
       await fetchUsersList()
+
+      // 6. Fetch landing page announcements
+      await fetchAnnouncementsList()
     } catch (err) {
       console.error(err)
       setError("Fallo al conectar con el servidor.")
@@ -641,6 +748,16 @@ export default function AdminPage() {
           }`}
         >
           <Heart className="h-4.5 w-4.5" /> Diagnóstico ADN AACOM
+        </button>
+        <button
+          onClick={() => setActiveTab("comunicados")}
+          className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === "comunicados"
+              ? "border-teal-600 text-teal-600 dark:text-teal-400"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <Sparkles className="h-4.5 w-4.5 text-amber-500" /> Banners de Inicio
         </button>
       </div>
 
@@ -1530,6 +1647,164 @@ export default function AdminPage() {
               )}
             </CardContent>
           </Card>
+
+        </div>
+      )}
+
+      {activeTab === "comunicados" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          
+          {/* Main Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            
+            {/* Left Column: Form to upload a new announcement banner */}
+            <Card className="border shadow-sm bg-gradient-to-br from-white to-slate-50/30">
+              <CardHeader className="py-4 border-b bg-slate-50/50">
+                <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <Sparkles className="h-4.5 w-4.5 text-amber-500 animate-pulse" /> Subir Nuevo Comunicado
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Sube una imagen JPG, PNG o GIF (menor de 5 MB) con anuncios, metas o avisos para la página de inicio.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-5 space-y-4">
+                
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-600 uppercase">Enlace Opcional (URL al hacer clic)</label>
+                  <Input 
+                    type="url" 
+                    placeholder="https://ejemplo.com/comunicado-meta" 
+                    value={announcementLinkInput}
+                    onChange={e => setAnnouncementLinkInput(e.target.value)}
+                    className="text-xs h-9"
+                    disabled={savingAnnouncement}
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-bold text-slate-600 uppercase block">Seleccionar Imagen (JPG, PNG, GIF)</label>
+                  <div className="flex items-center justify-center w-full">
+                    <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all hover:bg-slate-50 ${
+                      savingAnnouncement ? "opacity-50 pointer-events-none" : "border-slate-300 hover:border-teal-500"
+                    }`}>
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Download className="w-8 h-8 text-slate-400 mb-2" />
+                        <p className="text-[10px] text-slate-500 font-bold uppercase">Haz clic para buscar imagen</p>
+                        <p className="text-[9px] text-slate-400">JPG, PNG o GIF hasta 5 MB</p>
+                      </div>
+                      <input 
+                        type="file" 
+                        accept="image/jpeg,image/png,image/gif"
+                        onChange={handleUploadAnnouncement}
+                        className="hidden" 
+                        disabled={savingAnnouncement}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                {announcementMsg && (
+                  <p className={`text-xs font-bold text-center mt-2 ${
+                    announcementMsg.includes("Error") ? "text-red-500" : "text-teal-600 animate-pulse"
+                  }`}>
+                    {announcementMsg}
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Right Column: Grid list of Active & Inactive Announcements */}
+            <div className="lg:col-span-2 space-y-6">
+              <Card className="border shadow-sm overflow-hidden">
+                <CardHeader className="py-4 border-b bg-slate-50/50">
+                  <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider">
+                    Galería de Banners de Inicio
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Revisa las imágenes de avisos activas en la página principal. Puedes pausar su visualización o eliminarlas definitivamente.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-6">
+                  {loadingAnnouncements ? (
+                    <div className="text-center py-12 text-slate-400 text-xs">
+                      <RefreshCw className="h-6 w-6 animate-spin text-teal-600 mx-auto mb-2" />
+                      Cargando comunicados...
+                    </div>
+                  ) : announcements.length === 0 ? (
+                    <div className="text-center py-12 text-slate-400 text-xs italic">
+                      No hay imágenes de comunicados o avisos registradas en la página de inicio.
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                      {announcements.map((ad) => (
+                        <div key={ad.id} className={`border rounded-xl overflow-hidden bg-slate-50 dark:bg-zinc-800 shadow-sm transition-all flex flex-col justify-between ${
+                          !ad.active ? "opacity-60 border-dashed" : "border-slate-200"
+                        }`}>
+                          
+                          {/* Image Preview Container */}
+                          <div className="relative aspect-video w-full overflow-hidden bg-slate-200 flex items-center justify-center border-b">
+                            <img 
+                              src={ad.imageUrl} 
+                              alt="Anuncio de Inicio" 
+                              className="w-full h-full object-cover" 
+                            />
+                            {!ad.active && (
+                              <div className="absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center">
+                                <span className="px-2.5 py-1 rounded bg-amber-500 text-white font-black text-[9px] uppercase tracking-wider shadow">
+                                  Pausado (Oculto)
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Details and Actions */}
+                          <div className="p-4 space-y-3">
+                            <div className="text-[10px] text-slate-400 font-semibold flex justify-between items-center">
+                              <span>Subido: {new Date(ad.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "short" })}</span>
+                              <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
+                                ad.active ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                              }`}>
+                                {ad.active ? "Activo" : "Inactivo"}
+                              </span>
+                            </div>
+
+                            {ad.linkUrl && (
+                              <p className="text-[10px] text-teal-600 truncate font-semibold">
+                                Enlace: <a href={ad.linkUrl} target="_blank" rel="noopener noreferrer" className="hover:underline">{ad.linkUrl}</a>
+                              </p>
+                            )}
+
+                            <div className="flex gap-2 pt-1 border-t">
+                              <Button
+                                onClick={() => handleToggleAnnouncementActive(ad.id)}
+                                variant="outline"
+                                size="sm"
+                                className={`flex-1 font-bold text-[10px] h-7 px-2.5 ${
+                                  ad.active ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50" : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                }`}
+                              >
+                                {ad.active ? "Pausar" : "Mostrar"}
+                              </Button>
+                              <Button
+                                onClick={() => handleDeleteAnnouncement(ad.id)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-[10px] h-7 px-2.5"
+                              >
+                                Eliminar
+                              </Button>
+                            </div>
+                          </div>
+
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+          </div>
 
         </div>
       )}
