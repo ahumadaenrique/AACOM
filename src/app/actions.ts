@@ -1621,9 +1621,9 @@ ${knowledgeContext}`;
             }
         ];
 
-        // 5. Call Gemini API endpoint
+        // 5. Call Gemini API endpoint (Try v1beta first as it fully supports systemInstruction in REST API)
         let response = await fetch(
-            `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
             {
                 method: "POST",
                 headers: {
@@ -1643,20 +1643,29 @@ ${knowledgeContext}`;
             }
         );
 
-        // Fallback to v1beta if v1 is not supported (compatibility fallback)
-        if (response.status === 404) {
-            response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        // Fallback to v1 if v1beta fails (or if the key is restricted to v1 only)
+        // Since v1 REST API does not support the "systemInstruction" parameter at the root level, 
+        // we embed the system instructions in the final user message for robust fallback.
+        if (!response.ok) {
+            console.warn(`Gemini v1beta call failed with status ${response.status}. Attempting fallback to v1...`);
+            
+            const fallbackContents = [
+                ...chatHistory,
+                {
+                    role: "user",
+                    parts: [{ text: `${systemInstruction}\n\n[Pregunta del agente]: ${userMessage}` }]
+                }
+            ];
+
+            const fallbackResponse = await fetch(
+                `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
                 {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"
                     },
                     body: JSON.stringify({
-                        contents,
-                        systemInstruction: {
-                            parts: [{ text: systemInstruction }]
-                        },
+                        contents: fallbackContents,
                         generationConfig: {
                             temperature: 0.1,
                             topP: 0.95,
@@ -1665,6 +1674,10 @@ ${knowledgeContext}`;
                     })
                 }
             );
+
+            if (fallbackResponse.ok) {
+                response = fallbackResponse;
+            }
         }
 
         if (!response.ok) {
