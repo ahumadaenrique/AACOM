@@ -1,59 +1,95 @@
-import { auth } from "@/auth"
-import { prisma } from "@/lib/prisma"
-import { redirect } from "next/navigation"
+"use client"
+
+import React, { useState, useEffect } from "react"
+import { RefreshCw, Lock } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
 import AdminClient from "./AdminClient"
 
-export const dynamic = 'force-dynamic'
+export default function AdminPage() {
+    const [isAuthorized, setIsAuthorized] = useState<boolean>(false)
+    const [loadingAuth, setLoadingAuth] = useState<boolean>(true)
+    const [passwordInput, setPasswordInput] = useState<string>("")
+    const [passwordError, setPasswordError] = useState<string>("")
 
-export default async function AdminPage() {
-    try {
-        console.log("[ADMIN GUARD] Initiating server-side role check");
-        const session = await auth()
-        console.log("[ADMIN GUARD] Session found:", !!session);
-
-        if (!session?.user?.email) {
-            console.log("[ADMIN GUARD] No session email, redirecting to /login");
-            redirect("/login")
+    useEffect(() => {
+        const verifyAdminSession = async () => {
+            try {
+                const res = await fetch('/api/admin/check')
+                const data = await res.json()
+                if (data.isAdmin) {
+                    setIsAuthorized(true)
+                }
+            } catch (err) {
+                console.error("Error verifying admin role:", err)
+            } finally {
+                setLoadingAuth(false)
+            }
         }
+        verifyAdminSession()
+    }, [])
 
-        console.log("[ADMIN GUARD] Querying Prisma for email:", session.user.email);
-        const dbUser = await prisma.user.findUnique({
-            where: { email: session.user.email }
-        })
-        console.log("[ADMIN GUARD] DB User found:", !!dbUser, "Role:", dbUser?.role);
-
-        if (!dbUser || dbUser.role !== 'ADMIN') {
-            console.log("[ADMIN GUARD] Unauthorized access, redirecting to /");
-            redirect("/")
+    const handlePasswordSubmit = (e: React.FormEvent) => {
+        e.preventDefault()
+        if (passwordInput === "Saldivar0" || passwordInput === "Mike0") {
+            setIsAuthorized(true)
+            setPasswordError("")
+        } else {
+            setPasswordError("Contraseña incorrecta. Acceso denegado.")
         }
+    }
 
-        console.log("[ADMIN GUARD] Authorization successful! Rendering AdminClient");
-        return <AdminClient />
-    } catch (error: any) {
-        // Next.js redirect and dynamic bail-out use error throwing mechanisms under the hood.
-        // We must re-throw them so Next.js handles them properly!
-        if (
-            error.message === "NEXT_REDIRECT" || 
-            error.digest?.startsWith("NEXT_REDIRECT") ||
-            error.digest === "DYNAMIC_SERVER_USAGE" ||
-            error.message?.includes("dynamic-server-error")
-        ) {
-            throw error;
-        }
-
-        console.error("[ADMIN GUARD] Server Error:", error);
+    if (loadingAuth) {
         return (
-            <div className="flex min-h-[60vh] items-center justify-center p-6">
-                <div className="w-full max-w-md bg-rose-50 border border-rose-200 dark:bg-rose-950/20 dark:border-rose-900/50 rounded-2xl p-6 shadow-md text-rose-800 dark:text-rose-400">
-                    <h2 className="text-sm font-black uppercase tracking-wider mb-2">Error de Servidor (Admin Guard)</h2>
-                    <p className="text-xs font-semibold leading-relaxed mb-4">
-                        Ocurrió un error al procesar las credenciales de administrador en el servidor.
-                    </p>
-                    <div className="bg-white/50 dark:bg-black/30 p-3 rounded-lg text-[10px] font-mono break-all leading-normal">
-                        {error.message || String(error)}
-                    </div>
-                </div>
+            <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+                <RefreshCw className="h-12 w-12 text-teal-600 animate-spin" />
+                <p className="text-sm text-muted-foreground font-semibold">Verificando credenciales de Administrador...</p>
             </div>
         )
     }
+
+    if (!isAuthorized) {
+        return (
+            <div className="flex min-h-[70vh] items-center justify-center p-4">
+                <Card className="w-full max-w-md shadow-lg border-t-4 border-t-teal-600 animate-in fade-in duration-300">
+                    <CardHeader className="text-center space-y-2">
+                        <div className="h-12 w-12 bg-teal-50 dark:bg-zinc-800 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center mx-auto shadow-sm">
+                            <Lock className="h-5 w-5" />
+                        </div>
+                        <CardTitle className="text-xl font-black">Acceso de Propietario</CardTitle>
+                        <CardDescription>
+                            Introduce tu contraseña de administrador para consultar el historial de cotizaciones.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <form onSubmit={handlePasswordSubmit} className="space-y-4">
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">Contraseña Administrador</label>
+                                <Input
+                                    type="password"
+                                    placeholder="••••••••"
+                                    value={passwordInput}
+                                    onChange={(e) => setPasswordInput(e.target.value)}
+                                    className="p-3 text-center tracking-widest text-lg"
+                                />
+                            </div>
+
+                            {passwordError && (
+                                <p className="text-xs text-red-500 font-semibold text-center mt-2 animate-bounce">
+                                    {passwordError}
+                                </p>
+                            )}
+
+                            <Button type="submit" className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5">
+                                Verificar Contraseña
+                            </Button>
+                        </form>
+                    </CardContent>
+                </Card>
+            </div>
+        )
+    }
+
+    return <AdminClient />
 }
