@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { getMonthlyAdnRankings } from "@/app/actions";
+import { resolveImageUrl } from "@/lib/utils";
 import { 
     Trophy, 
     Sparkles, 
@@ -166,7 +167,7 @@ export default function RankingPage() {
                                     <div className={`h-24 w-24 rounded-full overflow-hidden shadow-inner ring-4 ${style.avatarRing} flex items-center justify-center bg-slate-50 dark:bg-zinc-950`}>
                                         {item.user.image ? (
                                             <img 
-                                                src={item.user.image} 
+                                                src={resolveImageUrl(item.user.image)} 
                                                 alt={item.user.name} 
                                                 className="h-full w-full object-cover"
                                             />
@@ -232,7 +233,7 @@ export default function RankingPage() {
                                         <div className="h-10 w-10 rounded-full overflow-hidden shrink-0 border bg-slate-50 dark:bg-zinc-950 flex items-center justify-center ring-2 ring-transparent group-hover:ring-teal-500/20 transition-all">
                                             {item.user.image ? (
                                                 <img 
-                                                    src={item.user.image} 
+                                                    src={resolveImageUrl(item.user.image)} 
                                                     alt={item.user.name} 
                                                     className="h-full w-full object-cover"
                                                 />

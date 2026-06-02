@@ -31,6 +31,7 @@ import {
   ClipboardCheck,
   Trash2
 } from "lucide-react"
+import { resolveImageUrl } from "@/lib/utils"
 
 // Recharts for Agent Weekly performance chart & Quote Rescue Area chart
 import {
@@ -3745,7 +3746,7 @@ export default function AdminClient() {
                   <div className="h-16 w-16 rounded-full border bg-slate-50 overflow-hidden flex items-center justify-center shrink-0 shadow-inner">
                     {editImage ? (
                       <img 
-                        src={editImage} 
+                        src={resolveImageUrl(editImage)} 
                         alt="Preview" 
                         className="h-full w-full object-cover" 
                         onError={(e) => {

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowUpRight, Sparkles, Megaphone, ZoomIn, X, Link as LinkIcon, User } from "lucide-react"
+import { resolveImageUrl } from "@/lib/utils"
 
 interface Announcement {
   id: string
@@ -285,7 +286,7 @@ export default function ClientHome({ announcements, isBirthday = false, currentU
               <div className="absolute inset-1.5 rounded-full overflow-hidden flex items-center justify-center bg-zinc-800">
                 {currentUser.image ? (
                   <img 
-                    src={currentUser.image} 
+                    src={resolveImageUrl(currentUser.image)} 
                     alt={currentUser.name || "Agente"} 
                     className="h-full w-full object-cover"
                   />

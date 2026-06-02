@@ -2,6 +2,7 @@ import Link from "next/link"
 import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { resolveImageUrl } from "@/lib/utils"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -29,7 +30,7 @@ export default async function DashboardLayout({
     }
 
     const isAdmin = dbUser?.role === 'ADMIN';
-    const userImage = dbUser?.image; // base64 string
+    const userImage = resolveImageUrl(dbUser?.image); // base64 or resolved google drive link
     const userName = dbUser?.name || session?.user?.name || "Agente";
     const userEmail = dbUser?.email || session?.user?.email || "";
 
