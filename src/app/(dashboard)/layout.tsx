@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -68,6 +68,13 @@ export default async function DashboardLayout({
                             Ranking
                         </Link>
                         <Link
+                            href="/team"
+                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                        >
+                            <Users className="h-4 w-4 text-indigo-500" />
+                            Equipo AACOM
+                        </Link>
+                        <Link
                             href="/cotizador"
                             className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
                         >
@@ -123,6 +130,13 @@ export default async function DashboardLayout({
                                 >
                                     <Award className="h-5 w-5 text-amber-500" />
                                     Ranking
+                                </Link>
+                                <Link
+                                    href="/team"
+                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                >
+                                    <Users className="h-5 w-5 text-indigo-500" />
+                                    Equipo AACOM
                                 </Link>
                                 <Link
                                     href="/cotizador"

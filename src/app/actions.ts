@@ -1313,4 +1313,135 @@ export async function removeLastActivityLogEntry(activityId: string) {
     }
 }
 
+export async function getTeamDirectory() {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    try {
+        const users = await prisma.user.findMany({
+            where: {
+                active: true
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                image: true,
+                birthDate: true,
+                role: true,
+                active: true,
+                instagram: true,
+                facebook: true,
+                linkedin: true,
+                twitter: true,
+                insurances: true,
+                favoriteBook: true,
+                hobby: true
+            },
+            orderBy: {
+                name: 'asc'
+            }
+        });
+
+        return { success: true, users };
+    } catch (error: any) {
+        console.error("Error fetching team directory:", error);
+        return { success: false, message: error.message || "Error al obtener el directorio" };
+    }
+}
+
+export async function updateUserProfileDetails(targetUserId: string, data: {
+    name?: string;
+    email?: string;
+    phone?: string;
+    birthDate?: string | null;
+    image?: string;
+    instagram?: string | null;
+    facebook?: string | null;
+    linkedin?: string | null;
+    twitter?: string | null;
+    insurances?: string | null;
+    favoriteBook?: string | null;
+    hobby?: string | null;
+}) {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    try {
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser) {
+            return { success: false, message: "Usuario en sesión no encontrado" };
+        }
+
+        const isAdmin = currentUser.role === 'ADMIN';
+        const isSelf = currentUser.id === targetUserId;
+
+        if (!isAdmin && !isSelf) {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const updateData: any = {};
+
+        // ADMIN can update base fields
+        if (isAdmin) {
+            if (data.name !== undefined) updateData.name = data.name;
+            if (data.email !== undefined) updateData.email = data.email;
+            if (data.phone !== undefined) updateData.phone = data.phone;
+            if (data.image !== undefined) updateData.image = data.image;
+            if (data.birthDate !== undefined) {
+                updateData.birthDate = data.birthDate ? new Date(data.birthDate) : null;
+            }
+        }
+
+        // Both ADMIN and Self can update extended fields
+        if (data.instagram !== undefined) updateData.instagram = data.instagram;
+        if (data.facebook !== undefined) updateData.facebook = data.facebook;
+        if (data.linkedin !== undefined) updateData.linkedin = data.linkedin;
+        if (data.twitter !== undefined) updateData.twitter = data.twitter;
+        if (data.insurances !== undefined) updateData.insurances = data.insurances;
+        if (data.favoriteBook !== undefined) updateData.favoriteBook = data.favoriteBook;
+        if (data.hobby !== undefined) updateData.hobby = data.hobby;
+
+        const updatedUser = await prisma.user.update({
+            where: { id: targetUserId },
+            data: updateData,
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                phone: true,
+                image: true,
+                birthDate: true,
+                role: true,
+                instagram: true,
+                facebook: true,
+                linkedin: true,
+                twitter: true,
+                insurances: true,
+                favoriteBook: true,
+                hobby: true
+            }
+        });
+
+        revalidatePath('/team');
+        revalidatePath('/ranking');
+        revalidatePath('/admin');
+        revalidatePath('/');
+
+        return { success: true, user: updatedUser, message: "Perfil actualizado con éxito" };
+    } catch (error: any) {
+        console.error("Error updating user profile details:", error);
+        return { success: false, message: error.message || "Error al actualizar perfil" };
+    }
+}
+
+
 

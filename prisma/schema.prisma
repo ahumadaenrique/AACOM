@@ -21,6 +21,17 @@ model User {
   active        Boolean   @default(true) // Estatus activo/inactivo para restringir acceso
   birthDate     DateTime? // Fecha de nacimiento del agente para overlay de cumpleaños
   
+  // Redes Sociales (Opcional)
+  instagram     String?
+  facebook      String?
+  linkedin      String?
+  twitter       String?
+
+  // Datos Adicionales (Opcional)
+  insurances    String?   // Aseguradoras con las que trabaja
+  favoriteBook  String?   // Libro favorito
+  hobby         String?   // Pasatiempo
+
   // Hierarchy
   reportsToId   String?
   reportsTo     User?     @relation("Hierarchy", fields: [reportsToId], references: [id])
