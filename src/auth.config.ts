@@ -8,12 +8,18 @@ export const authConfig = {
     callbacks: {
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
-            const isOnDashboard = nextUrl.pathname.startsWith('/activity') || nextUrl.pathname.startsWith('/policies') || nextUrl.pathname.startsWith('/adn'); // Protect specific routes
+            const isLoginPage = nextUrl.pathname === '/login';
 
-            if (isOnDashboard) {
-                if (isLoggedIn) return true;
-                return false; // Redirect unauthenticated users to login page
+            if (!isLoggedIn) {
+                if (isLoginPage) return true;
+                return false; // Redirige a /login automáticamente
             }
+
+            if (isLoginPage) {
+                // Redirige al inicio si ya tiene sesión activa
+                return Response.redirect(new URL('/', nextUrl));
+            }
+
             return true;
         },
         async session({ session, token }) {

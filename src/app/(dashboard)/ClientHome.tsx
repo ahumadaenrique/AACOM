@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowUpRight, Sparkles, Megaphone, ZoomIn, X, Link as LinkIcon } from "lucide-react"
+import { ArrowUpRight, Sparkles, Megaphone, ZoomIn, X, Link as LinkIcon, User } from "lucide-react"
 
 interface Announcement {
   id: string
@@ -15,10 +15,30 @@ interface Announcement {
 
 interface ClientHomeProps {
   announcements: Announcement[]
+  isBirthday?: boolean
+  currentUser?: {
+    name: string | null
+    image: string | null
+  } | null
 }
 
-export default function ClientHome({ announcements }: ClientHomeProps) {
+export default function ClientHome({ announcements, isBirthday = false, currentUser = null }: ClientHomeProps) {
   const [selectedAd, setSelectedAd] = useState<Announcement | null>(null)
+  const [showBirthday, setShowBirthday] = useState(false)
+
+  useEffect(() => {
+    if (isBirthday) {
+      const dismissed = sessionStorage.getItem("birthday_dismissed")
+      if (dismissed !== "true") {
+        setShowBirthday(true)
+      }
+    }
+  }, [isBirthday])
+
+  const handleCloseBirthday = () => {
+    sessionStorage.setItem("birthday_dismissed", "true")
+    setShowBirthday(false)
+  }
   
   // Close modal on Escape key press
   useEffect(() => {
@@ -185,6 +205,126 @@ export default function ClientHome({ announcements }: ClientHomeProps) {
                 className="flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 hover:text-white font-bold text-xs px-4 py-2.5 rounded-xl transition-colors duration-200"
               >
                 Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* CUMPLEANOS OVERLAY */}
+      {showBirthday && currentUser && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 sm:p-6 animate-in fade-in duration-300">
+          <style dangerouslySetInnerHTML={{__html: `
+            @keyframes confetti-fall {
+              0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+              100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+            }
+            .confetti-particle {
+              position: absolute;
+              top: -20px;
+              width: 10px;
+              height: 10px;
+              border-radius: 50%;
+              animation: confetti-fall 4s linear infinite;
+            }
+            @keyframes border-glow {
+              0%, 100% { border-color: rgba(234, 179, 8, 0.4); box-shadow: 0 0 15px rgba(234, 179, 8, 0.2); }
+              50% { border-color: rgba(234, 179, 8, 0.8); box-shadow: 0 0 30px rgba(234, 179, 8, 0.5); }
+            }
+            .birthday-card {
+              animation: border-glow 3s infinite;
+            }
+          `}} />
+
+          {/* Falling Confetti Particles */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none select-none">
+            {[...Array(30)].map((_, i) => {
+              const left = (i * 3.3) + Math.random() * 2;
+              const delay = Math.random() * 4;
+              const duration = 2.5 + Math.random() * 2.5;
+              const colors = ["#facc15", "#14b8a6", "#6366f1", "#f43f5e", "#ec4899", "#0ea5e9", "#22c55e"];
+              const randColor = colors[i % colors.length];
+              
+              return (
+                <div 
+                  key={i} 
+                  className="confetti-particle"
+                  style={{
+                    left: `${left}%`,
+                    backgroundColor: randColor,
+                    animationDelay: `${delay}s`,
+                    animationDuration: `${duration}s`,
+                    transform: `scale(${0.5 + Math.random() * 0.8})`
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          <div 
+            className="birthday-card w-full max-w-md bg-zinc-900/90 text-white border-2 border-yellow-500/50 rounded-3xl p-8 text-center relative shadow-2xl animate-in zoom-in-95 duration-300"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Confetti sparkle */}
+            <div className="absolute -top-10 left-1/2 -translate-x-1/2 text-yellow-400 drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]">
+              <Sparkles className="h-16 w-16 animate-pulse" />
+            </div>
+
+            {/* Close Button */}
+            <button 
+              onClick={handleCloseBirthday}
+              className="absolute top-4 right-4 text-white/60 hover:text-white bg-white/5 hover:bg-white/10 p-1.5 rounded-full transition-all duration-200"
+              title="Cerrar"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            {/* Celebrating Agent Profile Picture with Rotating gold circle */}
+            <div className="relative h-32 w-32 mx-auto mb-6 mt-4">
+              <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-yellow-500 via-amber-400 to-yellow-600 animate-spin blur-[2px]" style={{ animationDuration: '4s' }} />
+              <div className="absolute inset-0.5 rounded-full bg-zinc-900" />
+              <div className="absolute inset-1.5 rounded-full overflow-hidden flex items-center justify-center bg-zinc-800">
+                {currentUser.image ? (
+                  <img 
+                    src={currentUser.image} 
+                    alt={currentUser.name || "Agente"} 
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gradient-to-tr from-yellow-500 to-amber-600 text-zinc-950 font-black text-4xl flex items-center justify-center">
+                    {currentUser.name ? currentUser.name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase() : <User className="h-12 w-12" />}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Greeting messages */}
+            <div className="space-y-4">
+              <h2 className="text-3xl font-black bg-gradient-to-r from-yellow-400 via-amber-200 to-yellow-500 bg-clip-text text-transparent uppercase tracking-wider">
+                ¡Feliz Cumpleaños!
+              </h2>
+              
+              <h3 className="text-lg font-bold text-white tracking-tight">
+                {currentUser.name || "Apreciable Agente"}
+              </h3>
+
+              <div className="h-0.5 w-16 bg-yellow-500/50 mx-auto rounded-full" />
+
+              <p className="text-xs text-zinc-300 leading-relaxed max-w-sm mx-auto">
+                Hoy es un día especial y todo el equipo de <strong>AACOM Seguros</strong> quiere celebrarte. Te deseamos un año lleno de salud, felicidad, éxitos personales y muchas pólizas emitidas. 
+              </p>
+
+              <p className="text-[10px] text-yellow-400 font-extrabold uppercase tracking-widest animate-pulse mt-2">
+                ¡Gracias por ser parte esencial de nuestra familia! 🎂🎉
+              </p>
+            </div>
+
+            {/* Dismiss Button */}
+            <div className="mt-8">
+              <button
+                onClick={handleCloseBirthday}
+                className="w-full bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-600 hover:to-amber-600 text-zinc-950 font-black text-xs px-6 py-3.5 rounded-2xl shadow-lg hover:shadow-yellow-500/20 active:scale-[0.98] transition-all duration-200"
+              >
+                Muchas Gracias 🍰
               </button>
             </div>
           </div>

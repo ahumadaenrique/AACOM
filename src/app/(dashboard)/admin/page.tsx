@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement } from "@/app/actions"
+import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -27,7 +27,9 @@ import {
   Sparkles,
   Percent,
   Check,
-  Heart
+  Heart,
+  ClipboardCheck,
+  Trash2
 } from "lucide-react"
 
 // Recharts for Agent Weekly performance chart & Quote Rescue Area chart
@@ -60,7 +62,7 @@ export default function AdminPage() {
   const [error, setError] = useState<string>("")
 
   // Admin Dashboard Tabs
-  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados">("productividad")
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad">("productividad")
 
   // Rescued quote state
   const [selectedQuote, setSelectedQuote] = useState<any | null>(null)
@@ -98,6 +100,21 @@ export default function AdminPage() {
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [loadingAnnouncements, setLoadingAnnouncements] = useState<boolean>(false)
   const [announcementLinkInput, setAnnouncementLinkInput] = useState<string>("")
+  
+  // AACOM 25 Activity Report states
+  const [activityLogs, setActivityLogs] = useState<any[]>([])
+  const [loadingActivityLogs, setLoadingActivityLogs] = useState<boolean>(false)
+  const [reportAgentFilter, setReportAgentFilter] = useState<string>("ALL")
+  const [reportStartDate, setReportStartDate] = useState<string>("")
+  const [reportEndDate, setReportEndDate] = useState<string>("")
+
+  // Edit agent profile states
+  const [selectedUserForEdit, setSelectedUserForEdit] = useState<any | null>(null)
+  const [editName, setEditName] = useState<string>("")
+  const [editPhone, setEditPhone] = useState<string>("")
+  const [editBirthDate, setEditBirthDate] = useState<string>("")
+  const [editImage, setEditImage] = useState<string>("")
+  const [savingProfile, setSavingProfile] = useState<boolean>(false)
   const [announcementMsg, setAnnouncementMsg] = useState<string>("")
   const [savingAnnouncement, setSavingAnnouncement] = useState<boolean>(false)
 
@@ -354,12 +371,106 @@ export default function AdminPage() {
 
       // 6. Fetch landing page announcements
       await fetchAnnouncementsList()
+
+      // 7. Fetch activity logs for admin reporting
+      await fetchActivityLogsList()
     } catch (err) {
       console.error(err)
       setError("Fallo al conectar con el servidor.")
     } finally {
       setLoading(false)
       setLoadingAdn(false)
+    }
+  }
+
+  const fetchActivityLogsList = async () => {
+    try {
+      setLoadingActivityLogs(true)
+      const res = await getAdminActivityReport(
+        reportAgentFilter === "ALL" ? undefined : reportAgentFilter,
+        reportStartDate || undefined,
+        reportEndDate || undefined
+      )
+      if (res.success && res.logs) {
+        setActivityLogs(res.logs)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoadingActivityLogs(false)
+    }
+  }
+
+  const handleOpenEditProfileModal = (user: any) => {
+    setSelectedUserForEdit(user)
+    setEditName(user.name || "")
+    setEditPhone(user.phone || "")
+    setEditImage(user.image || "")
+    if (user.birthDate) {
+      const d = new Date(user.birthDate)
+      const year = d.getUTCFullYear()
+      const month = String(d.getUTCMonth() + 1).padStart(2, '0')
+      const day = String(d.getUTCDate()).padStart(2, '0')
+      setEditBirthDate(`${year}-${month}-${day}`)
+    } else {
+      setEditBirthDate("")
+    }
+  }
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!selectedUserForEdit) return
+    setSavingProfile(true)
+    try {
+      const res = await updateAgentProfile(selectedUserForEdit.id, {
+        name: editName.trim(),
+        phone: editPhone.trim(),
+        birthDate: editBirthDate || undefined,
+        image: editImage || undefined
+      })
+      if (res.success) {
+        alert("Perfil de agente actualizado correctamente.")
+        setSelectedUserForEdit(null)
+        loadData()
+      } else {
+        alert(res.message || "Error al actualizar perfil")
+      }
+    } catch (err) {
+      console.error(err)
+      alert("Error de conexión al guardar perfil")
+    } finally {
+      setSavingProfile(false)
+    }
+  }
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    
+    if (file.size > 2 * 1024 * 1024) {
+      alert("La imagen excede los 2 MB de tamaño permitido.")
+      return
+    }
+
+    const reader = new FileReader()
+    reader.onload = (upEv) => {
+      const base64 = upEv.target?.result as string
+      setEditImage(base64)
+    }
+    reader.readAsDataURL(file)
+  }
+
+  const handleDeleteActivityLog = async (logId: string) => {
+    if (!confirm("¿Estás seguro de que deseas eliminar este registro de actividad? Los puntos correspondientes le serán restados al agente.")) return
+    try {
+      const res = await deleteActivityLogEntry(logId)
+      if (res.success) {
+        await fetchActivityLogsList()
+      } else {
+        alert(res.message || "Error al eliminar registro")
+      }
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -758,6 +869,16 @@ export default function AdminPage() {
           }`}
         >
           <Sparkles className="h-4.5 w-4.5 text-amber-500" /> Banners de Inicio
+        </button>
+        <button
+          onClick={() => setActiveTab("actividad")}
+          className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === "actividad"
+              ? "border-teal-600 text-teal-600 dark:text-teal-400"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <ClipboardCheck className="h-4.5 w-4.5" /> Actividad AACOM 25
         </button>
       </div>
 
@@ -1383,6 +1504,14 @@ export default function AdminPage() {
                                 ) : (
                                   <div className="flex items-center justify-center gap-1.5">
                                     <Button
+                                      onClick={() => handleOpenEditProfileModal(user)}
+                                      variant="outline"
+                                      size="sm"
+                                      className="text-teal-600 hover:text-teal-800 hover:bg-teal-50 font-bold text-[10px] h-7 px-2.5"
+                                    >
+                                      Editar Perfil
+                                    </Button>
+                                    <Button
                                       onClick={() => { setEditingUserPasswordId(user.id); setNewPasswordInput(""); }}
                                       variant="outline"
                                       size="sm"
@@ -1806,6 +1935,197 @@ export default function AdminPage() {
 
           </div>
 
+        </div>
+      )}
+
+      {/* TAB CONTENT 6: AACOM 25 ACTIVITY REPORT */}
+      {activeTab === "actividad" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <Card className="border shadow-sm">
+            <CardHeader className="py-4 border-b bg-slate-50/50">
+              <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                <ClipboardCheck className="h-4.5 w-4.5 text-teal-600" /> Reporte de Actividad Comercial AACOM 25
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Audita y visualiza a nivel detallado la actividad incremental diaria, llamadas y prospectos ingresados por tus agentes.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              {/* Filters Area */}
+              <div className="flex flex-col md:flex-row gap-4 items-center bg-slate-50/40 dark:bg-zinc-900/30 p-4 rounded-xl border border-slate-100">
+                <div className="w-full md:w-56 space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase block">Filtrar por Agente</label>
+                  <select
+                    value={reportAgentFilter}
+                    onChange={(e) => setReportAgentFilter(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs focus-visible:outline-none"
+                  >
+                    <option value="ALL">Todos los Agentes</option>
+                    {usersList.filter(u => u.role === 'AGENTE').map((u) => (
+                      <option key={u.id} value={u.id}>{u.name || u.email}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="w-full md:w-44 space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase block">Fecha Inicio</label>
+                  <Input
+                    type="date"
+                    value={reportStartDate}
+                    onChange={(e) => setReportStartDate(e.target.value)}
+                    className="text-xs h-9"
+                  />
+                </div>
+
+                <div className="w-full md:w-44 space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase block">Fecha Fin</label>
+                  <Input
+                    type="date"
+                    value={reportEndDate}
+                    onChange={(e) => setReportEndDate(e.target.value)}
+                    className="text-xs h-9"
+                  />
+                </div>
+
+                <div className="w-full md:w-auto pt-5 flex gap-2">
+                  <Button 
+                    onClick={fetchActivityLogsList} 
+                    className="bg-teal-600 hover:bg-teal-700 text-white font-bold h-9 text-xs"
+                    disabled={loadingActivityLogs}
+                  >
+                    <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${loadingActivityLogs ? 'animate-spin' : ''}`} /> Filtrar Actividades
+                  </Button>
+                  
+                  {(reportAgentFilter !== "ALL" || reportStartDate !== "" || reportEndDate !== "") && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setReportAgentFilter("ALL")
+                        setReportStartDate("")
+                        setReportEndDate("")
+                        // Load all
+                        setTimeout(() => fetchActivityLogsList(), 50)
+                      }}
+                      className="text-red-500 hover:bg-red-50 hover:text-red-600 h-9 text-xs"
+                    >
+                      Limpiar
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Statistics Panel */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 bg-slate-50 dark:bg-zinc-900 border rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase block">Total Puntos Sumados</span>
+                    <span className="text-xl font-black text-slate-800 dark:text-zinc-100 block mt-1">
+                      {activityLogs.reduce((acc, log) => acc + log.points, 0)} pts
+                    </span>
+                  </div>
+                  <ClipboardCheck className="h-7 w-7 text-teal-600" />
+                </div>
+
+                <div className="p-4 bg-slate-50 dark:bg-zinc-900 border rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase block">Días con Actividad</span>
+                    <span className="text-xl font-black text-slate-800 dark:text-zinc-100 block mt-1">
+                      {new Set(activityLogs.map(l => `${l.userId}_${l.dateStr}`)).size} días
+                    </span>
+                  </div>
+                  <Calendar className="h-7 w-7 text-teal-600" />
+                </div>
+
+                <div className="p-4 bg-slate-50 dark:bg-zinc-900 border rounded-xl flex items-center justify-between">
+                  <div>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase block">Promedio de Puntos Diario</span>
+                    <span className="text-xl font-black text-slate-800 dark:text-zinc-100 block mt-1">
+                      {(() => {
+                        const days = new Set(activityLogs.map(l => `${l.userId}_${l.dateStr}`)).size
+                        const pts = activityLogs.reduce((acc, log) => acc + log.points, 0)
+                        return days > 0 ? (pts / days).toFixed(1) : 0
+                      })()} pts
+                    </span>
+                  </div>
+                  <TrendingUp className="h-7 w-7 text-teal-600" />
+                </div>
+              </div>
+
+              {/* Details table */}
+              <div className="border rounded-xl overflow-hidden shadow-inner">
+                {loadingActivityLogs ? (
+                  <div className="text-center py-12 text-slate-400 text-xs">
+                    <RefreshCw className="h-6 w-6 animate-spin text-teal-600 mx-auto mb-2" />
+                    Cargando reporte de actividades...
+                  </div>
+                ) : activityLogs.length === 0 ? (
+                  <div className="text-center py-12 text-slate-400 text-xs italic bg-slate-50/20">
+                    No se registran actividades con los filtros seleccionados.
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <Table className="text-xs">
+                      <TableHeader className="bg-slate-50/50">
+                        <TableRow>
+                          <TableHead className="font-bold pl-4">Agente</TableHead>
+                          <TableHead className="font-bold text-center">Fecha</TableHead>
+                          <TableHead className="font-bold">Actividad</TableHead>
+                          <TableHead className="font-bold text-center">Puntos</TableHead>
+                          <TableHead className="font-bold">Prospecto / Detalles</TableHead>
+                          <TableHead className="font-bold text-center">Hora Registro</TableHead>
+                          <TableHead className="font-bold text-center pr-4">Eliminar</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {activityLogs.map((log) => (
+                          <TableRow key={log.id} className="hover:bg-slate-50/30">
+                            <TableCell className="font-bold text-slate-700 dark:text-zinc-300 pl-4 py-3">
+                              <div className="flex items-center gap-2">
+                                <span className="h-5 w-5 rounded-full bg-teal-50 text-teal-800 flex items-center justify-center font-bold text-[8px] uppercase">
+                                  {((log.user?.name || "A").split(" ").map((w: string) => w[0]).slice(0, 2).join(""))}
+                                </span>
+                                <span>{log.user?.name || log.user?.email || "Agente"}</span>
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center text-slate-600 py-3">{log.dateStr}</TableCell>
+                            <TableCell className="font-semibold text-slate-700 py-3">{log.activityName}</TableCell>
+                            <TableCell className="text-center py-3">
+                              <span className="inline-block px-2 py-0.5 rounded text-[10px] font-black bg-slate-100 text-slate-800 border">
+                                +{log.points} pts
+                              </span>
+                            </TableCell>
+                            <TableCell className="py-3">
+                              {log.prospectName ? (
+                                <span className="text-teal-600 dark:text-teal-400 font-extrabold text-[10px]">
+                                  Prospecto: {log.prospectName}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 italic text-[10px]">Sin prospecto</span>
+                              )}
+                            </TableCell>
+                            <TableCell className="text-center text-slate-400 py-3">
+                              {new Date(log.createdAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                            </TableCell>
+                            <TableCell className="text-center py-3 pr-4">
+                              <Button
+                                onClick={() => handleDeleteActivityLog(log.id)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-500 hover:text-red-600 hover:bg-red-50 p-1 h-7 rounded"
+                                title="Eliminar registro"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
       )}
 
@@ -2906,6 +3226,110 @@ export default function AdminPage() {
           }
         }
       `}</style>
+
+      {/* MODAL EDITAR PERFIL DE AGENTE */}
+      {selectedUserForEdit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
+          <div 
+            className="bg-white dark:bg-zinc-950 w-full max-w-md rounded-2xl border shadow-2xl flex flex-col p-6 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b pb-2 mb-4">
+              <h3 className="text-sm font-black text-slate-800 dark:text-zinc-100 flex items-center gap-1.5">
+                <Users className="h-5 w-5 text-teal-600" /> Editar Perfil de Agente
+              </h3>
+              <button 
+                onClick={() => setSelectedUserForEdit(null)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-md"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveProfile} className="space-y-4">
+              {/* Name */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase">Nombre Completo</label>
+                <Input
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="text-xs h-9"
+                />
+              </div>
+
+              {/* Phone */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase">Teléfono</label>
+                <Input
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  className="text-xs h-9"
+                  placeholder="Ej: 5512345678"
+                />
+              </div>
+
+              {/* BirthDate */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase">Fecha de Nacimiento</label>
+                <Input
+                  type="date"
+                  value={editBirthDate}
+                  onChange={(e) => setEditBirthDate(e.target.value)}
+                  className="text-xs h-9"
+                />
+              </div>
+
+              {/* Photo Upload (Base64) */}
+              <div className="space-y-2">
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase block">Fotografía del Agente</label>
+                
+                {/* Preview */}
+                <div className="flex items-center gap-4">
+                  <div className="h-16 w-16 rounded-full border bg-slate-50 overflow-hidden flex items-center justify-center shrink-0 shadow-inner">
+                    {editImage ? (
+                      <img src={editImage} alt="Preview" className="h-full w-full object-cover" />
+                    ) : (
+                      <Users className="h-8 w-8 text-slate-300" />
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="text-xs text-slate-500 w-full"
+                    />
+                    <p className="text-[8px] text-slate-400">JPG, PNG hasta 2 MB. Se almacena directamente como Base64.</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 dark:border-zinc-800">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedUserForEdit(null)}
+                  className="font-bold text-xs"
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={savingProfile}
+                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs"
+                >
+                  {savingProfile ? <RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                  Guardar Cambios
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
     </div>
   )

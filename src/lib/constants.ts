@@ -1,11 +1,11 @@
 export const SALES_ACTIVITIES = [
-    { id: '1', name: 'Llamadas de Prospección', value: 1 },
-    { id: '2', name: 'Citas Iniciales', value: 3 },
-    { id: '3', name: 'Análisis de Necesidades', value: 3 },
-    { id: '4', name: 'Presentación de Propuestas', value: 5 },
-    { id: '5', name: 'Cierre de Ventas', value: 10 },
-    { id: '6', name: 'Solicitud de Referidos', value: 2 },
-    { id: '7', name: 'Entrega de Póliza', value: 1 },
+    { id: '1', name: 'Llamada telefónica', value: 1 },
+    { id: '2', name: 'Cita agendada', value: 2 },
+    { id: '3', name: 'Cita Efectiva', value: 3 },
+    { id: '4', name: 'Cierre de póliza', value: 5 },
+    { id: '5', name: 'Referido obtenido', value: 3 },
+    { id: '6', name: 'Póliza EMITIDA', value: 8 },
+    { id: '7', name: 'RDA', value: 8 },
 ];
 
 export const TRAFFIC_LIGHT_THRESHOLDS = {

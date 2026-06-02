@@ -789,3 +789,463 @@ export async function deleteAnnouncement(id: string) {
     }
 }
 
+// ==========================================
+// MÓDULO AACOM 25 & ACTIVIDAD DIARIA ACTIONS
+// ==========================================
+
+export async function saveActivityLogEntry(activityId: string, prospectName?: string) {
+    const session = await auth();
+
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email }
+    });
+
+    if (!user) {
+        return { success: false, message: "Usuario no encontrado" };
+    }
+
+    const activity = SALES_ACTIVITIES.find(a => a.id === activityId);
+    if (!activity) {
+        return { success: false, message: "Actividad no válida" };
+    }
+
+    // Validation: prospectName is mandatory for 'Cita agendada' (ID '2') or 'Cita Efectiva' (ID '3')
+    if ((activityId === '2' || activityId === '3') && !prospectName?.trim()) {
+        return { success: false, message: "El nombre del prospecto es obligatorio para citas iniciales/efectivas." };
+    }
+
+    // Calculate Mexico City date YYYY-MM-DD
+    const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+
+    try {
+        const log = await prisma.activityLog.create({
+            data: {
+                userId: user.id,
+                activityId,
+                activityName: activity.name,
+                points: activity.value,
+                prospectName: prospectName?.trim() || null,
+                dateStr,
+            }
+        });
+
+        revalidatePath('/activity');
+        revalidatePath('/admin');
+        revalidatePath('/');
+        return { success: true, message: `Actividad registrada: +${activity.value} pts`, log };
+    } catch (error: any) {
+        console.error("Error saving activity log:", error);
+        return { success: false, message: error.message || "Error al registrar la actividad" };
+    }
+}
+
+export async function deleteActivityLogEntry(logId: string) {
+    const session = await auth();
+
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    try {
+        const log = await prisma.activityLog.findUnique({
+            where: { id: logId }
+        });
+
+        if (!log) {
+            return { success: false, message: "Registro no encontrado" };
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!user || (log.userId !== user.id && user.role !== 'ADMIN')) {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        await prisma.activityLog.delete({
+            where: { id: logId }
+        });
+
+        revalidatePath('/activity');
+        revalidatePath('/admin');
+        revalidatePath('/');
+        return { success: true, message: "Registro eliminado correctamente" };
+    } catch (error: any) {
+        console.error("Error deleting activity log:", error);
+        return { success: false, message: error.message || "Error al eliminar el registro" };
+    }
+}
+
+export async function getDailyActivitySummary() {
+    const session = await auth();
+
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado", logs: [], totalPoints: 0, remainingPoints: 25 };
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!user) {
+            return { success: false, message: "Usuario no encontrado", logs: [], totalPoints: 0, remainingPoints: 25 };
+        }
+
+        const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+
+        const logs = await prisma.activityLog.findMany({
+            where: {
+                userId: user.id,
+                dateStr,
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        const totalPoints = logs.reduce((acc, log) => acc + log.points, 0);
+        const remainingPoints = Math.max(0, 25 - totalPoints);
+
+        return {
+            success: true,
+            logs,
+            totalPoints,
+            remainingPoints,
+        };
+    } catch (error: any) {
+        console.error("Error fetching daily summary:", error);
+        return { success: false, message: error.message, logs: [], totalPoints: 0, remainingPoints: 25 };
+    }
+}
+
+export async function getActivityHistory(targetUserId?: string) {
+    const session = await auth();
+
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado", history: [] };
+    }
+
+    try {
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser) {
+            return { success: false, message: "Usuario no encontrado", history: [] };
+        }
+
+        const userId = (currentUser.role === 'ADMIN' && targetUserId) ? targetUserId : currentUser.id;
+
+        // Get all activity logs for this user sorted by date and time
+        const logs = await prisma.activityLog.findMany({
+            where: { userId },
+            orderBy: [
+                { dateStr: 'desc' },
+                { createdAt: 'desc' }
+            ]
+        });
+
+        // Group by dateStr in JS for clean structures
+        const groups: Record<string, { dateStr: string; totalPoints: number; logs: typeof logs }> = {};
+
+        logs.forEach(log => {
+            if (!groups[log.dateStr]) {
+                groups[log.dateStr] = {
+                    dateStr: log.dateStr,
+                    totalPoints: 0,
+                    logs: []
+                };
+            }
+            groups[log.dateStr].totalPoints += log.points;
+            groups[log.dateStr].logs.push(log);
+        });
+
+        const history = Object.values(groups).sort((a, b) => b.dateStr.localeCompare(a.dateStr));
+
+        return {
+            success: true,
+            history
+        };
+    } catch (error: any) {
+        console.error("Error fetching activity history:", error);
+        return { success: false, message: error.message, history: [] };
+    }
+}
+
+// ==========================================
+// RANKING DE AGENTES & ADNs ACTIONS
+// ==========================================
+
+export async function getMonthlyAdnRankings() {
+    try {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = now.getMonth(); // 0-indexed
+
+        // Mexico City Time Month Start and End
+        // We can do it safely by defining standard dates:
+        const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
+        const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+        const diagnostics = await prisma.adnDiagnostic.findMany({
+            where: {
+                createdAt: {
+                    gte: startOfMonth,
+                    lte: endOfMonth
+                }
+            },
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        image: true,
+                        active: true
+                    }
+                }
+            }
+        });
+
+        // Fetch all active agents to initialize 0 points
+        const allAgents = await prisma.user.findMany({
+            where: {
+                role: 'AGENTE',
+                active: true
+            },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true
+            }
+        });
+
+        const counts: Record<string, { user: { id: string; name: string; email: string; image: string | null }; count: number }> = {};
+
+        allAgents.forEach(agent => {
+            counts[agent.id] = {
+                user: {
+                    id: agent.id,
+                    name: agent.name || agent.email.split('@')[0],
+                    email: agent.email,
+                    image: agent.image // base64
+                },
+                count: 0
+            };
+        });
+
+        diagnostics.forEach(diag => {
+            if (counts[diag.userId]) {
+                counts[diag.userId].count += 1;
+            } else if (diag.user && diag.user.active) {
+                // If agent is not in the list for some reason but exists
+                counts[diag.userId] = {
+                    user: {
+                        id: diag.userId,
+                        name: diag.user.name || diag.user.email.split('@')[0],
+                        email: diag.user.email,
+                        image: diag.user.image
+                    },
+                    count: 1
+                };
+            }
+        });
+
+        const rankings = Object.values(counts)
+            .sort((a, b) => b.count - a.count || a.user.name.localeCompare(b.user.name))
+            .slice(0, 10);
+
+        // Fetch the customizable admin campaign banner for Ranking page
+        const rankingAd = await prisma.content.findFirst({
+            where: {
+                type: 'RANKING_AD',
+                active: true
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        return {
+            success: true,
+            rankings,
+            rankingAd
+        };
+    } catch (error: any) {
+        console.error("Error fetching monthly ADN rankings:", error);
+        return { success: false, rankings: [], rankingAd: null, message: error.message };
+    }
+}
+
+export async function createRankingAd(base64Data: string, fileName: string, linkUrl?: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || currentUser.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const allowedExts = ['.jpg', '.jpeg', '.png', '.gif'];
+        const path = await import('path');
+        const ext = path.extname(fileName).toLowerCase();
+        if (!allowedExts.includes(ext)) {
+            return { success: false, message: "Tipo de archivo no permitido. Solo JPG, JPEG, PNG o GIF." };
+        }
+
+        // Deactivate other ranking ads to keep only the newest active
+        await prisma.content.updateMany({
+            where: { type: 'RANKING_AD' },
+            data: { active: false }
+        });
+
+        const newAd = await prisma.content.create({
+            data: {
+                type: 'RANKING_AD',
+                imageUrl: base64Data,
+                linkUrl: linkUrl || null,
+                active: true,
+                order: 0
+            }
+        });
+
+        revalidatePath('/ranking');
+        revalidatePath('/admin');
+        return { success: true, rankingAd: newAd };
+    } catch (error: any) {
+        console.error("Error creating ranking ad:", error);
+        return { success: false, message: error.message || "Error al subir campaña de incentivo" };
+    }
+}
+
+// ==========================================
+// ADMIN AACOM 25 REPORTS & PROFILE ACTIONS
+// ==========================================
+
+export async function getAdminActivityReport(userId?: string, startDate?: string, endDate?: string) {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado", logs: [] };
+    }
+
+    try {
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || currentUser.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes", logs: [] };
+        }
+
+        const whereClause: any = {};
+        if (userId && userId !== 'ALL') {
+            whereClause.userId = userId;
+        }
+
+        if (startDate || endDate) {
+            whereClause.dateStr = {};
+            if (startDate) whereClause.dateStr.gte = startDate;
+            if (endDate) whereClause.dateStr.lte = endDate;
+        }
+
+        const logs = await prisma.activityLog.findMany({
+            where: whereClause,
+            include: {
+                user: {
+                    select: {
+                        name: true,
+                        email: true,
+                        image: true
+                    }
+                }
+            },
+            orderBy: [
+                { dateStr: 'desc' },
+                { createdAt: 'desc' }
+            ]
+        });
+
+        return { success: true, logs };
+    } catch (error: any) {
+        console.error("Error fetching admin activity report:", error);
+        return { success: false, message: error.message, logs: [] };
+    }
+}
+
+export async function updateAgentProfile(userId: string, data: { name?: string; phone?: string; birthDate?: string; image?: string; password?: string; active?: boolean }) {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    try {
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser) {
+            return { success: false, message: "Usuario no encontrado" };
+        }
+
+        // Only allow self updates or ADMIN updates
+        if (currentUser.id !== userId && currentUser.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const updateData: any = {};
+        if (data.name !== undefined) updateData.name = data.name;
+        if (data.phone !== undefined) updateData.phone = data.phone;
+        if (data.image !== undefined) updateData.image = data.image; // Base64
+        if (data.password !== undefined && data.password.trim() !== '') updateData.password = data.password;
+        if (data.active !== undefined && currentUser.role === 'ADMIN') updateData.active = data.active;
+        
+        if (data.birthDate !== undefined) {
+            updateData.birthDate = data.birthDate ? new Date(data.birthDate) : null;
+        }
+
+        const updated = await prisma.user.update({
+            where: { id: userId },
+            data: updateData
+        });
+
+        // Also sync name to Agent table if agent exists
+        if (data.name && currentUser.role === 'ADMIN') {
+            const trimmedName = data.name.trim();
+            const existingAgent = await prisma.agent.findUnique({
+                where: { name: trimmedName }
+            });
+            if (!existingAgent) {
+                // Find if there is an agent with old name and update or create
+                // Simply create if not found, as we don't have secondary relation
+                await prisma.agent.upsert({
+                    where: { name: trimmedName },
+                    update: {},
+                    create: { name: trimmedName }
+                });
+            }
+        }
+
+        revalidatePath('/admin');
+        revalidatePath('/ranking');
+        revalidatePath('/');
+        return { success: true, message: "Perfil actualizado correctamente", user: updated };
+    } catch (error: any) {
+        console.error("Error updating agent profile:", error);
+        return { success: false, message: error.message || "Error al actualizar perfil" };
+    }
+}
+
+

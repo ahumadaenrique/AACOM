@@ -1,5 +1,7 @@
 import Link from "next/link"
-import { CircleUser, Menu, Package2, Search } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles } from "lucide-react"
+import { auth, signOut } from "@/auth"
+import { prisma } from "@/lib/prisma"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -12,21 +14,56 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
     children,
 }: {
     children: React.ReactNode
 }) {
+    const session = await auth();
+    let dbUser = null;
+
+    if (session?.user?.email) {
+        dbUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+    }
+
+    const isAdmin = dbUser?.role === 'ADMIN';
+    const userImage = dbUser?.image; // base64 string
+    const userName = dbUser?.name || session?.user?.name || "Agente";
+    const userEmail = dbUser?.email || session?.user?.email || "";
+
+    // Server-side native logout action
+    const handleLogout = async () => {
+        "use server";
+        await signOut({ redirectTo: "/login" });
+    };
+
     return (
         <div className="flex min-h-screen w-full flex-col">
-            <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6">
+            <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur px-4 md:px-6 shadow-sm">
+                {/* Desktop Navigation */}
                 <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
                     <Link
                         href="/"
-                        className="flex items-center gap-2 text-lg font-semibold md:text-base mr-4"
+                        className="flex items-center gap-2 text-lg font-semibold md:text-base mr-4 shrink-0"
                     >
                         <img src="/logo.png" alt="AACOM Seguros" className="h-7 w-auto object-contain" />
                         <span className="sr-only">AACOM cotizador</span>
+                    </Link>
+                    <Link
+                        href="/activity"
+                        className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                    >
+                        <ClipboardCheck className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                        AACOM 25
+                    </Link>
+                    <Link
+                        href="/ranking"
+                        className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                    >
+                        <Award className="h-4 w-4 text-amber-500" />
+                        Ranking
                     </Link>
                     <Link
                         href="/cotizador"
@@ -40,13 +77,17 @@ export default function DashboardLayout({
                     >
                         ADN AACOM
                     </Link>
-                    <Link
-                        href="/admin"
-                        className="text-muted-foreground transition-colors hover:text-foreground"
-                    >
-                        Admin
-                    </Link>
+                    {isAdmin && (
+                        <Link
+                            href="/admin"
+                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold"
+                        >
+                            Admin
+                        </Link>
+                    )}
                 </nav>
+
+                {/* Mobile Drawer Trigger */}
                 <Sheet>
                     <SheetTrigger asChild>
                         <Button
@@ -58,14 +99,28 @@ export default function DashboardLayout({
                             <span className="sr-only">Toggle navigation menu</span>
                         </Button>
                     </SheetTrigger>
-                    <SheetContent side="left">
+                    <SheetContent side="left" className="w-[280px]">
                         <nav className="grid gap-6 text-lg font-medium">
                             <Link
                                 href="/"
-                                className="flex items-center gap-2 text-lg font-semibold mb-2"
+                                className="flex items-center gap-2 text-lg font-semibold mb-4"
                             >
                                 <img src="/logo.png" alt="AACOM Seguros" className="h-8 w-auto object-contain" />
                                 <span className="sr-only">AACOM cotizador</span>
+                            </Link>
+                            <Link
+                                href="/activity"
+                                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                            >
+                                <ClipboardCheck className="h-5 w-5 text-teal-600" />
+                                AACOM 25
+                            </Link>
+                            <Link
+                                href="/ranking"
+                                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                            >
+                                <Award className="h-5 w-5 text-amber-500" />
+                                Ranking
                             </Link>
                             <Link
                                 href="/cotizador"
@@ -79,36 +134,58 @@ export default function DashboardLayout({
                             >
                                 ADN AACOM
                             </Link>
-                            <Link
-                                href="/admin"
-                                className="text-muted-foreground hover:text-foreground"
-                            >
-                                Admin
-                            </Link>
-                            {/* Add other links here for mobile */}
+                            {isAdmin && (
+                                <Link
+                                    href="/admin"
+                                    className="text-muted-foreground hover:text-foreground"
+                                >
+                                    Admin
+                                </Link>
+                            )}
                         </nav>
                     </SheetContent>
                 </Sheet>
+
+                {/* Header User Menu */}
                 <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-                    <form className="ml-auto flex-1 sm:flex-initial">
-                        <div className="relative">
-                            {/* Search bar placeholder */}
-                        </div>
-                    </form>
+                    <div className="ml-auto flex-1 sm:flex-initial" />
+                    
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                            <Button variant="secondary" size="icon" className="rounded-full">
-                                <CircleUser className="h-5 w-5" />
+                            <Button variant="secondary" size="icon" className="rounded-full overflow-hidden border border-slate-200 dark:border-zinc-800 shadow-sm relative shrink-0">
+                                {userImage ? (
+                                    <img 
+                                        src={userImage} 
+                                        alt={userName} 
+                                        className="h-full w-full object-cover"
+                                    />
+                                ) : (
+                                    <CircleUser className="h-5 w-5" />
+                                )}
                                 <span className="sr-only">Toggle user menu</span>
                             </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                        <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-xl p-2">
+                            <DropdownMenuLabel className="font-normal px-3 py-2 flex flex-col gap-0.5">
+                                <span className="text-xs font-black text-slate-800 dark:text-zinc-200 line-clamp-1">{userName}</span>
+                                <span className="text-[10px] text-muted-foreground truncate">{userEmail}</span>
+                                <span className="mt-1 w-fit bg-teal-50 text-teal-800 dark:bg-teal-950/30 dark:text-teal-400 text-[8px] font-black px-1.5 py-0.5 rounded uppercase">
+                                    {dbUser?.role || "AGENTE"}
+                                </span>
+                            </DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>Settings</DropdownMenuItem>
-                            <DropdownMenuItem>Support</DropdownMenuItem>
+                            <DropdownMenuItem className="text-xs font-bold text-slate-700 dark:text-zinc-300 py-2.5 rounded-xl cursor-pointer">
+                                Configuración
+                            </DropdownMenuItem>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem>Logout</DropdownMenuItem>
+                            <DropdownMenuItem asChild className="text-xs font-black text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 py-2.5 rounded-xl cursor-pointer">
+                                <form action={handleLogout} className="w-full">
+                                    <button type="submit" className="w-full text-left flex items-center gap-1.5">
+                                        <LogOut className="h-4 w-4" />
+                                        Cerrar Sesión
+                                    </button>
+                                </form>
+                            </DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>

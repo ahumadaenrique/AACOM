@@ -1,7 +1,38 @@
 import { prisma } from "@/lib/prisma"
+import { auth } from "@/auth"
 import ClientHome from "./ClientHome"
 
 export default async function HomePage() {
+    const session = await auth();
+    let isBirthday = false;
+    let currentUser = null;
+
+    if (session?.user?.email) {
+        currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: {
+                name: true,
+                image: true,
+                birthDate: true
+            }
+        });
+
+        if (currentUser?.birthDate) {
+            // Calculate Mexico City date YYYY-MM-DD
+            const cdmxTodayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+            const [_, todayMonth, todayDay] = cdmxTodayStr.split('-').map(Number); // month is 1-indexed
+
+            const bDate = new Date(currentUser.birthDate);
+            // We use getUTCDate/getUTCMonth to avoid local server timezone offsets when parsing database timestamps
+            const bMonth = bDate.getUTCMonth() + 1; // 1-indexed
+            const bDay = bDate.getUTCDate();
+
+            if (bMonth === todayMonth && bDay === todayDay) {
+                isBirthday = true;
+            }
+        }
+    }
+
     const announcements = await prisma.content.findMany({
         where: {
             type: 'HOME_AD',
@@ -10,7 +41,7 @@ export default async function HomePage() {
         orderBy: {
             createdAt: 'desc'
         }
-    })
+    });
 
     return (
         <div className="flex flex-col gap-8 w-full max-w-6xl mx-auto py-4 animate-in fade-in duration-300">
@@ -22,7 +53,11 @@ export default async function HomePage() {
                 <p className="text-sm text-muted-foreground font-medium">Bienvenido a la plataforma AACOM cotizador</p>
             </div>
 
-            <ClientHome announcements={announcements} />
+            <ClientHome 
+                announcements={announcements} 
+                isBirthday={isBirthday} 
+                currentUser={currentUser ? { name: currentUser.name, image: currentUser.image } : null} 
+            />
         </div>
     )
 }

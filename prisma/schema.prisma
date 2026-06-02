@@ -19,6 +19,7 @@ model User {
   role          String    @default("AGENTE") // Changed from Enum Role to String
   phone         String?   // Teléfono del usuario/agente
   active        Boolean   @default(true) // Estatus activo/inactivo para restringir acceso
+  birthDate     DateTime? // Fecha de nacimiento del agente para overlay de cumpleaños
   
   // Hierarchy
   reportsToId   String?
@@ -30,6 +31,7 @@ model User {
   
   // Data
   dailyRecords  DailyRecord[]
+  activityLogs  ActivityLog[]
   policies      Policy[]
   adnDiagnostics AdnDiagnostic[]
   
@@ -176,5 +178,17 @@ model AdnDiagnostic {
   
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+}
+
+model ActivityLog {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activityId   String   // ID de la actividad del catálogo ('1' a '7')
+  activityName String   // Nombre descriptivo (ej: 'Cita agendada')
+  points       Int      // Puntos otorgados por la actividad
+  prospectName String?  // Nombre del prospecto (obligatorio para citas)
+  dateStr      String   // Fecha en formato 'YYYY-MM-DD' en hora de CDMX
+  createdAt    DateTime @default(now())
 }
 
