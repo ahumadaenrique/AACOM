@@ -78,7 +78,12 @@ export default function AdminClient() {
   const [adnList, setAdnList] = useState<any[]>([])
   const [loadingAdn, setLoadingAdn] = useState<boolean>(false)
   const [searchAdnQuery, setSearchAdnQuery] = useState<string>("")
+  const [adnAgentFilter, setAdnAgentFilter] = useState<string>("ALL")
+  const [adnStartDate, setAdnStartDate] = useState<string>("")
+  const [adnEndDate, setAdnEndDate] = useState<string>("")
   const [selectedAdn, setSelectedAdn] = useState<any | null>(null)
+  const [expandedAdnAgents, setExpandedAdnAgents] = useState<Record<string, boolean>>({})
+  const [expandedAdnDates, setExpandedAdnDates] = useState<Record<string, boolean>>({})
   
   // Agent Credentials registration state
   const [agentEmailInput, setAgentEmailInput] = useState<string>("")
@@ -1617,7 +1622,7 @@ export default function AdminClient() {
             </Card>
           </div>
 
-          {/* ADN Diagnostics Table */}
+          {/* ADN Diagnostics Accordion Section */}
           <Card className="border shadow-sm flex flex-col justify-between">
             <CardHeader className="py-4 border-b bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
@@ -1625,101 +1630,312 @@ export default function AdminClient() {
                   <Heart className="h-4.5 w-4.5 text-teal-600 animate-pulse" /> Historial de ADN AACOM
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Consulta y descarga los diagnósticos patrimoniales de los clientes.
+                  Consulta y descarga los diagnósticos patrimoniales de los clientes agrupados de manera estructurada.
                 </CardDescription>
               </div>
-
-              {/* Filter search box */}
-              <div className="relative w-full sm:w-64 shrink-0">
-                <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
-                <Input 
-                  type="text" 
-                  placeholder="Buscar cliente/agente..." 
-                  value={searchAdnQuery}
-                  onChange={e => setSearchAdnQuery(e.target.value)}
-                  className="pl-8 text-xs h-8 rounded-lg"
-                />
-              </div>
             </CardHeader>
-            <CardContent className="p-0 flex-1">
-              {loadingAdn ? (
-                <div className="text-center py-12 text-slate-400 text-xs">Cargando diagnósticos ADN de la base de datos...</div>
-              ) : adnList.length === 0 ? (
-                <div className="text-center py-12 text-slate-400 text-xs italic flex flex-col items-center gap-2">
-                  <Heart className="h-8 w-8 text-slate-300" />
-                  <span>No hay diagnósticos ADN registrados aún en base de datos.</span>
+            <CardContent className="p-4 space-y-4">
+              {/* Filters Area */}
+              <div className="flex flex-col md:flex-row gap-4 items-center bg-slate-50/40 dark:bg-zinc-900/30 p-4 rounded-xl border border-slate-100">
+                <div className="w-full md:w-56 space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase block font-black">Filtrar por Agente</label>
+                  <select
+                    value={adnAgentFilter}
+                    onChange={(e) => setAdnAgentFilter(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs focus-visible:outline-none"
+                  >
+                    <option value="ALL">Todos los Agentes</option>
+                    {usersList.map((u) => (
+                      <option key={u.id} value={u.id}>{u.name || u.email}</option>
+                    ))}
+                  </select>
                 </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <Table className="text-xs">
-                    <TableHeader className="bg-slate-50 font-bold">
-                      <TableRow>
-                        <TableHead className="font-bold py-3 pl-4">Cliente</TableHead>
-                        <TableHead className="font-bold py-3">Edad</TableHead>
-                        <TableHead className="font-bold py-3">Fecha</TableHead>
-                        <TableHead className="font-bold py-3">Agente / Cuenta</TableHead>
-                        <TableHead className="font-bold py-3">Modalidad</TableHead>
-                        <TableHead className="font-bold py-3 text-center">Estatus Cierre</TableHead>
-                        <TableHead className="font-bold py-3 text-center pr-4">Acciones</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {adnList.filter(item => {
-                        const query = searchAdnQuery.toLowerCase().trim()
-                        if (!query) return true
-                        return (
-                          item.clienteNombre.toLowerCase().includes(query) ||
-                          (item.user?.name || "").toLowerCase().includes(query) ||
-                          (item.user?.email || "").toLowerCase().includes(query)
-                        )
-                      }).map((adn) => (
-                        <TableRow key={adn.id} className="hover:bg-slate-50/50 border-b">
-                          <TableCell className="font-bold text-slate-800 py-3 pl-4">
-                            {adn.clienteNombre}
-                          </TableCell>
-                          <TableCell className="text-slate-700 py-3">
-                            {adn.clienteEdad} años
-                          </TableCell>
-                          <TableCell className="text-slate-500 py-3">
-                            {new Date(adn.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "numeric", year: "2-digit" })}
-                          </TableCell>
-                          <TableCell className="text-slate-700 py-3 font-semibold">
-                            {adn.user?.name || adn.user?.email || "N/A"}
-                          </TableCell>
-                          <TableCell className="py-3">
-                            <span className="px-2 py-0.5 rounded bg-teal-50 text-teal-700 font-bold text-[9px] uppercase border">
-                              {adn.modalidad}
-                            </span>
-                          </TableCell>
-                          <TableCell className="py-3 text-center">
-                            <button
-                              onClick={() => handleToggleAdnClosed(adn.id)}
-                              className={`inline-block px-2.5 py-0.5 rounded-full font-bold text-[9px] uppercase border transition-colors ${
-                                adn.cerradaPagada 
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" 
-                                  : "bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100"
-                              }`}
-                              title="Haz clic para alternar estatus de cierre"
-                            >
-                              {adn.cerradaPagada ? "✓ Cerrada y Pagada" : "Pendiente"}
-                            </button>
-                          </TableCell>
-                          <TableCell className="text-center py-3 pr-4">
-                            <Button
-                              onClick={() => setSelectedAdn(adn)}
-                              variant="ghost"
-                              size="sm"
-                              className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 font-black text-xs flex items-center gap-1 mx-auto"
-                            >
-                              <Eye className="h-3.5 w-3.5" /> Ver Diagnóstico
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+
+                <div className="w-full md:w-44 space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase block font-black">Fecha Inicio</label>
+                  <Input
+                    type="date"
+                    value={adnStartDate}
+                    onChange={(e) => setAdnStartDate(e.target.value)}
+                    className="text-xs h-9"
+                  />
                 </div>
-              )}
+
+                <div className="w-full md:w-44 space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase block font-black">Fecha Fin</label>
+                  <Input
+                    type="date"
+                    value={adnEndDate}
+                    onChange={(e) => setAdnEndDate(e.target.value)}
+                    className="text-xs h-9"
+                  />
+                </div>
+
+                <div className="w-full md:w-64 space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase block font-black">Buscar por Cliente</label>
+                  <div className="relative">
+                    <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
+                    <Input 
+                      type="text" 
+                      placeholder="Nombre del cliente..." 
+                      value={searchAdnQuery}
+                      onChange={e => setSearchAdnQuery(e.target.value)}
+                      className="pl-8 text-xs h-9 rounded-lg"
+                    />
+                  </div>
+                </div>
+
+                <div className="w-full md:w-auto pt-5 flex gap-2">
+                  {(adnAgentFilter !== "ALL" || adnStartDate !== "" || adnEndDate !== "" || searchAdnQuery !== "") && (
+                    <Button
+                      variant="ghost"
+                      onClick={() => {
+                        setAdnAgentFilter("ALL")
+                        setAdnStartDate("")
+                        setAdnEndDate("")
+                        setSearchAdnQuery("")
+                      }}
+                      className="text-red-500 hover:bg-red-50 hover:text-red-600 h-9 text-xs"
+                    >
+                      Limpiar
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Grouped Accordions list */}
+              <div>
+                {loadingAdn ? (
+                  <div className="text-center py-16 text-slate-400 text-xs">
+                    <RefreshCw className="h-6 w-6 animate-spin text-teal-600 mx-auto mb-2" />
+                    Cargando reportes estructurados de ADN...
+                  </div>
+                ) : adnList.length === 0 ? (
+                  <div className="text-center py-16 text-slate-400 text-xs italic bg-slate-50/10 rounded-xl">
+                    No se registran diagnósticos ADN con los filtros seleccionados.
+                  </div>
+                ) : (
+                  (() => {
+                    // Filter ADN diagnostics first
+                    const filteredAdns = adnList.filter(item => {
+                      const query = searchAdnQuery.toLowerCase().trim()
+                      const matchesSearch = !query || 
+                        item.clienteNombre.toLowerCase().includes(query) ||
+                        (item.user?.name || "").toLowerCase().includes(query) ||
+                        (item.user?.email || "").toLowerCase().includes(query);
+
+                      const matchesAgent = adnAgentFilter === "ALL" || item.userId === adnAgentFilter;
+
+                      // CreatedAt comparison
+                      const itemDateStr = new Date(item.createdAt).toISOString().split('T')[0]
+                      const matchesStartDate = !adnStartDate || itemDateStr >= adnStartDate;
+                      const matchesEndDate = !adnEndDate || itemDateStr <= adnEndDate;
+
+                      return matchesSearch && matchesAgent && matchesStartDate && matchesEndDate;
+                    });
+
+                    if (filteredAdns.length === 0) {
+                      return (
+                        <div className="text-center py-12 text-slate-400 text-xs italic bg-slate-50/25 border rounded-xl">
+                          Ningún diagnóstico coincide con los filtros de búsqueda aplicados.
+                        </div>
+                      )
+                    }
+
+                    // Helper to group ADNs by Agent and Date
+                    const groups: Record<string, {
+                      agentName: string;
+                      agentEmail: string;
+                      agentId: string;
+                      dates: Record<string, any[]>;
+                      totalDiagnostics: number;
+                      closedDiagnostics: number;
+                    }> = {};
+
+                    filteredAdns.forEach(item => {
+                      const userId = item.userId;
+                      const name = item.user?.name || item.user?.email || "Agente";
+                      const email = item.user?.email || "";
+                      const dateStr = new Date(item.createdAt).toISOString().split('T')[0]
+
+                      if (!groups[userId]) {
+                        groups[userId] = {
+                          agentName: name,
+                          agentEmail: email,
+                          agentId: userId,
+                          dates: {},
+                          totalDiagnostics: 0,
+                          closedDiagnostics: 0
+                        };
+                      }
+
+                      if (!groups[userId].dates[dateStr]) {
+                        groups[userId].dates[dateStr] = [];
+                      }
+
+                      groups[userId].dates[dateStr].push(item);
+                      groups[userId].totalDiagnostics += 1;
+                      if (item.cerradaPagada) {
+                        groups[userId].closedDiagnostics += 1;
+                      }
+                    });
+
+                    const groupedAdns = Object.values(groups).map(g => ({
+                      ...g,
+                      dates: Object.entries(g.dates).map(([dateStr, dateItems]) => ({
+                        dateStr,
+                        diagnostics: dateItems.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+                      })).sort((a, b) => b.dateStr.localeCompare(a.dateStr))
+                    })).sort((a, b) => b.totalDiagnostics - a.totalDiagnostics);
+
+                    return (
+                      <div className="space-y-3">
+                        {groupedAdns.map((agentGroup) => {
+                          const isAgentExpanded = expandedAdnAgents[agentGroup.agentId];
+
+                          return (
+                            <Card key={agentGroup.agentId} className="shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden hover:shadow-md transition-shadow">
+                              {/* Agent Header Block */}
+                              <div 
+                                onClick={() => setExpandedAdnAgents(prev => ({ ...prev, [agentGroup.agentId]: !isAgentExpanded }))}
+                                className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50/50 dark:bg-zinc-900/30 cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-900/50 transition-colors gap-3 select-none animate-in fade-in duration-200"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <span className="h-9 w-9 rounded-full bg-teal-500 text-white flex items-center justify-center font-black text-xs uppercase shadow-inner">
+                                    {agentGroup.agentName.split(" ").map(w => w[0]).slice(0, 2).join("")}
+                                  </span>
+                                  <div>
+                                    <h3 className="font-extrabold text-slate-800 dark:text-zinc-100 text-xs sm:text-sm">
+                                      {agentGroup.agentName}
+                                    </h3>
+                                    <span className="text-[9px] text-slate-400 block mt-0.5">
+                                      {agentGroup.agentEmail}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-2 flex-wrap">
+                                  <span className="text-[9px] font-black bg-teal-50 dark:bg-teal-950/20 text-teal-700 dark:text-teal-400 border border-teal-200 px-2 py-1 rounded-full uppercase tracking-wider">
+                                    {agentGroup.totalDiagnostics} ADNs
+                                  </span>
+                                  {agentGroup.closedDiagnostics > 0 && (
+                                    <span className="text-[9px] font-black bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 px-2 py-1 rounded-full uppercase tracking-wider">
+                                      {agentGroup.closedDiagnostics} Cierres
+                                    </span>
+                                  )}
+                                  <svg 
+                                    xmlns="http://www.w3.org/2000/svg" 
+                                    fill="none" 
+                                    viewBox="0 0 24 24" 
+                                    strokeWidth={3} 
+                                    stroke="currentColor" 
+                                    className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isAgentExpanded ? 'rotate-180' : ''}`}
+                                  >
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                  </svg>
+                                </div>
+                              </div>
+
+                              {/* Agent Expanded Content */}
+                              {isAgentExpanded && (
+                                <CardContent className="p-4 bg-white dark:bg-zinc-950 border-t space-y-3 animate-in slide-in-from-top-1 duration-200">
+                                  {agentGroup.dates.map((dateGroup) => {
+                                    const dateKey = `${agentGroup.agentId}_${dateGroup.dateStr}`;
+                                    const isDateExpanded = expandedAdnDates[dateKey];
+
+                                    // Format Date beautifully
+                                    const dParts = dateGroup.dateStr.split('-')
+                                    const dObj = new Date(Number(dParts[0]), Number(dParts[1]) - 1, Number(dParts[2]))
+                                    const prettyDate = dObj.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" })
+
+                                    return (
+                                      <div key={dateGroup.dateStr} className="border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
+                                        {/* Date Header Accordion */}
+                                        <div 
+                                          onClick={() => setExpandedAdnDates(prev => ({ ...prev, [dateKey]: !isDateExpanded }))}
+                                          className="flex items-center justify-between px-3.5 py-2 bg-slate-50/30 dark:bg-zinc-900/10 cursor-pointer hover:bg-slate-50/80 dark:hover:bg-zinc-900/40 select-none text-xs"
+                                        >
+                                          <span className="font-bold text-slate-700 dark:text-zinc-300 capitalize flex items-center gap-1.5 font-black">
+                                            <Calendar className="h-3.5 w-3.5 text-teal-600" /> {prettyDate}
+                                          </span>
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-[9px] font-black bg-slate-100 dark:bg-zinc-800 text-slate-600 border px-2 py-0.5 rounded">
+                                              {dateGroup.diagnostics.length} adn(s)
+                                            </span>
+                                            <svg 
+                                              xmlns="http://www.w3.org/2000/svg" 
+                                              fill="none" 
+                                              viewBox="0 0 24 24" 
+                                              strokeWidth={3} 
+                                              stroke="currentColor" 
+                                              className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${isDateExpanded ? 'rotate-180' : ''}`}
+                                            >
+                                              <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                            </svg>
+                                          </div>
+                                        </div>
+
+                                        {/* Date Expanded Diagnostics details */}
+                                        {isDateExpanded && (
+                                          <div className="p-3 bg-white dark:bg-zinc-950 border-t space-y-2 animate-in slide-in-from-top-1 duration-150">
+                                            {dateGroup.diagnostics.map((adn) => (
+                                              <div key={adn.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-2.5 bg-slate-50/20 dark:bg-zinc-900/5 hover:bg-slate-50/50 dark:hover:bg-zinc-900/20 rounded-xl border border-slate-100 dark:border-zinc-900 gap-3 text-xs">
+                                                <div className="space-y-1">
+                                                  <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="font-extrabold text-slate-800 dark:text-zinc-200">
+                                                      👤 Cliente: {adn.clienteNombre} ({adn.clienteEdad} años)
+                                                    </span>
+                                                    <span className="text-[9px] text-slate-400 font-bold">
+                                                      Registrado: {new Date(adn.createdAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                                                    </span>
+                                                  </div>
+                                                  <div className="flex items-center gap-2">
+                                                    <span className="px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-950/20 text-teal-700 dark:text-teal-400 font-bold text-[9px] uppercase border">
+                                                      Modalidad: {adn.modalidad}
+                                                    </span>
+                                                  </div>
+                                                </div>
+
+                                                <div className="flex items-center justify-end gap-3">
+                                                  {/* Estatus Cierre toggle button */}
+                                                  <button
+                                                    onClick={() => handleToggleAdnClosed(adn.id)}
+                                                    className={`inline-block px-2.5 py-1 rounded-full font-bold text-[9px] uppercase border transition-colors ${
+                                                      adn.cerradaPagada 
+                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100" 
+                                                        : "bg-slate-50 text-slate-400 border-slate-200 hover:bg-slate-100"
+                                                    }`}
+                                                    title="Haz clic para alternar estatus de cierre"
+                                                  >
+                                                    {adn.cerradaPagada ? "✓ Cerrada y Pagada" : "Pendiente"}
+                                                  </button>
+
+                                                  <Button
+                                                    onClick={() => setSelectedAdn(adn)}
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/20 font-black text-xs flex items-center gap-1"
+                                                  >
+                                                    <Eye className="h-3.5 w-3.5" /> Ver Diagnóstico
+                                                  </Button>
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    )
+                                  })}
+                                </CardContent>
+                              )}
+                            </Card>
+                          )
+                        })}
+                      </div>
+                    )
+                  })()
+                )}
+              </div>
             </CardContent>
           </Card>
 
