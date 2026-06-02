@@ -1248,4 +1248,70 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
     }
 }
 
+export async function getCurrentUser() {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: { id: true, name: true, email: true, role: true }
+        });
+        if (!user) {
+            return { success: false, message: "Usuario no encontrado" };
+        }
+        return { success: true, user };
+    } catch (error: any) {
+        console.error("Error fetching current user:", error);
+        return { success: false, message: error.message || "Error al obtener usuario actual" };
+    }
+}
+
+export async function removeLastActivityLogEntry(activityId: string) {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!user) {
+            return { success: false, message: "Usuario no encontrado" };
+        }
+
+        const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+
+        const lastLog = await prisma.activityLog.findFirst({
+            where: {
+                userId: user.id,
+                activityId,
+                dateStr,
+            },
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+
+        if (!lastLog) {
+            return { success: false, message: "No se encontraron registros de esta actividad hoy." };
+        }
+
+        await prisma.activityLog.delete({
+            where: { id: lastLog.id }
+        });
+
+        revalidatePath('/activity');
+        revalidatePath('/admin');
+        revalidatePath('/');
+        return { success: true, message: `Registro de "${lastLog.activityName}" removido.` };
+    } catch (error: any) {
+        console.error("Error removing last activity log entry:", error);
+        return { success: false, message: error.message || "Error al remover la actividad" };
+    }
+}
+
 

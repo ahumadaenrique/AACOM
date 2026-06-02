@@ -5,7 +5,8 @@ import {
     saveActivityLogEntry, 
     deleteActivityLogEntry, 
     getDailyActivitySummary, 
-    getActivityHistory 
+    getActivityHistory,
+    removeLastActivityLogEntry
 } from "@/app/actions";
 import { SALES_ACTIVITIES, TRAFFIC_LIGHT_THRESHOLDS } from "@/lib/constants";
 import { 
@@ -144,6 +145,24 @@ export default function ActivityPage() {
         } else {
             // Log directly
             await registerActivity(activity.id);
+        }
+    };
+
+    // Handle Quick click subtraction
+    const handleActivityMinusClick = async (activity: typeof SALES_ACTIVITIES[0]) => {
+        try {
+            setSubmitting(true);
+            const res = await removeLastActivityLogEntry(activity.id);
+            if (res.success) {
+                await loadData();
+            } else {
+                alert(res.message);
+            }
+        } catch (err) {
+            console.error("Failed to subtract activity:", err);
+            alert("Ocurrió un error al reducir la actividad.");
+        } finally {
+            setSubmitting(false);
         }
     };
 
@@ -309,27 +328,53 @@ export default function ActivityPage() {
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {SALES_ACTIVITIES.map((act) => (
-                            <button
+                            <div
                                 key={act.id}
-                                disabled={submitting}
-                                onClick={() => handleActivityClick(act)}
-                                className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-100 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-900/30 hover:bg-slate-100/50 dark:hover:bg-zinc-800/50 hover:scale-[1.01] hover:shadow-sm active:scale-[0.99] transition-all text-left group"
+                                className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-900/30 shadow-sm transition-all"
                             >
-                                <div className="h-10 w-10 shrink-0 bg-white dark:bg-zinc-950 rounded-lg flex items-center justify-center shadow-sm border border-slate-100/80 dark:border-zinc-800">
-                                    {getActivityIcon(act.id)}
+                                {/* Left Side: Clickable area to add points */}
+                                <button
+                                    disabled={submitting}
+                                    onClick={() => handleActivityClick(act)}
+                                    className="flex items-center gap-3 flex-1 min-w-0 text-left group hover:translate-x-0.5 active:scale-[0.99] transition-all"
+                                    title={`Sumar ${act.name}`}
+                                >
+                                    <div className="h-10 w-10 shrink-0 bg-white dark:bg-zinc-950 rounded-lg flex items-center justify-center shadow-sm border border-slate-100/80 dark:border-zinc-800 group-hover:shadow-md transition-shadow">
+                                        {getActivityIcon(act.id)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
+                                            {act.name}
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">
+                                            +{act.value} {act.value === 1 ? 'punto' : 'puntos'}
+                                        </p>
+                                    </div>
+                                </button>
+
+                                {/* Right Side: Minus and Plus Quick Controls */}
+                                <div className="flex items-center gap-1.5 ml-2 shrink-0">
+                                    {/* Minus Button */}
+                                    <button
+                                        disabled={submitting}
+                                        onClick={() => handleActivityMinusClick(act)}
+                                        className="h-7 w-7 rounded-full bg-slate-100 hover:bg-rose-50 dark:bg-zinc-800/80 dark:hover:bg-rose-950/20 flex items-center justify-center text-slate-500 hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-400 active:scale-90 transition-all border border-slate-200/40 dark:border-zinc-700/30"
+                                        title="Quitar último"
+                                    >
+                                        <span className="text-base font-black leading-none -translate-y-[1px]">−</span>
+                                    </button>
+
+                                    {/* Plus Button */}
+                                    <button
+                                        disabled={submitting}
+                                        onClick={() => handleActivityClick(act)}
+                                        className="h-7 w-7 rounded-full bg-slate-100 hover:bg-teal-600 dark:bg-zinc-800/80 dark:hover:bg-teal-500 flex items-center justify-center text-slate-500 hover:text-white dark:text-zinc-400 dark:hover:text-white active:scale-90 transition-all border border-slate-200/40 dark:border-zinc-700/30"
+                                        title="Sumar uno"
+                                    >
+                                        <Plus className="h-3.5 w-3.5" />
+                                    </button>
                                 </div>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
-                                        {act.name}
-                                    </p>
-                                    <p className="text-[10px] text-muted-foreground font-black uppercase">
-                                        +{act.value} {act.value === 1 ? 'punto' : 'puntos'}
-                                    </p>
-                                </div>
-                                <div className="h-6 w-6 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-500 group-hover:bg-teal-600 group-hover:text-white dark:group-hover:bg-teal-500 transition-all shrink-0">
-                                    <Plus className="h-3.5 w-3.5" />
-                                </div>
-                            </button>
+                            </div>
                         ))}
                     </div>
                 </div>

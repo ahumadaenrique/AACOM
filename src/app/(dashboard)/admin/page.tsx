@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry } from "@/app/actions"
+import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -53,6 +53,7 @@ export default function AdminPage() {
   const [isAuthorized, setIsAuthorized] = useState<boolean>(false)
   const [passwordInput, setPasswordInput] = useState<string>("")
   const [passwordError, setPasswordError] = useState<string>("")
+  const [loadingAuth, setLoadingAuth] = useState<boolean>(true)
 
   // Admin Data states
   const [cotizaciones, setCotizaciones] = useState<any[]>([])
@@ -475,6 +476,22 @@ export default function AdminPage() {
   }
 
   useEffect(() => {
+    const verifyAdminSession = async () => {
+      try {
+        const res = await getCurrentUser()
+        if (res.success && res.user && res.user.role === 'ADMIN') {
+          setIsAuthorized(true)
+        }
+      } catch (err) {
+        console.error("Error verifying admin role:", err)
+      } finally {
+        setLoadingAuth(false)
+      }
+    }
+    verifyAdminSession()
+  }, [])
+
+  useEffect(() => {
     if (isAuthorized) {
       loadData()
     }
@@ -712,6 +729,16 @@ export default function AdminPage() {
     }
 
     html2pdf().from(element).set(opt).save()
+  }
+
+  // RENDER LOADING AUTH STATE
+  if (loadingAuth) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <RefreshCw className="h-12 w-12 text-teal-600 animate-spin" />
+        <p className="text-sm text-muted-foreground font-semibold">Verificando credenciales de Administrador...</p>
+      </div>
+    )
   }
 
   // RENDER PASSWORD SCREEN IF NOT AUTHORIZED
