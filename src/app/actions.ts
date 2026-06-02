@@ -1016,7 +1016,6 @@ export async function getMonthlyAdnRankings() {
         // Fetch all active agents to initialize 0 points
         const allAgents = await prisma.user.findMany({
             where: {
-                role: 'AGENTE',
                 active: true
             },
             select: {
