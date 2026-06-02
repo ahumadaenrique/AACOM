@@ -29,7 +29,8 @@ import {
   Check,
   Heart,
   ClipboardCheck,
-  Trash2
+  Trash2,
+  MessageSquare
 } from "lucide-react"
 import { resolveImageUrl } from "@/lib/utils"
 
@@ -59,7 +60,16 @@ export default function AdminClient() {
   const [error, setError] = useState<string>("")
 
   // Admin Dashboard Tabs
-  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad">("productividad")
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente">("productividad")
+
+  // Chatbot Knowledge Base states
+  const [knowledgeDocs, setKnowledgeDocs] = useState<any[]>([])
+  const [loadingDocs, setLoadingDocs] = useState<boolean>(false)
+  const [docTitle, setDocTitle] = useState<string>("")
+  const [docContent, setDocContent] = useState<string>("")
+  const [selectedDocId, setSelectedDocId] = useState<string | null>(null)
+  const [savingDoc, setSavingDoc] = useState<boolean>(false)
+  const [docMsg, setDocMsg] = useState<string>("")
 
   // Rescued quote state
   const [selectedQuote, setSelectedQuote] = useState<any | null>(null)
@@ -369,12 +379,85 @@ export default function AdminClient() {
 
       // 7. Fetch activity logs for admin reporting
       await fetchActivityLogsList()
+
+      // 8. Fetch chatbot knowledge documents
+      await fetchKnowledgeDocsList()
     } catch (err) {
       console.error(err)
       setError("Fallo al conectar con el servidor.")
     } finally {
       setLoading(false)
       setLoadingAdn(false)
+    }
+  }
+
+  const fetchKnowledgeDocsList = async () => {
+    try {
+      setLoadingDocs(true)
+      const { getKnowledgeDocuments } = await import("@/app/actions")
+      const res = await getKnowledgeDocuments()
+      if (res.success && res.docs) {
+        setKnowledgeDocs(res.docs)
+      }
+    } catch (err) {
+      console.error("Error fetching knowledge docs:", err)
+    } finally {
+      setLoadingDocs(false)
+    }
+  }
+
+  const handleSaveDoc = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!docTitle.trim() || !docContent.trim()) return
+    setSavingDoc(true)
+    setDocMsg("Guardando...")
+    try {
+      const { saveKnowledgeDocument } = await import("@/app/actions")
+      const res = await saveKnowledgeDocument(selectedDocId, docTitle.trim(), docContent.trim())
+      if (res.success) {
+        setDocMsg("¡Documento guardado con éxito!")
+        setDocTitle("")
+        setDocContent("")
+        setSelectedDocId(null)
+        await fetchKnowledgeDocsList()
+        setTimeout(() => setDocMsg(""), 3000)
+      } else {
+        setDocMsg(`Error: ${res.message}`)
+      }
+    } catch (err: any) {
+      console.error(err)
+      setDocMsg(`Error: ${err.message || "Error al conectar"}`)
+    } finally {
+      setSavingDoc(false)
+    }
+  }
+
+  const handleDeleteDoc = async (id: string) => {
+    if (!confirm("¿Estás seguro de que deseas eliminar este documento de la base de conocimientos? Gemini ya no podrá consultarlo.")) return
+    try {
+      const { deleteKnowledgeDocument } = await import("@/app/actions")
+      const res = await deleteKnowledgeDocument(id)
+      if (res.success) {
+        await fetchKnowledgeDocsList()
+      } else {
+        alert(res.message || "Error al eliminar")
+      }
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const handleToggleDocActive = async (id: string) => {
+    try {
+      const { toggleKnowledgeDocumentActiveStatus } = await import("@/app/actions")
+      const res = await toggleKnowledgeDocumentActiveStatus(id)
+      if (res.success) {
+        await fetchKnowledgeDocsList()
+      } else {
+        alert(res.message || "Error al cambiar estatus")
+      }
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -831,6 +914,16 @@ export default function AdminClient() {
           }`}
         >
           <ClipboardCheck className="h-4.5 w-4.5" /> Actividad AACOM 25
+        </button>
+        <button
+          onClick={() => setActiveTab("asistente")}
+          className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === "asistente"
+              ? "border-teal-600 text-teal-600 dark:text-teal-400"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <MessageSquare className="h-4.5 w-4.5 text-pink-500" /> Asistente (Conocimiento)
         </button>
       </div>
 
@@ -2583,6 +2676,175 @@ export default function AdminClient() {
               </div>
             </CardContent>
           </Card>
+        </div>
+      )}
+
+      {/* TAB CONTENT 7: CHATBOT KNOWLEDGE BASE */}
+      {activeTab === "asistente" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+            
+            {/* Left Column: Form to upload/paste new document */}
+            <Card className="border shadow-sm bg-gradient-to-br from-white to-slate-50/30">
+              <CardHeader className="py-4 border-b bg-slate-50/50">
+                <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                  <MessageSquare className="h-4.5 w-4.5 text-pink-500 animate-pulse" />
+                  {selectedDocId ? "Editar Documento" : "Cargar Lineamiento / Cuaderno"}
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Carga lineamientos comerciales, cuadernos de bonos o condiciones generales. Gemini responderá basándose en esta información.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="p-5 space-y-4">
+                <form onSubmit={handleSaveDoc} className="space-y-4">
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-600 uppercase block">Título del Documento</label>
+                    <Input 
+                      type="text" 
+                      placeholder="Ej. Lineamientos Comerciales Insignia 2026" 
+                      value={docTitle}
+                      onChange={e => setDocTitle(e.target.value)}
+                      className="text-xs h-9 font-semibold"
+                      disabled={savingDoc}
+                      required
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-bold text-slate-600 uppercase block">Contenido del Lineamiento (Copiar y Pegar Texto)</label>
+                    <textarea 
+                      placeholder="Pega aquí el contenido de texto del PDF o página web..." 
+                      value={docContent}
+                      onChange={e => setDocContent(e.target.value)}
+                      rows={12}
+                      className="w-full text-xs font-medium p-3 bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-xl focus:outline-none focus:ring-1 focus:ring-teal-500"
+                      disabled={savingDoc}
+                      required
+                    />
+                  </div>
+
+                  {docMsg && (
+                    <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest text-center animate-pulse">
+                      {docMsg}
+                    </p>
+                  )}
+
+                  <div className="flex gap-2">
+                    {selectedDocId && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedDocId(null)
+                          setDocTitle("")
+                          setDocContent("")
+                        }}
+                        className="flex-1 font-bold text-xs"
+                      >
+                        Cancelar
+                      </Button>
+                    )}
+                    <Button
+                      type="submit"
+                      size="sm"
+                      disabled={savingDoc}
+                      className="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs"
+                    >
+                      {savingDoc ? <RefreshCw className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                      {selectedDocId ? "Actualizar Documento" : "Guardar Documento"}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+
+            {/* Right Column: List of current documents */}
+            <Card className="lg:col-span-2 border shadow-sm">
+              <CardHeader className="py-4 border-b bg-slate-50/50 flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <BookOpen className="h-4.5 w-4.5 text-teal-600" /> Documentos de Entrenamiento Activos
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Listado de cuadernos, políticas y PDFs vigentes de los que el asistente aprende.
+                  </CardDescription>
+                </div>
+              </CardHeader>
+              <CardContent className="p-6">
+                {loadingDocs ? (
+                  <div className="text-center py-12 text-slate-400 text-xs">
+                    <RefreshCw className="h-6 w-6 animate-spin text-teal-600 mx-auto mb-2" />
+                    Cargando base de conocimientos...
+                  </div>
+                ) : knowledgeDocs.length === 0 ? (
+                  <div className="text-center py-12 text-slate-400 text-xs italic">
+                    No hay documentos de conocimiento guardados en la plataforma aún.
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {knowledgeDocs.map((doc) => (
+                      <div 
+                        key={doc.id} 
+                        className={`border rounded-xl p-4 bg-slate-50/50 dark:bg-zinc-900/30 flex flex-col sm:flex-row justify-between sm:items-center gap-4 transition-all ${
+                          !doc.active ? "opacity-60 border-dashed border-slate-300" : "border-slate-200"
+                        }`}
+                      >
+                        <div className="space-y-1 flex-1 min-w-0">
+                          <h4 className="text-xs font-black text-slate-800 dark:text-zinc-200 truncate flex items-center gap-1.5">
+                            {doc.title}
+                          </h4>
+                          <p className="text-[10px] text-slate-500 font-semibold line-clamp-2">
+                            {doc.content}
+                          </p>
+                          <div className="text-[9px] text-slate-400 font-bold flex gap-3 pt-1">
+                            <span>Modificado: {new Date(doc.updatedAt).toLocaleDateString("es-MX")}</span>
+                            <span>{doc.content.length} caracteres</span>
+                          </div>
+                        </div>
+
+                        <div className="flex sm:flex-col gap-2 shrink-0">
+                          <div className="flex gap-2">
+                            <Button
+                              onClick={() => {
+                                setSelectedDocId(doc.id)
+                                setDocTitle(doc.title)
+                                setDocContent(doc.content)
+                              }}
+                              variant="outline"
+                              size="sm"
+                              className="font-bold text-[10px] h-7 px-2.5"
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              onClick={() => handleToggleDocActive(doc.id)}
+                              variant="outline"
+                              size="sm"
+                              className={`font-bold text-[10px] h-7 px-2.5 ${
+                                doc.active ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50" : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                              }`}
+                            >
+                                {doc.active ? "Pausar" : "Activar"}
+                            </Button>
+                          </div>
+                          <Button
+                            onClick={() => handleDeleteDoc(doc.id)}
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-[10px] h-7 px-2.5"
+                          >
+                            Eliminar
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+          </div>
         </div>
       )}
 

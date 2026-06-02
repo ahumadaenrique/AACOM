@@ -1443,5 +1443,228 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
     }
 }
 
+// ==========================================
+// ASISTENTE INTELIGENTE AACOM (GEMINI 1.5) ACTIONS
+// ==========================================
+
+export async function getKnowledgeDocuments() {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    try {
+        const docs = await prisma.knowledgeDocument.findMany({
+            orderBy: {
+                createdAt: 'desc'
+            }
+        });
+        return { success: true, docs };
+    } catch (error: any) {
+        console.error("Error getting knowledge documents:", error);
+        return { success: false, message: error.message || "Error al obtener documentos" };
+    }
+}
+
+export async function saveKnowledgeDocument(id: string | null, title: string, content: string) {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!user || user.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        if (id) {
+            const updated = await prisma.knowledgeDocument.update({
+                where: { id },
+                data: { title, content }
+            });
+            revalidatePath('/admin');
+            return { success: true, doc: updated, message: "Documento actualizado" };
+        } else {
+            const created = await prisma.knowledgeDocument.create({
+                data: { title, content }
+            });
+            revalidatePath('/admin');
+            return { success: true, doc: created, message: "Documento guardado con éxito" };
+        }
+    } catch (error: any) {
+        console.error("Error saving knowledge document:", error);
+        return { success: false, message: error.message || "Error al guardar documento" };
+    }
+}
+
+export async function deleteKnowledgeDocument(id: string) {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!user || user.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        await prisma.knowledgeDocument.delete({
+            where: { id }
+        });
+
+        revalidatePath('/admin');
+        return { success: true, message: "Documento eliminado permanentemente" };
+    } catch (error: any) {
+        console.error("Error deleting knowledge document:", error);
+        return { success: false, message: error.message || "Error al eliminar documento" };
+    }
+}
+
+export async function toggleKnowledgeDocumentActiveStatus(id: string) {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!user || user.role !== 'ADMIN') {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const doc = await prisma.knowledgeDocument.findUnique({
+            where: { id }
+        });
+
+        if (!doc) {
+            return { success: false, message: "Documento no encontrado" };
+        }
+
+        const updated = await prisma.knowledgeDocument.update({
+            where: { id },
+            data: { active: !doc.active }
+        });
+
+        revalidatePath('/admin');
+        return { success: true, doc: updated, message: `Documento ${updated.active ? 'activado' : 'desactivado'}` };
+    } catch (error: any) {
+        console.error("Error toggling document active status:", error);
+        return { success: false, message: error.message || "Error al cambiar estatus" };
+    }
+}
+
+export async function askAacomAssistant(
+    chatHistory: { role: "user" | "model"; parts: { text: string }[] }[],
+    userMessage: string
+) {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+        return { 
+            success: false, 
+            message: "La clave de la API de Gemini (GEMINI_API_KEY) no está configurada en las variables de entorno de la plataforma. Solicita al administrador configurarla en .env.local de Vercel." 
+        };
+    }
+
+    try {
+        // 1. Fetch active knowledge documents to inject
+        const activeDocs = await prisma.knowledgeDocument.findMany({
+            where: { active: true },
+            select: { title: true, content: true }
+        });
+
+        // 2. Format knowledge context block
+        let knowledgeContext = "BASE DE CONOCIMIENTOS OFICIAL AACOM:\n";
+        if (activeDocs.length > 0) {
+            activeDocs.forEach((doc, idx) => {
+                knowledgeContext += `\n--- DOCUMENTO ${idx + 1}: ${doc.title} ---\n${doc.content}\n`;
+            });
+        } else {
+            knowledgeContext += "(No hay documentos de conocimiento cargados actualmente. Responde con tus conocimientos generales sobre seguros pero aclara que no hay directivas internas activas en este momento.)\n";
+        }
+
+        // 3. Define rigid system instruction
+        const systemInstruction = `Eres "Asistente AACOM", el copiloto inteligente de la promotoría de seguros de vida, gastos médicos y ahorro de AACOM.
+Tu objetivo es dar soporte rápido, amigable y muy profesional a los agentes de seguros sobre lineamientos comerciales, cuadernos de bonos, adendums y condiciones generales de productos (como el Vitalicio o el Universal).
+
+REGLAS ABSOLUTAS:
+1. Basar tus respuestas de la manera más directa y estricta posible en la "BASE DE CONOCIMIENTOS OFICIAL AACOM" que se te provee más abajo.
+2. Si la respuesta a la pregunta del agente no está contenida en la Base de Conocimientos oficial provista, responde textualmente:
+"Lo lamento, no cuento con esa información en mis lineamientos comerciales oficiales en este momento. Por favor, consulta directamente con la dirección o el equipo administrativo de AACOM."
+Bajo ninguna circunstancia debes inventar porcentajes de comisiones, montos de bonos, plazos de productos o políticas comerciales. No "alucines" ni asumas políticas que no estén explícitamente escritas en los documentos de abajo.
+3. Sé conciso y estructurado. Si respondes tablas o cifras, usa formato Markdown (listas con viñetas o tablas) para que la lectura móvil sea impecable.
+4. Responde en español de México.
+
+${knowledgeContext}`;
+
+        // 4. Form contents array for Gemini API payload
+        const contents = [
+            ...chatHistory,
+            {
+                role: "user",
+                parts: [{ text: userMessage }]
+            }
+        ];
+
+        // 5. Call Gemini API endpoint
+        const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    contents,
+                    systemInstruction: {
+                        parts: [{ text: systemInstruction }]
+                    },
+                    generationConfig: {
+                        temperature: 0.1, // Keep it highly focused and deterministic to avoid hallucinations
+                        topP: 0.95,
+                        maxOutputTokens: 2048
+                    }
+                })
+            }
+        );
+
+        if (!response.ok) {
+            const errData = await response.json().catch(() => ({}));
+            throw new Error(errData?.error?.message || `Error en la API de Gemini (${response.status})`);
+        }
+
+        const data = await response.json();
+        const assistantText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "No se pudo generar una respuesta.";
+
+        return { 
+            success: true, 
+            reply: assistantText 
+        };
+
+    } catch (error: any) {
+        console.error("Error in askAacomAssistant:", error);
+        return { 
+            success: false, 
+            message: error.message || "Error al conectar con el Asistente Inteligente." 
+        };
+    }
+}
+
+
 
 
