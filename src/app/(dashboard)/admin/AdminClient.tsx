@@ -30,7 +30,8 @@ import {
   Heart,
   ClipboardCheck,
   Trash2,
-  MessageSquare
+  MessageSquare,
+  Upload
 } from "lucide-react"
 import { resolveImageUrl } from "@/lib/utils"
 
@@ -430,6 +431,67 @@ export default function AdminClient() {
     } finally {
       setSavingDoc(false)
     }
+  }
+
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setDocMsg("Cargando y procesando PDF...")
+    
+    const loadPdfJs = () => {
+      return new Promise<void>((resolve, reject) => {
+        if ((window as any).pdfjsLib) {
+          resolve()
+          return
+        }
+        const script = document.createElement("script")
+        script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+        script.onload = () => {
+          ;(window as any).pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
+          resolve()
+        }
+        script.onerror = reject
+        document.head.appendChild(script)
+      })
+    }
+
+    const fileReader = new FileReader()
+    fileReader.onload = async function () {
+      try {
+        const typedarray = new Uint8Array(this.result as ArrayBuffer)
+        await loadPdfJs()
+        const pdfjsLib = (window as any).pdfjsLib
+        const pdf = await pdfjsLib.getDocument({ data: typedarray }).promise
+        
+        let extractedText = ""
+        for (let i = 1; i <= pdf.numPages; i++) {
+          const page = await pdf.getPage(i)
+          const textContent = await page.getTextContent()
+          const pageText = textContent.items.map((item: any) => item.str).join(" ")
+          extractedText += pageText + "\n"
+        }
+
+        if (!extractedText.trim()) {
+          setDocMsg("El PDF se leyó pero no se pudo extraer texto (puede que contenga solo imágenes).")
+          return
+        }
+
+        setDocContent(extractedText)
+        const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, "")
+        setDocTitle(fileNameWithoutExt)
+        setDocMsg(`¡Texto extraído de ${pdf.numPages} páginas con éxito!`)
+      } catch (err: any) {
+        console.error("Error al extraer PDF:", err)
+        setDocMsg(`Error al extraer PDF: ${err.message}`)
+      } finally {
+        e.target.value = ""
+      }
+    }
+    fileReader.onerror = () => {
+      setDocMsg("Error al leer el archivo PDF.")
+    }
+    fileReader.readAsArrayBuffer(file)
   }
 
   const handleDeleteDoc = async (id: string) => {
@@ -2708,6 +2770,27 @@ export default function AdminClient() {
                       disabled={savingDoc}
                       required
                     />
+                  </div>
+
+                  <div className="space-y-1.5 p-3.5 bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl">
+                    <label className="text-[10px] font-black text-slate-700 uppercase tracking-wider flex items-center gap-1">
+                      <Upload className="h-3.5 w-3.5 text-teal-600 animate-bounce" />
+                      Extraer Texto desde PDF (Opcional)
+                    </label>
+                    <input 
+                      type="file" 
+                      accept=".pdf"
+                      onChange={handlePdfUpload}
+                      disabled={savingDoc}
+                      className="block w-full text-[11px] text-slate-500 font-semibold
+                        file:mr-3.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0
+                        file:text-[10px] file:font-black file:uppercase file:tracking-wider
+                        file:bg-teal-600 file:text-white hover:file:bg-teal-700
+                        file:cursor-pointer cursor-pointer"
+                    />
+                    <span className="text-[9px] text-slate-500 leading-normal block">
+                      Selecciona un archivo PDF local para extraer su contenido de texto de forma automática. Podrás editarlo antes de guardarlo.
+                    </span>
                   </div>
 
                   <div className="space-y-1">
