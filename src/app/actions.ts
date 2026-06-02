@@ -1623,6 +1623,10 @@ ${knowledgeContext}`;
 
         // 5. Call Gemini API endpoint with a robust multi-model fallback loop
         const modelNames = [
+            "gemini-3.5-flash",
+            "gemini-3.5-flash-latest",
+            "gemini-3.1-flash-lite",
+            "gemini-3.5-pro",
             "gemini-1.5-flash",
             "gemini-1.5-flash-latest",
             "gemini-2.0-flash",
