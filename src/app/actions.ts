@@ -1621,35 +1621,55 @@ ${knowledgeContext}`;
             }
         ];
 
-        // 5. Call Gemini API endpoint (Try v1beta first as it fully supports systemInstruction in REST API)
-        let response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    contents,
-                    systemInstruction: {
-                        parts: [{ text: systemInstruction }]
-                    },
-                    generationConfig: {
-                        temperature: 0.1, // Keep it highly focused and deterministic to avoid hallucinations
-                        topP: 0.95,
-                        maxOutputTokens: 2048
-                    }
-                })
-            }
-        );
+        // 5. Call Gemini API endpoint with a robust multi-model fallback loop
+        const modelNames = [
+            "gemini-1.5-flash",
+            "gemini-1.5-flash-latest",
+            "gemini-2.0-flash",
+            "gemini-1.5-pro"
+        ];
 
-        // Fallback to v1 if v1beta fails (or if the key is restricted to v1 only)
-        // Since v1 REST API does not support the "systemInstruction" parameter at the root level, 
-        // we embed the system instructions in the final user message for robust fallback.
-        if (!response.ok) {
-            const errData = await response.clone().json().catch(() => ({}));
-            const v1betaError = errData?.error?.message || `Status ${response.status}`;
-            console.warn(`Gemini v1beta call failed: ${v1betaError}. Attempting fallback to v1...`);
+        let response: Response | null = null;
+        let lastErrorMsg = "";
+
+        // Phase A: Try v1beta models (which natively support systemInstruction in REST API)
+        for (const modelName of modelNames) {
+            try {
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+                const res = await fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        contents,
+                        systemInstruction: {
+                            parts: [{ text: systemInstruction }]
+                        },
+                        generationConfig: {
+                            temperature: 0.1,
+                            topP: 0.95,
+                            maxOutputTokens: 2048
+                        }
+                    })
+                });
+
+                if (res.ok) {
+                    response = res;
+                    break;
+                } else {
+                    const errData = await res.json().catch(() => ({}));
+                    const msg = errData?.error?.message || `Status ${res.status}`;
+                    lastErrorMsg += `[v1beta:${modelName} -> ${msg}]; `;
+                }
+            } catch (err: any) {
+                lastErrorMsg += `[v1beta:${modelName} error -> ${err.message}]; `;
+            }
+        }
+
+        // Phase B: Fallback to v1 models if v1beta fails (requires embedding instructions in user message)
+        if (!response) {
+            console.warn(`All v1beta models failed. Errors: ${lastErrorMsg}. Attempting fallback to stable v1...`);
             
             const fallbackContents = [
                 ...chatHistory,
@@ -1659,31 +1679,40 @@ ${knowledgeContext}`;
                 }
             ];
 
-            const fallbackResponse = await fetch(
-                `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        contents: fallbackContents,
-                        generationConfig: {
-                            temperature: 0.1,
-                            topP: 0.95,
-                            maxOutputTokens: 2048
-                        }
-                    })
-                }
-            );
+            for (const modelName of modelNames) {
+                try {
+                    const url = `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${apiKey}`;
+                    const res = await fetch(url, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            contents: fallbackContents,
+                            generationConfig: {
+                                temperature: 0.1,
+                                topP: 0.95,
+                                maxOutputTokens: 2048
+                            }
+                        })
+                    });
 
-            if (fallbackResponse.ok) {
-                response = fallbackResponse;
-            } else {
-                const fallbackErrData = await fallbackResponse.json().catch(() => ({}));
-                const v1Error = fallbackErrData?.error?.message || `Status ${fallbackResponse.status}`;
-                throw new Error(`Fallo en v1beta: "${v1betaError}" | Fallo en fallback v1: "${v1Error}"`);
+                    if (res.ok) {
+                        response = res;
+                        break;
+                    } else {
+                        const errData = await res.json().catch(() => ({}));
+                        const msg = errData?.error?.message || `Status ${res.status}`;
+                        lastErrorMsg += `[v1:${modelName} -> ${msg}]; `;
+                    }
+                } catch (err: any) {
+                    lastErrorMsg += `[v1:${modelName} error -> ${err.message}]; `;
+                }
             }
+        }
+
+        if (!response) {
+            throw new Error(`No se pudo conectar con ningún modelo de Gemini (v1/v1beta). Historial de errores: ${lastErrorMsg}`);
         }
 
         const data = await response.json();
