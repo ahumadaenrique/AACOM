@@ -478,8 +478,9 @@ export default function AdminPage() {
   useEffect(() => {
     const verifyAdminSession = async () => {
       try {
-        const res = await getCurrentUser()
-        if (res.success && res.user && res.user.role === 'ADMIN') {
+        const res = await fetch('/api/admin/check')
+        const data = await res.json()
+        if (data.isAdmin) {
           setIsAuthorized(true)
         }
       } catch (err) {
