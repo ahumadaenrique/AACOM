@@ -1907,7 +1907,7 @@ export default function AdminClient() {
                     className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs focus-visible:outline-none"
                   >
                     <option value="ALL">Todos los Agentes</option>
-                    {usersList.filter(u => u.role === 'AGENTE').map((u) => (
+                    {usersList.map((u) => (
                       <option key={u.id} value={u.id}>{u.name || u.email}</option>
                     ))}
                   </select>
