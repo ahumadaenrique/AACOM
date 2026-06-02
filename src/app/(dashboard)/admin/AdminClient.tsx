@@ -3736,27 +3736,48 @@ export default function AdminClient() {
                 />
               </div>
 
-              {/* Photo Upload (Base64) */}
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase block">Fotografía del Agente</label>
+              {/* Photo Option: URL or File */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase block font-black">Fotografía del Agente</label>
                 
                 {/* Preview */}
                 <div className="flex items-center gap-4">
                   <div className="h-16 w-16 rounded-full border bg-slate-50 overflow-hidden flex items-center justify-center shrink-0 shadow-inner">
                     {editImage ? (
-                      <img src={editImage} alt="Preview" className="h-full w-full object-cover" />
+                      <img 
+                        src={editImage} 
+                        alt="Preview" 
+                        className="h-full w-full object-cover" 
+                        onError={(e) => {
+                          e.currentTarget.src = "/logo.png"
+                        }}
+                      />
                     ) : (
                       <Users className="h-8 w-8 text-slate-300" />
                     )}
                   </div>
-                  <div className="flex-1 space-y-1">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageChange}
-                      className="text-xs text-slate-500 w-full"
-                    />
-                    <p className="text-[8px] text-slate-400">JPG, PNG hasta 2 MB. Se almacena directamente como Base64.</p>
+                  <div className="flex-1 space-y-2">
+                    <div className="space-y-1">
+                      <span className="text-[8px] font-black text-slate-400 uppercase block font-black">Opción 1: Pegar URL de Imagen</span>
+                      <Input
+                        type="url"
+                        placeholder="https://ejemplo.com/foto-agente.jpg"
+                        value={editImage && !editImage.startsWith("data:") ? editImage : ""}
+                        onChange={(e) => setEditImage(e.target.value)}
+                        className="text-[10px] h-7 px-2"
+                      />
+                    </div>
+                    
+                    <div className="space-y-1">
+                      <span className="text-[8px] font-black text-slate-400 uppercase block font-black">Opción 2: Subir Archivo Local</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageChange}
+                        className="text-[9px] text-slate-500 w-full cursor-pointer"
+                      />
+                      <p className="text-[8px] text-slate-400">JPG, PNG hasta 2 MB (Se guardará como Base64).</p>
+                    </div>
                   </div>
                 </div>
               </div>
