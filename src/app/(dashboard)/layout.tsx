@@ -41,115 +41,115 @@ export default async function DashboardLayout({
 
     return (
         <div className="flex min-h-screen w-full flex-col">
-            <header className="sticky top-0 z-40 flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur px-4 md:px-6 shadow-sm">
-                {/* Desktop Navigation */}
-                <nav className="hidden flex-col gap-6 text-lg font-medium md:flex md:flex-row md:items-center md:gap-5 md:text-sm lg:gap-6">
-                    <Link
-                        href="/"
-                        className="flex items-center gap-2 text-lg font-semibold md:text-base mr-4 shrink-0"
-                    >
-                        <img src="/logo.png" alt="AACOM Seguros" className="h-7 w-auto object-contain" />
-                        <span className="sr-only">AACOM cotizador</span>
-                    </Link>
-                    <Link
-                        href="/activity"
-                        className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                    >
-                        <ClipboardCheck className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                        AACOM 25
-                    </Link>
-                    <Link
-                        href="/ranking"
-                        className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                    >
-                        <Award className="h-4 w-4 text-amber-500" />
-                        Ranking
-                    </Link>
-                    <Link
-                        href="/cotizador"
-                        className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
-                    >
-                        Cotizador
-                    </Link>
-                    <Link
-                        href="/adn"
-                        className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
-                    >
-                        ADN AACOM
-                    </Link>
-                    {isAdmin && (
-                        <a
-                            href="/admin"
-                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold cursor-pointer"
+            <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur px-4 md:px-6 shadow-sm">
+                <div className="flex items-center gap-4">
+                    {/* Desktop Navigation */}
+                    <nav className="hidden flex-row items-center gap-5 text-sm md:flex lg:gap-6">
+                        <Link
+                            href="/"
+                            className="flex items-center gap-2 text-lg font-semibold md:text-base mr-4 shrink-0"
                         >
-                            Admin
-                        </a>
-                    )}
-                </nav>
+                            <img src="/logo.png" alt="AACOM Seguros" className="h-7 w-auto object-contain" />
+                            <span className="sr-only">AACOM cotizador</span>
+                        </Link>
+                        <Link
+                            href="/activity"
+                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                        >
+                            <ClipboardCheck className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                            AACOM 25
+                        </Link>
+                        <Link
+                            href="/ranking"
+                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                        >
+                            <Award className="h-4 w-4 text-amber-500" />
+                            Ranking
+                        </Link>
+                        <Link
+                            href="/cotizador"
+                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
+                        >
+                            Cotizador
+                        </Link>
+                        <Link
+                            href="/adn"
+                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
+                        >
+                            ADN AACOM
+                        </Link>
+                        {isAdmin && (
+                            <a
+                                href="/admin"
+                                className="text-muted-foreground transition-colors hover:text-foreground font-semibold cursor-pointer"
+                            >
+                                Admin
+                            </a>
+                        )}
+                    </nav>
 
-                {/* Mobile Drawer Trigger */}
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            className="shrink-0 md:hidden"
-                        >
-                            <Menu className="h-5 w-5" />
-                            <span className="sr-only">Toggle navigation menu</span>
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left" className="w-[280px]">
-                        <nav className="grid gap-6 text-lg font-medium">
-                            <Link
-                                href="/"
-                                className="flex items-center gap-2 text-lg font-semibold mb-4"
+                    {/* Mobile Drawer Trigger */}
+                    <Sheet>
+                        <SheetTrigger asChild>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="shrink-0 md:hidden"
                             >
-                                <img src="/logo.png" alt="AACOM Seguros" className="h-8 w-auto object-contain" />
-                                <span className="sr-only">AACOM cotizador</span>
-                            </Link>
-                            <Link
-                                href="/activity"
-                                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                            >
-                                <ClipboardCheck className="h-5 w-5 text-teal-600" />
-                                AACOM 25
-                            </Link>
-                            <Link
-                                href="/ranking"
-                                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                            >
-                                <Award className="h-5 w-5 text-amber-500" />
-                                Ranking
-                            </Link>
-                            <Link
-                                href="/cotizador"
-                                className="text-muted-foreground hover:text-foreground"
-                            >
-                                Cotizador
-                            </Link>
-                            <Link
-                                href="/adn"
-                                className="text-muted-foreground hover:text-foreground"
-                            >
-                                ADN AACOM
-                            </Link>
-                            {isAdmin && (
-                                <a
-                                    href="/admin"
-                                    className="text-muted-foreground hover:text-foreground cursor-pointer"
+                                <Menu className="h-5 w-5" />
+                                <span className="sr-only">Toggle navigation menu</span>
+                            </Button>
+                        </SheetTrigger>
+                        <SheetContent side="left" className="w-[280px]">
+                            <nav className="grid gap-6 text-lg font-medium">
+                                <Link
+                                    href="/"
+                                    className="flex items-center gap-2 text-lg font-semibold mb-4"
                                 >
-                                    Admin
-                                </a>
-                            )}
-                        </nav>
-                    </SheetContent>
-                </Sheet>
+                                    <img src="/logo.png" alt="AACOM Seguros" className="h-8 w-auto object-contain" />
+                                    <span className="sr-only">AACOM cotizador</span>
+                                </Link>
+                                <Link
+                                    href="/activity"
+                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                >
+                                    <ClipboardCheck className="h-5 w-5 text-teal-600" />
+                                    AACOM 25
+                                </Link>
+                                <Link
+                                    href="/ranking"
+                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                >
+                                    <Award className="h-5 w-5 text-amber-500" />
+                                    Ranking
+                                </Link>
+                                <Link
+                                    href="/cotizador"
+                                    className="text-muted-foreground hover:text-foreground"
+                                >
+                                    Cotizador
+                                </Link>
+                                <Link
+                                    href="/adn"
+                                    className="text-muted-foreground hover:text-foreground"
+                                >
+                                    ADN AACOM
+                                </Link>
+                                {isAdmin && (
+                                    <a
+                                        href="/admin"
+                                        className="text-muted-foreground hover:text-foreground cursor-pointer"
+                                    >
+                                        Admin
+                                    </a>
+                                )}
+                            </nav>
+                        </SheetContent>
+                    </Sheet>
+                </div>
 
                 {/* Header User Menu */}
-                <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">
-                    <div className="ml-auto flex-1 sm:flex-initial" />
-                    
+                <div className="flex items-center gap-4">
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="secondary" size="icon" className="rounded-full overflow-hidden border border-slate-200 dark:border-zinc-800 shadow-sm relative shrink-0">
