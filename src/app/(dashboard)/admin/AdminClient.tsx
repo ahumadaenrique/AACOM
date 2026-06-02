@@ -103,6 +103,8 @@ export default function AdminClient() {
   const [reportAgentFilter, setReportAgentFilter] = useState<string>("ALL")
   const [reportStartDate, setReportStartDate] = useState<string>("")
   const [reportEndDate, setReportEndDate] = useState<string>("")
+  const [expandedAgents, setExpandedAgents] = useState<Record<string, boolean>>({})
+  const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({})
 
   // Edit agent profile states
   const [selectedUserForEdit, setSelectedUserForEdit] = useState<any | null>(null)
@@ -1995,78 +1997,372 @@ export default function AdminClient() {
                 </div>
               </div>
 
-              {/* Details table */}
-              <div className="border rounded-xl overflow-hidden shadow-inner">
-                {loadingActivityLogs ? (
-                  <div className="text-center py-12 text-slate-400 text-xs">
-                    <RefreshCw className="h-6 w-6 animate-spin text-teal-600 mx-auto mb-2" />
-                    Cargando reporte de actividades...
-                  </div>
-                ) : activityLogs.length === 0 ? (
-                  <div className="text-center py-12 text-slate-400 text-xs italic bg-slate-50/20">
-                    No se registran actividades con los filtros seleccionados.
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table className="text-xs">
-                      <TableHeader className="bg-slate-50/50">
-                        <TableRow>
-                          <TableHead className="font-bold pl-4">Agente</TableHead>
-                          <TableHead className="font-bold text-center">Fecha</TableHead>
-                          <TableHead className="font-bold">Actividad</TableHead>
-                          <TableHead className="font-bold text-center">Puntos</TableHead>
-                          <TableHead className="font-bold">Prospecto / Detalles</TableHead>
-                          <TableHead className="font-bold text-center">Hora Registro</TableHead>
-                          <TableHead className="font-bold text-center pr-4">Eliminar</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {activityLogs.map((log) => (
-                          <TableRow key={log.id} className="hover:bg-slate-50/30">
-                            <TableCell className="font-bold text-slate-700 dark:text-zinc-300 pl-4 py-3">
-                              <div className="flex items-center gap-2">
-                                <span className="h-5 w-5 rounded-full bg-teal-50 text-teal-800 flex items-center justify-center font-bold text-[8px] uppercase">
-                                  {((log.user?.name || "A").split(" ").map((w: string) => w[0]).slice(0, 2).join(""))}
-                                </span>
-                                <span>{log.user?.name || log.user?.email || "Agente"}</span>
+              {/* Grouped Accordion and Monthly cumulative view */}
+              <div className="space-y-6">
+                {/* 1. Monthly Cumulative Report (If specific agent selected in main filter) */}
+                {reportAgentFilter !== "ALL" && (
+                  (() => {
+                    const now = new Date()
+                    const year = now.getFullYear()
+                    const month = String(now.getMonth() + 1).padStart(2, '0')
+                    const monthStr = `${year}-${month}`
+                    const monthName = now.toLocaleDateString("es-MX", { month: "long", year: "numeric" })
+                    
+                    const agentLogs = activityLogs.filter(log => log.userId === reportAgentFilter)
+                    const agentName = usersList.find(u => u.id === reportAgentFilter)?.name || "Agente"
+
+                    // Monthly cumulative
+                    const monthlyLogs = agentLogs.filter(log => log.dateStr.startsWith(monthStr))
+                    const monthlyCitasEfectivas = monthlyLogs.filter(log => log.activityId === "3")
+                    const monthlyCitasAgendadas = monthlyLogs.filter(log => log.activityId === "2")
+
+                    return (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 animate-in fade-in duration-300">
+                        {/* Citas Efectivas Card */}
+                        <Card className="border-t-4 border-t-emerald-500 shadow-md">
+                          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                            <div>
+                              <CardTitle className="text-sm font-black text-slate-800 dark:text-zinc-100 uppercase tracking-wider">
+                                Citas Efectivas Acumuladas
+                              </CardTitle>
+                              <CardDescription className="text-[10px]">
+                                {monthName} • {agentName}
+                              </CardDescription>
+                            </div>
+                            <div className="h-10 w-10 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center font-black text-lg">
+                              {monthlyCitasEfectivas.length}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Historial de Citas Efectivas este mes:</span>
+                            {monthlyCitasEfectivas.length === 0 ? (
+                              <p className="text-xs text-slate-400 italic py-2 text-center">Sin citas efectivas registradas este mes.</p>
+                            ) : (
+                              <div className="max-h-44 overflow-y-auto space-y-2 pr-1">
+                                {monthlyCitasEfectivas.map(log => (
+                                  <div key={log.id} className="flex justify-between items-center bg-emerald-50/40 dark:bg-emerald-950/10 px-3 py-2.5 rounded-xl border border-emerald-100/50 dark:border-emerald-900/30 text-xs">
+                                    <div className="space-y-0.5">
+                                      <span className="font-extrabold text-slate-800 dark:text-zinc-200 block">
+                                        👥 {log.prospectName || "Sin Nombre"}
+                                      </span>
+                                      <span className="text-[9px] text-slate-400 block">
+                                        Registrado: {new Date(log.createdAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                                      </span>
+                                    </div>
+                                    <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-white dark:bg-zinc-900 px-2 py-0.5 rounded border border-emerald-200">
+                                      {log.dateStr}
+                                    </span>
+                                  </div>
+                                ))}
                               </div>
-                            </TableCell>
-                            <TableCell className="text-center text-slate-600 py-3">{log.dateStr}</TableCell>
-                            <TableCell className="font-semibold text-slate-700 py-3">{log.activityName}</TableCell>
-                            <TableCell className="text-center py-3">
-                              <span className="inline-block px-2 py-0.5 rounded text-[10px] font-black bg-slate-100 text-slate-800 border">
-                                +{log.points} pts
-                              </span>
-                            </TableCell>
-                            <TableCell className="py-3">
-                              {log.prospectName ? (
-                                <span className="text-teal-600 dark:text-teal-400 font-extrabold text-[10px]">
-                                  Prospecto: {log.prospectName}
-                                </span>
-                              ) : (
-                                <span className="text-slate-400 italic text-[10px]">Sin prospecto</span>
-                              )}
-                            </TableCell>
-                            <TableCell className="text-center text-slate-400 py-3">
-                              {new Date(log.createdAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
-                            </TableCell>
-                            <TableCell className="text-center py-3 pr-4">
-                              <Button
-                                onClick={() => handleDeleteActivityLog(log.id)}
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50 p-1 h-7 rounded"
-                                title="Eliminar registro"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
+                            )}
+                          </CardContent>
+                        </Card>
+
+                        {/* Citas Agendadas Card */}
+                        <Card className="border-t-4 border-t-orange-500 shadow-md">
+                          <CardHeader className="pb-3 flex flex-row items-center justify-between">
+                            <div>
+                              <CardTitle className="text-sm font-black text-slate-800 dark:text-zinc-100 uppercase tracking-wider">
+                                Citas Agendadas
+                              </CardTitle>
+                              <CardDescription className="text-[10px]">
+                                {monthName} • {agentName}
+                              </CardDescription>
+                            </div>
+                            <div className="h-10 w-10 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center font-black text-lg">
+                              {monthlyCitasAgendadas.length}
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-3">
+                            <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Historial de Citas Agendadas este mes:</span>
+                            {monthlyCitasAgendadas.length === 0 ? (
+                              <p className="text-xs text-slate-400 italic py-2 text-center">Sin citas agendadas registradas este mes.</p>
+                            ) : (
+                              <div className="max-h-44 overflow-y-auto space-y-2 pr-1">
+                                {monthlyCitasAgendadas.map(log => (
+                                  <div key={log.id} className="flex justify-between items-center bg-orange-50/40 dark:bg-orange-950/10 px-3 py-2.5 rounded-xl border border-orange-100/50 dark:border-orange-900/30 text-xs">
+                                    <div className="space-y-0.5">
+                                      <span className="font-extrabold text-slate-800 dark:text-zinc-200 block">
+                                        📅 {log.prospectName || "Sin Nombre"}
+                                      </span>
+                                      <span className="text-[9px] text-slate-400 block">
+                                        Registrado: {new Date(log.createdAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                                      </span>
+                                    </div>
+                                    <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 bg-white dark:bg-zinc-900 px-2 py-0.5 rounded border border-orange-200">
+                                      {log.dateStr}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </div>
+                    )
+                  })()
                 )}
+
+                {/* 2. Three-Tier Collapsible Activity Logs List (Agent -> Date -> Details) */}
+                <div className="space-y-4">
+                  {loadingActivityLogs ? (
+                    <Card className="shadow-sm">
+                      <CardContent className="text-center py-16 text-slate-400 text-xs">
+                        <RefreshCw className="h-6 w-6 animate-spin text-teal-600 mx-auto mb-2" />
+                        Cargando reporte estructurado de actividades...
+                      </CardContent>
+                    </Card>
+                  ) : activityLogs.length === 0 ? (
+                    <Card className="shadow-sm">
+                      <CardContent className="text-center py-16 text-slate-400 text-xs italic bg-slate-50/10">
+                        No se registran actividades con los filtros seleccionados.
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    (() => {
+                      // Helper to group logs inside render
+                      const groups: Record<string, {
+                        agentName: string;
+                        agentEmail: string;
+                        agentId: string;
+                        dates: Record<string, any[]>;
+                        totalPoints: number;
+                      }> = {};
+
+                      activityLogs.forEach(log => {
+                        const userId = log.userId;
+                        const name = log.user?.name || log.user?.email || "Agente";
+                        const email = log.user?.email || "";
+                        const date = log.dateStr;
+
+                        if (!groups[userId]) {
+                          groups[userId] = {
+                            agentName: name,
+                            agentEmail: email,
+                            agentId: userId,
+                            dates: {},
+                            totalPoints: 0
+                          };
+                        }
+
+                        if (!groups[userId].dates[date]) {
+                          groups[userId].dates[date] = [];
+                        }
+
+                        groups[userId].dates[date].push(log);
+                        groups[userId].totalPoints += log.points;
+                      });
+
+                      const groupedData = Object.values(groups).map(g => ({
+                        ...g,
+                        dates: Object.entries(g.dates).map(([dateStr, dateLogs]) => ({
+                          dateStr,
+                          logs: dateLogs.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+                          totalPoints: dateLogs.reduce((sum, l) => sum + l.points, 0)
+                        })).sort((a, b) => b.dateStr.localeCompare(a.dateStr))
+                      })).sort((a, b) => b.totalPoints - a.totalPoints);
+
+                      // Date helpers for monthly stats
+                      const now = new Date()
+                      const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+
+                      return (
+                        <div className="space-y-3">
+                          {groupedData.map((agentGroup) => {
+                            const isAgentExpanded = expandedAgents[agentGroup.agentId];
+                            
+                            // Calculate monthly stats for the badge
+                            const agentMonthLogs = activityLogs.filter(l => l.userId === agentGroup.agentId && l.dateStr.startsWith(currentMonthStr));
+                            const monthCitasEfectivasCount = agentMonthLogs.filter(l => l.activityId === "3").length;
+                            const monthCitasAgendadasCount = agentMonthLogs.filter(l => l.activityId === "2").length;
+
+                            return (
+                              <Card key={agentGroup.agentId} className="shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden hover:shadow-md transition-shadow">
+                                {/* Agent Header Block */}
+                                <div 
+                                  onClick={() => setExpandedAgents(prev => ({ ...prev, [agentGroup.agentId]: !isAgentExpanded }))}
+                                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-slate-50/50 dark:bg-zinc-900/30 cursor-pointer hover:bg-slate-50 dark:hover:bg-zinc-900/50 transition-colors gap-3 select-none animate-in fade-in duration-200"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <span className="h-9 w-9 rounded-full bg-teal-500 text-white flex items-center justify-center font-black text-xs uppercase shadow-inner">
+                                      {agentGroup.agentName.split(" ").map(w => w[0]).slice(0, 2).join("")}
+                                    </span>
+                                    <div>
+                                      <h3 className="font-extrabold text-slate-800 dark:text-zinc-100 text-xs sm:text-sm">
+                                        {agentGroup.agentName}
+                                      </h3>
+                                      <span className="text-[9px] text-slate-400 block mt-0.5">
+                                        {agentGroup.agentEmail}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  <div className="flex flex-wrap items-center gap-2">
+                                    {/* Monthly metrics badges */}
+                                    <span className="text-[9px] font-black bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 px-2 py-1 rounded-full uppercase tracking-wider">
+                                      {monthCitasEfectivasCount} Citas Efectivas
+                                    </span>
+                                    {monthCitasAgendadasCount > 0 && (
+                                      <span className="text-[9px] font-black bg-orange-50 dark:bg-orange-950/20 text-orange-700 dark:text-orange-400 border border-orange-200 px-2 py-1 rounded-full uppercase tracking-wider">
+                                        {monthCitasAgendadasCount} Agendadas
+                                      </span>
+                                    )}
+                                    <span className="text-[10px] font-black bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 border px-2.5 py-1 rounded-full">
+                                      {agentGroup.totalPoints} pts
+                                    </span>
+                                    <svg 
+                                      xmlns="http://www.w3.org/2000/svg" 
+                                      fill="none" 
+                                      viewBox="0 0 24 24" 
+                                      strokeWidth={3} 
+                                      stroke="currentColor" 
+                                      className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isAgentExpanded ? 'rotate-180' : ''}`}
+                                    >
+                                      <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                    </svg>
+                                  </div>
+                                </div>
+
+                                {/* Agent Expanded Content */}
+                                {isAgentExpanded && (
+                                  <CardContent className="p-4 bg-white dark:bg-zinc-950 border-t space-y-4 animate-in slide-in-from-top-1 duration-200">
+                                    {/* 2.1 Agent Monthly Cumulative Citas inside collapsed card for convenience */}
+                                    {reportAgentFilter === "ALL" && (
+                                      <div className="p-3 bg-slate-50 dark:bg-zinc-900 border rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 shadow-inner">
+                                        <div className="space-y-0.5">
+                                          <span className="text-[9px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest block font-black">Resumen Acumulado de Citas</span>
+                                          <span className="text-[10px] text-slate-500 font-bold block">
+                                            Actividad total en el mes de {now.toLocaleDateString("es-MX", { month: "long", year: "numeric" })}
+                                          </span>
+                                        </div>
+                                        <div className="flex items-center gap-4 text-xs font-bold text-slate-700 dark:text-zinc-300">
+                                          <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 border px-3 py-1.5 rounded-xl shadow-sm">
+                                            <span className="h-2 w-2 rounded-full bg-emerald-500 block animate-pulse" />
+                                            <span>Efectivas: <strong className="text-emerald-600 text-sm font-black">{monthCitasEfectivasCount}</strong></span>
+                                          </div>
+                                          <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-950 border px-3 py-1.5 rounded-xl shadow-sm">
+                                            <span className="h-2 w-2 rounded-full bg-orange-500 block" />
+                                            <span>Agendadas: <strong className="text-orange-600 text-sm font-black">{monthCitasAgendadasCount}</strong></span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                    {/* 2.2 Collapsible Dates list */}
+                                    <div className="space-y-2">
+                                      <span className="text-[10px] font-black text-slate-400 uppercase block tracking-wider">Historial diario detallado:</span>
+                                      {agentGroup.dates.map((dateGroup) => {
+                                        const dateKey = `${agentGroup.agentId}_${dateGroup.dateStr}`;
+                                        const isDateExpanded = expandedDates[dateKey];
+
+                                        // Format Date beautifully
+                                        const dParts = dateGroup.dateStr.split('-')
+                                        const dObj = new Date(Number(dParts[0]), Number(dParts[1]) - 1, Number(dParts[2]))
+                                        const prettyDate = dObj.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" })
+
+                                        return (
+                                          <div key={dateGroup.dateStr} className="border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
+                                            {/* Date Header Accordion */}
+                                            <div 
+                                              onClick={() => setExpandedDates(prev => ({ ...prev, [dateKey]: !isDateExpanded }))}
+                                              className="flex items-center justify-between px-3.5 py-2.5 bg-slate-50/30 dark:bg-zinc-900/10 cursor-pointer hover:bg-slate-50/80 dark:hover:bg-zinc-900/40 select-none text-xs"
+                                            >
+                                              <span className="font-bold text-slate-700 dark:text-zinc-300 capitalize flex items-center gap-1.5">
+                                                <Calendar className="h-3.5 w-3.5 text-teal-600" /> {prettyDate}
+                                              </span>
+                                              <div className="flex items-center gap-2">
+                                                <span className="text-[9px] font-black bg-slate-100 dark:bg-zinc-800 text-slate-600 border px-2 py-0.5 rounded">
+                                                  {dateGroup.logs.length} act
+                                                </span>
+                                                <span className="text-[10px] font-black text-teal-700 dark:text-teal-400">
+                                                  +{dateGroup.totalPoints} pts
+                                                </span>
+                                                <svg 
+                                                  xmlns="http://www.w3.org/2000/svg" 
+                                                  fill="none" 
+                                                  viewBox="0 0 24 24" 
+                                                  strokeWidth={3} 
+                                                  stroke="currentColor" 
+                                                  className={`w-3 h-3 text-slate-400 transition-transform duration-200 ${isDateExpanded ? 'rotate-180' : ''}`}
+                                                >
+                                                  <path strokeLinecap="round" strokeLinejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                                                </svg>
+                                              </div>
+                                            </div>
+
+                                            {/* Date Expanded Logs details */}
+                                            {isDateExpanded && (
+                                              <div className="p-3 bg-white dark:bg-zinc-950 border-t space-y-2 animate-in slide-in-from-top-1 duration-150">
+                                                {dateGroup.logs.map((log) => (
+                                                  <div key={log.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-2.5 bg-slate-50/20 dark:bg-zinc-900/5 hover:bg-slate-50/50 dark:hover:bg-zinc-900/20 rounded-xl border border-slate-100 dark:border-zinc-900 gap-3 text-xs">
+                                                    <div className="flex items-start gap-2.5">
+                                                      {/* Micro icon for activity */}
+                                                      <span className="mt-0.5 p-1.5 bg-white dark:bg-zinc-900 rounded border shadow-sm shrink-0">
+                                                        {(() => {
+                                                          switch (log.activityId) {
+                                                            case "1": return <span className="text-blue-500 font-extrabold text-[10px]" title="Llamada">📞</span>
+                                                            case "2": return <span className="text-orange-500 font-extrabold text-[10px]" title="Agendada">📅</span>
+                                                            case "3": return <span className="text-amber-500 font-extrabold text-[10px]" title="Efectiva">🤝</span>
+                                                            case "4": return <span className="text-emerald-500 font-extrabold text-[10px]" title="Cierre">💼</span>
+                                                            case "5": return <span className="text-indigo-500 font-extrabold text-[10px]" title="Referido">👥</span>
+                                                            case "6": return <span className="text-purple-500 font-extrabold text-[10px]" title="Emitida">📝</span>
+                                                            case "7": return <span className="text-teal-500 font-extrabold text-[10px]" title="RDA">🏆</span>
+                                                            default: return <span className="text-slate-500 font-extrabold text-[10px]">➕</span>
+                                                          }
+                                                        })()}
+                                                      </span>
+                                                      <div className="space-y-0.5">
+                                                        <div className="flex items-center gap-1.5 flex-wrap">
+                                                          <span className="font-extrabold text-slate-800 dark:text-zinc-200">
+                                                            {log.activityName}
+                                                          </span>
+                                                          <span className="text-[9px] text-slate-400">
+                                                            {new Date(log.createdAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                                                          </span>
+                                                        </div>
+                                                        {log.prospectName ? (
+                                                          <span className="text-teal-600 dark:text-teal-400 font-extrabold text-[10px] block">
+                                                            👤 Prospecto: {log.prospectName}
+                                                          </span>
+                                                        ) : (
+                                                          <span className="text-slate-400 italic text-[10px] block">Sin prospecto registrado</span>
+                                                        )}
+                                                      </div>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-end gap-2.5">
+                                                      <span className="inline-block px-2 py-0.5 rounded text-[10px] font-black bg-slate-100 dark:bg-zinc-800 text-slate-800 dark:text-zinc-200 border">
+                                                        +{log.points} pts
+                                                      </span>
+                                                      <Button
+                                                        onClick={() => handleDeleteActivityLog(log.id)}
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 p-1 h-7 rounded"
+                                                        title="Eliminar registro"
+                                                      >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                      </Button>
+                                                    </div>
+                                                  </div>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )
+                                      })}
+                                    </div>
+                                  </CardContent>
+                                )}
+                              </Card>
+                            )
+                          })}
+                        </div>
+                      )
+                    })()
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>
