@@ -2286,7 +2286,7 @@ export default function AdminPage() {
                   <span>* Reporte de diagnóstico ilustrativo generado de forma segura desde la base de datos de desarrollo.</span>
                   <div className="flex items-center gap-1 font-bold text-slate-600">
                     <span>Respaldado por la plataforma</span>
-                    <img src="/logo.png" alt="AACOM" className="h-4.5 w-auto object-contain" />
+                    <img src="/logo.png" alt="AACOM" className="w-auto object-contain" style={{ height: '18px' }} />
                     <span>AACOM cotizador</span>
                   </div>
                 </div>
@@ -2875,10 +2875,20 @@ export default function AdminPage() {
             box-shadow: none !important;
             background-color: white !important;
           }
-          /* Ensure headers color */
+          /* Ensure headers color, padding, and font-size to prevent horizontal cutoff */
           th {
             background-color: #87D1B5 !important;
             color: white !important;
+            padding: 4px 2px !important;
+            font-size: 9px !important;
+            text-align: center !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          td {
+            padding: 4px 2px !important;
+            font-size: 9px !important;
+            text-align: center !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }

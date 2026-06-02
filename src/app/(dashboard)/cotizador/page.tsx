@@ -1689,10 +1689,20 @@ export default function CotizadorPage() {
           .print\\:break-inside-avoid {
             break-inside: avoid !important;
           }
-          /* Perfect headers coloring for printing */
+          /* Perfect headers coloring, padding, and font size for printing to fit 10 columns */
           th {
             background-color: #87D1B5 !important;
             color: white !important;
+            padding: 4px 2px !important;
+            font-size: 9px !important;
+            text-align: center !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+          }
+          td {
+            padding: 4px 2px !important;
+            font-size: 9px !important;
+            text-align: center !important;
             -webkit-print-color-adjust: exact;
             print-color-adjust: exact;
           }

@@ -2733,7 +2733,7 @@ export default function AdnPage() {
                   <span>* Reporte de diagnóstico ilustrativo generado de forma segura desde la base de datos de desarrollo.</span>
                   <div className="flex items-center gap-1 font-bold text-slate-600">
                     <span>Respaldado por la plataforma</span>
-                    <img src="/logo.png" alt="AACOM" className="h-4.5 w-auto object-contain" />
+                    <img src="/logo.png" alt="AACOM" className="w-auto object-contain" style={{ height: '18px' }} />
                     <span>AACOM cotizador</span>
                   </div>
                 </div>
@@ -3170,7 +3170,7 @@ export default function AdnPage() {
           <span>* Reporte de diagnóstico patrimonial ilustrativo proporcionado por AACOM Seguros.</span>
           <div className="flex items-center gap-1 font-bold text-slate-600">
             <span>Respaldado por la plataforma</span>
-            <img src="/logo.png" alt="AACOM" className="h-4.5 w-auto object-contain" />
+            <img src="/logo.png" alt="AACOM" className="w-auto object-contain" style={{ height: '18px' }} />
             <span>AACOM cotizador</span>
           </div>
         </div>
