@@ -1622,8 +1622,8 @@ ${knowledgeContext}`;
         ];
 
         // 5. Call Gemini API endpoint
-        const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+        let response = await fetch(
+            `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
             {
                 method: "POST",
                 headers: {
@@ -1642,6 +1642,30 @@ ${knowledgeContext}`;
                 })
             }
         );
+
+        // Fallback to v1beta if v1 is not supported (compatibility fallback)
+        if (response.status === 404) {
+            response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        contents,
+                        systemInstruction: {
+                            parts: [{ text: systemInstruction }]
+                        },
+                        generationConfig: {
+                            temperature: 0.1,
+                            topP: 0.95,
+                            maxOutputTokens: 2048
+                        }
+                    })
+                }
+            );
+        }
 
         if (!response.ok) {
             const errData = await response.json().catch(() => ({}));
