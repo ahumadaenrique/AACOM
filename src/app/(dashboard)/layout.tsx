@@ -78,12 +78,12 @@ export default async function DashboardLayout({
                         ADN AACOM
                     </Link>
                     {isAdmin && (
-                        <Link
+                        <a
                             href="/admin"
-                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold"
+                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold cursor-pointer"
                         >
                             Admin
-                        </Link>
+                        </a>
                     )}
                 </nav>
 
@@ -135,12 +135,12 @@ export default async function DashboardLayout({
                                 ADN AACOM
                             </Link>
                             {isAdmin && (
-                                <Link
+                                <a
                                     href="/admin"
-                                    className="text-muted-foreground hover:text-foreground"
+                                    className="text-muted-foreground hover:text-foreground cursor-pointer"
                                 >
                                     Admin
-                                </Link>
+                                </a>
                             )}
                         </nav>
                     </SheetContent>
