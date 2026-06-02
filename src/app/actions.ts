@@ -1647,7 +1647,9 @@ ${knowledgeContext}`;
         // Since v1 REST API does not support the "systemInstruction" parameter at the root level, 
         // we embed the system instructions in the final user message for robust fallback.
         if (!response.ok) {
-            console.warn(`Gemini v1beta call failed with status ${response.status}. Attempting fallback to v1...`);
+            const errData = await response.clone().json().catch(() => ({}));
+            const v1betaError = errData?.error?.message || `Status ${response.status}`;
+            console.warn(`Gemini v1beta call failed: ${v1betaError}. Attempting fallback to v1...`);
             
             const fallbackContents = [
                 ...chatHistory,
@@ -1677,12 +1679,11 @@ ${knowledgeContext}`;
 
             if (fallbackResponse.ok) {
                 response = fallbackResponse;
+            } else {
+                const fallbackErrData = await fallbackResponse.json().catch(() => ({}));
+                const v1Error = fallbackErrData?.error?.message || `Status ${fallbackResponse.status}`;
+                throw new Error(`Fallo en v1beta: "${v1betaError}" | Fallo en fallback v1: "${v1Error}"`);
             }
-        }
-
-        if (!response.ok) {
-            const errData = await response.json().catch(() => ({}));
-            throw new Error(errData?.error?.message || `Error en la API de Gemini (${response.status})`);
         }
 
         const data = await response.json();
