@@ -320,18 +320,30 @@ export default function AdnPage() {
       plazoAnios = Number(pprAniosPlazo)
     }
 
-    // Proyección acumulada inflacionada con tasa del 4% anual
+    // Proyección acumulada inflacionada con tasa del 5% anual
     let projectedAccumulation = 0
     let tempAporte = aporteAnual
     for (let i = 0; i < plazoAnios; i++) {
-      projectedAccumulation = (projectedAccumulation + tempAporte) * 1.04
-      tempAporte = tempAporte * 1.04
+      projectedAccumulation = (projectedAccumulation + tempAporte) * 1.05
+      tempAporte = tempAporte * 1.05
     }
+
+    // Fase 2: Maduración pasiva (Interés compuesto sin aportaciones adicionales hasta los 65 años)
+    const edadActual = Number(clienteEdad || 0)
+    const edadFinDePago = edadActual + plazoAnios
+    const aniosDeMaduracion = Math.max(0, 65 - edadFinDePago)
+    
+    if (aniosDeMaduracion > 0) {
+      projectedAccumulation = projectedAccumulation * Math.pow(1.05, aniosDeMaduracion)
+    }
+
     const brechaRetiro = Math.max(0, retirementGoal - projectedAccumulation)
     const isSufficient = projectedAccumulation >= retirementGoal
 
     // Sugerencia de aportación mensual adicional para cubrir brecha
-    const adicionalMensualSugerido = plazoAnios > 0 ? (brechaRetiro / plazoAnios) / 12 : 0
+    // Asumimos que tiene hasta los 65 años para juntarlo de alguna forma
+    const aniosTotalesParaRetiro = Math.max(1, 65 - edadActual)
+    const adicionalMensualSugerido = (brechaRetiro / Math.max(1, aniosTotalesParaRetiro)) / 12
 
     return {
       retirementGoal,
