@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser } from "@/app/actions"
+import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -31,7 +31,8 @@ import {
   ClipboardCheck,
   Trash2,
   MessageSquare,
-  Upload
+  Upload,
+  BellRing
 } from "lucide-react"
 import { resolveImageUrl } from "@/lib/utils"
 
@@ -61,7 +62,7 @@ export default function AdminClient() {
   const [error, setError] = useState<string>("")
 
   // Admin Dashboard Tabs
-  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente">("productividad")
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones">("productividad")
 
   // Chatbot Knowledge Base states
   const [knowledgeDocs, setKnowledgeDocs] = useState<any[]>([])
@@ -132,6 +133,35 @@ export default function AdminClient() {
   const [savingProfile, setSavingProfile] = useState<boolean>(false)
   const [announcementMsg, setAnnouncementMsg] = useState<string>("")
   const [savingAnnouncement, setSavingAnnouncement] = useState<boolean>(false)
+
+  // Push Notifications Admin States
+  const [pushRecipient, setPushRecipient] = useState<string>("ALL")
+  const [pushMessage, setPushMessage] = useState<string>("")
+  const [pushPin, setPushPin] = useState<string>("")
+  const [pushStatus, setPushStatus] = useState<string>("")
+  const [pushLoading, setPushLoading] = useState<boolean>(false)
+
+  const handleSendPush = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!pushMessage.trim() || !pushPin.trim()) return
+    setPushLoading(true)
+    setPushStatus("Enviando notificación...")
+    try {
+      const res = await sendAdminPushNotification(pushRecipient, pushMessage.trim(), pushPin.trim())
+      if (res.success) {
+        setPushStatus(`¡Éxito! ${res.message}`)
+        setPushMessage("")
+        setPushPin("")
+        setTimeout(() => setPushStatus(""), 5000)
+      } else {
+        setPushStatus(`Error: ${res.message}`)
+      }
+    } catch (err: any) {
+      setPushStatus(`Error de red: ${err.message}`)
+    } finally {
+      setPushLoading(false)
+    }
+  }
 
 
 
@@ -986,6 +1016,16 @@ export default function AdminClient() {
           }`}
         >
           <MessageSquare className="h-4.5 w-4.5 text-pink-500" /> Asistente (Conocimiento)
+        </button>
+        <button
+          onClick={() => setActiveTab("notificaciones")}
+          className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === "notificaciones"
+              ? "border-blue-600 text-blue-600 dark:text-blue-400"
+              : "border-transparent text-slate-500 hover:text-slate-800"
+          }`}
+        >
+          <BellRing className="h-4.5 w-4.5 text-blue-500" /> Push Notifications
         </button>
       </div>
 
@@ -3972,6 +4012,80 @@ export default function AdminClient() {
               </Button>
             </div>
 
+          </div>
+        </div>
+      )}
+
+      {/* TAB CONTENT 8: PUSH NOTIFICATIONS */}
+      {activeTab === "notificaciones" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <div className="max-w-xl mx-auto">
+            <Card className="border shadow-sm border-blue-100 dark:border-blue-900/30">
+              <CardHeader className="bg-blue-50/50 dark:bg-blue-950/20 border-b pb-4">
+                <CardTitle className="text-lg font-black text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                  <BellRing className="h-5 w-5" /> Enviar Notificación Push
+                </CardTitle>
+                <CardDescription>
+                  Envía un mensaje directo al teléfono de los agentes. Esto hará vibrar su dispositivo y mostrará una alerta nativa del sistema operativo.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <form onSubmit={handleSendPush} className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Destinatario</label>
+                    <select
+                      className="flex h-10 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:ring-offset-zinc-950 dark:placeholder:text-zinc-400"
+                      value={pushRecipient}
+                      onChange={(e) => setPushRecipient(e.target.value)}
+                    >
+                      <option value="ALL">🔔 Todos los agentes</option>
+                      {usersList.filter(u => u.role === 'AGENTE' && u.active).map(u => (
+                        <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Mensaje a mostrar</label>
+                    <Input 
+                      placeholder="Ej. ¡Último día de cierre! Manda tus cotizaciones antes de las 4 PM." 
+                      value={pushMessage}
+                      onChange={(e) => setPushMessage(e.target.value)}
+                      maxLength={150}
+                      className="rounded-xl border-slate-200"
+                      required
+                    />
+                    <p className="text-xs text-muted-foreground text-right">{pushMessage.length}/150</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">PIN de Autorización</label>
+                    <Input 
+                      type="password"
+                      placeholder="Ingresa el PIN de seguridad de 10 dígitos" 
+                      value={pushPin}
+                      onChange={(e) => setPushPin(e.target.value)}
+                      className="rounded-xl border-slate-200"
+                      required
+                    />
+                  </div>
+
+                  {pushStatus && (
+                    <div className={`p-3 rounded-lg text-sm font-semibold text-center ${pushStatus.includes("Error") ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600"}`}>
+                      {pushStatus}
+                    </div>
+                  )}
+
+                  <Button 
+                    type="submit" 
+                    disabled={pushLoading}
+                    className="w-full rounded-xl font-bold bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    {pushLoading ? "Enviando..." : "Lanzar Notificación Push"}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
           </div>
         </div>
       )}

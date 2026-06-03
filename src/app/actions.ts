@@ -1812,3 +1812,52 @@ export async function sendTestPushNotification(userId: string) {
         return { success: false, message: err.message };
     }
 }
+
+export async function sendAdminPushNotification(recipientId: string, message: string, pin: string) {
+    try {
+        if (pin !== "5515015502") return { success: false, message: "PIN de seguridad incorrecto." };
+
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado." };
+
+        const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (currentUser?.role !== 'ADMIN') return { success: false, message: "Permisos insuficientes." };
+
+        let subs = [];
+        if (recipientId === 'ALL') {
+            subs = await prisma.pushSubscription.findMany();
+        } else {
+            subs = await prisma.pushSubscription.findMany({ where: { userId: recipientId } });
+        }
+
+        if (!subs || subs.length === 0) return { success: false, message: "No hay dispositivos suscritos para este destinatario." };
+
+        webpush.setVapidDetails(
+            process.env.VAPID_SUBJECT || 'mailto:test@aacommx.com',
+            process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
+            process.env.VAPID_PRIVATE_KEY || ''
+        );
+
+        const payload = JSON.stringify({
+            title: "AACOM Notificación",
+            body: message,
+            url: "/"
+        });
+
+        const promises = subs.map(sub => 
+            webpush.sendNotification({
+                endpoint: sub.endpoint,
+                keys: { p256dh: sub.p256dh, auth: sub.auth }
+            }, payload).catch(err => {
+                console.error("Error pushing to sub", sub.endpoint.substring(0, 30), err.statusCode);
+            })
+        );
+
+        await Promise.all(promises);
+
+        return { success: true, message: `Notificación enviada a ${subs.length} dispositivo(s).` };
+    } catch (err: any) {
+        console.error("Error sending admin push notification:", err);
+        return { success: false, message: err.message };
+    }
+}
