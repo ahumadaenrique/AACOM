@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 // import { Inter } from "next/font/google"; // Can't easily import fonts without next build system verifying? It should be fine.
 import "./globals.css";
 
@@ -7,6 +7,20 @@ import "./globals.css";
 export const metadata: Metadata = {
     title: "AACOM cotizador - CRM",
     description: "Plataforma de Desarrollo de Agentes",
+    manifest: "/manifest.json",
+    appleWebApp: {
+        capable: true,
+        statusBarStyle: "default",
+        title: "AACOM Seguros"
+    }
+};
+
+export const viewport: Viewport = {
+    themeColor: "#0d9488",
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false
 };
 
 export default function RootLayout({

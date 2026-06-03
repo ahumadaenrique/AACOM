@@ -3,6 +3,7 @@ import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, Messa
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
+import PwaInstaller from "@/components/PwaInstaller"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -221,6 +222,7 @@ export default async function DashboardLayout({
             </header>
             <main className="flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
                 {children}
+                <PwaInstaller />
             </main>
         </div>
     )

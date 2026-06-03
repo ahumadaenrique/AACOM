@@ -1,0 +1,24 @@
+{
+  "name": "Zona Agentes AACOM",
+  "short_name": "AACOM",
+  "description": "Plataforma de Desarrollo y Seguimiento de Agentes AACOM Seguros",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#ffffff",
+  "theme_color": "#0d9488",
+  "icons": [
+    {
+      "src": "/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
