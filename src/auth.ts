@@ -36,7 +36,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         const passwordsMatch = password === user.password;
                         console.log("[AUTH] Password match:", passwordsMatch);
 
-                        if (passwordsMatch) return user;
+                        if (passwordsMatch) {
+                            // Prevent NextAuth cookie overflow by stripping massive Base64 images
+                            if (user.image && user.image.startsWith('data:image')) {
+                                user.image = null;
+                            }
+                            return user;
+                        }
                     } catch (error) {
                         console.error("[AUTH] Error in authorize:", error);
                         return null;
