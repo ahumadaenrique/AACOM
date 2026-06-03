@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react"
 import * as XLSX from "xlsx"
-import { saveCotizacion, getUdiSetting, getAgents } from "@/app/actions"
+import { saveCotizacion, getCotizaciones, getUdiSetting, getAgents } from "@/app/actions"
 import { 
   FileSpreadsheet, 
   Upload, 
@@ -70,6 +70,11 @@ interface ColumnMapping {
 }
 
 export default function CotizadorPage() {
+  // Navigation Mode
+  const [viewMode, setViewMode] = useState<'MENU' | 'HISTORY' | 'EDITOR'>('MENU')
+  const [historyList, setHistoryList] = useState<any[]>([])
+  const [loadingHistory, setLoadingHistory] = useState(false)
+
   // Step navigation state
   const [step, setStep] = useState<number>(1)
   
@@ -564,7 +569,12 @@ export default function CotizadorPage() {
       margin:       8, // 8mm margin on all sides
       filename:     `Cotizacion_${sanitizedClientName}_${new Date().toISOString().slice(0,10)}.pdf`,
       image:        { type: 'jpeg' as const, quality: 0.98 },
-      html2canvas:  { scale: 2.5, useCORS: true, letterRendering: true },
+      html2canvas:  { 
+        scale: 2.5, 
+        useCORS: true, 
+        letterRendering: true,
+        windowWidth: 1200 // Force desktop width for PDF generation to prevent mobile cut-off
+      },
       jsPDF:        { unit: 'mm' as const, format: 'letter' as const, orientation: 'portrait' as const }
     }
 
@@ -586,9 +596,173 @@ export default function CotizadorPage() {
   const endPaymentAge = endPaymentRow ? endPaymentRow.edad : null
   const startAge = calculatedData[0]?.edad || null
 
+  const fetchHistory = async () => {
+    setLoadingHistory(true)
+    const res = await getCotizaciones()
+    if (res.success) {
+      setHistoryList(res.cotizaciones || [])
+    }
+    setLoadingHistory(false)
+  }
+
+  const loadHistoryRecord = (record: any) => {
+    setFormData({
+      cliente: record.cliente,
+      agente: record.agente,
+      telefono: record.telefono,
+      producto: record.producto,
+      duracion: record.duracion || "15",
+      valorUdi: record.valorUdi || 8.25,
+      inflacionUdi: record.inflacionUdi || 5.0,
+      isr: record.isr || 35,
+      coberturas: record.coberturas ? JSON.parse(record.coberturas) : { itp: false, epp: false, ma: false, mapo: false }
+    })
+    
+    if (record.projectionData) {
+      const parsedData = JSON.parse(record.projectionData)
+      setCalculatedData(parsedData)
+      
+      const ahorroAt65Pesos = record.ahorro
+      const ahorroAt65Udis = parsedData[parsedData.length - 1]?.ahorroUdis || 0
+      const rendimientoAt65 = record.rendimiento
+      const accumulatedPremiumPesos = record.totalPrima
+      const annualPremium = record.primaAnual
+      
+      setSummaryMetrics({
+        totalPrimasPesos: accumulatedPremiumPesos,
+        totalAhorroPesos: ahorroAt65Pesos,
+        totalAhorroUdis: ahorroAt65Udis,
+        beneficioFiscalAnual: record.producto === "VPL PPR" ? annualPremium * ((record.isr||35) / 100) : 0,
+        beneficioFiscalTotal: record.producto === "VPL PPR" ? accumulatedPremiumPesos * ((record.isr||35) / 100) : 0,
+        rendimientoFinal65: rendimientoAt65
+      })
+      
+      setSaProgression({
+        y1: parsedData[0]?.saPesos || 0,
+        y10: (parsedData.find((r:any) => r.anio === 10) || parsedData[parsedData.length - 1])?.saPesos || 0,
+        y20: (parsedData.find((r:any) => r.anio === 20) || parsedData[parsedData.length - 1])?.saPesos || 0,
+        y30: (parsedData.find((r:any) => r.anio === 30) || parsedData[parsedData.length - 1])?.saPesos || 0
+      })
+      
+      setHasCalculated(true)
+      setStep(4)
+      setViewMode('EDITOR')
+    }
+  }
+
   return (
     <div className="flex flex-col gap-6 w-full max-w-6xl mx-auto">
-      {/* Header and Step Indicator - Hidden in printing */}
+      {viewMode === 'MENU' && (
+        <div className="flex flex-col items-center justify-center min-h-[70vh] gap-8 animate-in fade-in zoom-in duration-300">
+          <div className="text-center space-y-3">
+            <h1 className="text-4xl md:text-5xl font-black tracking-tight text-slate-800 dark:text-slate-100">
+              AACOM Cotizador
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-xl">
+              Genera nuevas proyecciones o revisa tu historial de cotizaciones pasadas.
+            </p>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-3xl">
+            <Card 
+              className="group cursor-pointer hover:border-teal-500 hover:shadow-xl hover:shadow-teal-500/10 transition-all duration-500 border-2"
+              onClick={() => { handleResetAndNewQuote(); setViewMode('EDITOR') }}
+            >
+              <CardContent className="p-8 flex flex-col items-center text-center gap-4">
+                <div className="h-20 w-20 bg-teal-50 dark:bg-zinc-800 text-teal-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                  <FileSpreadsheet className="h-10 w-10" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">Nueva Cotización</h3>
+                  <p className="text-slate-500 dark:text-slate-400">Calcula y genera una nueva proyección matemática desde cero.</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card 
+              className="group cursor-pointer hover:border-indigo-500 hover:shadow-xl hover:shadow-indigo-500/10 transition-all duration-500 border-2"
+              onClick={() => { setViewMode('HISTORY'); fetchHistory() }}
+            >
+              <CardContent className="p-8 flex flex-col items-center text-center gap-4">
+                <div className="h-20 w-20 bg-indigo-50 dark:bg-zinc-800 text-indigo-600 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform duration-500">
+                  <RefreshCw className="h-10 w-10" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-slate-800 dark:text-slate-100 mb-2">Mis Cotizaciones</h3>
+                  <p className="text-slate-500 dark:text-slate-400">Visualiza y recupera el historial de cotizaciones que has guardado.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'HISTORY' && (
+        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-3xl font-black text-slate-800 dark:text-slate-100">Historial de Cotizaciones</h2>
+              <p className="text-muted-foreground">Revisa tus proyecciones generadas recientemente.</p>
+            </div>
+            <Button variant="outline" onClick={() => setViewMode('MENU')} className="gap-2">
+              <ArrowLeft className="w-4 h-4" /> Regresar
+            </Button>
+          </div>
+
+          <Card className="shadow-lg border-0 ring-1 ring-slate-200 dark:ring-zinc-800">
+            <div className="overflow-x-auto w-full">
+              <Table>
+                <TableHeader className="bg-slate-50 dark:bg-zinc-800/50">
+                  <TableRow>
+                    <TableHead>Fecha</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Producto</TableHead>
+                    <TableHead className="text-right">Prima Anual</TableHead>
+                    <TableHead className="text-right">Ahorro 65 (Pesos)</TableHead>
+                    <TableHead className="text-center">Acción</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loadingHistory ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-slate-500">Cargando historial...</TableCell>
+                    </TableRow>
+                  ) : historyList.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-8 text-slate-500">No tienes cotizaciones guardadas aún.</TableCell>
+                    </TableRow>
+                  ) : (
+                    historyList.map((cot, idx) => (
+                      <TableRow key={idx} className="hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors">
+                        <TableCell className="font-medium">{new Date(cot.createdAt).toLocaleDateString()}</TableCell>
+                        <TableCell>{cot.cliente}</TableCell>
+                        <TableCell>
+                          <span className="bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs font-bold">{cot.producto}</span>
+                        </TableCell>
+                        <TableCell className="text-right font-semibold">
+                          ${(cot.primaAnual || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                        <TableCell className="text-right text-indigo-600 dark:text-indigo-400 font-bold">
+                          ${(cot.ahorro || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <Button variant="default" size="sm" onClick={() => loadHistoryRecord(cot)} className="bg-indigo-600 hover:bg-indigo-700">
+                            Ver Reporte
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {viewMode === 'EDITOR' && (
+        <>
+          {/* Header and Step Indicator - Hidden in printing */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden animate-in fade-in duration-200">
         <div className="flex items-center gap-3">
           {/* Logo in header */}
@@ -1742,8 +1916,23 @@ export default function CotizadorPage() {
           .text-teal-700 {
             color: #0f766e !important;
           }
+          /* Ensure tables don't cut off when printing */
+          .overflow-x-auto {
+            overflow: visible !important;
+            width: 100% !important;
+          }
+          table {
+            width: 100% !important;
+            page-break-inside: auto;
+          }
+          tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+          }
         }
       `}</style>
+        </>
+      )}
     </div>
   )
 }

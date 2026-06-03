@@ -46,6 +46,7 @@ model User {
   activityLogs  ActivityLog[]
   policies      Policy[]
   adnDiagnostics AdnDiagnostic[]
+  cotizaciones   Cotizacion[]
   pushSubscriptions PushSubscription[]
   
   createdAt     DateTime  @default(now())
@@ -119,6 +120,8 @@ model CompanyRules {
 
 model Cotizacion {
   id             String   @id @default(cuid())
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id])
   cliente        String
   telefono       String
   agente         String

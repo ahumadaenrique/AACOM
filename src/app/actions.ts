@@ -156,9 +156,23 @@ export async function saveCotizacion(data: {
     coberturas?: string;
     projectionData?: string;
 }) {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
     try {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!user) {
+            return { success: false, message: "Usuario no encontrado" };
+        }
+
         const newCotizacion = await prisma.cotizacion.create({
             data: {
+                userId: user.id,
                 cliente: data.cliente,
                 telefono: data.telefono,
                 agente: data.agente,
@@ -183,8 +197,24 @@ export async function saveCotizacion(data: {
 }
 
 export async function getCotizaciones() {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado", cotizaciones: [] };
+    }
+
     try {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!user) {
+            return { success: false, message: "Usuario no encontrado", cotizaciones: [] };
+        }
+
         const list = await prisma.cotizacion.findMany({
+            where: {
+                userId: user.id
+            },
             orderBy: {
                 createdAt: 'desc'
             }
