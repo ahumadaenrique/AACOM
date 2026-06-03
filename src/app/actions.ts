@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { SALES_ACTIVITIES } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
+import webpush from "web-push";
 
 export interface ActivityInput {
     activityId: string;
@@ -1736,6 +1737,78 @@ ${knowledgeContext}`;
     }
 }
 
+// ==========================================
+// MÓDULO PUSH NOTIFICATIONS
+// ==========================================
 
+export async function savePushSubscription(subscription: any) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+        
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user) return { success: false, message: "Usuario no encontrado" };
 
+        const { endpoint, keys } = subscription;
+        if (!endpoint || !keys?.p256dh || !keys?.auth) return { success: false, message: "Suscripción inválida" };
 
+        await prisma.pushSubscription.upsert({
+            where: { endpoint },
+            create: {
+                userId: user.id,
+                endpoint,
+                p256dh: keys.p256dh,
+                auth: keys.auth
+            },
+            update: {
+                userId: user.id,
+                p256dh: keys.p256dh,
+                auth: keys.auth
+            }
+        });
+
+        return { success: true, message: "Suscripción guardada" };
+    } catch (err: any) {
+        console.error("Error saving push subscription:", err);
+        return { success: false, message: err.message };
+    }
+}
+
+export async function sendTestPushNotification(userId: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+
+        const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (currentUser?.role !== 'ADMIN') return { success: false, message: "Permisos insuficientes" };
+
+        const subs = await prisma.pushSubscription.findMany({ where: { userId } });
+        if (!subs || subs.length === 0) return { success: false, message: "El usuario no tiene dispositivos suscritos" };
+
+        webpush.setVapidDetails(
+            process.env.VAPID_SUBJECT || 'mailto:test@aacommx.com',
+            process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || '',
+            process.env.VAPID_PRIVATE_KEY || ''
+        );
+
+        const payload = JSON.stringify({
+            title: "Prueba AACOM",
+            body: "Esta es una notificación de prueba desde el sistema.",
+            url: "/"
+        });
+
+        const promises = subs.map(sub => 
+            webpush.sendNotification({
+                endpoint: sub.endpoint,
+                keys: { p256dh: sub.p256dh, auth: sub.auth }
+            }, payload)
+        );
+
+        await Promise.all(promises);
+
+        return { success: true, message: "Notificación enviada" };
+    } catch (err: any) {
+        console.error("Error sending push notification:", err);
+        return { success: false, message: err.message };
+    }
+}
