@@ -1408,10 +1408,10 @@ export default function CotizadorPage() {
                       const isGreenRow = row.edad === 65 && !isPaymentEndRow
 
                       if (isPaymentEndRow) {
-                        rowStyle = "bg-[#1e3a8a] text-white hover:bg-[#172554] font-black border-y-2 border-teal-500"
+                        rowStyle = "bg-[#1e3a8a] text-white hover:bg-[#172554] font-black border-y-2 border-teal-500 print-row-blue"
                       } else if (isGreenRow) {
                         // Age 65 in Green
-                        rowStyle = "bg-[#77ac52] text-white hover:bg-[#6b9a4a] font-bold"
+                        rowStyle = "bg-[#77ac52] text-white hover:bg-[#6b9a4a] font-bold print-row-green"
                       }
 
                       // Helper to ensure cells have perfect white color on highlighted rows for high contrast
@@ -1714,17 +1714,17 @@ export default function CotizadorPage() {
             print-color-adjust: exact;
           }
           /* Deep blue custom payments end row highlight in print */
-          tr.bg-\\[\\#1e3a8a\\] td {
+          tr.print-row-blue td, tr.print-row-blue {
             background-color: #1e3a8a !important;
             color: white !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
-          tr.bg-\\[\\#77ac52\\] td {
+          tr.print-row-green td, tr.print-row-green {
             background-color: #77ac52 !important;
             color: white !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           /* Alternate rows grey coloring */
           tr.bg-slate-50\\/40 {
