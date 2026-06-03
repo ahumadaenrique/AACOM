@@ -20,6 +20,7 @@ model User {
   phone         String?   // Teléfono del usuario/agente
   active        Boolean   @default(true) // Estatus activo/inactivo para restringir acceso
   birthDate     DateTime? // Fecha de nacimiento del agente para overlay de cumpleaños
+  mustChangePassword Boolean @default(false) // Flag de seguridad para forzar cambio de contraseña temporal
   
   // Redes Sociales (Opcional)
   instagram     String?

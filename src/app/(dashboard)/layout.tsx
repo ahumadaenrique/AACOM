@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
 import PwaInstaller from "@/components/PwaInstaller"
 import { PushNotificationManager } from "@/components/PushNotificationManager"
+import { ForcePasswordChange } from "@/components/ForcePasswordChange"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -41,6 +42,12 @@ export default async function DashboardLayout({
         "use server";
         await signOut({ redirectTo: "/login" });
     };
+
+    // --- INTERCEPTOR DE SEGURIDAD ---
+    // Si el usuario requiere cambio de contraseña, se dibuja ÚNICAMENTE la pantalla de bloqueo
+    if (dbUser?.mustChangePassword) {
+        return <ForcePasswordChange userId={dbUser.id} email={dbUser.email} />
+    }
 
     return (
         <div className="flex min-h-screen w-full flex-col">

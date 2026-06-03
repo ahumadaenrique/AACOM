@@ -445,6 +445,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
                 phone: data.phone || null,
                 active: data.active !== undefined ? data.active : true,
                 password: data.password || "password123", // Simple plain text consistent with current auth config
+                mustChangePassword: true // Bloqueo temporal para obligar a que cambie su contraseña
             }
         });
 
@@ -1859,5 +1860,33 @@ export async function sendAdminPushNotification(recipientId: string, message: st
     } catch (err: any) {
         console.error("Error sending admin push notification:", err);
         return { success: false, message: err.message };
+    }
+}
+
+export async function forceUpdatePassword(userId: string, newPassword: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || currentUser.id !== userId) {
+            return { success: false, message: "No tienes permiso para actualizar esta contraseña" };
+        }
+
+        await prisma.user.update({
+            where: { id: userId },
+            data: { 
+                password: newPassword,
+                mustChangePassword: false 
+            }
+        });
+
+        return { success: true, message: "Contraseña actualizada correctamente" };
+    } catch (error: any) {
+        console.error("Error al actualizar la contraseña:", error);
+        return { success: false, message: error.message || "Error al actualizar contraseña" };
     }
 }
