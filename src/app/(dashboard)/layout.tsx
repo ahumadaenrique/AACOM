@@ -45,8 +45,14 @@ export default async function DashboardLayout({
 
     // --- INTERCEPTOR DE SEGURIDAD ---
     // Si el usuario requiere cambio de contraseña, se dibuja ÚNICAMENTE la pantalla de bloqueo
+    // Next.js requiere que los layouts siempre rendericen la variable children.
     if (dbUser?.mustChangePassword) {
-        return <ForcePasswordChange userId={dbUser.id} email={dbUser.email} />
+        return (
+            <>
+                <ForcePasswordChange userId={dbUser.id} email={dbUser.email} />
+                <div className="hidden" aria-hidden="true">{children}</div>
+            </>
+        )
     }
 
     return (
