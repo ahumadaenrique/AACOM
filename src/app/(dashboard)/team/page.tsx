@@ -166,6 +166,14 @@ export default function TeamDirectoryPage() {
             }
 
             const res = await updateUserProfileDetails(selectedUser.id, payload);
+            
+            // Protección contra respuestas vacías (ej: cuando Vercel corta la petición por límite de tamaño)
+            if (!res) {
+                setFormMsg("Error: La imagen es demasiado pesada para el servidor o la conexión falló.");
+                setUpdating(false);
+                return;
+            }
+
             if (res.success && res.user) {
                 setFormMsg("¡Guardado con éxito!");
                 
