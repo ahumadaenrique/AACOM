@@ -252,6 +252,32 @@ export async function getUdiSetting() {
     }
 }
 
+export async function saveRankingBanner(base64Image: string) {
+    try {
+        const setting = await prisma.setting.upsert({
+            where: { key: "ranking_banner_image" },
+            update: { value: base64Image },
+            create: { key: "ranking_banner_image", value: base64Image }
+        });
+        return { success: true, setting };
+    } catch (error: any) {
+        console.error("Error saving ranking banner:", error);
+        return { success: false, message: error.message || "Error al guardar imagen de ranking" };
+    }
+}
+
+export async function getRankingBanner() {
+    try {
+        const setting = await prisma.setting.findUnique({
+            where: { key: "ranking_banner_image" }
+        });
+        return { success: true, value: setting ? setting.value : null };
+    } catch (error: any) {
+        console.error("Error fetching ranking banner:", error);
+        return { success: false, value: null };
+    }
+}
+
 export async function getAgents() {
     try {
         const agents = await prisma.agent.findMany({
@@ -327,6 +353,7 @@ export interface AdnDiagnosticInput {
     ahorroActual: number;
     gastosData: string;
     totalGastos: number;
+    evidenciaBase64?: string;
 }
 
 export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
@@ -369,6 +396,7 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
                 ahorroActual: data.ahorroActual,
                 gastosData: data.gastosData,
                 totalGastos: data.totalGastos,
+                evidenciaBase64: data.evidenciaBase64 || null,
             }
         });
 
@@ -666,10 +694,10 @@ export async function toggleAdnDiagnosticClosedStatus(id: string) {
     }
 }
 
-export async function getAnnouncements() {
+export async function getAnnouncements(type: string = 'HOME_AD') {
     try {
         const list = await prisma.content.findMany({
-            where: { type: 'HOME_AD' },
+            where: { type },
             orderBy: { createdAt: 'desc' }
         });
         return { success: true, announcements: list };
@@ -679,7 +707,7 @@ export async function getAnnouncements() {
     }
 }
 
-export async function createAnnouncement(base64Data: string, fileName: string, linkUrl?: string) {
+export async function createAnnouncement(base64Data: string, fileName: string, linkUrl?: string, type: string = 'HOME_AD') {
     try {
         const session = await auth();
         if (!session?.user?.email) {
@@ -717,7 +745,7 @@ export async function createAnnouncement(base64Data: string, fileName: string, l
 
         const newAd = await prisma.content.create({
             data: {
-                type: 'HOME_AD',
+                type,
                 imageUrl,
                 linkUrl: linkUrl || null,
                 active: true,

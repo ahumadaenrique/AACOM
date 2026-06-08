@@ -192,6 +192,9 @@ model AdnDiagnostic {
   // Totales calculados
   totalGastos      Float
   
+  // Evidencia para modalidad BÁSICA
+  evidenciaBase64  String?
+  
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }

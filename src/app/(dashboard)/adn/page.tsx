@@ -7,7 +7,7 @@ import {
   Calendar, Plus, Trash2, Download, RefreshCw, AlertTriangle, 
   CheckCircle, HelpCircle, FileText, ArrowRight, ArrowLeft, 
   Heart, GraduationCap, Percent, ShoppingBag, Landmark, Coffee, Smile,
-  Search, Eye, X, ShieldCheck
+  Search, Eye, X, ShieldCheck, Camera, Upload
 } from 'lucide-react'
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, 
@@ -171,6 +171,7 @@ export default function AdnPage() {
   const [gastosDet, setGastosDet] = useState<GastosDetallados>(initialGastosDetallados)
   const [gastosRes, setGastosRes] = useState<GastosResumidos>(initialGastosResumidos)
   const [gastosBasicosTotales, setGastosBasicosTotales] = useState<number | ''>('')
+  const [evidenciaBase64, setEvidenciaBase64] = useState<string | null>(null)
 
   const [isSaving, setIsSaving] = useState(false)
   const [validationError, setValidationError] = useState('')
@@ -193,6 +194,55 @@ export default function AdnPage() {
 
   const removeHijo = (idx: number) => {
     setHijos(hijos.filter((_, i) => i !== idx))
+  }
+
+  // --- Handler for Upload & Compression ---
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // For PDFs, just read as base64 without canvas resize
+    if (file.type === 'application/pdf') {
+      const reader = new FileReader()
+      reader.onload = (upEv) => {
+        setEvidenciaBase64(upEv.target?.result as string)
+      }
+      reader.readAsDataURL(file)
+      return
+    }
+
+    // Image compression (resize and lower quality)
+    const reader = new FileReader()
+    reader.onload = (upEv) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const MAX_WIDTH = 1200
+        const MAX_HEIGHT = 1200
+        let width = img.width
+        let height = img.height
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width
+            width = MAX_WIDTH
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height
+            height = MAX_HEIGHT
+          }
+        }
+        canvas.width = width
+        canvas.height = height
+        const ctx = canvas.getContext('2d')
+        ctx?.drawImage(img, 0, 0, width, height)
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6) // Compress to 60% quality JPEG
+        setEvidenciaBase64(compressedBase64)
+      }
+      img.src = upEv.target?.result as string
+    }
+    reader.readAsDataURL(file)
   }
 
   // --- Sumas y Cálculos Financieros Desglosados por Ramo (AJUSTE 6) ---
@@ -444,8 +494,13 @@ export default function AdnPage() {
       if (ingresosTotales === '' || Number(ingresosTotales) <= 0) return 'Por favor ingresa los ingresos brutos'
       if (ingresosNetos === '' || Number(ingresosNetos) <= 0) return 'Por favor ingresa los ingresos netos'
       if (Number(ingresosNetos) > Number(ingresosTotales)) return 'Los ingresos netos no pueden superar a los ingresos brutos'
-      if (modalidad === 'BASICO' && (gastosBasicosTotales === '' || Number(gastosBasicosTotales) < 0)) {
-        return 'Por favor especifica el total de gastos'
+      if (modalidad === 'BASICO') {
+        if (gastosBasicosTotales === '' || Number(gastosBasicosTotales) < 0) {
+          return 'Por favor especifica el total de gastos'
+        }
+        if (!evidenciaBase64) {
+          return 'Es obligatorio adjuntar una foto de tu formato físico para la modalidad Básica'
+        }
       }
     }
     return ''
@@ -501,7 +556,8 @@ export default function AdnPage() {
       ingresosNetos: Number(ingresosNetos),
       ahorroActual: Number(ahorroActual) || 0,
       gastosData: JSON.stringify(gastosObj),
-      totalGastos: totalsByRamo.totalGastos
+      totalGastos: totalsByRamo.totalGastos,
+      evidenciaBase64: evidenciaBase64 || undefined
     }
 
     try {
@@ -1471,7 +1527,7 @@ export default function AdnPage() {
                 )}
 
                 {modalidad === 'BASICO' && (
-                  <div className="space-y-4 border-t pt-4">
+                  <div className="space-y-6 border-t pt-4">
                     <div className="space-y-1 max-w-md">
                       <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block">Gastos Mensuales Totales *</label>
                       <input 
@@ -1481,6 +1537,48 @@ export default function AdnPage() {
                         onChange={e => setGastosBasicosTotales(e.target.value === '' ? '' : Number(e.target.value))}
                         className="border p-3 rounded-xl w-full text-sm bg-slate-50 dark:bg-zinc-800 focus:outline-teal-500 font-bold"
                       />
+                    </div>
+
+                    {/* EVIDENCIA BÁSICA */}
+                    <div className="space-y-1 max-w-md">
+                      <label className="text-xs font-bold text-slate-600 uppercase tracking-wider block flex items-center gap-1.5">
+                        <Camera className="h-4 w-4 text-teal-600" /> Evidencia del Diagnóstico *
+                      </label>
+                      <p className="text-[10px] text-slate-500 mb-2">
+                        Toma una foto o sube el PDF de tus apuntes/formato donde calculaste estos montos (Obligatorio).
+                      </p>
+                      
+                      {!evidenciaBase64 ? (
+                        <div className="border-2 border-dashed border-teal-200 bg-teal-50/50 p-6 rounded-2xl text-center hover:bg-teal-50 transition-colors">
+                          <label className="cursor-pointer flex flex-col items-center gap-2">
+                            <div className="bg-white p-3 rounded-full shadow-sm border border-teal-100">
+                              <Camera className="h-6 w-6 text-teal-600" />
+                            </div>
+                            <span className="text-xs font-bold text-teal-800 mt-2 hover:underline">Tomar Foto o Subir Archivo</span>
+                            <span className="text-[9px] text-teal-600/70">JPG, PNG o PDF</span>
+                            <input 
+                              type="file" 
+                              accept="image/*,application/pdf"
+                              capture="environment" 
+                              className="hidden" 
+                              onChange={handleImageUpload} 
+                            />
+                          </label>
+                        </div>
+                      ) : (
+                        <div className="bg-emerald-50 border border-emerald-200 p-3 rounded-xl flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <CheckCircle className="h-5 w-5 text-emerald-600" />
+                            <span className="text-xs font-bold text-emerald-800">Evidencia Cargada</span>
+                          </div>
+                          <button 
+                            onClick={() => setEvidenciaBase64(null)} 
+                            className="text-xs text-red-600 font-bold hover:underline"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

@@ -1,13 +1,13 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification } from "@/app/actions"
+import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, getMonthlyAdnRankings } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { 
-  FileSpreadsheet, 
+  FileSpreadsheet, Award,
   Search, 
   TrendingUp, 
   Users, 
@@ -113,6 +113,11 @@ export default function AdminClient() {
   const [newPasswordInput, setNewPasswordInput] = useState<string>("")
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [loadingAnnouncements, setLoadingAnnouncements] = useState<boolean>(false)
+
+  // Ranking Banner states
+  const [rankingBanner, setRankingBanner] = useState<string | null>(null)
+  const [savingRankingBanner, setSavingRankingBanner] = useState<boolean>(false)
+  const [rankingBannerMsg, setRankingBannerMsg] = useState<string>("")
   const [announcementLinkInput, setAnnouncementLinkInput] = useState<string>("")
   
   // AACOM 25 Activity Report states
@@ -309,6 +314,52 @@ export default function AdminClient() {
     }
   }
 
+  // Upload Ranking Banner
+  const handleUploadRankingBanner = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (file.size > 5 * 1024 * 1024) {
+      setRankingBannerMsg("Error: El archivo supera los 5 MB permitidos.")
+      return
+    }
+
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
+    if (!allowedTypes.includes(file.type)) {
+      setRankingBannerMsg("Error: Solo se permiten imágenes JPG, JPEG, PNG o GIF.")
+      return
+    }
+
+    setSavingRankingBanner(true)
+    setRankingBannerMsg("Subiendo campaña de ranking...")
+
+    try {
+      const reader = new FileReader()
+      reader.onloadend = async () => {
+        const base64 = reader.result as string
+        const res = await createRankingAd(base64, file.name)
+        if (res.success && res.rankingAd) {
+          setRankingBanner(res.rankingAd.imageUrl)
+          setRankingBannerMsg("¡Campaña de Ranking subida con éxito!")
+          e.target.value = ""
+          setTimeout(() => setRankingBannerMsg(""), 5000)
+        } else {
+          setRankingBannerMsg(res.message || "Error al subir campaña de ranking")
+        }
+        setSavingRankingBanner(false)
+      }
+      reader.onerror = () => {
+        setRankingBannerMsg("Error al procesar la imagen")
+        setSavingRankingBanner(false)
+      }
+      reader.readAsDataURL(file)
+    } catch (err) {
+      console.error(err)
+      setRankingBannerMsg("Error inesperado")
+      setSavingRankingBanner(false)
+    }
+  }
+
   // Upload new announcement banner
   const handleUploadAnnouncement = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -413,6 +464,12 @@ export default function AdminClient() {
 
       // 8. Fetch chatbot knowledge documents
       await fetchKnowledgeDocsList()
+
+      // 9. Fetch Ranking Banner
+      const rankingRes = await getMonthlyAdnRankings()
+      if (rankingRes.success && rankingRes.rankingAd) {
+        setRankingBanner(rankingRes.rankingAd.imageUrl)
+      }
     } catch (err) {
       console.error(err)
       setError("Fallo al conectar con el servidor.")
@@ -946,7 +1003,7 @@ export default function AdminClient() {
       </Card>
 
       {/* Tabs Selector Navigation */}
-      <div className="flex border-b">
+      <div className="flex border-b overflow-x-auto hide-scrollbar whitespace-nowrap">
         <button
           onClick={() => setActiveTab("productividad")}
           className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
@@ -1033,6 +1090,48 @@ export default function AdminClient() {
       {activeTab === "productividad" && (
         <div className="space-y-6 animate-in fade-in duration-300">
           
+          {/* Ranking Banner Upload Section */}
+          <Card className="border shadow-sm bg-gradient-to-br from-amber-50 to-orange-50/30">
+            <CardHeader className="py-4 border-b bg-white/50">
+              <CardTitle className="text-sm font-black text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
+                <Award className="h-4.5 w-4.5" /> Campaña de Premiación (Ranking #1)
+              </CardTitle>
+              <CardDescription className="text-xs">
+                Sube una imagen para incentivar a los agentes. Se mostrará en la parte superior de su pantalla de Ranking.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-5">
+              <div className="flex flex-col md:flex-row gap-6 items-center">
+                <div className="w-full md:w-1/2 space-y-3">
+                  <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all hover:bg-white/60 ${savingRankingBanner ? "opacity-50 pointer-events-none" : "border-amber-300 hover:border-amber-500"}`}>
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <Download className="w-8 h-8 text-amber-500 mb-2" />
+                      <p className="text-[10px] text-amber-700 font-bold uppercase">Haz clic para subir campaña</p>
+                      <p className="text-[9px] text-amber-600/70">JPG, PNG o GIF hasta 5 MB</p>
+                    </div>
+                    <input type="file" accept="image/jpeg,image/png,image/gif" onChange={handleUploadRankingBanner} className="hidden" disabled={savingRankingBanner} />
+                  </label>
+                  {rankingBannerMsg && (
+                    <p className={`text-xs font-bold text-center ${rankingBannerMsg.includes("Error") ? "text-red-500" : "text-emerald-600 animate-pulse"}`}>
+                      {rankingBannerMsg}
+                    </p>
+                  )}
+                </div>
+                <div className="w-full md:w-1/2 flex justify-center">
+                  {rankingBanner ? (
+                    <div className="relative rounded-xl overflow-hidden shadow-sm border border-amber-200 w-full flex items-center justify-center bg-white p-2">
+                      <img src={rankingBanner} alt="Campaña de Ranking" className="max-w-full max-h-48 object-contain rounded" />
+                    </div>
+                  ) : (
+                    <div className="h-32 w-full rounded-xl border border-dashed border-amber-200 flex items-center justify-center text-amber-500 font-medium text-xs italic bg-white/40">
+                      Sin campaña activa actualmente.
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Global Statistics Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Global product mix bar card */}
@@ -3439,6 +3538,30 @@ export default function AdminClient() {
                           )}
                         </div>
                       </div>
+
+                      {/* AJUSTE: Evidencia para Modalidad BASICA */}
+                      {selectedAdn.modalidad === 'BASICO' && selectedAdn.evidenciaBase64 && (
+                        <div className="border border-slate-200 p-4 rounded-xl space-y-2 bg-slate-50/40">
+                          <span className="text-[9px] font-black text-slate-600 uppercase block tracking-wider">
+                            Evidencia Adjunta (Ingreso y Gasto Total)
+                          </span>
+                          <div className="flex justify-center w-full mt-2">
+                            {selectedAdn.evidenciaBase64.startsWith('data:application/pdf') ? (
+                              <div className="w-full h-[500px] border border-slate-300 rounded-lg overflow-hidden bg-white">
+                                <embed src={selectedAdn.evidenciaBase64} type="application/pdf" width="100%" height="100%" />
+                              </div>
+                            ) : (
+                              <div className="w-full bg-white border border-slate-200 rounded-lg p-2 flex justify-center shadow-sm">
+                                <img 
+                                  src={selectedAdn.evidenciaBase64} 
+                                  alt="Evidencia Diagnóstico Básico" 
+                                  className="max-w-full max-h-[600px] object-contain rounded" 
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </>
                   )
                 })()}

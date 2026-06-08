@@ -563,6 +563,18 @@ export default function CotizadorPage() {
     const element = document.getElementById("printable-report")
     if (!element) return
 
+    // Force desktop width temporarily to prevent mobile cut-off
+    const originalWidth = element.style.width
+    const originalMaxWidth = element.style.maxWidth
+    element.style.width = '1200px'
+    element.style.maxWidth = '1200px'
+
+    // Remove overflow restrictions that hide table content in html2canvas
+    const overflowElements = element.querySelectorAll('.overflow-x-auto')
+    overflowElements.forEach(el => {
+      (el as HTMLElement).style.overflow = 'visible'
+    })
+
     const sanitizedClientName = (formData.cliente || "Cotizacion").replace(/[^a-zA-Z0-9]/g, "_")
     
     const opt = {
@@ -578,8 +590,14 @@ export default function CotizadorPage() {
       jsPDF:        { unit: 'mm' as const, format: 'letter' as const, orientation: 'portrait' as const }
     }
 
-    // Direct download
-    html2pdf().from(element).set(opt).save()
+    // Direct download and restore styles
+    html2pdf().from(element).set(opt).save().then(() => {
+      element.style.width = originalWidth
+      element.style.maxWidth = originalMaxWidth
+      overflowElements.forEach(el => {
+        (el as HTMLElement).style.overflow = ''
+      })
+    })
   }
 
   // Calculations for Observation 2 (PPR): Ahorro real efectivo and Rentabilidad Real
