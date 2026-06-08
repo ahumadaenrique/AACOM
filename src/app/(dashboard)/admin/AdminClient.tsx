@@ -1474,7 +1474,7 @@ export default function AdminClient() {
                           <TableCell className="text-center text-slate-500 py-3.5">
                             <span className="flex items-center justify-center gap-1">
                               <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                              {new Date(item.createdAt).toLocaleDateString("es-MX")}
+                              {new Date(item.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}
                             </span>
                           </TableCell>
                           <TableCell className="text-center py-3.5 pr-4">
@@ -1835,7 +1835,7 @@ export default function AdminClient() {
                                 </div>
                               </TableCell>
                               <TableCell className="text-slate-500 py-3 font-normal">
-                                {new Date(agent.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" })}
+                                {new Date(agent.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City',  day: "numeric", month: "long", year: "numeric" })}
                               </TableCell>
                               <TableCell className="text-center py-3 pr-4">
                                 <Button
@@ -2141,7 +2141,7 @@ export default function AdminClient() {
                                     // Format Date beautifully
                                     const dParts = dateGroup.dateStr.split('-')
                                     const dObj = new Date(Number(dParts[0]), Number(dParts[1]) - 1, Number(dParts[2]))
-                                    const prettyDate = dObj.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" })
+                                    const prettyDate = dObj.toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City',  weekday: "long", day: "numeric", month: "long" })
 
                                     return (
                                       <div key={dateGroup.dateStr} className="border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
@@ -2181,7 +2181,7 @@ export default function AdminClient() {
                                                       👤 Cliente: {adn.clienteNombre} ({adn.clienteEdad} años)
                                                     </span>
                                                     <span className="text-[9px] text-slate-400 font-bold">
-                                                      Registrado: {new Date(adn.createdAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                                                      Registrado: {new Date(adn.createdAt).toLocaleTimeString("es-MX", { timeZone: 'America/Mexico_City',  hour: "2-digit", minute: "2-digit" })}
                                                     </span>
                                                   </div>
                                                   <div className="flex items-center gap-2">
@@ -2346,7 +2346,7 @@ export default function AdminClient() {
                           {/* Details and Actions */}
                           <div className="p-4 space-y-3">
                             <div className="text-[10px] text-slate-400 font-semibold flex justify-between items-center">
-                              <span>Subido: {new Date(ad.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "short" })}</span>
+                              <span>Subido: {new Date(ad.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City',  day: "numeric", month: "short" })}</span>
                               <span className={`inline-block px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
                                 ad.active ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
                               }`}>
@@ -2517,7 +2517,7 @@ export default function AdminClient() {
                     const year = now.getFullYear()
                     const month = String(now.getMonth() + 1).padStart(2, '0')
                     const monthStr = `${year}-${month}`
-                    const monthName = now.toLocaleDateString("es-MX", { month: "long", year: "numeric" })
+                    const monthName = now.toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City',  month: "long", year: "numeric" })
                     
                     const agentLogs = activityLogs.filter(log => log.userId === reportAgentFilter)
                     const agentName = usersList.find(u => u.id === reportAgentFilter)?.name || "Agente"
@@ -2557,7 +2557,7 @@ export default function AdminClient() {
                                         👥 {log.prospectName || "Sin Nombre"}
                                       </span>
                                       <span className="text-[9px] text-slate-400 block">
-                                        Registrado: {new Date(log.createdAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                                        Registrado: {new Date(log.createdAt).toLocaleTimeString("es-MX", { timeZone: 'America/Mexico_City',  hour: "2-digit", minute: "2-digit" })}
                                       </span>
                                     </div>
                                     <span className="text-[10px] font-black text-emerald-600 dark:text-emerald-400 bg-white dark:bg-zinc-900 px-2 py-0.5 rounded border border-emerald-200">
@@ -2598,7 +2598,7 @@ export default function AdminClient() {
                                         📅 {log.prospectName || "Sin Nombre"}
                                       </span>
                                       <span className="text-[9px] text-slate-400 block">
-                                        Registrado: {new Date(log.createdAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                                        Registrado: {new Date(log.createdAt).toLocaleTimeString("es-MX", { timeZone: 'America/Mexico_City',  hour: "2-digit", minute: "2-digit" })}
                                       </span>
                                     </div>
                                     <span className="text-[10px] font-black text-orange-600 dark:text-orange-400 bg-white dark:bg-zinc-900 px-2 py-0.5 rounded border border-orange-200">
@@ -2744,7 +2744,7 @@ export default function AdminClient() {
                                         <div className="space-y-0.5">
                                           <span className="text-[9px] font-black text-teal-600 dark:text-teal-400 uppercase tracking-widest block font-black">Resumen Acumulado de Citas</span>
                                           <span className="text-[10px] text-slate-500 font-bold block">
-                                            Actividad total en el mes de {now.toLocaleDateString("es-MX", { month: "long", year: "numeric" })}
+                                            Actividad total en el mes de {now.toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City',  month: "long", year: "numeric" })}
                                           </span>
                                         </div>
                                         <div className="flex items-center gap-4 text-xs font-bold text-slate-700 dark:text-zinc-300">
@@ -2770,7 +2770,7 @@ export default function AdminClient() {
                                         // Format Date beautifully
                                         const dParts = dateGroup.dateStr.split('-')
                                         const dObj = new Date(Number(dParts[0]), Number(dParts[1]) - 1, Number(dParts[2]))
-                                        const prettyDate = dObj.toLocaleDateString("es-MX", { weekday: "long", day: "numeric", month: "long" })
+                                        const prettyDate = dObj.toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City',  weekday: "long", day: "numeric", month: "long" })
 
                                         return (
                                           <div key={dateGroup.dateStr} className="border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
@@ -2829,7 +2829,7 @@ export default function AdminClient() {
                                                             {log.activityName}
                                                           </span>
                                                           <span className="text-[9px] text-slate-400">
-                                                            {new Date(log.createdAt).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" })}
+                                                            {new Date(log.createdAt).toLocaleTimeString("es-MX", { timeZone: 'America/Mexico_City',  hour: "2-digit", minute: "2-digit" })}
                                                           </span>
                                                         </div>
                                                         {log.prospectName ? (
@@ -3020,7 +3020,7 @@ export default function AdminClient() {
                             {doc.content}
                           </p>
                           <div className="text-[9px] text-slate-400 font-bold flex gap-3 pt-1">
-                            <span>Modificado: {new Date(doc.updatedAt).toLocaleDateString("es-MX")}</span>
+                            <span>Modificado: {new Date(doc.updatedAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}</span>
                             <span>{doc.content.length} caracteres</span>
                           </div>
                         </div>
@@ -3085,7 +3085,7 @@ export default function AdminClient() {
                     ADN Digital Rescatado: {selectedAdn.clienteNombre}
                   </h3>
                   <p className="text-[10px] text-muted-foreground">
-                    Diagnosticado el {new Date(selectedAdn.createdAt).toLocaleDateString("es-MX")}
+                    Diagnosticado el {new Date(selectedAdn.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}
                   </p>
                 </div>
               </div>
@@ -3127,7 +3127,7 @@ export default function AdminClient() {
                       <span>•</span>
                       <span><strong>Edad:</strong> {selectedAdn.clienteEdad} años</span>
                       <span>•</span>
-                      <span><strong>Fecha:</strong> {new Date(selectedAdn.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" })}</span>
+                      <span><strong>Fecha:</strong> {new Date(selectedAdn.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City',  day: "numeric", month: "long", year: "numeric" })}</span>
                     </div>
                   </div>
                   <div className="text-right flex flex-col items-end">
@@ -3138,7 +3138,7 @@ export default function AdminClient() {
                 </div>
 
                 {/* Profile detail */}
-                <div className="bg-slate-50 border p-4 rounded-xl grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="bg-slate-50 border p-4 rounded-xl grid grid-cols-2 md:grid-cols-5 gap-4">
                   <div>
                     <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Cliente</span>
                     <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.clienteNombre}</span>
@@ -3154,6 +3154,21 @@ export default function AdminClient() {
                   <div>
                     <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Situación Laboral</span>
                     <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.situacionLaboral}</span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Ubicación (GPS)</span>
+                    {selectedAdn.latitude && selectedAdn.longitude ? (
+                      <a 
+                        href={`https://www.google.com/maps?q=${selectedAdn.latitude},${selectedAdn.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline block mt-0.5 flex items-center gap-1"
+                      >
+                        📍 Ver en Mapa
+                      </a>
+                    ) : (
+                      <span className="text-xs font-bold text-slate-500 block mt-0.5">Sin registro</span>
+                    )}
                   </div>
                 </div>
 
@@ -3609,7 +3624,7 @@ export default function AdminClient() {
                     Propuesta Rescatada: {selectedQuote.cliente}
                   </h3>
                   <p className="text-[10px] text-muted-foreground">
-                    Cotizado por {selectedQuote.agente} el {new Date(selectedQuote.createdAt).toLocaleDateString("es-MX")}
+                    Cotizado por {selectedQuote.agente} el {new Date(selectedQuote.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}
                   </p>
                 </div>
               </div>
@@ -3671,7 +3686,7 @@ export default function AdminClient() {
                         <span>•</span>
                         <span><strong>Teléfono:</strong> {selectedQuote.telefono}</span>
                         <span>•</span>
-                        <span><strong>Fecha original:</strong> {new Date(selectedQuote.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" })}</span>
+                        <span><strong>Fecha original:</strong> {new Date(selectedQuote.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City',  day: "numeric", month: "long", year: "numeric" })}</span>
                       </div>
                     </div>
                     <div className="text-right flex flex-col items-end">
@@ -4394,3 +4409,5 @@ export default function AdminClient() {
     </div>
   )
 }
+
+

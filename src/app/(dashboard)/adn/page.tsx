@@ -525,50 +525,79 @@ export default function AdnPage() {
     setIsSaving(true)
     setValidationError('')
 
-    let gastosObj = {}
-    if (modalidad === 'DETALLADO') {
-      gastosObj = gastosDet
-    } else if (modalidad === 'RESUMIDO') {
-      gastosObj = gastosRes
-    } else {
-      gastosObj = { totalBasico: gastosBasicosTotales }
-    }
-
-    const payload = {
-      modalidad: modalidad!,
-      clienteNombre,
-      clienteEdad: Number(clienteEdad),
-      conyugeNombre: conyugeNombre || undefined,
-      conyugeEdad: conyugeEdad !== '' ? Number(conyugeEdad) : undefined,
-      situacionLaboral,
-      hijosData: hijos.length > 0 ? JSON.stringify(hijos) : undefined,
-      hasSeguroAhorro,
-      ahorroAporte: hasSeguroAhorro && ahorroAporte !== '' ? Number(ahorroAporte) : undefined,
-      ahorroFrecuencia: hasSeguroAhorro ? ahorroFrecuencia : undefined,
-      hasPpr,
-      pprAporte: hasPpr && pprAporte !== '' ? Number(pprAporte) : undefined,
-      pprFrecuencia: hasPpr ? pprFrecuencia : undefined,
-      pprAniosPlazo: hasPpr ? pprAniosPlazo : undefined,
-      hasGmm,
-      hasSeguroVida,
-      vidaSumaAsegurada: hasSeguroVida && vidaSumaAsegurada !== '' ? Number(vidaSumaAsegurada) : undefined,
-      ingresosTotales: Number(ingresosTotales),
-      ingresosNetos: Number(ingresosNetos),
-      ahorroActual: Number(ahorroActual) || 0,
-      gastosData: JSON.stringify(gastosObj),
-      totalGastos: totalsByRamo.totalGastos,
-      evidenciaBase64: evidenciaBase64 || undefined
+    // REQUERIR GPS
+    if (!navigator.geolocation) {
+      setValidationError("Tu navegador no soporta geolocalización. Es obligatoria para guardar ADNs.")
+      setIsSaving(false)
+      return
     }
 
     try {
+      // Prompt GPS
+      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+        navigator.geolocation.getCurrentPosition(resolve, reject, {
+          enableHighAccuracy: true,
+          timeout: 15000,
+          maximumAge: 0
+        })
+      })
+
+      const latitude = position.coords.latitude
+      const longitude = position.coords.longitude
+
+      let gastosObj = {}
+      if (modalidad === 'DETALLADO') {
+        gastosObj = gastosDet
+      } else if (modalidad === 'RESUMIDO') {
+        gastosObj = gastosRes
+      } else {
+        gastosObj = { totalBasico: gastosBasicosTotales }
+      }
+
+      const payload = {
+        modalidad: modalidad!,
+        clienteNombre,
+        clienteEdad: Number(clienteEdad),
+        conyugeNombre: conyugeNombre || undefined,
+        conyugeEdad: conyugeEdad !== '' ? Number(conyugeEdad) : undefined,
+        situacionLaboral,
+        hijosData: hijos.length > 0 ? JSON.stringify(hijos) : undefined,
+        hasSeguroAhorro,
+        ahorroAporte: hasSeguroAhorro && ahorroAporte !== '' ? Number(ahorroAporte) : undefined,
+        ahorroFrecuencia: hasSeguroAhorro ? ahorroFrecuencia : undefined,
+        hasPpr,
+        pprAporte: hasPpr && pprAporte !== '' ? Number(pprAporte) : undefined,
+        pprFrecuencia: hasPpr ? pprFrecuencia : undefined,
+        pprAniosPlazo: hasPpr ? pprAniosPlazo : undefined,
+        hasGmm,
+        hasSeguroVida,
+        vidaSumaAsegurada: hasSeguroVida && vidaSumaAsegurada !== '' ? Number(vidaSumaAsegurada) : undefined,
+        ingresosTotales: Number(ingresosTotales),
+        ingresosNetos: Number(ingresosNetos),
+        ahorroActual: Number(ahorroActual) || 0,
+        gastosData: JSON.stringify(gastosObj),
+        totalGastos: totalsByRamo.totalGastos,
+        evidenciaBase64: evidenciaBase64 || undefined,
+        latitude,
+        longitude
+      }
+
       const res = await saveAdnDiagnostic(payload)
       if (res.success) {
-        alert('¡Diagnóstico ADN guardado exitosamente en base de datos de desarrollo!')
+        alert('¡Diagnóstico ADN guardado exitosamente!')
       } else {
         setValidationError(res.message || 'Error al guardar el diagnóstico')
       }
     } catch (err: any) {
-      setValidationError(err.message || 'Ocurrió un error inesperado al guardar')
+      if (err.code === 1) { // PERMISSION_DENIED
+        setValidationError("🛑 Es obligatorio compartir tu ubicación GPS para registrar diagnósticos. Ve a la configuración de tu navegador para otorgar los permisos e inténtalo de nuevo.")
+      } else if (err.code === 2) { // POSITION_UNAVAILABLE
+        setValidationError("No se pudo obtener tu ubicación actual. Asegúrate de tener encendido el GPS.")
+      } else if (err.code === 3) { // TIMEOUT
+        setValidationError("El tiempo para obtener la ubicación se agotó. Revisa tu conexión y señal GPS.")
+      } else {
+        setValidationError(err.message || 'Ocurrió un error inesperado al guardar')
+      }
     } finally {
       setIsSaving(false)
     }
@@ -761,7 +790,7 @@ export default function AdnPage() {
                       .map(adn => (
                         <tr key={adn.id} className="hover:bg-slate-50/50">
                           <td className="py-3.5 px-4 text-slate-500">
-                            {new Date(adn.createdAt).toLocaleDateString("es-MX")}
+                            {new Date(adn.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}
                           </td>
                           <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-200">
                             {adn.clienteNombre}
@@ -2014,7 +2043,7 @@ export default function AdnPage() {
               </div>
               <div className="text-right text-xs text-slate-500">
                 <span className="block font-bold">AACOM SEGUROS</span>
-                <span className="block">Fecha: {new Date().toLocaleDateString('es-MX')}</span>
+                <span className="block">Fecha: {new Date().toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}</span>
               </div>
             </div>
 
@@ -2388,7 +2417,7 @@ export default function AdnPage() {
                     ADN Digital Rescatado: {selectedSavedAdn.clienteNombre}
                   </h3>
                   <p className="text-[10px] text-muted-foreground">
-                    Diagnosticado el {new Date(selectedSavedAdn.createdAt).toLocaleDateString("es-MX")}
+                    Diagnosticado el {new Date(selectedSavedAdn.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}
                   </p>
                 </div>
               </div>
@@ -2429,7 +2458,7 @@ export default function AdnPage() {
                       <span>•</span>
                       <span><strong>Edad:</strong> {selectedSavedAdn.clienteEdad} años</span>
                       <span>•</span>
-                      <span><strong>Fecha:</strong> {new Date(selectedSavedAdn.createdAt).toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" })}</span>
+                      <span><strong>Fecha:</strong> {new Date(selectedSavedAdn.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City',  day: "numeric", month: "long", year: "numeric" })}</span>
                     </div>
                   </div>
                   <div className="text-right flex flex-col items-end">
@@ -2880,7 +2909,7 @@ export default function AdnPage() {
           </div>
           <div className="text-right text-xs text-slate-500">
             <span className="block font-bold">AACOM SEGUROS</span>
-            <span className="block">Fecha: {new Date().toLocaleDateString('es-MX')}</span>
+            <span className="block">Fecha: {new Date().toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}</span>
           </div>
         </div>
 
@@ -3288,3 +3317,5 @@ export default function AdnPage() {
       </div>
   )
 }
+
+

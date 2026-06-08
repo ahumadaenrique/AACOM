@@ -354,6 +354,8 @@ export interface AdnDiagnosticInput {
     gastosData: string;
     totalGastos: number;
     evidenciaBase64?: string;
+    latitude?: number;
+    longitude?: number;
 }
 
 export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
@@ -397,6 +399,8 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
                 gastosData: data.gastosData,
                 totalGastos: data.totalGastos,
                 evidenciaBase64: data.evidenciaBase64 || null,
+                latitude: data.latitude || null,
+                longitude: data.longitude || null,
             }
         });
 

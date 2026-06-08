@@ -1280,7 +1280,7 @@ export default function CotizadorPage() {
                   <span>•</span>
                   <span><strong>Teléfono:</strong> {formData.telefono || "No Especificado"}</span>
                   <span>•</span>
-                  <span><strong>Fecha:</strong> {new Date().toLocaleDateString("es-MX", { day: "numeric", month: "long", year: "numeric" })}</span>
+                  <span><strong>Fecha:</strong> {new Date().toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City',  day: "numeric", month: "long", year: "numeric" })}</span>
                 </div>
               </div>
               <div className="text-right flex flex-col items-end">
@@ -1954,3 +1954,4 @@ export default function CotizadorPage() {
     </div>
   )
 }
+
