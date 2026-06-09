@@ -3416,40 +3416,24 @@ export default function AdminClient() {
                           </div>
                         </div>
 
-                        {/* Warren Percent progress bars */}
+                        {/* Warren Percent BarChart */}
                         <div className="border p-4 rounded-xl space-y-3.5 flex flex-col justify-between bg-white">
                           <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Comparación Warren 50-30-20</h4>
-                          
-                          <div className="space-y-3">
-                            <div className="space-y-0.5">
-                              <div className="flex justify-between text-[11px] font-bold text-slate-600">
-                                <span>Necesidades (Real / Óptimo)</span>
-                                <span>{pctNecesidades}% / 50%</span>
-                              </div>
-                              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                <div className="bg-blue-500 h-full" style={{ width: `${Math.min(100, pctNecesidades)}%` }} />
-                              </div>
-                            </div>
-
-                            <div className="space-y-0.5">
-                              <div className="flex justify-between text-[11px] font-bold text-slate-600">
-                                <span>Ahorro (Real / Óptimo)</span>
-                                <span>{pctAhorro}% / 30%</span>
-                              </div>
-                              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                <div className="bg-emerald-500 h-full" style={{ width: `${Math.min(100, pctAhorro)}%` }} />
-                              </div>
-                            </div>
-
-                            <div className="space-y-0.5">
-                              <div className="flex justify-between text-[11px] font-bold text-slate-600">
-                                <span>Deseos (Real / Óptimo)</span>
-                                <span>{pctDeseos}% / 20%</span>
-                              </div>
-                              <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                                <div className="bg-amber-500 h-full" style={{ width: `${Math.min(100, pctDeseos)}%` }} />
-                              </div>
-                            </div>
+                          <div className="h-48 w-full mt-2">
+                            <ResponsiveContainer width="100%" height="100%">
+                              <BarChart data={[
+                                { name: 'Necesidades', Recomendado: Math.round((income || 1) * 0.5), Real: necesidades },
+                                { name: 'Ahorro', Recomendado: Math.round((income || 1) * 0.3), Real: ahorro },
+                                { name: 'Deseos', Recomendado: Math.round((income || 1) * 0.2), Real: deseos }
+                              ]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                                <XAxis dataKey="name" stroke="#888888" fontSize={9} tickLine={false} axisLine={false} />
+                                <YAxis stroke="#888888" fontSize={9} tickLine={false} axisLine={false} tickFormatter={(val) => `$${(val/1000).toFixed(0)}k`} />
+                                <Tooltip formatter={(val: number) => [`$${val.toLocaleString('es-MX')}`, '']} />
+                                <Legend wrapperStyle={{ fontSize: '9px', fontWeight: 'bold' }} />
+                                <Bar dataKey="Recomendado" fill="#94a3b8" radius={[4, 4, 0, 0]} />
+                                <Bar dataKey="Real" fill="#0f766e" radius={[4, 4, 0, 0]} />
+                              </BarChart>
+                            </ResponsiveContainer>
                           </div>
                         </div>
                       </div>
