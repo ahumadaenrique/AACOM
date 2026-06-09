@@ -1,0 +1,1 @@
+const { PrismaClient } = require("@prisma/client"); const prisma = new PrismaClient(); async function main() { const users = await prisma.user.findMany({ include: { adnDiagnostics: true } }); users.forEach(u => console.log(u.email + ": " + u.adnDiagnostics.length + " ADNs")); } main().catch(console.error).finally(() => prisma.$disconnect());

@@ -481,6 +481,9 @@ export default function AdnPage() {
       name: 'Deseos (20%)',
       Recomendado: warrenMetrics.recDeseos,
       Real: totalsByRamo.deseos
+    }
+  ]
+
   // --- Step Validation ---
   const validateStep = () => {
     setValidationError('')
