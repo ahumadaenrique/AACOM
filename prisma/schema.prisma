@@ -167,6 +167,12 @@ model AdnDiagnostic {
   situacionLaboral String
   hijosData        String?  // JSON string: [{nombre: string, edad: number}]
   
+  // Salud y Hbitos
+  estatura         String?
+  peso             String?
+  fumador          Boolean  @default(false)
+  padecimientos    String?
+
   // Paso 2: Seguros Existentes
   hasSeguroAhorro  Boolean  @default(false)
   ahorroAporte     Float?
@@ -185,6 +191,11 @@ model AdnDiagnostic {
   ingresosTotales  Float
   ingresosNetos    Float
   ahorroActual     Float    // Para cálculo de brecha de fondo de emergencia
+
+  // Tarjetas de Crédito
+  hasTarjetasCredito Boolean  @default(false)
+  tarjetasCuales   String?
+  tarjetasLimite   String?
   
   // Gastos desglosados (Guardado en JSON por flexibilidad de modalidades)
   gastosData       String   // JSON string conteniendo rubros detallados o resumidos

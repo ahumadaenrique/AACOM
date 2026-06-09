@@ -338,6 +338,10 @@ export interface AdnDiagnosticInput {
     conyugeEdad?: number;
     situacionLaboral: string;
     hijosData?: string;
+    estatura?: string;
+    peso?: string;
+    fumador: boolean;
+    padecimientos?: string;
     hasSeguroAhorro: boolean;
     ahorroAporte?: number;
     ahorroFrecuencia?: string;
@@ -351,6 +355,9 @@ export interface AdnDiagnosticInput {
     ingresosTotales: number;
     ingresosNetos: number;
     ahorroActual: number;
+    hasTarjetasCredito: boolean;
+    tarjetasCuales?: string;
+    tarjetasLimite?: string;
     gastosData: string;
     totalGastos: number;
     evidenciaBase64?: string;
@@ -383,6 +390,10 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
                 conyugeEdad: data.conyugeEdad || null,
                 situacionLaboral: data.situacionLaboral,
                 hijosData: data.hijosData || null,
+                estatura: data.estatura || null,
+                peso: data.peso || null,
+                fumador: data.fumador,
+                padecimientos: data.padecimientos || null,
                 hasSeguroAhorro: data.hasSeguroAhorro,
                 ahorroAporte: data.ahorroAporte || null,
                 ahorroFrecuencia: data.ahorroFrecuencia || null,
@@ -396,6 +407,9 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
                 ingresosTotales: data.ingresosTotales,
                 ingresosNetos: data.ingresosNetos,
                 ahorroActual: data.ahorroActual,
+                hasTarjetasCredito: data.hasTarjetasCredito,
+                tarjetasCuales: data.tarjetasCuales || null,
+                tarjetasLimite: data.tarjetasLimite || null,
                 gastosData: data.gastosData,
                 totalGastos: data.totalGastos,
                 evidenciaBase64: data.evidenciaBase64 || null,

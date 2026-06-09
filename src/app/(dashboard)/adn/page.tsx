@@ -7,7 +7,7 @@ import {
   Calendar, Plus, Trash2, Download, RefreshCw, AlertTriangle, 
   CheckCircle, HelpCircle, FileText, ArrowRight, ArrowLeft, 
   Heart, GraduationCap, Percent, ShoppingBag, Landmark, Coffee, Smile,
-  Search, Eye, X, ShieldCheck, Camera, Upload
+  Search, Eye, X, ShieldCheck, Camera, Upload, CreditCard
 } from 'lucide-react'
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, 
@@ -43,6 +43,7 @@ interface GastosDetallados {
   supermercado: number; mercado: number; accesoriosCasa: number;
   // Cuidado Personal
   estetica: number; accesoriosBelleza: number; medicamentos: number; checkups: number;
+  ropaZapatos: number; gimnasio: number;
   // Ahorro
   inversiones: number;
   // Mascotas
@@ -71,7 +72,7 @@ const initialGastosDetallados: GastosDetallados = {
   prestamos: 0, creditos: 0,
   hobbies: 0, finDeSemana: 0, vacaciones: 0, cineTeatro: 0, comidasEsparcimiento: 0, baresRecreacion: 0, cafecitos: 0, clubSocial: 0, amazonCompras: 0,
   supermercado: 0, mercado: 0, accesoriosCasa: 0,
-  estetica: 0, accesoriosBelleza: 0, medicamentos: 0, checkups: 0,
+  estetica: 0, accesoriosBelleza: 0, medicamentos: 0, checkups: 0, ropaZapatos: 0, gimnasio: 0,
   inversiones: 0,
   comidaMascota: 0, saludMascota: 0, vacunasMascota: 0, esteticaMascota: 0, accesoriosMascota: 0
 }
@@ -147,6 +148,12 @@ export default function AdnPage() {
   const [nuevoHijoNombre, setNuevoHijoNombre] = useState('')
   const [nuevoHijoEdad, setNuevoHijoEdad] = useState<number | ''>('')
 
+  // Salud y Hábitos
+  const [estatura, setEstatura] = useState('')
+  const [peso, setPeso] = useState('')
+  const [fumador, setFumador] = useState(false)
+  const [padecimientos, setPadecimientos] = useState('')
+
   // Step 2: Seguros Existentes
   const [hasSeguroAhorro, setHasSeguroAhorro] = useState(false)
   const [ahorroAporte, setAhorroAporte] = useState<number | ''>('')
@@ -166,6 +173,11 @@ export default function AdnPage() {
   const [ingresosTotales, setIngresosTotales] = useState<number | ''>('')
   const [ingresosNetos, setIngresosNetos] = useState<number | ''>('')
   const [ahorroActual, setAhorroActual] = useState<number | ''>('')
+
+  // Tarjetas de Crédito
+  const [hasTarjetasCredito, setHasTarjetasCredito] = useState(false)
+  const [tarjetasCuales, setTarjetasCuales] = useState('')
+  const [tarjetasLimite, setTarjetasLimite] = useState('')
 
   // Egresos por modalidad
   const [gastosDet, setGastosDet] = useState<GastosDetallados>(initialGastosDetallados)
@@ -279,7 +291,7 @@ export default function AdnPage() {
       deudas = g.prestamos + g.creditos
       entretenimiento = g.hobbies + g.finDeSemana + g.vacaciones + g.cineTeatro + g.comidasEsparcimiento + g.baresRecreacion + g.cafecitos + g.clubSocial + g.amazonCompras
       alimentacion = g.supermercado + g.mercado + g.accesoriosCasa
-      cuidadoPersonal = g.estetica + g.accesoriosBelleza + g.medicamentos + g.checkups
+      cuidadoPersonal = g.estetica + g.accesoriosBelleza + g.medicamentos + g.checkups + g.ropaZapatos + g.gimnasio
       ahorro += g.inversiones // fondoEmergencia eliminado de la lista detallada
       mascotas = g.comidaMascota + g.saludMascota + g.vacunasMascota + g.esteticaMascota + g.accesoriosMascota
 
@@ -469,15 +481,13 @@ export default function AdnPage() {
       name: 'Deseos (20%)',
       Recomendado: warrenMetrics.recDeseos,
       Real: totalsByRamo.deseos
-    }
-  ]
-
   // --- Step Validation ---
   const validateStep = () => {
     setValidationError('')
     if (step === 1) {
       if (!clienteNombre.trim()) return 'Por favor ingresa el nombre del cliente'
       if (clienteEdad === '' || Number(clienteEdad) <= 0) return 'Por favor ingresa una edad válida'
+      if (!padecimientos.trim()) return 'Por favor responde a la pregunta de Padecimientos'
     }
     if (step === 2) {
       if (hasSeguroAhorro && (ahorroAporte === '' || Number(ahorroAporte) <= 0)) {
@@ -494,6 +504,7 @@ export default function AdnPage() {
       if (ingresosTotales === '' || Number(ingresosTotales) <= 0) return 'Por favor ingresa los ingresos brutos'
       if (ingresosNetos === '' || Number(ingresosNetos) <= 0) return 'Por favor ingresa los ingresos netos'
       if (Number(ingresosNetos) > Number(ingresosTotales)) return 'Los ingresos netos no pueden superar a los ingresos brutos'
+      if (hasTarjetasCredito && (!tarjetasCuales.trim() || !tarjetasLimite.trim())) return 'Por favor especifica cuáles tarjetas tienes y su límite de crédito'
       if (modalidad === 'BASICO') {
         if (gastosBasicosTotales === '' || Number(gastosBasicosTotales) < 0) {
           return 'Por favor especifica el total de gastos'
@@ -561,6 +572,10 @@ export default function AdnPage() {
         conyugeNombre: conyugeNombre || undefined,
         conyugeEdad: conyugeEdad !== '' ? Number(conyugeEdad) : undefined,
         situacionLaboral,
+        estatura: estatura || undefined,
+        peso: peso || undefined,
+        fumador,
+        padecimientos: padecimientos || undefined,
         hijosData: hijos.length > 0 ? JSON.stringify(hijos) : undefined,
         hasSeguroAhorro,
         ahorroAporte: hasSeguroAhorro && ahorroAporte !== '' ? Number(ahorroAporte) : undefined,
@@ -575,6 +590,9 @@ export default function AdnPage() {
         ingresosTotales: Number(ingresosTotales),
         ingresosNetos: Number(ingresosNetos),
         ahorroActual: Number(ahorroActual) || 0,
+        hasTarjetasCredito,
+        tarjetasCuales: hasTarjetasCredito ? tarjetasCuales : undefined,
+        tarjetasLimite: hasTarjetasCredito ? tarjetasLimite : undefined,
         gastosData: JSON.stringify(gastosObj),
         totalGastos: totalsByRamo.totalGastos,
         evidenciaBase64: evidenciaBase64 || undefined,
@@ -616,6 +634,10 @@ export default function AdnPage() {
     setConyugeNombre('')
     setConyugeEdad('')
     setSituacionLaboral('Empleado')
+    setEstatura('')
+    setPeso('')
+    setFumador(false)
+    setPadecimientos('')
     setHijos([])
     setHasSeguroAhorro(false)
     setAhorroAporte('')
@@ -628,6 +650,9 @@ export default function AdnPage() {
     setIngresosTotales('')
     setIngresosNetos('')
     setAhorroActual('')
+    setHasTarjetasCredito(false)
+    setTarjetasCuales('')
+    setTarjetasLimite('')
     setGastosDet(initialGastosDetallados)
     setGastosRes(initialGastosResumidos)
     setGastosBasicosTotales('')
@@ -824,7 +849,7 @@ export default function AdnPage() {
                           <td className="py-3.5 px-4 text-center">
                             <button 
                               onClick={() => setSelectedSavedAdn(adn)}
-                              className="text-teal-600 hover:text-teal-700 font-bold hover:underline flex items-center justify-center gap-1 mx-auto bg-teal-50 hover:bg-teal-100 p-1.5 px-3 rounded-lg border border-teal-200"
+                              className="text-teal-600 hover:text-teal-700 font-bold hover:underline flex items-center justify-center gap-1 mx-auto bg-teal-50 hover:bg-teal-100 p-1.5 px3 rounded-lg border border-teal-200"
                             >
                               <Eye className="h-3.5 w-3.5" /> Consultar
                             </button>
@@ -1000,7 +1025,35 @@ export default function AdnPage() {
                   </select>
                 </div>
 
-                {/* Hijos list (AJUSTE 4: Capturar nombre y edad de cada hijo) */}
+                {/* Salud y Hábitos */}
+                <div className="border border-slate-100 dark:border-zinc-800 p-5 rounded-2xl space-y-4">
+                  <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
+                    <Heart className="h-4 w-4 text-teal-600" /> Salud y Hábitos del Cliente
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-600 uppercase block">Estatura (Opcional)</label>
+                      <input type="text" placeholder="Ej. 1.75m" value={estatura} onChange={e => setEstatura(e.target.value)} className="border p-2.5 rounded-xl w-full text-sm bg-slate-50 dark:bg-zinc-800 focus:outline-teal-500" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-600 uppercase block">Peso (Opcional)</label>
+                      <input type="text" placeholder="Ej. 80kg" value={peso} onChange={e => setPeso(e.target.value)} className="border p-2.5 rounded-xl w-full text-sm bg-slate-50 dark:bg-zinc-800 focus:outline-teal-500" />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-600 uppercase block">¿Es Fumador? *</label>
+                      <select value={fumador ? 'SI' : 'NO'} onChange={e => setFumador(e.target.value === 'SI')} className="border p-2.5 rounded-xl w-full text-sm bg-slate-50 dark:bg-zinc-800 focus:outline-teal-500">
+                        <option value="NO">No</option>
+                        <option value="SI">Sí</option>
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-600 uppercase block">Padecimientos *</label>
+                      <input type="text" placeholder="Ninguno / Asma" value={padecimientos} onChange={e => setPadecimientos(e.target.value)} className="border p-2.5 rounded-xl w-full text-sm bg-slate-50 dark:bg-zinc-800 focus:outline-teal-500" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Hijos list */}
                 <div className="border border-slate-100 dark:border-zinc-800 p-5 rounded-2xl space-y-4">
                   <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
                     <Users className="h-4 w-4 text-teal-600" /> Estructura Familiar (Hijos)
@@ -1072,7 +1125,7 @@ export default function AdnPage() {
                 </div>
 
                 <div className="space-y-4">
-                  {/* PPR (AJUSTE 5: Preguntar plazo contratado) */}
+                  {/* PPR */}
                   <div className="border rounded-2xl p-4 bg-slate-50/50 space-y-4 border-slate-200/50">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
@@ -1190,7 +1243,7 @@ export default function AdnPage() {
                     />
                   </div>
 
-                  {/* Seguro de Vida (AJUSTE 1: Preguntar Suma Asegurada) */}
+                  {/* Seguro de Vida */}
                   <div className="border rounded-2xl p-4 bg-slate-50/50 space-y-4 border-slate-200/50">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-3">
@@ -1270,12 +1323,40 @@ export default function AdnPage() {
                   </div>
                 </div>
 
+                {/* Tarjetas de Crédito */}
+                <div className="border border-slate-100 dark:border-zinc-800 p-5 rounded-2xl space-y-4">
+                  <h4 className="text-xs font-black text-slate-700 uppercase tracking-widest flex items-center gap-1.5">
+                    <CreditCard className="h-4 w-4 text-teal-600" /> Tarjetas de Crédito
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-[10px] font-bold text-slate-600 uppercase block">¿Cuentas con tarjeta de crédito? *</label>
+                      <select value={hasTarjetasCredito ? 'SI' : 'NO'} onChange={e => setHasTarjetasCredito(e.target.value === 'SI')} className="border p-2.5 rounded-xl w-full text-sm bg-white dark:bg-zinc-800 focus:outline-teal-500">
+                        <option value="NO">No</option>
+                        <option value="SI">Sí</option>
+                      </select>
+                    </div>
+                    {hasTarjetasCredito && (
+                      <>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-600 uppercase block">¿Cuáles? *</label>
+                          <input type="text" placeholder="Ej. BBVA Azul, Nu" value={tarjetasCuales} onChange={e => setTarjetasCuales(e.target.value)} className="border p-2.5 rounded-xl w-full text-sm bg-white dark:bg-zinc-800 focus:outline-teal-500" />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold text-slate-600 uppercase block">Límite de Crédito *</label>
+                          <input type="text" placeholder="Ej. $50,000" value={tarjetasLimite} onChange={e => setTarjetasLimite(e.target.value)} className="border p-2.5 rounded-xl w-full text-sm bg-white dark:bg-zinc-800 focus:outline-teal-500" />
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+
                 {/* Gastos Desglosados según modalidad */}
                 {modalidad === 'DETALLADO' && (
                   <div className="space-y-6">
                     <h4 className="text-xs font-black text-teal-800 uppercase tracking-widest border-b pb-2">Gastos Mensuales Detallados</h4>
                     
-                    {/* Vivienda (AJUSTE 3: Agregar Predial a Vivienda y Servicios como anual) */}
+                    {/* Vivienda */}
                     <div className="space-y-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><Landmark className="h-4 w-4 text-teal-600" /> Vivienda y Servicios</span>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1483,8 +1564,8 @@ export default function AdnPage() {
                     {/* Cuidado Personal */}
                     <div className="space-y-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><Heart className="h-4 w-4 text-teal-600" /> Cuidado Personal y Salud</span>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        {Object.keys(initialGastosDetallados).slice(40, 44).map((key) => (
+                      <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
+                        {Object.keys(initialGastosDetallados).slice(40, 46).map((key) => (
                           <div key={key} className="space-y-1">
                             <label className="text-[9px] font-bold text-slate-500 uppercase">{key.replace(/([A-Z])/g, ' $1')}</label>
                             <input 
@@ -1503,7 +1584,7 @@ export default function AdnPage() {
                     <div className="space-y-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><Smile className="h-4 w-4 text-teal-600" /> Mascotas</span>
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                        {Object.keys(initialGastosDetallados).slice(45).map((key) => (
+                        {Object.keys(initialGastosDetallados).slice(46).map((key) => (
                           <div key={key} className="space-y-1">
                             <label className="text-[9px] font-bold text-slate-500 uppercase">{key.replace(/([A-Z])/g, ' $1')}</label>
                             <input 
@@ -2540,7 +2621,7 @@ export default function AdnPage() {
                     catEducacion = (g.escuelaHijos || 0) + (g.escuelaPropia || 0) + (g.utiles || 0) + (g.materiales || 0) + (g.libros || 0)
                     catDeudas = (g.prestamos || 0) + (g.creditos || 0)
                     catAlimentacion = (g.supermercado || 0) + (g.mercado || 0) + (g.accesoriosCasa || 0)
-                    catCuidadoPersonal = (g.estetica || 0) + (g.accesoriosBelleza || 0) + (g.medicamentos || 0) + (g.checkups || 0)
+                    catCuidadoPersonal = (g.estetica || 0) + (g.accesoriosBelleza || 0) + (g.medicamentos || 0) + (g.checkups || 0) + (g.ropaZapatos || 0) + (g.gimnasio || 0) + (g.ropaZapatos || 0) + (g.gimnasio || 0)
                     catMascotas = (g.comidaMascota || 0) + (g.saludMascota || 0) + (g.vacunasMascota || 0) + (g.esteticaMascota || 0) + (g.accesoriosMascota || 0)
                     catEntretenimiento = (g.hobbies || 0) + (g.finDeSemana || 0) + (g.vacaciones || 0) + (g.cineTeatro || 0) + (g.comidasEsparcimiento || 0) + (g.baresRecreacion || 0) + (g.cafecitos || 0) + (g.clubSocial || 0) + (g.amazonCompras || 0)
                     catAhorro += (g.inversiones || 0)
@@ -3000,7 +3081,7 @@ export default function AdnPage() {
             catEducacion = (g.escuelaHijos || 0) + (g.escuelaPropia || 0) + (g.utiles || 0) + (g.materiales || 0) + (g.libros || 0)
             catDeudas = (g.prestamos || 0) + (g.creditos || 0)
             catAlimentacion = (g.supermercado || 0) + (g.mercado || 0) + (g.accesoriosCasa || 0)
-            catCuidadoPersonal = (g.estetica || 0) + (g.accesoriosBelleza || 0) + (g.medicamentos || 0) + (g.checkups || 0)
+            catCuidadoPersonal = (g.estetica || 0) + (g.accesoriosBelleza || 0) + (g.medicamentos || 0) + (g.checkups || 0) + (g.ropaZapatos || 0) + (g.gimnasio || 0)
             catMascotas = (g.comidaMascota || 0) + (g.saludMascota || 0) + (g.vacunasMascota || 0) + (g.esteticaMascota || 0) + (g.accesoriosMascota || 0)
             catEntretenimiento = (g.hobbies || 0) + (g.finDeSemana || 0) + (g.vacaciones || 0) + (g.cineTeatro || 0) + (g.comidasEsparcimiento || 0) + (g.baresRecreacion || 0) + (g.cafecitos || 0) + (g.clubSocial || 0) + (g.amazonCompras || 0)
             catAhorro += (g.inversiones || 0)
@@ -3317,5 +3398,6 @@ export default function AdnPage() {
       </div>
   )
 }
+
 
 

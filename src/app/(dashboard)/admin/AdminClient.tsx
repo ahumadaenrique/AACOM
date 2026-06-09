@@ -3187,6 +3187,29 @@ export default function AdminClient() {
                   </div>
                 )}
 
+                {/* Salud y Hábitos */}
+                <div className="border border-slate-200 p-3.5 rounded-xl space-y-1.5 mt-4">
+                  <span className="text-[9px] font-black text-slate-600 uppercase block tracking-wider">Salud y Hábitos</span>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Estatura</span>
+                      <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.estatura || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Peso</span>
+                      <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.peso || 'N/A'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Fumador</span>
+                      <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.fumador ? 'SI' : 'NO'}</span>
+                    </div>
+                    <div>
+                      <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Padecimientos</span>
+                      <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.padecimientos || 'Ninguno'}</span>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Calculations metrics */}
                 {(() => {
                   const parsedGastos = JSON.parse(selectedAdn.gastosData)
@@ -3341,6 +3364,29 @@ export default function AdminClient() {
                           )}
                         </div>
                       </div>
+
+                        {/* Tarjetas de Crédito */}
+                        <div className="border border-slate-200 p-3.5 rounded-xl space-y-2 mt-4">
+                          <span className="text-[9px] font-black text-slate-600 uppercase block tracking-wider">Tarjetas de Crédito</span>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">¿Cuenta con TC?</span>
+                              <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.hasTarjetasCredito ? 'Sí' : 'No'}</span>
+                            </div>
+                            {selectedAdn.hasTarjetasCredito && (
+                              <>
+                                <div className="col-span-2">
+                                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Cuáles</span>
+                                  <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.tarjetasCuales || 'N/A'}</span>
+                                </div>
+                                <div>
+                                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Límite de Crédito</span>
+                                  <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.tarjetasLimite || 'N/A'}</span>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        </div>
 
                       {/* Financial 50-30-20 Summary */}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
