@@ -1,5 +1,6 @@
 'use server'
 
+export const maxDuration = 60;
 import { appendToSheet } from "@/lib/google-sheets";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
@@ -1731,7 +1732,7 @@ ${knowledgeContext}`;
                         generationConfig: {
                             temperature: 0.1,
                             topP: 0.95,
-                            maxOutputTokens: 2048
+                            maxOutputTokens: 8192
                         }
                     })
                 });
@@ -1774,7 +1775,7 @@ ${knowledgeContext}`;
                             generationConfig: {
                                 temperature: 0.1,
                                 topP: 0.95,
-                                maxOutputTokens: 2048
+                                maxOutputTokens: 8192
                             }
                         })
                     });
@@ -2004,3 +2005,4 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
         return { success: false, message: error.message };
     }
 }
+
