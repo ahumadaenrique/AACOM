@@ -1,12 +1,16 @@
 {
-  "crons": [
-    {
-      "path": "/api/cron/push-points",
-      "schedule": "0 23 * * 1-5"
-    },
-    {
-      "path": "/api/cron/push-planning",
-      "schedule": "30 14 * * 1-5"
-    }
-  ]
+    "crons":  [
+                  {
+                      "path":  "/api/cron/push-points",
+                      "schedule":  "0 23 * * 1-5"
+                  },
+                  {
+                      "path":  "/api/cron/push-planning",
+                      "schedule":  "30 14 * * 1-5"
+                  },
+                  {
+                      "path":  "/api/cron/push-master",
+                      "schedule":  "0 * * * 1-5"
+                  }
+              ]
 }

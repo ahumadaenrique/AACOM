@@ -1,6 +1,5 @@
 'use server'
 
-export const maxDuration = 60;
 import { appendToSheet } from "@/lib/google-sheets";
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
@@ -2006,4 +2005,78 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
     }
 }
 
+
+
+// ==========================================
+// PUSH SETTINGS & SCHEDULING (ADMIN)
+// ==========================================
+
+export async function getAdminSettings() {
+    const pointsSetting = await prisma.setting.findUnique({ where: { key: 'push_points_enabled' } });
+    const planningSetting = await prisma.setting.findUnique({ where: { key: 'push_planning_enabled' } });
+    
+    return {
+        pushPointsEnabled: pointsSetting ? pointsSetting.value === 'true' : true,
+        pushPlanningEnabled: planningSetting ? planningSetting.value === 'true' : true,
+    };
+}
+
+export async function toggleAdminSetting(key: string, enabled: boolean, pin: string) {
+    if (pin !== "5515015502") return { success: false, message: "PIN de seguridad incorrecto." };
+    
+    const session = await auth();
+    if (!session?.user?.email) return { success: false, message: "No autenticado." };
+    
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    if (user?.role !== 'ADMIN') return { success: false, message: "No autorizado." };
+
+    try {
+        await prisma.setting.upsert({
+            where: { key },
+            update: { value: enabled ? 'true' : 'false' },
+            create: { key, value: enabled ? 'true' : 'false' }
+        });
+        return { success: true };
+    } catch (err: any) {
+        return { success: false, message: err.message };
+    }
+}
+
+export async function getScheduledPushes() {
+    return await prisma.scheduledPush.findMany({
+        orderBy: { createdAt: 'desc' }
+    });
+}
+
+export async function createScheduledPush(data: { message: string, frequency: string, timeHour: number, recipientId: string, runDate?: string }, pin: string) {
+    if (pin !== "5515015502") return { success: false, message: "PIN de seguridad incorrecto." };
+    
+    const session = await auth();
+    if (!session?.user?.email) return { success: false, message: "No autenticado." };
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    if (user?.role !== 'ADMIN') return { success: false, message: "No autorizado." };
+
+    try {
+        await prisma.scheduledPush.create({ data });
+        return { success: true };
+    } catch (err: any) {
+        return { success: false, message: err.message };
+    }
+}
+
+export async function deleteScheduledPush(id: string, pin: string) {
+    if (pin !== "5515015502") return { success: false, message: "PIN de seguridad incorrecto." };
+    
+    const session = await auth();
+    if (!session?.user?.email) return { success: false, message: "No autenticado." };
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    if (user?.role !== 'ADMIN') return { success: false, message: "No autorizado." };
+
+    try {
+        await prisma.scheduledPush.delete({ where: { id } });
+        return { success: true };
+    } catch (err: any) {
+        return { success: false, message: err.message };
+    }
+}
 

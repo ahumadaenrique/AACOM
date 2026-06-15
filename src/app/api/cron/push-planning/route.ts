@@ -12,6 +12,8 @@ export async function GET(request: Request) {
     }
 
     try {
+        const setting = await prisma.setting.findUnique({ where: { key: 'push_planning_enabled' } });
+        if (setting && setting.value === 'false') return new NextResponse('Disabled', { status: 200 });
         // 2. Obtener a todos los agentes activos que tienen al menos una suscripcin push
         const agents = await prisma.user.findMany({
             where: {
@@ -63,4 +65,5 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
+
 

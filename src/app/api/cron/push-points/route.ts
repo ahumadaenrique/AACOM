@@ -12,6 +12,8 @@ export async function GET(request: Request) {
     }
 
     try {
+        const setting = await prisma.setting.findUnique({ where: { key: 'push_points_enabled' } });
+        if (setting && setting.value === 'false') return new NextResponse('Disabled', { status: 200 });
         // 2. Calcular la fecha actual en la CDMX ('YYYY-MM-DD')
         const todayDateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
 
@@ -74,4 +76,5 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
+
 
