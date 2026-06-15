@@ -2,19 +2,20 @@
 
 import React, { useState, useEffect } from "react";
 import { getWeeklyReportData } from "@/app/actions";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Download, Loader2, CalendarRange, Users, Search } from "lucide-react";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Download, Loader2, CalendarRange, Users, Search, Filter } from "lucide-react";
 
 interface AgentReport {
     id: string;
     name: string;
     totalPoints: number;
-    citasAgendadas: string[]; // prospect names
+    citasAgendadas: string[];
     citasEfectivas: string[];
-    adns: string[]; // cliente names
+    adns: string[];
     llamadas: number;
     polizas: number;
     referidos: number;
@@ -26,8 +27,8 @@ export default function ReportesClient() {
     const [loading, setLoading] = useState(true);
     const [reportData, setReportData] = useState<AgentReport[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [hiddenAgents, setHiddenAgents] = useState<Set<string>>(new Set());
 
-    // Calculate default dates (Last Monday to Last Sunday)
     useEffect(() => {
         const today = new Date();
         const dayOfWeek = today.getDay() === 0 ? 7 : today.getDay();
@@ -59,7 +60,6 @@ export default function ReportesClient() {
         try {
             const res = await getWeeklyReportData(startDate, endDate);
             if (res.success && res.agents) {
-                // Initialize map
                 const agentMap = new Map<string, AgentReport>();
                 res.agents.forEach((a: any) => {
                     agentMap.set(a.id, {
@@ -75,35 +75,21 @@ export default function ReportesClient() {
                     });
                 });
 
-                // Process logs
                 res.logs?.forEach((log: any) => {
                     const agent = agentMap.get(log.userId);
                     if (agent) {
                         agent.totalPoints += log.points;
-                        
-                        // ID 1 = Llamadas, 2 = Citas Agendadas, 3 = Citas Efectivas, 4 = Cierres, 5 = Referidos, 6 = Poliza Emitida
                         switch(log.activityId) {
-                            case "1":
-                                agent.llamadas += 1;
-                                break;
-                            case "2":
-                                if (log.prospectName) agent.citasAgendadas.push(log.prospectName);
-                                break;
-                            case "3":
-                                if (log.prospectName) agent.citasEfectivas.push(log.prospectName);
-                                break;
+                            case "1": agent.llamadas += 1; break;
+                            case "2": if (log.prospectName) agent.citasAgendadas.push(log.prospectName); break;
+                            case "3": if (log.prospectName) agent.citasEfectivas.push(log.prospectName); break;
                             case "4":
-                            case "6":
-                                agent.polizas += 1; // Assuming both 4 and 6 count towards Polizas/Cierres
-                                break;
-                            case "5":
-                                agent.referidos += 1;
-                                break;
+                            case "6": agent.polizas += 1; break;
+                            case "5": agent.referidos += 1; break;
                         }
                     }
                 });
 
-                // Process ADNs
                 res.adns?.forEach((adn: any) => {
                     const agent = agentMap.get(adn.userId);
                     if (agent) {
@@ -111,7 +97,6 @@ export default function ReportesClient() {
                     }
                 });
 
-                // Sort alphabetically
                 const finalData = Array.from(agentMap.values()).sort((a, b) => a.name.localeCompare(b.name));
                 setReportData(finalData);
             }
@@ -121,6 +106,22 @@ export default function ReportesClient() {
             setLoading(false);
         }
     };
+
+    const toggleAgentVisibility = (id: string) => {
+        setHiddenAgents(prev => {
+            const newSet = new Set(prev);
+            if (newSet.has(id)) {
+                newSet.delete(id);
+            } else {
+                newSet.add(id);
+            }
+            return newSet;
+        });
+    };
+
+    const filteredData = reportData
+        .filter(d => !hiddenAgents.has(d.id))
+        .filter(d => d.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     const handleExportCSV = () => {
         const headers = [
@@ -137,7 +138,8 @@ export default function ReportesClient() {
             "Referidos Obtenidos"
         ];
 
-        const rows = reportData.map(a => [
+        // Export only filtered data
+        const rows = filteredData.map(a => [
             `"${a.name}"`,
             a.totalPoints,
             a.citasAgendadas.length,
@@ -163,8 +165,6 @@ export default function ReportesClient() {
         link.click();
         document.body.removeChild(link);
     };
-
-    const filteredData = reportData.filter(d => d.name.toLowerCase().includes(searchTerm.toLowerCase()));
 
     return (
         <div className="flex-1 space-y-6 p-4 md:p-8 pt-6">
@@ -217,7 +217,31 @@ export default function ReportesClient() {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
-                        <Button onClick={handleExportCSV} disabled={loading || reportData.length === 0} className="h-9 gap-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl shadow-md">
+
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" className="h-9 gap-2 text-slate-600 rounded-xl shadow-sm bg-white">
+                                    <Filter className="h-4 w-4" />
+                                    <span className="hidden sm:inline">Filtrar Agentes</span>
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-56 max-h-[300px] overflow-y-auto">
+                                <DropdownMenuLabel className="text-xs font-bold">Visibles en Reporte</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                {reportData.map(agent => (
+                                    <DropdownMenuCheckboxItem
+                                        key={agent.id}
+                                        checked={!hiddenAgents.has(agent.id)}
+                                        onCheckedChange={() => toggleAgentVisibility(agent.id)}
+                                        className="text-xs font-medium cursor-pointer"
+                                    >
+                                        {agent.name}
+                                    </DropdownMenuCheckboxItem>
+                                ))}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        <Button onClick={handleExportCSV} disabled={loading || filteredData.length === 0} className="h-9 gap-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl shadow-md">
                             <Download className="h-4 w-4" />
                             <span className="hidden sm:inline">Exportar CSV</span>
                         </Button>
@@ -248,7 +272,7 @@ export default function ReportesClient() {
                                     {filteredData.length === 0 ? (
                                         <TableRow>
                                             <TableCell colSpan={8} className="h-32 text-center text-slate-500 font-medium">
-                                                No hay registros en este periodo.
+                                                No hay registros con los filtros actuales.
                                             </TableCell>
                                         </TableRow>
                                     ) : (
