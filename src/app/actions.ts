@@ -1976,7 +1976,7 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
         if (!currentUser || currentUser.role !== 'ADMIN') return { success: false, message: "Permisos insuficientes" };
 
         const agents = await prisma.user.findMany({
-            where: { role: 'AGENTE', active: true },
+            where: { active: true },
             select: { id: true, name: true }
         });
 
