@@ -1966,3 +1966,41 @@ export async function forceUpdatePassword(userId: string, newPassword: string) {
         return { success: false, message: error.message || "Error al actualizar contraseña" };
     }
 }
+
+export async function getWeeklyReportData(startDate: string, endDate: string) {
+    const session = await auth();
+    if (!session?.user?.email) return { success: false, message: "No autenticado" };
+
+    try {
+        const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!currentUser || currentUser.role !== 'ADMIN') return { success: false, message: "Permisos insuficientes" };
+
+        const agents = await prisma.user.findMany({
+            where: { role: 'AGENTE', active: true },
+            select: { id: true, name: true }
+        });
+
+        const logs = await prisma.activityLog.findMany({
+            where: {
+                dateStr: { gte: startDate, lte: endDate }
+            }
+        });
+
+        // Parse CDMX dates to UTC for accurate AdnDiagnostic filtering
+        const start = new Date(startDate + "T00:00:00.000-06:00");
+        const end = new Date(endDate + "T23:59:59.999-06:00");
+
+        const adns = await prisma.adnDiagnostic.findMany({
+            where: {
+                createdAt: { gte: start, lte: end }
+            },
+            select: { userId: true, clienteNombre: true }
+        });
+
+        return { success: true, agents, logs, adns };
+
+    } catch (error: any) {
+        console.error("Error fetching weekly report data:", error);
+        return { success: false, message: error.message };
+    }
+}

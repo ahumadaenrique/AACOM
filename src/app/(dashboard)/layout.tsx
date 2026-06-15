@@ -109,12 +109,20 @@ export default async function DashboardLayout({
                             ADN AACOM
                         </Link>
                         {isAdmin && (
-                            <a
-                                href="/admin"
-                                className="text-muted-foreground transition-colors hover:text-foreground font-semibold cursor-pointer"
-                            >
-                                Admin
-                            </a>
+                            <>
+                                <Link
+                                    href="/admin"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold"
+                                >
+                                    Admin
+                                </Link>
+                                <Link
+                                    href="/reportes"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold"
+                                >
+                                    Reportes
+                                </Link>
+                            </>
                         )}
                     </nav>
 
@@ -180,12 +188,20 @@ export default async function DashboardLayout({
                                     ADN AACOM
                                 </Link>
                                 {isAdmin && (
-                                    <a
-                                        href="/admin"
-                                        className="text-muted-foreground hover:text-foreground cursor-pointer"
-                                    >
-                                        Admin
-                                    </a>
+                                    <>
+                                        <Link
+                                            href="/admin"
+                                            className="text-muted-foreground hover:text-foreground"
+                                        >
+                                            Admin
+                                        </Link>
+                                        <Link
+                                            href="/reportes"
+                                            className="text-muted-foreground hover:text-foreground"
+                                        >
+                                            Reportes
+                                        </Link>
+                                    </>
                                 )}
                             </nav>
                         </SheetContent>
