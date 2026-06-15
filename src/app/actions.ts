@@ -1879,7 +1879,7 @@ export async function sendTestPushNotification(userId: string) {
             webpush.sendNotification({
                 endpoint: sub.endpoint,
                 keys: { p256dh: sub.p256dh, auth: sub.auth }
-            }, payload)
+            }, payload, { urgency: 'high' })
         );
 
         await Promise.all(promises);
@@ -1926,7 +1926,7 @@ export async function sendAdminPushNotification(recipientId: string, message: st
             webpush.sendNotification({
                 endpoint: sub.endpoint,
                 keys: { p256dh: sub.p256dh, auth: sub.auth }
-            }, payload).catch(err => {
+            }, payload, { urgency: 'high' }).catch(err => {
                 console.error("Error pushing to sub", sub.endpoint.substring(0, 30), err.statusCode);
             })
         );
@@ -2005,4 +2005,5 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
         return { success: false, message: error.message };
     }
 }
+
 

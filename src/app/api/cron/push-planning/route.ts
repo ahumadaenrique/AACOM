@@ -45,7 +45,7 @@ export async function GET(request: Request) {
                 webpush.sendNotification({
                     endpoint: sub.endpoint,
                     keys: { p256dh: sub.p256dh, auth: sub.auth }
-                }, payload).catch(err => {
+                }, payload, { urgency: 'high' }).catch(err => {
                     console.error(`Cron Push Planning failed for sub ${sub.id}`, err.statusCode);
                 })
             );
@@ -63,3 +63,4 @@ export async function GET(request: Request) {
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
+
