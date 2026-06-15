@@ -1,4 +1,3 @@
-export const maxDuration = 60;
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
@@ -263,4 +262,5 @@ export default function AssistantPage() {
         </div>
     );
 }
+
 
