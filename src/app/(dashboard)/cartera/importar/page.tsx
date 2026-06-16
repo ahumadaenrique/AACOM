@@ -73,6 +73,7 @@ export default function ImportarCartera() {
 
     try {
       const res = await uploadPoliciesLayout(parsedData);
+      if (res.error) throw new Error(res.error);
       toast({
         title: "Cartera Importada exitosamente",
         description: `Se crearon ${res.createdClients} clientes y ${res.createdPolicies} pólizas.`,
@@ -221,4 +222,5 @@ export default function ImportarCartera() {
     </div>
   );
 }
+
 

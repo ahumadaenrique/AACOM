@@ -244,67 +244,76 @@ export async function deletePolicyPdf(url: string) {
 }
 
 export async function uploadPoliciesLayout(parsedData: any[]) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("No autorizado");
+    try {
+        const session = await auth();
+        if (!session?.user?.id) throw new Error("No autorizado");
+    
+        let createdClients = 0;
+        let createdPolicies = 0;
 
-  // In real life we should wrap this in a transaction or iterate carefully
-  let createdClients = 0;
-  let createdPolicies = 0;
-
-  for (const row of parsedData) {
-    if (!row.clientName) continue; // Skip invalid rows
-
-    // Find or create client
-    let client = await prisma.client.findFirst({
-      where: { name: row.clientName, userId: session.user.id },
-    });
-
-    if (!client) {
-      client = await prisma.client.create({
-        data: {
-          name: row.clientName,
-          email: row.email || null,
-          phone: row.phone || null,
-          birthDate: row.birthDate ? new Date(row.birthDate) : null,
-          userId: session.user.id,
-        },
-      });
-      createdClients++;
+        const safeDate = (val: any) => {
+            if (!val) return null;
+            const d = new Date(val);
+            return isNaN(d.getTime()) ? null : d;
+        };
+    
+        for (const row of parsedData) {
+            if (!row.clientName) continue;
+    
+            let client = await prisma.client.findFirst({
+                where: { name: row.clientName, userId: session.user.id },
+            });
+    
+            if (!client) {
+                client = await prisma.client.create({
+                    data: {
+                        name: row.clientName,
+                        email: row.email ? String(row.email) : null,
+                        phone: row.phone ? String(row.phone) : null,
+                        birthDate: safeDate(row.birthDate),
+                        userId: session.user.id,
+                    },
+                });
+                createdClients++;
+            }
+    
+            if (row.policyNumber) {
+                const existingPolicy = await prisma.policy.findFirst({
+                    where: { policyNumber: String(row.policyNumber) },
+                });
+    
+                if (!existingPolicy) {
+                    await prisma.policy.create({
+                        data: {
+                            policyNumber: String(row.policyNumber),
+                            clientId: client.id,
+                            contractor: row.clientName,
+                            insured: row.clientName,
+                            product: row.product ? String(row.product) : null,
+                            insuranceCompany: row.insuranceCompany ? String(row.insuranceCompany) : null,
+                            effectiveDate: safeDate(row.effectiveDate),
+                            renewalDate: safeDate(row.renewalDate),
+                            annualPremium: row.annualPremium ? parseFloat(String(row.annualPremium).replace(/[^0-9.-]+/g, "")) || 0 : 0,
+                            paymentMethod: row.paymentMethod ? String(row.paymentMethod) : null,
+                            approximateCommission: row.approximateCommission ? parseFloat(String(row.approximateCommission).replace(/[^0-9.-]+/g, "")) || 0 : 0,
+                            approximateBonus: row.approximateBonus ? parseFloat(String(row.approximateBonus).replace(/[^0-9.-]+/g, "")) || 0 : 0,
+                            observations: row.observations ? String(row.observations) : null,
+                            userId: session.user.id,
+                        },
+                    });
+                    createdPolicies++;
+                }
+            }
+        }
+    
+        revalidatePath("/cartera");
+        revalidatePath("/cartera/clientes");
+        return { success: true, createdClients, createdPolicies };
+    } catch (e: any) {
+        console.error("Upload error:", e);
+        return { error: String(e.message || e) };
     }
-
-    // Create policy if policy number exists
-    if (row.policyNumber) {
-      const existingPolicy = await prisma.policy.findFirst({
-        where: { policyNumber: row.policyNumber },
-      });
-
-      if (!existingPolicy) {
-        await prisma.policy.create({
-          data: {
-            policyNumber: row.policyNumber,
-            clientId: client.id,
-            contractor: row.clientName, // Default to client name
-            insured: row.clientName,
-            product: row.product || null,
-            insuranceCompany: row.insuranceCompany || null,
-            effectiveDate: row.effectiveDate ? new Date(row.effectiveDate) : null,
-            renewalDate: row.renewalDate ? new Date(row.renewalDate) : null,
-            annualPremium: row.annualPremium ? parseFloat(String(row.annualPremium).replace(/[^0-9.-]+/g, "")) : 0,
-            paymentMethod: row.paymentMethod || null,
-            approximateCommission: row.approximateCommission ? parseFloat(String(row.approximateCommission).replace(/[^0-9.-]+/g, "")) : 0,
-            approximateBonus: row.approximateBonus ? parseFloat(String(row.approximateBonus).replace(/[^0-9.-]+/g, "")) : 0,
-            observations: row.observations || null,
-            userId: session.user.id,
-          },
-        });
-        createdPolicies++;
-      }
-    }
-  }
-
-  revalidatePath("/cartera");
-  revalidatePath("/cartera/clientes");
-  return { success: true, createdClients, createdPolicies };
 }
+
 
 
