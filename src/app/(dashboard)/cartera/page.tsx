@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { format, addDays, isBefore, isAfter } from "date-fns";
 import { es } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -172,3 +172,4 @@ export default async function CarteraDashboard({
     </div>
   );
 }
+

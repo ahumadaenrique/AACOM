@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { clientSchema, policySchema } from "./schema";
 import { z } from "zod";
@@ -306,3 +306,4 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
   revalidatePath("/cartera/clientes");
   return { success: true, createdClients, createdPolicies };
 }
+
