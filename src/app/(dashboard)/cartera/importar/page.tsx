@@ -6,7 +6,7 @@ import * as xlsx from "xlsx";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { UploadCloud, FileSpreadsheet, Loader2, CheckCircle2 } from "lucide-react";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 
@@ -221,3 +221,4 @@ export default function ImportarCartera() {
     </div>
   );
 }
+
