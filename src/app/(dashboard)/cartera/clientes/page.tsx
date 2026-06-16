@@ -1,14 +1,11 @@
-import { auth } from "@/auth";
+﻿import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Plus, User, FileText, ArrowLeft } from "lucide-react";
+import { User, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import ClientFormDialog from "./[id]/ClientFormDialog";
-import { Badge } from "@/components/ui/badge";
+import ClientListTable from "./ClientListTable";
 
 export const dynamic = "force-dynamic";
 
@@ -60,46 +57,7 @@ export default async function DirectorioClientes() {
               </Link>
             </div>
           ) : (
-            <div className="overflow-auto max-h-[600px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nombre / Contacto</TableHead>
-                    <TableHead>Nacimiento</TableHead>
-                    <TableHead className="text-center">Pólizas</TableHead>
-                    <TableHead className="text-right">Prima Total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {clients.map((client) => {
-                    const totalPremium = client.policies.reduce((acc, p) => acc + (p.annualPremium || 0), 0);
-                    return (
-                      <TableRow key={client.id}>
-                        <TableCell>
-                          <Link href={`/cartera/clientes/${client.id}`} className="font-semibold text-primary hover:underline">{client.name}</Link>
-                          <div className="text-xs text-muted-foreground flex flex-col mt-1">
-                            {client.email && <span>{client.email}</span>}
-                            {client.phone && <span>{client.phone}</span>}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {client.birthDate ? format(new Date(client.birthDate), "dd MMM yyyy", { locale: es }) : "N/A"}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge variant="secondary" className="flex items-center w-fit mx-auto gap-1">
-                            <FileText className="w-3 h-3" />
-                            {client.policies.length}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right font-medium">
-                          {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(totalPremium)}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
+            <ClientListTable clients={clients} />
           )}
         </CardContent>
       </Card>
