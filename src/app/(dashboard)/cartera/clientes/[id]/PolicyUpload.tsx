@@ -31,18 +31,13 @@ export default function PolicyUpload({ policy }: { policy: any }) {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const url = await uploadPolicyPdf(formData);
+      const res = await uploadPolicyPdf(formData);
+      if (res.error) throw new Error(res.error);
+      if (!res.url) throw new Error("No se obtuvo la URL del archivo");
       
-      // Update policy in DB with the new PDF url
-      // To do this properly we need to call updatePolicy from actions
-      const { updatePolicy } = await import("../../actions");
-      await updatePolicy(policy.id, {
-        ...policy,
-        pdfUrl: url,
-        // Optional fixes for schema matching
-        effectiveDate: policy.effectiveDate ? new Date(policy.effectiveDate) : null,
-        renewalDate: policy.renewalDate ? new Date(policy.renewalDate) : null,
-      });
+      const { updatePolicyPdfUrl } = await import("../../actions");
+      const updateRes = await updatePolicyPdfUrl(policy.id, res.url);
+      if (updateRes?.error) throw new Error(updateRes.error);
 
       toast({ title: "Póliza subida correctamente" });
       router.refresh();
@@ -64,14 +59,13 @@ export default function PolicyUpload({ policy }: { policy: any }) {
 
     setIsDeleting(true);
     try {
-      await deletePolicyPdf(policy.pdfUrl);
+      const res = await deletePolicyPdf(policy.pdfUrl);
+      if (res.error) throw new Error(res.error);
       
       // Update policy in DB
-      const { updatePolicy } = await import("../../actions");
-      await updatePolicy(policy.id, {
-        ...policy,
-        pdfUrl: null,
-      });
+      const { updatePolicyPdfUrl } = await import("../../actions");
+      const updateRes = await updatePolicyPdfUrl(policy.id, null);
+      if (updateRes?.error) throw new Error(updateRes.error);
 
       toast({ title: "Póliza eliminada" });
       router.refresh();

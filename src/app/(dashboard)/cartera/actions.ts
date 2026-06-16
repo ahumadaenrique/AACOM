@@ -222,25 +222,58 @@ export async function deletePolicy(id: string) {
 
 // Upload PDF to Vercel Blob
 export async function uploadPolicyPdf(formData: FormData) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("No autorizado");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "No autorizado" };
 
-  const file = formData.get("file") as File;
-  if (!file) throw new Error("No se proporcionó archivo");
+    const file = formData.get("file") as File;
+    if (!file) return { error: "No se proporcionó archivo" };
 
-  const blob = await put(`policies/${session.user.id}/${Date.now()}-${file.name}`, file, {
-    access: "public",
-  });
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      return { error: "Error de configuración: BLOB_READ_WRITE_TOKEN no encontrado" };
+    }
 
-  return blob.url;
+    const blob = await put(`policies/${session.user.id}/${Date.now()}-${file.name}`, file, {
+      access: "public",
+    });
+
+    return { success: true, url: blob.url };
+  } catch (error: any) {
+    console.error("Vercel Blob Upload Error:", error);
+    return { error: error.message || "Error al subir a Vercel Blob" };
+  }
 }
 
 export async function deletePolicyPdf(url: string) {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("No autorizado");
-  
-  await del(url);
-  return { success: true };
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "No autorizado" };
+    
+    await del(url);
+    return { success: true };
+  } catch (error: any) {
+    console.error("Vercel Blob Delete Error:", error);
+    return { error: error.message || "Error al eliminar de Vercel Blob" };
+  }
+}
+
+export async function updatePolicyPdfUrl(id: string, pdfUrl: string | null) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { error: "No autorizado" };
+
+    await prisma.policy.update({
+      where: { id, userId: session.user.id },
+      data: { pdfUrl },
+    });
+
+    revalidatePath("/cartera");
+    revalidatePath("/cartera/clientes");
+    return { success: true };
+  } catch (error: any) {
+    console.error("DB Update Error:", error);
+    return { error: error.message || "Error al actualizar la URL en la BD" };
+  }
 }
 
 export async function uploadPoliciesLayout(parsedData: any[]) {
