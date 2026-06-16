@@ -1,4 +1,4 @@
-﻿import { auth } from "@/auth";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
@@ -19,9 +19,18 @@ export default async function ClienteDetalle({ params }: { params: { id: string 
   const session = await auth();
   if (!session?.user?.id) return null;
 
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  const isAdmin = currentUser?.role === "ADMIN";
+
   const client = await prisma.client.findFirst({
-    where: { id: params.id, userId: session.user.id },
-    include: { policies: true },
+    where: isAdmin ? { id: params.id } : { id: params.id, userId: session.user.id },
+    include: { 
+      policies: true,
+      user: { select: { name: true } }
+    },
   });
 
   if (!client) {
@@ -67,6 +76,15 @@ export default async function ClienteDetalle({ params }: { params: { id: string 
                 {client.birthDate ? format(new Date(client.birthDate), "dd 'de' MMMM 'de' yyyy", { locale: es }) : "Fecha no registrada"}
               </span>
             </div>
+            {isAdmin && (
+              <div className="flex items-center gap-3 mt-4 pt-4 border-t border-border">
+                <User className="w-5 h-5 text-primary" />
+                <div>
+                  <div className="text-xs text-muted-foreground">Agente Asignado</div>
+                  <div className="font-medium text-sm">{client.user?.name || "Desconocido"}</div>
+                </div>
+              </div>
+            )}
             <hr className="my-4" />
             <div className="pt-2">
               <div className="text-sm font-semibold text-muted-foreground mb-1">Valor Total del Cliente</div>
