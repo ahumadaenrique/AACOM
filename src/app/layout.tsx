@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 // import { Inter } from "next/font/google"; // Can't easily import fonts without next build system verifying? It should be fine.
 import "./globals.css";
+import { Toaster } from "@/components/ui/toaster";
 
 // const inter = Inter({ subsets: ["latin"] });
 
@@ -62,7 +63,10 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="es">
-            <body className={`min-h-screen bg-background font-sans antialiased`}>{children}</body>
+            <body className={`min-h-screen bg-background font-sans antialiased`}>{children}
+            <Toaster />
+            </body>
         </html>
     );
 }
+

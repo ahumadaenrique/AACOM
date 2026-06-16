@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -87,8 +87,15 @@ export default async function DashboardLayout({
                             className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
                         >
                             <Users className="h-4 w-4 text-indigo-500" />
-                            Equipo AACOM
-                        </Link>
+                              Equipo AACOM
+                          </Link>
+                          <Link
+                              href="/cartera"
+                              className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                          >
+                              <Wallet className="h-4 w-4 text-green-600" />
+                              Mi Cartera
+                          </Link>
                         <Link
                             href="/assistant"
                             className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
@@ -166,8 +173,15 @@ export default async function DashboardLayout({
                                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
                                 >
                                     <Users className="h-5 w-5 text-indigo-500" />
-                                    Equipo AACOM
-                                </Link>
+                                      Equipo AACOM
+                                  </Link>
+                                  <Link
+                                      href="/cartera"
+                                      className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                  >
+                                      <Wallet className="h-5 w-5 text-green-600" />
+                                      Mi Cartera
+                                  </Link>
                                 <Link
                                     href="/assistant"
                                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
@@ -258,3 +272,4 @@ export default async function DashboardLayout({
         </div>
     )
 }
+

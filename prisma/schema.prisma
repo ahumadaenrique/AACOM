@@ -45,6 +45,7 @@ model User {
   dailyRecords  DailyRecord[]
   activityLogs  ActivityLog[]
   policies      Policy[]
+  clients       Client[]
   adnDiagnostics AdnDiagnostic[]
   cotizaciones   Cotizacion[]
   pushSubscriptions PushSubscription[]
@@ -78,24 +79,55 @@ model DailyRecord {
   @@unique([userId, activityId, date]) // One record per activity per user per day
 }
 
-model Policy {
+model Client {
   id            String    @id @default(cuid())
-  
-  policyNumber  String    @unique
-  contractor    String    // Contratante
-  insured       String    // Asegurado
-  paymentMethod String
-  renewalDate   DateTime
-  
-  pdfUrl        String?   // GCS URL
+  name          String
+  email         String?
+  phone         String?
+  birthDate     DateTime?
   
   userId        String
   user          User      @relation(fields: [userId], references: [id])
   
+  policies      Policy[]
+  
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+}
 
-  // Indexed for search performance (trigram indices would be added in raw SQL migration usually)
+model Policy {
+  id                    String    @id @default(cuid())
+  
+  policyNumber          String    @unique
+  contractor            String?   // Contratante
+  insured               String?   // Asegurado
+  
+  product               String?
+  insuranceCompany      String?
+  
+  effectiveDate         DateTime?
+  renewalDate           DateTime?
+  anniversaryDay        Int?
+  anniversaryMonth      Int?
+  
+  annualPremium         Float?    @default(0)
+  paymentMethod         String?
+  
+  approximateCommission Float?    @default(0)
+  approximateBonus      Float?    @default(0)
+  
+  observations          String?
+  
+  pdfUrl                String?   // Vercel Blob URL
+  
+  clientId              String?
+  client                Client?   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id])
+  
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 }
 
 model Content {
