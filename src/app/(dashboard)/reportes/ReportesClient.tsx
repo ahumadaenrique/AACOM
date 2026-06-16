@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Download, Loader2, CalendarRange, Users, Search, Filter } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface AgentReport {
     id: string;
     name: string;
+    image?: string | null;
     totalPoints: number;
     citasAgendadas: string[];
     citasEfectivas: string[];
@@ -65,6 +67,7 @@ export default function ReportesClient() {
                     agentMap.set(a.id, {
                         id: a.id,
                         name: a.name,
+                        image: a.image,
                         totalPoints: 0,
                         citasAgendadas: [],
                         citasEfectivas: [],
@@ -279,7 +282,15 @@ export default function ReportesClient() {
                                         filteredData.map((agent) => (
                                             <TableRow key={agent.id} className="group hover:bg-indigo-50/40 dark:hover:bg-indigo-900/10 transition-colors">
                                                 <TableCell className="font-bold text-slate-800 dark:text-zinc-200">
-                                                    {agent.name}
+                                                    <div className="flex items-center gap-3">
+                                                        <Avatar className="h-8 w-8 ring-2 ring-indigo-50 dark:ring-indigo-900/30">
+                                                            <AvatarImage src={agent.image || undefined} alt={agent.name} className="object-cover" />
+                                                            <AvatarFallback className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900 dark:text-indigo-300 font-bold text-xs">
+                                                                {agent.name.substring(0, 2).toUpperCase()}
+                                                            </AvatarFallback>
+                                                        </Avatar>
+                                                        <span>{agent.name}</span>
+                                                    </div>
                                                 </TableCell>
                                                 <TableCell className="text-center">
                                                     <span className="inline-flex items-center justify-center px-2.5 py-1 rounded-full text-xs font-black bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-400">

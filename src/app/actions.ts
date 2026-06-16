@@ -1977,7 +1977,7 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
 
         const agents = await prisma.user.findMany({
             where: { active: true },
-            select: { id: true, name: true }
+            select: { id: true, name: true, image: true }
         });
 
         const logs = await prisma.activityLog.findMany({
