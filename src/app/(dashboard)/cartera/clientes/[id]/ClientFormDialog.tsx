@@ -72,12 +72,12 @@ export default function ClientFormDialog({ client }: { client: any }) {
             {form.formState.errors.name && <p className="text-xs text-red-500">{form.formState.errors.name.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label>Correo ElectrÃ³nico</Label>
+            <Label>Correo Electrónico</Label>
             <Input type="email" {...form.register("email")} />
             {form.formState.errors.email && <p className="text-xs text-red-500">{form.formState.errors.email.message}</p>}
           </div>
           <div className="space-y-2">
-            <Label>TelÃ©fono</Label>
+            <Label>Teléfono</Label>
             <Input {...form.register("phone")} />
           </div>
           <div className="space-y-2">

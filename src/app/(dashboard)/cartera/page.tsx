@@ -36,7 +36,7 @@ export default async function CarteraDashboard({
 
   const totalPremium = policies.reduce((acc, curr) => acc + (curr.annualPremium || 0), 0);
 
-  // Filtrar las que estÃ¡n por vencer en los prÃ³ximos X días
+  // Filtrar las que están por vencer en los próximos X días
   const upcomingRenewals = policies.filter(
     (p) =>
       p.renewalDate &&
@@ -136,7 +136,7 @@ export default async function CarteraDashboard({
             {upcomingRenewals.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground flex flex-col items-center">
                 <Building2 className="w-12 h-12 mb-3 text-muted/30" />
-                <p>No tienes pólizas por vencer en los prÃ³ximos {daysFilter} días.</p>
+                <p>No tienes pólizas por vencer en los próximos {daysFilter} días.</p>
               </div>
             ) : (
               <div className="divide-y">

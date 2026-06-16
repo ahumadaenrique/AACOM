@@ -38,10 +38,10 @@ export default async function DirectorioClientes() {
           </p>
         </div>
         <div className="flex gap-2">
-          {/* MÃ³dulo de "Nuevo Cliente" pendiente de implementarse en formulario modal */}
+          {/* Módulo de "Nuevo Cliente" pendiente de implementarse en formulario modal */}
           <Button variant="default">
             <Plus className="mr-2 h-4 w-4" />
-            Nuevo Cliente (PrÃ³ximamente)
+            Nuevo Cliente (Próximamente)
           </Button>
         </div>
       </div>
@@ -50,14 +50,14 @@ export default async function DirectorioClientes() {
         <CardHeader>
           <CardTitle>Todos tus Clientes ({clients.length})</CardTitle>
           <CardDescription>
-            Lista de clientes dados de alta manual o mediante la importaciÃ³n de tu Layout.
+            Lista de clientes dados de alta manual o mediante la importación de tu Layout.
           </CardDescription>
         </CardHeader>
         <CardContent>
           {clients.length === 0 ? (
             <div className="p-8 text-center text-muted-foreground flex flex-col items-center border rounded-md">
               <User className="w-12 h-12 mb-3 text-muted/30" />
-              <p>AÃºn no tienes clientes registrados.</p>
+              <p>Aún no tienes clientes registrados.</p>
               <Link href="/cartera/importar" className="mt-4">
                 <Button variant="outline">Ir a Cargar Layout</Button>
               </Link>

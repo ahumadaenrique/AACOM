@@ -57,11 +57,11 @@ export default function PolicyFormDialog({
       if (isEditing) {
         const res = await updatePolicy(policy.id, data);
         
-        toast({ title: "PÃ³liza actualizada correctamente" });
+        toast({ title: "Póliza actualizada correctamente" });
       } else {
         const res = await createPolicy(data);
         
-        toast({ title: "PÃ³liza creada correctamente" });
+        toast({ title: "Póliza creada correctamente" });
       }
       
       setOpen(false);
@@ -69,7 +69,7 @@ export default function PolicyFormDialog({
       if (!isEditing) form.reset();
     } catch (err: any) {
       toast({
-        title: "Error al guardar pÃ³liza",
+        title: "Error al guardar póliza",
         description: err.message,
         variant: "destructive",
       });
@@ -82,18 +82,18 @@ export default function PolicyFormDialog({
         {triggerButton || (
           <Button size="sm">
             <FileText className="w-4 h-4 mr-2" />
-            Agregar PÃ³liza
+            Agregar Póliza
           </Button>
         )}
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEditing ? "Editar PÃ³liza" : "Agregar PÃ³liza"}</DialogTitle>
+          <DialogTitle>{isEditing ? "Editar Póliza" : "Agregar Póliza"}</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 md:grid-cols-2">
           
           <div className="space-y-2 md:col-span-2">
-            <Label>NÃºmero de PÃ³liza *</Label>
+            <Label>Número de Póliza *</Label>
             <Input {...form.register("policyNumber")} placeholder="Ej. POL-12345" />
             {form.formState.errors.policyNumber && <p className="text-xs text-red-500">{form.formState.errors.policyNumber.message}</p>}
           </div>
@@ -128,7 +128,7 @@ export default function PolicyFormDialog({
           </div>
 
           <div className="space-y-2">
-            <Label>Fecha de RenovaciÃ³n</Label>
+            <Label>Fecha de Renovación</Label>
             <Input 
               type="date" 
               defaultValue={policy?.renewalDate ? format(new Date(policy.renewalDate), "yyyy-MM-dd") : ""}
@@ -154,7 +154,7 @@ export default function PolicyFormDialog({
           <div className="md:col-span-2 pt-4">
             <Button type="submit" className="w-full" disabled={form.formState.isSubmitting}>
               {form.formState.isSubmitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-              {isEditing ? "Guardar Cambios" : "Crear PÃ³liza"}
+              {isEditing ? "Guardar Cambios" : "Crear Póliza"}
             </Button>
           </div>
         </form>

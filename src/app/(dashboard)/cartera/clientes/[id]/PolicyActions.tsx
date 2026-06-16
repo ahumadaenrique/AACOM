@@ -14,12 +14,12 @@ export default function PolicyActions({ policy, clientId }: { policy: any, clien
   const { toast } = useToast();
 
   const handleDelete = async () => {
-    if (!confirm("Â¿Seguro que deseas eliminar esta pÃ³liza?")) return;
+    if (!confirm("¿Seguro que deseas eliminar esta póliza?")) return;
     setIsDeleting(true);
     try {
       const res = await deletePolicy(policy.id);
       
-      toast({ title: "PÃ³liza eliminada" });
+      toast({ title: "Póliza eliminada" });
       router.refresh();
     } catch (e: any) {
       toast({ title: "Error", description: e.message, variant: "destructive" });

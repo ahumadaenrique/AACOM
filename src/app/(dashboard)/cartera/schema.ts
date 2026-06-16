@@ -3,7 +3,7 @@
 export const clientSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "El nombre es requerido"),
-  email: z.string().email("Correo invÃ¡lido").optional().or(z.literal("")),
+  email: z.string().email("Correo inválido").optional().or(z.literal("")),
   phone: z.string().optional(),
   birthDate: z.date().optional().nullable(),
 });
@@ -11,7 +11,7 @@ export const clientSchema = z.object({
 export const policySchema = z.object({
   id: z.string().optional(),
   clientId: z.string().optional().nullable(),
-  policyNumber: z.string().min(1, "El nÃºmero de pÃ³liza es requerido"),
+  policyNumber: z.string().min(1, "El número de póliza es requerido"),
   contractor: z.string().optional(),
   insured: z.string().optional(),
   product: z.string().optional(),
