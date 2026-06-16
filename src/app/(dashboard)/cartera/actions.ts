@@ -289,10 +289,10 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
             insuranceCompany: row.insuranceCompany || null,
             effectiveDate: row.effectiveDate ? new Date(row.effectiveDate) : null,
             renewalDate: row.renewalDate ? new Date(row.renewalDate) : null,
-            annualPremium: row.annualPremium ? parseFloat(row.annualPremium) : 0,
+            annualPremium: row.annualPremium ? parseFloat(String(row.annualPremium).replace(/[^0-9.-]+/g, "")) : 0,
             paymentMethod: row.paymentMethod || null,
-            approximateCommission: row.approximateCommission ? parseFloat(row.approximateCommission) : 0,
-            approximateBonus: row.approximateBonus ? parseFloat(row.approximateBonus) : 0,
+            approximateCommission: row.approximateCommission ? parseFloat(String(row.approximateCommission).replace(/[^0-9.-]+/g, "")) : 0,
+            approximateBonus: row.approximateBonus ? parseFloat(String(row.approximateBonus).replace(/[^0-9.-]+/g, "")) : 0,
             observations: row.observations || null,
             userId: session.user.id,
           },
@@ -306,4 +306,5 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
   revalidatePath("/cartera/clientes");
   return { success: true, createdClients, createdPolicies };
 }
+
 
