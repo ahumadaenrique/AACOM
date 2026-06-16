@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Building2, Users, Wallet, Clock, FileText, Upload, Plus } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export const dynamic = "force-dynamic";
 
@@ -22,7 +23,7 @@ export default async function CarteraDashboard({
   const today = new Date();
   const futureDate = addDays(today, daysFilter);
 
-  // Obtener todas las pólizas del agente actual
+  // Obtener todas las pÃ³lizas del agente actual
   const policies = await prisma.policy.findMany({
     where: { userId: session.user.id },
     include: { client: true },
@@ -35,7 +36,7 @@ export default async function CarteraDashboard({
 
   const totalPremium = policies.reduce((acc, curr) => acc + (curr.annualPremium || 0), 0);
 
-  // Filtrar las que están por vencer en los próximos X días
+  // Filtrar las que estÃ¡n por vencer en los prÃ³ximos X dÃ­as
   const upcomingRenewals = policies.filter(
     (p) =>
       p.renewalDate &&
@@ -49,7 +50,7 @@ export default async function CarteraDashboard({
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Mi Cartera</h1>
           <p className="text-muted-foreground">
-            Resumen de tu cartera de seguros y próximas renovaciones.
+            Resumen de tu cartera de seguros y prÃ³ximas renovaciones.
           </p>
         </div>
         <div className="flex gap-2">
@@ -95,12 +96,12 @@ export default async function CarteraDashboard({
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Pólizas Vigentes</CardTitle>
+            <CardTitle className="text-sm font-medium">PÃ³lizas Vigentes</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{policies.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">Pólizas individuales</p>
+            <p className="text-xs text-muted-foreground mt-1">PÃ³lizas individuales</p>
           </CardContent>
         </Card>
       </div>
@@ -109,22 +110,22 @@ export default async function CarteraDashboard({
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <Clock className="w-5 h-5 text-orange-500" />
-            Línea de tiempo de Renovaciones
+            LÃ­nea de tiempo de Renovaciones
           </h2>
           <div className="flex space-x-1 border rounded-md p-1 bg-muted/20">
             <Link href="?days=30">
               <Badge variant={daysFilter === 30 ? "default" : "outline"} className="cursor-pointer">
-                30 días
+                30 dÃ­as
               </Badge>
             </Link>
             <Link href="?days=45">
               <Badge variant={daysFilter === 45 ? "default" : "outline"} className="cursor-pointer">
-                45 días
+                45 dÃ­as
               </Badge>
             </Link>
             <Link href="?days=60">
               <Badge variant={daysFilter === 60 ? "default" : "outline"} className="cursor-pointer">
-                60 días
+                60 dÃ­as
               </Badge>
             </Link>
           </div>
@@ -135,7 +136,7 @@ export default async function CarteraDashboard({
             {upcomingRenewals.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground flex flex-col items-center">
                 <Building2 className="w-12 h-12 mb-3 text-muted/30" />
-                <p>No tienes pólizas por vencer en los próximos {daysFilter} días.</p>
+                <p>No tienes pÃ³lizas por vencer en los prÃ³ximos {daysFilter} dÃ­as.</p>
               </div>
             ) : (
               <div className="divide-y">
@@ -147,7 +148,7 @@ export default async function CarteraDashboard({
                     <div className="flex flex-col">
                       <span className="font-semibold text-lg">{policy.contractor}</span>
                       <span className="text-sm text-muted-foreground">
-                        {policy.product || "Producto no especificado"} • {policy.insuranceCompany}
+                        {policy.product || "Producto no especificado"} â€¢ {policy.insuranceCompany}
                       </span>
                     </div>
                     <div className="flex flex-col items-end mt-2 md:mt-0 text-right">
@@ -169,7 +170,64 @@ export default async function CarteraDashboard({
           </CardContent>
         </Card>
       </div>
+
+      {/* FULL POLICIES TABLE */}
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
+          <FileText className="w-5 h-5 text-blue-500" />
+          Detalle Completo de Pólizas
+        </h2>
+        <Card>
+          <CardContent className="p-0">
+            <div className="overflow-auto max-h-[500px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Póliza</TableHead>
+                    <TableHead>Contratante</TableHead>
+                    <TableHead>Producto</TableHead>
+                    <TableHead>Aseguradora</TableHead>
+                    <TableHead>Vigencia</TableHead>
+                    <TableHead className="text-right">Prima</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {policies.map((policy) => (
+                    <TableRow key={policy.id} className="hover:bg-muted/50">
+                      <TableCell className="font-medium text-xs">
+                        {policy.policyNumber}
+                      </TableCell>
+                      <TableCell>
+                        <Link href={`/cartera/clientes/${policy.clientId}`} className="hover:underline font-semibold text-primary">
+                          {policy.contractor}
+                        </Link>
+                      </TableCell>
+                      <TableCell>{policy.product}</TableCell>
+                      <TableCell>{policy.insuranceCompany}</TableCell>
+                      <TableCell className="text-xs">
+                        {policy.effectiveDate ? format(new Date(policy.effectiveDate), "dd/MM/yyyy") : "-"} a {policy.renewalDate ? format(new Date(policy.renewalDate), "dd/MM/yyyy") : "-"}
+                      </TableCell>
+                      <TableCell className="text-right font-medium">
+                        {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(policy.annualPremium || 0)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {policies.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center p-4 text-muted-foreground">
+                        No hay pólizas registradas.
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }
+
+
 
