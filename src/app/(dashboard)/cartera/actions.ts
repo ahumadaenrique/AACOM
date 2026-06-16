@@ -253,6 +253,9 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
 
         const safeDate = (val: any) => {
             if (!val) return null;
+            if (typeof val === 'number') {
+                return new Date(Math.round((val - 25569) * 864e5));
+            }
             const d = new Date(val);
             return isNaN(d.getTime()) ? null : d;
         };

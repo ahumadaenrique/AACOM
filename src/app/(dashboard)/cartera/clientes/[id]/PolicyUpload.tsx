@@ -20,7 +20,7 @@ export default function PolicyUpload({ policy }: { policy: any }) {
 
     if (file.type !== "application/pdf") {
       toast({
-        title: "Archivo inválido",
+        title: "Archivo invÃ¡lido",
         description: "Por favor selecciona un archivo PDF",
         variant: "destructive",
       });
@@ -44,12 +44,12 @@ export default function PolicyUpload({ policy }: { policy: any }) {
         renewalDate: policy.renewalDate ? new Date(policy.renewalDate) : null,
       });
 
-      toast({ title: "Póliza subida correctamente" });
+      toast({ title: "PÃ³liza subida correctamente" });
       router.refresh();
     } catch (err: any) {
       toast({
         title: "Error al subir PDF",
-        description: err.message || "Ocurrió un error",
+        description: err.message || "OcurriÃ³ un error",
         variant: "destructive",
       });
     } finally {
@@ -60,7 +60,7 @@ export default function PolicyUpload({ policy }: { policy: any }) {
 
   const handleDelete = async () => {
     if (!policy.pdfUrl) return;
-    if (!confirm("¿Estás seguro de eliminar este PDF?")) return;
+    if (!confirm("Â¿EstÃ¡s seguro de eliminar este PDF?")) return;
 
     setIsDeleting(true);
     try {
@@ -73,12 +73,12 @@ export default function PolicyUpload({ policy }: { policy: any }) {
         pdfUrl: null,
       });
 
-      toast({ title: "Póliza eliminada" });
+      toast({ title: "PÃ³liza eliminada" });
       router.refresh();
     } catch (err: any) {
       toast({
         title: "Error al eliminar",
-        description: err.message || "Ocurrió un error",
+        description: err.message || "OcurriÃ³ un error",
         variant: "destructive",
       });
     } finally {
@@ -132,3 +132,4 @@ export default function PolicyUpload({ policy }: { policy: any }) {
     </div>
   );
 }
+

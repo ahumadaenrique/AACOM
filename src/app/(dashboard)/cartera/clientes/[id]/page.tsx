@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+﻿import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, User, Phone, Mail, Calendar, Edit, FileText } from "lucide-react";
 import Link from "next/link";
 import PolicyUpload from "./PolicyUpload";
+import ClientFormDialog from "./ClientFormDialog";
+import PolicyFormDialog from "./PolicyFormDialog";
+import PolicyActions from "./PolicyActions";
 
 export const dynamic = "force-dynamic";
 
@@ -41,10 +44,7 @@ export default async function ClienteDetalle({ params }: { params: { id: string 
             <p className="text-muted-foreground">Perfil del cliente y listado de pólizas contratadas.</p>
           </div>
         </div>
-        <Button variant="secondary">
-          <Edit className="w-4 h-4 mr-2" />
-          Editar Cliente
-        </Button>
+        <ClientFormDialog client={client} />
       </div>
 
       <div className="grid gap-6 md:grid-cols-3">
@@ -83,10 +83,7 @@ export default async function ClienteDetalle({ params }: { params: { id: string 
               <CardTitle className="text-lg">Pólizas Activas ({client.policies.length})</CardTitle>
               <CardDescription>Pólizas asociadas a este cliente.</CardDescription>
             </div>
-            <Button size="sm">
-              <FileText className="w-4 h-4 mr-2" />
-              Agregar Póliza
-            </Button>
+            <PolicyFormDialog clientId={client.id} />
           </CardHeader>
           <CardContent className="p-0">
             {client.policies.length === 0 ? (
@@ -103,6 +100,7 @@ export default async function ClienteDetalle({ params }: { params: { id: string 
                       <TableHead>Vigencia</TableHead>
                       <TableHead className="text-right">Prima</TableHead>
                       <TableHead className="text-center">Documento</TableHead>
+                      <TableHead className="text-center">Acciones</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -121,8 +119,10 @@ export default async function ClienteDetalle({ params }: { params: { id: string 
                           {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(policy.annualPremium || 0)}
                         </TableCell>
                         <TableCell className="text-center">
-                          {/* Componente para subir o ver el PDF */}
                           <PolicyUpload policy={policy} />
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <PolicyActions policy={policy} clientId={client.id} />
                         </TableCell>
                       </TableRow>
                     ))}

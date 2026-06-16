@@ -34,7 +34,7 @@ export default async function DirectorioClientes() {
             <h1 className="text-3xl font-bold tracking-tight">Directorio de Clientes</h1>
           </div>
           <p className="text-muted-foreground pl-10">
-            Administra a tus clientes y visualiza sus pÃ³lizas asociadas.
+            Administra a tus clientes y visualiza sus pólizas asociadas.
           </p>
         </div>
         <div className="flex gap-2">
@@ -69,7 +69,7 @@ export default async function DirectorioClientes() {
                   <TableRow>
                     <TableHead>Nombre / Contacto</TableHead>
                     <TableHead>Nacimiento</TableHead>
-                    <TableHead className="text-center">PÃ³lizas</TableHead>
+                    <TableHead className="text-center">Pólizas</TableHead>
                     <TableHead className="text-right">Prima Total</TableHead>
                   </TableRow>
                 </TableHeader>

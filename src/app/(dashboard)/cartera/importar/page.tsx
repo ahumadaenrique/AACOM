@@ -134,7 +134,7 @@ export default function ImportarCartera() {
           <CardHeader className="text-center">
             <CardTitle>Paso 2: Sube tu Archivo</CardTitle>
             <CardDescription>
-              Arrastra o selecciona el archivo Excel ya lleno con tu cartera.
+              Arrastraño selecciona el archivo Excel ya lleno con tu cartera.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center flex-1">

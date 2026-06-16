@@ -23,7 +23,7 @@ export default async function CarteraDashboard({
   const today = new Date();
   const futureDate = addDays(today, daysFilter);
 
-  // Obtener todas las pÃ³lizas del agente actual
+  // Obtener todas las pólizas del agente actual
   const policies = await prisma.policy.findMany({
     where: { userId: session.user.id },
     include: { client: true },
@@ -36,7 +36,7 @@ export default async function CarteraDashboard({
 
   const totalPremium = policies.reduce((acc, curr) => acc + (curr.annualPremium || 0), 0);
 
-  // Filtrar las que estÃ¡n por vencer en los prÃ³ximos X dÃ­as
+  // Filtrar las que estÃ¡n por vencer en los prÃ³ximos X días
   const upcomingRenewals = policies.filter(
     (p) =>
       p.renewalDate &&
@@ -50,7 +50,7 @@ export default async function CarteraDashboard({
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Mi Cartera</h1>
           <p className="text-muted-foreground">
-            Resumen de tu cartera de seguros y prÃ³ximas renovaciones.
+            Resumen de tu cartera de seguros y próximas renovaciones.
           </p>
         </div>
         <div className="flex gap-2">
@@ -96,12 +96,12 @@ export default async function CarteraDashboard({
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">PÃ³lizas Vigentes</CardTitle>
+            <CardTitle className="text-sm font-medium">Pólizas Vigentes</CardTitle>
             <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{policies.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">PÃ³lizas individuales</p>
+            <p className="text-xs text-muted-foreground mt-1">Pólizas individuales</p>
           </CardContent>
         </Card>
       </div>
@@ -110,22 +110,22 @@ export default async function CarteraDashboard({
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold flex items-center gap-2">
             <Clock className="w-5 h-5 text-orange-500" />
-            LÃ­nea de tiempo de Renovaciones
+            Línea de tiempo de Renovaciones
           </h2>
           <div className="flex space-x-1 border rounded-md p-1 bg-muted/20">
             <Link href="?days=30">
               <Badge variant={daysFilter === 30 ? "default" : "outline"} className="cursor-pointer">
-                30 dÃ­as
+                30 días
               </Badge>
             </Link>
             <Link href="?days=45">
               <Badge variant={daysFilter === 45 ? "default" : "outline"} className="cursor-pointer">
-                45 dÃ­as
+                45 días
               </Badge>
             </Link>
             <Link href="?days=60">
               <Badge variant={daysFilter === 60 ? "default" : "outline"} className="cursor-pointer">
-                60 dÃ­as
+                60 días
               </Badge>
             </Link>
           </div>
@@ -136,7 +136,7 @@ export default async function CarteraDashboard({
             {upcomingRenewals.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground flex flex-col items-center">
                 <Building2 className="w-12 h-12 mb-3 text-muted/30" />
-                <p>No tienes pÃ³lizas por vencer en los prÃ³ximos {daysFilter} dÃ­as.</p>
+                <p>No tienes pólizas por vencer en los prÃ³ximos {daysFilter} días.</p>
               </div>
             ) : (
               <div className="divide-y">
