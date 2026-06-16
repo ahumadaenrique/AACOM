@@ -185,7 +185,7 @@ export async function updatePolicy(id: string, data: z.infer<typeof policySchema
       approximateCommission: parsed.approximateCommission || 0,
       approximateBonus: parsed.approximateBonus || 0,
       observations: parsed.observations || null,
-      pdfUrl: parsed.pdfUrl || null,
+      pdfUrl: parsed.pdfUrl !== undefined ? parsed.pdfUrl : existing.pdfUrl,
     },
   });
 
