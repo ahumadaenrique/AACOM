@@ -232,7 +232,7 @@ export async function uploadPolicyPdf(formData: FormData) {
     const token = process.env.BLOB_READ_WRITE_TOKEN || "vercel_blob_rw_lXYhGKKGWTXJIQp0_j4iwqKaJJEy88BVAadlj42H1HNYn92";
 
     const blob = await put(`policies/${session.user.id}/${Date.now()}-${file.name}`, file, {
-      access: "public",
+      access: "private",
       token: token,
     });
 

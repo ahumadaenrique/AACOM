@@ -84,7 +84,7 @@ export default function PolicyUpload({ policy }: { policy: any }) {
     return (
       <div className="flex items-center gap-2">
         <Button variant="outline" size="sm" asChild>
-          <a href={policy.pdfUrl} target="_blank" rel="noopener noreferrer">
+          <a href={`/api/pdf?url=${encodeURIComponent(policy.pdfUrl)}`} target="_blank" rel="noopener noreferrer">
             <FileDown className="w-4 h-4 mr-1" />
             Ver PDF
           </a>
