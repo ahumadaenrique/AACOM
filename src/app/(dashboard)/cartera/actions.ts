@@ -229,12 +229,11 @@ export async function uploadPolicyPdf(formData: FormData) {
     const file = formData.get("file") as File;
     if (!file) return { error: "No se proporcionó archivo" };
 
-    if (!process.env.BLOB_READ_WRITE_TOKEN) {
-      return { error: "Error de configuración: BLOB_READ_WRITE_TOKEN no encontrado" };
-    }
+    const token = process.env.BLOB_READ_WRITE_TOKEN || "vercel_blob_rw_lXYhGKKGWTXJIQp0_j4iwqKaJJEy88BVAadlj42H1HNYn92";
 
     const blob = await put(`policies/${session.user.id}/${Date.now()}-${file.name}`, file, {
       access: "public",
+      token: token,
     });
 
     return { success: true, url: blob.url };
@@ -249,7 +248,9 @@ export async function deletePolicyPdf(url: string) {
     const session = await auth();
     if (!session?.user?.id) return { error: "No autorizado" };
     
-    await del(url);
+    const token = process.env.BLOB_READ_WRITE_TOKEN || "vercel_blob_rw_lXYhGKKGWTXJIQp0_j4iwqKaJJEy88BVAadlj42H1HNYn92";
+
+    await del(url, { token });
     return { success: true };
   } catch (error: any) {
     console.error("Vercel Blob Delete Error:", error);
