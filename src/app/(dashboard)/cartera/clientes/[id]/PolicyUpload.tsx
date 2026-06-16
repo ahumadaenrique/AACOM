@@ -7,9 +7,18 @@ import { useToast } from "@/hooks/use-toast";
 import { Upload, FileDown, Trash2, Loader2, CheckCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 export default function PolicyUpload({ policy }: { policy: any }) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isPdfOpen, setIsPdfOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const router = useRouter();
@@ -83,12 +92,28 @@ export default function PolicyUpload({ policy }: { policy: any }) {
   if (policy.pdfUrl) {
     return (
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="sm" asChild>
-          <a href={`/api/pdf?url=${encodeURIComponent(policy.pdfUrl)}`} target="_blank" rel="noopener noreferrer">
-            <FileDown className="w-4 h-4 mr-1" />
-            Ver PDF
-          </a>
-        </Button>
+        <Dialog open={isPdfOpen} onOpenChange={setIsPdfOpen}>
+          <DialogTrigger asChild>
+            <Button variant="outline" size="sm">
+              <FileDown className="w-4 h-4 mr-1" />
+              Ver PDF
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-5xl h-[90vh] flex flex-col p-0 overflow-hidden">
+            <DialogHeader className="p-4 pb-0">
+              <DialogTitle>Documento de la Póliza</DialogTitle>
+            </DialogHeader>
+            <div className="flex-1 w-full bg-muted mt-2">
+              {isPdfOpen && (
+                <iframe 
+                  src={`/api/pdf?url=${encodeURIComponent(policy.pdfUrl)}`} 
+                  className="w-full h-full border-0" 
+                  title="PDF Viewer" 
+                />
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
         <Button variant="destructive" size="icon" onClick={handleDelete} disabled={isDeleting} className="h-9 w-9">
           {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
         </Button>
