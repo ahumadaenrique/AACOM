@@ -1,4 +1,4 @@
-﻿import { auth } from "@/auth";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -7,6 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Plus, User, FileText, ArrowLeft } from "lucide-react";
 import Link from "next/link";
+import ClientFormDialog from "./[id]/ClientFormDialog";
 import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
@@ -38,11 +39,7 @@ export default async function DirectorioClientes() {
           </p>
         </div>
         <div className="flex gap-2">
-          {/* Módulo de "Nuevo Cliente" pendiente de implementarse en formulario modal */}
-          <Button variant="default">
-            <Plus className="mr-2 h-4 w-4" />
-            Nuevo Cliente (Próximamente)
-          </Button>
+          <ClientFormDialog />
         </div>
       </div>
 
@@ -109,5 +106,3 @@ export default async function DirectorioClientes() {
     </div>
   );
 }
-
-
