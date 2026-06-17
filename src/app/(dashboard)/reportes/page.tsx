@@ -17,7 +17,7 @@ export default async function ReportesPage() {
         where: { email: session.user.email }
     });
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
         redirect("/activity");
     }
 
