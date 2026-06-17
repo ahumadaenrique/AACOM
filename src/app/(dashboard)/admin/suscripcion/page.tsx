@@ -21,12 +21,18 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
   if (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") return <div className="p-10 text-red-500">Error: Tu rol es {user?.role || "nulo"}, necesitas ser ADMIN o SUPER_ADMIN</div>;
 
   let agencyId = session.user.agencyId || user?.agencyId;
+  let agency = null;
 
-  // Si el SUPER_ADMIN no tiene agencia, le asignamos la primera (o se redirige si no hay agencias)
-  if (user?.role === "SUPER_ADMIN" && !agencyId) {
+  if (agencyId) {
+    agency = await prisma.agency.findUnique({ where: { id: agencyId } });
+  }
+
+  // Si el SUPER_ADMIN no tiene agencia O apunta a una agencia borrada, le asignamos la primera
+  if (user?.role === "SUPER_ADMIN" && (!agencyId || !agency)) {
     const firstAgency = await prisma.agency.findFirst();
     if (firstAgency) {
       agencyId = firstAgency.id;
+      agency = firstAgency;
       await prisma.user.update({
         where: { id: user.id },
         data: { agencyId: firstAgency.id }
@@ -34,10 +40,7 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
     }
   }
 
-  if (!agencyId) return <div className="p-10 text-red-500">Error: Sigo sin agencyId. El findFirst no encontró agencias?</div>;
-
-  const agency = await prisma.agency.findUnique({ where: { id: agencyId } });
-  if (!agency) return <div className="p-10 text-red-500">Error: agencyId {agencyId} no existe en la BD</div>;
+  if (!agency) return <div className="p-10 text-red-500">Error: agencyId {agencyId} no existe en la BD y no hay agencias disponibles para auto-asignar.</div>;
 
   const isSubscribed = agency.subscriptionStatus === "active";
   const endDate = agency.subscriptionEndDate;
