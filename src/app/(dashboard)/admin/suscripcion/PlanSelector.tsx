@@ -56,9 +56,18 @@ export default function PlanSelector({ isSubscribed }: { isSubscribed: boolean }
 
     try {
       setLoading(true);
-      await createCheckoutSession(selectedPlan.priceId, selectedPlan.days, discountCode);
+      const res = await createCheckoutSession(selectedPlan.priceId, selectedPlan.days, discountCode);
+      if (!res?.success) {
+        alert(res?.message || "Ocurrió un error al procesar la solicitud.");
+        setLoading(false);
+        return;
+      }
+      
+      if (res.url) {
+        window.location.href = res.url;
+      }
     } catch (error: any) {
-      alert(error.message || "Ocurrió un error al procesar la solicitud.");
+      alert(error.message || "Ocurrió un error de conexión.");
       setLoading(false);
     }
   };

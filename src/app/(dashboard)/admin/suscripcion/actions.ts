@@ -11,84 +11,96 @@ export async function createCheckoutSession(
   daysToAdd: number,
   discountCodeStr?: string
 ) {
-  const session = await auth();
-  if (!session?.user?.id || !session.user.agencyId) throw new Error("No autorizado");
-
-  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  if (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
-
-  const agency = await prisma.agency.findUnique({ where: { id: session.user.agencyId } });
-  if (!agency) throw new Error("Agencia no encontrada");
-
-  const hostList = headers();
-  const host = hostList.get("host") || "";
-  const protocol = host.includes("localhost") ? "http" : "https";
-  const origin = `${protocol}://${host}`;
-
-  let stripeCustomerId = agency.stripeCustomerId;
-
-  if (!stripeCustomerId) {
-    const customer = await stripe.customers.create({
-      email: user.email,
-      name: agency.name,
-      metadata: {
-        agencyId: agency.id,
-      },
-    });
-    stripeCustomerId = customer.id;
-    await prisma.agency.update({
-      where: { id: agency.id },
-      data: { stripeCustomerId },
-    });
-  }
-
-  // Verificar código de descuento si existe
-  let stripeCouponId = undefined;
-  if (discountCodeStr) {
-    const discountCode = await prisma.discountCode.findUnique({
-      where: { code: discountCodeStr },
-    });
-    if (discountCode && discountCode.active) {
-      const coupon = await stripe.coupons.create({
-        percent_off: discountCode.discountPercentage,
-        duration: "once", // Only for the first charge
-        name: `Cupón ${discountCodeStr} (${discountCode.discountPercentage}%)`,
-      });
-      stripeCouponId = coupon.id;
-    } else {
-      throw new Error("Código de descuento inválido o expirado.");
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, message: "No autorizado (Falta ID de usuario)" };
+    
+    // We fetch the user to get the true agencyId because session might be stale
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+      return { success: false, message: "Permisos insuficientes" };
     }
-  }
 
-  if (!priceId) {
-    throw new Error("ID de producto no válido.");
-  }
+    if (!user.agencyId) {
+      return { success: false, message: "No tienes una agencia asignada. Ve a la página anterior y recarga." };
+    }
 
-  const checkoutSession = await stripe.checkout.sessions.create({
-    customer: stripeCustomerId,
-    mode: "subscription",
-    payment_method_types: ["card"],
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
-      },
-    ],
-    discounts: stripeCouponId ? [{ coupon: stripeCouponId }] : undefined,
-    success_url: `${origin}/admin/suscripcion?success=true`,
-    cancel_url: `${origin}/admin/suscripcion?canceled=true`,
-    metadata: {
-      agencyId: agency.id,
-      daysToAdd: daysToAdd.toString(),
-    },
-    subscription_data: {
+    const agency = await prisma.agency.findUnique({ where: { id: user.agencyId } });
+    if (!agency) return { success: false, message: "Agencia no encontrada en la base de datos" };
+
+    const hostList = headers();
+    const host = hostList.get("host") || "";
+    const protocol = host.includes("localhost") ? "http" : "https";
+    const origin = `${protocol}://${host}`;
+
+    let stripeCustomerId = agency.stripeCustomerId;
+
+    if (!stripeCustomerId) {
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: agency.name,
+        metadata: {
+          agencyId: agency.id,
+        },
+      });
+      stripeCustomerId = customer.id;
+      await prisma.agency.update({
+        where: { id: agency.id },
+        data: { stripeCustomerId },
+      });
+    }
+
+    // Verificar código de descuento si existe
+    let stripeCouponId = undefined;
+    if (discountCodeStr) {
+      const discountCode = await prisma.discountCode.findUnique({
+        where: { code: discountCodeStr },
+      });
+      if (discountCode && discountCode.active) {
+        const coupon = await stripe.coupons.create({
+          percent_off: discountCode.discountPercentage,
+          duration: "once",
+          name: `Cupón ${discountCodeStr} (${discountCode.discountPercentage}%)`,
+        });
+        stripeCouponId = coupon.id;
+      } else {
+        return { success: false, message: "Código de descuento inválido o expirado." };
+      }
+    }
+
+    if (!priceId) {
+      return { success: false, message: "ID de producto no válido." };
+    }
+
+    const checkoutSession = await stripe.checkout.sessions.create({
+      customer: stripeCustomerId,
+      mode: "subscription",
+      payment_method_types: ["card"],
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      discounts: stripeCouponId ? [{ coupon: stripeCouponId }] : undefined,
+      success_url: `${origin}/admin/suscripcion?success=true`,
+      cancel_url: `${origin}/admin/suscripcion?canceled=true`,
       metadata: {
         agencyId: agency.id,
         daysToAdd: daysToAdd.toString(),
+      },
+      subscription_data: {
+        metadata: {
+          agencyId: agency.id,
+          daysToAdd: daysToAdd.toString(),
+        }
       }
-    }
-  });
+    });
 
-  if (!checkoutSession.url) throw new Error("Error creando sesión de Stripe");
-  redirect(checkoutSession.url);
+    if (!checkoutSession.url) return { success: false, message: "Error al generar la URL de pago de Stripe." };
+    return { success: true, url: checkoutSession.url };
+
+  } catch (error: any) {
+    return { success: false, message: error.message || "Error desconocido al procesar la suscripción con Stripe." };
+  }
 }
