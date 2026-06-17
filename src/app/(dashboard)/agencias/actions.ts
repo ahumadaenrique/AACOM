@@ -9,7 +9,7 @@ const agencySchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
   slug: z.string().min(2, "El subdominio debe tener al menos 2 caracteres"),
   primaryColor: z.string().optional(),
-  imageUrl: z.string().optional(),
+  logoUrl: z.string().optional(),
   active: z.boolean().optional(),
   // Opcional para crear el primer admin
   adminName: z.string().optional(),
@@ -49,7 +49,7 @@ export async function createAgency(data: z.infer<typeof agencySchema>) {
       name: parsed.name,
       slug: parsed.slug,
       primaryColor: parsed.primaryColor || "#0f172a", // Default color
-      imageUrl: parsed.imageUrl,
+      logoUrl: parsed.logoUrl,
       active: parsed.active ?? true,
     },
   });

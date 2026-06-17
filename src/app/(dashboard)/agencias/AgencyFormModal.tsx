@@ -24,7 +24,7 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
       name: formData.get("name") as string,
       slug: (formData.get("slug") as string).toLowerCase().replace(/[^a-z0-9-]/g, ''),
       primaryColor: formData.get("primaryColor") as string,
-      imageUrl: formData.get("imageUrl") as string,
+      logoUrl: formData.get("logoUrl") as string,
       active: formData.get("active") === "on",
       adminName: formData.get("adminName") as string || undefined,
       adminEmail: formData.get("adminEmail") as string || undefined,
@@ -105,8 +105,8 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="imageUrl">URL del Logo (Opcional)</Label>
-              <Input id="imageUrl" name="imageUrl" defaultValue={agency?.imageUrl || ""} placeholder="https://..." />
+              <Label htmlFor="logoUrl">URL del Logo (Opcional)</Label>
+              <Input id="logoUrl" name="logoUrl" defaultValue={agency?.logoUrl || ""} placeholder="https://..." />
             </div>
 
             {!agency && (
