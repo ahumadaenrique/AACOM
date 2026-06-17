@@ -13,7 +13,7 @@ export async function getClients() {
   if (!session?.user?.id) throw new Error("No autorizado");
 
   const whereClause: any = {};
-  if (session.user.role === 'ADMIN' && session.user.agencyId) {
+  if ((session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN') && session.user.agencyId) {
     whereClause.agencyId = session.user.agencyId;
   } else {
     whereClause.userId = session.user.id;
@@ -117,7 +117,7 @@ export async function getPolicies() {
   if (!session?.user?.id) throw new Error("No autorizado");
 
   const whereClause: any = {};
-  if (session.user.role === 'ADMIN' && session.user.agencyId) {
+  if ((session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN') && session.user.agencyId) {
     whereClause.agencyId = session.user.agencyId;
   } else {
     whereClause.userId = session.user.id;

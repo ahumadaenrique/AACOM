@@ -18,7 +18,7 @@ export default async function AdminPage() {
         where: { email: session.user.email }
     })
 
-    if (!dbUser || dbUser.role !== 'ADMIN') {
+    if (!dbUser || (dbUser.role !== 'ADMIN' && dbUser.role !== 'SUPER_ADMIN')) {
         return (
             <div className="flex min-h-[70vh] items-center justify-center p-4">
                 <div className="w-full max-w-md border-t-4 border-t-red-600 bg-white dark:bg-zinc-950 p-6 rounded-2xl shadow-xl border border-slate-200 dark:border-zinc-800 text-center space-y-4">

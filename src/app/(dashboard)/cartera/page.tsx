@@ -26,7 +26,7 @@ export default async function CarteraDashboard({
   let policiesWhereClause: any = { userId: session.user.id };
   let clientsWhereClause: any = { userId: session.user.id };
 
-  if (session.user.role === 'ADMIN' && session.user.agencyId) {
+  if ((session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN') && session.user.agencyId) {
      policiesWhereClause = { agencyId: session.user.agencyId };
      clientsWhereClause = { agencyId: session.user.agencyId };
   }
@@ -192,7 +192,7 @@ export default async function CarteraDashboard({
                 <TableHeader>
                   <TableRow>
                     <TableHead>Póliza</TableHead>
-                    {session.user.role === 'ADMIN' && <TableHead>Agente</TableHead>}
+                    {(session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN') && <TableHead>Agente</TableHead>}
                     <TableHead>Contratante</TableHead>
                     <TableHead>Producto</TableHead>
                     <TableHead>Aseguradora</TableHead>
@@ -206,7 +206,7 @@ export default async function CarteraDashboard({
                       <TableCell className="font-medium text-xs">
                         {policy.policyNumber}
                       </TableCell>
-                      {session.user.role === 'ADMIN' && (
+                      {(session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN') && (
                         <TableCell className="text-xs font-semibold text-indigo-600">
                           {policy.user?.name || "Sin Asignar"}
                         </TableCell>
@@ -228,7 +228,7 @@ export default async function CarteraDashboard({
                   ))}
                   {policies.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={session.user.role === 'ADMIN' ? 7 : 6} className="text-center p-4 text-muted-foreground">
+                      <TableCell colSpan={(session.user.role === 'ADMIN' || session.user.role === 'SUPER_ADMIN') ? 7 : 6} className="text-center p-4 text-muted-foreground">
                         No hay pólizas registradas.
                       </TableCell>
                     </TableRow>

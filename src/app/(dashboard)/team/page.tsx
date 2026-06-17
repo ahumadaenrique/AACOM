@@ -157,7 +157,7 @@ export default function TeamDirectoryPage() {
             };
 
             // Only send administrative fields if admin
-            if (currentUser?.role === 'ADMIN') {
+            if ((currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN')) {
                 payload.name = editForm.name;
                 payload.email = editForm.email;
                 payload.phone = editForm.phone;
@@ -263,7 +263,7 @@ export default function TeamDirectoryPage() {
     }
 
     const isAuthorizedToEdit = selectedUser && (
-        currentUser?.role === 'ADMIN' || currentUser?.id === selectedUser.id
+        (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') || currentUser?.id === selectedUser.id
     );
 
     return (
@@ -338,7 +338,7 @@ export default function TeamDirectoryPage() {
                                         )}
                                     </div>
                                     <div className={`absolute -bottom-1 -right-1 h-5 w-5 rounded-full flex items-center justify-center shadow border border-white ${
-                                        user.role === 'ADMIN' ? 'bg-amber-500 text-white' : 'bg-teal-600 text-white'
+                                        (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? 'bg-amber-500 text-white' : 'bg-teal-600 text-white'
                                     }`} title={user.role}>
                                         <Shield className="h-3 w-3" />
                                     </div>
@@ -350,7 +350,7 @@ export default function TeamDirectoryPage() {
                                         {user.name || user.email.split("@")[0]}
                                     </h3>
                                     <span className={`inline-block text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
-                                        user.role === 'ADMIN' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-teal-100 text-teal-800 dark:bg-teal-950/30 dark:text-teal-400'
+                                        (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-teal-100 text-teal-800 dark:bg-teal-950/30 dark:text-teal-400'
                                     }`}>
                                         {user.role}
                                     </span>
@@ -440,7 +440,7 @@ export default function TeamDirectoryPage() {
                                     </div>
                                     
                                     {/* Upload Button overlay only if Admin is editing */}
-                                    {isEditing && currentUser?.role === 'ADMIN' && (
+                                    {isEditing && (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') && (
                                         <label className="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center text-[8px] font-black text-white uppercase tracking-wider cursor-pointer opacity-0 hover:opacity-100 transition-opacity">
                                             <span>Subir</span>
                                             <span>Foto</span>
@@ -456,7 +456,7 @@ export default function TeamDirectoryPage() {
 
                                 <div className="flex-1 space-y-1.5">
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-center sm:justify-start">
-                                        {isEditing && currentUser?.role === 'ADMIN' ? (
+                                        {isEditing && (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? (
                                             <input 
                                                 type="text" 
                                                 value={editForm.name} 
@@ -473,7 +473,7 @@ export default function TeamDirectoryPage() {
                                             </h2>
                                         )}
                                         <span className={`w-fit mx-auto sm:mx-0 text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
-                                            selectedUser.role === 'ADMIN' ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-teal-100 text-teal-800 dark:bg-teal-950/30 dark:text-teal-400'
+                                            selected(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-teal-100 text-teal-800 dark:bg-teal-950/30 dark:text-teal-400'
                                         }`}>
                                             {selectedUser.role}
                                         </span>
@@ -497,7 +497,7 @@ export default function TeamDirectoryPage() {
                                         <div className="space-y-3">
                                             <div>
                                                 <label className="text-[9px] font-bold text-slate-500 uppercase block mb-0.5">Correo Electrónico</label>
-                                                {isEditing && currentUser?.role === 'ADMIN' ? (
+                                                {isEditing && (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? (
                                                     <input 
                                                         type="email" 
                                                         value={editForm.email} 
@@ -514,7 +514,7 @@ export default function TeamDirectoryPage() {
 
                                             <div>
                                                 <label className="text-[9px] font-bold text-slate-500 uppercase block mb-0.5">Número Telefónico</label>
-                                                {isEditing && currentUser?.role === 'ADMIN' ? (
+                                                {isEditing && (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? (
                                                     <input 
                                                         type="text" 
                                                         value={editForm.phone} 
@@ -535,7 +535,7 @@ export default function TeamDirectoryPage() {
 
                                             <div>
                                                 <label className="text-[9px] font-bold text-slate-500 uppercase block mb-0.5">Cumpleaños</label>
-                                                {isEditing && currentUser?.role === 'ADMIN' ? (
+                                                {isEditing && (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? (
                                                     <input 
                                                         type="date" 
                                                         value={editForm.birthDate} 
@@ -779,7 +779,7 @@ export default function TeamDirectoryPage() {
                                             className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-md hover:shadow-indigo-500/20"
                                         >
                                             <Edit3 className="h-3.5 w-3.5" />
-                                            {currentUser?.role === 'ADMIN' ? 'Editar Perfil Completo' : 'Completar Mi Perfil'}
+                                            {(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? 'Editar Perfil Completo' : 'Completar Mi Perfil'}
                                         </Button>
                                     )
                                 )}
