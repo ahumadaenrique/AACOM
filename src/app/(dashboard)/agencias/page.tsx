@@ -7,6 +7,7 @@ import { Building2, Users, FileText, Globe, Plus, ExternalLink, ShieldCheck, Pal
 import { Button } from "@/components/ui/button";
 import { getAgencies } from "./actions";
 import { AgencyFormModal } from "./AgencyFormModal";
+import { SwitchAgencyButton } from "./SwitchAgencyButton";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -112,10 +113,10 @@ export default async function AgenciasPage() {
                   Configurar
                 </Button>
               </AgencyFormModal>
-              <Link href={`https://${agency.slug}.aacomsoft.com`} target="_blank" className="w-full">
-                <Button variant="secondary" className="w-full bg-indigo-50 text-indigo-700 hover:bg-indigo-100">
-                  <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                  Visitar
+              <SwitchAgencyButton agencyId={agency.id} agencyName={agency.name} />
+              <Link href={`https://${agency.slug}.aacomsoft.com`} target="_blank" className="w-full" title="Visitar">
+                <Button variant="ghost" size="icon" className="text-slate-400 hover:text-slate-600 bg-slate-50 hover:bg-slate-100">
+                  <ExternalLink className="w-4 h-4" />
                 </Button>
               </Link>
             </CardFooter>

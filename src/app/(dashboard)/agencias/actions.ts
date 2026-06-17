@@ -93,3 +93,22 @@ export async function updateAgency(id: string, data: Partial<z.infer<typeof agen
   revalidatePath("/agencias");
   return agency;
 }
+
+export async function switchAgency(agencyId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+  const targetAgency = await prisma.agency.findUnique({ where: { id: agencyId } });
+  if (!targetAgency) throw new Error("Agencia no encontrada");
+
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { agencyId: targetAgency.id }
+  });
+
+  revalidatePath("/");
+  return { success: true };
+}
