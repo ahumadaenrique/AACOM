@@ -1,7 +1,10 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import ReportesClient from "./ReportesClient";
+import dynamic from "next/dynamic";
+
+// Disable SSR for the client component to prevent Server-Side Rendering crashes
+const ReportesClient = dynamic(() => import("./ReportesClient"), { ssr: false });
 
 export const metadata = {
     title: "Reportes Gerenciales - AACOM",
@@ -21,7 +24,7 @@ export default async function ReportesPage() {
         if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
             redirect("/activity");
         }
-
+        
         return <ReportesClient />;
     } catch (e: any) {
         if (e.message && e.message.includes('NEXT_REDIRECT')) {
