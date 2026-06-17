@@ -6,7 +6,11 @@ import { stripe } from "@/lib/stripe";
 import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
-export async function createCheckoutSession(discountCodeStr?: string) {
+export async function createCheckoutSession(
+  priceId: string,
+  daysToAdd: number,
+  discountCodeStr?: string
+) {
   const session = await auth();
   if (!session?.user?.id || !session.user.agencyId) throw new Error("No autorizado");
 
@@ -45,8 +49,6 @@ export async function createCheckoutSession(discountCodeStr?: string) {
       where: { code: discountCodeStr },
     });
     if (discountCode && discountCode.active) {
-      // Create a coupon on the fly in stripe, or assume one exists with the same ID
-      // To keep it simple, we create an ephemeral coupon in Stripe matching the DB discount percentage
       const coupon = await stripe.coupons.create({
         percent_off: discountCode.discountPercentage,
         duration: "once", // Only for the first charge
@@ -58,9 +60,8 @@ export async function createCheckoutSession(discountCodeStr?: string) {
     }
   }
 
-  const priceId = process.env.STRIPE_PRICE_ID;
   if (!priceId) {
-    throw new Error("No se ha configurado el producto de suscripción (STRIPE_PRICE_ID).");
+    throw new Error("ID de producto no válido.");
   }
 
   const checkoutSession = await stripe.checkout.sessions.create({
@@ -78,7 +79,14 @@ export async function createCheckoutSession(discountCodeStr?: string) {
     cancel_url: `${origin}/admin/suscripcion?canceled=true`,
     metadata: {
       agencyId: agency.id,
+      daysToAdd: daysToAdd.toString(),
     },
+    subscription_data: {
+      metadata: {
+        agencyId: agency.id,
+        daysToAdd: daysToAdd.toString(),
+      }
+    }
   });
 
   if (!checkoutSession.url) throw new Error("Error creando sesión de Stripe");

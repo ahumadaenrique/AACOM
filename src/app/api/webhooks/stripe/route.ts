@@ -21,57 +21,81 @@ export async function POST(req: Request) {
     return new NextResponse(`Webhook Error: ${error.message}`, { status: 400 });
   }
 
-  // Handle checkout.session.completed
-  if (event.type === "checkout.session.completed") {
-    const session = event.data.object as Stripe.Checkout.Session;
+  // Función auxiliar para procesar el pago y extender la suscripción
+  const processSubscriptionPayment = async (agencyId: string, daysToAddStr: string | undefined) => {
+    const agency = await prisma.agency.findUnique({
+      where: { id: agencyId },
+    });
 
-    const agencyId = session.metadata?.agencyId;
-    if (agencyId) {
-      const agency = await prisma.agency.findUnique({
+    if (agency) {
+      const daysToAdd = daysToAddStr ? parseInt(daysToAddStr, 10) : 365; // Default 365 if not found
+
+      const now = new Date();
+      const currentEndDate = agency.subscriptionEndDate && agency.subscriptionEndDate > now 
+          ? agency.subscriptionEndDate 
+          : now;
+      
+      const newEndDate = new Date(currentEndDate);
+      newEndDate.setDate(newEndDate.getDate() + daysToAdd);
+
+      await prisma.agency.update({
         where: { id: agencyId },
+        data: {
+          subscriptionStatus: "active",
+          subscriptionEndDate: newEndDate,
+        },
       });
 
-      if (agency) {
-        // Calculate new end date (add 1 year by default for this example, can be adjusted)
-        const now = new Date();
-        const currentEndDate = agency.subscriptionEndDate && agency.subscriptionEndDate > now 
-            ? agency.subscriptionEndDate 
-            : now;
-        
-        const newEndDate = new Date(currentEndDate);
-        newEndDate.setFullYear(newEndDate.getFullYear() + 1); // 1 year extension
-
-        await prisma.agency.update({
-          where: { id: agencyId },
-          data: {
-            subscriptionStatus: "active",
-            subscriptionEndDate: newEndDate,
-          },
+      // "Refiere y Gana" Logic: Add 60 days to the referrer if this is their first payment.
+      if (agency.referredByAgencyId && (!agency.subscriptionEndDate || agency.subscriptionEndDate < now)) {
+        const referrer = await prisma.agency.findUnique({
+          where: { id: agency.referredByAgencyId },
         });
 
-        // "Refiere y Gana" Logic: Add 60 days to the referrer if this is their first payment.
-        // We need to ensure we only reward once. Let's add a flag or check if it was previously inactive.
-        if (agency.referredByAgencyId && (!agency.subscriptionEndDate || agency.subscriptionEndDate < now)) {
-          const referrer = await prisma.agency.findUnique({
-            where: { id: agency.referredByAgencyId },
+        if (referrer) {
+          const referrerCurrentEnd = referrer.subscriptionEndDate && referrer.subscriptionEndDate > now
+            ? referrer.subscriptionEndDate
+            : now;
+          
+          const referrerNewEnd = new Date(referrerCurrentEnd);
+          referrerNewEnd.setDate(referrerNewEnd.getDate() + 60); // +60 days reward
+
+          await prisma.agency.update({
+            where: { id: referrer.id },
+            data: {
+              subscriptionEndDate: referrerNewEnd,
+              subscriptionStatus: "active",
+            },
           });
+        }
+      }
+    }
+  };
 
-          if (referrer) {
-            const referrerCurrentEnd = referrer.subscriptionEndDate && referrer.subscriptionEndDate > now
-              ? referrer.subscriptionEndDate
-              : now;
-            
-            const referrerNewEnd = new Date(referrerCurrentEnd);
-            referrerNewEnd.setDate(referrerNewEnd.getDate() + 60); // +60 days reward
+  // Handle checkout.session.completed (First payment)
+  if (event.type === "checkout.session.completed") {
+    const session = event.data.object as Stripe.Checkout.Session;
+    const agencyId = session.metadata?.agencyId;
+    const daysToAddStr = session.metadata?.daysToAdd;
+    
+    if (agencyId) {
+      await processSubscriptionPayment(agencyId, daysToAddStr);
+    }
+  }
 
-            await prisma.agency.update({
-              where: { id: referrer.id },
-              data: {
-                subscriptionEndDate: referrerNewEnd,
-                subscriptionStatus: "active",
-              },
-            });
-          }
+  // Handle invoice.payment_succeeded (Renewals)
+  if (event.type === "invoice.payment_succeeded") {
+    const invoice = event.data.object as Stripe.Invoice;
+    // For renewals, the billing reason is usually subscription_cycle
+    if (invoice.billing_reason === "subscription_cycle") {
+      const subscriptionId = (invoice as any).subscription as string;
+      if (subscriptionId) {
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const agencyId = subscription.metadata?.agencyId;
+        const daysToAddStr = subscription.metadata?.daysToAdd;
+        
+        if (agencyId) {
+          await processSubscriptionPayment(agencyId, daysToAddStr);
         }
       }
     }

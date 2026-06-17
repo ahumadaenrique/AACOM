@@ -9,6 +9,7 @@ import { CreditCard, Gift, ShieldCheck, Zap, Copy, CheckCircle2 } from "lucide-r
 import { createCheckoutSession } from "./actions";
 import { differenceInDays, format } from "date-fns";
 import { es } from "date-fns/locale";
+import PlanSelector from "./PlanSelector";
 
 export const dynamic = "force-dynamic";
 
@@ -73,7 +74,7 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
               </Badge>
             </div>
           </CardHeader>
-          <CardContent className="pt-6 flex-1">
+          <CardContent className="pt-6 flex-1 border-b border-slate-100">
             <div className="flex flex-col gap-4">
               <div className="bg-white border border-slate-200 p-4 rounded-xl shadow-sm">
                 <div className="text-sm font-medium text-slate-500 mb-1">Días Restantes</div>
@@ -91,21 +92,6 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
               )}
             </div>
           </CardContent>
-          <CardFooter className="bg-slate-50 border-t border-slate-100 p-4">
-            <form action={async (formData) => {
-              "use server";
-              const code = formData.get("discountCode") as string;
-              await createCheckoutSession(code);
-            }} className="w-full flex flex-col gap-3">
-              <div className="flex gap-2">
-                <Input name="discountCode" placeholder="Código de descuento (Opcional)" className="bg-white" />
-              </div>
-              <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold shadow-md">
-                <Zap className="w-4 h-4 mr-2" />
-                {isSubscribed ? "Renovar / Extender Licencia" : "Activar Licencia"}
-              </Button>
-            </form>
-          </CardFooter>
         </Card>
 
         {/* Refiere y Gana */}
@@ -142,6 +128,11 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
             </div>
           </CardContent>
         </Card>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-2xl font-extrabold text-slate-800 mb-6">Elige tu Plan de Suscripción</h2>
+        <PlanSelector isSubscribed={isSubscribed} />
       </div>
     </div>
   );
