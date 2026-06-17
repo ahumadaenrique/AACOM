@@ -1024,7 +1024,7 @@ export async function getActivityHistory(targetUserId?: string) {
             return { success: false, message: "Usuario no encontrado", history: [] };
         }
 
-        const userId = (current(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') && targetUserId) ? targetUserId : currentUser.id;
+        const userId = ((currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN') && targetUserId) ? targetUserId : currentUser.id;
 
         // Get all activity logs for this user sorted by date and time
         const logs = await prisma.activityLog.findMany({
@@ -1293,7 +1293,7 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
         if (data.phone !== undefined) updateData.phone = data.phone;
         if (data.image !== undefined) updateData.image = data.image; // Base64
         if (data.password !== undefined && data.password.trim() !== '') updateData.password = data.password;
-        if (data.active !== undefined && current(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) updateData.active = data.active;
+        if (data.active !== undefined && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) updateData.active = data.active;
         
         if (data.birthDate !== undefined) {
             updateData.birthDate = data.birthDate ? new Date(data.birthDate) : null;
@@ -1305,7 +1305,7 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
         });
 
         // Also sync name to Agent table if agent exists
-        if (data.name && current(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
+        if (data.name && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) {
             const trimmedName = data.name.trim();
             const existingAgent = await prisma.agent.findUnique({
                 where: { name: trimmedName }
@@ -1470,7 +1470,7 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
             return { success: false, message: "Usuario en sesión no encontrado" };
         }
 
-        const isAdmin = current(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN');
+        const isAdmin = (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN');
         const isSelf = currentUser.id === targetUserId;
 
         if (!isAdmin && !isSelf) {
