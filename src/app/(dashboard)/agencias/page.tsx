@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { getAgencies } from "./actions";
 import { AgencyFormModal } from "./AgencyFormModal";
 import { SwitchAgencyButton } from "./SwitchAgencyButton";
+import { AgenciesTable } from "./AgenciesTable";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -141,6 +142,10 @@ export default async function AgenciasPage() {
           </div>
         )}
       </div>
+
+      {agencies.length > 0 && (
+        <AgenciesTable agencies={agencies} />
+      )}
     </div>
   );
 }

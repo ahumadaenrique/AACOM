@@ -26,6 +26,10 @@ export async function getAgencies() {
 
   return await prisma.agency.findMany({
     include: {
+      users: {
+        where: { role: "ADMIN" },
+        take: 1,
+      },
       _count: {
         select: { users: true, clients: true, policies: true }
       }
