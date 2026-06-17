@@ -137,11 +137,8 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
               <div className="flex items-center gap-2 bg-white border border-indigo-200 p-2 rounded-xl shadow-sm">
                 <Input readOnly value={referralLink} className="border-0 bg-transparent focus-visible:ring-0 text-sm text-indigo-900 font-medium" />
                 {/* Client component copy button needed here for interactivity, using a generic visually appealing block for now */}
-                <Button type="button" variant="secondary" className="shrink-0 bg-indigo-100 hover:bg-indigo-200 text-indigo-700" onClick={() => {
-                  // This is a server component, so onclick won't work natively. Ideally this would be extracted.
-                  // For MVP we just display it.
-                }}>
-                  Copiar
+                <Button type="button" variant="secondary" className="shrink-0 bg-indigo-100 hover:bg-indigo-200 text-indigo-700">
+                  Copiar Enlace
                 </Button>
               </div>
             </div>
