@@ -19,12 +19,12 @@ interface Plan {
 
 const plans: Plan[] = [
   {
-    id: "monthly",
-    name: "Mensual",
-    description: "Ideal para comenzar y probar la plataforma.",
-    price: "$1,999 MXN",
+    id: "trimestral",
+    name: "Trimestral",
+    description: "Ideal para probar el sistema a mediano plazo.",
+    price: "$5,997 MXN",
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY || "price_1TjM2RHQaI7mythjYsPj6bvD",
-    days: 30,
+    days: 90,
   },
   {
     id: "semiannual",
