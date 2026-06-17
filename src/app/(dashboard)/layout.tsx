@@ -125,6 +125,12 @@ export default async function DashboardLayout({
                                     Admin
                                 </Link>
                                 <Link
+                                    href="/admin/suscripcion"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                                >
+                                    Suscripción
+                                </Link>
+                                <Link
                                     href="/reportes"
                                     className="text-muted-foreground transition-colors hover:text-foreground font-semibold"
                                 >
@@ -218,6 +224,13 @@ export default async function DashboardLayout({
                                             className="text-muted-foreground hover:text-foreground"
                                         >
                                             Admin
+                                        </Link>
+                                        <Link
+                                            href="/admin/suscripcion"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                        >
+                                            <Wallet className="h-5 w-5" />
+                                            Suscripción
                                         </Link>
                                         <Link
                                             href="/reportes"
