@@ -1984,15 +1984,21 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
 
     try {
         const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
-        if (!currentUser || currentUser.role !== 'ADMIN') return { success: false, message: "Permisos insuficientes" };
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const agencyId = currentUser.agencyId;
+        if (!agencyId) return { success: false, message: "El administrador no tiene una agencia válida asignada." };
 
         const agents = await prisma.user.findMany({
-            where: { active: true },
+            where: { active: true, agencyId },
             select: { id: true, name: true, image: true }
         });
 
         const logs = await prisma.activityLog.findMany({
             where: {
+                agencyId,
                 dateStr: { gte: startDate, lte: endDate }
             }
         });
@@ -2003,6 +2009,7 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
 
         const adns = await prisma.adnDiagnostic.findMany({
             where: {
+                agencyId,
                 createdAt: { gte: start, lte: end }
             },
             select: { userId: true, clienteNombre: true }

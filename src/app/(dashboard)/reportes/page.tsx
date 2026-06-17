@@ -13,13 +13,20 @@ export default async function ReportesPage() {
         redirect("/login");
     }
 
-    const user = await prisma.user.findUnique({
-        where: { email: session.user.email }
-    });
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
 
-    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
-        redirect("/activity");
+        if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+            redirect("/activity");
+        }
+
+        return <ReportesClient />;
+    } catch (e: any) {
+        if (e.message && e.message.includes('NEXT_REDIRECT')) {
+            throw e;
+        }
+        return <div className="p-10 text-red-500 font-bold">Error en ReportesPage: {e.message || String(e)}</div>;
     }
-
-    return <ReportesClient />;
 }
