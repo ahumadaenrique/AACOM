@@ -12,9 +12,16 @@ export async function getClients() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("No autorizado");
 
+  const whereClause: any = {};
+  if (session.user.role === 'ADMIN' && session.user.agencyId) {
+    whereClause.agencyId = session.user.agencyId;
+  } else {
+    whereClause.userId = session.user.id;
+  }
+
   return await prisma.client.findMany({
-    where: { userId: session.user.id },
-    include: { policies: true },
+    where: whereClause,
+    include: { policies: true, user: { select: { name: true } } },
     orderBy: { name: "asc" },
   });
 }
@@ -109,9 +116,16 @@ export async function getPolicies() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("No autorizado");
 
+  const whereClause: any = {};
+  if (session.user.role === 'ADMIN' && session.user.agencyId) {
+    whereClause.agencyId = session.user.agencyId;
+  } else {
+    whereClause.userId = session.user.id;
+  }
+
   return await prisma.policy.findMany({
-    where: { userId: session.user.id },
-    include: { client: true },
+    where: whereClause,
+    include: { client: true, user: { select: { name: true } } },
     orderBy: { renewalDate: "asc" },
   });
 }

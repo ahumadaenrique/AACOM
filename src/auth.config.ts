@@ -22,13 +22,19 @@ export const authConfig = {
 
             return true;
         },
-        async session({ session, token }) {
+        async session({ session, token }: any) {
             if (token.sub && session.user) {
                 session.user.id = token.sub;
+                session.user.agencyId = token.agencyId;
+                session.user.role = token.role;
             }
             return session;
         },
-        async jwt({ token }) {
+        async jwt({ token, user }: any) {
+            if (user) {
+                token.agencyId = user.agencyId;
+                token.role = user.role;
+            }
             return token;
         }
     },

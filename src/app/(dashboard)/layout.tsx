@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2 } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -32,7 +32,8 @@ export default async function DashboardLayout({
         });
     }
 
-    const isAdmin = dbUser?.role === 'ADMIN';
+    const isAdmin = dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN';
+    const isSuperAdmin = dbUser?.role === 'SUPER_ADMIN';
     const userImage = resolveImageUrl(dbUser?.image); // base64 or resolved google drive link
     const userName = dbUser?.name || session?.user?.name || "Agente";
     const userEmail = dbUser?.email || session?.user?.email || "";
@@ -131,6 +132,15 @@ export default async function DashboardLayout({
                                 </Link>
                             </>
                         )}
+                        {isSuperAdmin && (
+                            <Link
+                                href="/agencias"
+                                className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                            >
+                                <Building2 className="h-4 w-4 text-purple-600" />
+                                Agencias SaaS
+                            </Link>
+                        )}
                     </nav>
 
                     {/* Mobile Drawer Trigger */}
@@ -216,6 +226,15 @@ export default async function DashboardLayout({
                                             Reportes
                                         </Link>
                                     </>
+                                )}
+                                {isSuperAdmin && (
+                                    <Link
+                                        href="/agencias"
+                                        className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                    >
+                                        <Building2 className="h-5 w-5 text-purple-600" />
+                                        Agencias SaaS
+                                    </Link>
                                 )}
                             </nav>
                         </SheetContent>

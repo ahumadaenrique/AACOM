@@ -23,15 +23,23 @@ export default async function CarteraDashboard({
   const today = new Date();
   const futureDate = addDays(today, daysFilter);
 
-  // Obtener todas las pólizas del agente actual
+  let policiesWhereClause: any = { userId: session.user.id };
+  let clientsWhereClause: any = { userId: session.user.id };
+
+  if (session.user.role === 'ADMIN' && session.user.agencyId) {
+     policiesWhereClause = { agencyId: session.user.agencyId };
+     clientsWhereClause = { agencyId: session.user.agencyId };
+  }
+
+  // Obtener todas las pólizas del agente o de la agencia (si es admin)
   const policies = await prisma.policy.findMany({
-    where: { userId: session.user.id },
-    include: { client: true },
+    where: policiesWhereClause,
+    include: { client: true, user: { select: { name: true } } },
     orderBy: { renewalDate: "asc" },
   });
 
   const clientsCount = await prisma.client.count({
-    where: { userId: session.user.id },
+    where: clientsWhereClause,
   });
 
   const totalPremium = policies.reduce((acc, curr) => acc + (curr.annualPremium || 0), 0);
@@ -184,6 +192,7 @@ export default async function CarteraDashboard({
                 <TableHeader>
                   <TableRow>
                     <TableHead>Póliza</TableHead>
+                    {session.user.role === 'ADMIN' && <TableHead>Agente</TableHead>}
                     <TableHead>Contratante</TableHead>
                     <TableHead>Producto</TableHead>
                     <TableHead>Aseguradora</TableHead>
@@ -197,6 +206,11 @@ export default async function CarteraDashboard({
                       <TableCell className="font-medium text-xs">
                         {policy.policyNumber}
                       </TableCell>
+                      {session.user.role === 'ADMIN' && (
+                        <TableCell className="text-xs font-semibold text-indigo-600">
+                          {policy.user?.name || "Sin Asignar"}
+                        </TableCell>
+                      )}
                       <TableCell>
                         <Link href={`/cartera/clientes/${policy.clientId}`} className="hover:underline font-semibold text-primary">
                           {policy.contractor}
@@ -214,7 +228,7 @@ export default async function CarteraDashboard({
                   ))}
                   {policies.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center p-4 text-muted-foreground">
+                      <TableCell colSpan={session.user.role === 'ADMIN' ? 7 : 6} className="text-center p-4 text-muted-foreground">
                         No hay pólizas registradas.
                       </TableCell>
                     </TableRow>

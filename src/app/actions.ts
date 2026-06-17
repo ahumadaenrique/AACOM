@@ -446,6 +446,9 @@ export async function getAdnDiagnostics() {
         if (user.role === 'ADMIN') {
             // Admin sees all diagnostics, including the agent's name
             diagnostics = await prisma.adnDiagnostic.findMany({
+                where: {
+                    agencyId: user.agencyId
+                },
                 include: {
                     user: {
                         select: {
@@ -562,6 +565,9 @@ export async function getUsers() {
         }
 
         const users = await prisma.user.findMany({
+            where: {
+                agencyId: currentUser.agencyId
+            },
             orderBy: {
                 createdAt: 'desc'
             }
@@ -1398,9 +1404,14 @@ export async function getTeamDirectory() {
     }
 
     try {
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
         const users = await prisma.user.findMany({
             where: {
-                active: true
+                active: true,
+                agencyId: currentUser?.agencyId
             },
             select: {
                 id: true,
