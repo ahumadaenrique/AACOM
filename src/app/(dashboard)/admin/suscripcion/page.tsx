@@ -15,12 +15,28 @@ export const dynamic = "force-dynamic";
 
 export default async function SuscripcionPage({ searchParams }: { searchParams: { success?: string, canceled?: string } }) {
   const session = await auth();
-  if (!session?.user?.id || !session.user.agencyId) redirect("/login");
+  if (!session?.user?.id) redirect("/login");
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   if (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") redirect("/");
 
-  const agency = await prisma.agency.findUnique({ where: { id: session.user.agencyId } });
+  let agencyId = session.user.agencyId || user?.agencyId;
+
+  // Si el SUPER_ADMIN no tiene agencia, le asignamos la primera (o se redirige si no hay agencias)
+  if (user?.role === "SUPER_ADMIN" && !agencyId) {
+    const firstAgency = await prisma.agency.findFirst();
+    if (firstAgency) {
+      agencyId = firstAgency.id;
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { agencyId: firstAgency.id }
+      });
+    }
+  }
+
+  if (!agencyId) redirect("/"); // Si sigue sin agencia, a home
+
+  const agency = await prisma.agency.findUnique({ where: { id: agencyId } });
   if (!agency) redirect("/");
 
   const isSubscribed = agency.subscriptionStatus === "active";
