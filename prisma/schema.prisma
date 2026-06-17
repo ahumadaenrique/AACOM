@@ -10,8 +10,46 @@ datasource db {
 // SQLite does not support Enums, so we use String validation in app logic
 // enum Role { ... } replaced by Strings
 
+model Agency {
+  id                  String    @id @default(cuid())
+  name                String
+  slug                String    @unique
+  logoUrl             String?
+  primaryColor        String?   @default("#4f46e5")
+  secondaryColor      String?
+  stripeCustomerId    String?
+  subscriptionStatus  String?   @default("active")
+  subscriptionEndDate DateTime?
+  referredByAgencyId  String?
+  active              Boolean   @default(true)
+  
+  users               User[]
+  clients             Client[]
+  policies            Policy[]
+  adnDiagnostics      AdnDiagnostic[]
+  activityLogs        ActivityLog[]
+  dailyRecords        DailyRecord[]
+  cotizaciones        Cotizacion[]
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+}
+
+model DiscountCode {
+  id                 String   @id @default(cuid())
+  code               String   @unique
+  discountPercentage Float
+  maxUses            Int?
+  uses               Int      @default(0)
+  active             Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
 model User {
   id            String    @id @default(cuid())
+  agencyId      String?
+  agency        Agency?   @relation(fields: [agencyId], references: [id])
   name          String?
   email         String    @unique
   password      String?
@@ -63,6 +101,8 @@ model Activity {
 
 model DailyRecord {
   id          String    @id @default(cuid())
+  agencyId    String?
+  agency      Agency?   @relation(fields: [agencyId], references: [id])
   userId      String
   user        User      @relation(fields: [userId], references: [id])
   
@@ -81,6 +121,8 @@ model DailyRecord {
 
 model Client {
   id            String    @id @default(cuid())
+  agencyId      String?
+  agency        Agency?   @relation(fields: [agencyId], references: [id])
   name          String
   email         String?
   phone         String?
@@ -97,6 +139,8 @@ model Client {
 
 model Policy {
   id                    String    @id @default(cuid())
+  agencyId              String?
+  agency                Agency?   @relation(fields: [agencyId], references: [id])
   
   policyNumber          String    @unique
   contractor            String?   // Contratante
@@ -152,6 +196,8 @@ model CompanyRules {
 
 model Cotizacion {
   id             String   @id @default(cuid())
+  agencyId       String?
+  agency         Agency?  @relation(fields: [agencyId], references: [id])
   userId         String?
   user           User?    @relation(fields: [userId], references: [id])
   cliente        String
@@ -184,6 +230,8 @@ model Agent {
 
 model AdnDiagnostic {
   id               String   @id @default(cuid())
+  agencyId         String?
+  agency           Agency?  @relation(fields: [agencyId], references: [id])
   userId           String
   user             User     @relation(fields: [userId], references: [id])
   
@@ -248,6 +296,8 @@ model AdnDiagnostic {
 
 model ActivityLog {
   id           String   @id @default(cuid())
+  agencyId     String?
+  agency       Agency?  @relation(fields: [agencyId], references: [id])
   userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   activityId   String   // ID de la actividad del catálogo ('1' a '7')
