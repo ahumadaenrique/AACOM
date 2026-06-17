@@ -15,10 +15,10 @@ export const dynamic = "force-dynamic";
 
 export default async function SuscripcionPage({ searchParams }: { searchParams: { success?: string, canceled?: string } }) {
   const session = await auth();
-  if (!session?.user?.id) redirect("/login");
+  if (!session?.user?.id) return <div className="p-10 text-red-500">Error: No session user ID</div>;
 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-  if (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") redirect("/");
+  if (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") return <div className="p-10 text-red-500">Error: Tu rol es {user?.role || "nulo"}, necesitas ser ADMIN o SUPER_ADMIN</div>;
 
   let agencyId = session.user.agencyId || user?.agencyId;
 
@@ -34,10 +34,10 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
     }
   }
 
-  if (!agencyId) redirect("/"); // Si sigue sin agencia, a home
+  if (!agencyId) return <div className="p-10 text-red-500">Error: Sigo sin agencyId. El findFirst no encontró agencias?</div>;
 
   const agency = await prisma.agency.findUnique({ where: { id: agencyId } });
-  if (!agency) redirect("/");
+  if (!agency) return <div className="p-10 text-red-500">Error: agencyId {agencyId} no existe en la BD</div>;
 
   const isSubscribed = agency.subscriptionStatus === "active";
   const endDate = agency.subscriptionEndDate;
