@@ -473,7 +473,7 @@ export default function TeamDirectoryPage() {
                                             </h2>
                                         )}
                                         <span className={`w-fit mx-auto sm:mx-0 text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
-                                            selected(user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-teal-100 text-teal-800 dark:bg-teal-950/30 dark:text-teal-400'
+                                            (selectedUser.role === 'ADMIN' || selectedUser.role === 'SUPER_ADMIN') ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-teal-100 text-teal-800 dark:bg-teal-950/30 dark:text-teal-400'
                                         }`}>
                                             {selectedUser.role}
                                         </span>
