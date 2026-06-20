@@ -57,7 +57,8 @@ export async function uploadAgencyLogo(formData: FormData) {
     console.log("Agency updated and layout revalidated");
     return { success: true, logoUrl: blob.url };
   } catch (error: any) {
-    console.error("Error uploading logo:", error?.message || error);
-    return { success: false, error: "Failed to upload logo" };
+    const msg = error?.message || String(error);
+    console.error("Error uploading logo:", msg);
+    return { success: false, error: msg };
   }
 }
