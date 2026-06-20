@@ -511,7 +511,11 @@ export default function CotizadorPage() {
       edad: 1,
       prima: 2,
       sa: 3,
-      valores: 4
+      valores: 4,
+      fondoDisponible: -1,
+      recuperacion: -1,
+      primaProteccion: -1,
+      primaAhorro: -1
     })
     setFormData(prev => ({
       ...prev,
@@ -669,7 +673,9 @@ export default function CotizadorPage() {
       valorUdi: record.valorUdi || 8.25,
       inflacionUdi: record.inflacionUdi || 5.0,
       isr: record.isr || 35,
-      coberturas: record.coberturas ? JSON.parse(record.coberturas) : { itp: false, epp: false, ma: false, mapo: false }
+      coberturas: record.coberturas ? JSON.parse(record.coberturas) : { itp: false, epp: false, ma: false, mapo: false },
+      edadCliente: 35,
+      formaDePagoCotizada: record.producto === "Insignia Life Universal" ? "Anual" : "Meses sin intereses"
     })
     
     if (record.projectionData) {
