@@ -21,9 +21,10 @@ interface ClientHomeProps {
     name: string | null
     image: string | null
   } | null
+  agencyName?: string
 }
 
-export default function ClientHome({ announcements, isBirthday = false, currentUser = null }: ClientHomeProps) {
+export default function ClientHome({ announcements, isBirthday = false, currentUser = null, agencyName = "AACOM Seguros" }: ClientHomeProps) {
   const [selectedAd, setSelectedAd] = useState<Announcement | null>(null)
   const [showBirthday, setShowBirthday] = useState(false)
 
@@ -91,7 +92,7 @@ export default function ClientHome({ announcements, isBirthday = false, currentU
                     {/* The actual sharp image */}
                     <img 
                       src={ad.imageUrl} 
-                      alt="Comunicado AACOM" 
+                      alt={`Comunicado ${agencyName}`} 
                       className="relative z-10 max-w-full max-h-full object-contain transition-all duration-500 group-hover:scale-[1.02]" 
                     />
 
@@ -311,7 +312,7 @@ export default function ClientHome({ announcements, isBirthday = false, currentU
               <div className="h-0.5 w-16 bg-yellow-500/50 mx-auto rounded-full" />
 
               <p className="text-xs text-zinc-300 leading-relaxed max-w-sm mx-auto">
-                Hoy es un día especial y todo el equipo de <strong>AACOM Seguros</strong> quiere celebrarte. Te deseamos un año lleno de salud, felicidad, éxitos personales y muchas pólizas emitidas. 
+                Hoy es un día especial y todo el equipo de <strong>{agencyName}</strong> quiere celebrarte. Te deseamos un año lleno de salud, felicidad, éxitos personales y muchas pólizas emitidas. 
               </p>
 
               <p className="text-[10px] text-yellow-400 font-extrabold uppercase tracking-widest animate-pulse mt-2">

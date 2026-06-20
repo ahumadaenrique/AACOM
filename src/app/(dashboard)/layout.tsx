@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2 } from "lucide-react"
+import { headers } from "next/headers"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -38,6 +39,13 @@ export default async function DashboardLayout({
     const userName = dbUser?.name || session?.user?.name || "Agente";
     const userEmail = dbUser?.email || session?.user?.email || "";
 
+    const headersList = headers();
+    const slug = headersList.get('x-agency-slug') || 'aacom';
+    const agency = await prisma.agency.findUnique({ where: { slug } });
+    const agencyName = agency?.name || "AACOM Seguros";
+    const agencyLogo = agency?.logoUrl || "/logo.png";
+    const shortAgencyName = agency?.name || "AACOM";
+
     // Server-side native logout action
     const handleLogout = async () => {
         "use server";
@@ -66,15 +74,15 @@ export default async function DashboardLayout({
                             href="/"
                             className="flex items-center gap-2 text-lg font-semibold md:text-base mr-4 shrink-0"
                         >
-                            <img src="/logo.png" alt="AACOM Seguros" className="h-7 w-auto object-contain" />
-                            <span className="sr-only">AACOM cotizador</span>
+                            <img src={agencyLogo} alt={agencyName} className="h-7 w-auto object-contain" />
+                            <span className="sr-only">{shortAgencyName} cotizador</span>
                         </Link>
                         <Link
                             href="/activity"
                             className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
                         >
                             <ClipboardCheck className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                            AACOM 25
+                            {shortAgencyName} 25
                         </Link>
                         <Link
                             href="/ranking"
@@ -88,7 +96,7 @@ export default async function DashboardLayout({
                             className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
                         >
                             <Users className="h-4 w-4 text-indigo-500" />
-                              Equipo AACOM
+                              Equipo {shortAgencyName}
                           </Link>
                           <Link
                               href="/cartera"
@@ -102,7 +110,7 @@ export default async function DashboardLayout({
                             className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
                         >
                             <MessageSquare className="h-4 w-4 text-pink-500" />
-                            Asistente AACOM
+                            Asistente {shortAgencyName}
                         </Link>
                         <Link
                             href="/cotizador"
@@ -114,7 +122,7 @@ export default async function DashboardLayout({
                             href="/adn"
                             className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
                         >
-                            ADN AACOM
+                            ADN {shortAgencyName}
                         </Link>
                         {isAdmin && (
                             <>
@@ -167,15 +175,15 @@ export default async function DashboardLayout({
                                     href="/"
                                     className="flex items-center gap-2 text-lg font-semibold mb-4"
                                 >
-                                    <img src="/logo.png" alt="AACOM Seguros" className="h-8 w-auto object-contain" />
-                                    <span className="sr-only">AACOM cotizador</span>
+                                    <img src={agencyLogo} alt={agencyName} className="h-8 w-auto object-contain" />
+                                    <span className="sr-only">{shortAgencyName} cotizador</span>
                                 </Link>
                                 <Link
                                     href="/activity"
                                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
                                 >
                                     <ClipboardCheck className="h-5 w-5 text-teal-600" />
-                                    AACOM 25
+                                    {shortAgencyName} 25
                                 </Link>
                                 <Link
                                     href="/ranking"
@@ -189,7 +197,7 @@ export default async function DashboardLayout({
                                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
                                 >
                                     <Users className="h-5 w-5 text-indigo-500" />
-                                      Equipo AACOM
+                                      Equipo {shortAgencyName}
                                   </Link>
                                   <Link
                                       href="/cartera"
@@ -203,7 +211,7 @@ export default async function DashboardLayout({
                                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
                                 >
                                     <MessageSquare className="h-5 w-5 text-pink-500" />
-                                    Asistente AACOM
+                                    Asistente {shortAgencyName}
                                 </Link>
                                 <Link
                                     href="/cotizador"
@@ -215,7 +223,7 @@ export default async function DashboardLayout({
                                     href="/adn"
                                     className="text-muted-foreground hover:text-foreground"
                                 >
-                                    ADN AACOM
+                                    ADN {shortAgencyName}
                                 </Link>
                                 {isAdmin && (
                                     <>
@@ -280,8 +288,15 @@ export default async function DashboardLayout({
                                 </span>
                             </DropdownMenuLabel>
                             <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-xs font-bold text-slate-700 dark:text-zinc-300 py-2.5 rounded-xl cursor-pointer">
-                                Configuración
+                            <DropdownMenuItem asChild className="text-xs font-bold text-slate-700 dark:text-zinc-300 py-2.5 rounded-xl cursor-pointer">
+                                {isAdmin ? (
+                                    <Link href="/admin/agencia" className="flex items-center gap-1.5 w-full">
+                                        <Settings className="h-4 w-4" />
+                                        Mi Agencia SaaS
+                                    </Link>
+                                ) : (
+                                    <span>Configuración</span>
+                                )}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild className="text-xs font-black text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 py-2.5 rounded-xl cursor-pointer">
