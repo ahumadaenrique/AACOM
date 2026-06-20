@@ -77,9 +77,21 @@ export async function POST(req: Request) {
     const session = event.data.object as Stripe.Checkout.Session;
     const agencyId = session.metadata?.agencyId;
     const daysToAddStr = session.metadata?.daysToAdd;
+    const discountCodeStr = session.metadata?.discountCodeStr;
     
     if (agencyId) {
       await processSubscriptionPayment(agencyId, daysToAddStr);
+    }
+
+    if (discountCodeStr) {
+      try {
+        await prisma.discountCode.update({
+          where: { code: discountCodeStr },
+          data: { uses: { increment: 1 } },
+        });
+      } catch (err) {
+        console.error("Error updating discount code uses:", err);
+      }
     }
   }
 

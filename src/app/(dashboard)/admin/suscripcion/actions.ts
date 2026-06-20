@@ -56,16 +56,25 @@ export async function createCheckoutSession(
       const discountCode = await prisma.discountCode.findUnique({
         where: { code: discountCodeStr },
       });
-      if (discountCode && discountCode.active) {
-        const coupon = await stripe.coupons.create({
-          percent_off: discountCode.discountPercentage,
-          duration: "once",
-          name: `Cupón ${discountCodeStr} (${discountCode.discountPercentage}%)`,
-        });
-        stripeCouponId = coupon.id;
-      } else {
-        return { success: false, message: "Código de descuento inválido o expirado." };
+      
+      if (!discountCode || !discountCode.active) {
+        return { success: false, message: "Código de descuento inválido o inactivo." };
       }
+      
+      if (discountCode.expiresAt && new Date() > new Date(discountCode.expiresAt)) {
+        return { success: false, message: "Este código de descuento ha expirado." };
+      }
+      
+      if (discountCode.maxUses !== null && discountCode.uses >= discountCode.maxUses) {
+        return { success: false, message: "Este código de descuento ha alcanzado su límite de usos." };
+      }
+
+      const coupon = await stripe.coupons.create({
+        percent_off: discountCode.discountPercentage,
+        duration: "once",
+        name: `Cupón ${discountCodeStr} (${discountCode.discountPercentage}%)`,
+      });
+      stripeCouponId = coupon.id;
     }
 
     if (!priceId) {
@@ -88,11 +97,13 @@ export async function createCheckoutSession(
       metadata: {
         agencyId: agency.id,
         daysToAdd: daysToAdd.toString(),
+        discountCodeStr: discountCodeStr || "",
       },
       subscription_data: {
         metadata: {
           agencyId: agency.id,
           daysToAdd: daysToAdd.toString(),
+          discountCodeStr: discountCodeStr || "",
         }
       }
     });

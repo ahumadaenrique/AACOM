@@ -41,6 +41,7 @@ model DiscountCode {
   discountPercentage Float
   maxUses            Int?
   uses               Int      @default(0)
+  expiresAt          DateTime? // Nueva propiedad para límite de tiempo
   active             Boolean  @default(true)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt

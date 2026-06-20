@@ -116,3 +116,68 @@ export async function switchAgency(agencyId: string) {
   revalidatePath("/");
   return { success: true };
 }
+
+// ---- DISCOUNT CODES ACTIONS ---- //
+
+const discountSchema = z.object({
+  code: z.string().min(3, "El código debe tener al menos 3 caracteres").toUpperCase(),
+  discountPercentage: z.number().min(1).max(100),
+  maxUses: z.number().nullable().optional(),
+  expiresAt: z.date().nullable().optional(),
+});
+
+export async function getDiscountCodes() {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+  return await prisma.discountCode.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+}
+
+export async function createDiscountCode(data: any) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+  const parsed = discountSchema.parse({
+    ...data,
+    maxUses: data.maxUses ? parseInt(data.maxUses) : null,
+    expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+  });
+
+  const existingCode = await prisma.discountCode.findUnique({ where: { code: parsed.code } });
+  if (existingCode) throw new Error("Este código de descuento ya existe");
+
+  const discount = await prisma.discountCode.create({
+    data: {
+      code: parsed.code,
+      discountPercentage: parsed.discountPercentage,
+      maxUses: parsed.maxUses,
+      expiresAt: parsed.expiresAt,
+      active: true,
+    },
+  });
+
+  revalidatePath("/agencias");
+  return discount;
+}
+
+export async function toggleDiscountCode(id: string, active: boolean) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+  const discount = await prisma.discountCode.update({
+    where: { id },
+    data: { active },
+  });
+
+  revalidatePath("/agencias");
+  return discount;
+}
