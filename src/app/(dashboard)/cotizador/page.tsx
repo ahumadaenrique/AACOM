@@ -47,8 +47,10 @@ interface FormData {
   cliente: string
   agente: string
   telefono: string
+  edadCliente: number
   producto: string
   duracion: string
+  formaDePagoCotizada: string
   valorUdi: number
   inflacionUdi: number
   coberturas: {
@@ -67,6 +69,10 @@ interface ColumnMapping {
   prima: number
   sa: number
   valores: number
+  fondoDisponible: number
+  recuperacion: number
+  primaProteccion: number
+  primaAhorro: number
 }
 
 export default function CotizadorPage() {
@@ -84,8 +90,10 @@ export default function CotizadorPage() {
     cliente: "",
     agente: "",
     telefono: "",
+    edadCliente: 35,
     producto: "VPL",
     duracion: "15",
+    formaDePagoCotizada: "Anual",
     valorUdi: 8.25, // default
     inflacionUdi: 5.0,
     coberturas: {
@@ -153,7 +161,11 @@ export default function CotizadorPage() {
     edad: -1,
     prima: -1,
     sa: -1,
-    valores: -1
+    valores: -1,
+    fondoDisponible: -1,
+    recuperacion: -1,
+    primaProteccion: -1,
+    primaAhorro: -1
   })
 
   // Step 4: Results
@@ -245,7 +257,7 @@ export default function CotizadorPage() {
         setFileRows(rawRows.slice(1)) // Rows without header
 
         // Apply visual heuristic to auto-map columns
-        const newMapping = { anios: -1, edad: -1, prima: -1, sa: -1, valores: -1 }
+        const newMapping = { anios: -1, edad: -1, prima: -1, sa: -1, valores: -1, fondoDisponible: -1, recuperacion: -1, primaProteccion: -1, primaAhorro: -1 }
         
         headers.forEach((header, index) => {
           const lower = header.toLowerCase()
@@ -254,10 +266,18 @@ export default function CotizadorPage() {
             if (newMapping.anios === -1) newMapping.anios = index
           } else if (lower.includes("edad")) {
             if (newMapping.edad === -1) newMapping.edad = index
-          } else if (lower.includes("prima") || lower.includes("aport") || lower.includes("anual")) {
+          } else if (lower.includes("prima de protección") || lower.includes("prima de proteccion")) {
+            if (newMapping.primaProteccion === -1) newMapping.primaProteccion = index
+          } else if (lower.includes("prima de ahorro")) {
+            if (newMapping.primaAhorro === -1) newMapping.primaAhorro = index
+          } else if (lower.includes("prima total") || lower.includes("prima") || lower.includes("aport") || lower.includes("anual")) {
             if (newMapping.prima === -1) newMapping.prima = index
-          } else if (lower.includes("suma") || lower.includes("aseg") || lower.includes("sa") || lower.includes("fallecimiento")) {
+          } else if (lower.includes("proteccion") || lower.includes("protección") || lower.includes("suma") || lower.includes("aseg") || lower.includes("sa") || lower.includes("fallecimiento")) {
             if (newMapping.sa === -1) newMapping.sa = index
+          } else if (lower.includes("fondo") || lower.includes("disponible")) {
+            if (newMapping.fondoDisponible === -1) newMapping.fondoDisponible = index
+          } else if (lower.includes("recuperacion") || lower.includes("recuperación") || lower.includes("sobre fondo")) {
+            if (newMapping.recuperacion === -1) newMapping.recuperacion = index
           } else if (lower.includes("valor") || lower.includes("garant") || lower.includes("rescate") || lower.includes("efect") || lower.includes("ahorro")) {
             if (newMapping.valores === -1) newMapping.valores = index
           }
@@ -321,17 +341,23 @@ export default function CotizadorPage() {
     // Filter rows that have a valid year
     const validRows = fileRows.filter(row => {
       const yearVal = row[mapping.anios]
-      const ageVal = row[mapping.edad]
       return yearVal !== undefined && yearVal !== null && String(yearVal).trim() !== "" && !isNaN(Number(yearVal))
     })
 
     validRows.forEach((row, idx) => {
       // ANOS column = policy year, Edad column = client age
       const anio = parseInt(row[mapping.anios]) || idx + 1
-      const edad = parseInt(row[mapping.edad]) || 0
+      let edad = parseInt(row[mapping.edad])
+      if (isNaN(edad)) {
+        edad = formData.edadCliente + anio - 1
+      }
       const primaPesos = parseNumericValue(row[mapping.prima])
       const saPesos = parseNumericValue(row[mapping.sa])
       const valoresPesos = parseNumericValue(row[mapping.valores])
+      const fondoDisponiblePesos = mapping.fondoDisponible !== -1 ? parseNumericValue(row[mapping.fondoDisponible]) : 0
+      const recuperacionSobreFondo = mapping.recuperacion !== -1 ? parseNumericValue(row[mapping.recuperacion]) : 0
+      const primaProteccionPesos = mapping.primaProteccion !== -1 ? parseNumericValue(row[mapping.primaProteccion]) : 0
+      const primaAhorroPesos = mapping.primaAhorro !== -1 ? parseNumericValue(row[mapping.primaAhorro]) : 0
 
       // UDI value projection (starts at valorUdi, increases compounded by inflation)
       const udiValue = idx === 0 ? currentUdi : currentUdi * (1 + formData.inflacionUdi / 100)
@@ -357,7 +383,11 @@ export default function CotizadorPage() {
         valoresPesos,
         ahorroUdis,
         accumulatedPremiumPesos,
-        rendimiento
+        rendimiento,
+        fondoDisponiblePesos,
+        recuperacionSobreFondo,
+        primaProteccionPesos,
+        primaAhorroPesos
       })
     })
 
@@ -521,8 +551,10 @@ export default function CotizadorPage() {
       cliente: "",
       agente: "", // Reset back to placeholder
       telefono: "",
+      edadCliente: 35,
       producto: "VPL",
       duracion: "15",
+      formaDePagoCotizada: "Anual",
       valorUdi: formData.valorUdi, // Keep initial default UDI value
       inflacionUdi: 5.0, // Default 5%
       coberturas: {
@@ -541,7 +573,11 @@ export default function CotizadorPage() {
       edad: -1,
       prima: -1,
       sa: -1,
-      valores: -1
+      valores: -1,
+      fondoDisponible: -1,
+      recuperacion: -1,
+      primaProteccion: -1,
+      primaAhorro: -1
     })
     setCalculatedData([])
     setSummaryMetrics({
@@ -887,6 +923,19 @@ export default function CotizadorPage() {
               </div>
 
               <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 font-sans">Edad del Cliente</label>
+                <Input 
+                  type="number"
+                  name="edadCliente" 
+                  value={formData.edadCliente} 
+                  onChange={handleInputChange} 
+                  placeholder="Ej. 35" 
+                  min="0"
+                  max="99"
+                />
+              </div>
+
+              <div className="space-y-2">
                 <label className="text-sm font-bold text-slate-700 dark:text-slate-300 font-sans">Producto</label>
                 <select
                   name="producto"
@@ -896,6 +945,31 @@ export default function CotizadorPage() {
                 >
                   <option value="VPL">VPL (Vida Pagos Limitados)</option>
                   <option value="VPL PPR">VPL PPR (Plan Personal de Retiro)</option>
+                  <option value="Insignia Life Universal">Insignia Life Universal</option>
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Forma de Pago Cotizada</label>
+                <select
+                  name="formaDePagoCotizada"
+                  value={formData.formaDePagoCotizada}
+                  onChange={handleInputChange}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  {formData.producto === "Insignia Life Universal" ? (
+                    <>
+                      <option value="Anual">Anual</option>
+                      <option value="Semestral">Semestral</option>
+                      <option value="Trimestral">Trimestral</option>
+                      <option value="Mensual">Mensual</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="Meses sin intereses">Meses sin intereses</option>
+                      <option value="Anual">Anual</option>
+                    </>
+                  )}
                 </select>
               </div>
 
@@ -907,12 +981,21 @@ export default function CotizadorPage() {
                   onChange={handleInputChange}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
-                  <option value="5">5 Años</option>
-                  <option value="10">10 Años</option>
-                  <option value="15">15 Años</option>
-                  <option value="20">20 Años</option>
-                  <option value="25">25 Años</option>
-                  <option value="EA65">Edad Alcanzada 65 (Jubilación)</option>
+                  {formData.producto === "Insignia Life Universal" ? (
+                    <>
+                      <option value="20">20 Años</option>
+                      <option value="EA65">Edad Alcanzada 65</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="5">5 Años</option>
+                      <option value="10">10 Años</option>
+                      <option value="15">15 Años</option>
+                      <option value="20">20 Años</option>
+                      <option value="25">25 Años</option>
+                      <option value="EA65">Edad Alcanzada 65 (Jubilación)</option>
+                    </>
+                  )}
                 </select>
               </div>
 
@@ -975,7 +1058,7 @@ export default function CotizadorPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   { key: "itp", label: "Invalidez Total y Permanente (ITP)", code: "ITP" },
-                  { key: "epp", label: "Exención de Pago Primas por ITP (EPP)", code: "EPP" },
+                  { key: "epp", label: formData.producto === "Insignia Life Universal" ? "Beneficio de Exención de cobro de seguro (BECS)" : "Exención de Pago Primas por ITP (EPP)", code: formData.producto === "Insignia Life Universal" ? "BECS" : "EPP" },
                   { key: "ma", label: "Muerte Accidental (MA)", code: "MA" },
                   { key: "mapo", label: "Muerte Accidental con Pérdidas Orgánicas (MAPO)", code: "MAPO" }
                 ].map((cov) => (
@@ -1111,13 +1194,19 @@ export default function CotizadorPage() {
           <CardContent className="space-y-6">
             
             {/* Mapping Selectors grid */}
-            <div className="bg-slate-50 dark:bg-zinc-800/30 p-5 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-5 gap-6">
+            <div className="bg-slate-50 dark:bg-zinc-800/30 p-5 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
               {[
-                { key: "anios", label: "Años Póliza", desc: "Progreso anual (1, 2, 3...)", icon: TrendingUp },
+                { key: "anios", label: "Años Póliza", desc: "Progreso anual", icon: TrendingUp },
                 { key: "edad", label: "Edad", desc: "Edad del cliente", icon: HelpCircle },
-                { key: "prima", label: "Prima Anual ($)", desc: "Aportación anual pesos", icon: PiggyBank },
-                { key: "sa", label: "Suma Asegurada ($)", desc: "Monto de fallecimiento", icon: Percent },
-                { key: "valores", label: "Valores Garantizados", desc: "Rescate / Ahorro pesos", icon: Check }
+                { key: "prima", label: formData.producto === "Insignia Life Universal" ? "Prima Total ($)" : "Prima Anual ($)", desc: "Aportación anual", icon: PiggyBank },
+                { key: "sa", label: formData.producto === "Insignia Life Universal" ? "Protección ($)" : "Suma Asegurada ($)", desc: "Cobertura", icon: Percent },
+                { key: "valores", label: formData.producto === "Insignia Life Universal" ? "Aportación Acumulada" : "Valores Garantizados", desc: "Rescate / Ahorro", icon: Check },
+                ...(formData.producto === "Insignia Life Universal" ? [
+                  { key: "primaProteccion", label: "Prima Protec.", desc: "Costo protección", icon: CheckSquare },
+                  { key: "primaAhorro", label: "Prima Ahorro", desc: "Destinado a ahorro", icon: CheckSquare },
+                  { key: "fondoDisponible", label: "Fondo Disponible", desc: "Fondo proyectado", icon: CheckSquare },
+                  { key: "recuperacion", label: "Recuperación %", desc: "Recuperación sobre fondo", icon: Percent }
+                ] : [])
               ].map((field) => {
                 const isMapped = mapping[field.key as keyof ColumnMapping] !== -1
                 
@@ -1176,7 +1265,15 @@ export default function CotizadorPage() {
                         Object.entries(mapping).forEach(([key, val]) => {
                           if (val === idx) {
                             isMapped = true
-                            mapName = key === "anios" ? "Años" : key === "edad" ? "Edad" : key === "prima" ? "Prima" : key === "sa" ? "SA" : "Valores"
+                            if (key === "anios") mapName = "Años"
+                            else if (key === "edad") mapName = "Edad"
+                            else if (key === "prima") mapName = "Prima"
+                            else if (key === "sa") mapName = "SA"
+                            else if (key === "valores") mapName = "Valores"
+                            else if (key === "fondoDisponible") mapName = "Fondo"
+                            else if (key === "recuperacion") mapName = "Recuperación"
+                            else if (key === "primaProteccion") mapName = "Pr.Prot"
+                            else if (key === "primaAhorro") mapName = "Pr.Ahor"
                           }
                         })
                         
@@ -1219,7 +1316,11 @@ export default function CotizadorPage() {
               </Button>
               
               <Button 
-                disabled={Object.values(mapping).some(v => v === -1)} 
+                disabled={
+                  formData.producto === "Insignia Life Universal"
+                    ? (mapping.anios === -1 || mapping.prima === -1 || mapping.sa === -1 || mapping.valores === -1 || mapping.fondoDisponible === -1 || mapping.recuperacion === -1 || mapping.primaProteccion === -1 || mapping.primaAhorro === -1)
+                    : (mapping.anios === -1 || mapping.prima === -1 || mapping.sa === -1 || mapping.valores === -1)
+                } 
                 onClick={calculateResults} 
                 className="bg-teal-600 hover:bg-teal-700 text-white px-8 disabled:opacity-50"
               >
@@ -1386,6 +1487,10 @@ export default function CotizadorPage() {
                     <div className="flex justify-between border-b pb-1.5">
                       <span className="text-slate-500 font-medium">Producto</span>
                       <span className="font-bold text-slate-800 print:text-black">{formData.producto}</span>
+                    </div>
+                    <div className="flex justify-between border-b pb-1.5">
+                      <span className="text-slate-500 font-medium">Forma de Pago</span>
+                      <span className="font-bold text-slate-800 print:text-black">{formData.formaDePagoCotizada}</span>
                     </div>
                     <div className="flex justify-between border-b pb-1.5">
                       <span className="text-slate-500 font-medium">Plazo de Pago / Duración</span>
@@ -1573,14 +1678,28 @@ export default function CotizadorPage() {
                     <TableRow className="bg-[#87D1B5] hover:bg-[#87D1B5]">
                       <TableHead className="font-black text-white text-center py-2.5">Año</TableHead>
                       <TableHead className="font-black text-white text-center py-2.5">Edad</TableHead>
-                      <TableHead className="font-black text-white text-center py-2.5">Valor UDI</TableHead>
-                      <TableHead className="font-black text-white text-center py-2.5">Prima en UDIS</TableHead>
-                      <TableHead className="font-black text-white text-center py-2.5">Prima en Pesos</TableHead>
-                      <TableHead className="font-black text-white text-center py-2.5">SA en UDIS</TableHead>
-                      <TableHead className="font-black text-white text-center py-2.5">SA en Pesos</TableHead>
-                      <TableHead className="font-black text-white text-center py-2.5">Ahorro UDIS</TableHead>
-                      <TableHead className="font-black text-white text-center py-2.5">Ahorro Pesos</TableHead>
-                      <TableHead className="font-black text-white text-center py-2.5">Rendimiento</TableHead>
+                      {formData.producto === "Insignia Life Universal" ? (
+                        <>
+                          <TableHead className="font-black text-white text-center py-2.5">Protección</TableHead>
+                          <TableHead className="font-black text-white text-center py-2.5">Prima de Protección</TableHead>
+                          <TableHead className="font-black text-white text-center py-2.5">Prima de Ahorro</TableHead>
+                          <TableHead className="font-black text-white text-center py-2.5">Prima Total</TableHead>
+                          <TableHead className="font-black text-white text-center py-2.5">Aportación Acumulada</TableHead>
+                          <TableHead className="font-black text-white text-center py-2.5">Fondo Disponible</TableHead>
+                          <TableHead className="font-black text-white text-center py-2.5">Recuperación</TableHead>
+                        </>
+                      ) : (
+                        <>
+                          <TableHead className="font-black text-white text-center py-2.5">Valor UDI</TableHead>
+                          <TableHead className="font-black text-white text-center py-2.5">Prima en UDIS</TableHead>
+                          <TableHead className="font-black text-white text-center py-2.5">Prima en Pesos</TableHead>
+                          <TableHead className="font-black text-white text-center py-2.5">SA en UDIS</TableHead>
+                          <TableHead className="font-black text-white text-center py-2.5">SA en Pesos</TableHead>
+                          <TableHead className="font-black text-white text-center py-2.5">Ahorro UDIS</TableHead>
+                          <TableHead className="font-black text-white text-center py-2.5">Ahorro Pesos</TableHead>
+                          <TableHead className="font-black text-white text-center py-2.5">Rendimiento</TableHead>
+                        </>
+                      )}
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -1621,30 +1740,58 @@ export default function CotizadorPage() {
                         >
                           <TableCell className={cellClass("text-center py-2 font-medium", "text-slate-800")}>{row.anio}</TableCell>
                           <TableCell className={cellClass("text-center py-2", "text-slate-800")}>{row.edad}</TableCell>
-                          <TableCell className={cellClass("text-center py-2", "text-slate-600 print:text-black")}>
-                            {row.udiValue.toFixed(4)}
-                          </TableCell>
-                          <TableCell className={cellClass("text-center py-2 font-semibold", "text-slate-800")}>
-                            {row.primaUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                          </TableCell>
-                          <TableCell className={cellClass("text-center py-2 font-medium", "text-slate-800")}>
-                            ${row.primaPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                          </TableCell>
-                          <TableCell className={cellClass("text-center py-2", "text-slate-800")}>
-                            {row.saUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                          </TableCell>
-                          <TableCell className={cellClass("text-center py-2 font-semibold", "text-slate-800")}>
-                            ${row.saPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                          </TableCell>
-                          <TableCell className={cellClass("text-center py-2 font-semibold", "text-teal-700 print:text-black")}>
-                            {row.ahorroUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                          </TableCell>
-                          <TableCell className={cellClass("text-center py-2 font-bold", "text-emerald-600 print:text-black")}>
-                            ${row.valoresPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                          </TableCell>
-                          <TableCell className={cellClass("text-center py-2 font-semibold", "text-slate-700 print:text-black")}>
-                            {(row.rendimiento * 100).toFixed(1)}%
-                          </TableCell>
+                          {formData.producto === "Insignia Life Universal" ? (
+                            <>
+                              <TableCell className={cellClass("text-center py-2 font-semibold", "text-slate-800")}>
+                                ${row.saPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                              </TableCell>
+                              <TableCell className={cellClass("text-center py-2 font-medium", "text-slate-800")}>
+                                ${row.primaProteccionPesos?.toLocaleString("es-MX", { maximumFractionDigits: 0 }) || "0"}
+                              </TableCell>
+                              <TableCell className={cellClass("text-center py-2 font-medium", "text-slate-800")}>
+                                ${row.primaAhorroPesos?.toLocaleString("es-MX", { maximumFractionDigits: 0 }) || "0"}
+                              </TableCell>
+                              <TableCell className={cellClass("text-center py-2 font-bold", "text-slate-800")}>
+                                ${row.primaPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                              </TableCell>
+                              <TableCell className={cellClass("text-center py-2 font-semibold", "text-slate-700")}>
+                                ${row.valoresPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                              </TableCell>
+                              <TableCell className={cellClass("text-center py-2 font-bold", "text-emerald-600 print:text-black")}>
+                                ${row.fondoDisponiblePesos?.toLocaleString("es-MX", { maximumFractionDigits: 0 }) || "0"}
+                              </TableCell>
+                              <TableCell className={cellClass("text-center py-2 font-semibold", "text-teal-700 print:text-black")}>
+                                {row.recuperacionSobreFondo ? `${(row.recuperacionSobreFondo * 100).toFixed(1)}%` : "0%"}
+                              </TableCell>
+                            </>
+                          ) : (
+                            <>
+                              <TableCell className={cellClass("text-center py-2", "text-slate-600 print:text-black")}>
+                                {row.udiValue.toFixed(4)}
+                              </TableCell>
+                              <TableCell className={cellClass("text-center py-2 font-semibold", "text-slate-800")}>
+                                {row.primaUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                              </TableCell>
+                              <TableCell className={cellClass("text-center py-2 font-medium", "text-slate-800")}>
+                                ${row.primaPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                              </TableCell>
+                              <TableCell className={cellClass("text-center py-2", "text-slate-800")}>
+                                {row.saUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                              </TableCell>
+                              <TableCell className={cellClass("text-center py-2 font-semibold", "text-slate-800")}>
+                                ${row.saPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                              </TableCell>
+                              <TableCell className={cellClass("text-center py-2 font-semibold", "text-teal-700 print:text-black")}>
+                                {row.ahorroUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                              </TableCell>
+                              <TableCell className={cellClass("text-center py-2 font-bold", "text-emerald-600 print:text-black")}>
+                                ${row.valoresPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                              </TableCell>
+                              <TableCell className={cellClass("text-center py-2 font-semibold", "text-slate-700 print:text-black")}>
+                                {(row.rendimiento * 100).toFixed(1)}%
+                              </TableCell>
+                            </>
+                          )}
                         </TableRow>
                       )
                     })}
