@@ -7,7 +7,10 @@ export default async function HomePage() {
     const session = await auth();
     const headersList = headers();
     const slug = headersList.get('x-agency-slug') || 'aacom';
-    const agency = await prisma.agency.findUnique({ where: { slug } });
+    let agency = await prisma.agency.findUnique({ where: { slug } });
+    if (!agency) {
+        agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
+    }
     const agencyName = agency?.name || "AACOM Seguros";
     let isBirthday = false;
     let currentUser = null;

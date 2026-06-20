@@ -17,16 +17,25 @@ export default async function AgencySettingsPage() {
     }
 
     const headersList = headers();
-    const slug = headersList.get('x-agency-slug') || 'aacom';
+    let slug = headersList.get('x-agency-slug') || 'aacom';
 
-    const agency = await prisma.agency.findUnique({
-        where: { slug }
-    });
+    let agency = null;
+    if (dbUser?.agencyId) {
+        agency = await prisma.agency.findUnique({
+            where: { id: dbUser.agencyId }
+        });
+    }
+
+    if (!agency) {
+        agency = await prisma.agency.findUnique({
+            where: { slug }
+        });
+    }
 
     if (!agency) {
         return (
             <div className="flex h-full w-full items-center justify-center p-8">
-                <p className="text-muted-foreground text-center">Agencia no encontrada para el subdominio: {slug}</p>
+                <p className="text-muted-foreground text-center">Agencia no encontrada. Por favor, asegúrate de estar asignado a una agencia en tu perfil.</p>
             </div>
         );
     }

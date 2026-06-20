@@ -90,11 +90,16 @@ export default async function RootLayout({
     const headersList = headers();
     const slug = headersList.get('x-agency-slug') || 'aacom';
 
+    let agency = await prisma.agency.findUnique({
+        where: { slug }
+    });
+
+    if (!agency) {
+        agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
+    }
+
     let agencyColor = null;
     try {
-        const agency = await prisma.agency.findUnique({
-            where: { slug }
-        });
         if (agency?.primaryColor) {
             agencyColor = hexToHsl(agency.primaryColor);
         }
