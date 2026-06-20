@@ -12,10 +12,14 @@ export default auth((req) => {
     let slug = "aacom"; // Default fallback
     
     if (hostname) {
-        const parts = hostname.split('.');
-        // Check if it's a subdomain (e.g. not localhost:3000, not www.aacomsoft.com, etc)
-        if (parts.length >= 2 && parts[0] !== 'www' && !hostname.startsWith('localhost:')) {
-             slug = parts[0];
+        if (hostname.endsWith('.vercel.app')) {
+             slug = "aacom"; // Default agency for Vercel preview environments
+        } else {
+             const parts = hostname.split('.');
+             // Check if it's a subdomain (e.g. not localhost:3000, not www.aacomsoft.com, etc)
+             if (parts.length >= 2 && parts[0] !== 'www' && !hostname.startsWith('localhost:')) {
+                  slug = parts[0];
+             }
         }
     }
 
