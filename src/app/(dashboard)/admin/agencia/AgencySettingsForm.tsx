@@ -66,8 +66,8 @@ export default function AgencySettingsForm({ slug, initialName, initialColor, in
       } else {
         throw new Error(res.error);
       }
-    } catch (e) {
-      toast({ title: "Error", description: "No se pudo subir el logotipo. ¿Tienes Vercel Blob configurado correctamente?", variant: "destructive" });
+    } catch (e: any) {
+      toast({ title: "Error al subir", description: e.message || "Error desconocido", variant: "destructive" });
     } finally {
       setIsUploading(false);
     }
