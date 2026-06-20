@@ -43,7 +43,6 @@ export async function uploadAgencyLogo(formData: FormData) {
 
     const blob = await put(`agencies/${slug}/logo-${Date.now()}-${file.name}`, buffer, {
       access: "public",
-      token: process.env.BLOB_READ_WRITE_TOKEN,
       contentType: file.type,
     });
 
