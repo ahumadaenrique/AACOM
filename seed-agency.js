@@ -2,34 +2,37 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log("Creating AACOM agency...");
+  console.log("Checking production agency...");
   
-  // Create or upsert the AACOM agency
-  const agency = await prisma.agency.upsert({
-    where: { slug: 'aacom' },
-    update: {},
-    create: {
-      name: 'AACOM Seguros',
-      slug: 'aacom',
-      primaryColor: '#E54A4C',
-      active: true,
-    }
-  });
-  console.log("Agency created:", agency.id, agency.slug);
+  // Find or create the AACOM agency
+  let agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
+  if (!agency) {
+    agency = await prisma.agency.create({
+      data: {
+        name: 'AACOM Seguros',
+        slug: 'aacom',
+        primaryColor: '#E54A4C',
+        active: true,
+      }
+    });
+    console.log("Agency created:", agency.id);
+  } else {
+    console.log("Agency already exists:", agency.id);
+  }
 
-  // Assign the test admin user to this agency
-  const user = await prisma.user.update({
-    where: { email: 'admin_prueba@aacom.com' },
-    data: { agencyId: agency.id }
-  });
-  console.log("User updated:", user.name, "-> agencyId:", user.agencyId);
-
-  // Also assign all users without an agency to this one
-  const updatedUsers = await prisma.user.updateMany({
+  // Assign ALL users without an agency to this one (safe - doesn't touch existing data)
+  const result = await prisma.user.updateMany({
     where: { agencyId: null },
     data: { agencyId: agency.id }
   });
-  console.log("Additional users assigned to agency:", updatedUsers.count);
+  console.log(`Assigned ${result.count} users to agency AACOM`);
+
+  // Show all users now
+  const users = await prisma.user.findMany({ 
+    select: { name: true, email: true, role: true, agencyId: true },
+    take: 10 
+  });
+  console.log("Users in production:", users);
 }
 
 main()
