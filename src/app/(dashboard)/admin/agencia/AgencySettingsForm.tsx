@@ -58,8 +58,9 @@ export default function AgencySettingsForm({ slug, initialName, initialColor, in
 
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("slug", slug);
 
-      const res = await uploadAgencyLogo(slug, formData);
+      const res = await uploadAgencyLogo(formData);
       if (res.success) {
         toast({ title: "Logo actualizado", description: "El logotipo se ha subido exitosamente." });
       } else {

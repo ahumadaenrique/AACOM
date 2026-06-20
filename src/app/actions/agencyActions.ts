@@ -25,14 +25,29 @@ export async function updateAgencySettings(
   return { success: true, agency };
 }
 
-export async function uploadAgencyLogo(slug: string, formData: FormData) {
+export async function uploadAgencyLogo(formData: FormData) {
+  const slug = formData.get("slug") as string;
+  console.log("uploadAgencyLogo action triggered for slug:", slug);
   try {
     const file = formData.get("file") as File;
-    if (!file) throw new Error("No file provided");
+    if (!file) {
+      console.log("No file found in formData");
+      throw new Error("No file provided");
+    }
 
-    const blob = await put(`agencies/${slug}/logo-${Date.now()}-${file.name}`, file, {
+    console.log(`File received: ${file.name}, size: ${file.size}, type: ${file.type}`);
+    console.log("Starting upload to Vercel Blob...");
+
+    // Convert file to buffer to prevent hanging on Next.js FormData File object
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    const blob = await put(`agencies/${slug}/logo-${Date.now()}-${file.name}`, buffer, {
       access: "public",
+      token: process.env.BLOB_READ_WRITE_TOKEN,
+      contentType: file.type,
     });
+
+    console.log("Upload successful, URL:", blob.url);
 
     const agency = await prisma.agency.update({
       where: { slug },
@@ -40,9 +55,10 @@ export async function uploadAgencyLogo(slug: string, formData: FormData) {
     });
 
     revalidatePath("/", "layout");
+    console.log("Agency updated and layout revalidated");
     return { success: true, logoUrl: blob.url };
-  } catch (error) {
-    console.error("Error uploading logo:", error);
+  } catch (error: any) {
+    console.error("Error uploading logo:", error?.message || error);
     return { success: false, error: "Failed to upload logo" };
   }
 }
