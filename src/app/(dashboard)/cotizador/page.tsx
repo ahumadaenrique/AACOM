@@ -192,12 +192,25 @@ export default function CotizadorPage() {
   // Handle forms input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
-    setFormData(prev => ({
-      ...prev,
-      [name]: name === "valorUdi" || name === "inflacionUdi" || name === "isr" 
-        ? parseFloat(value) || 0 
-        : value
-    }))
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [name]: name === "valorUdi" || name === "inflacionUdi" || name === "isr" 
+          ? parseFloat(value) || 0 
+          : value
+      }
+      
+      // Auto-correct duracion if product changes
+      if (name === "producto" && value === "Insignia Life Universal") {
+        if (updated.duracion !== "20" && updated.duracion !== "EA65") {
+          updated.duracion = "20"
+        }
+        if (!["Anual", "Semestral", "Trimestral", "Mensual"].includes(updated.formaDePagoCotizada)) {
+          updated.formaDePagoCotizada = "Anual"
+        }
+      }
+      return updated
+    })
   }
 
   // Handle coverages checkbox changes
@@ -391,15 +404,18 @@ export default function CotizadorPage() {
       })
     })
 
-    // UDI calculation at 65
-    let rowAt65 = results.find(r => r.edad === 65)
-    if (!rowAt65 && results.length > 0) {
-      rowAt65 = results[results.length - 1] // Fallback to last row
+    // UDI calculation at target
+    let targetRow = results.find(r => r.edad === 65)
+    if (formData.producto === "Insignia Life Universal" && formData.duracion === "20") {
+      targetRow = results.find(r => r.anio === 20)
+    }
+    if (!targetRow && results.length > 0) {
+      targetRow = results[results.length - 1] // Fallback to last row
     }
 
-    const ahorroAt65Pesos = rowAt65 ? rowAt65.valoresPesos : 0
-    const ahorroAt65Udis = rowAt65 ? rowAt65.ahorroUdis : 0
-    const rendimientoAt65 = rowAt65 ? rowAt65.rendimiento * 100 : 0
+    const ahorroAtTargetPesos = targetRow ? targetRow.valoresPesos : 0
+    const ahorroAtTargetUdis = targetRow ? targetRow.ahorroUdis : 0
+    const rendimientoAtTarget = targetRow ? targetRow.rendimiento * 100 : 0
 
     // Correction 8: Suma Asegurada (SA) progression every 10 years
     const saY1 = results[0]?.saPesos || 0
@@ -433,11 +449,11 @@ export default function CotizadorPage() {
     
     const metrics = {
       totalPrimasPesos: accumulatedPremiumPesos,
-      totalAhorroPesos: ahorroAt65Pesos,
-      totalAhorroUdis: ahorroAt65Udis,
+      totalAhorroPesos: ahorroAtTargetPesos,
+      totalAhorroUdis: ahorroAtTargetUdis,
       beneficioFiscalAnual: benefitFiscalAnual,
       beneficioFiscalTotal: benefitFiscalTotal,
-      rendimientoFinal65: rendimientoAt65
+      rendimientoFinal65: rendimientoAtTarget
     }
     
     setSummaryMetrics(metrics)
@@ -452,8 +468,8 @@ export default function CotizadorPage() {
         producto: formData.producto,
         primaAnual: annualPremium,
         totalPrima: accumulatedPremiumPesos,
-        ahorro: ahorroAt65Pesos,
-        rendimiento: rendimientoAt65,
+        ahorro: ahorroAtTargetPesos,
+        rendimiento: rendimientoAtTarget,
         valorUdi: formData.valorUdi,
         inflacionUdi: formData.inflacionUdi,
         duracion: formData.duracion,
@@ -1398,13 +1414,17 @@ export default function CotizadorPage() {
               </div>
             </div>
 
-            {/* TOP METRIC CARDS (Corrected calculations at age 65 and total ISR) */}
+            {/* TOP METRIC CARDS */}
             <div className={`grid gap-4 print:gap-2 ${formData.producto.includes("PPR") ? "grid-cols-2 lg:grid-cols-5" : "grid-cols-2 lg:grid-cols-4"}`}>
               <Card className="shadow-sm border-slate-100 bg-slate-50/50 print:bg-white print:border">
                 <CardContent className="p-4 print:p-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Ahorro a Edad 65</span>
-                    <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded leading-none">Hito 65</span>
+                    <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">
+                      {formData.producto === "Insignia Life Universal" && formData.duracion === "20" ? "Ahorro al Año 20" : "Ahorro a Edad 65"}
+                    </span>
+                    <span className="text-[9px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.5 rounded leading-none">
+                      {formData.producto === "Insignia Life Universal" && formData.duracion === "20" ? "Hito 20 Años" : "Hito 65"}
+                    </span>
                   </div>
                   <span className="text-lg md:text-2xl font-black text-emerald-600 block mt-1.5">
                     ${summaryMetrics.totalAhorroPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
@@ -1430,7 +1450,9 @@ export default function CotizadorPage() {
               <Card className="shadow-sm border-slate-100 bg-slate-50/50 print:bg-white print:border">
                 <CardContent className="p-4 print:p-2.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">Rendimiento a Edad 65</span>
+                    <span className="text-[10px] md:text-xs font-bold text-slate-500 uppercase">
+                      {formData.producto === "Insignia Life Universal" && formData.duracion === "20" ? "Rendimiento al Año 20" : "Rendimiento a Edad 65"}
+                    </span>
                     <span className="text-[9px] bg-teal-100 text-teal-800 font-bold px-1.5 py-0.5 rounded leading-none">Retorno</span>
                   </div>
                   <span className="text-lg md:text-2xl font-black text-teal-600 block mt-1.5">
@@ -1555,7 +1577,7 @@ export default function CotizadorPage() {
                           </div>
                         </div>
                       )}
-                      {saProgression.y30 > 0 && (
+                      {saProgression.y30 > 0 && formData.duracion !== "20" && (
                         <div className="relative">
                           <span className="absolute -left-[21px] top-1 h-2.5 w-2.5 rounded-full bg-teal-600"></span>
                           <div className="flex justify-between text-[11px]">
@@ -1865,7 +1887,7 @@ export default function CotizadorPage() {
                     {formData.coberturas.epp && (
                       <TableRow className="hover:bg-slate-50 dark:hover:bg-zinc-800 border-b">
                         <TableCell className="font-bold py-2 text-slate-800 dark:text-slate-200">
-                          Exención de Pago de Primas por ITP (EPP)
+                          {formData.producto === "Insignia Life Universal" ? "Beneficio de Exención de cobro de seguro (BECS)" : "Exención de Pago de Primas por ITP (EPP)"}
                         </TableCell>
                         <TableCell className="text-center py-2">
                           <span className="px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 text-[10px] font-semibold border border-teal-200/50 dark:border-teal-900/50">
