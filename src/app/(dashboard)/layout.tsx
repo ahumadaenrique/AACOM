@@ -7,7 +7,6 @@ import { resolveImageUrl } from "@/lib/utils"
 import PwaInstaller from "@/components/PwaInstaller"
 import { PushNotificationManager } from "@/components/PushNotificationManager"
 import { ForcePasswordChange } from "@/components/ForcePasswordChange"
-import { createCustomerPortalSession } from "@/app/(dashboard)/billing/actions"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -54,16 +53,6 @@ export default async function DashboardLayout({
     const handleLogout = async () => {
         "use server";
         await signOut({ redirectTo: "/login" });
-    };
-
-    // Server-side action to open billing portal
-    const handleSubscriptionPortal = async () => {
-        "use server";
-        const res = await createCustomerPortalSession();
-        if (res.success && res.url) {
-            const { redirect } = await import("next/navigation");
-            redirect(res.url);
-        }
     };
 
     // --- INTERCEPTOR DE SEGURIDAD ---
@@ -145,12 +134,6 @@ export default async function DashboardLayout({
                                     className="text-muted-foreground transition-colors hover:text-foreground font-semibold"
                                 >
                                     Admin
-                                </Link>
-                                <Link
-                                    href="/admin/suscripcion"
-                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                                >
-                                    Suscripción
                                 </Link>
                                 <Link
                                     href="/reportes"
@@ -248,13 +231,6 @@ export default async function DashboardLayout({
                                             Admin
                                         </Link>
                                         <Link
-                                            href="/admin/suscripcion"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <Wallet className="h-5 w-5" />
-                                            Suscripción
-                                        </Link>
-                                        <Link
                                             href="/reportes"
                                             className="text-muted-foreground hover:text-foreground"
                                         >
@@ -313,14 +289,20 @@ export default async function DashboardLayout({
                                 )}
                             </DropdownMenuItem>
                             {isAdmin && (
-                                <DropdownMenuItem asChild className="text-xs font-bold text-slate-700 dark:text-zinc-300 py-2.5 rounded-xl cursor-pointer">
-                                    <form action={handleSubscriptionPortal} className="w-full">
-                                        <button type="submit" className="w-full text-left flex items-center gap-1.5">
+                                <>
+                                    <DropdownMenuItem asChild className="text-xs font-bold text-slate-700 dark:text-zinc-300 py-2.5 rounded-xl cursor-pointer">
+                                        <Link href="/admin/suscripcion" className="flex items-center gap-1.5 w-full">
+                                            <Award className="h-4 w-4" />
+                                            Mi Membresía
+                                        </Link>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem asChild className="text-xs font-bold text-slate-700 dark:text-zinc-300 py-2.5 rounded-xl cursor-pointer">
+                                        <Link href="/api/billing" className="flex items-center gap-1.5 w-full">
                                             <Wallet className="h-4 w-4" />
-                                            Suscripción y Pagos
-                                        </button>
-                                    </form>
-                                </DropdownMenuItem>
+                                            Portal de Pagos (Stripe)
+                                        </Link>
+                                    </DropdownMenuItem>
+                                </>
                             )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild className="text-xs font-black text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 py-2.5 rounded-xl cursor-pointer">
