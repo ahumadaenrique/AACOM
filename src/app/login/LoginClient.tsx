@@ -4,6 +4,7 @@
 import { signIn } from "next-auth/react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
 
 export default function LoginPage({ agencyName = "AACOM Seguros", agencyLogo = "/logo.png" }: { agencyName?: string, agencyLogo?: string }) {
@@ -88,12 +89,21 @@ export default function LoginPage({ agencyName = "AACOM Seguros", agencyLogo = "
                     <div>
                         <button
                             type="submit"
-                            className="group relative flex w-full justify-center rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                            className="flex w-full justify-center rounded-md bg-indigo-600 px-3 py-3 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 transition-colors"
                         >
-                            Ingresar
+                            Iniciar sesión
                         </button>
                     </div>
                 </form>
+
+                <div className="mt-6 text-center">
+                    <p className="text-sm text-gray-600">
+                        ¿Aún no tienes tu plataforma?{' '}
+                        <Link href="/registro" className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">
+                            Crea tu Agencia SaaS aquí
+                        </Link>
+                    </p>
+                </div>
             </div>
         </div>
     )

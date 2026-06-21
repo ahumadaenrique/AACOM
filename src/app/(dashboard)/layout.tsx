@@ -7,6 +7,7 @@ import { resolveImageUrl } from "@/lib/utils"
 import PwaInstaller from "@/components/PwaInstaller"
 import { PushNotificationManager } from "@/components/PushNotificationManager"
 import { ForcePasswordChange } from "@/components/ForcePasswordChange"
+import { createCustomerPortalSession } from "@/app/(dashboard)/billing/actions"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -53,6 +54,16 @@ export default async function DashboardLayout({
     const handleLogout = async () => {
         "use server";
         await signOut({ redirectTo: "/login" });
+    };
+
+    // Server-side action to open billing portal
+    const handleSubscriptionPortal = async () => {
+        "use server";
+        const res = await createCustomerPortalSession();
+        if (res.success && res.url) {
+            const { redirect } = await import("next/navigation");
+            redirect(res.url);
+        }
     };
 
     // --- INTERCEPTOR DE SEGURIDAD ---
@@ -301,6 +312,16 @@ export default async function DashboardLayout({
                                     <span>Configuración</span>
                                 )}
                             </DropdownMenuItem>
+                            {isAdmin && (
+                                <DropdownMenuItem asChild className="text-xs font-bold text-slate-700 dark:text-zinc-300 py-2.5 rounded-xl cursor-pointer">
+                                    <form action={handleSubscriptionPortal} className="w-full">
+                                        <button type="submit" className="w-full text-left flex items-center gap-1.5">
+                                            <Wallet className="h-4 w-4" />
+                                            Suscripción y Pagos
+                                        </button>
+                                    </form>
+                                </DropdownMenuItem>
+                            )}
                             <DropdownMenuSeparator />
                             <DropdownMenuItem asChild className="text-xs font-black text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/20 py-2.5 rounded-xl cursor-pointer">
                                 <form action={handleLogout} className="w-full">
