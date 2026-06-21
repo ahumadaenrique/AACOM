@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createCustomerPortalSession } from "@/app/(dashboard)/billing/actions";
+import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -11,5 +12,10 @@ export async function GET() {
   }
   
   // Fallback if there is an error
-  return NextResponse.redirect(new URL("/activity?error=billing", process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"));
+  const hostList = headers();
+  const host = hostList.get("host") || "";
+  const protocol = host.includes("localhost") ? "http" : "https";
+  const errorMessage = encodeURIComponent(res.message || "No se pudo acceder al portal");
+
+  return NextResponse.redirect(new URL(`/activity?error=billing&message=${errorMessage}`, `${protocol}://${host}`));
 }
