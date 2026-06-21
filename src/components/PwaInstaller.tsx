@@ -11,7 +11,7 @@ import {
   Smartphone
 } from "lucide-react"
 
-export default function PwaInstaller() {
+export default function PwaInstaller({ agencyName = "AACOM Seguros" }: { agencyName?: string }) {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [showPrompt, setShowPrompt] = useState<boolean>(false)
   const [isIOS, setIsIOS] = useState<boolean>(false)
@@ -122,8 +122,8 @@ export default function PwaInstaller() {
                   <Sparkles className="h-3.5 w-3.5 text-yellow-400" />
                   Instalar Aplicación
                 </h4>
-                <p className="text-[11px] font-medium text-slate-100 mt-0.5 leading-relaxed">
-                  Agrega "AACOM Seguros" a tu pantalla de inicio para un acceso rápido y notificaciones.
+                <p className="text-[13px] text-muted-foreground mt-1">
+                  Agrega "{agencyName}" a tu pantalla de inicio para un acceso rápido y notificaciones.
                 </p>
               </div>
             </div>
