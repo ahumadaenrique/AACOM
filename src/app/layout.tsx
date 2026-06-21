@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 // import { Inter } from "next/font/google"; // Can't easily import fonts without next build system verifying? It should be fine.
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
+import { Analytics } from "@vercel/analytics/react";
 
 // const inter = Inter({ subsets: ["latin"] });
 
@@ -134,8 +135,8 @@ export default async function RootLayout({
                     </p>
                 </footer>
                 <Toaster />
+                <Analytics />
             </body>
         </html>
     );
 }
-
