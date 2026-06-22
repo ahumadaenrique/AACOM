@@ -682,7 +682,7 @@ export async function deleteUser(id: string) {
             where: { email: session.user.email }
         });
 
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
@@ -703,6 +703,12 @@ export async function deleteUser(id: string) {
         if (targetUser.email === "enrique.ahumada@aacommx.com") {
             return { success: false, message: "No está permitido eliminar la cuenta principal del propietario (Enrique Ahumada)." };
         }
+
+        // Primero borrar dependencias si no hay CASCADE
+        await prisma.adnDiagnostic.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.cotizacion.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.activityLog.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.client.deleteMany({ where: { userId: id } }).catch(() => {});
 
         const deleted = await prisma.user.delete({
             where: { id }
