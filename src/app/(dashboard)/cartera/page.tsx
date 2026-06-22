@@ -33,6 +33,12 @@ export default async function CarteraDashboard({
      clientsWhereClause = { agencyId: dbUser.agencyId };
   }
 
+  // --- MIGRACIÓN MASIVA DE RESCATE (Pólizas, Clientes y Registros huérfanos) ---
+  await prisma.client.updateMany({ where: { agencyId: null }, data: { agencyId: 'aacom' } });
+  await prisma.policy.updateMany({ where: { agencyId: null }, data: { agencyId: 'aacom' } });
+  await prisma.dailyRecord.updateMany({ where: { agencyId: null }, data: { agencyId: 'aacom' } });
+  // ----------------------------------------------------------------------------
+
   // Obtener todas las pólizas del agente o de la agencia (si es admin)
   const policies = await prisma.policy.findMany({
     where: policiesWhereClause,

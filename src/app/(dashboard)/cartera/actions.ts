@@ -42,8 +42,11 @@ export async function createClient(data: z.infer<typeof clientSchema>) {
 
   const parsed = clientSchema.parse(data);
 
+  const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { agencyId: true } });
+
   const client = await prisma.client.create({
     data: {
+      agencyId: dbUser?.agencyId,
       name: parsed.name,
       email: parsed.email || null,
       phone: parsed.phone || null,
@@ -143,8 +146,11 @@ export async function createPolicy(data: z.infer<typeof policySchema>) {
     if (!clientExists) throw new Error("Cliente no encontrado");
   }
 
+  const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { agencyId: true } });
+
   const policy = await prisma.policy.create({
     data: {
+      agencyId: dbUser?.agencyId,
       policyNumber: parsed.policyNumber,
       clientId: parsed.clientId || null,
       contractor: parsed.contractor || null,
@@ -308,6 +314,8 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
             return isNaN(d.getTime()) ? null : d;
         };
     
+        const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { agencyId: true } });
+
         for (const row of parsedData) {
             if (!row.clientName) continue;
     
@@ -318,6 +326,7 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
             if (!client) {
                 client = await prisma.client.create({
                     data: {
+                        agencyId: dbUser?.agencyId,
                         name: row.clientName,
                         email: row.email ? String(row.email) : null,
                         phone: row.phone ? String(row.phone) : null,
@@ -336,6 +345,7 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
                 if (!existingPolicy) {
                     await prisma.policy.create({
                         data: {
+                            agencyId: dbUser?.agencyId,
                             policyNumber: String(row.policyNumber),
                             clientId: client.id,
                             contractor: row.clientName,
