@@ -6,13 +6,11 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
     // Vercel Cron Authentication
     const authHeader = request.headers.get('authorization');
-    /*
     if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
         if (process.env.NODE_ENV === 'production') {
             return new Response('Unauthorized', { status: 401 });
         }
     }
-    */
 
     const token = process.env.BANXICO_TOKEN;
     if (!token) {
