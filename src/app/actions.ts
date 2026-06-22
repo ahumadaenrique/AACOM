@@ -350,7 +350,7 @@ export async function deleteUserAccount(userId: string) {
         // Primero borrar dependencias si no hay CASCADE
         await prisma.adnDiagnostic.deleteMany({ where: { userId } }).catch(() => {});
         await prisma.cotizacion.deleteMany({ where: { userId } }).catch(() => {});
-        await prisma.activity.deleteMany({ where: { userId } }).catch(() => {});
+        await prisma.activityLog.deleteMany({ where: { userId } }).catch(() => {});
         await prisma.client.deleteMany({ where: { userId } }).catch(() => {});
         
         await prisma.user.delete({ where: { id: userId } });
