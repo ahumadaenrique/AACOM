@@ -39,9 +39,20 @@ export default async function DashboardLayout({
     const userName = dbUser?.name || session?.user?.name || "Agente";
     const userEmail = dbUser?.email || session?.user?.email || "";
 
-    const headersList = headers();
-    const slug = headersList.get('x-agency-slug') || 'aacom';
-    let agency = await prisma.agency.findUnique({ where: { slug } });
+    // First, try to load the agency the authenticated user belongs to.
+    let agency = null;
+    if (dbUser?.agencyId) {
+        agency = await prisma.agency.findUnique({ where: { id: dbUser.agencyId } });
+    }
+
+    // If no user/agency, fall back to the slug from middleware
+    if (!agency) {
+        const headersList = headers();
+        const slug = headersList.get('x-agency-slug') || 'aacom';
+        agency = await prisma.agency.findUnique({ where: { slug } });
+    }
+
+    // Ultimate fallback
     if (!agency) {
         agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
     }
