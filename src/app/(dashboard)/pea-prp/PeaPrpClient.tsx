@@ -13,8 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { getCurrentWeekStats, submitPerformanceReview, getPerformanceReviews, authorizeReview } from "./actions";
 
 export default function PeaPrpClient({ userRole }: { userRole: string }) {
@@ -155,7 +154,7 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="compromisos">Compromisos y Notas (Opcional)</Label>
-                                        <Textarea id="compromisos" placeholder="Detalla aquí los acuerdos cualitativos o prospectos clave..." value={compromisos} onChange={(e) => setCompromisos(e.target.value)} className="resize-none h-20" />
+                                        <textarea id="compromisos" placeholder="Detalla aquí los acuerdos cualitativos o prospectos clave..." value={compromisos} onChange={(e) => setCompromisos(e.target.value)} className="flex w-full rounded-md border border-slate-200 dark:border-zinc-800 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-slate-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 resize-none h-20" />
                                     </div>
                                 </div>
                                 <DialogFooter>
