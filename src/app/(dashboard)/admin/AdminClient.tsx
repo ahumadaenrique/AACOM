@@ -62,7 +62,7 @@ export default function AdminClient() {
   const [error, setError] = useState<string>("")
 
   // Admin Dashboard Tabs
-  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones">("productividad")
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca">("productividad")
 
   // Chatbot Knowledge Base states
   const [knowledgeDocs, setKnowledgeDocs] = useState<any[]>([])
@@ -4453,6 +4453,7 @@ export default function AdminClient() {
 
     </div>
   )
+}
 
 
 
