@@ -32,6 +32,7 @@ model Agency {
   agencyDocuments     AgencyDocument[]
   dailyRecords        DailyRecord[]
   cotizaciones        Cotizacion[]
+  performanceReviews  PerformanceReview[]
 
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -90,6 +91,8 @@ model User {
   adnDiagnostics AdnDiagnostic[]
   cotizaciones   Cotizacion[]
   pushSubscriptions PushSubscription[]
+  agentReviews      PerformanceReview[] @relation("AgentReviews")
+  evaluatedReviews  PerformanceReview[] @relation("EvaluatedReviews")
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -385,6 +388,32 @@ model AgencyDocument {
   name        String
   fileUrl     String
   fileSize    Int      @default(0) // En bytes para calcular el limite de 80MB
-  fileType    String?
   createdAt   DateTime @default(now())
+}
+
+// ----------------------------------------------------------------------------
+// Módulo de Gestión de Desempeño (PEA/PRP)
+// ----------------------------------------------------------------------------
+
+model PerformanceReview {
+  id                 String   @id @default(cuid())
+  agencyId           String?
+  agency             Agency?  @relation(fields: [agencyId], references: [id])
+  agentId            String
+  agent              User     @relation("AgentReviews", fields: [agentId], references: [id], onDelete: Cascade)
+  evaluatorId        String?
+  evaluator          User?    @relation("EvaluatedReviews", fields: [evaluatorId], references: [id], onDelete: SetNull)
+  
+  status             String   @default("PENDING") // PENDING, REVIEWED
+  
+  metaPrimasMensual  Float
+  avancePrimasActual Float
+  puntosActividad    Int
+  adnsRealizados     Int
+  compromisos        String?
+  
+  aiAnalysisResult   String?  // Diagnóstico generado por el Motor de IA
+  
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }

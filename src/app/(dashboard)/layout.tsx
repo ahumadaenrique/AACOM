@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -114,6 +114,13 @@ export default async function DashboardLayout({
                                     Ranking
                                 </Link>
                                 <Link
+                                    href="/pea-prp"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                                >
+                                    <Target className="h-4 w-4 text-indigo-600" />
+                                    PEA/PRP
+                                </Link>
+                                <Link
                                     href="/team"
                                     className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
                                 >
@@ -220,6 +227,13 @@ export default async function DashboardLayout({
                                         >
                                             <Award className="h-5 w-5 text-amber-500" />
                                             Ranking
+                                        </Link>
+                                        <Link
+                                            href="/pea-prp"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                        >
+                                            <Target className="h-5 w-5 text-indigo-600" />
+                                            PEA/PRP
                                         </Link>
                                         <Link
                                             href="/team"
