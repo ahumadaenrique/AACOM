@@ -1903,17 +1903,26 @@ export async function sendTestPushNotification(userId: string) {
 
 export async function sendAdminPushNotification(recipientId: string, message: string, pin: string) {
     try {
-        if (pin !== "5515015502") return { success: false, message: "PIN de seguridad incorrecto." };
-
         const session = await auth();
         if (!session?.user?.email) return { success: false, message: "No autenticado." };
 
         const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
-        if (currentUser?.role !== 'ADMIN') return { success: false, message: "Permisos insuficientes." };
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
+            return { success: false, message: "Permisos insuficientes." };
+        }
+        
+        if (currentUser.password !== pin) {
+            return { success: false, message: "Contraseña incorrecta." };
+        }
 
         let subs = [];
         if (recipientId === 'ALL') {
-            subs = await prisma.pushSubscription.findMany();
+            const agencyUsers = await prisma.user.findMany({
+                where: { agencyId: currentUser.agencyId },
+                select: { id: true }
+            });
+            const agencyUserIds = agencyUsers.map(u => u.id);
+            subs = await prisma.pushSubscription.findMany({ where: { userId: { in: agencyUserIds } } });
         } else {
             subs = await prisma.pushSubscription.findMany({ where: { userId: recipientId } });
         }
@@ -2067,12 +2076,12 @@ export async function getScheduledPushes() {
 }
 
 export async function createScheduledPush(data: { message: string, frequency: string, timeHour: number, recipientId: string, runDate?: string }, pin: string) {
-    if (pin !== "5515015502") return { success: false, message: "PIN de seguridad incorrecto." };
-    
     const session = await auth();
     if (!session?.user?.email) return { success: false, message: "No autenticado." };
     const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-    if (user?.role !== 'ADMIN') return { success: false, message: "No autorizado." };
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) return { success: false, message: "No autorizado." };
+    
+    if (user.password !== pin) return { success: false, message: "Contraseña incorrecta." };
 
     try {
         await prisma.scheduledPush.create({ data });
@@ -2083,12 +2092,12 @@ export async function createScheduledPush(data: { message: string, frequency: st
 }
 
 export async function deleteScheduledPush(id: string, pin: string) {
-    if (pin !== "5515015502") return { success: false, message: "PIN de seguridad incorrecto." };
-    
     const session = await auth();
     if (!session?.user?.email) return { success: false, message: "No autenticado." };
     const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-    if (user?.role !== 'ADMIN') return { success: false, message: "No autorizado." };
+    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) return { success: false, message: "No autorizado." };
+    
+    if (user.password !== pin) return { success: false, message: "Contraseña incorrecta." };
 
     try {
         await prisma.scheduledPush.delete({ where: { id } });
