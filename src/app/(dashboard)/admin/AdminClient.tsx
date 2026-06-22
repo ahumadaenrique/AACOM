@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react"
 import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import PushNotificationsPanel from "./PushNotificationsPanel"
+import BibliotecaAdmin from "./BibliotecaAdmin"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { 
@@ -32,7 +34,8 @@ import {
   Trash2,
   MessageSquare,
   Upload,
-  BellRing
+  BellRing,
+  Book
 } from "lucide-react"
 import { resolveImageUrl } from "@/lib/utils"
 
