@@ -3,22 +3,34 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
-import { startOfWeek, endOfWeek, format } from "date-fns";
+import { startOfMonth, format, isWeekend, addDays } from "date-fns";
 
-// 1. Obtener los Puntos y ADNs de la semana en curso para el agente autenticado
-export async function getCurrentWeekStats() {
+// 1. Obtener los Puntos y ADNs del MES en curso para el agente autenticado
+export async function getCurrentMonthStats() {
     try {
         const session = await auth();
         if (!session?.user?.id) throw new Error("No autenticado");
 
         const userId = session.user.id;
         const now = new Date();
-        const start = startOfWeek(now, { weekStartsOn: 1 }); // Lunes
-        const end = endOfWeek(now, { weekStartsOn: 1 });     // Domingo
+        const start = startOfMonth(now); // Día 1 del mes
+
+        // Calcular días hábiles transcurridos hasta hoy
+        let businessDays = 0;
+        let currentDate = start;
+        while (currentDate <= now) {
+            if (!isWeekend(currentDate)) {
+                businessDays++;
+            }
+            currentDate = addDays(currentDate, 1);
+        }
+
+        const expectedPoints = businessDays * 25;
+        const expectedAdns = businessDays * 2;
 
         // Formato para activityLogs dateStr
         const startStr = format(start, 'yyyy-MM-dd');
-        const endStr = format(end, 'yyyy-MM-dd');
+        const endStr = format(now, 'yyyy-MM-dd');
 
         // Sumar puntos
         const logs = await prisma.activityLog.findMany({
@@ -33,11 +45,11 @@ export async function getCurrentWeekStats() {
         const adnsCount = await prisma.adnDiagnostic.count({
             where: {
                 userId,
-                createdAt: { gte: start, lte: end }
+                createdAt: { gte: start, lte: now }
             }
         });
 
-        return { success: true, points: totalPoints, adns: adnsCount };
+        return { success: true, points: totalPoints, adns: adnsCount, expectedPoints, expectedAdns };
     } catch (e: any) {
         return { success: false, message: e.message };
     }
@@ -45,6 +57,7 @@ export async function getCurrentWeekStats() {
 
 // 2. Enviar Evaluación (Agente) -> Dispara IA
 export async function submitPerformanceReview(data: {
+    reviewId?: string;
     metaPrimasMensual: number;
     avancePrimasActual: number;
     puntosActividad: number;
@@ -62,19 +75,32 @@ export async function submitPerformanceReview(data: {
 
         if (!user) throw new Error("Usuario no encontrado");
 
+        // Calcular prorrateo para la IA
+        const now = new Date();
+        const start = startOfMonth(now);
+        let businessDays = 0;
+        let currentDate = start;
+        while (currentDate <= now) {
+            if (!isWeekend(currentDate)) { businessDays++; }
+            currentDate = addDays(currentDate, 1);
+        }
+        const expectedPuntos = businessDays * 25;
+        const expectedAdns = businessDays * 2;
+
         // Preparar el PROMPT MAESTRO
         const systemInstruction = `
-Rol: Eres el "Motor de Inteligencia de Desempeño" de AACOM. Tu función es gestionar el ciclo de vida semanal del agente, integrando estrictamente la actividad operativa con la ejecución financiera.
+Rol: Eres el "Motor de Inteligencia de Desempeño" de AACOM. Tu función es gestionar el ciclo de vida de metas del agente, integrando estrictamente la actividad operativa con la ejecución financiera.
 
 Entradas de datos a procesar:
-- Data Operativa (PEA/PRP): Puntos semanales (Meta: 125) = ${data.puntosActividad}, ADN's nuevos (Meta: 10) = ${data.adnsRealizados}.
+- Data Operativa Mensual (Prorrateada al día de hoy): Puntos logrados = ${data.puntosActividad} (Meta esperada: ${expectedPuntos}), ADN's nuevos logrados = ${data.adnsRealizados} (Meta esperada: ${expectedAdns}).
 - Compromisos cualitativos pactados: "${data.compromisos || "Ninguno"}"
 - Data Financiera: Meta Primas Mensual: $${data.metaPrimasMensual}, Avance Primas Actual: $${data.avancePrimasActual}.
 
 Tu metodología de procesamiento:
 1. Evaluación de Sostenibilidad: Compara el avance contra el tiempo transcurrido del mes. Determina si la meta es alcanzable.
 2. Correlación Actividad vs Resultado: 
-   - Si avance es bajo pero actividad (125 pts / 10 ADN) es alta, analiza si el problema es la tasa de conversión (calidad del ADN o cierre).
+   - Analiza si la actividad real está alineada a la actividad esperada para las fechas actuales.
+   - Si avance es bajo pero actividad es alta, analiza si el problema es la tasa de conversión (calidad del ADN o cierre).
    - Si la actividad es baja, advierte que el incumplimiento es inminente.
 3. Gestión de Entradas: Calcula el "gap" diario o semanal necesario para alcanzar la meta.
 
@@ -127,23 +153,37 @@ No uses markdown (\`\`\`), devuelve únicamente el HTML exacto con las clases de
             aiResultHTML = "<p><em>Motor de IA inactivo (Falta API Key). Los datos fueron guardados.</em></p>";
         }
 
-        // Guardar en Base de Datos
-        const review = await prisma.performanceReview.create({
-            data: {
-                agentId: user.id,
-                agencyId: user.agencyId,
-                status: "PENDING",
-                metaPrimasMensual: data.metaPrimasMensual,
-                avancePrimasActual: data.avancePrimasActual,
-                puntosActividad: data.puntosActividad,
-                adnsRealizados: data.adnsRealizados,
-                compromisos: data.compromisos,
-                aiAnalysisResult: aiResultHTML
-            }
-        });
+        const updateData = {
+            status: "PENDING",
+            metaPrimasMensual: data.metaPrimasMensual,
+            avancePrimasActual: data.avancePrimasActual,
+            puntosActividad: data.puntosActividad,
+            adnsRealizados: data.adnsRealizados,
+            compromisos: data.compromisos,
+            aiAnalysisResult: aiResultHTML,
+            feedback: null // Limpiamos cualquier feedback anterior
+        };
 
-        revalidatePath('/pea-prp');
-        return { success: true, reviewId: review.id };
+        if (data.reviewId) {
+            // Actualizar reporte existente
+            await prisma.performanceReview.update({
+                where: { id: data.reviewId, agentId: user.id }, // Solo el dueño puede editar
+                data: updateData
+            });
+            revalidatePath('/pea-prp');
+            return { success: true, reviewId: data.reviewId };
+        } else {
+            // Guardar en Base de Datos
+            const review = await prisma.performanceReview.create({
+                data: {
+                    agentId: user.id,
+                    agencyId: user.agencyId,
+                    ...updateData
+                }
+            });
+            revalidatePath('/pea-prp');
+            return { success: true, reviewId: review.id };
+        }
 
     } catch (e: any) {
         return { success: false, message: e.message };
@@ -200,7 +240,34 @@ export async function authorizeReview(reviewId: string) {
 
         await prisma.performanceReview.update({
             where: { id: reviewId },
-            data: { status: "REVIEWED", evaluatorId: user.id }
+            data: { status: "REVIEWED", evaluatorId: user.id, feedback: null }
+        });
+
+        revalidatePath('/pea-prp');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+// 5. Rechazar Revisión (Admin)
+export async function rejectReview(reviewId: string, feedback: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) throw new Error("No autenticado");
+
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { role: true, id: true }
+        });
+
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+            throw new Error("No tienes permisos para rechazar.");
+        }
+
+        await prisma.performanceReview.update({
+            where: { id: reviewId },
+            data: { status: "REJECTED", evaluatorId: user.id, feedback }
         });
 
         revalidatePath('/pea-prp');

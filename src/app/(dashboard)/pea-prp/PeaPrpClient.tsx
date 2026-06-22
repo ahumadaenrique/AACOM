@@ -14,7 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { getCurrentWeekStats, submitPerformanceReview, getPerformanceReviews, authorizeReview } from "./actions";
+import { getCurrentMonthStats, submitPerformanceReview, getPerformanceReviews, authorizeReview, rejectReview } from "./actions";
 
 export default function PeaPrpClient({ userRole }: { userRole: string }) {
     const { toast } = useToast();
@@ -29,11 +29,18 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
     // Auto-calculados
     const [puntosActividad, setPuntosActividad] = useState(0);
     const [adnsRealizados, setAdnsRealizados] = useState(0);
+    const [expectedPuntos, setExpectedPuntos] = useState(0);
+    const [expectedAdns, setExpectedAdns] = useState(0);
     
     // Captura manual
     const [metaPrimasMensual, setMetaPrimasMensual] = useState("");
     const [avancePrimasActual, setAvancePrimasActual] = useState("");
     const [compromisos, setCompromisos] = useState("");
+    const [editingReviewId, setEditingReviewId] = useState<string | null>(null);
+
+    // Rechazo State
+    const [rejectingId, setRejectingId] = useState<string | null>(null);
+    const [rejectFeedback, setRejectFeedback] = useState("");
 
     const isAdmin = userRole === 'ADMIN' || userRole === 'SUPER_ADMIN';
 
@@ -50,24 +57,47 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
         loadReviews();
     }, []);
 
+    const loadStats = async () => {
+        setStatsLoading(true);
+        const res = await getCurrentMonthStats();
+        if (res.success) {
+            setPuntosActividad(res.points || 0);
+            setAdnsRealizados(res.adns || 0);
+            setExpectedPuntos(res.expectedPoints || 0);
+            setExpectedAdns(res.expectedAdns || 0);
+        }
+        setStatsLoading(false);
+    };
+
     // Al abrir el modal, auto-calcular la semana
-    const handleOpenNewModal = async (open: boolean) => {
+    const handleOpenNewModal = (open: boolean) => {
         setOpenNew(open);
         if (open) {
-            setStatsLoading(true);
-            const res = await getCurrentWeekStats();
-            if (res.success) {
-                setPuntosActividad(res.points || 0);
-                setAdnsRealizados(res.adns || 0);
+            if (!editingReviewId) {
+                loadStats();
+                setMetaPrimasMensual("");
+                setAvancePrimasActual("");
+                setCompromisos("");
             }
-            setStatsLoading(false);
+        } else {
+            setEditingReviewId(null);
         }
+    };
+
+    const handleEdit = (rev: any) => {
+        setEditingReviewId(rev.id);
+        setMetaPrimasMensual(rev.metaPrimasMensual.toString());
+        setAvancePrimasActual(rev.avancePrimasActual.toString());
+        setCompromisos(rev.compromisos || "");
+        loadStats();
+        setOpenNew(true);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setFormLoading(true);
         const res = await submitPerformanceReview({
+            reviewId: editingReviewId || undefined,
             metaPrimasMensual: Number(metaPrimasMensual),
             avancePrimasActual: Number(avancePrimasActual),
             puntosActividad,
@@ -93,6 +123,19 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
         const res = await authorizeReview(id);
         if (res.success) {
             toast({ title: "Evaluación Autorizada", description: "El registro ha sido validado exitosamente." });
+            loadReviews();
+        } else {
+            toast({ title: "Error", description: res.message, variant: "destructive" });
+        }
+    };
+
+    const submitReject = async () => {
+        if (!rejectingId || !rejectFeedback) return;
+        const res = await rejectReview(rejectingId, rejectFeedback);
+        if (res.success) {
+            toast({ title: "Evaluación Rechazada", description: "Se ha devuelto la evaluación al agente con tus comentarios." });
+            setRejectingId(null);
+            setRejectFeedback("");
             loadReviews();
         } else {
             toast({ title: "Error", description: res.message, variant: "destructive" });
@@ -132,14 +175,20 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                                 <div className="grid gap-4 py-4">
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-3 rounded-lg text-center">
-                                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Puntos Semana</p>
+                                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Acumulado Mes (Pts)</p>
                                             {statsLoading ? <div className="animate-pulse h-8 bg-slate-200 dark:bg-zinc-800 rounded w-16 mx-auto"></div> : 
-                                            <p className={`text-2xl font-black ${puntosActividad >= 125 ? 'text-teal-600' : 'text-amber-600'}`}>{puntosActividad}</p>}
+                                            <div>
+                                                <p className={`text-2xl font-black ${puntosActividad >= expectedPuntos ? 'text-teal-600' : 'text-amber-600'}`}>{puntosActividad}</p>
+                                                <p className="text-xs text-muted-foreground mt-1">Esperado hoy: {expectedPuntos}</p>
+                                            </div>}
                                         </div>
                                         <div className="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-3 rounded-lg text-center">
-                                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">ADN's Creados</p>
+                                            <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Acumulado Mes (ADN)</p>
                                             {statsLoading ? <div className="animate-pulse h-8 bg-slate-200 dark:bg-zinc-800 rounded w-16 mx-auto"></div> : 
-                                            <p className={`text-2xl font-black ${adnsRealizados >= 10 ? 'text-teal-600' : 'text-amber-600'}`}>{adnsRealizados}</p>}
+                                            <div>
+                                                <p className={`text-2xl font-black ${adnsRealizados >= expectedAdns ? 'text-teal-600' : 'text-amber-600'}`}>{adnsRealizados}</p>
+                                                <p className="text-xs text-muted-foreground mt-1">Esperado hoy: {expectedAdns}</p>
+                                            </div>}
                                         </div>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
@@ -193,6 +242,8 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                                             </Badge>
                                             {rev.status === 'REVIEWED' ? (
                                                 <Badge className="bg-teal-100 text-teal-800 hover:bg-teal-100 border border-teal-200"><CheckCircle2 className="w-3 h-3 mr-1" /> Autorizado</Badge>
+                                            ) : rev.status === 'REJECTED' ? (
+                                                <Badge variant="destructive" className="border-red-200"><Activity className="w-3 h-3 mr-1" /> Rechazado</Badge>
                                             ) : (
                                                 <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-100 border border-amber-200"><CalendarClock className="w-3 h-3 mr-1" /> Pendiente</Badge>
                                             )}
@@ -211,25 +262,45 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                                                 <div className="h-full bg-indigo-500" style={{ width: `${Math.min(100, (rev.avancePrimasActual / rev.metaPrimasMensual) * 100)}%` }}></div>
                                             </div>
                                             <div className="flex justify-between items-center text-sm pt-2">
-                                                <span className="text-muted-foreground flex items-center gap-1"><Activity className="w-4 h-4"/> Puntos:</span>
-                                                <span className={`font-black ${rev.puntosActividad >= 125 ? 'text-teal-600' : 'text-red-500'}`}>{rev.puntosActividad} / 125</span>
+                                                <span className="text-muted-foreground flex items-center gap-1"><Activity className="w-4 h-4"/> Puntos (Mes):</span>
+                                                <span className="font-black text-slate-700 dark:text-zinc-300">{rev.puntosActividad}</span>
                                             </div>
                                             <div className="flex justify-between items-center text-sm">
-                                                <span className="text-muted-foreground flex items-center gap-1"><FileText className="w-4 h-4"/> ADNs:</span>
-                                                <span className={`font-black ${rev.adnsRealizados >= 10 ? 'text-teal-600' : 'text-red-500'}`}>{rev.adnsRealizados} / 10</span>
+                                                <span className="text-muted-foreground flex items-center gap-1"><FileText className="w-4 h-4"/> ADNs (Mes):</span>
+                                                <span className="font-black text-slate-700 dark:text-zinc-300">{rev.adnsRealizados}</span>
                                             </div>
                                         </div>
                                     </div>
                                     
-                                    {isAdmin && rev.status === 'PENDING' && (
-                                        <Button onClick={() => handleAuthorize(rev.id)} className="w-full mt-6 bg-teal-600 hover:bg-teal-700">
-                                            <CheckCircle2 className="w-4 h-4 mr-2" /> Autorizar
+                                    {!isAdmin && (rev.status === 'PENDING' || rev.status === 'REJECTED') && (
+                                        <Button onClick={() => handleEdit(rev)} variant="outline" className="w-full mt-6 border-indigo-200 text-indigo-700 hover:bg-indigo-50">
+                                            Editar Reporte
                                         </Button>
+                                    )}
+
+                                    {isAdmin && rev.status === 'PENDING' && (
+                                        <div className="flex flex-col gap-2 mt-6">
+                                            <Button onClick={() => handleAuthorize(rev.id)} className="w-full bg-teal-600 hover:bg-teal-700">
+                                                <CheckCircle2 className="w-4 h-4 mr-2" /> Autorizar
+                                            </Button>
+                                            <Button onClick={() => setRejectingId(rev.id)} variant="outline" className="w-full text-red-600 hover:bg-red-50 border-red-200">
+                                                Rechazar
+                                            </Button>
+                                        </div>
                                     )}
                                 </div>
 
                                 {/* Dictamen IA - Lateral Derecho */}
                                 <div className="p-6 md:w-2/3">
+                                    {rev.status === 'REJECTED' && rev.feedback && (
+                                        <div className="mb-4 p-4 bg-red-50 dark:bg-red-950/30 rounded-lg border border-red-200 dark:border-red-900">
+                                            <h3 className="text-red-800 dark:text-red-400 font-bold flex items-center gap-2 mb-1">
+                                                <Activity className="w-4 h-4" /> Observaciones del Administrador
+                                            </h3>
+                                            <p className="text-sm text-red-700 dark:text-red-300">{rev.feedback}</p>
+                                        </div>
+                                    )}
+
                                     <div className="flex items-center gap-2 mb-4">
                                         <BrainCircuit className="w-5 h-5 text-indigo-600" />
                                         <h3 className="font-bold text-slate-800 dark:text-zinc-200">Dictamen de Inteligencia Artificial</h3>
@@ -250,6 +321,26 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                     ))}
                 </div>
             )}
+
+            {/* Modal de Rechazo para Admin */}
+            <Dialog open={!!rejectingId} onOpenChange={(open) => !open && setRejectingId(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Rechazar Evaluación</DialogTitle>
+                        <DialogDescription>Escribe tus observaciones. El agente deberá corregir su reporte basándose en estos comentarios.</DialogDescription>
+                    </DialogHeader>
+                    <textarea 
+                        className="w-full h-24 p-3 border rounded-md text-sm mt-2" 
+                        placeholder="Ej. Los compromisos no son específicos..."
+                        value={rejectFeedback}
+                        onChange={(e) => setRejectFeedback(e.target.value)}
+                    />
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setRejectingId(null)}>Cancelar</Button>
+                        <Button variant="destructive" onClick={submitReject}>Rechazar y Devolver</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
