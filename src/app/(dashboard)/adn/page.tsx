@@ -539,6 +539,13 @@ export default function AdnPage() {
     setIsSaving(true)
     setValidationError('')
 
+    const error = validateStep()
+    if (error) {
+      setValidationError(error)
+      setIsSaving(false)
+      return
+    }
+
     // REQUERIR GPS
     if (!navigator.geolocation) {
       setValidationError("Tu navegador no soporta geolocalización. Es obligatoria para guardar ADNs.")
