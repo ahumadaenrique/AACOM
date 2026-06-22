@@ -2035,6 +2035,19 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
     if (!session?.user?.email) return { success: false, message: "No autenticado" };
 
     try {
+        // --- MIGRACIÓN MASIVA DE RESCATE ---
+        // Vercel estaba apuntando a una DB que nunca recibió la migración local.
+        // Forzamos a que todos los usuarios y actividades huérfanas se asignen a 'aacom'.
+        await prisma.user.updateMany({
+            where: { agencyId: null },
+            data: { agencyId: 'aacom' }
+        });
+        await prisma.activityLog.updateMany({
+            where: { agencyId: null },
+            data: { agencyId: 'aacom' }
+        });
+        // -----------------------------------
+
         const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
         if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
@@ -2042,12 +2055,6 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
 
         const agencyId = currentUser.agencyId;
         if (!agencyId) return { success: false, message: "El administrador no tiene una agencia válida asignada." };
-
-        // Retro-fix para rescatar actividades huérfanas creadas antes del sistema SaaS
-        await prisma.activityLog.updateMany({
-            where: { agencyId: null },
-            data: { agencyId: 'aacom' }
-        });
 
         const agents = await prisma.user.findMany({
             where: { active: true, agencyId },
