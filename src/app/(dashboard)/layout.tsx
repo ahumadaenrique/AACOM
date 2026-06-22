@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -136,21 +136,24 @@ export default async function DashboardLayout({
                                 </Link>
                                 <Link
                                     href="/documentacion"
-                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1 text-teal-600 dark:text-teal-400"
                                 >
+                                    <Book className="h-4 w-4" />
                                     Mi Biblioteca
                                 </Link>
                                 <Link
                                     href="/cotizador"
-                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1 text-teal-600 dark:text-teal-400"
                                 >
+                                    <Calculator className="h-4 w-4" />
                                     Cotizador
                                 </Link>
                                 <Link
                                     href="/adn"
-                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1 text-teal-600 dark:text-teal-400"
                                 >
-                                    ADN {shortAgencyName}
+                                    <HeartPulse className="h-4 w-4 text-red-500" />
+                                    ADN
                                 </Link>
                                 {isAdmin && (
                                     <>
@@ -241,20 +244,23 @@ export default async function DashboardLayout({
                                         </Link>
                                         <Link
                                             href="/documentacion"
-                                            className="text-muted-foreground hover:text-foreground"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
                                         >
+                                            <Book className="h-5 w-5 text-teal-600" />
                                             Mi Biblioteca
                                         </Link>
                                         <Link
                                             href="/cotizador"
-                                            className="text-muted-foreground hover:text-foreground"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
                                         >
+                                            <Calculator className="h-5 w-5 text-teal-600" />
                                             Cotizador
                                         </Link>
                                         <Link
                                             href="/adn"
-                                            className="text-muted-foreground hover:text-foreground"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
                                         >
+                                            <HeartPulse className="h-5 w-5 text-red-500" />
                                             ADN {shortAgencyName}
                                         </Link>
                                         {isAdmin && (
