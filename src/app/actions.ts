@@ -348,7 +348,7 @@ export async function deleteUserAccount(userId: string) {
         if (currentUser?.role !== "SUPER_ADMIN") throw new Error("Solo el SUPER_ADMIN puede borrar usuarios");
 
         // Primero borrar dependencias si no hay CASCADE
-        await prisma.aDN.deleteMany({ where: { userId } }).catch(() => {});
+        await prisma.adnDiagnostic.deleteMany({ where: { userId } }).catch(() => {});
         await prisma.cotizacion.deleteMany({ where: { userId } }).catch(() => {});
         await prisma.activity.deleteMany({ where: { userId } }).catch(() => {});
         await prisma.client.deleteMany({ where: { userId } }).catch(() => {});
