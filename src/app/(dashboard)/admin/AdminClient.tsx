@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react"
 import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import PushNotificationsPanel from "./PushNotificationsPanel"
 import BibliotecaAdmin from "./BibliotecaAdmin"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -3152,16 +3151,6 @@ export default function AdminClient() {
         </div>
       )}
 
-      {/* TAB CONTENT 8: PUSH NOTIFICATIONS */}
-      {activeTab === "notificaciones" && (
-        <PushNotificationsPanel />
-      )}
-
-      {/* TAB CONTENT 9: BIBLIOTECA ADMIN */}
-      {activeTab === "biblioteca" && (
-        <BibliotecaAdmin />
-      )}
-
       {/* DETAILED VIEW MODAL FOR SELECTED ADN DIAGNOSTIC */}
       {selectedAdn && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 overflow-y-auto">
@@ -3611,7 +3600,7 @@ export default function AdminClient() {
                                 {p1_retiro 
                                   ? '⚠️ Alerta: El cliente no cuenta con plan para retiro. Es crítico iniciar un ahorro deducible bajo el Art. 151 LISR para construir su independencia a edad de retiro.'
                                   : <>
-                                      <span className="font-bold text-slate-700">✅ Registrado: </span> El cliente aporta <strong>${selectedAdn.pprAporte?.toLocaleString('es-MX')}</strong> ({selectedAdn.pprFrecuencia === 'MENSUAL' ? 'Mensual' : 'Anual'}). A un plazo contratado de <strong>{selectedAdn.pprAniosPlazo === '65' ? 'Hasta edad 65' : `${selectedAdn.pprAniosPlazo} años`}</strong>.
+                                      <span className="font-bold text-slate-700">✅ Registrado: </span> El cliente aporta <strong>${selectedAdn.pprAporte?.toLocaleString('es-MX')}</strong> ({selectedAdn.pprFrecuencia === 'MENSUAL' ? 'Mensual' : 'Anual'}) a un plazo contratado de <strong>{selectedAdn.pprAniosPlazo === '65' ? 'Hasta edad 65' : `${selectedAdn.pprAniosPlazo} años`}</strong>.
                                       <span className="block mt-2 pt-2 border-t border-slate-100 text-slate-700">
                                         <strong>Meta de Retiro (20 años de ingresos):</strong> ${retirementGoal.toLocaleString('es-MX')} pesos.
                                         <br />
@@ -4276,6 +4265,190 @@ export default function AdminClient() {
         </div>
       )}
 
+      {/* TAB CONTENT 8: PUSH NOTIFICATIONS */}
+            {activeTab === "notificaciones" && (
+        <div className="space-y-6 animate-in fade-in duration-300 pb-10">
+          <div className="max-w-xl mx-auto space-y-6">
+            
+            {/* Toggles del Sistema */}
+            <Card className="border shadow-sm">
+              <CardHeader className="bg-slate-50 border-b pb-4">
+                <CardTitle className="text-lg font-black text-slate-700 flex items-center gap-2">
+                  <BellRing className="h-5 w-5" /> Notificaciones Autom�ticas (Sistema)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6 space-y-4">
+                <div className="flex items-center justify-between p-3 border rounded-xl">
+                  <div>
+                    <h4 className="font-bold text-sm">Validaci�n 25 Puntos</h4>
+                    <p className="text-xs text-slate-500">Alerta de Lunes a Viernes a las 5:00 PM</p>
+                  </div>
+                  <Button variant={pushPointsEnabled ? "default" : "outline"} onClick={handleTogglePointsSetting} className={pushPointsEnabled ? "bg-teal-600 hover:bg-teal-700 text-white" : ""}>
+                    {pushPointsEnabled ? "Encendida" : "Apagada"}
+                  </Button>
+                </div>
+                <div className="flex items-center justify-between p-3 border rounded-xl">
+                  <div>
+                    <h4 className="font-bold text-sm">Planeaci�n Diaria</h4>
+                    <p className="text-xs text-slate-500">Alerta de Lunes a Viernes a las 8:30 AM</p>
+                  </div>
+                  <Button variant={pushPlanningEnabled ? "default" : "outline"} onClick={handleTogglePlanningSetting} className={pushPlanningEnabled ? "bg-teal-600 hover:bg-teal-700 text-white" : ""}>
+                    {pushPlanningEnabled ? "Encendida" : "Apagada"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Crear / Enviar Push */}
+            <Card className="border shadow-sm border-blue-100 dark:border-blue-900/30">
+              <CardHeader className="bg-blue-50/50 dark:bg-blue-950/20 border-b pb-4">
+                <CardTitle className="text-lg font-black text-blue-700 dark:text-blue-400 flex items-center gap-2">
+                  <BellRing className="h-5 w-5" /> Enviar o Programar Notificaci�n Push
+                </CardTitle>
+                <CardDescription>
+                  Env�a un mensaje al instante o progr�malo para que se env�e autom�ticamente.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Destinatario</label>
+                    <select
+                      className="flex h-10 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:ring-offset-zinc-950 dark:placeholder:text-zinc-400"
+                      value={pushRecipient}
+                      onChange={(e) => setPushRecipient(e.target.value)}
+                    >
+                      <option value="ALL">Todos los agentes</option>
+                      {usersList.filter(u => u.role === 'AGENTE' && u.active).map(u => (
+                        <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Mensaje a mostrar</label>
+                    <Input 
+                      placeholder="Ej. �ltimo d�a de cierre! Manda tus cotizaciones antes de las 4 PM." 
+                      value={pushMessage}
+                      onChange={(e) => setPushMessage(e.target.value)}
+                      maxLength={150}
+                      className="rounded-xl border-slate-200"
+                    />
+                    <p className="text-xs text-muted-foreground text-right">{pushMessage.length}/150</p>
+                  </div>
+
+                  <div className="space-y-2 border-t pt-4">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">�Cu�ndo enviar?</label>
+                    <select
+                      className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-teal-600"
+                      value={schedFreq}
+                      onChange={(e) => setSchedFreq(e.target.value)}
+                    >
+                      <option value="NOW">En este momento</option>
+                      <option value="ONCE">Una sola vez en el futuro</option>
+                      <option value="DAILY">Diario (Lunes a Viernes)</option>
+                    </select>
+                  </div>
+
+                  {schedFreq !== "NOW" && (
+                    <div className="flex gap-3">
+                      <div className="flex-1 space-y-2">
+                        <label className="text-xs font-bold text-slate-500">Hora (M�xico)</label>
+                        <select
+                          className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
+                          value={schedHour}
+                          onChange={(e) => setSchedHour(e.target.value)}
+                        >
+                          {[...Array(24)].map((_, i) => (
+                            <option key={i} value={i}>{i === 0 ? "12 AM" : i < 12 ? i + " AM" : i === 12 ? "12 PM" : (i - 12) + " PM"}</option>
+                          ))}
+                        </select>
+                      </div>
+                      {schedFreq === "ONCE" && (
+                        <div className="flex-1 space-y-2">
+                          <label className="text-xs font-bold text-slate-500">Fecha</label>
+                          <Input type="date" value={schedDate} onChange={e => setSchedDate(e.target.value)} required={schedFreq === "ONCE"} className="rounded-xl" />
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="space-y-2 border-t pt-4">
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">PIN de Autorizaci�n</label>
+                    <Input 
+                      type="password"
+                      placeholder="Ingresa el PIN de seguridad de 10 d�gitos" 
+                      value={pushPin}
+                      onChange={(e) => setPushPin(e.target.value)}
+                      className="rounded-xl border-slate-200"
+                    />
+                  </div>
+
+                  {pushStatus && (
+                    <div className={"p-3 rounded-lg text-sm font-semibold text-center " + (pushStatus.includes("Error") ? "bg-red-50 text-red-600" : "bg-green-50 text-green-600")}>
+                      {pushStatus}
+                    </div>
+                  )}
+
+                  <div className="flex gap-3 pt-2">
+                    {schedFreq === "NOW" ? (
+                      <Button onClick={handleSendPush} disabled={pushLoading} className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl h-11">
+                        {pushLoading ? "Enviando..." : "Enviar Ahora Mismo"}
+                      </Button>
+                    ) : (
+                      <Button onClick={handleCreateSchedule} disabled={pushLoading} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl h-11">
+                        {pushLoading ? "Programando..." : "Guardar Programaci�n"}
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Lista de Notificaciones Programadas */}
+            {scheduledPushes.length > 0 && (
+              <Card className="border shadow-sm">
+                <CardHeader className="bg-slate-50 border-b py-3">
+                  <CardTitle className="text-sm font-bold text-slate-700">Notificaciones Programadas</CardTitle>
+                </CardHeader>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="pl-4">Mensaje</TableHead>
+                        <TableHead>Frecuencia / Hora</TableHead>
+                        <TableHead className="w-[80px]"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {scheduledPushes.map(sp => (
+                        <TableRow key={sp.id}>
+                          <TableCell className="text-xs pl-4 font-medium">{sp.message}</TableCell>
+                          <TableCell className="text-xs text-slate-500">
+                            {sp.frequency === 'DAILY' ? 'Diario (L-V)' : "Una vez (" + sp.runDate + ")"} <br/>
+                            a las {sp.timeHour === 0 ? "12 AM" : sp.timeHour < 12 ? sp.timeHour + " AM" : sp.timeHour === 12 ? "12 PM" : (sp.timeHour - 12) + " PM"}
+                          </TableCell>
+                          <TableCell>
+                            <Button variant="ghost" size="sm" onClick={() => handleDeleteSchedule(sp.id)} className="text-red-500 hover:bg-red-50">
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* TAB CONTENT 9: BIBLIOTECA ADMIN */}
+      {activeTab === "biblioteca" && (
+        <BibliotecaAdmin />
+      )}
+
       {/* Styles inject for print layout within Admin preview */}
       <style jsx global>{`
         @media print {
@@ -4457,6 +4630,9 @@ export default function AdminClient() {
     </div>
   )
 }
+
+
+
 
 
 
