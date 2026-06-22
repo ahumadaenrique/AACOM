@@ -7,6 +7,7 @@ import { resolveImageUrl } from "@/lib/utils"
 import PwaInstaller from "@/components/PwaInstaller"
 import { PushNotificationManager } from "@/components/PushNotificationManager"
 import { ForcePasswordChange } from "@/components/ForcePasswordChange"
+import { SubscriptionBlocker } from "@/components/SubscriptionBlocker"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -60,6 +61,11 @@ export default async function DashboardLayout({
     const agencyLogo = agency?.logoUrl || "/logo.png";
     const shortAgencyName = agency?.name || "AACOM";
 
+    const endDate = agency?.subscriptionEndDate ? new Date(agency.subscriptionEndDate) : null;
+    const now = new Date();
+    const isSubscriptionActive = agency?.subscriptionStatus === "active" && (!endDate || endDate >= now);
+    const showNavLinks = isSubscriptionActive || isSuperAdmin;
+
     // Server-side native logout action
     const handleLogout = async () => {
         "use server";
@@ -91,77 +97,81 @@ export default async function DashboardLayout({
                             <img src={agencyLogo} alt={agencyName} className="h-7 w-auto object-contain" />
                             <span className="sr-only">{shortAgencyName} cotizador</span>
                         </Link>
-                        <Link
-                            href="/activity"
-                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                        >
-                            <ClipboardCheck className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                            {shortAgencyName} 25
-                        </Link>
-                        <Link
-                            href="/ranking"
-                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                        >
-                            <Award className="h-4 w-4 text-amber-500" />
-                            Ranking
-                        </Link>
-                        <Link
-                            href="/team"
-                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                        >
-                            <Users className="h-4 w-4 text-indigo-500" />
-                              Equipo {shortAgencyName}
-                          </Link>
-                          <Link
-                              href="/cartera"
-                              className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                          >
-                              <Wallet className="h-4 w-4 text-green-600" />
-                              Mi Cartera
-                          </Link>
-                        <Link
-                            href="/assistant"
-                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                        >
-                            <MessageSquare className="h-4 w-4 text-pink-500" />
-                            Asistente {shortAgencyName}
-                        </Link>
-                        <Link
-                            href="/cotizador"
-                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
-                        >
-                            Cotizador
-                        </Link>
-                        <Link
-                            href="/adn"
-                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
-                        >
-                            ADN {shortAgencyName}
-                        </Link>
-                        {isAdmin && (
+                        {showNavLinks && (
                             <>
                                 <Link
-                                    href="/admin"
-                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold"
+                                    href="/activity"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
                                 >
-                                    Admin
+                                    <ClipboardCheck className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                                    {shortAgencyName} 25
                                 </Link>
                                 <Link
-                                    href="/reportes"
-                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold"
+                                    href="/ranking"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
                                 >
-                                    Reportes
+                                    <Award className="h-4 w-4 text-amber-500" />
+                                    Ranking
                                 </Link>
+                                <Link
+                                    href="/team"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                                >
+                                    <Users className="h-4 w-4 text-indigo-500" />
+                                    Equipo {shortAgencyName}
+                                </Link>
+                                <Link
+                                    href="/cartera"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                                >
+                                    <Wallet className="h-4 w-4 text-green-600" />
+                                    Mi Cartera
+                                </Link>
+                                <Link
+                                    href="/assistant"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                                >
+                                    <MessageSquare className="h-4 w-4 text-pink-500" />
+                                    Asistente {shortAgencyName}
+                                </Link>
+                                <Link
+                                    href="/cotizador"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
+                                >
+                                    Cotizador
+                                </Link>
+                                <Link
+                                    href="/adn"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
+                                >
+                                    ADN {shortAgencyName}
+                                </Link>
+                                {isAdmin && (
+                                    <>
+                                        <Link
+                                            href="/admin"
+                                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold"
+                                        >
+                                            Admin
+                                        </Link>
+                                        <Link
+                                            href="/reportes"
+                                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold"
+                                        >
+                                            Reportes
+                                        </Link>
+                                    </>
+                                )}
+                                {isSuperAdmin && (
+                                    <Link
+                                        href="/agencias"
+                                        className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                                    >
+                                        <Building2 className="h-4 w-4 text-purple-600" />
+                                        Agencias SaaS
+                                    </Link>
+                                )}
                             </>
-                        )}
-                        {isSuperAdmin && (
-                            <Link
-                                href="/agencias"
-                                className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                            >
-                                <Building2 className="h-4 w-4 text-purple-600" />
-                                Agencias SaaS
-                            </Link>
                         )}
                     </nav>
 
@@ -186,77 +196,81 @@ export default async function DashboardLayout({
                                     <img src={agencyLogo} alt={agencyName} className="h-8 w-auto object-contain" />
                                     <span className="sr-only">{shortAgencyName} cotizador</span>
                                 </Link>
-                                <Link
-                                    href="/activity"
-                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                >
-                                    <ClipboardCheck className="h-5 w-5 text-teal-600" />
-                                    {shortAgencyName} 25
-                                </Link>
-                                <Link
-                                    href="/ranking"
-                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                >
-                                    <Award className="h-5 w-5 text-amber-500" />
-                                    Ranking
-                                </Link>
-                                <Link
-                                    href="/team"
-                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                >
-                                    <Users className="h-5 w-5 text-indigo-500" />
-                                      Equipo {shortAgencyName}
-                                  </Link>
-                                  <Link
-                                      href="/cartera"
-                                      className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                  >
-                                      <Wallet className="h-5 w-5 text-green-600" />
-                                      Mi Cartera
-                                  </Link>
-                                <Link
-                                    href="/assistant"
-                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                >
-                                    <MessageSquare className="h-5 w-5 text-pink-500" />
-                                    Asistente {shortAgencyName}
-                                </Link>
-                                <Link
-                                    href="/cotizador"
-                                    className="text-muted-foreground hover:text-foreground"
-                                >
-                                    Cotizador
-                                </Link>
-                                <Link
-                                    href="/adn"
-                                    className="text-muted-foreground hover:text-foreground"
-                                >
-                                    ADN {shortAgencyName}
-                                </Link>
-                                {isAdmin && (
+                                {showNavLinks && (
                                     <>
                                         <Link
-                                            href="/admin"
-                                            className="text-muted-foreground hover:text-foreground"
+                                            href="/activity"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
                                         >
-                                            Admin
+                                            <ClipboardCheck className="h-5 w-5 text-teal-600" />
+                                            {shortAgencyName} 25
                                         </Link>
                                         <Link
-                                            href="/reportes"
+                                            href="/ranking"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                        >
+                                            <Award className="h-5 w-5 text-amber-500" />
+                                            Ranking
+                                        </Link>
+                                        <Link
+                                            href="/team"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                        >
+                                            <Users className="h-5 w-5 text-indigo-500" />
+                                            Equipo {shortAgencyName}
+                                        </Link>
+                                        <Link
+                                            href="/cartera"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                        >
+                                            <Wallet className="h-5 w-5 text-green-600" />
+                                            Mi Cartera
+                                        </Link>
+                                        <Link
+                                            href="/assistant"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                        >
+                                            <MessageSquare className="h-5 w-5 text-pink-500" />
+                                            Asistente {shortAgencyName}
+                                        </Link>
+                                        <Link
+                                            href="/cotizador"
                                             className="text-muted-foreground hover:text-foreground"
                                         >
-                                            Reportes
+                                            Cotizador
                                         </Link>
+                                        <Link
+                                            href="/adn"
+                                            className="text-muted-foreground hover:text-foreground"
+                                        >
+                                            ADN {shortAgencyName}
+                                        </Link>
+                                        {isAdmin && (
+                                            <>
+                                                <Link
+                                                    href="/admin"
+                                                    className="text-muted-foreground hover:text-foreground"
+                                                >
+                                                    Admin
+                                                </Link>
+                                                <Link
+                                                    href="/reportes"
+                                                    className="text-muted-foreground hover:text-foreground"
+                                                >
+                                                    Reportes
+                                                </Link>
+                                            </>
+                                        )}
+                                        {isSuperAdmin && (
+                                            <Link
+                                                href="/agencias"
+                                                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                            >
+                                                <Building2 className="h-5 w-5 text-purple-600" />
+                                                Agencias SaaS
+                                            </Link>
+                                        )}
                                     </>
-                                )}
-                                {isSuperAdmin && (
-                                    <Link
-                                        href="/agencias"
-                                        className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                    >
-                                        <Building2 className="h-5 w-5 text-purple-600" />
-                                        Agencias SaaS
-                                    </Link>
                                 )}
                             </nav>
                         </SheetContent>
@@ -329,7 +343,9 @@ export default async function DashboardLayout({
                 </div>
             </header>
             <main className="flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-                {children}
+                <SubscriptionBlocker isActive={isSubscriptionActive} isSuperAdmin={isSuperAdmin}>
+                    {children}
+                </SubscriptionBlocker>
                 <PwaInstaller agencyName={agencyName} />
                 <PushNotificationManager />
             </main>
