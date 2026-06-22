@@ -566,7 +566,7 @@ export async function getUsers() {
             where: { email: session.user.email }
         });
 
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes", users: [] };
         }
 
