@@ -1,17 +1,11 @@
-import { headers } from 'next/headers'
+import { auth } from '@/auth'
 import { prisma } from '@/lib/prisma'
 import TeamClient from './TeamClient'
 
 export default async function TeamPage() {
-  const headersList = headers();
-  const slug = headersList.get('x-agency-slug') || 'aacom';
-  
-  let agency = await prisma.agency.findUnique({ where: { slug } });
-  if (!agency) {
-    agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
-  }
-  
-  const agencyName = agency?.name || 'AACOM Seguros';
+  const session = await auth();
+  const dbUser = session?.user?.id ? await prisma.user.findUnique({ where: { id: session.user.id }, include: { agency: true } }) : null;
+  const agencyName = dbUser?.agency?.name || 'Agencia';
   
   return <TeamClient agencyName={agencyName} />;
 }

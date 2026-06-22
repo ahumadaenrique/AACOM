@@ -1077,7 +1077,10 @@ export async function getMonthlyAdnRankings() {
         const session = await auth();
         if (!session?.user?.email) return { success: false, rankings: [], rankingAd: null, message: "No autenticado" };
         
-        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        const user = await prisma.user.findUnique({ 
+            where: { email: session.user.email },
+            include: { agency: true }
+        });
         if (!user) return { success: false, rankings: [], rankingAd: null, message: "Usuario no encontrado" };
 
         const now = new Date();
@@ -1169,8 +1172,9 @@ export async function getMonthlyAdnRankings() {
 
         return {
             success: true,
-            rankings,
-            rankingAd
+            rankings: finalRankings,
+            rankingAd,
+            agencyName: user.agency?.name || 'la Agencia'
         };
     } catch (error: any) {
         console.error("Error fetching monthly ADN rankings:", error);

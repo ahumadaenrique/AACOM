@@ -36,6 +36,7 @@ interface RankingAd {
 export default function RankingPage() {
     const [rankings, setRankings] = useState<UserRank[]>([]);
     const [campaignAd, setCampaignAd] = useState<RankingAd | null>(null);
+    const [agencyName, setAgencyName] = useState<string>("la Agencia");
     const [loading, setLoading] = useState(true);
     const [selectedAd, setSelectedAd] = useState<RankingAd | null>(null);
 
@@ -46,6 +47,7 @@ export default function RankingPage() {
             if (res.success) {
                 setRankings(res.rankings as any);
                 setCampaignAd(res.rankingAd as any);
+                if (res.agencyName) setAgencyName(res.agencyName);
             }
         } catch (err) {
             console.error("Error loading rankings:", err);
@@ -275,7 +277,7 @@ export default function RankingPage() {
                     <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-zinc-800">
                         <Megaphone className="h-5 w-5 text-teal-600 dark:text-teal-400" />
                         <h2 className="text-base font-black text-slate-700 dark:text-zinc-300 uppercase tracking-wider">
-                            Campaña de Incentivos AACOM
+                            Campaña de Incentivos {agencyName}
                         </h2>
                     </div>
 
