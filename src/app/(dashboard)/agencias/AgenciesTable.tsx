@@ -4,9 +4,29 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { differenceInDays, format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ShieldAlert, CheckCircle2, XCircle } from "lucide-react";
+import { ShieldAlert, CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { deleteAgency } from "./actions";
+import { useState } from "react";
 
 export function AgenciesTable({ agencies }: { agencies: any[] }) {
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDelete = async (agencyId: string, agencyName: string) => {
+    if (!confirm(`¿ESTÁS ABSOLUTAMENTE SEGURO de querer borrar a la agencia "${agencyName}"? Esta acción borrará la agencia por completo y no se puede deshacer.`)) {
+      return;
+    }
+    
+    try {
+      setDeletingId(agencyId);
+      await deleteAgency(agencyId);
+    } catch (err: any) {
+      alert("Error al borrar agencia: " + err.message);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   return (
     <div className="mt-12 bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
       <div className="p-6 border-b border-slate-100 bg-slate-50/50">
@@ -23,6 +43,7 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
               <TableHead className="font-bold text-slate-600 text-center">Usuarios</TableHead>
               <TableHead className="font-bold text-slate-600">Suscripción</TableHead>
               <TableHead className="font-bold text-slate-600 text-right">Vencimiento</TableHead>
+              <TableHead className="font-bold text-slate-600 text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -105,13 +126,25 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                       <span className="text-sm text-slate-400 italic">Ilimitada</span>
                     )}
                   </TableCell>
+
+                  <TableCell className="text-right">
+                    <Button 
+                      variant="destructive" 
+                      size="sm" 
+                      onClick={() => handleDelete(agency.id, agency.name)}
+                      disabled={deletingId === agency.id}
+                      className="text-xs h-7 px-2 bg-red-100 hover:bg-red-200 text-red-600 border border-red-200"
+                    >
+                      {deletingId === agency.id ? "Borrando..." : <Trash2 className="h-3.5 w-3.5" />}
+                    </Button>
+                  </TableCell>
                 </TableRow>
               );
             })}
             
             {agencies.length === 0 && (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-slate-500">
+                <TableCell colSpan={6} className="h-24 text-center text-slate-500">
                   No hay agencias registradas aún.
                 </TableCell>
               </TableRow>

@@ -117,6 +117,24 @@ export async function switchAgency(agencyId: string) {
   return { success: true };
 }
 
+export async function deleteAgency(agencyId: string) {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("No autorizado");
+    
+    const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+    if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+  
+    // Remove users agencyId before deleting agency
+    await prisma.user.updateMany({
+        where: { agencyId },
+        data: { agencyId: null }
+    });
+
+    await prisma.agency.delete({ where: { id: agencyId } });
+    revalidatePath("/agencias");
+    return { success: true };
+}
+
 // ---- DISCOUNT CODES ACTIONS ---- //
 
 const discountSchema = z.object({

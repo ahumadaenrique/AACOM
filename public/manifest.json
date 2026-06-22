@@ -1,7 +1,7 @@
 {
-  "name": "Zona Agentes AACOM",
-  "short_name": "AACOM",
-  "description": "Plataforma de Desarrollo y Seguimiento de Agentes AACOM Seguros",
+  "name": "Sistema Integral de Administración de Agencias y Promotorías",
+  "short_name": "Sistema Agencias",
+  "description": "Plataforma de Desarrollo y Seguimiento de Agentes",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait-primary",

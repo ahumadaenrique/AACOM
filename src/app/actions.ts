@@ -340,6 +340,27 @@ export async function deleteAgent(id: string) {
     }
 }
 
+export async function deleteUserAccount(userId: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) throw new Error("No autenticado");
+        const currentUser = await prisma.user.findUnique({ where: { id: session.user.id } });
+        if (currentUser?.role !== "SUPER_ADMIN") throw new Error("Solo el SUPER_ADMIN puede borrar usuarios");
+
+        // Primero borrar dependencias si no hay CASCADE
+        await prisma.aDN.deleteMany({ where: { userId } }).catch(() => {});
+        await prisma.cotizacion.deleteMany({ where: { userId } }).catch(() => {});
+        await prisma.activity.deleteMany({ where: { userId } }).catch(() => {});
+        await prisma.client.deleteMany({ where: { userId } }).catch(() => {});
+        
+        await prisma.user.delete({ where: { id: userId } });
+        return { success: true };
+    } catch (err: any) {
+        console.error("Error al borrar usuario", err);
+        return { success: false, message: err.message || "Error al borrar usuario" };
+    }
+}
+
 export interface AdnDiagnosticInput {
     modalidad: string;
     clienteNombre: string;

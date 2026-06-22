@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getTeamDirectory, updateUserProfileDetails, getCurrentUser } from "@/app/actions";
+import { getTeamDirectory, updateUserProfileDetails, getCurrentUser, deleteUserAccount } from "@/app/actions";
 import { resolveImageUrl } from "@/lib/utils";
 import {
     Search,
@@ -22,7 +22,8 @@ import {
     Check,
     Briefcase,
     Sparkles,
-    Cake
+    Cake,
+    Trash2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -187,6 +188,28 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
         } catch (err: any) {
             console.error(err);
             setFormMsg(err.message || "Error en el servidor");
+        } finally {
+            setUpdating(false);
+        }
+    };
+
+    const handleDeleteUser = async () => {
+        if (!selectedUser) return;
+        if (!confirm(`¿Estás completamente seguro de borrar a ${selectedUser.name || selectedUser.email}? Esta acción no se puede deshacer.`)) return;
+        
+        try {
+            setUpdating(true);
+            setFormMsg("Borrando usuario...");
+            const res = await deleteUserAccount(selectedUser.id);
+            if (res.success) {
+                setTeam(prev => prev.filter(u => u.id !== selectedUser.id));
+                setSelectedUser(null);
+            } else {
+                setFormMsg(res.message || "Error al borrar usuario");
+            }
+        } catch (err: any) {
+            console.error(err);
+            setFormMsg("Error en el servidor al intentar borrar");
         } finally {
             setUpdating(false);
         }
@@ -785,6 +808,18 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
                                             {(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? 'Editar Perfil Completo' : 'Completar Mi Perfil'}
                                         </Button>
                                     )
+                                )}
+                                {currentUser?.role === 'SUPER_ADMIN' && selectedUser?.id !== currentUser?.id && (
+                                    <Button 
+                                        type="button"
+                                        variant="destructive"
+                                        onClick={handleDeleteUser}
+                                        disabled={updating}
+                                        className="text-xs font-bold rounded-xl flex items-center gap-1 shadow-md"
+                                    >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                        Eliminar Súper Admin/Agente
+                                    </Button>
                                 )}
                                 <Button 
                                     type="button"
