@@ -173,6 +173,7 @@ export async function saveCotizacion(data: {
         const newCotizacion = await prisma.cotizacion.create({
             data: {
                 userId: user.id,
+                agencyId: user.agencyId,
                 cliente: data.cliente,
                 telefono: data.telefono,
                 agente: data.agente,
@@ -211,10 +212,13 @@ export async function getCotizaciones() {
             return { success: false, message: "Usuario no encontrado", cotizaciones: [] };
         }
 
+        let whereClause: any = { agencyId: user.agencyId };
+        if (user.role !== 'SUPER_ADMIN' && user.role !== 'ADMIN') {
+            whereClause.userId = user.id;
+        }
+
         const list = await prisma.cotizacion.findMany({
-            where: {
-                userId: user.id
-            },
+            where: whereClause,
             orderBy: {
                 createdAt: 'desc'
             }
@@ -280,7 +284,13 @@ export async function getRankingBanner() {
 
 export async function getAgents() {
     try {
-        const agents = await prisma.agent.findMany({
+        const session = await auth();
+        if (!session?.user?.email) throw new Error("No autenticado");
+        const user = await prisma.user.findUnique({where: {email: session.user.email}});
+        if (!user) throw new Error("Usuario no encontrado");
+
+        const agents = await prisma.user.findMany({
+            where: { agencyId: user.agencyId },
             orderBy: {
                 name: 'asc'
             }
@@ -444,17 +454,12 @@ export async function getAdnDiagnostics() {
 
         let diagnostics;
         if ((user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
-            // Admin sees all diagnostics, including the agent's name
+            // Admin sees all diagnostics from their agency
             diagnostics = await prisma.adnDiagnostic.findMany({
-                where: {
-                    agencyId: user.agencyId
-                },
+                where: { agencyId: user.agencyId },
                 include: {
                     user: {
-                        select: {
-                            name: true,
-                            email: true
-                        }
+                        select: { name: true }
                     }
                 },
                 orderBy: {
@@ -521,6 +526,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
                 name: data.name,
                 email: data.email,
                 role: data.role,
+                agencyId: currentUser.agencyId,
                 phone: data.phone || null,
                 active: data.active !== undefined ? data.active : true,
                 password: data.password || "password123", // Simple plain text consistent with current auth config
@@ -1068,6 +1074,12 @@ export async function getActivityHistory(targetUserId?: string) {
 
 export async function getMonthlyAdnRankings() {
     try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, rankings: [], rankingAd: null, message: "No autenticado" };
+        
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user) return { success: false, rankings: [], rankingAd: null, message: "Usuario no encontrado" };
+
         const now = new Date();
         const year = now.getFullYear();
         const month = now.getMonth(); // 0-indexed
@@ -1079,6 +1091,7 @@ export async function getMonthlyAdnRankings() {
 
         const diagnostics = await prisma.adnDiagnostic.findMany({
             where: {
+                agencyId: user.agencyId,
                 createdAt: {
                     gte: startOfMonth,
                     lte: endOfMonth
@@ -1099,9 +1112,7 @@ export async function getMonthlyAdnRankings() {
 
         // Fetch all active agents to initialize 0 points
         const allAgents = await prisma.user.findMany({
-            where: {
-                active: true
-            },
+            where: { agencyId: user.agencyId, active: true, role: 'USER' },
             select: {
                 id: true,
                 name: true,
@@ -1233,7 +1244,7 @@ export async function getAdminActivityReport(userId?: string, startDate?: string
             return { success: false, message: "Permisos insuficientes", logs: [] };
         }
 
-        const whereClause: any = {};
+        const whereClause: any = { agencyId: currentUser.agencyId };
         if (userId && userId !== 'ALL') {
             whereClause.userId = userId;
         }

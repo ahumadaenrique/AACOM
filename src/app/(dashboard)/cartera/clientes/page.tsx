@@ -1,4 +1,4 @@
-﻿import { auth } from "@/auth";
+import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,8 +13,15 @@ export default async function DirectorioClientes() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
+  const dbUser = await prisma.user.findUnique({where: {id: session.user.id}, select: {role: true, agencyId: true}});
+
+  let clientsWhereClause: any = { userId: session.user.id };
+  if ((dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN') && dbUser?.agencyId) {
+     clientsWhereClause = { agencyId: dbUser.agencyId };
+  }
+
   const clients = await prisma.client.findMany({
-    where: { userId: session.user.id },
+    where: clientsWhereClause,
     include: { policies: true },
     orderBy: { name: "asc" },
   });

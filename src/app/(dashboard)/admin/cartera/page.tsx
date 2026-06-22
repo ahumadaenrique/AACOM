@@ -16,7 +16,7 @@ export default async function AdminCartera() {
   
   const userRole = await prisma.user.findUnique({
     where: { id: session?.user?.id },
-    select: { role: true },
+    select: { role: true, agencyId: true },
   });
 
   if (userRole?.role !== "ADMIN") {
@@ -24,6 +24,7 @@ export default async function AdminCartera() {
   }
 
   const allClients = await prisma.client.findMany({
+    where: { agencyId: userRole.agencyId },
     include: {
       policies: true,
       user: { select: { name: true, email: true } },
