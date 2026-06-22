@@ -942,6 +942,7 @@ export async function saveActivityLogEntry(activityId: string, prospectName?: st
         const log = await prisma.activityLog.create({
             data: {
                 userId: user.id,
+                agencyId: user.agencyId,
                 activityId,
                 activityName: activity.name,
                 points: activity.value,
@@ -2041,6 +2042,12 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
 
         const agencyId = currentUser.agencyId;
         if (!agencyId) return { success: false, message: "El administrador no tiene una agencia válida asignada." };
+
+        // Retro-fix para rescatar actividades huérfanas creadas antes del sistema SaaS
+        await prisma.activityLog.updateMany({
+            where: { agencyId: null },
+            data: { agencyId: 'aacom' }
+        });
 
         const agents = await prisma.user.findMany({
             where: { active: true, agencyId },
