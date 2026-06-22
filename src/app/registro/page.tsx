@@ -201,7 +201,7 @@ export default function RegisterPage() {
                   <Input required value={agencyName} onChange={e => {
                     setAgencyName(e.target.value);
                     if (!agencySlug) setAgencySlug(e.target.value.toLowerCase().replace(/[^a-z0-9]/g, ''));
-                  }} placeholder="Ej. Seguros Monterrey" />
+                  }} placeholder="Ej. SeguMex" />
                 </div>
                 <div className="space-y-2">
                   <Label>Identificador / Subdominio Web</Label>
