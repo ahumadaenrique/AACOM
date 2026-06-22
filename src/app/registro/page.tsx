@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, CheckCircle2, ChevronRight, Building2, User, CreditCard, AlertCircle } from "lucide-react";
-import { checkSlugAvailability, processRegistration } from "./actions";
+import { Loader2, CheckCircle2, ChevronRight, Building2, User, CreditCard, AlertCircle, Tag } from "lucide-react";
+import { checkSlugAvailability, processRegistration, validateCode } from "./actions";
 
 // Use same plan definitions, but Trimestral instead of Mensual
 const plans = [
@@ -60,6 +60,9 @@ export default function RegisterPage() {
 
   // Step 3
   const [selectedPlanId, setSelectedPlanId] = useState("annual");
+  const [promoCode, setPromoCode] = useState("");
+  const [promoMessage, setPromoMessage] = useState<{type: "success" | "error", text: string} | null>(null);
+  const [validatingPromo, setValidatingPromo] = useState(false);
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(async () => {
@@ -99,6 +102,25 @@ export default function RegisterPage() {
     setStep(3);
   };
 
+  const handleValidatePromo = async () => {
+    setPromoMessage(null);
+    if (!promoCode.trim()) return;
+    setValidatingPromo(true);
+    
+    try {
+      const res = await validateCode(promoCode.trim());
+      if (res.valid) {
+        setPromoMessage({ type: "success", text: res.name || "Código aplicado correctamente" });
+      } else {
+        setPromoMessage({ type: "error", text: res.message || "Código no válido" });
+      }
+    } catch (e) {
+      setPromoMessage({ type: "error", text: "Error al validar el código." });
+    } finally {
+      setValidatingPromo(false);
+    }
+  };
+
   const handleFinish = async () => {
     setError("");
     setLoading(true);
@@ -111,7 +133,8 @@ export default function RegisterPage() {
       agencyName, agencySlug, agencyColor,
       priceId: selectedPlan.priceId,
       daysToAdd: selectedPlan.days,
-      refSlug
+      refSlug,
+      promoCode: promoMessage?.type === "success" ? promoCode.trim() : undefined
     };
 
     const res = await processRegistration(data);
@@ -266,6 +289,34 @@ export default function RegisterPage() {
                     </div>
                   ))}
                 </div>
+
+                <div className="pt-4 mt-4 border-t border-slate-100">
+                  <Label className="flex items-center gap-2 mb-2"><Tag className="w-4 h-4 text-slate-400" /> ¿Tienes un código de descuento o invitación?</Label>
+                  <div className="flex items-start gap-2">
+                    <div className="flex-1 space-y-1">
+                      <Input 
+                        placeholder="Ej. BUENFIN25 o slug de un amigo" 
+                        value={promoCode} 
+                        onChange={(e) => {
+                          setPromoCode(e.target.value);
+                          setPromoMessage(null);
+                        }} 
+                      />
+                      {promoMessage?.type === "success" && <p className="text-xs font-medium text-emerald-600 flex items-center mt-1"><CheckCircle2 className="w-3 h-3 mr-1"/> {promoMessage.text}</p>}
+                      {promoMessage?.type === "error" && <p className="text-xs font-medium text-red-500 mt-1">{promoMessage.text}</p>}
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="secondary" 
+                      onClick={handleValidatePromo} 
+                      disabled={!promoCode.trim() || validatingPromo}
+                    >
+                      {validatingPromo ? <Loader2 className="w-4 h-4 animate-spin" /> : "Validar"}
+                    </Button>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-2">Si ingresaste con un enlace de referido válido, el beneficio se aplicará automáticamente.</p>
+                </div>
+
                 {error && <p className="text-sm text-red-500 font-medium text-center bg-red-50 p-2 rounded-lg">{error}</p>}
               </CardContent>
               <CardFooter className="flex gap-3">

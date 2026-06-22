@@ -1,9 +1,17 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
 import ClientHome from "./ClientHome"
+import { headers } from "next/headers"
 
 export default async function HomePage() {
     const session = await auth();
+    const headersList = headers();
+    const slug = headersList.get('x-agency-slug') || 'aacom';
+    let agency = await prisma.agency.findUnique({ where: { slug } });
+    if (!agency) {
+        agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
+    }
+    const agencyName = agency?.name || "AACOM Seguros";
     let isBirthday = false;
     let currentUser = null;
 
@@ -50,13 +58,14 @@ export default async function HomePage() {
                     <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-100">Inicio</h1>
                     <span className="h-2.5 w-2.5 rounded-full bg-teal-500 animate-pulse" />
                 </div>
-                <p className="text-sm text-muted-foreground font-medium">Bienvenido a la plataforma AACOM cotizador</p>
+                <p className="text-sm text-muted-foreground font-medium">Bienvenido a la plataforma {agencyName} cotizador</p>
             </div>
 
             <ClientHome 
                 announcements={announcements} 
                 isBirthday={isBirthday} 
                 currentUser={currentUser ? { name: currentUser.name, image: currentUser.image } : null} 
+                agencyName={agencyName}
             />
         </div>
     )

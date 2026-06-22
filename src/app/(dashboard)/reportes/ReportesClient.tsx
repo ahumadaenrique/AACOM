@@ -23,7 +23,7 @@ interface AgentReport {
     referidos: number;
 }
 
-export default function ReportesClient() {
+export default function ReportesClient({ agencyName = "AACOM" }: { agencyName?: string }) {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [loading, setLoading] = useState(true);
@@ -177,8 +177,8 @@ export default function ReportesClient() {
                         <Users className="h-8 w-8 text-indigo-600 dark:text-indigo-500" />
                         Reporte de Actividad
                     </h2>
-                    <p className="text-muted-foreground text-sm font-medium">
-                        Resumen gerencial de la productividad del equipo AACOM.
+                    <p className="text-sm text-muted-foreground mt-1">
+                        Resumen gerencial de la productividad del equipo {agencyName}.
                     </p>
                 </div>
                 
