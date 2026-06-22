@@ -135,6 +135,12 @@ export default async function DashboardLayout({
                                     Asistente {shortAgencyName}
                                 </Link>
                                 <Link
+                                    href="/documentacion"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
+                                >
+                                    Mi Biblioteca
+                                </Link>
+                                <Link
                                     href="/cotizador"
                                     className="text-muted-foreground transition-colors hover:text-foreground font-semibold text-teal-600 dark:text-teal-400"
                                 >
@@ -232,6 +238,12 @@ export default async function DashboardLayout({
                                         >
                                             <MessageSquare className="h-5 w-5 text-pink-500" />
                                             Asistente {shortAgencyName}
+                                        </Link>
+                                        <Link
+                                            href="/documentacion"
+                                            className="text-muted-foreground hover:text-foreground"
+                                        >
+                                            Mi Biblioteca
                                         </Link>
                                         <Link
                                             href="/cotizador"

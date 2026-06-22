@@ -28,6 +28,8 @@ model Agency {
   policies            Policy[]
   adnDiagnostics      AdnDiagnostic[]
   activityLogs        ActivityLog[]
+  documentPacks       AgencyDocumentPack[]
+  agencyDocuments     AgencyDocument[]
   dailyRecords        DailyRecord[]
   cotizaciones        Cotizacion[]
 
@@ -336,5 +338,53 @@ model ScheduledPush {
   timeHour    Int
   recipientId String
   runDate     String?
+  createdAt   DateTime @default(now())
+}
+
+// ----------------------------------------------------------------------------
+// Módulo de Biblioteca y Documentación
+// ----------------------------------------------------------------------------
+
+model DocumentPack {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  documents   PackDocument[]
+  agencies    AgencyDocumentPack[]
+}
+
+model PackDocument {
+  id             String       @id @default(cuid())
+  packId         String
+  pack           DocumentPack @relation(fields: [packId], references: [id], onDelete: Cascade)
+  name           String
+  fileUrl        String
+  fileSize       Int          @default(0) // En bytes
+  fileType       String?
+  createdAt      DateTime     @default(now())
+}
+
+model AgencyDocumentPack {
+  agencyId      String
+  agency        Agency       @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  packId        String
+  pack          DocumentPack @relation(fields: [packId], references: [id], onDelete: Cascade)
+  enabledAt     DateTime     @default(now())
+
+  @@id([agencyId, packId])
+}
+
+model AgencyDocument {
+  id          String   @id @default(cuid())
+  agencyId    String
+  agency      Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  name        String
+  fileUrl     String
+  fileSize    Int      @default(0) // En bytes para calcular el limite de 80MB
+  fileType    String?
   createdAt   DateTime @default(now())
 }
