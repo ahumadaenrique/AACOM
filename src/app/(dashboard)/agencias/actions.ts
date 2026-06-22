@@ -24,6 +24,18 @@ export async function getAgencies() {
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
 
+  // Auto-seed de la agencia matriz en la base de datos actual (para evitar problemas de desincronización)
+  const matrizExists = await prisma.agency.findUnique({ where: { id: "aacom" } });
+  if (!matrizExists) {
+    await prisma.agency.create({
+      data: {
+        id: "aacom",
+        name: "AACOM Seguros",
+        slug: "aacom"
+      }
+    }).catch(() => {}); // Catch por si hay colisiones simultáneas
+  }
+
   return await prisma.agency.findMany({
     include: {
       users: {
