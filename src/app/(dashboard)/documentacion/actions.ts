@@ -67,7 +67,7 @@ export async function uploadGlobalDocument(packId: string, formData: FormData) {
     try {
         const blob = await put(`packs/${packId}/${Date.now()}_${file.name}`, file, { 
             access: 'public',
-            token: process.env.BLOB_READ_WRITE_TOKEN_BIBLIOTECA || process.env.BLOB_READ_WRITE_TOKEN 
+            token: process.env.BLOB_BIBLIOTECA_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN 
         });
         
         const doc = await prisma.packDocument.create({
@@ -135,7 +135,7 @@ export async function uploadAgencyDocument(formData: FormData) {
     try {
         const blob = await put(`agency_${user.agencyId}/${Date.now()}_${file.name}`, file, { 
             access: 'public',
-            token: process.env.BLOB_READ_WRITE_TOKEN_BIBLIOTECA || process.env.BLOB_READ_WRITE_TOKEN 
+            token: process.env.BLOB_BIBLIOTECA_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN 
         });
         
         const doc = await prisma.agencyDocument.create({
