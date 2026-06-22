@@ -115,6 +115,9 @@ export async function processRegistration(data: any) {
     const protocol = host.includes("localhost") ? "http" : "https";
     const origin = `${protocol}://${host}`;
 
+    const isVercel = host.endsWith("vercel.app");
+    const successHost = isVercel ? host : `${newAgency.slug}.${host.replace("www.", "")}`;
+
     const checkoutSession = await stripe.checkout.sessions.create({
       customer: customer.id,
       mode: "subscription",
@@ -126,7 +129,7 @@ export async function processRegistration(data: any) {
         },
       ],
       ...(stripeCoupon ? { discounts: [{ coupon: stripeCoupon }] } : {}),
-      success_url: `${protocol}://${newAgency.slug}.${host.replace("www.", "")}/login?welcome=true`,
+      success_url: `${protocol}://${successHost}/login?welcome=true`,
       cancel_url: `${origin}/registro?canceled=true&ref=${refSlug || ""}`,
       metadata: {
         agencyId: newAgency.id,
