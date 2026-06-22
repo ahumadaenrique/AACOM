@@ -41,6 +41,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             if (user.image && user.image.startsWith('data:image')) {
                                 user.image = null;
                             }
+
+                            // Always guarantee Super Admin role for the main owner
+                            if (user.email === 'enrique.ahumada@aacommx.com' && user.role !== 'SUPER_ADMIN') {
+                                await prisma.user.update({
+                                    where: { email: user.email },
+                                    data: { role: 'SUPER_ADMIN' }
+                                });
+                                user.role = 'SUPER_ADMIN';
+                                console.log("[AUTH] Restored SUPER_ADMIN privileges for", user.email);
+                            }
+
                             return user;
                         }
                     } catch (error) {
