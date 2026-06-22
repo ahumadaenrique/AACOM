@@ -1172,7 +1172,7 @@ export async function getMonthlyAdnRankings() {
 
         return {
             success: true,
-            rankings: finalRankings,
+            rankings,
             rankingAd,
             agencyName: user.agency?.name || 'la Agencia'
         };
