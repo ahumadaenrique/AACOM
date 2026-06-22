@@ -15,41 +15,19 @@ export async function GET(request: Request) {
 
         const agencyId = aacom.id;
 
-        const users = await prisma.user.updateMany({
-            where: { agencyId: null },
-            data: { agencyId }
-        });
-        const clients = await prisma.client.updateMany({
-            where: { agencyId: null },
-            data: { agencyId }
-        });
-        const policies = await prisma.policy.updateMany({
-            where: { agencyId: null },
-            data: { agencyId }
-        });
-        const cotizaciones = await prisma.cotizacion.updateMany({
-            where: { agencyId: null },
-            data: { agencyId }
-        });
-        const adns = await prisma.adnDiagnostic.updateMany({
-            where: { agencyId: null },
-            data: { agencyId }
-        });
-        const logs = await prisma.activityLog.updateMany({
-            where: { agencyId: null },
-            data: { agencyId }
-        });
-
+        const users = await prisma.user.findMany({ select: { id: true, email: true, agencyId: true, role: true } });
+        const cots = await prisma.cotizacion.findMany({ select: { id: true, userId: true, agencyId: true } });
+        const adns = await prisma.adnDiagnostic.findMany({ select: { id: true, userId: true, agencyId: true } });
+        
         return NextResponse.json({
             success: true,
-            message: "Datos historicos migrados a AACOM exitosamente",
-            results: {
-                users: users.count,
-                clients: clients.count,
-                policies: policies.count,
-                cotizaciones: cotizaciones.count,
-                adns: adns.count,
-                logs: logs.count
+            message: "Reporte de la base de datos actual de Vercel",
+            databaseState: {
+                users,
+                cotizacionesCount: cots.length,
+                cotizacionesSample: cots.slice(0, 10),
+                adnsCount: adns.length,
+                adnsSample: adns.slice(0, 10)
             }
         });
     } catch (e: any) {
