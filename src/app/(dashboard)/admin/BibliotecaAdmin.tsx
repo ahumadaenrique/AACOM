@@ -56,18 +56,29 @@ export default function BibliotecaAdmin() {
         }
     }
 
-    const handleUploadToPack = async (packId: string, file: File) => {
+    const handleUploadToPack = async (packId: string, files: FileList) => {
         setUploadingPackId(packId)
-        const formData = new FormData()
-        formData.append("file", file)
         
-        const res = await uploadGlobalDocument(packId, formData)
-        if (res.success) {
+        let successCount = 0;
+        for (let i = 0; i < files.length; i++) {
+            const formData = new FormData()
+            formData.append("file", files[i])
+            
+            const res = await uploadGlobalDocument(packId, formData)
+            if (res.success) {
+                successCount++;
+            } else {
+                alert(`Error al subir ${files[i].name}: ${res.message}`)
+            }
+        }
+
+        if (successCount > 0) {
             loadData()
-        } else {
-            alert(res.message)
         }
         setUploadingPackId(null)
+        if (fileInputRef.current[packId]) {
+            fileInputRef.current[packId]!.value = ""
+        }
     }
 
     const handleUploadAgencyDoc = async (file: File) => {
@@ -171,10 +182,13 @@ export default function BibliotecaAdmin() {
                                                 type="file" 
                                                 className="text-xs file:text-xs" 
                                                 accept=".pdf,.doc,.docx,.txt"
+                                                multiple
                                                 ref={(el) => { fileInputRef.current[pack.id] = el }}
                                                 onChange={(e) => {
-                                                    const file = e.target.files?.[0]
-                                                    if (file) handleUploadToPack(pack.id, file)
+                                                    const files = e.target.files
+                                                    if (files && files.length > 0) {
+                                                        handleUploadToPack(pack.id, files)
+                                                    }
                                                 }}
                                                 disabled={uploadingPackId === pack.id}
                                             />
