@@ -209,7 +209,7 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                                                 <span className="font-bold">${rev.avancePrimasActual.toLocaleString()}</span>
                                             </div>
                                             <div className="h-2 w-full bg-slate-200 dark:bg-zinc-800 rounded-full overflow-hidden mt-1">
-                                                <div className="h-full bg-indigo-500" style={{ width: \`\${Math.min(100, (rev.avancePrimasActual / rev.metaPrimasMensual) * 100)}%\` }}></div>
+                                                <div className="h-full bg-indigo-500" style={{ width: `${Math.min(100, (rev.avancePrimasActual / rev.metaPrimasMensual) * 100)}%` }}></div>
                                             </div>
                                             <div className="flex justify-between items-center text-sm pt-2">
                                                 <span className="text-muted-foreground flex items-center gap-1"><Activity className="w-4 h-4"/> Puntos:</span>
