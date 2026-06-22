@@ -414,6 +414,7 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
         const newDiagnostic = await prisma.adnDiagnostic.create({
             data: {
                 userId: user.id,
+                agencyId: user.agencyId,
                 modalidad: data.modalidad,
                 clienteNombre: data.clienteNombre,
                 clienteEdad: data.clienteEdad,
@@ -1110,6 +1111,17 @@ export async function getMonthlyAdnRankings() {
             include: { agency: true }
         });
         if (!user) return { success: false, rankings: [], rankingAd: null, message: "Usuario no encontrado" };
+
+        // --- MIGRACIÓN DE RESCATE (ADNs y Cotizaciones huérfanas) ---
+        await prisma.adnDiagnostic.updateMany({
+            where: { agencyId: null },
+            data: { agencyId: 'aacom' }
+        });
+        await prisma.cotizacion.updateMany({
+            where: { agencyId: null },
+            data: { agencyId: 'aacom' }
+        });
+        // -------------------------------------------------------------
 
         const now = new Date();
         const year = now.getFullYear();
