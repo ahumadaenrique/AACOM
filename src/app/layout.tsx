@@ -19,8 +19,8 @@ export async function generateMetadata(): Promise<Metadata> {
     const agencyName = agency?.name || "AACOM Seguros";
 
     return {
-        title: `${agencyName} cotizador - CRM`,
-        description: "Plataforma de Desarrollo de Agentes",
+        title: `SYSGPYA | ${agencyName}`,
+        description: "Sistema de Gestión de Promotorías y Agencias",
         manifest: "/manifest.json",
         appleWebApp: {
             capable: true,
