@@ -34,11 +34,14 @@ export async function POST(req: Request) {
           : now;
       
       const newEndDate = new Date(currentEndDate);
+      let daysToAdd = 365;
       
       if (monthsToAddStr) {
-        newEndDate.setMonth(newEndDate.getMonth() + parseInt(monthsToAddStr, 10));
+        const months = parseInt(monthsToAddStr, 10);
+        daysToAdd = months * 30; // Approximated days for referral check
+        newEndDate.setMonth(newEndDate.getMonth() + months);
       } else {
-        const daysToAdd = daysToAddStr ? parseInt(daysToAddStr, 10) : 365; // Default 365 if not found
+        daysToAdd = daysToAddStr ? parseInt(daysToAddStr, 10) : 365; // Default 365 if not found
         newEndDate.setDate(newEndDate.getDate() + daysToAdd);
       }
 
