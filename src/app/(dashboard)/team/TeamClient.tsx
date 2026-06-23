@@ -53,7 +53,7 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");
     const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
-    const [currentUser, setCurrentUser] = useState<{ id: string; name: string | null; email: string; role: string } | null>(null);
+    const [currentUser, setCurrentUser] = useState<{ id: string; name: string | null; email: string; role: string; agencyId?: string | null } | null>(null);
     
     // Edit Form State
     const [isEditing, setIsEditing] = useState(false);

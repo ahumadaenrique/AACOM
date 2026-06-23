@@ -1409,7 +1409,7 @@ export async function getCurrentUser() {
     try {
         const user = await prisma.user.findUnique({
             where: { email: session.user.email },
-            select: { id: true, name: true, email: true, role: true }
+            select: { id: true, name: true, email: true, role: true, agencyId: true }
         });
         if (!user) {
             return { success: false, message: "Usuario no encontrado" };
