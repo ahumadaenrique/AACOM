@@ -299,20 +299,37 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
     return (
         <div className="flex flex-col gap-8 w-full max-w-lg mx-auto py-4 md:max-w-6xl md:px-0">
             {/* HEADER AREA */}
-                  <div className="flex flex-col gap-1.5 px-4 md:px-0">
-                <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl flex items-center justify-center border border-indigo-200 dark:border-indigo-800/50">
-                        <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 px-4 md:px-0">
+                <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl flex items-center justify-center border border-indigo-200 dark:border-indigo-800/50">
+                            <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                        </div>
+                        <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-zinc-100">
+                            Equipo {agencyName}
+                        </h1>
                     </div>
-                    <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-zinc-100">
-                        Equipo {agencyName}
-                    </h1>
+                    <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
+                        Mantente conectado con todos los miembros.
+                        <br className="hidden md:block" />
+                        Conoce e interactúa con el equipo de promotores, agentes y staff de {agencyName}.
+                    </p>
                 </div>
-                <p className="text-sm text-muted-foreground max-w-2xl leading-relaxed">
-                    Mantente conectado con todos los miembros.
-                    <br className="hidden md:block" />
-                    Conoce e interactúa con el equipo de promotores, agentes y staff de {agencyName}.
-                </p>
+
+                {/* Invite Button for Admins */}
+                {(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') && currentUser?.agencyId && (
+                    <Button 
+                        onClick={() => {
+                            const inviteUrl = `${window.location.origin}/invite/${currentUser.agencyId}`;
+                            navigator.clipboard.writeText(inviteUrl);
+                            alert("¡Enlace de invitación copiado al portapapeles!\n\n" + inviteUrl);
+                        }}
+                        className="bg-teal-600 hover:bg-teal-700 text-white font-bold whitespace-nowrap self-start md:self-center shadow-md"
+                    >
+                        <Building2 className="w-4 h-4 mr-2" />
+                        Copiar Enlace de Invitación
+                    </Button>
+                )}
             </div>
 
             {/* SEARCH AREA */}

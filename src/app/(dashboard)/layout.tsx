@@ -163,13 +163,7 @@ export default async function DashboardLayout({
                                     <HeartPulse className="h-4 w-4 text-red-500" />
                                     ADN
                                 </Link>
-                                <Link
-                                    href="/support"
-                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1 text-blue-600 dark:text-blue-400"
-                                >
-                                    <LifeBuoy className="h-4 w-4 text-blue-500" />
-                                    Ayuda y Soporte
-                                </Link>
+
                                 {isAdmin && (
                                     <>
                                         <Link
@@ -285,13 +279,7 @@ export default async function DashboardLayout({
                                             <HeartPulse className="h-5 w-5 text-red-500" />
                                             ADN {shortAgencyName}
                                         </Link>
-                                        <Link
-                                            href="/support"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <LifeBuoy className="h-5 w-5 text-blue-500" />
-                                            Ayuda y Soporte
-                                        </Link>
+
                                         {isAdmin && (
                                             <>
                                                 <Link
@@ -365,6 +353,14 @@ export default async function DashboardLayout({
                             {dbUser && (
                                 <DigitalCardModalButton user={dbUser} agencyName={agencyName} />
                             )}
+
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem asChild className="text-xs font-bold text-slate-700 dark:text-zinc-300 py-2.5 rounded-xl cursor-pointer hover:bg-slate-100 dark:hover:bg-zinc-800">
+                                <Link href="/support" className="flex items-center gap-1.5 w-full text-blue-600 dark:text-blue-400">
+                                    <LifeBuoy className="h-4 w-4" />
+                                    Ayuda y Soporte
+                                </Link>
+                            </DropdownMenuItem>
 
                             {isAdmin && (
                                 <>
