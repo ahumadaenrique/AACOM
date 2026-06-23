@@ -76,6 +76,7 @@ export async function POST(req: Request) {
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
     const isAgent = session.metadata?.isAgent === 'true';
+    const isAgencySeat = session.metadata?.isAgencySeat === 'true';
 
     if (isAgent) {
       const agencyId = session.metadata?.agencyId;
@@ -109,6 +110,14 @@ export async function POST(req: Request) {
                 }
             });
         }
+      }
+    } else if (isAgencySeat) {
+      const agencyId = session.metadata?.agencyId;
+      if (agencyId) {
+        await prisma.agency.update({
+          where: { id: agencyId },
+          data: { purchasedSeats: { increment: 1 } }
+        });
       }
     } else {
       const agencyId = session.metadata?.agencyId;
@@ -150,14 +159,28 @@ export async function POST(req: Request) {
     }
   }
 
-  // Handle customer.subscription.deleted (Agent cancellation)
+  // Handle customer.subscription.deleted (Agent or Seat cancellation)
   if (event.type === "customer.subscription.deleted") {
     const subscription = event.data.object as Stripe.Subscription;
+    const isAgencySeat = subscription.metadata?.isAgencySeat === 'true';
     
-    await prisma.user.updateMany({
-        where: { stripeSubscriptionId: subscription.id },
-        data: { active: false }
-    });
+    if (isAgencySeat) {
+        const agencyId = subscription.metadata?.agencyId;
+        if (agencyId) {
+            const agency = await prisma.agency.findUnique({ where: { id: agencyId } });
+            if (agency && agency.purchasedSeats > 0) {
+                await prisma.agency.update({
+                    where: { id: agencyId },
+                    data: { purchasedSeats: { decrement: 1 } }
+                });
+            }
+        }
+    } else {
+        await prisma.user.updateMany({
+            where: { stripeSubscriptionId: subscription.id },
+            data: { active: false }
+        });
+    }
   }
 
   return new NextResponse("Webhook processed successfully", { status: 200 });

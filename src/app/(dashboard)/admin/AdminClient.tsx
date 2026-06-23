@@ -73,6 +73,7 @@ export default function AdminClient() {
   const [docContent, setDocContent] = useState<string>("")
   const [docIsGlobalTemplate, setDocIsGlobalTemplate] = useState<boolean>(false)
   const [currentUserRole, setCurrentUserRole] = useState<string>("ADMIN")
+  const [currentUserData, setCurrentUserData] = useState<any | null>(null)
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null)
   const [savingDoc, setSavingDoc] = useState<boolean>(false)
   const [docMsg, setDocMsg] = useState<string>("")
@@ -505,6 +506,7 @@ export default function AdminClient() {
       const userRes = await getCurrentUser()
       if (userRes.success && userRes.user) {
         setCurrentUserRole(userRes.user.role)
+        setCurrentUserData(userRes.user)
       }
 
       // 1. Get quotes
@@ -1736,13 +1738,46 @@ export default function AdminClient() {
               
               {/* User Accounts Dashboard (Credentials Table) */}
               <Card className="border shadow-sm overflow-hidden flex flex-col justify-between">
-                <CardHeader className="py-4 border-b bg-slate-50/50">
-                  <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider">
-                    Cuentas de Usuarios con Acceso (Login)
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    Administra el acceso del personal: activa/suspende cuentas, redefine contraseñas y elimina credenciales.
-                  </CardDescription>
+                <CardHeader className="py-4 border-b bg-slate-50/50 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div>
+                    <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider">
+                      Cuentas de Usuarios con Acceso (Login)
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Administra el acceso del personal: activa/suspende cuentas, redefine contraseñas y elimina credenciales.
+                    </CardDescription>
+                  </div>
+
+                  {currentUserData?.agency && (
+                    <div className="flex flex-col items-start md:items-end gap-1.5 bg-white p-3 rounded-xl border border-slate-200 shadow-sm w-full md:w-auto">
+                      <div className="flex items-center gap-2 text-xs font-black text-slate-700">
+                        <Users className="h-4 w-4 text-indigo-500" />
+                        Capacidad: {usersList.length} / {10 + (currentUserData.agency.purchasedSeats || 0)}
+                      </div>
+                      <p className="text-[10px] text-muted-foreground font-semibold">
+                        (10 lugares base + {currentUserData.agency.purchasedSeats || 0} extra)
+                      </p>
+                      <Button 
+                        size="sm" 
+                        onClick={async () => {
+                          try {
+                            const res = await fetch('/api/checkout/seat', { method: 'POST' });
+                            if (res.ok) {
+                              const data = await res.json();
+                              window.location.href = data.url;
+                            } else {
+                              alert("Error al iniciar la compra del asiento. Por favor contacta a soporte.");
+                            }
+                          } catch (err) {
+                            alert("Error de conexión al servidor de pagos.");
+                          }
+                        }}
+                        className="w-full mt-1 bg-teal-600 hover:bg-teal-700 text-white text-[10px] h-7 rounded-lg shadow-sm font-bold"
+                      >
+                        Aumentar Capacidad (+1 Lugar) - $299 MXN
+                      </Button>
+                    </div>
+                  )}
                 </CardHeader>
                 <CardContent className="p-0">
                   {loadingUsers ? (
