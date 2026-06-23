@@ -413,7 +413,7 @@ export default function CotizadorPage({ agencyName = "AACOM Seguros", agencyLogo
       targetRow = results[results.length - 1] // Fallback to last row
     }
 
-    const ahorroAtTargetPesos = targetRow ? targetRow.fondoDisponiblePesos : 0
+    const ahorroAtTargetPesos = targetRow ? (targetRow.fondoDisponiblePesos > 0 ? targetRow.fondoDisponiblePesos : targetRow.valoresPesos) : 0
     const ahorroAtTargetUdis = targetRow ? targetRow.ahorroUdis : 0
     const rendimientoAtTarget = targetRow ? targetRow.rendimiento * 100 : 0
 
