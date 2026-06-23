@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { askAacomAssistant } from "@/app/actions";
 import { 
     MessageSquare, 
     Send, 
@@ -53,23 +52,70 @@ export default function AssistantPage({ agencyName = "AACOM" }: { agencyName?: s
         setLoading(true);
 
         try {
-            // Send conversation history (except current message) and userMessage to server action
             const historyForApi = messages;
-            const res = await askAacomAssistant(historyForApi, trimmed);
+            const response = await fetch("/api/assistant", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ messages: historyForApi, prompt: trimmed })
+            });
 
-            if (res.success && res.reply) {
-                const modelMsg: ChatMessage = {
-                    role: "model",
-                    parts: [{ text: res.reply }]
-                };
-                setMessages(prev => [...prev, modelMsg]);
-            } else {
-                setErrorMsg(res.message || "No se pudo conectar con el Asistente.");
+            if (!response.ok) {
+                const text = await response.text();
+                setErrorMsg(text || "No se pudo conectar con el Asistente.");
+                setLoading(false);
+                return;
             }
+
+            const reader = response.body?.getReader();
+            if (!reader) {
+                setLoading(false);
+                return;
+            }
+
+            const decoder = new TextDecoder();
+            let accumulatedText = "";
+
+            // Remove loading spinner and inject empty model message container
+            setLoading(false);
+            setMessages(prev => [...prev, { role: "model", parts: [{ text: "" }] }]);
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value, { stream: true });
+                const lines = chunk.split("\n");
+
+                for (const line of lines) {
+                    if (line.startsWith("data: ")) {
+                        const dataStr = line.slice(6).trim();
+                        if (!dataStr || dataStr === "[DONE]") continue;
+                        
+                        try {
+                            const data = JSON.parse(dataStr);
+                            const textPart = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                            if (textPart) {
+                                accumulatedText += textPart;
+                                
+                                setMessages(prev => {
+                                    const newMsgs = [...prev];
+                                    const lastMsg = newMsgs[newMsgs.length - 1];
+                                    if (lastMsg && lastMsg.role === "model") {
+                                        lastMsg.parts[0].text = accumulatedText;
+                                    }
+                                    return newMsgs;
+                                });
+                            }
+                        } catch (e) {
+                            // ignore partial chunk JSON parsing errors
+                        }
+                    }
+                }
+            }
+
         } catch (err: any) {
             console.error("Error in chat page:", err);
             setErrorMsg(err.message || "Error al generar la respuesta de la IA.");
-        } finally {
             setLoading(false);
         }
     };
@@ -217,7 +263,7 @@ export default function AssistantPage({ agencyName = "AACOM" }: { agencyName?: s
                             <div className="flex justify-start w-full">
                                 <div className="bg-slate-100 dark:bg-zinc-900 text-slate-500 rounded-2xl rounded-tl-none px-4 py-3 border border-slate-200/30 dark:border-zinc-800 flex items-center gap-2">
                                     <Loader2 className="h-4 w-4 animate-spin text-pink-500" />
-                                    <span className="text-[10px] font-black uppercase tracking-wider animate-pulse">Copiloto está pensando...</span>
+                                    <span className="text-[10px] font-black uppercase tracking-wider animate-pulse">Asistente experta pensando...</span>
                                 </div>
                             </div>
                         )}
