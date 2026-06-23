@@ -160,10 +160,14 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
                 hobby: editForm.hobby
             };
 
-            // Only send administrative fields if admin
-            if ((currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN')) {
-                payload.name = editForm.name;
+            // Admin ONLY fields
+            if (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') {
                 payload.email = editForm.email;
+            }
+
+            // Admin or Self fields
+            if ((currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') || currentUser?.id === selectedUser.id) {
+                payload.name = editForm.name;
                 payload.phone = editForm.phone;
                 payload.image = editForm.image;
                 payload.birthDate = editForm.birthDate || null;
@@ -544,8 +548,9 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
                                                         type="email" 
                                                         value={editForm.email} 
                                                         onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                                                        className="bg-background border border-slate-300 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs font-semibold w-full focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                                                        className="bg-background border border-slate-300 dark:border-zinc-700 rounded-lg px-2 py-1 text-xs font-semibold w-full focus:ring-1 focus:ring-indigo-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                                                         required
+                                                        disabled={!(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN')}
                                                     />
                                                 ) : (
                                                     <a href={`mailto:${selectedUser.email}`} className="text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:underline block break-all">

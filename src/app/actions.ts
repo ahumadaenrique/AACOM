@@ -1534,10 +1534,14 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
 
         const updateData: any = {};
 
-        // ADMIN can update base fields
+        // ADMIN ONLY fields
         if (isAdmin) {
-            if (data.name !== undefined) updateData.name = data.name;
             if (data.email !== undefined) updateData.email = data.email;
+        }
+
+        // ADMIN or SELF fields
+        if (isAdmin || isSelf) {
+            if (data.name !== undefined) updateData.name = data.name;
             if (data.phone !== undefined) updateData.phone = data.phone;
             if (data.image !== undefined) updateData.image = data.image;
             if (data.birthDate !== undefined) {
