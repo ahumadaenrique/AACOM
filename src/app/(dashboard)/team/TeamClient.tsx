@@ -319,17 +319,22 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
 
                 {/* Invite Button for Admins */}
                 {(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') && currentUser?.agencyId && (
-                    <Button 
-                        onClick={() => {
-                            const inviteUrl = `${window.location.origin}/invite/${currentUser.agencyId}`;
-                            navigator.clipboard.writeText(inviteUrl);
-                            alert("¡Enlace de invitación copiado al portapapeles!\n\n" + inviteUrl);
-                        }}
-                        className="bg-teal-600 hover:bg-teal-700 text-white font-bold whitespace-nowrap self-start md:self-center shadow-md"
-                    >
-                        <Building2 className="w-4 h-4 mr-2" />
-                        Copiar Enlace de Invitación
-                    </Button>
+                    <div className="flex flex-col items-center md:items-end gap-1.5 self-start md:self-center mt-2 md:mt-0">
+                        <Button 
+                            onClick={() => {
+                                const inviteUrl = `${window.location.origin}/invite/${currentUser.agencyId}`;
+                                navigator.clipboard.writeText(inviteUrl);
+                                alert("¡Enlace de invitación copiado al portapapeles!\n\n" + inviteUrl);
+                            }}
+                            className="bg-teal-600 hover:bg-teal-700 text-white font-bold whitespace-nowrap shadow-md w-full md:w-auto"
+                        >
+                            <Building2 className="w-4 h-4 mr-2" />
+                            Copiar Enlace de Invitación
+                        </Button>
+                        <p className="text-[10px] text-muted-foreground text-center md:text-right max-w-[220px] font-medium leading-tight">
+                            Invita agentes adicionales a que paguen por su cuenta y se unan a tu estructura.
+                        </p>
+                    </div>
                 )}
             </div>
 
