@@ -33,7 +33,7 @@ export default async function manifest(): Promise<MetadataRoute.Manifest> {
                 src: logoUrl,
                 sizes: '512x512',
                 type: 'image/png',
-                purpose: 'any maskable'
+                purpose: 'maskable'
             }
         ]
     };
