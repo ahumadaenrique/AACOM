@@ -1711,7 +1711,7 @@ export async function toggleKnowledgeDocumentActiveStatus(id: string) {
             where: { email: session.user.email }
         });
 
-        if (!user || user.role !== 'ADMIN') {
+        if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
