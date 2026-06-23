@@ -71,6 +71,8 @@ export default function AdminClient() {
   const [loadingDocs, setLoadingDocs] = useState<boolean>(false)
   const [docTitle, setDocTitle] = useState<string>("")
   const [docContent, setDocContent] = useState<string>("")
+  const [docIsGlobalTemplate, setDocIsGlobalTemplate] = useState<boolean>(false)
+  const [currentUserRole, setCurrentUserRole] = useState<string>("ADMIN")
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null)
   const [savingDoc, setSavingDoc] = useState<boolean>(false)
   const [docMsg, setDocMsg] = useState<string>("")
@@ -500,6 +502,11 @@ export default function AdminClient() {
     setLoading(true)
     setError("")
     try {
+      const userRes = await getCurrentUser()
+      if (userRes.success && userRes.user) {
+        setCurrentUserRole(userRes.user.role)
+      }
+
       // 1. Get quotes
       const res = await getCotizaciones()
       if (res.success && res.cotizaciones) {
@@ -572,11 +579,12 @@ export default function AdminClient() {
     setDocMsg("Guardando...")
     try {
       const { saveKnowledgeDocument } = await import("@/app/actions")
-      const res = await saveKnowledgeDocument(selectedDocId, docTitle.trim(), docContent.trim())
+      const res = await saveKnowledgeDocument(selectedDocId, docTitle.trim(), docContent.trim(), docIsGlobalTemplate)
       if (res.success) {
         setDocMsg("¡Documento guardado con éxito!")
         setDocTitle("")
         setDocContent("")
+        setDocIsGlobalTemplate(false)
         setSelectedDocId(null)
         await fetchKnowledgeDocsList()
         setTimeout(() => setDocMsg(""), 3000)
@@ -3026,6 +3034,22 @@ export default function AdminClient() {
                     />
                   </div>
 
+                  {currentUserRole === 'SUPER_ADMIN' && (
+                    <div className="flex items-center space-x-2 py-2 p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800/50 rounded-xl">
+                      <input 
+                        type="checkbox" 
+                        id="global-template-checkbox"
+                        checked={docIsGlobalTemplate}
+                        onChange={(e) => setDocIsGlobalTemplate(e.target.checked)}
+                        className="h-4 w-4 text-amber-600 focus:ring-amber-500 border-amber-300 rounded cursor-pointer"
+                        disabled={savingDoc}
+                      />
+                      <label htmlFor="global-template-checkbox" className="text-xs font-bold text-amber-700 dark:text-amber-500 cursor-pointer flex items-center gap-1 select-none">
+                        💡 Compartir como Plantilla Base (Se clonará a nuevas agencias)
+                      </label>
+                    </div>
+                  )}
+
                   {docMsg && (
                     <p className="text-[10px] font-black text-indigo-600 uppercase tracking-widest text-center animate-pulse">
                       {docMsg}
@@ -3042,6 +3066,7 @@ export default function AdminClient() {
                           setSelectedDocId(null)
                           setDocTitle("")
                           setDocContent("")
+                          setDocIsGlobalTemplate(false)
                         }}
                         className="flex-1 font-bold text-xs"
                       >
@@ -3094,8 +3119,13 @@ export default function AdminClient() {
                         }`}
                       >
                         <div className="space-y-1 flex-1 min-w-0">
-                          <h4 className="text-xs font-black text-slate-800 dark:text-zinc-200 truncate flex items-center gap-1.5">
+                          <h4 className="text-xs font-black text-slate-800 dark:text-zinc-200 truncate flex flex-wrap items-center gap-1.5">
                             {doc.title}
+                            {doc.isGlobalTemplate && (
+                              <span className="bg-amber-100 text-amber-700 border border-amber-200 text-[8px] px-1.5 py-0.5 rounded uppercase tracking-widest font-black">
+                                Plantilla Default
+                              </span>
+                            )}
                           </h4>
                           <p className="text-[10px] text-slate-500 font-semibold line-clamp-2">
                             {doc.content}
@@ -3113,6 +3143,7 @@ export default function AdminClient() {
                                 setSelectedDocId(doc.id)
                                 setDocTitle(doc.title)
                                 setDocContent(doc.content)
+                                setDocIsGlobalTemplate(doc.isGlobalTemplate || false)
                               }}
                               variant="outline"
                               size="sm"

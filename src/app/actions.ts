@@ -1621,7 +1621,7 @@ export async function getKnowledgeDocuments() {
     }
 }
 
-export async function saveKnowledgeDocument(id: string | null, title: string, content: string) {
+export async function saveKnowledgeDocument(id: string | null, title: string, content: string, isGlobalTemplate: boolean = false) {
     const session = await auth();
     if (!session?.user?.email) {
         return { success: false, message: "No autenticado" };
@@ -1642,13 +1642,13 @@ export async function saveKnowledgeDocument(id: string | null, title: string, co
         if (id) {
             const updated = await prisma.knowledgeDocument.update({
                 where: { id },
-                data: { title, content }
+                data: { title, content, isGlobalTemplate }
             });
             revalidatePath('/admin');
             return { success: true, doc: updated, message: "Documento actualizado" };
         } else {
             const created = await prisma.knowledgeDocument.create({
-                data: { title, content, agencyId: user.agencyId }
+                data: { title, content, agencyId: user.agencyId, isGlobalTemplate }
             });
             revalidatePath('/admin');
             return { success: true, doc: created, message: "Documento guardado con éxito" };

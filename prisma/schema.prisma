@@ -316,13 +316,14 @@ model ActivityLog {
 }
 
 model KnowledgeDocument {
-  id        String   @id @default(cuid())
-  agencyId  String?
-  agency    Agency?  @relation(fields: [agencyId], references: [id])
-  title     String
-  content   String   // Contenido de texto
-  active    Boolean  @default(true)
-  createdAt DateTime @default(now())
+  id               String   @id @default(cuid())
+  agencyId         String?
+  agency           Agency?  @relation(fields: [agencyId], references: [id])
+  title            String
+  content          String   // Contenido de texto
+  active           Boolean  @default(true)
+  isGlobalTemplate Boolean  @default(false)
+  createdAt        DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 

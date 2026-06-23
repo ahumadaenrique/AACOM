@@ -90,7 +90,7 @@ export async function createAgency(data: z.infer<typeof agencySchema>) {
   const rootAgency = await prisma.agency.findUnique({ where: { slug: "aacom" } });
   if (rootAgency) {
       const defaultDocs = await prisma.knowledgeDocument.findMany({
-          where: { agencyId: rootAgency.id }
+          where: { agencyId: rootAgency.id, isGlobalTemplate: true }
       });
       if (defaultDocs.length > 0) {
           await prisma.knowledgeDocument.createMany({
