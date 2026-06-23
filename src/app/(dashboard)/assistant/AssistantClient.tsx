@@ -177,10 +177,10 @@ export default function AssistantPage({ agencyName = "AACOM" }: { agencyName?: s
 
                         <div className="max-w-md space-y-2">
                             <p className="text-sm font-semibold text-slate-800 dark:text-zinc-200">
-                                ¡Hola! Soy tu Copiloto {agencyName}.
+                                ¡Hola! Soy tu Súper Asistente Inteligente.
                             </p>
                             <p className="text-xs text-muted-foreground font-semibold leading-relaxed">
-                                Estoy entrenado con las directivas oficiales de la promotoría. Puedes preguntarme detalles de productos, bonos de Insignia Life o reglas comerciales.
+                                Estoy entrenada con directivas de seguros e información cargada por tu Director de Agencia / Promotor.
                             </p>
                         </div>
 
