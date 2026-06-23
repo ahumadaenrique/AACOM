@@ -11,7 +11,7 @@ export async function GET() {
         let count = 0;
         
         for (const rev of revs) {
-            if (rev.agent.name.includes("Raul") || rev.agent.name.includes("Coka")) {
+            if (rev.agent?.name?.includes("Raul") || rev.agent?.name?.includes("Coka")) {
                 await prisma.performanceReview.update({
                     where: { id: rev.id },
                     data: { avancePrimasActual: 120000 }
