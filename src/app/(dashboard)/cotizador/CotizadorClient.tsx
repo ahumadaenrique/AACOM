@@ -415,7 +415,17 @@ export default function CotizadorPage({ agencyName = "AACOM Seguros", agencyLogo
 
     const ahorroAtTargetPesos = targetRow ? (targetRow.fondoDisponiblePesos > 0 ? targetRow.fondoDisponiblePesos : targetRow.valoresPesos) : 0
     const ahorroAtTargetUdis = targetRow ? targetRow.ahorroUdis : 0
-    const rendimientoAtTarget = targetRow ? targetRow.rendimiento * 100 : 0
+    
+    let rendimientoAtTarget = targetRow ? targetRow.rendimiento * 100 : 0
+    if (formData.producto === "Insignia Life Universal" && targetRow) {
+      // Si la columna H se mapeó, usarla directo. Si la celda trae decimales < 2 (ej. 1.15), multiplicamos por 100.
+      let recVal = targetRow.recuperacionSobreFondo
+      if (recVal > 0 && recVal <= 5) recVal = recVal * 100
+      
+      rendimientoAtTarget = recVal > 0 
+        ? recVal 
+        : (targetRow.accumulatedPremiumPesos > 0 ? (targetRow.fondoDisponiblePesos / targetRow.accumulatedPremiumPesos) * 100 : 0)
+    }
 
     // Correction 8: Suma Asegurada (SA) progression every 10 years
     const saY1 = results[0]?.saPesos || 0
