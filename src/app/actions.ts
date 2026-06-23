@@ -1740,8 +1740,6 @@ export async function toggleKnowledgeDocumentActiveStatus(id: string) {
     }
 }
 
-}
-
 // ==========================================
 // MÓDULO PUSH NOTIFICATIONS
 // ==========================================
