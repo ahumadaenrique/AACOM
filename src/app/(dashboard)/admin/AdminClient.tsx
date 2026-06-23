@@ -3045,7 +3045,7 @@ export default function AdminClient() {
                         disabled={savingDoc}
                       />
                       <label htmlFor="global-template-checkbox" className="text-xs font-bold text-amber-700 dark:text-amber-500 cursor-pointer flex items-center gap-1 select-none">
-                        💡 Compartir como Plantilla Base (Se clonará a nuevas agencias)
+                        💡 Compartir como Plantilla Base (Aplicará en tiempo real a TODAS las agencias actuales y nuevas)
                       </label>
                     </div>
                   )}
