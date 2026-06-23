@@ -523,7 +523,8 @@ export async function createAgentUser(data: { name: string; email: string; role:
         }
 
         const currentUser = await prisma.user.findUnique({
-            where: { email: session.user.email }
+            where: { email: session.user.email },
+            include: { agency: true }
         });
 
         if (!currentUser || currentUser.role !== 'ADMIN') {
@@ -541,6 +542,20 @@ export async function createAgentUser(data: { name: string; email: string; role:
 
         if (existingUser) {
             return { success: false, message: "Ya existe un usuario registrado con este correo" };
+        }
+
+        // Limit Check
+        if (currentUser.agencyId) {
+            const activeUsersCount = await prisma.user.count({
+                where: { agencyId: currentUser.agencyId, active: true }
+            });
+            const limit = 10 + (currentUser.agency?.purchasedSeats || 0);
+            if (activeUsersCount >= limit) {
+                return { 
+                    success: false, 
+                    message: `Límite alcanzado (${limit} usuarios). Adquiere más licencias en tu Portal de Pagos o envíale a este agente una invitación para que pague su propia cuenta.` 
+                };
+            }
         }
 
         const newUser = await prisma.user.create({

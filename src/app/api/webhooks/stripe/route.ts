@@ -75,22 +75,59 @@ export async function POST(req: Request) {
   // Handle checkout.session.completed (First payment)
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
-    const agencyId = session.metadata?.agencyId;
-    const daysToAddStr = session.metadata?.daysToAdd;
-    const discountCodeStr = session.metadata?.discountCodeStr;
-    
-    if (agencyId) {
-      await processSubscriptionPayment(agencyId, daysToAddStr);
-    }
+    const isAgent = session.metadata?.isAgent === 'true';
 
-    if (discountCodeStr) {
-      try {
-        await prisma.discountCode.update({
-          where: { code: discountCodeStr },
-          data: { uses: { increment: 1 } },
-        });
-      } catch (err) {
-        console.error("Error updating discount code uses:", err);
+    if (isAgent) {
+      const agencyId = session.metadata?.agencyId;
+      const email = session.metadata?.email;
+      const name = session.metadata?.name;
+
+      if (agencyId && email) {
+        const existing = await prisma.user.findUnique({ where: { email } });
+        if (!existing) {
+            await prisma.user.create({
+                data: {
+                    name: name || "Agente",
+                    email: email,
+                    agencyId: agencyId,
+                    role: 'AGENTE',
+                    isSelfPaid: true,
+                    stripeCustomerId: session.customer as string,
+                    stripeSubscriptionId: session.subscription as string,
+                    password: "password123",
+                    mustChangePassword: true,
+                }
+            });
+        } else {
+            await prisma.user.update({
+                where: { email: email },
+                data: {
+                    isSelfPaid: true,
+                    stripeCustomerId: session.customer as string,
+                    stripeSubscriptionId: session.subscription as string,
+                    active: true 
+                }
+            });
+        }
+      }
+    } else {
+      const agencyId = session.metadata?.agencyId;
+      const daysToAddStr = session.metadata?.daysToAdd;
+      const discountCodeStr = session.metadata?.discountCodeStr;
+      
+      if (agencyId) {
+        await processSubscriptionPayment(agencyId, daysToAddStr);
+      }
+
+      if (discountCodeStr) {
+        try {
+          await prisma.discountCode.update({
+            where: { code: discountCodeStr },
+            data: { uses: { increment: 1 } },
+          });
+        } catch (err) {
+          console.error("Error updating discount code uses:", err);
+        }
       }
     }
   }
@@ -111,6 +148,16 @@ export async function POST(req: Request) {
         }
       }
     }
+  }
+
+  // Handle customer.subscription.deleted (Agent cancellation)
+  if (event.type === "customer.subscription.deleted") {
+    const subscription = event.data.object as Stripe.Subscription;
+    
+    await prisma.user.updateMany({
+        where: { stripeSubscriptionId: subscription.id },
+        data: { active: false }
+    });
   }
 
   return new NextResponse("Webhook processed successfully", { status: 200 });

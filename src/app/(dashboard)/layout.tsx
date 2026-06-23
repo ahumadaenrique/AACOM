@@ -158,10 +158,17 @@ export default async function DashboardLayout({
                                 </Link>
                                 <Link
                                     href="/adn"
-                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1 text-teal-600 dark:text-teal-400"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
                                 >
                                     <HeartPulse className="h-4 w-4 text-red-500" />
                                     ADN
+                                </Link>
+                                <Link
+                                    href="/support"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1 text-blue-600 dark:text-blue-400"
+                                >
+                                    <LifeBuoy className="h-4 w-4 text-blue-500" />
+                                    Ayuda y Soporte
                                 </Link>
                                 {isAdmin && (
                                     <>
@@ -277,6 +284,13 @@ export default async function DashboardLayout({
                                         >
                                             <HeartPulse className="h-5 w-5 text-red-500" />
                                             ADN {shortAgencyName}
+                                        </Link>
+                                        <Link
+                                            href="/support"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                        >
+                                            <LifeBuoy className="h-5 w-5 text-blue-500" />
+                                            Ayuda y Soporte
                                         </Link>
                                         {isAdmin && (
                                             <>

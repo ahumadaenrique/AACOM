@@ -34,6 +34,9 @@ model Agency {
   cotizaciones        Cotizacion[]
   performanceReviews  PerformanceReview[]
   knowledgeDocuments  KnowledgeDocument[]
+  tickets             Ticket[]
+
+  purchasedSeats      Int       @default(0)
 
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -94,6 +97,12 @@ model User {
   pushSubscriptions PushSubscription[]
   agentReviews      PerformanceReview[] @relation("AgentReviews")
   evaluatedReviews  PerformanceReview[] @relation("EvaluatedReviews")
+  tickets           Ticket[]
+  
+  // Billing
+  isSelfPaid        Boolean   @default(false)
+  stripeCustomerId  String?
+  stripeSubscriptionId String?
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -422,4 +431,18 @@ model PerformanceReview {
   
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+}
+
+model Ticket {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  agencyId    String?
+  agency      Agency?  @relation(fields: [agencyId], references: [id])
+  subject     String
+  description String
+  status      String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
