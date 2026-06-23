@@ -345,6 +345,12 @@ export default async function DashboardLayout({
                                     <span>Configuración</span>
                                 )}
                             </DropdownMenuItem>
+                            
+                            {/* Inyección de Tarjeta Digital */}
+                            {dbUser && (
+                                <DigitalCardModalButton user={dbUser} agencyName={agencyName} />
+                            )}
+
                             {isAdmin && (
                                 <>
                                     <DropdownMenuItem asChild className="text-xs font-bold text-slate-700 dark:text-zinc-300 py-2.5 rounded-xl cursor-pointer">

@@ -23,9 +23,12 @@ import {
     Briefcase,
     Sparkles,
     Cake,
-    Trash2
+    Trash2,
+    QrCode
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import DigitalCard from "@/components/DigitalCard";
 
 interface UserProfile {
     id: string;
@@ -464,7 +467,7 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
                                     </div>
                                     
                                     {/* Upload Button overlay only if Admin is editing */}
-                                    {isEditing && (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') && (
+                                    {isEditing && isAuthorizedToEdit && (
                                         <label className="absolute inset-0 bg-black/60 rounded-full flex flex-col items-center justify-center text-[8px] font-black text-white uppercase tracking-wider cursor-pointer opacity-0 hover:opacity-100 transition-opacity">
                                             <span>Subir</span>
                                             <span>Foto</span>
@@ -480,7 +483,7 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
 
                                 <div className="flex-1 space-y-1.5">
                                     <div className="flex flex-col sm:flex-row sm:items-center gap-2 justify-center sm:justify-start">
-                                        {isEditing && (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? (
+                                        {isEditing && isAuthorizedToEdit ? (
                                             <input 
                                                 type="text" 
                                                 value={editForm.name} 
@@ -502,11 +505,24 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
                                             {selectedUser.role}
                                         </span>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <Briefcase className="h-4 w-4 text-slate-400 shrink-0" />
-                                        <span className="text-xs text-slate-600 dark:text-zinc-400 truncate">
-                                        Miembro de {agencyName}
-                                        </span>
+                                    <div className="flex items-center gap-4 mt-1">
+                                        <div className="flex items-center gap-2">
+                                            <Briefcase className="h-4 w-4 text-slate-400 shrink-0" />
+                                            <span className="text-xs text-slate-600 dark:text-zinc-400 truncate">
+                                            Miembro de {agencyName}
+                                            </span>
+                                        </div>
+                                        <Dialog>
+                                            <DialogTrigger asChild>
+                                                <Button variant="outline" size="sm" className="h-7 text-[10px] font-bold rounded-lg border-indigo-200 text-indigo-700 bg-indigo-50 hover:bg-indigo-100">
+                                                    <QrCode className="h-3 w-3 mr-1" />
+                                                    Ver Tarjeta Digital
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="max-w-md p-0 overflow-hidden bg-transparent border-none shadow-none">
+                                                <DigitalCard user={{...selectedUser, agencyName}} />
+                                            </DialogContent>
+                                        </Dialog>
                                     </div>
                                 </div>
                             </div>
@@ -523,7 +539,7 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
                                         <div className="space-y-3">
                                             <div>
                                                 <label className="text-[9px] font-bold text-slate-500 uppercase block mb-0.5">Correo Electrónico</label>
-                                                {isEditing && (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? (
+                                                {isEditing && isAuthorizedToEdit ? (
                                                     <input 
                                                         type="email" 
                                                         value={editForm.email} 
@@ -540,7 +556,7 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
 
                                             <div>
                                                 <label className="text-[9px] font-bold text-slate-500 uppercase block mb-0.5">Número Telefónico</label>
-                                                {isEditing && (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? (
+                                                {isEditing && isAuthorizedToEdit ? (
                                                     <input 
                                                         type="text" 
                                                         value={editForm.phone} 
@@ -561,7 +577,7 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
 
                                             <div>
                                                 <label className="text-[9px] font-bold text-slate-500 uppercase block mb-0.5">Cumpleaños</label>
-                                                {isEditing && (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? (
+                                                {isEditing && isAuthorizedToEdit ? (
                                                     <input 
                                                         type="date" 
                                                         value={editForm.birthDate} 
@@ -805,7 +821,7 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
                                             className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl flex items-center gap-1 shadow-md hover:shadow-indigo-500/20"
                                         >
                                             <Edit3 className="h-3.5 w-3.5" />
-                                            {(currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') ? 'Editar Perfil Completo' : 'Completar Mi Perfil'}
+                                            {isAuthorizedToEdit ? 'Editar Perfil Completo' : 'Completar Mi Perfil'}
                                         </Button>
                                     )
                                 )}
