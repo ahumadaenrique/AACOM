@@ -64,7 +64,7 @@ export default async function DashboardLayout({
 
     const endDate = agency?.subscriptionEndDate ? new Date(agency.subscriptionEndDate) : null;
     const now = new Date();
-    const isSubscriptionActive = agency?.subscriptionStatus === "active" && (!endDate || endDate >= now);
+    const isSubscriptionActive = (agency?.subscriptionStatus === "active" || agency?.subscriptionStatus === "trialing") && (!endDate || endDate >= now);
     const showNavLinks = isSubscriptionActive || isSuperAdmin;
 
     // Server-side native logout action

@@ -22,21 +22,25 @@ export async function POST(req: Request) {
   }
 
   // Función auxiliar para procesar el pago y extender la suscripción
-  const processSubscriptionPayment = async (agencyId: string, daysToAddStr: string | undefined) => {
+  const processSubscriptionPayment = async (agencyId: string, daysToAddStr?: string, monthsToAddStr?: string) => {
     const agency = await prisma.agency.findUnique({
       where: { id: agencyId },
     });
 
     if (agency) {
-      const daysToAdd = daysToAddStr ? parseInt(daysToAddStr, 10) : 365; // Default 365 if not found
-
       const now = new Date();
       const currentEndDate = agency.subscriptionEndDate && agency.subscriptionEndDate > now 
           ? agency.subscriptionEndDate 
           : now;
       
       const newEndDate = new Date(currentEndDate);
-      newEndDate.setDate(newEndDate.getDate() + daysToAdd);
+      
+      if (monthsToAddStr) {
+        newEndDate.setMonth(newEndDate.getMonth() + parseInt(monthsToAddStr, 10));
+      } else {
+        const daysToAdd = daysToAddStr ? parseInt(daysToAddStr, 10) : 365; // Default 365 if not found
+        newEndDate.setDate(newEndDate.getDate() + daysToAdd);
+      }
 
       await prisma.agency.update({
         where: { id: agencyId },
@@ -122,10 +126,11 @@ export async function POST(req: Request) {
     } else {
       const agencyId = session.metadata?.agencyId;
       const daysToAddStr = session.metadata?.daysToAdd;
+      const monthsToAddStr = session.metadata?.monthsToAdd;
       const discountCodeStr = session.metadata?.discountCodeStr;
       
       if (agencyId) {
-        await processSubscriptionPayment(agencyId, daysToAddStr);
+        await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr);
       }
 
       if (discountCodeStr) {
@@ -151,9 +156,10 @@ export async function POST(req: Request) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const agencyId = subscription.metadata?.agencyId;
         const daysToAddStr = subscription.metadata?.daysToAdd;
+        const monthsToAddStr = subscription.metadata?.monthsToAdd;
         
         if (agencyId) {
-          await processSubscriptionPayment(agencyId, daysToAddStr);
+          await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr);
         }
       }
     }

@@ -20,7 +20,7 @@ export function SubscriptionBlocker({
     }
 
     // Rutas permitidas incluso cuando están inactivos (para que puedan pagar)
-    if (pathname?.startsWith('/admin/suscripcion') || pathname?.startsWith('/admin/agencia')) {
+    if (pathname?.startsWith('/admin/suscripcion') || pathname?.startsWith('/admin/agencia') || pathname?.startsWith('/billing')) {
         return <>{children}</>
     }
 
@@ -32,11 +32,14 @@ export function SubscriptionBlocker({
             </div>
             <h2 className="text-3xl font-black text-slate-800 mb-2">Suscripción Inactiva</h2>
             <p className="text-slate-500 mb-8 max-w-md mx-auto leading-relaxed">
-                El servicio SaaS para esta agencia se encuentra suspendido por falta de pago o porque su vigencia ha expirado. 
+                El servicio SaaS para esta agencia se encuentra suspendido por falta de pago o porque su periodo de prueba ha expirado. 
             </p>
-            <p className="text-sm font-medium text-slate-600 bg-slate-50 py-3 px-6 rounded-xl border border-slate-100">
-                Ve al menú superior derecho (haciendo clic en tu perfil) y selecciona <br/><span className="font-bold text-indigo-600">"Suscripción y Pagos"</span> o <span className="font-bold text-indigo-600">"Mi Membresía"</span> para reactivar tu servicio de inmediato.
+            <p className="text-sm font-medium text-slate-600 bg-slate-50 py-3 px-6 rounded-xl border border-slate-100 mb-6">
+                Para recuperar el acceso inmediato a tu cartera, herramientas y agentes, selecciona un plan de facturación.
             </p>
+            <a href="/billing" className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg shadow-indigo-200 transition-all">
+                Elegir mi Plan
+            </a>
         </div>
     )
 }

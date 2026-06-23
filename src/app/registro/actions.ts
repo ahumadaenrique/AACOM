@@ -69,13 +69,18 @@ export async function processRegistration(data: any) {
       if (referrer) referredByAgencyId = referrer.id;
     }
 
-    // Create the Agency with pending status
+    // Calculate trial end date (5 days from now)
+    const trialEndDate = new Date();
+    trialEndDate.setDate(trialEndDate.getDate() + 5);
+
+    // Create the Agency with trialing status and +5 days
     const newAgency = await prisma.agency.create({
       data: {
         name: agencyName,
         slug: agencySlug,
         primaryColor: agencyColor || "#4f46e5",
-        subscriptionStatus: "pending_payment", // Will be changed to active by webhook
+        subscriptionStatus: "trialing",
+        subscriptionEndDate: trialEndDate,
         active: true,
         referredByAgencyId,
       }
@@ -94,7 +99,7 @@ export async function processRegistration(data: any) {
       }
     });
 
-    // Create Stripe Customer
+    // Create Stripe Customer to store it early
     const customer = await stripe.customers.create({
       email: newUser.email,
       name: newAgency.name,
@@ -109,46 +114,8 @@ export async function processRegistration(data: any) {
       data: { stripeCustomerId: customer.id }
     });
 
-    // Create Checkout Session
-    const hostList = headers();
-    const host = hostList.get("host") || "";
-    const protocol = host.includes("localhost") ? "http" : "https";
-    const origin = `${protocol}://${host}`;
-
-    const isVercel = host.endsWith("vercel.app");
-    const successHost = isVercel ? host : `${newAgency.slug}.${host.replace("www.", "")}`;
-
-    const checkoutSession = await stripe.checkout.sessions.create({
-      customer: customer.id,
-      mode: "subscription",
-      payment_method_types: ["card"],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
-      ...(stripeCoupon ? { discounts: [{ coupon: stripeCoupon }] } : {}),
-      success_url: `${protocol}://${successHost}/login?welcome=true`,
-      cancel_url: `${origin}/registro?canceled=true&ref=${refSlug || ""}`,
-      metadata: {
-        agencyId: newAgency.id,
-        daysToAdd: daysToAdd.toString(),
-        ...(stripeCoupon ? { discountCodeStr: stripeCoupon } : {})
-      },
-      subscription_data: {
-        metadata: {
-          agencyId: newAgency.id,
-          daysToAdd: daysToAdd.toString(),
-        }
-      }
-    });
-
-    if (!checkoutSession.url) {
-      return { success: false, message: "No se pudo generar la sesión de pago." };
-    }
-
-    return { success: true, url: checkoutSession.url };
+    // No checkout session generated here, return success directly for Freemium model
+    return { success: true, url: `/login?welcome=true` };
   } catch (error: any) {
     console.error("Error in processRegistration:", error);
     return { success: false, message: error.message || "Ocurrió un error inesperado al procesar el registro." };
