@@ -33,6 +33,7 @@ model Agency {
   dailyRecords        DailyRecord[]
   cotizaciones        Cotizacion[]
   performanceReviews  PerformanceReview[]
+  knowledgeDocuments  KnowledgeDocument[]
 
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
@@ -316,6 +317,8 @@ model ActivityLog {
 
 model KnowledgeDocument {
   id        String   @id @default(cuid())
+  agencyId  String?
+  agency    Agency?  @relation(fields: [agencyId], references: [id])
   title     String
   content   String   // Contenido de texto
   active    Boolean  @default(true)

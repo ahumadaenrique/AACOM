@@ -1598,7 +1598,18 @@ export async function getKnowledgeDocuments() {
     }
 
     try {
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user || !user.agencyId) return { success: false, message: "Sin agencia asignada" };
+
+        if (user.role === 'SUPER_ADMIN') {
+            await prisma.knowledgeDocument.updateMany({
+                where: { agencyId: null },
+                data: { agencyId: user.agencyId }
+            });
+        }
+
         const docs = await prisma.knowledgeDocument.findMany({
+            where: { agencyId: user.agencyId },
             orderBy: {
                 createdAt: 'desc'
             }
@@ -1621,8 +1632,11 @@ export async function saveKnowledgeDocument(id: string | null, title: string, co
             where: { email: session.user.email }
         });
 
-        if (!user || user.role !== 'ADMIN') {
+        if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
+        }
+        if (!user.agencyId) {
+            return { success: false, message: "Sin agencia asignada" };
         }
 
         if (id) {
@@ -1634,7 +1648,7 @@ export async function saveKnowledgeDocument(id: string | null, title: string, co
             return { success: true, doc: updated, message: "Documento actualizado" };
         } else {
             const created = await prisma.knowledgeDocument.create({
-                data: { title, content }
+                data: { title, content, agencyId: user.agencyId }
             });
             revalidatePath('/admin');
             return { success: true, doc: created, message: "Documento guardado con éxito" };
