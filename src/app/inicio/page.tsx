@@ -234,9 +234,14 @@ export default function InicioPage() {
           </div>
 
           <div className="pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-slate-500 text-sm font-medium">
-              &copy; {new Date().getFullYear()} AACOM. Todos los derechos reservados.
-            </p>
+            <div className="flex flex-col items-center md:items-start gap-1">
+              <p className="text-slate-500 text-sm font-medium">
+                &copy; {new Date().getFullYear()} AACOM. Todos los derechos reservados.
+              </p>
+              <p className="text-slate-400 text-xs font-semibold">
+                Aacomsoft es una empresa de grupo AACOM
+              </p>
+            </div>
             <div className="flex gap-4">
               <div className="w-10 h-6 bg-slate-200 rounded flex items-center justify-center text-[8px] font-black text-slate-400 uppercase tracking-widest">Stripe</div>
             </div>
