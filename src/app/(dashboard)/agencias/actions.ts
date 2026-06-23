@@ -86,6 +86,25 @@ export async function createAgency(data: z.infer<typeof agencySchema>) {
     }
   }
 
+  // --- MÓDULO DE CLONACIÓN DE IA (PAQUETE DEFAULT) ---
+  const rootAgency = await prisma.agency.findUnique({ where: { slug: "aacom" } });
+  if (rootAgency) {
+      const defaultDocs = await prisma.knowledgeDocument.findMany({
+          where: { agencyId: rootAgency.id }
+      });
+      if (defaultDocs.length > 0) {
+          await prisma.knowledgeDocument.createMany({
+              data: defaultDocs.map(doc => ({
+                  title: doc.title,
+                  content: doc.content,
+                  active: doc.active,
+                  agencyId: agency.id
+              }))
+          });
+      }
+  }
+  // ----------------------------------------------------
+
   revalidatePath("/agencias");
   return agency;
 }

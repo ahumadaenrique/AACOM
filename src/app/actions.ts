@@ -1726,9 +1726,14 @@ export async function askAacomAssistant(
     }
 
     try {
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user || !user.agencyId) {
+            return { success: false, message: "No tienes una agencia válida asignada." };
+        }
+
         // 1. Fetch active knowledge documents to inject
         const activeDocs = await prisma.knowledgeDocument.findMany({
-            where: { active: true },
+            where: { active: true, agencyId: user.agencyId },
             select: { title: true, content: true }
         });
 
