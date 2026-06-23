@@ -21,7 +21,6 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
         title: `SYSGPYA | ${agencyName}`,
         description: "Sistema de Gestión de Promotorías y Agencias",
-        manifest: "/manifest.json",
         appleWebApp: {
             capable: true,
             statusBarStyle: "default",
