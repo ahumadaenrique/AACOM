@@ -29,7 +29,7 @@ export default function InicioPage() {
             </Link>
             <Link href="/login">
               <Button className="bg-teal-600 hover:bg-teal-700 text-white font-bold shadow-md">
-                Prueba Gratuita
+                Solicitar una demo
               </Button>
             </Link>
           </div>
@@ -62,7 +62,7 @@ export default function InicioPage() {
               </Button>
             </Link>
           </div>
-          <p className="mt-6 text-sm text-slate-500 font-medium">No se requiere tarjeta de crédito para iniciar.</p>
+          <p className="mt-6 text-sm text-slate-500 font-medium">Se requiere tarjeta de crédito para iniciar.</p>
         </div>
       </section>
 
@@ -122,9 +122,9 @@ export default function InicioPage() {
             <div className="bg-slate-800 rounded-3xl p-8 border border-slate-700">
               <h3 className="text-2xl font-bold mb-2">Agencia SaaS</h3>
               <p className="text-slate-400 mb-6 h-12">Ideal para promotorías que van iniciando y requieren digitalizarse.</p>
-              <div className="mb-8">
-                <span className="text-5xl font-black">$0</span>
-                <span className="text-slate-400 font-medium"> / configuración inicial</span>
+              <div className="mb-8 flex items-baseline">
+                <span className="text-5xl font-black">$1,999</span>
+                <span className="text-slate-400 font-medium ml-2"> / mes</span>
               </div>
               <ul className="space-y-4 mb-8">
                 <li className="flex items-start gap-3 text-slate-300">
@@ -145,7 +145,7 @@ export default function InicioPage() {
                 </li>
               </ul>
               <Link href="/login">
-                <Button className="w-full bg-white text-slate-900 hover:bg-slate-100 font-bold h-12 rounded-xl">Crear Agencia Gratis</Button>
+                <Button className="w-full bg-white text-slate-900 hover:bg-slate-100 font-bold h-12 rounded-xl">Crear Agencia</Button>
               </Link>
             </div>
 
