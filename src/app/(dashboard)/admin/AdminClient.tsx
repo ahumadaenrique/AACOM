@@ -3137,39 +3137,49 @@ export default function AdminClient() {
                         </div>
 
                         <div className="flex sm:flex-col gap-2 shrink-0">
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => {
-                                setSelectedDocId(doc.id)
-                                setDocTitle(doc.title)
-                                setDocContent(doc.content)
-                                setDocIsGlobalTemplate(doc.isGlobalTemplate || false)
-                              }}
-                              variant="outline"
-                              size="sm"
-                              className="font-bold text-[10px] h-7 px-2.5"
-                            >
-                              Editar
-                            </Button>
-                            <Button
-                              onClick={() => handleToggleDocActive(doc.id)}
-                              variant="outline"
-                              size="sm"
-                              className={`font-bold text-[10px] h-7 px-2.5 ${
-                                doc.active ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50" : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                              }`}
-                            >
-                                {doc.active ? "Pausar" : "Activar"}
-                            </Button>
-                          </div>
-                          <Button
-                            onClick={() => handleDeleteDoc(doc.id)}
-                            variant="ghost"
-                            size="sm"
-                            className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-[10px] h-7 px-2.5"
-                          >
-                            Eliminar
-                          </Button>
+                          {doc.isGlobalTemplate && currentUserRole !== 'SUPER_ADMIN' ? (
+                            <div className="flex items-center justify-center bg-slate-100 dark:bg-zinc-800 rounded px-3 py-1.5 border border-slate-200 dark:border-zinc-700">
+                              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
+                                🔒 Solo Lectura
+                              </span>
+                            </div>
+                          ) : (
+                            <>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={() => {
+                                    setSelectedDocId(doc.id)
+                                    setDocTitle(doc.title)
+                                    setDocContent(doc.content)
+                                    setDocIsGlobalTemplate(doc.isGlobalTemplate || false)
+                                  }}
+                                  variant="outline"
+                                  size="sm"
+                                  className="font-bold text-[10px] h-7 px-2.5"
+                                >
+                                  Editar
+                                </Button>
+                                <Button
+                                  onClick={() => handleToggleDocActive(doc.id)}
+                                  variant="outline"
+                                  size="sm"
+                                  className={`font-bold text-[10px] h-7 px-2.5 ${
+                                    doc.active ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50" : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                  }`}
+                                >
+                                    {doc.active ? "Pausar" : "Activar"}
+                                </Button>
+                              </div>
+                              <Button
+                                onClick={() => handleDeleteDoc(doc.id)}
+                                variant="ghost"
+                                size="sm"
+                                className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-[10px] h-7 px-2.5"
+                              >
+                                Eliminar
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
                     ))}

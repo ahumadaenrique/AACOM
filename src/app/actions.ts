@@ -1609,7 +1609,12 @@ export async function getKnowledgeDocuments() {
         }
 
         const docs = await prisma.knowledgeDocument.findMany({
-            where: { agencyId: user.agencyId },
+            where: { 
+                OR: [
+                    { agencyId: user.agencyId },
+                    { isGlobalTemplate: true }
+                ]
+            },
             orderBy: {
                 createdAt: 'desc'
             }
@@ -1640,15 +1645,19 @@ export async function saveKnowledgeDocument(id: string | null, title: string, co
         }
 
         if (id) {
+            const existingDoc = await prisma.knowledgeDocument.findUnique({ where: { id } });
+            if (existingDoc?.isGlobalTemplate && user.role !== 'SUPER_ADMIN') {
+                return { success: false, message: "No tienes permiso para editar una Plantilla Global." };
+            }
             const updated = await prisma.knowledgeDocument.update({
                 where: { id },
-                data: { title, content, isGlobalTemplate }
+                data: { title, content, isGlobalTemplate: user.role === 'SUPER_ADMIN' ? isGlobalTemplate : undefined }
             });
             revalidatePath('/admin');
             return { success: true, doc: updated, message: "Documento actualizado" };
         } else {
             const created = await prisma.knowledgeDocument.create({
-                data: { title, content, agencyId: user.agencyId, isGlobalTemplate }
+                data: { title, content, agencyId: user.agencyId, isGlobalTemplate: user.role === 'SUPER_ADMIN' ? isGlobalTemplate : false }
             });
             revalidatePath('/admin');
             return { success: true, doc: created, message: "Documento guardado con éxito" };
@@ -1670,8 +1679,13 @@ export async function deleteKnowledgeDocument(id: string) {
             where: { email: session.user.email }
         });
 
-        if (!user || user.role !== 'ADMIN') {
+        if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const doc = await prisma.knowledgeDocument.findUnique({ where: { id } });
+        if (doc?.isGlobalTemplate && user.role !== 'SUPER_ADMIN') {
+            return { success: false, message: "No puedes borrar una Plantilla Global." };
         }
 
         await prisma.knowledgeDocument.delete({
@@ -1707,6 +1721,10 @@ export async function toggleKnowledgeDocumentActiveStatus(id: string) {
 
         if (!doc) {
             return { success: false, message: "Documento no encontrado" };
+        }
+        
+        if (doc.isGlobalTemplate && user.role !== 'SUPER_ADMIN') {
+            return { success: false, message: "No tienes permiso para modificar una Plantilla Global." };
         }
 
         const updated = await prisma.knowledgeDocument.update({
@@ -1747,31 +1765,38 @@ export async function askAacomAssistant(
 
         // 1. Fetch active knowledge documents to inject
         const activeDocs = await prisma.knowledgeDocument.findMany({
-            where: { active: true, agencyId: user.agencyId },
-            select: { title: true, content: true }
+            where: { 
+                active: true,
+                OR: [
+                    { agencyId: user.agencyId },
+                    { isGlobalTemplate: true }
+                ]
+            },
+            select: { title: true, content: true, isGlobalTemplate: true }
         });
 
         // 2. Format knowledge context block
-        let knowledgeContext = "BASE DE CONOCIMIENTOS OFICIAL AACOM:\n";
+        let knowledgeContext = "BASE DE CONOCIMIENTOS OFICIAL:\n";
         if (activeDocs.length > 0) {
             activeDocs.forEach((doc, idx) => {
-                knowledgeContext += `\n--- DOCUMENTO ${idx + 1}: ${doc.title} ---\n${doc.content}\n`;
+                knowledgeContext += `\n--- DOCUMENTO ${idx + 1} ${doc.isGlobalTemplate ? '(PLANTILLA GLOBAL)' : '(REGLA LOCAL DE AGENCIA)'}: ${doc.title} ---\n${doc.content}\n`;
             });
         } else {
             knowledgeContext += "(No hay documentos de conocimiento cargados actualmente. Responde con tus conocimientos generales sobre seguros pero aclara que no hay directivas internas activas en este momento.)\n";
         }
 
         // 3. Define rigid system instruction
-        const systemInstruction = `Eres "Asistente AACOM", el copiloto inteligente de la promotoría de seguros de vida, gastos médicos y ahorro de AACOM.
+        const systemInstruction = `Eres "Asistente AACOM", el copiloto inteligente de la promotoría de seguros de vida, gastos médicos y ahorro.
 Tu objetivo es dar soporte rápido, amigable y muy profesional a los agentes de seguros sobre lineamientos comerciales, cuadernos de bonos, adendums y condiciones generales de productos (como el Vitalicio o el Universal).
 
 REGLAS ABSOLUTAS:
-1. Basar tus respuestas de la manera más directa y estricta posible en la "BASE DE CONOCIMIENTOS OFICIAL AACOM" que se te provee más abajo.
-2. Si la respuesta a la pregunta del agente no está contenida en la Base de Conocimientos oficial provista, responde textualmente:
-"Lo lamento, no cuento con esa información en mis lineamientos comerciales oficiales en este momento. Por favor, consulta directamente con la dirección o el equipo administrativo de AACOM."
+1. Basar tus respuestas de la manera más directa y estricta posible en la "BASE DE CONOCIMIENTOS OFICIAL" que se te provee más abajo.
+2. REGLA DE ORO DE JERARQUÍA: Verás que algunos documentos están marcados como '(REGLA LOCAL DE AGENCIA)' y otros como '(PLANTILLA GLOBAL)'. Si hay CUALQUIER contradicción entre una regla local y una global, SIEMPRE dale prioridad y aplica la '(REGLA LOCAL DE AGENCIA)'. La regla local tiene autoridad absoluta.
+3. Si la respuesta a la pregunta del agente no está contenida en la Base de Conocimientos oficial provista, responde textualmente:
+"Lo lamento, no cuento con esa información en mis lineamientos comerciales oficiales en este momento. Por favor, consulta directamente con la dirección o el equipo administrativo."
 Bajo ninguna circunstancia debes inventar porcentajes de comisiones, montos de bonos, plazos de productos o políticas comerciales. No "alucines" ni asumas políticas que no estén explícitamente escritas en los documentos de abajo.
-3. Sé conciso y estructurado. Si respondes tablas o cifras, usa formato Markdown (listas con viñetas o tablas) para que la lectura móvil sea impecable.
-4. Responde en español de México.
+4. Sé conciso y estructurado. Si respondes tablas o cifras, usa formato Markdown (listas con viñetas o tablas) para que la lectura móvil sea impecable.
+5. Responde en español de México.
 
 ${knowledgeContext}`;
 
