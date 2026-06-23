@@ -20,6 +20,14 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Este correo electrónico ya está registrado en el sistema." }, { status: 400 });
         }
 
+        const endDate = agency.subscriptionEndDate ? new Date(agency.subscriptionEndDate) : null;
+        const now = new Date();
+        const isSubscriptionActive = (agency.subscriptionStatus === "active" || agency.subscriptionStatus === "trialing") && (!endDate || endDate >= now);
+
+        if (!isSubscriptionActive) {
+            return NextResponse.json({ error: "La agencia que te invitó tiene su suscripción suspendida. No es posible unirse en este momento." }, { status: 403 });
+        }
+
         const protocol = req.headers.get("x-forwarded-proto") || "http";
         const host = req.headers.get("host") || "localhost:3000";
         const baseUrl = `${protocol}://${host}`;
@@ -46,7 +54,14 @@ export async function POST(req: Request) {
             metadata: {
                 agencyId,
                 name,
-                email
+                email,
+                isAgent: "true"
+            },
+            subscription_data: {
+                metadata: {
+                    agencyId,
+                    isAgent: "true"
+                }
             },
             success_url: `${baseUrl}/invite/${agencyId}?success=true`,
             cancel_url: `${baseUrl}/invite/${agencyId}?canceled=true`,
