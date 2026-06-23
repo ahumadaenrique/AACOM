@@ -24,7 +24,8 @@ import {
     Sparkles,
     Cake,
     Trash2,
-    QrCode
+    QrCode,
+    Building2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
