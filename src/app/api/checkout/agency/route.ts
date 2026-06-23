@@ -11,7 +11,34 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { plan } = body; // '3M', '6M', '12M'
+    const { plan, promoCode } = body; // '3M', '6M', '12M'
+
+    // Validación de cupón o referidos
+    let stripeCoupon = null;
+    let referredByAgencyId = null;
+
+    if (promoCode && promoCode.trim() !== "") {
+      const codeStr = promoCode.trim().toUpperCase();
+      const discount = await prisma.discountCode.findUnique({ where: { code: codeStr } });
+      
+      if (discount && discount.active) {
+        if (discount.maxUses && discount.uses >= discount.maxUses) {
+          return NextResponse.json({ error: "El código de descuento ya alcanzó su límite de usos." }, { status: 400 });
+        }
+        if (discount.expiresAt && discount.expiresAt < new Date()) {
+          return NextResponse.json({ error: "El código de descuento ha expirado." }, { status: 400 });
+        }
+        stripeCoupon = discount.code;
+      } else {
+        // Verificar si es un referral (slug de otra agencia)
+        const referral = await prisma.agency.findUnique({ where: { slug: promoCode.trim().toLowerCase() } });
+        if (referral && referral.active) {
+          referredByAgencyId = referral.id;
+        } else {
+          return NextResponse.json({ error: "El código promocional ingresado no es válido." }, { status: 400 });
+        }
+      }
+    }
 
     // Determinar el Price ID según el plan
     let priceId = "";
@@ -55,7 +82,16 @@ export async function POST(req: NextRequest) {
 
       await prisma.agency.update({
         where: { id: agency.id },
-        data: { stripeCustomerId: customerId },
+        data: { 
+          stripeCustomerId: customerId,
+          ...(referredByAgencyId ? { referredByAgencyId } : {})
+        },
+      });
+    } else if (referredByAgencyId) {
+      // Si ya existía el cliente pero metió un código de referido ahora
+      await prisma.agency.update({
+        where: { id: agency.id },
+        data: { referredByAgencyId }
       });
     }
 
@@ -74,12 +110,14 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         },
       ],
+      ...(stripeCoupon ? { discounts: [{ coupon: stripeCoupon }] } : {}),
       success_url: `${origin}/login?welcome=true`,
       cancel_url: `${origin}/billing`,
       metadata: {
         agencyId: agency.id,
         isMainLicense: "true",
         monthsToAdd: monthsToAdd.toString(),
+        ...(stripeCoupon ? { discountCodeStr: stripeCoupon } : {})
       },
       subscription_data: {
         metadata: {

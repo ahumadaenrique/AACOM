@@ -5,8 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle2, ShieldCheck, Zap, ArrowRight, Loader2 } from 'lucide-react';
 
+import { Input } from '@/components/ui/input';
+
 export default function BillingPage() {
   const [loading, setLoading] = useState<string | null>(null);
+  const [promoCode, setPromoCode] = useState("");
 
   const handleCheckout = async (plan: string) => {
     setLoading(plan);
@@ -16,7 +19,7 @@ export default function BillingPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ plan }),
+        body: JSON.stringify({ plan, promoCode }),
       });
 
       const data = await response.json();
@@ -42,6 +45,17 @@ export default function BillingPage() {
         <p className="mt-4 text-xl text-slate-600 max-w-3xl mx-auto">
           Obtén acceso total a SYSGPYA + Inteligencia Artificial y lleva el control, la atracción y el desarrollo de tus agentes al siguiente nivel.
         </p>
+      </div>
+
+      <div className="max-w-md mx-auto mb-12">
+        <div className="flex gap-2">
+          <Input 
+            placeholder="¿Tienes un código de descuento?" 
+            value={promoCode}
+            onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+            className="text-center font-bold tracking-wider"
+          />
+        </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
