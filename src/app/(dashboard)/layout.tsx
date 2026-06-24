@@ -41,6 +41,11 @@ export default async function DashboardLayout({
     const userName = dbUser?.name || session?.user?.name || "Agente";
     const userEmail = dbUser?.email || session?.user?.email || "";
 
+    // Load open tickets count for Super Admin
+    const openTicketsCount = isSuperAdmin 
+        ? await prisma.ticket.count({ where: { status: "OPEN" } }) 
+        : 0;
+
     // First, try to load the agency the authenticated user belongs to.
     let agency = null;
     if (dbUser?.agencyId) {
@@ -327,6 +332,13 @@ export default async function DashboardLayout({
                                     <CircleUser className="h-5 w-5" />
                                 )}
                                 <span className="sr-only">Toggle user menu</span>
+                                
+                                {/* Super Admin Ticket Badge */}
+                                {isSuperAdmin && openTicketsCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-600 text-[9px] font-bold text-white shadow-sm ring-2 ring-white dark:ring-zinc-950 animate-bounce">
+                                        {openTicketsCount > 9 ? '9+' : openTicketsCount}
+                                    </span>
+                                )}
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-56 rounded-2xl shadow-xl p-2">
@@ -376,6 +388,25 @@ export default async function DashboardLayout({
                                             Portal de Pagos (Stripe)
                                         </Link>
                                     </DropdownMenuItem>
+                                    
+                                    {isSuperAdmin && (
+                                        <DropdownMenuItem asChild className="text-xs font-bold text-slate-700 dark:text-zinc-300 py-2.5 rounded-xl cursor-pointer relative">
+                                            <Link href="/admin/tickets" className="flex items-center gap-1.5 w-full">
+                                                <div className="relative">
+                                                    <LifeBuoy className="h-4 w-4 text-rose-500" />
+                                                    {openTicketsCount > 0 && (
+                                                        <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-red-600"></span>
+                                                    )}
+                                                </div>
+                                                Bandeja de Soporte
+                                                {openTicketsCount > 0 && (
+                                                    <span className="ml-auto bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-400 px-2 py-0.5 rounded-full text-[10px] font-black">
+                                                        {openTicketsCount}
+                                                    </span>
+                                                )}
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    )}
                                 </>
                             )}
                             <DropdownMenuSeparator />

@@ -2054,3 +2054,23 @@ export async function deleteScheduledPush(id: string, pin: string) {
     }
 }
 
+export async function resolveTicket(ticketId: string) {
+    const session = await auth();
+    if (!session?.user?.email) return { success: false, message: "Unauthorized" };
+
+    const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+    if (!user || user.role !== "SUPER_ADMIN") return { success: false, message: "Only Super Admins can resolve tickets." };
+
+    try {
+        await prisma.ticket.update({
+            where: { id: ticketId },
+            data: { status: "RESOLVED" }
+        });
+        revalidatePath('/admin/tickets');
+        revalidatePath('/'); // To update the badge count on the layout
+        return { success: true };
+    } catch (err: any) {
+        return { success: false, message: err.message };
+    }
+}
+
