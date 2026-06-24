@@ -59,6 +59,20 @@ export default function RegisterPage() {
     return () => clearTimeout(delayDebounceFn);
   }, [agencySlug]);
 
+  useEffect(() => {
+    // If arriving with a refSlug from URL, auto-fill it
+    if (refSlug && !promoCode) {
+      setPromoCode(refSlug);
+    }
+  }, [refSlug]);
+
+  useEffect(() => {
+    // Auto-validate promo code if pre-filled and entering step 3
+    if (step === 3 && promoCode && !promoMessage) {
+      handleValidatePromo();
+    }
+  }, [step]);
+
   const handleNextStep1 = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
