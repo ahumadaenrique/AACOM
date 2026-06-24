@@ -629,11 +629,12 @@ export default function CotizadorPage({ agencyName = "AACOM Seguros", agencyLogo
     const element = document.getElementById("printable-report")
     if (!element) return
 
-    // Force desktop width temporarily to prevent mobile cut-off
+    // Force desktop width temporarily to prevent mobile cut-off, but allow it to grow if table is huge
     const originalWidth = element.style.width
     const originalMaxWidth = element.style.maxWidth
-    element.style.width = '1200px'
-    element.style.maxWidth = '1200px'
+    element.style.width = 'max-content'
+    element.style.minWidth = '1200px'
+    element.style.maxWidth = 'none'
 
     // Remove overflow restrictions that hide table content in html2canvas
     const overflowElements = element.querySelectorAll('.overflow-x-auto')
@@ -641,6 +642,11 @@ export default function CotizadorPage({ agencyName = "AACOM Seguros", agencyLogo
       (el as HTMLElement).style.overflow = 'visible'
     })
 
+    // CRITICAL: Wait 600ms for Recharts <ResponsiveContainer> to detect the new 1200px+ width and resize its SVG
+    // Otherwise, the right side of the chart is cut off
+    await new Promise(resolve => setTimeout(resolve, 600))
+
+    const captureWidth = Math.max(element.scrollWidth, 1200)
     const sanitizedClientName = (formData.cliente || "Cotizacion").replace(/[^a-zA-Z0-9]/g, "_")
     
     const opt = {
@@ -651,8 +657,10 @@ export default function CotizadorPage({ agencyName = "AACOM Seguros", agencyLogo
       html2canvas:  { 
         scale: 2, // Slightly lower scale to prevent canvas limits on huge tables
         useCORS: true, 
+        allowTaint: true, // Help with external logos
         letterRendering: true,
-        windowWidth: 1200 // Desktop width
+        windowWidth: captureWidth, // Dynamic width to prevent right-edge clipping
+        width: captureWidth
       },
       jsPDF:        { unit: 'mm' as const, format: 'letter' as const, orientation: 'landscape' as const }
     }
