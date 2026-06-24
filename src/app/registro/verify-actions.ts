@@ -20,19 +20,23 @@ export async function sendVerificationSms(phone: string) {
     return { success: false, message: "Por favor incluye el código de país (ej. +52) o ingresa tus 10 dígitos si estás en México." };
   }
 
-  // Check if phone is already registered and verified
-  const existingUser = await prisma.user.findFirst({
-    where: { 
-      phone: phone,
-      phoneVerified: true,
-      agency: {
-        active: true
-      }
-    }
-  });
+  // Whitelist master phone numbers that can create unlimited agencies
+  const whitelistedPhones = ["+525515015502", "5515015502", "+15515015502"];
 
-  if (existingUser) {
-    return { success: false, message: "Este número de teléfono ya ha sido utilizado para registrar otra agencia." };
+  if (!whitelistedPhones.includes(formattedPhone) && !whitelistedPhones.includes(phone.trim())) {
+    const existingUser = await prisma.user.findFirst({
+      where: { 
+        phone: phone,
+        phoneVerified: true,
+        agency: {
+          active: true
+        }
+      }
+    });
+
+    if (existingUser) {
+      return { success: false, message: "Este número de teléfono ya ha sido utilizado para registrar otra agencia." };
+    }
   }
 
   try {
