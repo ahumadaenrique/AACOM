@@ -54,7 +54,7 @@ export async function POST(req: Request) {
       });
 
       // "Refiere y Gana" Logic: Add 60 days to the referrer if this is their first payment AND they paid for at least a quarter (90 days).
-      if (agency.referredByAgencyId && (!agency.subscriptionEndDate || agency.subscriptionEndDate < now) && daysToAdd >= 90) {
+      if (agency.referredByAgencyId && (agency.subscriptionStatus === "trialing" || !agency.subscriptionEndDate || agency.subscriptionEndDate < now) && daysToAdd >= 90) {
         const referrer = await prisma.agency.findUnique({
           where: { id: agency.referredByAgencyId },
         });
