@@ -176,7 +176,7 @@ export async function createDiscountCode(data: any) {
   const parsed = discountSchema.parse({
     ...data,
     maxUses: data.maxUses ? parseInt(data.maxUses) : null,
-    expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+    expiresAt: data.expiresAt ? new Date(`${data.expiresAt}T23:59:59-06:00`) : null,
   });
 
   const existingCode = await prisma.discountCode.findUnique({ where: { code: parsed.code } });
@@ -220,7 +220,7 @@ export async function updateDiscountCode(id: string, data: any) {
   const parsed = discountSchema.parse({
     ...data,
     maxUses: data.maxUses ? parseInt(data.maxUses.toString()) : null,
-    expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+    expiresAt: data.expiresAt ? new Date(`${data.expiresAt}T23:59:59-06:00`) : null,
   });
 
   const existingCode = await prisma.discountCode.findUnique({ where: { code: parsed.code } });

@@ -24,7 +24,15 @@ export function DiscountCodeFormModal({ children, discount }: { children: React.
   const [code, setCode] = useState(discount?.code || "");
   const [discountPercentage, setDiscountPercentage] = useState(discount?.discountPercentage?.toString() || "50");
   const [maxUses, setMaxUses] = useState(discount?.maxUses?.toString() || "");
-  const [expiresAt, setExpiresAt] = useState(discount?.expiresAt ? new Date(discount.expiresAt).toISOString().split('T')[0] : "");
+
+  const formatDateForInput = (dateStr: string | null | undefined) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    const tzOffset = d.getTimezoneOffset() * 60000;
+    return new Date(d.getTime() - tzOffset).toISOString().split('T')[0];
+  };
+
+  const [expiresAt, setExpiresAt] = useState(formatDateForInput(discount?.expiresAt));
 
   // Update state when modal opens with new props
   const handleOpenChange = (newOpen: boolean) => {
@@ -33,7 +41,7 @@ export function DiscountCodeFormModal({ children, discount }: { children: React.
       setCode(discount?.code || "");
       setDiscountPercentage(discount?.discountPercentage?.toString() || "50");
       setMaxUses(discount?.maxUses?.toString() || "");
-      setExpiresAt(discount?.expiresAt ? new Date(discount.expiresAt).toISOString().split('T')[0] : "");
+      setExpiresAt(formatDateForInput(discount?.expiresAt));
       setError("");
     }
   };
