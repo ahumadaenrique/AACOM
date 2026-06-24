@@ -675,7 +675,7 @@ export default function AdnPage() {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-5 print:hidden">
         <div>
           <h1 className="text-3xl font-black tracking-tight text-teal-800 dark:text-teal-400 flex items-center gap-2">
-            <Heart className="h-8 w-8 text-teal-600 animate-pulse" /> ADN AACOM
+            <Heart className="h-8 w-8 text-teal-600 animate-pulse" /> ADN
           </h1>
           <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Herramienta premium para el diagnóstico financiero y patrimonial digital del cliente.
@@ -2133,7 +2133,7 @@ export default function AdnPage() {
                 </div>
               </div>
               <div className="text-right text-xs text-slate-500">
-                <span className="block font-bold">AACOM SEGUROS</span>
+                <span className="block font-bold">SYSGPYA</span>
                 <span className="block">Fecha: {new Date().toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}</span>
               </div>
             </div>
@@ -2439,11 +2439,10 @@ export default function AdnPage() {
 
             {/* Report Signature & Footer */}
             <div className="border-t pt-8 flex flex-col md:flex-row justify-between items-center text-[10px] text-slate-400 gap-4 mt-8">
-              <span>* Diagnóstico financiero ilustrativo proporcionado por AACOM Seguros.</span>
-              <div className="flex items-center gap-1 font-bold text-slate-600">
-                <span>Generado con el respaldo de</span>
-                <img src="/logo.png" alt="AACOM" className="h-5 w-auto object-contain" />
-                <span>AACOM cotizador</span>
+              <span>* Diagnóstico financiero ilustrativo.</span>
+              <div className="flex items-center gap-1.5 opacity-50 grayscale mt-2">
+                <img src="/logo.png" alt="SYSGPYA" className="h-5 w-auto object-contain" />
+                <span>SYSGPYA cotizador</span>
               </div>
             </div>
 
@@ -2501,11 +2500,11 @@ export default function AdnPage() {
             {/* Modal Header */}
             <div className="bg-slate-100 dark:bg-zinc-900 border-b p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <img src="/logo.png" alt="AACOM" className="h-7 w-auto object-contain" />
+                <img src="/logo.png" alt="Logo" className="h-7 w-auto object-contain" />
                 <div className="h-5 w-px bg-slate-300"></div>
                 <div>
                   <h3 className="text-sm font-black text-slate-800 dark:text-slate-100">
-                    ADN Digital Rescatado: {selectedSavedAdn.clienteNombre}
+                    ADN Rescatado: {selectedSavedAdn.clienteNombre}
                   </h3>
                   <p className="text-[10px] text-muted-foreground">
                     Diagnosticado el {new Date(selectedSavedAdn.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}
@@ -2539,10 +2538,10 @@ export default function AdnPage() {
                 <div className="border-b-2 border-teal-500 pb-4 flex flex-row items-center justify-between gap-4">
                   <div>
                     <span className="text-[10px] font-bold text-teal-600 uppercase tracking-widest block">
-                      Diagnóstico Patrimonial Digital
+                      Diagnóstico Patrimonial
                     </span>
                     <h2 className="text-xl font-extrabold text-slate-800">
-                      ADN DIGITAL AACOM
+                      ADN DIGITAL
                     </h2>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[11px] text-slate-500">
                       <span><strong>Cliente:</strong> {selectedSavedAdn.clienteNombre}</span>
@@ -2553,8 +2552,8 @@ export default function AdnPage() {
                     </div>
                   </div>
                   <div className="text-right flex flex-col items-end">
-                    <img src="/logo.png" alt="AACOM Seguros" className="h-8 w-auto object-contain mb-1" />
-                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wide">AACOM cotizador</span>
+                    <img src="/logo.png" alt="Logo" className="h-8 w-auto object-contain mb-1" />
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wide">SYSGPYA cotizador</span>
                     <span className="text-[9px] text-slate-400"><strong>Agente:</strong> {selectedSavedAdn.user?.name || selectedSavedAdn.user?.email || "Sin Agente"}</span>
                   </div>
                 </div>
@@ -2944,11 +2943,10 @@ export default function AdnPage() {
 
                 {/* Print/Modal footer signature */}
                 <div className="border-t pt-4 flex flex-row justify-between items-center text-[9px] text-slate-400 gap-2">
-                  <span>* Reporte de diagnóstico ilustrativo generado de forma segura desde la base de datos de desarrollo.</span>
-                  <div className="flex items-center gap-1 font-bold text-slate-600">
-                    <span>Respaldado por la plataforma</span>
-                    <img src="/logo.png" alt="AACOM" className="w-auto object-contain" style={{ height: '18px' }} />
-                    <span>AACOM cotizador</span>
+                  <span>* Reporte de diagnóstico patrimonial ilustrativo.</span>
+                  <div className="flex items-center gap-1.5 opacity-50 grayscale mt-2">
+                    <img src="/logo.png" alt="SYSGPYA" className="w-auto object-contain" style={{ height: '18px' }} />
+                    <span>SYSGPYA cotizador</span>
                   </div>
                 </div>
 
@@ -2976,14 +2974,14 @@ export default function AdnPage() {
         {/* Cover Page Header */}
         <div className="border-b-4 border-teal-600 pb-5 flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="AACOM" className="h-14 w-auto object-contain" />
+            <img src="/logo.png" alt="Logo" className="h-14 w-auto object-contain" />
             <div>
               <h2 className="text-2xl font-black text-slate-800 uppercase tracking-widest">ADN DIGITAL</h2>
               <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Diagnóstico Patrimonial Digital</span>
             </div>
           </div>
           <div className="text-right text-xs text-slate-500">
-            <span className="block font-bold">AACOM SEGUROS</span>
+            <span className="block font-bold">SYSGPYA</span>
             <span className="block">Fecha: {new Date().toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}</span>
           </div>
         </div>
@@ -3381,11 +3379,10 @@ export default function AdnPage() {
 
         {/* Print footer signature */}
         <div className="border-t pt-4 flex flex-row justify-between items-center text-[9px] text-slate-400 gap-2">
-          <span>* Reporte de diagnóstico patrimonial ilustrativo proporcionado por AACOM Seguros.</span>
-          <div className="flex items-center gap-1 font-bold text-slate-600">
-            <span>Respaldado por la plataforma</span>
-            <img src="/logo.png" alt="AACOM" className="w-auto object-contain" style={{ height: '18px' }} />
-            <span>AACOM cotizador</span>
+          <span>* Reporte de diagnóstico patrimonial ilustrativo.</span>
+          <div className="flex items-center gap-1.5 opacity-50 grayscale mt-2">
+            <img src="/logo.png" alt="SYSGPYA" className="w-auto object-contain" style={{ height: '18px' }} />
+            <span>SYSGPYA cotizador</span>
           </div>
         </div>
         </div>

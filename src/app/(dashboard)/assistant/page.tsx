@@ -3,15 +3,23 @@ import { prisma } from '@/lib/prisma'
 import AssistantClient from './AssistantClient'
 
 export default async function AssistantPage() {
-  const headersList = headers();
-  const slug = headersList.get('x-agency-slug') || 'aacom';
+  const session = await auth();
   
-  let agency = await prisma.agency.findUnique({ where: { slug } });
+  let agency = null;
+  if (session?.user?.agencyId) {
+    agency = await prisma.agency.findUnique({ where: { id: session.user.agencyId } });
+  }
+
+  if (!agency) {
+    const headersList = headers();
+    const slug = headersList.get('x-agency-slug') || 'aacom';
+    agency = await prisma.agency.findUnique({ where: { slug } });
+  }
   if (!agency) {
     agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
   }
   
-  const agencyName = agency?.name || 'AACOM Seguros';
+  const agencyName = agency?.name || 'SYSGPYA';
   
   return <AssistantClient agencyName={agencyName} />;
 }

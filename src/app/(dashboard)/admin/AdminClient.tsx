@@ -1123,7 +1123,7 @@ export default function AdminClient() {
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
-          <Heart className="h-4.5 w-4.5" /> Diagnóstico ADN AACOM
+          <Heart className="h-4.5 w-4.5" /> Diagnóstico ADN
         </button>
         <button
           onClick={() => setActiveTab("comunicados")}
@@ -1143,7 +1143,7 @@ export default function AdminClient() {
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
-          <ClipboardCheck className="h-4.5 w-4.5" /> Actividad AACOM 25
+          <ClipboardCheck className="h-4.5 w-4.5" /> Actividad 25
         </button>
         <button
           onClick={() => setActiveTab("asistente")}
@@ -1696,40 +1696,7 @@ export default function AdminClient() {
                 </CardContent>
               </Card>
 
-              {/* Form to add a new Agent (Simple Name for Cotizador, no login) */}
-              <Card className="border shadow-sm bg-slate-50/20">
-                <CardHeader className="py-4 border-b">
-                  <CardTitle className="text-xs font-black text-slate-700 uppercase tracking-wider">
-                    Solo Nombre de Agente (Sin Login)
-                  </CardTitle>
-                  <CardDescription className="text-[10px]">
-                    Agrega un nombre rápido al Cotizador sin crear credenciales ni cuentas.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-5 space-y-4">
-                  <div className="space-y-1.5">
-                    <label className="text-[10px] font-bold text-slate-600 uppercase">Nombre del Agente</label>
-                    <Input
-                      placeholder="Ej. Sofía Martínez Rivera"
-                      value={newAgentName}
-                      onChange={(e) => setNewAgentName(e.target.value)}
-                      className="text-xs h-9"
-                    />
-                  </div>
-                  <Button 
-                    onClick={handleAddAgent} 
-                    disabled={submittingAgent || !newAgentName.trim()} 
-                    className="w-full bg-slate-700 hover:bg-slate-800 text-white font-bold h-9 text-xs"
-                  >
-                    {submittingAgent ? "Agregando..." : "Dar de Alta Nombre"}
-                  </Button>
-                  {agentMessage && (
-                    <p className={`text-xs font-semibold text-center mt-2 ${agentMessage.includes("error") || agentMessage.includes("Error") ? "text-red-500" : "text-emerald-600"}`}>
-                      {agentMessage}
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+
 
             </div>
 
@@ -2046,7 +2013,7 @@ export default function AdminClient() {
             <CardHeader className="py-4 border-b bg-slate-50/50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                  <Heart className="h-4.5 w-4.5 text-teal-600 animate-pulse" /> Historial de ADN AACOM
+                  <Heart className="h-4.5 w-4.5 text-teal-600 animate-pulse" /> Historial de ADN
                 </CardTitle>
                 <CardDescription className="text-xs">
                   Consulta y descarga los diagnósticos patrimoniales de los clientes agrupados de manera estructurada.
@@ -2525,7 +2492,7 @@ export default function AdminClient() {
           <Card className="border shadow-sm">
             <CardHeader className="py-4 border-b bg-slate-50/50">
               <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <ClipboardCheck className="h-4.5 w-4.5 text-teal-600" /> Reporte de Actividad Comercial AACOM 25
+                <ClipboardCheck className="h-4.5 w-4.5 text-teal-600" /> Reporte de Actividad Comercial 25
               </CardTitle>
               <CardDescription className="text-xs">
                 Audita y visualiza a nivel detallado la actividad incremental diaria, llamadas y prospectos ingresados por tus agentes.

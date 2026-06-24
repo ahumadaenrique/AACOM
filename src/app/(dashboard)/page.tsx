@@ -6,12 +6,18 @@ import { headers } from "next/headers"
 export default async function HomePage() {
     const session = await auth();
     const headersList = headers();
-    const slug = headersList.get('x-agency-slug') || 'aacom';
-    let agency = await prisma.agency.findUnique({ where: { slug } });
+    let agency = null;
+    if (session?.user?.agencyId) {
+        agency = await prisma.agency.findUnique({ where: { id: session.user.agencyId } });
+    }
+    if (!agency) {
+        const slug = headersList.get('x-agency-slug') || 'aacom';
+        agency = await prisma.agency.findUnique({ where: { slug } });
+    }
     if (!agency) {
         agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
     }
-    const agencyName = agency?.name || "AACOM Seguros";
+    const agencyName = agency?.name || "SYSGPYA";
     let isBirthday = false;
     let currentUser = null;
 
@@ -58,7 +64,7 @@ export default async function HomePage() {
                     <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-100">Inicio</h1>
                     <span className="h-2.5 w-2.5 rounded-full bg-teal-500 animate-pulse" />
                 </div>
-                <p className="text-sm text-muted-foreground font-medium">Bienvenido a la plataforma {agencyName} cotizador</p>
+                <p className="text-sm text-muted-foreground font-medium">Bienvenido a SYSGPYA (Sistema de gestión de promotorías y agencias).</p>
             </div>
 
             <ClientHome 

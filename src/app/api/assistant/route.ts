@@ -16,10 +16,15 @@ export async function POST(req: Request) {
             return new Response("API Key no configurada", { status: 500 });
         }
 
-        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-        if (!user || !user.agencyId) {
+        const user = await prisma.user.findUnique({ 
+            where: { email: session.user.email },
+            include: { agency: true }
+        });
+        if (!user || !user.agencyId || !user.agency) {
             return new Response("Agencia no válida", { status: 403 });
         }
+        
+        const agencyName = user.agency.name || "SYSGPYA";
 
         // 1. Fetch active knowledge documents
         const activeDocs = await prisma.knowledgeDocument.findMany({
@@ -44,7 +49,7 @@ export async function POST(req: Request) {
         }
 
         // 3. Define rigid system instruction
-        const systemInstruction = `Eres "Asistente AACOM", el copiloto inteligente de la promotoría de seguros de vida, gastos médicos y ahorro.
+        const systemInstruction = `Eres "Asistente ${agencyName}", el copiloto inteligente de la promotoría de seguros de vida, gastos médicos y ahorro.
 Tu objetivo es dar soporte rápido, amigable y muy profesional a los agentes de seguros sobre lineamientos comerciales, cuadernos de bonos, adendums y condiciones generales de productos (como el Vitalicio o el Universal).
 
 REGLAS ABSOLUTAS:

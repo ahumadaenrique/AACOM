@@ -33,10 +33,19 @@ export default async function ReportesPage() {
         }
         
         const headersList = await import("next/headers").then(m => m.headers());
-        const slug = headersList.get('x-agency-slug') || 'aacom';
-        let agency = await prisma.agency.findUnique({ where: { slug } });
-        if (!agency) agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
-        const agencyName = agency?.name || 'AACOM Seguros';
+        const session = await auth();
+        let agency = null;
+        if (session?.user?.agencyId) {
+            agency = await prisma.agency.findUnique({ where: { id: session.user.agencyId } });
+        }
+        if (!agency) {
+            const slug = headersList.get('x-agency-slug') || 'aacom';
+            agency = await prisma.agency.findUnique({ where: { slug } });
+        }
+        if (!agency) {
+            agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
+        }
+        const agencyName = agency?.name || 'SYSGPYA';
 
         return <ReportesClient agencyName={agencyName} />;
     } catch (e: any) {
