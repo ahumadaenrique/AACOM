@@ -362,7 +362,7 @@ export default function CotizadorPage({ agencyName = "AACOM Seguros", agencyLogo
       const anio = parseInt(row[mapping.anios]) || idx + 1
       let edad = parseInt(row[mapping.edad])
       if (isNaN(edad)) {
-        edad = formData.edadCliente + anio - 1
+        edad = parseInt(String(formData.edadCliente), 10) + anio - 1
       }
       const primaPesos = parseNumericValue(row[mapping.prima])
       const saPesos = parseNumericValue(row[mapping.sa])
@@ -644,16 +644,17 @@ export default function CotizadorPage({ agencyName = "AACOM Seguros", agencyLogo
     const sanitizedClientName = (formData.cliente || "Cotizacion").replace(/[^a-zA-Z0-9]/g, "_")
     
     const opt = {
-      margin:       8, // 8mm margin on all sides
+      margin:       10, // 10mm margin for better spacing
       filename:     `Cotizacion_${sanitizedClientName}_${new Date().toISOString().slice(0,10)}.pdf`,
       image:        { type: 'jpeg' as const, quality: 0.98 },
+      pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }, // Prevents cutting elements in half
       html2canvas:  { 
-        scale: 2.5, 
+        scale: 2, // Slightly lower scale to prevent canvas limits on huge tables
         useCORS: true, 
         letterRendering: true,
-        windowWidth: 1200 // Force desktop width for PDF generation to prevent mobile cut-off
+        windowWidth: 1200 // Desktop width
       },
-      jsPDF:        { unit: 'mm' as const, format: 'letter' as const, orientation: 'portrait' as const }
+      jsPDF:        { unit: 'mm' as const, format: 'letter' as const, orientation: 'landscape' as const }
     }
 
     // Direct download and restore styles
@@ -1697,6 +1698,9 @@ export default function CotizadorPage({ agencyName = "AACOM Seguros", agencyLogo
                 </div>
               </div>
             </div>
+
+            {/* FORCE PAGE BREAK FOR PDF BEFORE TABLE TO PROTECT CHART */}
+            <div className="html2pdf__page-break"></div>
 
             {/* MAIN CALCULATION RESULTS TABLE */}
             <div className="space-y-3 print:block">
