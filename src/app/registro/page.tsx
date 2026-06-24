@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, CheckCircle2, ChevronRight, Building2, User, CreditCard, AlertCircle, Tag, Smartphone } from "lucide-react";
 import { checkSlugAvailability, processRegistration, validateCode } from "./actions";
 import { sendVerificationSms, checkVerificationCode } from "./verify-actions";
+import { signOut } from "next-auth/react";
 
 // Planes eliminados del flujo inicial (Freemium activado)
 
@@ -70,6 +71,15 @@ export default function RegisterPage() {
     // Auto-validate promo code if pre-filled and entering step 3
     if (step === 3 && promoCode && !promoMessage) {
       handleValidatePromo();
+    }
+  }, [step]);
+
+  useEffect(() => {
+    if (step === 4) {
+      const timer = setTimeout(() => {
+        window.location.href = "/login?welcome=true";
+      }, 5000);
+      return () => clearTimeout(timer);
     }
   }, [step]);
 
@@ -166,8 +176,10 @@ export default function RegisterPage() {
     if (!res.success) {
       setError(res.message);
       setLoading(false);
-    } else if (res.url) {
-      window.location.href = res.url;
+    } else {
+      // Destruir cualquier sesión anterior de forma silenciosa para evitar cruce de identidades
+      await signOut({ redirect: false });
+      setStep(4);
     }
   };
 
@@ -364,6 +376,22 @@ export default function RegisterPage() {
                   {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Procesando...</> : 'Crear mi Agencia ahora'}
                 </Button>
               </CardFooter>
+            </div>
+          )}
+
+          {step === 4 && (
+            <div className="py-12 px-6 flex flex-col items-center text-center">
+              <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-sm border-4 border-emerald-50">
+                <CheckCircle2 className="w-10 h-10" />
+              </div>
+              <h2 className="text-2xl font-extrabold text-slate-800 mb-2">¡Tu cuenta fue creada exitosamente!</h2>
+              <p className="text-slate-600 mb-8 max-w-md">
+                Hemos preparado todo el sistema para ti. Por seguridad, te llevaremos a la pantalla de acceso en un momento para que inicies sesión con tus nuevas credenciales.
+              </p>
+              <div className="flex items-center text-indigo-600 font-medium text-sm bg-indigo-50 px-4 py-2 rounded-full">
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Redirigiendo en unos segundos...
+              </div>
             </div>
           )}
         </Card>
