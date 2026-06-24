@@ -60,7 +60,10 @@ export default async function DashboardLayout({
     }
 
     // SECURITY BLOCK: If the user is logged in but their agency was deleted or deactivated
-    if (dbUser && (!agency || agency.active === false)) {
+    const isOrphan = !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.email !== 'enrique.ahumada@aacommx.com';
+    const isAgencyInactive = dbUser?.agencyId && (!agency || agency.active === false);
+
+    if (dbUser && (dbUser.active === false || isOrphan || isAgencyInactive)) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
                 <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md w-full border border-red-100">

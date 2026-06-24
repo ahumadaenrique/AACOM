@@ -34,7 +34,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                         }
 
                         // Check if the user's agency is suspended or deleted
-                        if (user.agencyId) {
+                        if (!user.agencyId) {
+                            if (user.role !== 'SUPER_ADMIN' && user.email !== 'enrique.ahumada@aacommx.com') {
+                                console.log("[AUTH] Orphaned user without agency:", email);
+                                return null;
+                            }
+                        } else {
                             const agency = await prisma.agency.findUnique({ where: { id: user.agencyId } });
                             if (!agency || agency.active === false) {
                                 console.log("[AUTH] Agency deleted or suspended for user:", email);
