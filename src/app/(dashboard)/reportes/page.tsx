@@ -33,7 +33,6 @@ export default async function ReportesPage() {
         }
         
         const headersList = await import("next/headers").then(m => m.headers());
-        const session = await auth();
         let agency = null;
         if (session?.user?.agencyId) {
             agency = await prisma.agency.findUnique({ where: { id: session.user.agencyId } });

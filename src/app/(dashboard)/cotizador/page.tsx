@@ -1,5 +1,6 @@
 import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 import CotizadorClient from './CotizadorClient'
 
 export default async function CotizadorPage() {

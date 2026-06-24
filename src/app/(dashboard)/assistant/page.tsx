@@ -1,5 +1,6 @@
 import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
+import { auth } from '@/auth'
 import AssistantClient from './AssistantClient'
 
 export default async function AssistantPage() {
