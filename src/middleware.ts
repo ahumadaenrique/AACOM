@@ -23,6 +23,14 @@ export default auth((req) => {
         }
     }
 
+    const isLoggedIn = !!req.auth;
+    const isPublicRoute = req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/registro') || req.nextUrl.pathname === '/';
+
+    // If user is not logged in and tries to access a private route, kick them to login
+    if (!isLoggedIn && !isPublicRoute) {
+        return NextResponse.redirect(new URL('/login', req.nextUrl));
+    }
+
     const requestHeaders = new Headers(req.headers);
     requestHeaders.set('x-agency-slug', slug);
 
