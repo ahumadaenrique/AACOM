@@ -91,7 +91,7 @@ export async function createCheckoutSession(
       stripeCouponId = coupon.id;
     }
 
-    if (!priceId) {
+    if (!actualPriceId) {
       return { success: false, message: "ID de producto no válido." };
     }
 
