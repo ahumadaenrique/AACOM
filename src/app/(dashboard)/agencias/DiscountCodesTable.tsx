@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, Tag, Activity, Clock } from "lucide-react";
-import { toggleDiscountCode } from "./actions";
+import { Calendar, Tag, Activity, Pencil, Trash2 } from "lucide-react";
+import { toggleDiscountCode, deleteDiscountCode } from "./actions";
 import { Switch } from "@/components/ui/switch";
+import { DiscountCodeFormModal } from "./DiscountCodeFormModal";
 
 export function DiscountCodesTable({ discountCodes }: { discountCodes: any[] }) {
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -18,6 +19,18 @@ export function DiscountCodesTable({ discountCodes }: { discountCodes: any[] }) 
       await toggleDiscountCode(id, !currentStatus);
     } catch (error: any) {
       alert("Error al actualizar: " + error.message);
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm("¿Estás seguro de que deseas eliminar este código de descuento? Esta acción no se puede deshacer.")) return;
+    try {
+      setLoadingId(id);
+      await deleteDiscountCode(id);
+    } catch (error: any) {
+      alert("Error al eliminar: " + error.message);
     } finally {
       setLoadingId(null);
     }
@@ -39,6 +52,7 @@ export function DiscountCodesTable({ discountCodes }: { discountCodes: any[] }) 
               <TableHead>Usos</TableHead>
               <TableHead>Vencimiento</TableHead>
               <TableHead>Estado</TableHead>
+              <TableHead className="text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -86,6 +100,24 @@ export function DiscountCodesTable({ discountCodes }: { discountCodes: any[] }) 
                       <Badge variant={actuallyActive ? "default" : "secondary"} className={actuallyActive ? "bg-emerald-500" : ""}>
                         {code.active ? (actuallyActive ? 'Activo' : 'Pausado') : 'Apagado'}
                       </Badge>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <DiscountCodeFormModal discount={code}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-500 hover:text-indigo-600">
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                      </DiscountCodeFormModal>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-8 w-8 text-slate-500 hover:text-red-600"
+                        onClick={() => handleDelete(code.id)}
+                        disabled={loadingId === code.id}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </TableCell>
                 </TableRow>

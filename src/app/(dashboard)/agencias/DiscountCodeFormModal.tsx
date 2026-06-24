@@ -13,18 +13,30 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { createDiscountCode } from "./actions";
+import { createDiscountCode, updateDiscountCode } from "./actions";
 import { Loader2 } from "lucide-react";
 
-export function DiscountCodeFormModal({ children }: { children: React.ReactNode }) {
+export function DiscountCodeFormModal({ children, discount }: { children: React.ReactNode, discount?: any }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [code, setCode] = useState("");
-  const [discountPercentage, setDiscountPercentage] = useState("50");
-  const [maxUses, setMaxUses] = useState("");
-  const [expiresAt, setExpiresAt] = useState("");
+  const [code, setCode] = useState(discount?.code || "");
+  const [discountPercentage, setDiscountPercentage] = useState(discount?.discountPercentage?.toString() || "50");
+  const [maxUses, setMaxUses] = useState(discount?.maxUses?.toString() || "");
+  const [expiresAt, setExpiresAt] = useState(discount?.expiresAt ? new Date(discount.expiresAt).toISOString().split('T')[0] : "");
+
+  // Update state when modal opens with new props
+  const handleOpenChange = (newOpen: boolean) => {
+    setOpen(newOpen);
+    if (newOpen) {
+      setCode(discount?.code || "");
+      setDiscountPercentage(discount?.discountPercentage?.toString() || "50");
+      setMaxUses(discount?.maxUses?.toString() || "");
+      setExpiresAt(discount?.expiresAt ? new Date(discount.expiresAt).toISOString().split('T')[0] : "");
+      setError("");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,19 +44,30 @@ export function DiscountCodeFormModal({ children }: { children: React.ReactNode 
     setError("");
 
     try {
-      await createDiscountCode({
-        code: code.trim().toUpperCase(),
-        discountPercentage: Number(discountPercentage),
-        maxUses: maxUses ? Number(maxUses) : null,
-        expiresAt: expiresAt ? new Date(expiresAt) : null,
-      });
+      if (discount?.id) {
+        await updateDiscountCode(discount.id, {
+          code: code.trim().toUpperCase(),
+          discountPercentage: Number(discountPercentage),
+          maxUses: maxUses ? Number(maxUses) : null,
+          expiresAt: expiresAt ? new Date(expiresAt) : null,
+        });
+      } else {
+        await createDiscountCode({
+          code: code.trim().toUpperCase(),
+          discountPercentage: Number(discountPercentage),
+          maxUses: maxUses ? Number(maxUses) : null,
+          expiresAt: expiresAt ? new Date(expiresAt) : null,
+        });
+      }
       setOpen(false);
       
       // Reset form
-      setCode("");
-      setDiscountPercentage("50");
-      setMaxUses("");
-      setExpiresAt("");
+      if (!discount) {
+        setCode("");
+        setDiscountPercentage("50");
+        setMaxUses("");
+        setExpiresAt("");
+      }
     } catch (err: any) {
       setError(err.message || "Ocurrió un error");
     } finally {
@@ -53,15 +76,15 @@ export function DiscountCodeFormModal({ children }: { children: React.ReactNode 
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Nuevo Cupón de Descuento</DialogTitle>
+          <DialogTitle>{discount ? "Editar Cupón" : "Nuevo Cupón de Descuento"}</DialogTitle>
           <DialogDescription>
-            Crea un código promocional. Este código podrá ser usado en la pantalla de pago de las agencias.
+            {discount ? "Modifica los valores del cupón seleccionado." : "Crea un código promocional. Este código podrá ser usado en la pantalla de pago de las agencias."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
@@ -117,7 +140,7 @@ export function DiscountCodeFormModal({ children }: { children: React.ReactNode 
             </Button>
             <Button type="submit" disabled={loading} className="bg-indigo-600 hover:bg-indigo-700">
               {loading ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
-              Crear Cupón
+              {discount ? "Guardar Cambios" : "Crear Cupón"}
             </Button>
           </DialogFooter>
         </form>
