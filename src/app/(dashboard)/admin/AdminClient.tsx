@@ -2295,6 +2295,17 @@ export default function AdminClient() {
                                                   >
                                                     {adn.cerradaPagada ? "✓ Cerrada y Pagada" : "Pendiente"}
                                                   </button>
+                                                  {adn.latitude && adn.longitude && (
+                                                    <a
+                                                      href={`https://www.google.com/maps?q=${adn.latitude},${adn.longitude}`}
+                                                      target="_blank"
+                                                      rel="noopener noreferrer"
+                                                      className="text-blue-600 hover:text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 font-black text-[10px] uppercase flex items-center gap-1 px-2.5 py-1.5 rounded-md transition-colors"
+                                                      title="Abrir ubicación GPS en Google Maps"
+                                                    >
+                                                      📍 Mapa
+                                                    </a>
+                                                  )}
 
                                                   <Button
                                                     onClick={() => setSelectedAdn(adn)}
