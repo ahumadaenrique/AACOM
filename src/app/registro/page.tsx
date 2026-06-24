@@ -6,8 +6,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, CheckCircle2, ChevronRight, Building2, User, CreditCard, AlertCircle, Tag } from "lucide-react";
+import { Loader2, CheckCircle2, ChevronRight, Building2, User, CreditCard, AlertCircle, Tag, Smartphone } from "lucide-react";
 import { checkSlugAvailability, processRegistration, validateCode } from "./actions";
+import { sendVerificationSms, checkVerificationCode } from "./verify-actions";
 
 // Planes eliminados del flujo inicial (Freemium activado)
 
@@ -27,6 +28,11 @@ export default function RegisterPage() {
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Step 1.5 (SMS)
+  const [smsCode, setSmsCode] = useState("");
+  const [sendingSms, setSendingSms] = useState(false);
+  const [verifyingSms, setVerifyingSms] = useState(false);
 
   // Step 2
   const [agencyName, setAgencyName] = useState("");
@@ -53,7 +59,7 @@ export default function RegisterPage() {
     return () => clearTimeout(delayDebounceFn);
   }, [agencySlug]);
 
-  const handleNextStep1 = (e: React.FormEvent) => {
+  const handleNextStep1 = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     if (password !== confirmPassword) {
@@ -64,7 +70,40 @@ export default function RegisterPage() {
       setError("La contraseña debe tener al menos 6 caracteres");
       return;
     }
-    setStep(2);
+    if (phone.length < 10) {
+      setError("El teléfono debe tener al menos 10 dígitos (incluyendo LADA).");
+      return;
+    }
+
+    setSendingSms(true);
+    try {
+      const res = await sendVerificationSms(phone);
+      if (res.success) {
+        setStep(1.5);
+      }
+    } catch (err: any) {
+      setError(err.message || "Error al enviar el SMS de verificación.");
+    } finally {
+      setSendingSms(false);
+    }
+  };
+
+  const handleVerifySms = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setVerifyingSms(true);
+    try {
+      const res = await checkVerificationCode(phone, smsCode);
+      if (res.success) {
+        setStep(2);
+      } else {
+        setError(res.message || "Código incorrecto");
+      }
+    } catch (err: any) {
+      setError("Ocurrió un error al verificar tu código.");
+    } finally {
+      setVerifyingSms(false);
+    }
   };
 
   const handleNextStep2 = (e: React.FormEvent) => {
@@ -138,8 +177,8 @@ export default function RegisterPage() {
           </div>
           
           {[1, 2, 3].map((num) => (
-            <div key={num} className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border-4 transition-colors ${step >= num ? 'bg-indigo-600 border-indigo-100 text-white' : 'bg-white border-slate-200 text-slate-400'}`}>
-              {step > num ? <CheckCircle2 className="w-5 h-5" /> : num}
+            <div key={num} className={`w-10 h-10 rounded-full flex items-center justify-center font-bold border-4 transition-colors ${Math.floor(step) >= num ? 'bg-indigo-600 border-indigo-100 text-white' : 'bg-white border-slate-200 text-slate-400'}`}>
+              {Math.floor(step) > num ? <CheckCircle2 className="w-5 h-5" /> : num}
             </div>
           ))}
         </div>
@@ -177,7 +216,37 @@ export default function RegisterPage() {
                 {error && <p className="text-sm text-red-500 font-medium">{error}</p>}
               </CardContent>
               <CardFooter>
-                <Button type="submit" className="w-full bg-indigo-600 hover:bg-indigo-700">Continuar <ChevronRight className="w-4 h-4 ml-1" /></Button>
+                <Button type="submit" disabled={sendingSms} className="w-full bg-indigo-600 hover:bg-indigo-700">
+                  {sendingSms ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Enviando SMS...</> : <><Smartphone className="w-4 h-4 mr-2" /> Validar Teléfono <ChevronRight className="w-4 h-4 ml-1" /></>}
+                </Button>
+              </CardFooter>
+            </form>
+          )}
+
+          {step === 1.5 && (
+            <form onSubmit={handleVerifySms}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Smartphone className="w-5 h-5 text-indigo-600" /> Verifica tu Celular</CardTitle>
+                <CardDescription>Te hemos enviado un código de seguridad por SMS al número <strong>{phone}</strong>.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Código de 6 dígitos</Label>
+                  <Input 
+                    required 
+                    value={smsCode} 
+                    onChange={e => setSmsCode(e.target.value.replace(/\D/g, '').slice(0, 6))} 
+                    placeholder="123456" 
+                    className="text-center text-3xl tracking-[1em] font-mono h-16 bg-slate-50" 
+                  />
+                </div>
+                {error && <p className="text-sm text-red-500 font-medium text-center">{error}</p>}
+              </CardContent>
+              <CardFooter className="flex gap-3">
+                <Button type="button" variant="outline" disabled={verifyingSms} onClick={() => setStep(1)}>Cambiar Número</Button>
+                <Button type="submit" disabled={verifyingSms || smsCode.length < 6} className="flex-1 bg-indigo-600 hover:bg-indigo-700">
+                  {verifyingSms ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Verificando...</> : 'Confirmar Código'}
+                </Button>
               </CardFooter>
             </form>
           )}

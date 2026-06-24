@@ -64,6 +64,7 @@ model User {
   image         String?
   role          String    @default("AGENTE") // Changed from Enum Role to String
   phone         String?   // Teléfono del usuario/agente
+  phoneVerified Boolean   @default(false) // Candado de verificación SMS
   active        Boolean   @default(true) // Estatus activo/inactivo para restringir acceso
   birthDate     DateTime? // Fecha de nacimiento del agente para overlay de cumpleaños
   mustChangePassword Boolean @default(false) // Flag de seguridad para forzar cambio de contraseña temporal

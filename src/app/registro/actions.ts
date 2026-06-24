@@ -52,6 +52,14 @@ export async function processRegistration(data: any) {
       return { success: false, message: "El nombre de la plataforma (slug) ya no está disponible." };
     }
 
+    // Validate phone duplicate to prevent abuse
+    const existingPhone = await prisma.user.findFirst({
+      where: { phone, phoneVerified: true, agency: { active: true } }
+    });
+    if (existingPhone) {
+      return { success: false, message: "Este número de teléfono ya tiene otra agencia registrada." };
+    }
+
     // Check referrer or promoCode
     let referredByAgencyId = null;
     let stripeCoupon = null;
@@ -93,6 +101,7 @@ export async function processRegistration(data: any) {
         email,
         password, // Using plain text to match existing auth logic
         phone,
+        phoneVerified: true, // We verified it in step 1.5
         role: "ADMIN",
         agencyId: newAgency.id,
         active: true,
