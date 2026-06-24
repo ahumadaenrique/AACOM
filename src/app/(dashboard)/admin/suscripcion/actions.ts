@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { headers } from "next/headers";
 
 export async function createCheckoutSession(
-  priceId: string,
+  planId: string,
   daysToAdd: number,
   discountCodeStr?: string
 ) {
@@ -32,6 +32,20 @@ export async function createCheckoutSession(
     const host = hostList.get("host") || "";
     const protocol = host.includes("localhost") ? "http" : "https";
     const origin = `${protocol}://${host}`;
+
+    // Map planId to real Stripe price ID from server env variables
+    let actualPriceId = "";
+    if (planId === "trimestral") {
+      actualPriceId = process.env.STRIPE_PLAN_3M_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY || "";
+    } else if (planId === "semiannual") {
+      actualPriceId = process.env.STRIPE_PLAN_6M_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_PRICE_SEMIANNUAL || "";
+    } else if (planId === "annual") {
+      actualPriceId = process.env.STRIPE_PLAN_12M_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL || "";
+    }
+
+    if (!actualPriceId) {
+      return { success: false, message: "Las llaves de precio de Stripe no están configuradas en Vercel." };
+    }
 
     let stripeCustomerId = agency.stripeCustomerId;
 
@@ -87,7 +101,7 @@ export async function createCheckoutSession(
       payment_method_types: ["card"],
       line_items: [
         {
-          price: priceId,
+          price: actualPriceId,
           quantity: 1,
         },
       ],

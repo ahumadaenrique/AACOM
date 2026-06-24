@@ -12,7 +12,6 @@ interface Plan {
   name: string;
   description: string;
   price: string;
-  priceId: string;
   days: number;
   popular?: boolean;
 }
@@ -23,7 +22,6 @@ const plans: Plan[] = [
     name: "Trimestral",
     description: "Ideal para probar el sistema a mediano plazo.",
     price: "$5,997 MXN",
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY || "price_1TjM2RHQaI7mythjYsPj6bvD",
     days: 90,
   },
   {
@@ -31,7 +29,6 @@ const plans: Plan[] = [
     name: "Semestral",
     description: "Ahorra al comprometerte medio año.",
     price: "$10,799 MXN",
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_SEMIANNUAL || "price_1TjM5hHQaI7mythjO1sX5v5z",
     days: 180,
   },
   {
@@ -39,7 +36,6 @@ const plans: Plan[] = [
     name: "Anual",
     description: "El mejor valor para agencias establecidas.",
     price: "$20,500 MXN",
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL || "price_1TjM5hHQaI7mythjfRjgkC39",
     days: 365,
     popular: true,
   }
@@ -56,7 +52,7 @@ export default function PlanSelector({ isSubscribed }: { isSubscribed: boolean }
 
     try {
       setLoading(true);
-      const res = await createCheckoutSession(selectedPlan.priceId, selectedPlan.days, discountCode);
+      const res = await createCheckoutSession(selectedPlan.id, selectedPlan.days, discountCode);
       if (!res?.success) {
         alert(res?.message || "Ocurrió un error al procesar la solicitud.");
         setLoading(false);
