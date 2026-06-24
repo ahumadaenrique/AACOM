@@ -90,6 +90,7 @@ export default async function TicketsAdminPage() {
                     <div className="flex flex-wrap gap-4 text-xs font-semibold text-slate-500 bg-slate-50 dark:bg-zinc-900 w-fit px-3 py-2 rounded-xl border border-slate-100 dark:border-zinc-800">
                       <div><span className="text-slate-400">Usuario:</span> {ticket.user.name} ({ticket.user.email})</div>
                       {ticket.agency && <div><span className="text-slate-400">Agencia:</span> {ticket.agency.name} ({ticket.agency.slug})</div>}
+                      {ticket.contactPhone && <div><span className="text-slate-400">Tel/WA:</span> {ticket.contactPhone}</div>}
                     </div>
                   </div>
                   <div className="flex flex-col justify-center items-end shrink-0 pl-4 border-l border-slate-100 dark:border-zinc-800">

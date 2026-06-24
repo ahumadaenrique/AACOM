@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 export default function SupportPage() {
     const [subject, setSubject] = useState("");
     const [description, setDescription] = useState("");
+    const [contactPhone, setContactPhone] = useState("");
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const { toast } = useToast();
@@ -23,7 +24,7 @@ export default function SupportPage() {
             const res = await fetch("/api/support", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ subject, description })
+                body: JSON.stringify({ subject, description, contactPhone })
             });
 
             const data = await res.json();
@@ -51,7 +52,7 @@ export default function SupportPage() {
                 <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
                 <h2 className="text-2xl font-bold text-slate-800 dark:text-zinc-200">¡Ticket Registrado!</h2>
                 <p className="text-slate-500 mt-2 max-w-md text-center">Nuestro equipo de soporte técnico ha sido notificado y se pondrá en contacto contigo muy pronto.</p>
-                <Button className="mt-6" onClick={() => { setSuccess(false); setSubject(""); setDescription(""); }}>
+                <Button className="mt-6" onClick={() => { setSuccess(false); setSubject(""); setDescription(""); setContactPhone(""); }}>
                     Enviar otro ticket
                 </Button>
             </div>
@@ -94,6 +95,16 @@ export default function SupportPage() {
                                 required 
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
+                            />
+                        </div>
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700 dark:text-zinc-300">Número de Contacto (WhatsApp / Teléfono)</label>
+                            <Input 
+                                type="tel"
+                                placeholder="Ej. 55 1234 5678" 
+                                required 
+                                value={contactPhone}
+                                onChange={(e) => setContactPhone(e.target.value)}
                             />
                         </div>
                     </CardContent>

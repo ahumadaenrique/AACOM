@@ -5,11 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CreditCard, Gift, ShieldCheck, Zap, Copy, CheckCircle2 } from "lucide-react";
+import { CreditCard, Gift, ShieldCheck, Zap, Copy, CheckCircle2, AlertCircle, Calendar } from "lucide-react";
 import { createCheckoutSession } from "./actions";
 import { differenceInDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import PlanSelector from "./PlanSelector";
+import CopyLinkButton from "./CopyLinkButton";
 
 export const dynamic = "force-dynamic";
 
@@ -136,10 +137,7 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
               <label className="text-xs font-bold text-indigo-900 uppercase tracking-wider">Tu Enlace Único de Referido</label>
               <div className="flex items-center gap-2 bg-white border border-indigo-200 p-2 rounded-xl shadow-sm">
                 <Input readOnly value={referralLink} className="border-0 bg-transparent focus-visible:ring-0 text-sm text-indigo-900 font-medium" />
-                {/* Client component copy button needed here for interactivity, using a generic visually appealing block for now */}
-                <Button type="button" variant="secondary" className="shrink-0 bg-indigo-100 hover:bg-indigo-200 text-indigo-700">
-                  Copiar Enlace
-                </Button>
+                <CopyLinkButton referralLink={referralLink} />
               </div>
             </div>
           </CardContent>

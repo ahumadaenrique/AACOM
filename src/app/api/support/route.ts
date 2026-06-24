@@ -10,9 +10,9 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "No autenticado" }, { status: 401 });
         }
 
-        const { subject, description } = await req.json();
+        const { subject, description, contactPhone } = await req.json();
 
-        if (!subject || !description) {
+        if (!subject || !description || !contactPhone) {
             return NextResponse.json({ error: "Faltan datos en el ticket" }, { status: 400 });
         }
 
@@ -32,6 +32,7 @@ export async function POST(req: Request) {
                 agencyId: user.agencyId,
                 subject,
                 description,
+                contactPhone,
                 status: "OPEN"
             }
         });
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
                         <h2>Nuevo Ticket de Soporte Registrado</h2>
                         <p><strong>Agencia:</strong> ${user.agency?.name || 'Independiente'}</p>
                         <p><strong>Usuario:</strong> ${user.name} (${user.email})</p>
+                        <p><strong>Teléfono de Contacto:</strong> ${contactPhone}</p>
                         <hr />
                         <h3>Descripción del Problema:</h3>
                         <p>${description}</p>

@@ -442,6 +442,7 @@ model Ticket {
   agency      Agency?  @relation(fields: [agencyId], references: [id])
   subject     String
   description String
+  contactPhone String?
   status      String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED
   imageUrl    String?
   createdAt   DateTime @default(now())
