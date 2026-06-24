@@ -9,31 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, CheckCircle2, ChevronRight, Building2, User, CreditCard, AlertCircle, Tag } from "lucide-react";
 import { checkSlugAvailability, processRegistration, validateCode } from "./actions";
 
-// Use same plan definitions, but Trimestral instead of Mensual
-const plans = [
-  {
-    id: "trimestral",
-    name: "Trimestral",
-    price: "$5,997 MXN",
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY || "price_1TjM2RHQaI7mythjYsPj6bvD",
-    days: 90,
-  },
-  {
-    id: "semiannual",
-    name: "Semestral",
-    price: "$10,799 MXN",
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_SEMIANNUAL || "price_1TjM5hHQaI7mythjO1sX5v5z",
-    days: 180,
-  },
-  {
-    id: "annual",
-    name: "Anual",
-    price: "$20,500 MXN",
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRICE_ANNUAL || "price_1TjM5hHQaI7mythjfRjgkC39",
-    days: 365,
-    popular: true,
-  }
-];
+// Planes eliminados del flujo inicial (Freemium activado)
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -59,7 +35,6 @@ export default function RegisterPage() {
   const [slugStatus, setSlugStatus] = useState<"idle" | "loading" | "available" | "taken">("idle");
 
   // Step 3
-  const [selectedPlanId, setSelectedPlanId] = useState("annual");
   const [promoCode, setPromoCode] = useState("");
   const [promoMessage, setPromoMessage] = useState<{type: "success" | "error", text: string} | null>(null);
   const [validatingPromo, setValidatingPromo] = useState(false);
@@ -125,14 +100,9 @@ export default function RegisterPage() {
     setError("");
     setLoading(true);
 
-    const selectedPlan = plans.find(p => p.id === selectedPlanId);
-    if (!selectedPlan) return;
-
     const data = {
       name, email, phone, password,
       agencyName, agencySlug, agencyColor,
-      priceId: selectedPlan.priceId,
-      daysToAdd: selectedPlan.days,
       refSlug,
       promoCode: promoMessage?.type === "success" ? promoCode.trim() : undefined
     };
@@ -262,40 +232,24 @@ export default function RegisterPage() {
           {step === 3 && (
             <div>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2"><CreditCard className="w-5 h-5 text-indigo-600" /> Activación y Pago</CardTitle>
-                <CardDescription>Tu plataforma está lista para nacer. Selecciona un plan para activarla ahora mismo.</CardDescription>
+                <CardTitle className="flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-indigo-600" /> ¡Todo Listo para Despegar!</CardTitle>
+                <CardDescription>Estás a un clic de crear tu plataforma. Disfruta de tus 5 días de acceso total sin compromiso.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  {plans.map((plan) => (
-                    <div 
-                      key={plan.id}
-                      onClick={() => setSelectedPlanId(plan.id)}
-                      className={`relative flex items-center justify-between p-4 rounded-xl border-2 cursor-pointer transition-all ${selectedPlanId === plan.id ? 'border-indigo-600 bg-indigo-50/50' : 'border-slate-200 hover:border-indigo-300'}`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${selectedPlanId === plan.id ? 'border-indigo-600' : 'border-slate-300'}`}>
-                          {selectedPlanId === plan.id && <div className="w-2.5 h-2.5 bg-indigo-600 rounded-full" />}
-                        </div>
-                        <div>
-                          <p className="font-bold text-slate-900">{plan.name}</p>
-                          <p className="text-xs text-slate-500">{plan.days} días de acceso</p>
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-bold text-indigo-600">{plan.price}</p>
-                        {plan.popular && <span className="text-[10px] uppercase font-bold text-white bg-indigo-600 px-2 py-0.5 rounded-full">Popular</span>}
-                      </div>
-                    </div>
-                  ))}
+                <div className="bg-indigo-50 border border-indigo-100 rounded-xl p-6 flex flex-col items-center text-center shadow-sm">
+                  <div className="w-14 h-14 bg-white rounded-full flex items-center justify-center mb-3 shadow-md">
+                    <span className="text-3xl font-extrabold text-indigo-600">5</span>
+                  </div>
+                  <h3 className="text-lg font-bold text-indigo-900">Días de Prueba Gratis</h3>
+                  <p className="text-sm text-indigo-700 mt-2 max-w-sm">Tendrás acceso ilimitado a todas las herramientas Premium. Podrás suscribirte desde tu panel cuando lo decidas.</p>
                 </div>
-
+                
                 <div className="pt-4 mt-4 border-t border-slate-100">
-                  <Label className="flex items-center gap-2 mb-2"><Tag className="w-4 h-4 text-slate-400" /> ¿Tienes un código de descuento o invitación?</Label>
+                  <Label className="flex items-center gap-2 mb-2"><Tag className="w-4 h-4 text-slate-400" /> ¿Tienes un código de invitación?</Label>
                   <div className="flex items-start gap-2">
                     <div className="flex-1 space-y-1">
                       <Input 
-                        placeholder="Ej. BUENFIN25 o slug de un amigo" 
+                        placeholder="Ej. slug de un amigo" 
                         value={promoCode} 
                         onChange={(e) => {
                           setPromoCode(e.target.value);
@@ -321,8 +275,8 @@ export default function RegisterPage() {
               </CardContent>
               <CardFooter className="flex gap-3">
                 <Button type="button" variant="outline" disabled={loading} onClick={() => setStep(2)}>Atrás</Button>
-                <Button onClick={handleFinish} disabled={loading} className="flex-1 bg-indigo-600 hover:bg-indigo-700">
-                  {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Procesando...</> : 'Pagar de forma segura'}
+                <Button onClick={handleFinish} disabled={loading} className="flex-1 bg-indigo-600 hover:bg-indigo-700 shadow-md">
+                  {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Procesando...</> : 'Crear mi Agencia ahora'}
                 </Button>
               </CardFooter>
             </div>
