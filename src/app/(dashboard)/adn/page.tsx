@@ -520,12 +520,22 @@ export default function AdnPage() {
     return ''
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const error = validateStep()
     if (error) {
       setValidationError(error)
       return
     }
+
+    // Auto-save on the final capture step (Step 3) before showing results
+    if (step === 3) {
+      const success = await handleSaveDiagnostic(true)
+      if (success) {
+        setStep(prev => prev + 1)
+      }
+      return
+    }
+
     setStep(prev => prev + 1)
   }
 
@@ -535,7 +545,7 @@ export default function AdnPage() {
   }
 
   // --- Save to Database ---
-  const handleSaveDiagnostic = async () => {
+  const handleSaveDiagnostic = async (isAutoSave = false): Promise<boolean> => {
     setIsSaving(true)
     setValidationError('')
 
@@ -543,14 +553,14 @@ export default function AdnPage() {
     if (error) {
       setValidationError(error)
       setIsSaving(false)
-      return
+      return false
     }
 
     // REQUERIR GPS
     if (!navigator.geolocation) {
       setValidationError("Tu navegador no soporta geolocalización. Es obligatoria para guardar ADNs.")
       setIsSaving(false)
-      return
+      return false
     }
 
     try {
@@ -612,9 +622,15 @@ export default function AdnPage() {
 
       const res = await saveAdnDiagnostic(payload)
       if (res.success) {
-        alert('¡Diagnóstico ADN guardado exitosamente!')
+        if (!isAutoSave) {
+          alert('¡Diagnóstico ADN guardado exitosamente!')
+        }
+        setIsSaving(false)
+        return true
       } else {
         setValidationError(res.message || 'Error al guardar el diagnóstico')
+        setIsSaving(false)
+        return false
       }
     } catch (err: any) {
       if (err.code === 1) { // PERMISSION_DENIED
@@ -626,8 +642,8 @@ export default function AdnPage() {
       } else {
         setValidationError(err.message || 'Ocurrió un error inesperado al guardar')
       }
-    } finally {
       setIsSaving(false)
+      return false
     }
   }
 
@@ -1760,11 +1776,12 @@ export default function AdnPage() {
                   Siguiente <ArrowRight className="h-4 w-4" />
                 </button>
               ) : (
-                <button
+                <button 
                   onClick={handleNext}
-                  className="flex items-center gap-1.5 bg-teal-800 hover:bg-teal-900 text-white p-3 px-6 rounded-2xl text-xs font-black transition-all shadow-md hover:shadow-lg"
+                  disabled={isSaving}
+                  className="flex items-center gap-1.5 bg-teal-800 hover:bg-teal-900 text-white p-3 px-6 rounded-2xl text-xs font-black transition-all shadow-md hover:shadow-lg disabled:opacity-50"
                 >
-                  Generar Diagnóstico <CheckCircle className="h-4 w-4" />
+                  {isSaving ? "Generando y Guardando..." : "Generar Diagnóstico"} <CheckCircle className="h-4 w-4" />
                 </button>
               )}
             </div>
@@ -1784,13 +1801,6 @@ export default function AdnPage() {
                 className="flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white p-2.5 px-4 rounded-xl text-xs font-black shadow transition-all"
               >
                 <Download className="h-4 w-4" /> Descargar Diagnóstico (PDF)
-              </button>
-              <button 
-                onClick={handleSaveDiagnostic}
-                disabled={isSaving}
-                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white p-2.5 px-4 rounded-xl text-xs font-black shadow transition-all disabled:opacity-50"
-              >
-                {isSaving ? 'Guardando...' : 'Guardar en Base de Datos'}
               </button>
               <button 
                 onClick={() => setStep(3)}
