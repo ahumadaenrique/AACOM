@@ -80,6 +80,8 @@ export default function RegisterPage() {
       const res = await sendVerificationSms(phone);
       if (res.success) {
         setStep(1.5);
+      } else {
+        setError(res.message || "Error al verificar el número.");
       }
     } catch (err: any) {
       setError(err.message || "Error al enviar el SMS de verificación.");

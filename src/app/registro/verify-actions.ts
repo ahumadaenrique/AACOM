@@ -5,11 +5,11 @@ import { twilioClient } from "@/lib/twilio";
 
 export async function sendVerificationSms(phone: string) {
   if (!twilioClient) {
-    throw new Error("Twilio no está configurado en el servidor. Faltan las claves de entorno.");
+    return { success: false, message: "Twilio no está configurado en el servidor. Faltan las claves de entorno." };
   }
   const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
   if (!serviceSid) {
-    throw new Error("Falta el TWILIO_VERIFY_SERVICE_SID en el servidor.");
+    return { success: false, message: "Falta el TWILIO_VERIFY_SERVICE_SID en el servidor." };
   }
 
   // Format phone to E.164 (assuming Mexico if no country code)
@@ -17,7 +17,7 @@ export async function sendVerificationSms(phone: string) {
   if (formattedPhone.length === 10 && !formattedPhone.startsWith("+")) {
     formattedPhone = `+52${formattedPhone}`;
   } else if (!formattedPhone.startsWith("+")) {
-    throw new Error("Por favor incluye el código de país (ej. +52) o ingresa tus 10 dígitos si estás en México.");
+    return { success: false, message: "Por favor incluye el código de país (ej. +52) o ingresa tus 10 dígitos si estás en México." };
   }
 
   // Check if phone is already registered and verified
@@ -32,7 +32,7 @@ export async function sendVerificationSms(phone: string) {
   });
 
   if (existingUser) {
-    throw new Error("Este número de teléfono ya ha sido utilizado para registrar otra agencia.");
+    return { success: false, message: "Este número de teléfono ya ha sido utilizado para registrar otra agencia." };
   }
 
   try {
@@ -43,17 +43,17 @@ export async function sendVerificationSms(phone: string) {
     return { success: true, status: verification.status };
   } catch (error: any) {
     console.error("Twilio send error:", error);
-    throw new Error(error.message || "Error al enviar el SMS. Verifica que el número sea correcto.");
+    return { success: false, message: error.message || "Error al enviar el SMS. Verifica que el número sea correcto." };
   }
 }
 
 export async function checkVerificationCode(phone: string, code: string) {
   if (!twilioClient) {
-    throw new Error("Twilio no está configurado en el servidor.");
+    return { success: false, message: "Twilio no está configurado en el servidor." };
   }
   const serviceSid = process.env.TWILIO_VERIFY_SERVICE_SID;
   if (!serviceSid) {
-    throw new Error("Falta el TWILIO_VERIFY_SERVICE_SID en el servidor.");
+    return { success: false, message: "Falta el TWILIO_VERIFY_SERVICE_SID en el servidor." };
   }
 
   let formattedPhone = phone.trim();
