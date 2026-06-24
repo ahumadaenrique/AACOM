@@ -33,6 +33,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             return null;
                         }
 
+                        // Check if the user's agency is suspended or deleted
+                        if (user.agencyId) {
+                            const agency = await prisma.agency.findUnique({ where: { id: user.agencyId } });
+                            if (!agency || agency.active === false) {
+                                console.log("[AUTH] Agency deleted or suspended for user:", email);
+                                return null;
+                            }
+                        }
+
                         const passwordsMatch = password === user.password;
                         console.log("[AUTH] Password match:", passwordsMatch);
 
