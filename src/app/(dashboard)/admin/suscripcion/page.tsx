@@ -46,8 +46,8 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
   const isSubscribed = agency.subscriptionStatus === "active";
   const endDate = agency.subscriptionEndDate;
   const daysLeft = endDate ? differenceInDays(endDate, new Date()) : 0;
-  
-  const referralLink = `https://aacomsoft.com/registro?ref=${agency.id}`;
+    // El enlace de referido debe usar el 'slug' (el nombre corto de la plataforma), no el ID de base de datos
+  const referralLink = `https://aacomsoft.com/registro?ref=${agency.slug}`;
 
   return (
     <div className="flex flex-col gap-8 p-4 md:p-8 max-w-5xl mx-auto w-full">

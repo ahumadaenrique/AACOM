@@ -27,8 +27,15 @@ export async function validateCode(code: string) {
     return { valid: true, type: "discount", name: `Descuento del ${discount.discountPercentage}%`, code: discount.code };
   }
   
-  // 2. Check if it's an agency slug (referral)
-  const agency = await prisma.agency.findUnique({ where: { slug: code.toLowerCase() } });
+  // 2. Check if it's an agency slug OR id (referral)
+  const agency = await prisma.agency.findFirst({ 
+    where: { 
+      OR: [
+        { slug: code.toLowerCase() },
+        { id: code }
+      ]
+    } 
+  });
   if (agency && agency.active) {
     return { valid: true, type: "referral", name: `Invitado por ${agency.name}`, slug: agency.slug };
   }
