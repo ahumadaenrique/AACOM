@@ -45,6 +45,7 @@ export default function PlanSelector({ isSubscribed }: { isSubscribed: boolean }
   const [selectedPlanId, setSelectedPlanId] = useState<string>("annual");
   const [discountCode, setDiscountCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleSubscribe = async () => {
     const selectedPlan = plans.find(p => p.id === selectedPlanId);
@@ -52,9 +53,10 @@ export default function PlanSelector({ isSubscribed }: { isSubscribed: boolean }
 
     try {
       setLoading(true);
+      setErrorMsg("");
       const res = await createCheckoutSession(selectedPlan.id, selectedPlan.days, discountCode);
       if (!res?.success) {
-        alert(res?.message || "Ocurrió un error al procesar la solicitud.");
+        setErrorMsg(res?.message || "Ocurrió un error al procesar la solicitud.");
         setLoading(false);
         return;
       }
@@ -63,7 +65,7 @@ export default function PlanSelector({ isSubscribed }: { isSubscribed: boolean }
         window.location.href = res.url;
       }
     } catch (error: any) {
-      alert(error.message || "Ocurrió un error de conexión.");
+      setErrorMsg(error.message || "Ocurrió un error de conexión.");
       setLoading(false);
     }
   };
@@ -108,6 +110,9 @@ export default function PlanSelector({ isSubscribed }: { isSubscribed: boolean }
             placeholder="Si tienes un código, ingrésalo aquí" 
             className="bg-slate-50"
           />
+          {errorMsg && (
+            <p className="text-sm text-red-500 font-medium mt-2">{errorMsg}</p>
+          )}
         </div>
         <Button 
           disabled={loading} 
