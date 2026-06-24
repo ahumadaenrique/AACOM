@@ -59,6 +59,32 @@ export default async function DashboardLayout({
         agency = await prisma.agency.findUnique({ where: { slug } });
     }
 
+    // SECURITY BLOCK: If the user is logged in but their agency was deleted or deactivated
+    if (dbUser && (!agency || agency.active === false)) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+                <div className="bg-white p-8 rounded-2xl shadow-xl text-center max-w-md w-full border border-red-100">
+                    <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <Building2 className="w-10 h-10" />
+                    </div>
+                    <h1 className="text-2xl font-extrabold text-slate-800 mb-2">Agencia No Disponible</h1>
+                    <p className="text-slate-600 mb-8 leading-relaxed">
+                        La agencia a la que pertenece esta cuenta ha sido desactivada o eliminada permanentemente del sistema. Por seguridad, tu acceso ha sido revocado.
+                    </p>
+                    <form action={async () => {
+                        "use server"
+                        await signOut()
+                    }}>
+                        <Button type="submit" className="w-full h-12 bg-red-600 hover:bg-red-700 text-white font-bold text-lg rounded-xl shadow-md transition-all">
+                            <LogOut className="w-5 h-5 mr-2" />
+                            Cerrar Sesión Segura
+                        </Button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
+
     // Ultimate fallback
     if (!agency) {
         agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
