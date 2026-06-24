@@ -197,7 +197,7 @@ export default function CotizadorPage({ agencyName = "AACOM Seguros", agencyLogo
         ...prev,
         [name]: name === "valorUdi" || name === "inflacionUdi" || name === "isr" 
           ? parseFloat(value) || 0 
-          : value
+          : name === "edadCliente" ? parseInt(value) || 0 : value
       }
       
       // Auto-correct duracion if product changes
