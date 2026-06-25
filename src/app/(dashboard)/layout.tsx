@@ -202,6 +202,13 @@ export default async function DashboardLayout({
                                 {isAdmin && (
                                     <>
                                         <Link
+                                            href="/votaciones"
+                                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                                        >
+                                            <Sparkles className="h-4 w-4 text-amber-500" />
+                                            Votaciones
+                                        </Link>
+                                        <Link
                                             href="/admin"
                                             className="text-muted-foreground transition-colors hover:text-foreground font-semibold"
                                         >
@@ -317,6 +324,13 @@ export default async function DashboardLayout({
 
                                         {isAdmin && (
                                             <>
+                                                <Link
+                                                    href="/votaciones"
+                                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                                >
+                                                    <Sparkles className="h-5 w-5 text-amber-500" />
+                                                    Votaciones
+                                                </Link>
                                                 <Link
                                                     href="/admin"
                                                     className="text-muted-foreground hover:text-foreground"

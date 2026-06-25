@@ -78,9 +78,9 @@ export async function saveActivity(records: ActivityInput[]) {
     // ... This is tricky without exact ID mapping.
 
     // STRICT MAPPING ATTEMPT based on screenshot vs constants:
-    // "Llamadas de Prospección" (1) -> LLAMADAS (E)
+    // "Llamadas de ProspecciÃ³n" (1) -> LLAMADAS (E)
     // "Citas Iniciales" (2) -> CITAS AGENDADAS (F, G)
-    // "Análisis de Necesidades" (3) -> CITAS EFECTIVAS (H, I) ?? (Analysis often implies an effective meeting)
+    // "AnÃ¡lisis de Necesidades" (3) -> CITAS EFECTIVAS (H, I) ?? (Analysis often implies an effective meeting)
     // "Cierre de Ventas" (5) -> CIERRE DE POLIZA (J, K)
 
     // Let's try to follow the ID order from constants constants.ts:
@@ -193,7 +193,7 @@ export async function saveCotizacion(data: {
         return { success: true, cotizacion: newCotizacion };
     } catch (error: any) {
         console.error("Error saving cotizacion:", error);
-        return { success: false, message: error.message || "Error al guardar cotización" };
+        return { success: false, message: error.message || "Error al guardar cotizaciÃ³n" };
     }
 }
 
@@ -305,7 +305,7 @@ export async function createAgent(name: string) {
     try {
         const trimmedName = name.trim();
         if (!trimmedName) {
-            return { success: false, message: "El nombre del agente no puede estar vacío" };
+            return { success: false, message: "El nombre del agente no puede estar vacÃ­o" };
         }
         
         // Check for duplicates (case insensitive search or direct unique key handle)
@@ -454,7 +454,7 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
         return { success: true, diagnostic: newDiagnostic };
     } catch (error: any) {
         console.error("Error saving ADN diagnostic:", error);
-        return { success: false, message: error.message || "Error al guardar el diagnóstico de ADN" };
+        return { success: false, message: error.message || "Error al guardar el diagnÃ³stico de ADN" };
     }
 }
 
@@ -510,7 +510,7 @@ export async function getAdnDiagnostics() {
         return { success: true, diagnostics };
     } catch (error: any) {
         console.error("Error fetching ADN diagnostics:", error);
-        return { success: false, message: error.message || "Error al obtener diagnósticos de ADN" };
+        return { success: false, message: error.message || "Error al obtener diagnÃ³sticos de ADN" };
     }
 }
 
@@ -530,9 +530,9 @@ export async function createAgentUser(data: { name: string; email: string; role:
             return { success: false, message: "Permisos insuficientes" };
         }
 
-        // Restricción: solo el propietario (enrique.ahumada@aacommx.com) puede dar de alta a otros administradores
+        // RestricciÃ³n: solo el propietario (enrique.ahumada@aacommx.com) puede dar de alta a otros administradores
         if (data.role === 'ADMIN' && currentUser.email !== 'enrique.ahumada@aacommx.com') {
-            return { success: false, message: "Solo el administrador principal (Enrique Ahumada) está facultado para dar de alta cuentas administrativas." };
+            return { success: false, message: "Solo el administrador principal (Enrique Ahumada) estÃ¡ facultado para dar de alta cuentas administrativas." };
         }
 
         const existingUser = await prisma.user.findUnique({
@@ -552,7 +552,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
             if (activeUsersCount >= limit) {
                 return { 
                     success: false, 
-                    message: `Límite alcanzado (${limit} usuarios). Adquiere más licencias en tu Portal de Pagos o envíale a este agente una invitación para que pague su propia cuenta.` 
+                    message: `LÃ­mite alcanzado (${limit} usuarios). Adquiere mÃ¡s licencias en tu Portal de Pagos o envÃ­ale a este agente una invitaciÃ³n para que pague su propia cuenta.` 
                 };
             }
         }
@@ -566,11 +566,11 @@ export async function createAgentUser(data: { name: string; email: string; role:
                 phone: data.phone || null,
                 active: data.active !== undefined ? data.active : true,
                 password: data.password || "password123", // Simple plain text consistent with current auth config
-                mustChangePassword: true // Bloqueo temporal para obligar a que cambie su contraseña
+                mustChangePassword: true // Bloqueo temporal para obligar a que cambie su contraseÃ±a
             }
         });
 
-        // Sincronización con el modelo Agent para el Cotizador
+        // SincronizaciÃ³n con el modelo Agent para el Cotizador
         if (data.syncToAgent) {
             const trimmedName = data.name.trim();
             const existingAgent = await prisma.agent.findUnique({
@@ -646,7 +646,7 @@ export async function updateUserPassword(id: string, newPassword: string) {
         return { success: true, user: updatedUser };
     } catch (error: any) {
         console.error("Error updating user password:", error);
-        return { success: false, message: error.message || "Error al actualizar contraseña" };
+        return { success: false, message: error.message || "Error al actualizar contraseÃ±a" };
     }
 }
 
@@ -701,7 +701,7 @@ export async function deleteUser(id: string) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
-        // Evitar que el administrador se elimine a sí mismo
+        // Evitar que el administrador se elimine a sÃ­ mismo
         if (currentUser.id === id) {
             return { success: false, message: "No puedes eliminar tu propia cuenta de administrador" };
         }
@@ -714,9 +714,9 @@ export async function deleteUser(id: string) {
             return { success: false, message: "Usuario no encontrado" };
         }
 
-        // Restricción: impedir la eliminación del propietario Enrique Ahumada
+        // RestricciÃ³n: impedir la eliminaciÃ³n del propietario Enrique Ahumada
         if (targetUser.email === "enrique.ahumada@aacommx.com") {
-            return { success: false, message: "No está permitido eliminar la cuenta principal del propietario (Enrique Ahumada)." };
+            return { success: false, message: "No estÃ¡ permitido eliminar la cuenta principal del propietario (Enrique Ahumada)." };
         }
 
         // Primero borrar dependencias si no hay CASCADE
@@ -749,7 +749,7 @@ export async function toggleAdnDiagnosticClosedStatus(id: string) {
         });
 
         if (!adn) {
-            return { success: false, message: "Diagnóstico no encontrado" };
+            return { success: false, message: "DiagnÃ³stico no encontrado" };
         }
 
         const updated = await prisma.adnDiagnostic.update({
@@ -808,7 +808,7 @@ export async function createAnnouncement(base64Data: string, fileName: string, l
         
         // Double-check file size is under 5MB (5 * 1024 * 1024 bytes)
         if (buffer.length > 5 * 1024 * 1024) {
-            return { success: false, message: "El tamaño del archivo supera los 5 MB permitidos." };
+            return { success: false, message: "El tamaÃ±o del archivo supera los 5 MB permitidos." };
         }
 
         // Save image as base64 data URI directly in database
@@ -922,7 +922,7 @@ export async function deleteAnnouncement(id: string) {
 }
 
 // ==========================================
-// MÓDULO AACOM 25 & ACTIVIDAD DIARIA ACTIONS
+// MÃ“DULO AACOM 25 & ACTIVIDAD DIARIA ACTIONS
 // ==========================================
 
 export async function saveActivityLogEntry(activityId: string, prospectName?: string) {
@@ -942,7 +942,7 @@ export async function saveActivityLogEntry(activityId: string, prospectName?: st
 
     const activity = SALES_ACTIVITIES.find(a => a.id === activityId);
     if (!activity) {
-        return { success: false, message: "Actividad no válida" };
+        return { success: false, message: "Actividad no vÃ¡lida" };
     }
 
     // Validation: prospectName is mandatory for 'Cita agendada' (ID '2') or 'Cita Efectiva' (ID '3')
@@ -1126,7 +1126,7 @@ export async function getMonthlyAdnRankings() {
         });
         if (!user) return { success: false, rankings: [], rankingAd: null, message: "Usuario no encontrado" };
 
-        // --- MIGRACIÓN DE RESCATE (ADNs y Cotizaciones huérfanas) ---
+        // --- MIGRACIÃ“N DE RESCATE (ADNs y Cotizaciones huÃ©rfanas) ---
         await prisma.adnDiagnostic.updateMany({
             where: { agencyId: null },
             data: { agencyId: 'aacom' }
@@ -1279,7 +1279,7 @@ export async function createRankingAd(base64Data: string, fileName: string, link
         return { success: true, rankingAd: newAd };
     } catch (error: any) {
         console.error("Error creating ranking ad:", error);
-        return { success: false, message: error.message || "Error al subir campaña de incentivo" };
+        return { success: false, message: error.message || "Error al subir campaÃ±a de incentivo" };
     }
 }
 
@@ -1536,7 +1536,7 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
         });
 
         if (!currentUser) {
-            return { success: false, message: "Usuario en sesión no encontrado" };
+            return { success: false, message: "Usuario en sesiÃ³n no encontrado" };
         }
 
         const isAdmin = (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN');
@@ -1598,7 +1598,7 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
         revalidatePath('/admin');
         revalidatePath('/');
 
-        return { success: true, user: updatedUser, message: "Perfil actualizado con éxito" };
+        return { success: true, user: updatedUser, message: "Perfil actualizado con Ã©xito" };
     } catch (error: any) {
         console.error("Error updating user profile details:", error);
         return { success: false, message: error.message || "Error al actualizar perfil" };
@@ -1678,7 +1678,7 @@ export async function saveKnowledgeDocument(id: string | null, title: string, co
                 data: { title, content, agencyId: user.agencyId, isGlobalTemplate: user.role === 'SUPER_ADMIN' ? isGlobalTemplate : false }
             });
             revalidatePath('/admin');
-            return { success: true, doc: created, message: "Documento guardado con éxito" };
+            return { success: true, doc: created, message: "Documento guardado con Ã©xito" };
         }
     } catch (error: any) {
         console.error("Error saving knowledge document:", error);
@@ -1759,7 +1759,7 @@ export async function toggleKnowledgeDocumentActiveStatus(id: string) {
 }
 
 // ==========================================
-// MÓDULO PUSH NOTIFICATIONS
+// MÃ“DULO PUSH NOTIFICATIONS
 // ==========================================
 
 export async function savePushSubscription(subscription: any) {
@@ -1771,7 +1771,7 @@ export async function savePushSubscription(subscription: any) {
         if (!user) return { success: false, message: "Usuario no encontrado" };
 
         const { endpoint, keys } = subscription;
-        if (!endpoint || !keys?.p256dh || !keys?.auth) return { success: false, message: "Suscripción inválida" };
+        if (!endpoint || !keys?.p256dh || !keys?.auth) return { success: false, message: "SuscripciÃ³n invÃ¡lida" };
 
         await prisma.pushSubscription.upsert({
             where: { endpoint },
@@ -1788,7 +1788,7 @@ export async function savePushSubscription(subscription: any) {
             }
         });
 
-        return { success: true, message: "Suscripción guardada" };
+        return { success: true, message: "SuscripciÃ³n guardada" };
     } catch (err: any) {
         console.error("Error saving push subscription:", err);
         return { success: false, message: err.message };
@@ -1814,7 +1814,7 @@ export async function sendTestPushNotification(userId: string) {
 
         const payload = JSON.stringify({
             title: "Prueba AACOM",
-            body: "Esta es una notificación de prueba desde el sistema.",
+            body: "Esta es una notificaciÃ³n de prueba desde el sistema.",
             url: "/"
         });
 
@@ -1827,7 +1827,7 @@ export async function sendTestPushNotification(userId: string) {
 
         await Promise.all(promises);
 
-        return { success: true, message: "Notificación enviada" };
+        return { success: true, message: "NotificaciÃ³n enviada" };
     } catch (err: any) {
         console.error("Error sending push notification:", err);
         return { success: false, message: err.message };
@@ -1845,7 +1845,7 @@ export async function sendAdminPushNotification(recipientId: string, message: st
         }
         
         if (currentUser.password !== pin) {
-            return { success: false, message: "Contraseña incorrecta." };
+            return { success: false, message: "ContraseÃ±a incorrecta." };
         }
 
         let subs = [];
@@ -1869,7 +1869,7 @@ export async function sendAdminPushNotification(recipientId: string, message: st
         );
 
         const payload = JSON.stringify({
-            title: "AACOM Notificación",
+            title: "AACOM NotificaciÃ³n",
             body: message,
             url: "/"
         });
@@ -1885,7 +1885,7 @@ export async function sendAdminPushNotification(recipientId: string, message: st
 
         await Promise.all(promises);
 
-        return { success: true, message: `Notificación enviada a ${subs.length} dispositivo(s).` };
+        return { success: true, message: `NotificaciÃ³n enviada a ${subs.length} dispositivo(s).` };
     } catch (err: any) {
         console.error("Error sending admin push notification:", err);
         return { success: false, message: err.message };
@@ -1902,7 +1902,7 @@ export async function forceUpdatePassword(userId: string, newPassword: string) {
         });
 
         if (!currentUser || currentUser.id !== userId) {
-            return { success: false, message: "No tienes permiso para actualizar esta contraseña" };
+            return { success: false, message: "No tienes permiso para actualizar esta contraseÃ±a" };
         }
 
         await prisma.user.update({
@@ -1913,10 +1913,10 @@ export async function forceUpdatePassword(userId: string, newPassword: string) {
             }
         });
 
-        return { success: true, message: "Contraseña actualizada correctamente" };
+        return { success: true, message: "ContraseÃ±a actualizada correctamente" };
     } catch (error: any) {
-        console.error("Error al actualizar la contraseña:", error);
-        return { success: false, message: error.message || "Error al actualizar contraseña" };
+        console.error("Error al actualizar la contraseÃ±a:", error);
+        return { success: false, message: error.message || "Error al actualizar contraseÃ±a" };
     }
 }
 
@@ -1925,9 +1925,9 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
     if (!session?.user?.email) return { success: false, message: "No autenticado" };
 
     try {
-        // --- MIGRACIÓN MASIVA DE RESCATE ---
-        // Vercel estaba apuntando a una DB que nunca recibió la migración local.
-        // Forzamos a que todos los usuarios y actividades huérfanas se asignen a 'aacom'.
+        // --- MIGRACIÃ“N MASIVA DE RESCATE ---
+        // Vercel estaba apuntando a una DB que nunca recibiÃ³ la migraciÃ³n local.
+        // Forzamos a que todos los usuarios y actividades huÃ©rfanas se asignen a 'aacom'.
         await prisma.user.updateMany({
             where: { agencyId: null },
             data: { agencyId: 'aacom' }
@@ -1944,7 +1944,7 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
         }
 
         const agencyId = currentUser.agencyId;
-        if (!agencyId) return { success: false, message: "El administrador no tiene una agencia válida asignada." };
+        if (!agencyId) return { success: false, message: "El administrador no tiene una agencia vÃ¡lida asignada." };
 
         const agents = await prisma.user.findMany({
             where: { active: true, agencyId },
@@ -2027,7 +2027,7 @@ export async function createScheduledPush(data: { message: string, frequency: st
     const user = await prisma.user.findUnique({ where: { email: session.user.email } });
     if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) return { success: false, message: "No autorizado." };
     
-    if (user.password !== pin) return { success: false, message: "Contraseña incorrecta." };
+    if (user.password !== pin) return { success: false, message: "ContraseÃ±a incorrecta." };
 
     try {
         await prisma.scheduledPush.create({ data });
@@ -2043,7 +2043,7 @@ export async function deleteScheduledPush(id: string, pin: string) {
     const user = await prisma.user.findUnique({ where: { email: session.user.email } });
     if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) return { success: false, message: "No autorizado." };
     
-    if (user.password !== pin) return { success: false, message: "Contraseña incorrecta." };
+    if (user.password !== pin) return { success: false, message: "ContraseÃ±a incorrecta." };
 
     try {
         await prisma.scheduledPush.delete({ where: { id } });
@@ -2070,6 +2070,161 @@ export async function resolveTicket(ticketId: string) {
         return { success: true };
     } catch (err: any) {
         return { success: false, message: err.message };
+    }
+}
+
+
+// ----------------------------------------------------------------------------
+// Módulo de Votaciones (Polls)
+// ----------------------------------------------------------------------------
+
+export async function createPoll(title: string, question: string, optionsText: string[]) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user || user.role !== 'SUPER_ADMIN') return { success: false, message: "Permisos insuficientes" };
+
+        if (!title || !question || optionsText.length < 2) {
+            return { success: false, message: "Faltan datos para crear la encuesta" };
+        }
+
+        const poll = await prisma.poll.create({
+            data: {
+                title,
+                question,
+                options: {
+                    create: optionsText.map(text => ({ text }))
+                }
+            }
+        });
+        return { success: true, poll };
+    } catch (error: any) {
+        console.error("Error creating poll:", error);
+        return { success: false, message: error.message || "Error al crear encuesta" };
+    }
+}
+
+export async function getActivePolls() {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado", polls: [] };
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user) return { success: false, message: "Usuario no encontrado", polls: [] };
+
+        const polls = await prisma.poll.findMany({
+            where: { active: true },
+            include: {
+                options: {
+                    include: {
+                        _count: { select: { votes: true } }
+                    }
+                },
+                _count: { select: { votes: true } },
+                votes: {
+                    where: { userId: user.id } // Traemos solo los votos de este usuario para ver si ya votó
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        return { success: true, polls };
+    } catch (error: any) {
+        console.error("Error fetching polls:", error);
+        return { success: false, message: "Error al obtener encuestas", polls: [] };
+    }
+}
+
+export async function voteOnPoll(pollId: string, optionId: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user || !user.agencyId) return { success: false, message: "Usuario no válido" };
+
+        // Check if poll is active
+        const poll = await prisma.poll.findUnique({ where: { id: pollId } });
+        if (!poll || !poll.active) return { success: false, message: "La encuesta ya no está activa" };
+
+        // Upsert para garantizar un solo voto (create or fail by unique constraint)
+        const vote = await prisma.pollVote.create({
+            data: {
+                pollId,
+                optionId,
+                userId: user.id,
+                agencyId: user.agencyId
+            }
+        });
+        return { success: true, vote };
+    } catch (error: any) {
+        if (error.code === 'P2002') {
+            return { success: false, message: "Ya has registrado tu voto en esta encuesta." };
+        }
+        console.error("Error voting:", error);
+        return { success: false, message: "Error al registrar voto" };
+    }
+}
+
+export async function getPollResults() {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado", polls: [] };
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user || user.role !== 'SUPER_ADMIN') return { success: false, message: "Permisos insuficientes", polls: [] };
+
+        const polls = await prisma.poll.findMany({
+            include: {
+                options: {
+                    include: {
+                        _count: {
+                            select: { votes: true }
+                        }
+                    }
+                },
+                _count: {
+                    select: { votes: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        return { success: true, polls };
+    } catch (error: any) {
+        console.error("Error fetching poll results:", error);
+        return { success: false, message: "Error al obtener resultados", polls: [] };
+    }
+}
+
+export async function deactivatePoll(pollId: string, status: boolean) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user || user.role !== 'SUPER_ADMIN') return { success: false, message: "Permisos insuficientes" };
+
+        const updated = await prisma.poll.update({
+            where: { id: pollId },
+            data: { active: status }
+        });
+        return { success: true, poll: updated };
+    } catch (error: any) {
+        return { success: false, message: "Error al cambiar estatus" };
+    }
+}
+
+export async function deletePoll(pollId: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user || user.role !== 'SUPER_ADMIN') return { success: false, message: "Permisos insuficientes" };
+
+        await prisma.poll.delete({
+            where: { id: pollId }
+        });
+        return { success: true };
+    } catch (error: any) {
+        return { success: false, message: "Error al borrar encuesta" };
     }
 }
 

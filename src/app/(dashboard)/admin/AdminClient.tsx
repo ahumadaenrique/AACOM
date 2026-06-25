@@ -5,6 +5,7 @@ import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent,
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import BibliotecaAdmin from "./BibliotecaAdmin"
+import { AdminPollManager } from "./AdminPollManager"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { 
@@ -64,7 +65,7 @@ export default function AdminClient() {
   const [error, setError] = useState<string>("")
 
   // Admin Dashboard Tabs
-  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca">("productividad")
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca" | "votaciones">("productividad")
 
   // Chatbot Knowledge Base states
   const [knowledgeDocs, setKnowledgeDocs] = useState<any[]>([])
@@ -4501,6 +4502,12 @@ export default function AdminClient() {
       {/* TAB CONTENT 9: BIBLIOTECA ADMIN */}
       {activeTab === "biblioteca" && (
         <BibliotecaAdmin />
+      )}
+
+      {activeTab === "votaciones" && currentUserRole === 'SUPER_ADMIN' && (
+        <div className="space-y-6 animate-in fade-in duration-300 pb-10">
+          <AdminPollManager />
+        </div>
       )}
 
       {/* Styles inject for print layout within Admin preview */}

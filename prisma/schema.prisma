@@ -35,6 +35,7 @@ model Agency {
   performanceReviews  PerformanceReview[]
   knowledgeDocuments  KnowledgeDocument[]
   tickets             Ticket[]
+  pollVotes           PollVote[]
 
   purchasedSeats      Int       @default(0)
 
@@ -104,6 +105,8 @@ model User {
   isSelfPaid        Boolean   @default(false)
   stripeCustomerId  String?
   stripeSubscriptionId String?
+  
+  pollVotes     PollVote[]
   
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
@@ -447,4 +450,36 @@ model Ticket {
   imageUrl    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Poll {
+  id          String       @id @default(cuid())
+  title       String
+  question    String
+  active      Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  options     PollOption[]
+  votes       PollVote[]
+}
+
+model PollOption {
+  id      String     @id @default(cuid())
+  pollId  String
+  poll    Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  text    String
+  votes   PollVote[]
+}
+
+model PollVote {
+  id       String     @id @default(cuid())
+  pollId   String
+  poll     Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  optionId String
+  option   PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  userId   String
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agencyId String?
+  agency   Agency?    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([pollId, userId])
 }
