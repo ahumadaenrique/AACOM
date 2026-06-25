@@ -12,6 +12,7 @@ interface Plan {
   name: string;
   description: string;
   price: string;
+  monthlyPrice?: string;
   days: number;
   popular?: boolean;
 }
@@ -21,14 +22,16 @@ const plans: Plan[] = [
     id: "trimestral",
     name: "Trimestral",
     description: "Ideal para probar el sistema a mediano plazo.",
-    price: "$5,997 MXN",
+    price: "$7,497 MXN",
+    monthlyPrice: "Equivalente a $2,499 / mes",
     days: 90,
   },
   {
     id: "semiannual",
     name: "Semestral",
     description: "Ahorra al comprometerte medio año.",
-    price: "$10,799 MXN",
+    price: "$14,394 MXN",
+    monthlyPrice: "Equivalente a $2,399 / mes",
     days: 180,
   },
   {
@@ -36,6 +39,7 @@ const plans: Plan[] = [
     name: "Anual",
     description: "El mejor valor para agencias establecidas.",
     price: "$20,500 MXN",
+    monthlyPrice: "Equivalente a $1,708 / mes",
     days: 365,
     popular: true,
   }
@@ -94,7 +98,10 @@ export default function PlanSelector({ isSubscribed }: { isSubscribed: boolean }
             </CardHeader>
             <CardContent className="text-center pb-6">
               <div className="text-3xl font-black text-indigo-900">{plan.price}</div>
-              <div className="text-xs text-slate-500 font-medium mt-1">Suscripción recurrente</div>
+              {plan.monthlyPrice && (
+                <div className="text-sm font-bold text-emerald-600 mt-1.5">{plan.monthlyPrice}</div>
+              )}
+              <div className="text-xs text-slate-500 font-medium mt-2">Suscripción recurrente</div>
             </CardContent>
             <div className={`h-1.5 w-full absolute bottom-0 left-0 ${selectedPlanId === plan.id ? 'bg-indigo-600' : 'bg-transparent'}`} />
           </Card>
