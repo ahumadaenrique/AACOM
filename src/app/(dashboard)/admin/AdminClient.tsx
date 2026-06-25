@@ -1,4 +1,4 @@
-"use client"
+﻿"use client"
 
 import React, { useState, useEffect } from "react"
 import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush } from "@/app/actions"
@@ -198,7 +198,7 @@ export default function AdminClient() {
     }, pushPin);
     
     if (res.success) {
-      setPushStatus("�Notificaci�n programada con �xito!");
+      setPushStatus("ï¿½Notificaciï¿½n programada con ï¿½xito!");
       setPushMessage("");
       const schedRes = await getScheduledPushes();
       if (Array.isArray(schedRes)) setScheduledPushes(schedRes);
@@ -213,7 +213,7 @@ export default function AdminClient() {
     setPushStatus("Borrando...");
     const res = await deleteScheduledPush(id, pushPin);
     if (res.success) {
-      setPushStatus("Notificaci�n borrada.");
+      setPushStatus("Notificaciï¿½n borrada.");
       const schedRes = await getScheduledPushes();
       if (Array.isArray(schedRes)) setScheduledPushes(schedRes);
     } else {
@@ -225,11 +225,11 @@ export default function AdminClient() {
     e.preventDefault()
     if (!pushMessage.trim() || !pushPin.trim()) return
     setPushLoading(true)
-    setPushStatus("Enviando notificación...")
+    setPushStatus("Enviando notificaciÃ³n...")
     try {
       const res = await sendAdminPushNotification(pushRecipient, pushMessage.trim(), pushPin.trim())
       if (res.success) {
-        setPushStatus(`¡Éxito! ${res.message}`)
+        setPushStatus(`Â¡Ã‰xito! ${res.message}`)
         setPushMessage("")
         setPushPin("")
         setTimeout(() => setPushStatus(""), 5000)
@@ -278,7 +278,7 @@ export default function AdminClient() {
   // Update user password
   const handleUpdatePassword = async (id: string) => {
     if (!newPasswordInput.trim()) {
-      alert("La contraseña no puede estar vacía")
+      alert("La contraseÃ±a no puede estar vacÃ­a")
       return
     }
     try {
@@ -286,20 +286,20 @@ export default function AdminClient() {
       if (res.success) {
         setEditingUserPasswordId(null)
         setNewPasswordInput("")
-        alert("Contraseña actualizada con éxito")
+        alert("ContraseÃ±a actualizada con Ã©xito")
         fetchUsersList()
       } else {
-        alert(res.message || "Error al actualizar contraseña")
+        alert(res.message || "Error al actualizar contraseÃ±a")
       }
     } catch (err) {
       console.error(err)
-      alert("Error de red al actualizar contraseña")
+      alert("Error de red al actualizar contraseÃ±a")
     }
   }
 
   // Delete user account
   const handleDeleteUser = async (id: string) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar a este usuario? Esto revocará su acceso por completo de manera permanente.")) return
+    if (!confirm("Â¿EstÃ¡s seguro de que deseas eliminar a este usuario? Esto revocarÃ¡ su acceso por completo de manera permanente.")) return
     try {
       const res = await deleteUser(id)
       if (res.success) {
@@ -375,7 +375,7 @@ export default function AdminClient() {
 
   // Delete announcement banner
   const handleDeleteAnnouncement = async (id: string) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar este comunicado de forma permanente? Se borrará el archivo de imagen de la plataforma.")) return
+    if (!confirm("Â¿EstÃ¡s seguro de que deseas eliminar este comunicado de forma permanente? Se borrarÃ¡ el archivo de imagen de la plataforma.")) return
     try {
       const res = await deleteAnnouncement(id)
       if (res.success) {
@@ -401,12 +401,12 @@ export default function AdminClient() {
 
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
     if (!allowedTypes.includes(file.type)) {
-      setRankingBannerMsg("Error: Solo se permiten imágenes JPG, JPEG, PNG o GIF.")
+      setRankingBannerMsg("Error: Solo se permiten imÃ¡genes JPG, JPEG, PNG o GIF.")
       return
     }
 
     setSavingRankingBanner(true)
-    setRankingBannerMsg("Subiendo campaña de ranking...")
+    setRankingBannerMsg("Subiendo campaÃ±a de ranking...")
 
     try {
       const reader = new FileReader()
@@ -415,11 +415,11 @@ export default function AdminClient() {
         const res = await createRankingAd(base64, file.name)
         if (res.success && res.rankingAd) {
           setRankingBanner(res.rankingAd.imageUrl)
-          setRankingBannerMsg("¡Campaña de Ranking subida con éxito!")
+          setRankingBannerMsg("Â¡CampaÃ±a de Ranking subida con Ã©xito!")
           e.target.value = ""
           setTimeout(() => setRankingBannerMsg(""), 5000)
         } else {
-          setRankingBannerMsg(res.message || "Error al subir campaña de ranking")
+          setRankingBannerMsg(res.message || "Error al subir campaÃ±a de ranking")
         }
         setSavingRankingBanner(false)
       }
@@ -449,7 +449,7 @@ export default function AdminClient() {
     // Validate type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
     if (!allowedTypes.includes(file.type)) {
-      setAnnouncementMsg("Error: Solo se permiten imágenes JPG, JPEG, PNG o GIF.")
+      setAnnouncementMsg("Error: Solo se permiten imÃ¡genes JPG, JPEG, PNG o GIF.")
       return
     }
 
@@ -462,7 +462,7 @@ export default function AdminClient() {
         const base64 = reader.result as string
         const res = await createAnnouncement(base64, file.name, announcementLinkInput.trim() || undefined)
         if (res.success) {
-          setAnnouncementMsg("¡Imagen de comunicado subida con éxito!")
+          setAnnouncementMsg("Â¡Imagen de comunicado subida con Ã©xito!")
           setAnnouncementLinkInput("")
           // Clear input element
           e.target.value = ""
@@ -584,7 +584,7 @@ export default function AdminClient() {
       const { saveKnowledgeDocument } = await import("@/app/actions")
       const res = await saveKnowledgeDocument(selectedDocId, docTitle.trim(), docContent.trim(), docIsGlobalTemplate)
       if (res.success) {
-        setDocMsg("¡Documento guardado con éxito!")
+        setDocMsg("Â¡Documento guardado con Ã©xito!")
         setDocTitle("")
         setDocContent("")
         setDocIsGlobalTemplate(false)
@@ -642,14 +642,14 @@ export default function AdminClient() {
         }
 
         if (!extractedText.trim()) {
-          setDocMsg("El PDF se leyó pero no se pudo extraer texto (puede que contenga solo imágenes).")
+          setDocMsg("El PDF se leyÃ³ pero no se pudo extraer texto (puede que contenga solo imÃ¡genes).")
           return
         }
 
         setDocContent(extractedText)
         const fileNameWithoutExt = file.name.replace(/\.[^/.]+$/, "")
         setDocTitle(fileNameWithoutExt)
-        setDocMsg(`¡Texto extraído de ${pdf.numPages} páginas con éxito!`)
+        setDocMsg(`Â¡Texto extraÃ­do de ${pdf.numPages} pÃ¡ginas con Ã©xito!`)
       } catch (err: any) {
         console.error("Error al extraer PDF:", err)
         setDocMsg(`Error al extraer PDF: ${err.message}`)
@@ -664,7 +664,7 @@ export default function AdminClient() {
   }
 
   const handleDeleteDoc = async (id: string) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar este documento de la base de conocimientos? Gemini ya no podrá consultarlo.")) return
+    if (!confirm("Â¿EstÃ¡s seguro de que deseas eliminar este documento de la base de conocimientos? Gemini ya no podrÃ¡ consultarlo.")) return
     try {
       const { deleteKnowledgeDocument } = await import("@/app/actions")
       const res = await deleteKnowledgeDocument(id)
@@ -746,7 +746,7 @@ export default function AdminClient() {
       }
     } catch (err) {
       console.error(err)
-      alert("Error de conexión al guardar perfil")
+      alert("Error de conexiÃ³n al guardar perfil")
     } finally {
       setSavingProfile(false)
     }
@@ -757,7 +757,7 @@ export default function AdminClient() {
     if (!file) return
     
     if (file.size > 2 * 1024 * 1024) {
-      alert("La imagen excede los 2 MB de tamaño permitido.")
+      alert("La imagen excede los 2 MB de tamaÃ±o permitido.")
       return
     }
 
@@ -770,7 +770,7 @@ export default function AdminClient() {
   }
 
   const handleDeleteActivityLog = async (logId: string) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar este registro de actividad? Los puntos correspondientes le serán restados al agente.")) return
+    if (!confirm("Â¿EstÃ¡s seguro de que deseas eliminar este registro de actividad? Los puntos correspondientes le serÃ¡n restados al agente.")) return
     try {
       const res = await deleteActivityLogEntry(logId)
       if (res.success) {
@@ -793,7 +793,7 @@ export default function AdminClient() {
     try {
       const res = await saveUdiSetting(defaultUdi)
       if (res.success) {
-        setUdiSaving("¡Guardado!")
+        setUdiSaving("Â¡Guardado!")
         setTimeout(() => setUdiSaving(""), 3000)
       } else {
         setUdiSaving("Error")
@@ -813,7 +813,7 @@ export default function AdminClient() {
       const res = await createAgent(newAgentName.trim())
       if (res.success) {
         setNewAgentName("")
-        setAgentMessage("¡Agente registrado con éxito!")
+        setAgentMessage("Â¡Agente registrado con Ã©xito!")
         setTimeout(() => setAgentMessage(""), 5000)
         fetchAgentsList()
       } else {
@@ -828,7 +828,7 @@ export default function AdminClient() {
 
   // Delete an Agent
   const handleDeleteAgent = async (id: string) => {
-    if (!confirm("¿Estás seguro de que deseas eliminar a este agente? Esto no borrará sus cotizaciones históricas, pero ya no aparecerá como opción para nuevas cotizaciones.")) return
+    if (!confirm("Â¿EstÃ¡s seguro de que deseas eliminar a este agente? Esto no borrarÃ¡ sus cotizaciones histÃ³ricas, pero ya no aparecerÃ¡ como opciÃ³n para nuevas cotizaciones.")) return
     try {
       const res = await deleteAgent(id)
       if (res.success) {
@@ -865,7 +865,7 @@ export default function AdminClient() {
         setAgentEmailInput("")
         setAgentPasswordInput("")
         setAgentPhoneInput("")
-        setUserRegistrationMessage("¡Usuario de agente creado exitosamente!")
+        setUserRegistrationMessage("Â¡Usuario de agente creado exitosamente!")
         setTimeout(() => setUserRegistrationMessage(""), 5000)
         loadData()
       } else {
@@ -1033,10 +1033,10 @@ export default function AdminClient() {
           <div className="h-8 w-px bg-slate-300 dark:bg-zinc-700 hidden sm:block"></div>
           <div>
             <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
-              Administración de Cotizaciones <ShieldCheck className="h-5 w-5 text-teal-600" />
+              AdministraciÃ³n de Cotizaciones <ShieldCheck className="h-5 w-5 text-teal-600" />
             </h1>
             <p className="text-xs text-muted-foreground">
-              Auditoría, rescatado de propuestas y análisis de productividad comercial de tus agentes.
+              AuditorÃ­a, rescatado de propuestas y anÃ¡lisis de productividad comercial de tus agentes.
             </p>
           </div>
         </div>
@@ -1056,7 +1056,7 @@ export default function AdminClient() {
             <div>
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Valor de la UDI Predeterminado</h3>
               <p className="text-xs text-muted-foreground">
-                Define el tipo de cambio que se mostrará en el formulario inicial del agente.
+                Define el tipo de cambio que se mostrarÃ¡ en el formulario inicial del agente.
               </p>
             </div>
           </div>
@@ -1114,7 +1114,7 @@ export default function AdminClient() {
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
-          <Users className="h-4.5 w-4.5" /> Gestión de Agentes
+          <Users className="h-4.5 w-4.5" /> GestiÃ³n de Agentes
         </button>
         <button
           onClick={() => setActiveTab("adn")}
@@ -1124,7 +1124,7 @@ export default function AdminClient() {
               : "border-transparent text-slate-500 hover:text-slate-800"
           }`}
         >
-          <Heart className="h-4.5 w-4.5" /> Diagnóstico ADN
+          <Heart className="h-4.5 w-4.5" /> DiagnÃ³stico ADN
         </button>
         <button
           onClick={() => setActiveTab("comunicados")}
@@ -1176,7 +1176,15 @@ export default function AdminClient() {
         >
           <Book className="h-4.5 w-4.5" /> Biblioteca de Documentos
         </button>
-      </div>
+                {currentUserRole === 'SUPER_ADMIN' && (
+            <button
+              onClick={() => setActiveTab('votaciones')}
+              className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${activeTab === "votaciones" ? "border-amber-500 text-amber-500" : "border-transparent text-slate-500 hover:text-slate-800"}`}
+            >
+              <Sparkles className="h-4.5 w-4.5 text-amber-500" /> Control de Votaciones
+            </button>
+          )}
+        </div>
 
       {/* TAB CONTENT 1: AGENT PRODUCTIVITY DASHBOARD */}
       {activeTab === "productividad" && (
@@ -1186,10 +1194,10 @@ export default function AdminClient() {
           <Card className="border shadow-sm bg-gradient-to-br from-amber-50 to-orange-50/30">
             <CardHeader className="py-4 border-b bg-white/50">
               <CardTitle className="text-sm font-black text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
-                <Award className="h-4.5 w-4.5" /> Campaña de Premiación (Ranking #1)
+                <Award className="h-4.5 w-4.5" /> CampaÃ±a de PremiaciÃ³n (Ranking #1)
               </CardTitle>
               <CardDescription className="text-xs">
-                Sube una imagen para incentivar a los agentes. Se mostrará en la parte superior de su pantalla de Ranking.
+                Sube una imagen para incentivar a los agentes. Se mostrarÃ¡ en la parte superior de su pantalla de Ranking.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-5">
@@ -1198,7 +1206,7 @@ export default function AdminClient() {
                   <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-xl cursor-pointer transition-all hover:bg-white/60 ${savingRankingBanner ? "opacity-50 pointer-events-none" : "border-amber-300 hover:border-amber-500"}`}>
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
                       <Download className="w-8 h-8 text-amber-500 mb-2" />
-                      <p className="text-[10px] text-amber-700 font-bold uppercase">Haz clic para subir campaña</p>
+                      <p className="text-[10px] text-amber-700 font-bold uppercase">Haz clic para subir campaÃ±a</p>
                       <p className="text-[9px] text-amber-600/70">JPG, PNG o GIF hasta 5 MB</p>
                     </div>
                     <input type="file" accept="image/jpeg,image/png,image/gif" onChange={handleUploadRankingBanner} className="hidden" disabled={savingRankingBanner} />
@@ -1212,11 +1220,11 @@ export default function AdminClient() {
                 <div className="w-full md:w-1/2 flex justify-center">
                   {rankingBanner ? (
                     <div className="relative rounded-xl overflow-hidden shadow-sm border border-amber-200 w-full flex items-center justify-center bg-white p-2">
-                      <img src={rankingBanner} alt="Campaña de Ranking" className="max-w-full max-h-48 object-contain rounded" />
+                      <img src={rankingBanner} alt="CampaÃ±a de Ranking" className="max-w-full max-h-48 object-contain rounded" />
                     </div>
                   ) : (
                     <div className="h-32 w-full rounded-xl border border-dashed border-amber-200 flex items-center justify-center text-amber-500 font-medium text-xs italic bg-white/40">
-                      Sin campaña activa actualmente.
+                      Sin campaÃ±a activa actualmente.
                     </div>
                   )}
                 </div>
@@ -1233,7 +1241,7 @@ export default function AdminClient() {
                   <BarChart3 className="h-4 w-4 text-teal-600" /> Mix de Productos Cotizados (Global)
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Participación del volumen de cotizaciones acumulado por producto
+                  ParticipaciÃ³n del volumen de cotizaciones acumulado por producto
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-6 space-y-4">
@@ -1270,7 +1278,7 @@ export default function AdminClient() {
                     <span className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-1 block">
                       {agentStatsList.length}
                     </span>
-                    <span className="text-xs text-slate-400 block mt-1">Con al menos 1 cotización</span>
+                    <span className="text-xs text-slate-400 block mt-1">Con al menos 1 cotizaciÃ³n</span>
                   </div>
                   <div className="h-12 w-12 bg-teal-50 dark:bg-zinc-800 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center">
                     <Users className="h-6 w-6" />
@@ -1302,19 +1310,19 @@ export default function AdminClient() {
                 Tabla de Productividad de Agentes
               </CardTitle>
               <CardDescription>
-                Resumen analítico detallado del desempeño, volumen cotizado y métricas temporales de cada agente.
+                Resumen analÃ­tico detallado del desempeÃ±o, volumen cotizado y mÃ©tricas temporales de cada agente.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
               {loading ? (
                 <div className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
                   <RefreshCw className="h-8 w-8 animate-spin text-teal-600" />
-                  <span>Calculando estadísticas...</span>
+                  <span>Calculando estadÃ­sticas...</span>
                 </div>
               ) : agentStatsList.length === 0 ? (
                 <div className="p-12 text-center text-muted-foreground text-xs flex flex-col items-center justify-center gap-2">
                   <Users className="h-8 w-8 text-slate-400" />
-                  <span>No hay agentes registrados en el sistema de cotizaciones aún.</span>
+                  <span>No hay agentes registrados en el sistema de cotizaciones aÃºn.</span>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
@@ -1325,10 +1333,10 @@ export default function AdminClient() {
                         <TableHead className="font-bold py-3 text-center">Total Cotizaciones</TableHead>
                         <TableHead className="font-bold py-3 text-center bg-teal-50/30">Este Mes</TableHead>
                         <TableHead className="font-bold py-3 text-center">Mes Pasado</TableHead>
-                        <TableHead className="font-bold py-3 text-center">Este Año</TableHead>
+                        <TableHead className="font-bold py-3 text-center">Este AÃ±o</TableHead>
                         <TableHead className="font-bold py-3 text-right">Prima Promedio</TableHead>
-                        <TableHead className="font-bold py-3 text-center">Producto Más Cotizado</TableHead>
-                        <TableHead className="font-bold py-3 text-center pr-4">Estadística de Cotizaciones (4 semanas)</TableHead>
+                        <TableHead className="font-bold py-3 text-center">Producto MÃ¡s Cotizado</TableHead>
+                        <TableHead className="font-bold py-3 text-center pr-4">EstadÃ­stica de Cotizaciones (4 semanas)</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1471,7 +1479,7 @@ export default function AdminClient() {
               <div className="relative flex-1 w-full">
                 <Search className="absolute left-3 top-2.5 h-4.5 w-4.5 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar por cliente, teléfono o agente..."
+                  placeholder="Buscar por cliente, telÃ©fono o agente..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   className="pl-10"
@@ -1506,10 +1514,10 @@ export default function AdminClient() {
           <Card className="shadow-sm border-slate-100 overflow-hidden">
             <CardHeader className="py-4 border-b">
               <CardTitle className="text-base font-bold text-slate-800 dark:text-slate-200">
-                Registro Histórico de Cotizaciones
+                Registro HistÃ³rico de Cotizaciones
               </CardTitle>
               <CardDescription>
-                Lista completa de cotizaciones con capacidad de rescatado visual e impresión inmediata.
+                Lista completa de cotizaciones con capacidad de rescatado visual e impresiÃ³n inmediata.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -1529,7 +1537,7 @@ export default function AdminClient() {
                     <TableHeader className="bg-slate-50 dark:bg-zinc-800">
                       <TableRow>
                         <TableHead className="font-bold py-3 pl-4">Cliente</TableHead>
-                        <TableHead className="font-bold py-3">Teléfono</TableHead>
+                        <TableHead className="font-bold py-3">TelÃ©fono</TableHead>
                         <TableHead className="font-bold py-3 text-center">Producto</TableHead>
                         <TableHead className="font-bold py-3 text-right">Prima Anual</TableHead>
                         <TableHead className="font-bold py-3 text-right">Prima Total</TableHead>
@@ -1605,7 +1613,7 @@ export default function AdminClient() {
                     <ShieldCheck className="h-4.5 w-4.5 text-teal-600 animate-pulse" /> Crear Cuenta de Usuario
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Crea credenciales oficiales (correo y contraseña) para permitir acceso a la plataforma.
+                    Crea credenciales oficiales (correo y contraseÃ±a) para permitir acceso a la plataforma.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-5">
@@ -1622,7 +1630,7 @@ export default function AdminClient() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-600 uppercase">Correo Electrónico (Login)</label>
+                      <label className="text-[10px] font-bold text-slate-600 uppercase">Correo ElectrÃ³nico (Login)</label>
                       <Input 
                         type="email" 
                         placeholder="ejemplo@aacommx.com" 
@@ -1633,7 +1641,7 @@ export default function AdminClient() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-600 uppercase">Teléfono (Contacto)</label>
+                      <label className="text-[10px] font-bold text-slate-600 uppercase">TelÃ©fono (Contacto)</label>
                       <Input 
                         type="tel" 
                         placeholder="Ej. 5512345678" 
@@ -1644,10 +1652,10 @@ export default function AdminClient() {
                     </div>
 
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-slate-600 uppercase">Contraseña Acceso</label>
+                      <label className="text-[10px] font-bold text-slate-600 uppercase">ContraseÃ±a Acceso</label>
                       <Input 
                         type="password" 
-                        placeholder="Mínimo 6 caracteres" 
+                        placeholder="MÃ­nimo 6 caracteres" 
                         value={agentPasswordInput}
                         onChange={e => setAgentPasswordInput(e.target.value)}
                         className="text-xs h-9"
@@ -1681,7 +1689,7 @@ export default function AdminClient() {
                     </div>
 
                     {userRegistrationMessage && (
-                      <p className={`text-xs font-bold text-center mt-2 ${userRegistrationMessage.includes("exitosamente") || userRegistrationMessage.includes("éxito") ? "text-teal-600" : "text-red-500"}`}>
+                      <p className={`text-xs font-bold text-center mt-2 ${userRegistrationMessage.includes("exitosamente") || userRegistrationMessage.includes("Ã©xito") ? "text-teal-600" : "text-red-500"}`}>
                         {userRegistrationMessage}
                       </p>
                     )}
@@ -1712,7 +1720,7 @@ export default function AdminClient() {
                       Cuentas de Usuarios con Acceso (Login)
                     </CardTitle>
                     <CardDescription className="text-xs">
-                      Administra el acceso del personal: activa/suspende cuentas, redefine contraseñas y elimina credenciales.
+                      Administra el acceso del personal: activa/suspende cuentas, redefine contraseÃ±as y elimina credenciales.
                     </CardDescription>
                   </div>
 
@@ -1737,7 +1745,7 @@ export default function AdminClient() {
                               alert("Error al iniciar la compra del asiento. Por favor contacta a soporte.");
                             }
                           } catch (err) {
-                            alert("Error de conexión al servidor de pagos.");
+                            alert("Error de conexiÃ³n al servidor de pagos.");
                           }
                         }}
                         className="w-full mt-1 bg-teal-600 hover:bg-teal-700 text-white text-[10px] h-7 rounded-lg shadow-sm font-bold"
@@ -1818,7 +1826,7 @@ export default function AdminClient() {
                                   <div className="flex items-center justify-center gap-1.5 min-w-[200px] animate-in slide-in-from-right-1 duration-150">
                                     <Input
                                       type="password"
-                                      placeholder="Nueva contraseña"
+                                      placeholder="Nueva contraseÃ±a"
                                       value={newPasswordInput}
                                       onChange={(e) => setNewPasswordInput(e.target.value)}
                                       className="text-xs h-7 w-28 px-1.5 py-0.5 border-teal-400 focus-visible:ring-teal-400"
@@ -1828,7 +1836,7 @@ export default function AdminClient() {
                                       size="sm"
                                       className="bg-emerald-600 hover:bg-emerald-700 text-white h-7 px-2 font-bold text-[10px]"
                                     >
-                                      ✔ Guardar
+                                      âœ” Guardar
                                     </Button>
                                     <Button
                                       onClick={() => { setEditingUserPasswordId(null); setNewPasswordInput(""); }}
@@ -1836,7 +1844,7 @@ export default function AdminClient() {
                                       size="sm"
                                       className="h-7 px-2 text-slate-500 font-bold text-[10px]"
                                     >
-                                      ✕
+                                      âœ•
                                     </Button>
                                   </div>
                                 ) : (
@@ -1892,7 +1900,7 @@ export default function AdminClient() {
                     Nombres Autorizados en Cotizador
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Lista oficial de nombres que aparecen en el dropdown del Cotizador de propuestas técnicas.
+                    Lista oficial de nombres que aparecen en el dropdown del Cotizador de propuestas tÃ©cnicas.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -1967,7 +1975,7 @@ export default function AdminClient() {
                   <span className="text-3xl font-black text-slate-800 dark:text-slate-100 mt-1 block">
                     {adnList.length}
                   </span>
-                  <span className="text-xs text-slate-400 block mt-1">Diagnósticos patrimoniales</span>
+                  <span className="text-xs text-slate-400 block mt-1">DiagnÃ³sticos patrimoniales</span>
                 </div>
                 <div className="h-12 w-12 bg-teal-50 dark:bg-zinc-800 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center">
                   <Heart className="h-6 w-6" />
@@ -1978,7 +1986,7 @@ export default function AdminClient() {
             <Card className="shadow-sm border-slate-100 bg-white dark:bg-zinc-900">
               <CardContent className="p-5 flex items-center justify-between">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Cierres Exitosos (Pólizas)</span>
+                  <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Cierres Exitosos (PÃ³lizas)</span>
                   <span className="text-3xl font-black text-emerald-600 mt-1 block">
                     {adnList.filter(item => item.cerradaPagada).length}
                   </span>
@@ -2000,7 +2008,7 @@ export default function AdminClient() {
                       : "0.0%"
                     }
                   </span>
-                  <span className="text-xs text-slate-400 block mt-1">Ratio de éxito comercial</span>
+                  <span className="text-xs text-slate-400 block mt-1">Ratio de Ã©xito comercial</span>
                 </div>
                 <div className="h-12 w-12 bg-teal-50 dark:bg-zinc-800 text-teal-600 dark:text-teal-400 rounded-full flex items-center justify-center">
                   <TrendingUp className="h-6 w-6" />
@@ -2017,7 +2025,7 @@ export default function AdminClient() {
                   <Heart className="h-4.5 w-4.5 text-teal-600 animate-pulse" /> Historial de ADN
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Consulta y descarga los diagnósticos patrimoniales de los clientes agrupados de manera estructurada.
+                  Consulta y descarga los diagnÃ³sticos patrimoniales de los clientes agrupados de manera estructurada.
                 </CardDescription>
               </div>
             </CardHeader>
@@ -2099,7 +2107,7 @@ export default function AdminClient() {
                   </div>
                 ) : adnList.length === 0 ? (
                   <div className="text-center py-16 text-slate-400 text-xs italic bg-slate-50/10 rounded-xl">
-                    No se registran diagnósticos ADN con los filtros seleccionados.
+                    No se registran diagnÃ³sticos ADN con los filtros seleccionados.
                   </div>
                 ) : (
                   (() => {
@@ -2124,7 +2132,7 @@ export default function AdminClient() {
                     if (filteredAdns.length === 0) {
                       return (
                         <div className="text-center py-12 text-slate-400 text-xs italic bg-slate-50/25 border rounded-xl">
-                          Ningún diagnóstico coincide con los filtros de búsqueda aplicados.
+                          NingÃºn diagnÃ³stico coincide con los filtros de bÃºsqueda aplicados.
                         </div>
                       )
                     }
@@ -2270,7 +2278,7 @@ export default function AdminClient() {
                                                 <div className="space-y-1">
                                                   <div className="flex items-center gap-2 flex-wrap">
                                                     <span className="font-extrabold text-slate-800 dark:text-zinc-200">
-                                                      👤 Cliente: {adn.clienteNombre} ({adn.clienteEdad} años)
+                                                      ðŸ‘¤ Cliente: {adn.clienteNombre} ({adn.clienteEdad} aÃ±os)
                                                     </span>
                                                     <span className="text-[9px] text-slate-400 font-bold">
                                                       Registrado: {new Date(adn.createdAt).toLocaleTimeString("es-MX", { timeZone: 'America/Mexico_City',  hour: "2-digit", minute: "2-digit" })}
@@ -2294,7 +2302,7 @@ export default function AdminClient() {
                                                     }`}
                                                     title="Haz clic para alternar estatus de cierre"
                                                   >
-                                                    {adn.cerradaPagada ? "✓ Cerrada y Pagada" : "Pendiente"}
+                                                    {adn.cerradaPagada ? "âœ“ Cerrada y Pagada" : "Pendiente"}
                                                   </button>
                                                   {adn.latitude && adn.longitude && (
                                                     <a
@@ -2302,9 +2310,9 @@ export default function AdminClient() {
                                                       target="_blank"
                                                       rel="noopener noreferrer"
                                                       className="text-blue-600 hover:text-blue-700 bg-blue-50 border border-blue-200 hover:bg-blue-100 font-black text-[10px] uppercase flex items-center gap-1 px-2.5 py-1.5 rounded-md transition-colors"
-                                                      title="Abrir ubicación GPS en Google Maps"
+                                                      title="Abrir ubicaciÃ³n GPS en Google Maps"
                                                     >
-                                                      📍 Mapa
+                                                      ðŸ“ Mapa
                                                     </a>
                                                   )}
 
@@ -2314,7 +2322,7 @@ export default function AdminClient() {
                                                     size="sm"
                                                     className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/20 font-black text-xs flex items-center gap-1"
                                                   >
-                                                    <Eye className="h-3.5 w-3.5" /> Ver Diagnóstico
+                                                    <Eye className="h-3.5 w-3.5" /> Ver DiagnÃ³stico
                                                   </Button>
                                                 </div>
                                               </div>
@@ -2353,7 +2361,7 @@ export default function AdminClient() {
                   <Sparkles className="h-4.5 w-4.5 text-amber-500 animate-pulse" /> Subir Nuevo Comunicado
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Sube una imagen JPG, PNG o GIF (menor de 5 MB) con anuncios, metas o avisos para la página de inicio.
+                  Sube una imagen JPG, PNG o GIF (menor de 5 MB) con anuncios, metas o avisos para la pÃ¡gina de inicio.
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-5 space-y-4">
@@ -2407,10 +2415,10 @@ export default function AdminClient() {
               <Card className="border shadow-sm overflow-hidden">
                 <CardHeader className="py-4 border-b bg-slate-50/50">
                   <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider">
-                    Galería de Banners de Inicio
+                    GalerÃ­a de Banners de Inicio
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Revisa las imágenes de avisos activas en la página principal. Puedes pausar su visualización o eliminarlas definitivamente.
+                    Revisa las imÃ¡genes de avisos activas en la pÃ¡gina principal. Puedes pausar su visualizaciÃ³n o eliminarlas definitivamente.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-6">
@@ -2421,7 +2429,7 @@ export default function AdminClient() {
                     </div>
                   ) : announcements.length === 0 ? (
                     <div className="text-center py-12 text-slate-400 text-xs italic">
-                      No hay imágenes de comunicados o avisos registradas en la página de inicio.
+                      No hay imÃ¡genes de comunicados o avisos registradas en la pÃ¡gina de inicio.
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -2588,9 +2596,9 @@ export default function AdminClient() {
 
                 <div className="p-4 bg-slate-50 dark:bg-zinc-900 border rounded-xl flex items-center justify-between">
                   <div>
-                    <span className="text-[9px] font-bold text-slate-500 uppercase block">Días con Actividad</span>
+                    <span className="text-[9px] font-bold text-slate-500 uppercase block">DÃ­as con Actividad</span>
                     <span className="text-xl font-black text-slate-800 dark:text-zinc-100 block mt-1">
-                      {new Set(activityLogs.map(l => `${l.userId}_${l.dateStr}`)).size} días
+                      {new Set(activityLogs.map(l => `${l.userId}_${l.dateStr}`)).size} dÃ­as
                     </span>
                   </div>
                   <Calendar className="h-7 w-7 text-teal-600" />
@@ -2640,7 +2648,7 @@ export default function AdminClient() {
                                 Citas Efectivas Acumuladas
                               </CardTitle>
                               <CardDescription className="text-[10px]">
-                                {monthName} • {agentName}
+                                {monthName} â€¢ {agentName}
                               </CardDescription>
                             </div>
                             <div className="h-10 w-10 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center font-black text-lg">
@@ -2657,7 +2665,7 @@ export default function AdminClient() {
                                   <div key={log.id} className="flex justify-between items-center bg-emerald-50/40 dark:bg-emerald-950/10 px-3 py-2.5 rounded-xl border border-emerald-100/50 dark:border-emerald-900/30 text-xs">
                                     <div className="space-y-0.5">
                                       <span className="font-extrabold text-slate-800 dark:text-zinc-200 block">
-                                        👥 {log.prospectName || "Sin Nombre"}
+                                        ðŸ‘¥ {log.prospectName || "Sin Nombre"}
                                       </span>
                                       <span className="text-[9px] text-slate-400 block">
                                         Registrado: {new Date(log.createdAt).toLocaleTimeString("es-MX", { timeZone: 'America/Mexico_City',  hour: "2-digit", minute: "2-digit" })}
@@ -2681,7 +2689,7 @@ export default function AdminClient() {
                                 Citas Agendadas
                               </CardTitle>
                               <CardDescription className="text-[10px]">
-                                {monthName} • {agentName}
+                                {monthName} â€¢ {agentName}
                               </CardDescription>
                             </div>
                             <div className="h-10 w-10 bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 rounded-full flex items-center justify-center font-black text-lg">
@@ -2698,7 +2706,7 @@ export default function AdminClient() {
                                   <div key={log.id} className="flex justify-between items-center bg-orange-50/40 dark:bg-orange-950/10 px-3 py-2.5 rounded-xl border border-orange-100/50 dark:border-orange-900/30 text-xs">
                                     <div className="space-y-0.5">
                                       <span className="font-extrabold text-slate-800 dark:text-zinc-200 block">
-                                        📅 {log.prospectName || "Sin Nombre"}
+                                        ðŸ“… {log.prospectName || "Sin Nombre"}
                                       </span>
                                       <span className="text-[9px] text-slate-400 block">
                                         Registrado: {new Date(log.createdAt).toLocaleTimeString("es-MX", { timeZone: 'America/Mexico_City',  hour: "2-digit", minute: "2-digit" })}
@@ -2915,14 +2923,14 @@ export default function AdminClient() {
                                                       <span className="mt-0.5 p-1.5 bg-white dark:bg-zinc-900 rounded border shadow-sm shrink-0">
                                                         {(() => {
                                                           switch (log.activityId) {
-                                                            case "1": return <span className="text-blue-500 font-extrabold text-[10px]" title="Llamada">📞</span>
-                                                            case "2": return <span className="text-orange-500 font-extrabold text-[10px]" title="Agendada">📅</span>
-                                                            case "3": return <span className="text-amber-500 font-extrabold text-[10px]" title="Efectiva">🤝</span>
-                                                            case "4": return <span className="text-emerald-500 font-extrabold text-[10px]" title="Cierre">💼</span>
-                                                            case "5": return <span className="text-indigo-500 font-extrabold text-[10px]" title="Referido">👥</span>
-                                                            case "6": return <span className="text-purple-500 font-extrabold text-[10px]" title="Emitida">📝</span>
-                                                            case "7": return <span className="text-teal-500 font-extrabold text-[10px]" title="RDA">🏆</span>
-                                                            default: return <span className="text-slate-500 font-extrabold text-[10px]">➕</span>
+                                                            case "1": return <span className="text-blue-500 font-extrabold text-[10px]" title="Llamada">ðŸ“ž</span>
+                                                            case "2": return <span className="text-orange-500 font-extrabold text-[10px]" title="Agendada">ðŸ“…</span>
+                                                            case "3": return <span className="text-amber-500 font-extrabold text-[10px]" title="Efectiva">ðŸ¤</span>
+                                                            case "4": return <span className="text-emerald-500 font-extrabold text-[10px]" title="Cierre">ðŸ’¼</span>
+                                                            case "5": return <span className="text-indigo-500 font-extrabold text-[10px]" title="Referido">ðŸ‘¥</span>
+                                                            case "6": return <span className="text-purple-500 font-extrabold text-[10px]" title="Emitida">ðŸ“</span>
+                                                            case "7": return <span className="text-teal-500 font-extrabold text-[10px]" title="RDA">ðŸ†</span>
+                                                            default: return <span className="text-slate-500 font-extrabold text-[10px]">âž•</span>
                                                           }
                                                         })()}
                                                       </span>
@@ -2937,7 +2945,7 @@ export default function AdminClient() {
                                                         </div>
                                                         {log.prospectName ? (
                                                           <span className="text-teal-600 dark:text-teal-400 font-extrabold text-[10px] block">
-                                                            👤 Prospecto: {log.prospectName}
+                                                            ðŸ‘¤ Prospecto: {log.prospectName}
                                                           </span>
                                                         ) : (
                                                           <span className="text-slate-400 italic text-[10px] block">Sin prospecto registrado</span>
@@ -2996,13 +3004,13 @@ export default function AdminClient() {
                   {selectedDocId ? "Editar Documento" : "Cargar Lineamiento / Cuaderno"}
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Carga lineamientos comerciales, cuadernos de bonos o condiciones generales. Gemini responderá basándose en esta información.
+                  Carga lineamientos comerciales, cuadernos de bonos o condiciones generales. Gemini responderÃ¡ basÃ¡ndose en esta informaciÃ³n.
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-5 space-y-4">
                 <form onSubmit={handleSaveDoc} className="space-y-4">
                   <div className="space-y-1">
-                    <label className="text-[10px] font-bold text-slate-600 uppercase block">Título del Documento</label>
+                    <label className="text-[10px] font-bold text-slate-600 uppercase block">TÃ­tulo del Documento</label>
                     <Input 
                       type="text" 
                       placeholder="Ej. Lineamientos Comerciales Insignia 2026" 
@@ -3031,14 +3039,14 @@ export default function AdminClient() {
                         file:cursor-pointer cursor-pointer"
                     />
                     <span className="text-[9px] text-slate-500 leading-normal block">
-                      Selecciona un archivo PDF local para extraer su contenido de texto de forma automática. Podrás editarlo antes de guardarlo.
+                      Selecciona un archivo PDF local para extraer su contenido de texto de forma automÃ¡tica. PodrÃ¡s editarlo antes de guardarlo.
                     </span>
                   </div>
 
                   <div className="space-y-1">
                     <label className="text-[10px] font-bold text-slate-600 uppercase block">Contenido del Lineamiento (Copiar y Pegar Texto)</label>
                     <textarea 
-                      placeholder="Pega aquí el contenido de texto del PDF o página web..." 
+                      placeholder="Pega aquÃ­ el contenido de texto del PDF o pÃ¡gina web..." 
                       value={docContent}
                       onChange={e => setDocContent(e.target.value)}
                       rows={12}
@@ -3059,7 +3067,7 @@ export default function AdminClient() {
                         disabled={savingDoc}
                       />
                       <label htmlFor="global-template-checkbox" className="text-xs font-bold text-amber-700 dark:text-amber-500 cursor-pointer flex items-center gap-1 select-none">
-                        💡 Compartir como Plantilla Base (Aplicará en tiempo real a TODAS las agencias actuales y nuevas)
+                        ðŸ’¡ Compartir como Plantilla Base (AplicarÃ¡ en tiempo real a TODAS las agencias actuales y nuevas)
                       </label>
                     </div>
                   )}
@@ -3109,7 +3117,7 @@ export default function AdminClient() {
                     <BookOpen className="h-4.5 w-4.5 text-teal-600" /> Documentos de Entrenamiento Activos
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Listado de cuadernos, políticas y PDFs vigentes de los que el asistente aprende.
+                    Listado de cuadernos, polÃ­ticas y PDFs vigentes de los que el asistente aprende.
                   </CardDescription>
                 </div>
               </CardHeader>
@@ -3121,7 +3129,7 @@ export default function AdminClient() {
                   </div>
                 ) : knowledgeDocs.length === 0 ? (
                   <div className="text-center py-12 text-slate-400 text-xs italic">
-                    No hay documentos de conocimiento guardados en la plataforma aún.
+                    No hay documentos de conocimiento guardados en la plataforma aÃºn.
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -3154,7 +3162,7 @@ export default function AdminClient() {
                           {doc.isGlobalTemplate && currentUserRole !== 'SUPER_ADMIN' ? (
                             <div className="flex items-center justify-center bg-slate-100 dark:bg-zinc-800 rounded px-3 py-1.5 border border-slate-200 dark:border-zinc-700">
                               <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">
-                                🔒 Solo Lectura
+                                ðŸ”’ Solo Lectura
                               </span>
                             </div>
                           ) : (
@@ -3253,16 +3261,16 @@ export default function AdminClient() {
                 <div className="border-b-2 border-teal-500 pb-4 flex flex-row items-center justify-between gap-4">
                   <div>
                     <span className="text-[10px] font-bold text-teal-600 uppercase tracking-widest block">
-                      Diagnóstico Patrimonial Digital
+                      DiagnÃ³stico Patrimonial Digital
                     </span>
                     <h2 className="text-xl font-extrabold text-slate-800">
                       ADN DIGITAL AACOM
                     </h2>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[11px] text-slate-500">
                       <span><strong>Cliente:</strong> {selectedAdn.clienteNombre}</span>
-                      <span>•</span>
-                      <span><strong>Edad:</strong> {selectedAdn.clienteEdad} años</span>
-                      <span>•</span>
+                      <span>â€¢</span>
+                      <span><strong>Edad:</strong> {selectedAdn.clienteEdad} aÃ±os</span>
+                      <span>â€¢</span>
                       <span><strong>Fecha:</strong> {new Date(selectedAdn.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City',  day: "numeric", month: "long", year: "numeric" })}</span>
                     </div>
                   </div>
@@ -3281,18 +3289,18 @@ export default function AdminClient() {
                   </div>
                   <div>
                     <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Edad</span>
-                    <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.clienteEdad} años</span>
+                    <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.clienteEdad} aÃ±os</span>
                   </div>
                   <div>
-                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Cónyuge</span>
-                    <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.conyugeNombre ? `${selectedAdn.conyugeNombre} (${selectedAdn.conyugeEdad} años)` : 'No registrado'}</span>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">CÃ³nyuge</span>
+                    <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.conyugeNombre ? `${selectedAdn.conyugeNombre} (${selectedAdn.conyugeEdad} aÃ±os)` : 'No registrado'}</span>
                   </div>
                   <div>
-                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Situación Laboral</span>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">SituaciÃ³n Laboral</span>
                     <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.situacionLaboral}</span>
                   </div>
                   <div>
-                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Ubicación (GPS)</span>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">UbicaciÃ³n (GPS)</span>
                     {selectedAdn.latitude && selectedAdn.longitude ? (
                       <a 
                         href={`https://www.google.com/maps?q=${selectedAdn.latitude},${selectedAdn.longitude}`}
@@ -3300,7 +3308,7 @@ export default function AdminClient() {
                         rel="noopener noreferrer"
                         className="text-xs font-bold text-blue-600 hover:text-blue-800 hover:underline block mt-0.5 flex items-center gap-1"
                       >
-                        📍 Ver en Mapa
+                        ðŸ“ Ver en Mapa
                       </a>
                     ) : (
                       <span className="text-xs font-bold text-slate-500 block mt-0.5">Sin registro</span>
@@ -3311,21 +3319,21 @@ export default function AdminClient() {
                 {/* Hijos list */}
                 {selectedAdn.hijosData && JSON.parse(selectedAdn.hijosData).length > 0 && (
                   <div className="border border-slate-200 p-3.5 rounded-xl space-y-1.5">
-                    <span className="text-[9px] font-black text-slate-600 uppercase block tracking-wider">Estructura de Protección Familiar (Hijos)</span>
+                    <span className="text-[9px] font-black text-slate-600 uppercase block tracking-wider">Estructura de ProtecciÃ³n Familiar (Hijos)</span>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                       {JSON.parse(selectedAdn.hijosData).map((h: any, i: number) => (
                         <div key={i} className="border-l-2 border-teal-500 pl-2">
                           <span className="text-xs font-bold text-slate-800 block">{h.nombre}</span>
-                          <span className="text-[9px] text-slate-500 block">{h.edad} años</span>
+                          <span className="text-[9px] text-slate-500 block">{h.edad} aÃ±os</span>
                         </div>
                       ))}
                     </div>
                   </div>
                 )}
 
-                {/* Salud y Hábitos */}
+                {/* Salud y HÃ¡bitos */}
                 <div className="border border-slate-200 p-3.5 rounded-xl space-y-1.5 mt-4">
-                  <span className="text-[9px] font-black text-slate-600 uppercase block tracking-wider">Salud y Hábitos</span>
+                  <span className="text-[9px] font-black text-slate-600 uppercase block tracking-wider">Salud y HÃ¡bitos</span>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Estatura</span>
@@ -3442,7 +3450,7 @@ export default function AdminClient() {
                   } else {
                     plazoAnios = Number(selectedAdn.pprAniosPlazo || 10)
                   }
-                  // Proyección acumulada inflacionada con tasa del 4% anual
+                  // ProyecciÃ³n acumulada inflacionada con tasa del 4% anual
                   let projectedPprAccumulation = 0
                   let tempAporte = pprAporteAnual
                   for (let i = 0; i < plazoAnios; i++) {
@@ -3467,7 +3475,7 @@ export default function AdminClient() {
                               <span className="text-[9px] text-slate-500 block">
                                 Aporte: ${selectedAdn.pprAporte?.toLocaleString('es-MX')} ({selectedAdn.pprFrecuencia === 'MENSUAL' ? 'Mensual' : 'Anual'})
                                 <br />
-                                Plazo: {selectedAdn.pprAniosPlazo === '65' ? 'Hasta edad 65' : `${selectedAdn.pprAniosPlazo} años`}
+                                Plazo: {selectedAdn.pprAniosPlazo === '65' ? 'Hasta edad 65' : `${selectedAdn.pprAniosPlazo} aÃ±os`}
                               </span>
                             </div>
                           )}
@@ -3481,8 +3489,8 @@ export default function AdminClient() {
                           )}
                           {selectedAdn.hasGmm && (
                             <div className="border-l-2 border-teal-500 pl-2">
-                              <span className="text-xs font-bold text-slate-800 block">Gastos Médicos (GMM)</span>
-                              <span className="text-[9px] text-slate-500 block">Póliza de Salud Activa</span>
+                              <span className="text-xs font-bold text-slate-800 block">Gastos MÃ©dicos (GMM)</span>
+                              <span className="text-[9px] text-slate-500 block">PÃ³liza de Salud Activa</span>
                             </div>
                           )}
                           {selectedAdn.hasSeguroVida && (
@@ -3491,7 +3499,7 @@ export default function AdminClient() {
                               <span className="text-[9px] text-slate-500 block">
                                 {selectedAdn.vidaSumaAsegurada 
                                   ? `Suma Asegurada: $${selectedAdn.vidaSumaAsegurada.toLocaleString('es-MX')} pesos`
-                                  : 'Póliza de Protección Activa'}
+                                  : 'PÃ³liza de ProtecciÃ³n Activa'}
                               </span>
                             </div>
                           )}
@@ -3501,22 +3509,22 @@ export default function AdminClient() {
                         </div>
                       </div>
 
-                        {/* Tarjetas de Crédito */}
+                        {/* Tarjetas de CrÃ©dito */}
                         <div className="border border-slate-200 p-3.5 rounded-xl space-y-2 mt-4">
-                          <span className="text-[9px] font-black text-slate-600 uppercase block tracking-wider">Tarjetas de Crédito</span>
+                          <span className="text-[9px] font-black text-slate-600 uppercase block tracking-wider">Tarjetas de CrÃ©dito</span>
                           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                             <div>
-                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">¿Cuenta con TC?</span>
-                              <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.hasTarjetasCredito ? 'Sí' : 'No'}</span>
+                              <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Â¿Cuenta con TC?</span>
+                              <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.hasTarjetasCredito ? 'SÃ­' : 'No'}</span>
                             </div>
                             {selectedAdn.hasTarjetasCredito && (
                               <>
                                 <div className="col-span-2">
-                                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Cuáles</span>
+                                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">CuÃ¡les</span>
                                   <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.tarjetasCuales || 'N/A'}</span>
                                 </div>
                                 <div>
-                                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Límite de Crédito</span>
+                                  <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">LÃ­mite de CrÃ©dito</span>
                                   <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedAdn.tarjetasLimite || 'N/A'}</span>
                                 </div>
                               </>
@@ -3554,7 +3562,7 @@ export default function AdminClient() {
 
                         {/* Warren Percent BarChart */}
                         <div className="border p-4 rounded-xl space-y-3.5 flex flex-col justify-between bg-white">
-                          <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Comparación Warren 50-30-20</h4>
+                          <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">ComparaciÃ³n Warren 50-30-20</h4>
                           <div className="h-48 w-full mt-2">
                             <ResponsiveContainer width="100%" height="100%">
                               <BarChart data={[
@@ -3598,22 +3606,22 @@ export default function AdminClient() {
                                 <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catTransporte / (income || 1)) * 100)}%</td>
                               </tr>
                               <tr className="hover:bg-slate-50/50">
-                                <td className="py-1.5 px-3 font-semibold">Educación</td>
+                                <td className="py-1.5 px-3 font-semibold">EducaciÃ³n</td>
                                 <td className="py-1.5 px-3 text-center">${catEducacion.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
                                 <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catEducacion / (income || 1)) * 100)}%</td>
                               </tr>
                               <tr className="hover:bg-slate-50/50">
-                                <td className="py-1.5 px-3 font-semibold">Deudas y Créditos</td>
+                                <td className="py-1.5 px-3 font-semibold">Deudas y CrÃ©ditos</td>
                                 <td className="py-1.5 px-3 text-center">${catDeudas.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
                                 <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catDeudas / (income || 1)) * 100)}%</td>
                               </tr>
                               <tr className="hover:bg-slate-50/50">
-                                <td className="py-1.5 px-3 font-semibold">Diversión y Entretenimiento (Deseos)</td>
+                                <td className="py-1.5 px-3 font-semibold">DiversiÃ³n y Entretenimiento (Deseos)</td>
                                 <td className="py-1.5 px-3 text-center">${catEntretenimiento.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
                                 <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catEntretenimiento / (income || 1)) * 100)}%</td>
                               </tr>
                               <tr className="hover:bg-slate-50/50">
-                                <td className="py-1.5 px-3 font-semibold">Alimentación y Despensa</td>
+                                <td className="py-1.5 px-3 font-semibold">AlimentaciÃ³n y Despensa</td>
                                 <td className="py-1.5 px-3 text-center">${catAlimentacion.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
                                 <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catAlimentacion / (income || 1)) * 100)}%</td>
                               </tr>
@@ -3639,10 +3647,10 @@ export default function AdminClient() {
                         </div>
                       </div>
 
-                      {/* 5 Priorities Semáforo Evaluation */}
+                      {/* 5 Priorities SemÃ¡foro Evaluation */}
                       <div className="space-y-3">
                         <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider flex items-center gap-1">
-                          <ShieldCheck className="h-4 w-4 text-teal-600" /> Evaluación de Blindaje y Recomendaciones
+                          <ShieldCheck className="h-4 w-4 text-teal-600" /> EvaluaciÃ³n de Blindaje y Recomendaciones
                         </h4>
                         
                         <div className="space-y-3">
@@ -3653,22 +3661,22 @@ export default function AdminClient() {
                               <span className="font-extrabold text-[9px] tracking-wider text-slate-400 block uppercase">Pilar 1: Plan Personal para Retiro (PPR)</span>
                               <p className="text-slate-600 mt-0.5">
                                 {p1_retiro 
-                                  ? '⚠️ Alerta: El cliente no cuenta con plan para retiro. Es crítico iniciar un ahorro deducible bajo el Art. 151 LISR para construir su independencia a edad de retiro.'
+                                  ? 'âš ï¸ Alerta: El cliente no cuenta con plan para retiro. Es crÃ­tico iniciar un ahorro deducible bajo el Art. 151 LISR para construir su independencia a edad de retiro.'
                                   : <>
-                                      <span className="font-bold text-slate-700">✅ Registrado: </span> El cliente aporta <strong>${selectedAdn.pprAporte?.toLocaleString('es-MX')}</strong> ({selectedAdn.pprFrecuencia === 'MENSUAL' ? 'Mensual' : 'Anual'}) a un plazo contratado de <strong>{selectedAdn.pprAniosPlazo === '65' ? 'Hasta edad 65' : `${selectedAdn.pprAniosPlazo} años`}</strong>.
+                                      <span className="font-bold text-slate-700">âœ… Registrado: </span> El cliente aporta <strong>${selectedAdn.pprAporte?.toLocaleString('es-MX')}</strong> ({selectedAdn.pprFrecuencia === 'MENSUAL' ? 'Mensual' : 'Anual'}) a un plazo contratado de <strong>{selectedAdn.pprAniosPlazo === '65' ? 'Hasta edad 65' : `${selectedAdn.pprAniosPlazo} aÃ±os`}</strong>.
                                       <span className="block mt-2 pt-2 border-t border-slate-100 text-slate-700">
-                                        <strong>Meta de Retiro (20 años de ingresos):</strong> ${retirementGoal.toLocaleString('es-MX')} pesos.
+                                        <strong>Meta de Retiro (20 aÃ±os de ingresos):</strong> ${retirementGoal.toLocaleString('es-MX')} pesos.
                                         <br />
-                                        <strong>Acumulación PPR Proyectada:</strong> ${projectedPprAccumulation.toLocaleString('es-MX')} pesos.
+                                        <strong>AcumulaciÃ³n PPR Proyectada:</strong> ${projectedPprAccumulation.toLocaleString('es-MX')} pesos.
                                       </span>
                                       {!isPprSufficient ? (
                                         <span className="block mt-2 bg-red-50 text-red-800 p-2 rounded-md font-semibold border border-red-100">
-                                          ⚠️ Brecha Financiera Detectada: Faltan <strong>${brechaRetiro.toLocaleString('es-MX')} pesos</strong> para alcanzar la meta. 
-                                          Se sugiere incrementar sustancialmente su aportación para lograr su meta de retiro.
+                                          âš ï¸ Brecha Financiera Detectada: Faltan <strong>${brechaRetiro.toLocaleString('es-MX')} pesos</strong> para alcanzar la meta. 
+                                          Se sugiere incrementar sustancialmente su aportaciÃ³n para lograr su meta de retiro.
                                         </span>
                                       ) : (
                                         <span className="block mt-2 bg-emerald-50 text-emerald-800 p-2 rounded-md font-semibold border border-emerald-100">
-                                          🎉 ¡Excelente! La acumulación proyectada de su PPR actual es suficiente para cubrir la meta de retiro sugerida.
+                                          ðŸŽ‰ Â¡Excelente! La acumulaciÃ³n proyectada de su PPR actual es suficiente para cubrir la meta de retiro sugerida.
                                         </span>
                                       )}
                                     </>
@@ -3681,11 +3689,11 @@ export default function AdminClient() {
                           <div className="border p-3 rounded-lg flex items-start gap-3 bg-white">
                             <span className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${p2_gmm ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`} />
                             <div className="text-xs">
-                              <span className="font-extrabold text-[9px] tracking-wider text-slate-400 block uppercase">Pilar 2: Gastos Médicos Mayores (GMM)</span>
+                              <span className="font-extrabold text-[9px] tracking-wider text-slate-400 block uppercase">Pilar 2: Gastos MÃ©dicos Mayores (GMM)</span>
                               <p className="text-slate-600 mt-0.5">
                                 {p2_gmm 
-                                  ? '⚠️ Alerta: Sin póliza de GMM. Un accidente o enfermedad grave extinguirá de inmediato sus fondos líquidos de emergencia e inversiones.'
-                                  : '✅ Cubierto: Salud y patrimonio blindados con póliza de Gastos Médicos Mayores.'}
+                                  ? 'âš ï¸ Alerta: Sin pÃ³liza de GMM. Un accidente o enfermedad grave extinguirÃ¡ de inmediato sus fondos lÃ­quidos de emergencia e inversiones.'
+                                  : 'âœ… Cubierto: Salud y patrimonio blindados con pÃ³liza de Gastos MÃ©dicos Mayores.'}
                               </p>
                             </div>
                           </div>
@@ -3697,7 +3705,7 @@ export default function AdminClient() {
                               <div className="text-xs">
                                 <span className="font-extrabold text-[9px] tracking-wider text-slate-400 block uppercase">Pilar 3: Fondo de Emergencia</span>
                                 <p className="text-slate-600 mt-0.5">
-                                  ⚠️ Insuficiente: Fondo de emergencia óptimo sugerido: ${fondoIdeal.toLocaleString('es-MX')} (equivalente a {idealMonths} meses). Cuenta actualmente con ${(selectedAdn.ahorroActual || 0).toLocaleString('es-MX')} pesos (Faltante: ${p3_fondo_gap.toLocaleString('es-MX')} pesos).
+                                  âš ï¸ Insuficiente: Fondo de emergencia Ã³ptimo sugerido: ${fondoIdeal.toLocaleString('es-MX')} (equivalente a {idealMonths} meses). Cuenta actualmente con ${(selectedAdn.ahorroActual || 0).toLocaleString('es-MX')} pesos (Faltante: ${p3_fondo_gap.toLocaleString('es-MX')} pesos).
                                 </p>
                               </div>
                             </div>
@@ -3711,8 +3719,8 @@ export default function AdminClient() {
                                 <span className="font-extrabold text-[9px] tracking-wider text-slate-400 block uppercase">Pilar 4: Seguro Educativo</span>
                                 <p className="text-slate-600 mt-0.5">
                                   {p4_educacion 
-                                    ? '⚠️ Recomendación: Cuenta con hijos pequeños (0-9 años) sin plan educativo. Iniciar una póliza de ahorro universitario garantiza su carrera profesional y reduce sustancialmente el costo mensual.'
-                                    : '✅ Cubierto: Cuentas con un plan de ahorro educativo previsto.'}
+                                    ? 'âš ï¸ RecomendaciÃ³n: Cuenta con hijos pequeÃ±os (0-9 aÃ±os) sin plan educativo. Iniciar una pÃ³liza de ahorro universitario garantiza su carrera profesional y reduce sustancialmente el costo mensual.'
+                                    : 'âœ… Cubierto: Cuentas con un plan de ahorro educativo previsto.'}
                                 </p>
                               </div>
                             </div>
@@ -3735,7 +3743,7 @@ export default function AdminClient() {
                               <div className="w-full bg-white border border-slate-200 rounded-lg p-2 flex justify-center shadow-sm">
                                 <img 
                                   src={selectedAdn.evidenciaBase64} 
-                                  alt="Evidencia Diagnóstico Básico" 
+                                  alt="Evidencia DiagnÃ³stico BÃ¡sico" 
                                   className="max-w-full max-h-[600px] object-contain rounded" 
                                 />
                               </div>
@@ -3749,7 +3757,7 @@ export default function AdminClient() {
 
                 {/* Modal footer signature */}
                 <div className="border-t pt-4 flex flex-row justify-between items-center text-[9px] text-slate-400 gap-2">
-                  <span>* Reporte de diagnóstico ilustrativo generado de forma segura desde la base de datos de desarrollo.</span>
+                  <span>* Reporte de diagnÃ³stico ilustrativo generado de forma segura desde la base de datos de desarrollo.</span>
                   <div className="flex items-center gap-1 font-bold text-slate-600">
                     <span>Respaldado por la plataforma</span>
                     <img src="/logo.png" alt="AACOM" className="w-auto object-contain" style={{ height: '18px' }} />
@@ -3769,7 +3777,7 @@ export default function AdminClient() {
                 onClick={() => setSelectedAdn(null)} 
                 className="h-9 px-4 text-xs font-bold"
               >
-                Cerrar Diagnóstico
+                Cerrar DiagnÃ³stico
               </Button>
             </div>
 
@@ -3821,7 +3829,7 @@ export default function AdminClient() {
                   <ShieldCheck className="h-10 w-10 text-amber-500 mx-auto" />
                   <h4 className="font-bold text-amber-800 text-sm">Rescatado Parcial</h4>
                   <p className="text-xs text-amber-700 max-w-md mx-auto">
-                    Esta propuesta fue generada con una versión anterior del cotizador que no guardaba el desglose anual completo en base de datos. Solo se pueden consultar las métricas generales.
+                    Esta propuesta fue generada con una versiÃ³n anterior del cotizador que no guardaba el desglose anual completo en base de datos. Solo se pueden consultar las mÃ©tricas generales.
                   </p>
                   <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto pt-4 text-xs">
                     <div className="border bg-white p-3 rounded-lg text-center">
@@ -3845,13 +3853,13 @@ export default function AdminClient() {
                         Propuesta Rescatada
                       </span>
                       <h2 className="text-xl font-extrabold text-slate-800">
-                        Análisis Financiero de {selectedQuote.producto}
+                        AnÃ¡lisis Financiero de {selectedQuote.producto}
                       </h2>
                       <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[11px] text-slate-500">
                         <span><strong>Cliente:</strong> {selectedQuote.cliente}</span>
-                        <span>•</span>
-                        <span><strong>Teléfono:</strong> {selectedQuote.telefono}</span>
-                        <span>•</span>
+                        <span>â€¢</span>
+                        <span><strong>TelÃ©fono:</strong> {selectedQuote.telefono}</span>
+                        <span>â€¢</span>
                         <span><strong>Fecha original:</strong> {new Date(selectedQuote.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City',  day: "numeric", month: "long", year: "numeric" })}</span>
                       </div>
                     </div>
@@ -3913,7 +3921,7 @@ export default function AdminClient() {
 
                           <Card className="shadow-none border border-slate-100 bg-slate-50/50">
                             <CardContent className="p-3">
-                              <span className="text-[9px] font-bold text-slate-500 uppercase block">Aportación Total</span>
+                              <span className="text-[9px] font-bold text-slate-500 uppercase block">AportaciÃ³n Total</span>
                               <span className="text-lg font-black text-slate-800 block mt-1">
                                 ${selectedQuote.totalPrima.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
                               </span>
@@ -3963,7 +3971,7 @@ export default function AdminClient() {
                             <Card className="border shadow-none flex-1">
                               <CardHeader className="py-2.5 px-3 bg-slate-50 border-b">
                                 <CardTitle className="text-[10px] font-black text-slate-700 uppercase tracking-widest">
-                                  Parámetros Originales
+                                  ParÃ¡metros Originales
                                 </CardTitle>
                               </CardHeader>
                               <CardContent className="p-3 text-[11px] space-y-1.5">
@@ -3972,9 +3980,9 @@ export default function AdminClient() {
                                   <span className="font-bold text-slate-800">{selectedQuote.producto}</span>
                                 </div>
                                 <div className="flex justify-between border-b pb-1">
-                                  <span className="text-slate-500 font-medium">Duración de Pagos</span>
+                                  <span className="text-slate-500 font-medium">DuraciÃ³n de Pagos</span>
                                   <span className="font-bold text-slate-800">
-                                    {selectedQuote.duracion === "EA65" ? "Edad Alcanzada 65 Años" : `${selectedQuote.duracion} Años`}
+                                    {selectedQuote.duracion === "EA65" ? "Edad Alcanzada 65 AÃ±os" : `${selectedQuote.duracion} AÃ±os`}
                                   </span>
                                 </div>
                                 <div className="flex justify-between border-b pb-1">
@@ -3982,7 +3990,7 @@ export default function AdminClient() {
                                   <span className="font-bold text-slate-800">${(selectedQuote.valorUdi || 8.25).toFixed(4)}</span>
                                 </div>
                                 <div className="flex justify-between border-b pb-1">
-                                  <span className="text-slate-500 font-medium">Inflación UDI Anual</span>
+                                  <span className="text-slate-500 font-medium">InflaciÃ³n UDI Anual</span>
                                   <span className="font-bold text-teal-600">{(selectedQuote.inflacionUdi || 5.0).toFixed(1)}%</span>
                                 </div>
                                 {selectedQuote.producto.includes("PPR") && (
@@ -4005,7 +4013,7 @@ export default function AdminClient() {
                                   <div className="relative">
                                     <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-teal-600"></span>
                                     <div className="flex justify-between text-[10px]">
-                                      <span className="text-slate-500">Año 1</span>
+                                      <span className="text-slate-500">AÃ±o 1</span>
                                       <span className="font-bold text-slate-800">${saY1.toLocaleString("es-MX", {maximumFractionDigits:0})}</span>
                                     </div>
                                   </div>
@@ -4013,7 +4021,7 @@ export default function AdminClient() {
                                     <div className="relative">
                                       <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-teal-600"></span>
                                       <div className="flex justify-between text-[10px]">
-                                        <span className="text-slate-500">Año 10</span>
+                                        <span className="text-slate-500">AÃ±o 10</span>
                                         <span className="font-bold text-slate-800">${saY10.toLocaleString("es-MX", {maximumFractionDigits:0})}</span>
                                       </div>
                                     </div>
@@ -4022,7 +4030,7 @@ export default function AdminClient() {
                                     <div className="relative">
                                       <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-teal-600"></span>
                                       <div className="flex justify-between text-[10px]">
-                                        <span className="text-slate-500">Año 20</span>
+                                        <span className="text-slate-500">AÃ±o 20</span>
                                         <span className="font-bold text-slate-800">${saY20.toLocaleString("es-MX", {maximumFractionDigits:0})}</span>
                                       </div>
                                     </div>
@@ -4031,7 +4039,7 @@ export default function AdminClient() {
                                     <div className="relative">
                                       <span className="absolute -left-[21px] top-1 h-2 w-2 rounded-full bg-teal-600"></span>
                                       <div className="flex justify-between text-[10px]">
-                                        <span className="text-slate-500">Año 30</span>
+                                        <span className="text-slate-500">AÃ±o 30</span>
                                         <span className="font-bold text-slate-800">${saY30.toLocaleString("es-MX", {maximumFractionDigits:0})}</span>
                                       </div>
                                     </div>
@@ -4039,7 +4047,7 @@ export default function AdminClient() {
                                 </div>
                                 <div className="text-[9px] text-slate-500 font-medium mt-2.5 border-t pt-1.5 flex items-center gap-1.5">
                                   <span className="text-[8px] bg-teal-600 text-white font-extrabold px-1.5 py-0.5 rounded tracking-widest uppercase">
-                                    PROTECCIÓN
+                                    PROTECCIÃ“N
                                   </span>
                                   <span>Monto por fallecimiento garantizado.</span>
                                 </div>
@@ -4051,7 +4059,7 @@ export default function AdminClient() {
                           <div className="md:col-span-7 border rounded-2xl p-4 flex flex-col justify-between min-h-56 shadow-none">
                             <div className="flex items-center justify-between mb-2">
                               <span className="text-[10px] font-black text-slate-700 uppercase tracking-widest">
-                                Proyección del Ahorro Garantizado
+                                ProyecciÃ³n del Ahorro Garantizado
                               </span>
                               <span className="text-[9px] text-muted-foreground">Valores en Pesos</span>
                             </div>
@@ -4123,7 +4131,7 @@ export default function AdminClient() {
                                   />
                                   <Legend iconSize={8} wrapperStyle={{ fontSize: 9 }} />
                                   <Area name="Ahorro Garantizado ($)" type="monotone" dataKey="valoresPesos" stroke="#10b981" strokeWidth={2.5} fillOpacity={1} fill="url(#adminColorAhorro)" />
-                                  <Area name="Aportación Acumulada ($)" type="monotone" dataKey="accumulatedPremiumPesos" stroke="#64748b" strokeWidth={1.5} fillOpacity={1} fill="url(#adminColorAportado)" />
+                                  <Area name="AportaciÃ³n Acumulada ($)" type="monotone" dataKey="accumulatedPremiumPesos" stroke="#64748b" strokeWidth={1.5} fillOpacity={1} fill="url(#adminColorAportado)" />
                                 </AreaChart>
                               </ResponsiveContainer>
                             </div>
@@ -4139,7 +4147,7 @@ export default function AdminClient() {
                             <Table className="w-full text-xs">
                               <TableHeader className="bg-[#87D1B5] sticky top-0 z-10">
                                 <TableRow>
-                                  <TableHead className="font-bold text-white text-center py-2">Año</TableHead>
+                                  <TableHead className="font-bold text-white text-center py-2">AÃ±o</TableHead>
                                   <TableHead className="font-bold text-white text-center py-2">Edad</TableHead>
                                   <TableHead className="font-bold text-white text-center py-2">Valor UDI</TableHead>
                                   <TableHead className="font-bold text-white text-center py-2">Prima UDIS</TableHead>
@@ -4228,7 +4236,7 @@ export default function AdminClient() {
                               <TableBody>
                                 <TableRow className="border-b">
                                   <TableCell className="font-bold py-1.5">Fallecimiento (Cobertura Base)</TableCell>
-                                  <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-slate-100 text-[9px] font-semibold">Básica</span></TableCell>
+                                  <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-slate-100 text-[9px] font-semibold">BÃ¡sica</span></TableCell>
                                   <TableCell className="text-center py-1.5 font-semibold">${saY1.toLocaleString("es-MX", {maximumFractionDigits:0})} MXN</TableCell>
                                   <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold">Amparada</span></TableCell>
                                 </TableRow>
@@ -4242,9 +4250,9 @@ export default function AdminClient() {
                                 )}
                                 {parsedCoverages.epp && (
                                   <TableRow className="border-b">
-                                    <TableCell className="font-bold py-1.5">Exención de Pago de Primas por ITP (EPP)</TableCell>
+                                    <TableCell className="font-bold py-1.5">ExenciÃ³n de Pago de Primas por ITP (EPP)</TableCell>
                                     <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-teal-50 text-teal-700 text-[9px] font-semibold">Adicional</span></TableCell>
-                                    <TableCell className="text-center py-1.5 font-semibold">Exención de Aportaciones</TableCell>
+                                    <TableCell className="text-center py-1.5 font-semibold">ExenciÃ³n de Aportaciones</TableCell>
                                     <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold">Amparada</span></TableCell>
                                   </TableRow>
                                 )}
@@ -4271,11 +4279,11 @@ export default function AdminClient() {
                               </h4>
                             </div>
                             <p className="text-[11px] text-slate-600">
-                              Estrategia de deducción anual acumulada basada en la tasa fiscal marginal recomendada de **{selectedQuote.isr || 35}%**:
+                              Estrategia de deducciÃ³n anual acumulada basada en la tasa fiscal marginal recomendada de **{selectedQuote.isr || 35}%**:
                             </p>
                             <div className="grid grid-cols-2 gap-4 pt-1">
                               <div className="border bg-white p-2.5 rounded-lg text-center text-xs">
-                                <span className="text-[9px] font-bold text-slate-500 block">Ahorro Fiscal Declaración Anual</span>
+                                <span className="text-[9px] font-bold text-slate-500 block">Ahorro Fiscal DeclaraciÃ³n Anual</span>
                                 <span className="text-sm font-extrabold text-teal-700 block mt-0.5">
                                   ${benefitFiscalAnual.toLocaleString("es-MX", { maximumFractionDigits: 0 })} pesos
                                 </span>
@@ -4292,7 +4300,7 @@ export default function AdminClient() {
 
                         {/* Modal disclaimer footer */}
                         <div className="border-t pt-3 flex justify-between items-center text-[9px] text-slate-400">
-                          <span>* Cotización rescatada desde el registro histórico central de la promotoría.</span>
+                          <span>* CotizaciÃ³n rescatada desde el registro histÃ³rico central de la promotorÃ­a.</span>
                           <span className="font-semibold text-slate-500">AACOM cotizador</span>
                         </div>
                       </>
@@ -4329,13 +4337,13 @@ export default function AdminClient() {
             <Card className="border shadow-sm">
               <CardHeader className="bg-slate-50 border-b pb-4">
                 <CardTitle className="text-lg font-black text-slate-700 flex items-center gap-2">
-                  <BellRing className="h-5 w-5" /> Notificaciones Autom�ticas (Sistema)
+                  <BellRing className="h-5 w-5" /> Notificaciones Automï¿½ticas (Sistema)
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6 space-y-4">
                 <div className="flex items-center justify-between p-3 border rounded-xl">
                   <div>
-                    <h4 className="font-bold text-sm">Validaci�n 25 Puntos</h4>
+                    <h4 className="font-bold text-sm">Validaciï¿½n 25 Puntos</h4>
                     <p className="text-xs text-slate-500">Alerta de Lunes a Viernes a las 5:00 PM</p>
                   </div>
                   <Button variant={pushPointsEnabled ? "default" : "outline"} onClick={handleTogglePointsSetting} className={pushPointsEnabled ? "bg-teal-600 hover:bg-teal-700 text-white" : ""}>
@@ -4344,7 +4352,7 @@ export default function AdminClient() {
                 </div>
                 <div className="flex items-center justify-between p-3 border rounded-xl">
                   <div>
-                    <h4 className="font-bold text-sm">Planeaci�n Diaria</h4>
+                    <h4 className="font-bold text-sm">Planeaciï¿½n Diaria</h4>
                     <p className="text-xs text-slate-500">Alerta de Lunes a Viernes a las 8:30 AM</p>
                   </div>
                   <Button variant={pushPlanningEnabled ? "default" : "outline"} onClick={handleTogglePlanningSetting} className={pushPlanningEnabled ? "bg-teal-600 hover:bg-teal-700 text-white" : ""}>
@@ -4358,10 +4366,10 @@ export default function AdminClient() {
             <Card className="border shadow-sm border-blue-100 dark:border-blue-900/30">
               <CardHeader className="bg-blue-50/50 dark:bg-blue-950/20 border-b pb-4">
                 <CardTitle className="text-lg font-black text-blue-700 dark:text-blue-400 flex items-center gap-2">
-                  <BellRing className="h-5 w-5" /> Enviar o Programar Notificaci�n Push
+                  <BellRing className="h-5 w-5" /> Enviar o Programar Notificaciï¿½n Push
                 </CardTitle>
                 <CardDescription>
-                  Env�a un mensaje al instante o progr�malo para que se env�e autom�ticamente.
+                  Envï¿½a un mensaje al instante o progrï¿½malo para que se envï¿½e automï¿½ticamente.
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
@@ -4383,7 +4391,7 @@ export default function AdminClient() {
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Mensaje a mostrar</label>
                     <Input 
-                      placeholder="Ej. �ltimo d�a de cierre! Manda tus cotizaciones antes de las 4 PM." 
+                      placeholder="Ej. ï¿½ltimo dï¿½a de cierre! Manda tus cotizaciones antes de las 4 PM." 
                       value={pushMessage}
                       onChange={(e) => setPushMessage(e.target.value)}
                       maxLength={150}
@@ -4393,7 +4401,7 @@ export default function AdminClient() {
                   </div>
 
                   <div className="space-y-2 border-t pt-4">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">�Cu�ndo enviar?</label>
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">ï¿½Cuï¿½ndo enviar?</label>
                     <select
                       className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-teal-600"
                       value={schedFreq}
@@ -4408,7 +4416,7 @@ export default function AdminClient() {
                   {schedFreq !== "NOW" && (
                     <div className="flex gap-3">
                       <div className="flex-1 space-y-2">
-                        <label className="text-xs font-bold text-slate-500">Hora (M�xico)</label>
+                        <label className="text-xs font-bold text-slate-500">Hora (Mï¿½xico)</label>
                         <select
                           className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
                           value={schedHour}
@@ -4429,10 +4437,10 @@ export default function AdminClient() {
                   )}
 
                   <div className="space-y-2 border-t pt-4">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">PIN de Autorizaci�n</label>
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">PIN de Autorizaciï¿½n</label>
                     <Input 
                       type="password"
-                      placeholder="Ingresa el PIN de seguridad de 10 d�gitos" 
+                      placeholder="Ingresa el PIN de seguridad de 10 dï¿½gitos" 
                       value={pushPin}
                       onChange={(e) => setPushPin(e.target.value)}
                       className="rounded-xl border-slate-200"
@@ -4452,7 +4460,7 @@ export default function AdminClient() {
                       </Button>
                     ) : (
                       <Button onClick={handleCreateSchedule} disabled={pushLoading} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl h-11">
-                        {pushLoading ? "Programando..." : "Guardar Programaci�n"}
+                        {pushLoading ? "Programando..." : "Guardar Programaciï¿½n"}
                       </Button>
                     )}
                   </div>
@@ -4596,7 +4604,7 @@ export default function AdminClient() {
 
               {/* Phone */}
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase">Teléfono</label>
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase">TelÃ©fono</label>
                 <Input
                   value={editPhone}
                   onChange={(e) => setEditPhone(e.target.value)}
@@ -4618,7 +4626,7 @@ export default function AdminClient() {
 
               {/* Photo Option: URL or File */}
               <div className="space-y-3">
-                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase block font-black">Fotografía del Agente</label>
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase block font-black">FotografÃ­a del Agente</label>
                 
                 {/* Preview */}
                 <div className="flex items-center gap-4">
@@ -4638,7 +4646,7 @@ export default function AdminClient() {
                   </div>
                   <div className="flex-1 space-y-2">
                     <div className="space-y-1">
-                      <span className="text-[8px] font-black text-slate-400 uppercase block font-black">Opción 1: Pegar URL de Imagen</span>
+                      <span className="text-[8px] font-black text-slate-400 uppercase block font-black">OpciÃ³n 1: Pegar URL de Imagen</span>
                       <Input
                         type="url"
                         placeholder="https://ejemplo.com/foto-agente.jpg"
@@ -4649,14 +4657,14 @@ export default function AdminClient() {
                     </div>
                     
                     <div className="space-y-1">
-                      <span className="text-[8px] font-black text-slate-400 uppercase block font-black">Opción 2: Subir Archivo Local</span>
+                      <span className="text-[8px] font-black text-slate-400 uppercase block font-black">OpciÃ³n 2: Subir Archivo Local</span>
                       <input
                         type="file"
                         accept="image/*"
                         onChange={handleImageChange}
                         className="text-[9px] text-slate-500 w-full cursor-pointer"
                       />
-                      <p className="text-[8px] text-slate-400">JPG, PNG hasta 2 MB (Se guardará como Base64).</p>
+                      <p className="text-[8px] text-slate-400">JPG, PNG hasta 2 MB (Se guardarÃ¡ como Base64).</p>
                     </div>
                   </div>
                 </div>
