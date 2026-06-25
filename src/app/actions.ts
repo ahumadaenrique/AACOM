@@ -289,8 +289,7 @@ export async function getAgents() {
         const user = await prisma.user.findUnique({where: {email: session.user.email}});
         if (!user) throw new Error("Usuario no encontrado");
 
-        const agents = await prisma.user.findMany({
-            where: { agencyId: user.agencyId },
+        const agents = await prisma.agent.findMany({
             orderBy: {
                 name: 'asc'
             }
