@@ -37,9 +37,9 @@ const plans: Plan[] = [
   {
     id: "annual",
     name: "Anual",
-    description: "El mejor valor para agencias establecidas.",
-    price: "$20,500 MXN",
-    monthlyPrice: "Equivalente a $1,708 / mes",
+    description: "El mejor valor para agencias establecidas e incluye IA avanzada.",
+    price: "$25,200 MXN",
+    monthlyPrice: "Equivalente a $2,100 / mes",
     days: 365,
     popular: true,
   }
