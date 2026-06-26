@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, ShieldCheck, Zap, Users, TrendingUp, Mail, Phone, MapPin } from 'lucide-react';
+import SoftAurora from '@/components/SoftAurora';
 
 export default function InicioPage() {
   return (
@@ -37,13 +38,18 @@ export default function InicioPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-32 overflow-hidden">
-        {/* Background Gradients */}
-        <div className="absolute top-0 left-1/2 w-full -translate-x-1/2 h-[500px] bg-gradient-to-b from-teal-50 to-transparent -z-10"></div>
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-teal-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-20 -left-40 w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+      <section className="relative pt-24 pb-32 overflow-hidden min-h-[80vh] flex flex-col justify-center">
+        {/* React Bits Soft Aurora Background */}
+        <div className="absolute inset-0 w-full h-full -z-10 overflow-hidden">
+          <SoftAurora 
+            color1="#f7f7f7"
+            color2="#0d9488" /* Teal 600 para que haga match con tu marca */
+            brightness={1.2}
+            speed={0.4}
+          />
+        </div>
 
-        <div className="container mx-auto px-4 text-center max-w-4xl">
+        <div className="container mx-auto px-4 text-center max-w-4xl relative z-10">
           <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight leading-tight mb-8">
             El sistema operativo definitivo para <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">Promotorías de Seguros</span>
           </h1>
