@@ -8,6 +8,7 @@ import PwaInstaller from "@/components/PwaInstaller"
 import { PushNotificationManager } from "@/components/PushNotificationManager"
 import { ForcePasswordChange } from "@/components/ForcePasswordChange"
 import { SubscriptionBlocker } from "@/components/SubscriptionBlocker"
+import TermsModal from "@/components/TermsModal"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -61,6 +62,16 @@ export default async function DashboardLayout({
 
     // SECURITY BLOCK: If the user is logged in but their agency was deleted or deactivated
     const isOrphan = dbUser && !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.email !== 'enrique.ahumada@aacommx.com';
+    // Bloqueo Legal de Términos y Condiciones
+    if (dbUser && !dbUser.termsAccepted) {
+        return (
+            <>
+                <TermsModal email={dbUser.email} />
+                <div className="hidden" aria-hidden="true">{children}</div>
+            </>
+        )
+    }
+    
     const isAgencyInactive = dbUser?.agencyId && (!agency || agency.active === false);
     const isDeletedUser = session?.user?.email && !dbUser;
 

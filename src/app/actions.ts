@@ -925,6 +925,30 @@ export async function deleteAnnouncement(id: string) {
 // MÃƒÆ’Ã¢â‚¬Å“DULO AACOM 25 & ACTIVIDAD DIARIA ACTIONS
 // ==========================================
 
+export async function isAgentVerified(email: string) {
+    const user = await prisma.user.findUnique({
+        where: { email },
+        select: { phoneVerified: true }
+    })
+    return user?.phoneVerified ?? false
+}
+
+export async function acceptTermsAndConditions(email: string) {
+    try {
+        await prisma.user.update({
+            where: { email },
+            data: {
+                termsAccepted: true,
+                termsAcceptedAt: new Date(),
+            }
+        });
+        return { success: true };
+    } catch (error) {
+        console.error("Error accepting terms:", error);
+        return { success: false, error: "No se pudieron aceptar los términos." };
+    }
+}
+
 export async function saveActivityLogEntry(activityId: string, prospectName?: string) {
     const session = await auth();
 

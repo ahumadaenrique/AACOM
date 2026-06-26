@@ -70,6 +70,10 @@ model User {
   birthDate     DateTime? // Fecha de nacimiento del agente para overlay de cumpleaños
   mustChangePassword Boolean @default(false) // Flag de seguridad para forzar cambio de contraseña temporal
   
+  // Términos y Condiciones
+  termsAccepted Boolean   @default(false) // Candado legal de primer acceso
+  termsAcceptedAt DateTime? // Evidencia de firma
+  
   // Redes Sociales (Opcional)
   instagram     String?
   facebook      String?
