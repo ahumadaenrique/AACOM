@@ -38,9 +38,9 @@ export default function InicioPage() {
       </header>
 
       {/* Hero Section */}
-      <section className="relative pt-24 pb-32 overflow-hidden min-h-[80vh] flex flex-col justify-center">
+      <section className="relative pt-24 pb-32 overflow-hidden min-h-[80vh] flex flex-col justify-center bg-slate-950">
         {/* React Bits Soft Aurora Background */}
-        <div className="absolute inset-0 w-full h-full -z-10 overflow-hidden">
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden opacity-80">
           <SoftAurora 
             color1="#10B981"
             color2="#06B6D4"
@@ -50,25 +50,25 @@ export default function InicioPage() {
         </div>
 
         <div className="container mx-auto px-4 text-center max-w-4xl relative z-10">
-          <h1 className="text-5xl md:text-7xl font-black text-slate-900 tracking-tight leading-tight mb-8">
-            El sistema operativo definitivo para <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-600 to-blue-600">Promotorías de Seguros</span>
+          <h1 className="text-5xl md:text-7xl font-black text-white tracking-tight leading-tight mb-8 drop-shadow-lg">
+            El sistema operativo definitivo para <span className="text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-400">Promotorías de Seguros</span>
           </h1>
-          <p className="text-lg md:text-xl text-slate-600 mb-10 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-lg md:text-xl text-slate-200 mb-10 max-w-2xl mx-auto leading-relaxed drop-shadow">
             Multi-cotizador, gestión de cartera, seguimiento de ADN y control de agentes. Todo en una sola plataforma en la nube diseñada para escalar tu promotoría.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <Link href="/login">
-              <Button size="lg" className="bg-slate-900 hover:bg-slate-800 text-white w-full sm:w-auto h-14 px-8 text-lg font-bold shadow-xl rounded-full">
+              <Button size="lg" className="bg-teal-500 hover:bg-teal-600 text-white w-full sm:w-auto h-14 px-8 text-lg font-bold shadow-xl rounded-full">
                 Comenzar ahora
               </Button>
             </Link>
             <Link href="#contacto">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg font-bold rounded-full bg-white">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-lg font-bold rounded-full bg-white/10 hover:bg-white/20 text-white border-white/20 backdrop-blur-sm">
                 Contactar Ventas
               </Button>
             </Link>
           </div>
-          <p className="mt-6 text-sm text-slate-500 font-medium">Se requiere tarjeta de crédito para iniciar.</p>
+          <p className="mt-6 text-sm text-slate-400 font-medium">Se requiere tarjeta de crédito para iniciar.</p>
         </div>
       </section>
 
