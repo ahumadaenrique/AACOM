@@ -18,7 +18,15 @@ export async function GET(request: Request) {
     }
 
     try {
-        const url = 'https://www.banxico.org.mx/SieAPIRest/service/v1/series/SP68257/datos/oportuno';
+        // Obtenemos la fecha actual en formato YYYY-MM-DD (Ajustando a zona horaria de MX aprox si es necesario, pero UTC 8am es el mismo dia en MX)
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const todayStr = `${year}-${month}-${day}`;
+
+        // Le pedimos a Banxico exclusivamente la UDI del día de HOY, no la "oportuna" que es la proyectada a futuro
+        const url = `https://www.banxico.org.mx/SieAPIRest/service/v1/series/SP68257/datos/${todayStr}/${todayStr}`;
         const res = await fetch(url, {
             headers: { 'Bmx-Token': token },
             next: { revalidate: 0 }
