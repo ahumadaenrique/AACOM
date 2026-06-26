@@ -27,7 +27,8 @@ export default async function HomePage() {
             select: {
                 name: true,
                 image: true,
-                birthDate: true
+                birthDate: true,
+                role: true
             }
         });
 
@@ -72,6 +73,7 @@ export default async function HomePage() {
                 isBirthday={isBirthday} 
                 currentUser={currentUser ? { name: currentUser.name, image: currentUser.image } : null} 
                 agencyName={agencyName}
+                isAdmin={currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'}
             />
         </div>
     )

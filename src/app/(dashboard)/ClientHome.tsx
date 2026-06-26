@@ -22,9 +22,10 @@ interface ClientHomeProps {
     image: string | null
   } | null
   agencyName?: string
+  isAdmin?: boolean
 }
 
-export default function ClientHome({ announcements, isBirthday = false, currentUser = null, agencyName = "AACOM Seguros" }: ClientHomeProps) {
+export default function ClientHome({ announcements, isBirthday = false, currentUser = null, agencyName = "AACOM Seguros", isAdmin = false }: ClientHomeProps) {
   const [selectedAd, setSelectedAd] = useState<Announcement | null>(null)
   const [showBirthday, setShowBirthday] = useState(false)
 
@@ -56,8 +57,37 @@ export default function ClientHome({ announcements, isBirthday = false, currentU
   const hasAnnouncements = announcements && announcements.length > 0
 
   return (
-    <div className="space-y-6">
-      {hasAnnouncements ? (
+      <div className="space-y-6 pb-20">
+        {/* Admin Upsell Banner */}
+        {isAdmin && (
+            <div className="bg-gradient-to-r from-teal-900 via-teal-700 to-emerald-800 text-white p-4 md:p-6 rounded-2xl shadow-lg border border-teal-600/50 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-4 mb-2">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-teal-400 rounded-full mix-blend-overlay filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/3"></div>
+                <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-400 rounded-full mix-blend-overlay filter blur-3xl opacity-20 translate-y-1/3 -translate-x-1/4"></div>
+                
+                <div className="flex items-start gap-4 relative z-10 w-full md:w-auto">
+                    <div className="bg-white/10 p-3 rounded-xl hidden sm:block backdrop-blur-sm">
+                        <Sparkles className="w-6 h-6 text-teal-200" />
+                    </div>
+                    <div>
+                        <h3 className="font-black text-lg md:text-xl text-teal-50 drop-shadow-md flex items-center gap-2">
+                            ¿Necesitas tecnología a la medida?
+                            <span className="bg-gradient-to-r from-amber-200 to-yellow-400 text-yellow-900 text-[10px] uppercase font-black px-2 py-0.5 rounded-full tracking-wider">Premium</span>
+                        </h3>
+                        <p className="text-teal-100 text-sm md:text-base mt-1 max-w-xl leading-relaxed font-medium">
+                            Si requieres de un módulo, cotizador, o funcionalidad específica exclusiva para tu sistema, contáctanos por medio de un ticket y te cotizamos lo que necesites.
+                        </p>
+                    </div>
+                </div>
+                
+                <div className="relative z-10 w-full md:w-auto shrink-0 flex justify-end">
+                    <a href="/support" className="w-full md:w-auto text-center bg-white text-teal-900 hover:bg-teal-50 hover:text-teal-950 font-bold px-6 py-3 rounded-xl shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 border border-teal-100/50">
+                        Cotizar Desarrollo
+                    </a>
+                </div>
+            </div>
+        )}
+
+        {hasAnnouncements ? (
         <div className="space-y-6">
           <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-zinc-800">
             <Megaphone className="h-5 w-5 text-teal-600 dark:text-teal-400" />
