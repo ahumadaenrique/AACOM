@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { FileText, CheckCircle2, ShieldCheck } from "lucide-react";
 import { acceptTermsAndConditions } from "@/app/actions";
 import { useToast } from "@/hooks/use-toast";
@@ -61,7 +60,7 @@ export default function TermsModal({ email }: TermsModalProps) {
                     </div>
                 </DialogHeader>
 
-                <ScrollArea className="flex-1 p-6 md:p-8">
+                <div className="flex-1 p-6 md:p-8 overflow-y-auto">
                     <div className="max-w-3xl mx-auto space-y-8 text-sm md:text-base text-slate-600 dark:text-slate-300 leading-relaxed">
                         
                         <div className="text-center mb-8 pb-8 border-b border-slate-100 dark:border-slate-800">
@@ -212,7 +211,7 @@ export default function TermsModal({ email }: TermsModalProps) {
                         </section>
 
                     </div>
-                </ScrollArea>
+                </div>
 
                 <DialogFooter className="p-4 md:p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50">
                     <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4">
