@@ -129,7 +129,7 @@ export default function InicioPage() {
               <h3 className="text-2xl font-bold mb-2">Agencia SaaS</h3>
               <p className="text-slate-400 mb-6 h-12">Ideal para promotorías que van iniciando y requieren digitalizarse.</p>
               <div className="mb-8 flex items-baseline">
-                <span className="text-5xl font-black">$1,999</span>
+                <span className="text-4xl md:text-5xl font-black text-white">$2,499</span>
                 <span className="text-slate-400 font-medium ml-2"> / mes</span>
               </div>
               <ul className="space-y-4 mb-8">
