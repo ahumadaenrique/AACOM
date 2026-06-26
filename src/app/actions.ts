@@ -78,9 +78,9 @@ export async function saveActivity(records: ActivityInput[]) {
     // ... This is tricky without exact ID mapping.
 
     // STRICT MAPPING ATTEMPT based on screenshot vs constants:
-    // "Llamadas de ProspecciÃ³n" (1) -> LLAMADAS (E)
+    // "Llamadas de ProspecciÃƒÆ’Ã‚Â³n" (1) -> LLAMADAS (E)
     // "Citas Iniciales" (2) -> CITAS AGENDADAS (F, G)
-    // "AnÃ¡lisis de Necesidades" (3) -> CITAS EFECTIVAS (H, I) ?? (Analysis often implies an effective meeting)
+    // "AnÃƒÆ’Ã‚Â¡lisis de Necesidades" (3) -> CITAS EFECTIVAS (H, I) ?? (Analysis often implies an effective meeting)
     // "Cierre de Ventas" (5) -> CIERRE DE POLIZA (J, K)
 
     // Let's try to follow the ID order from constants constants.ts:
@@ -193,7 +193,7 @@ export async function saveCotizacion(data: {
         return { success: true, cotizacion: newCotizacion };
     } catch (error: any) {
         console.error("Error saving cotizacion:", error);
-        return { success: false, message: error.message || "Error al guardar cotizaciÃ³n" };
+        return { success: false, message: error.message || "Error al guardar cotizaciÃƒÆ’Ã‚Â³n" };
     }
 }
 
@@ -305,7 +305,7 @@ export async function createAgent(name: string) {
     try {
         const trimmedName = name.trim();
         if (!trimmedName) {
-            return { success: false, message: "El nombre del agente no puede estar vacÃ­o" };
+            return { success: false, message: "El nombre del agente no puede estar vacÃƒÆ’Ã‚Â­o" };
         }
         
         // Check for duplicates (case insensitive search or direct unique key handle)
@@ -454,7 +454,7 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
         return { success: true, diagnostic: newDiagnostic };
     } catch (error: any) {
         console.error("Error saving ADN diagnostic:", error);
-        return { success: false, message: error.message || "Error al guardar el diagnÃ³stico de ADN" };
+        return { success: false, message: error.message || "Error al guardar el diagnÃƒÆ’Ã‚Â³stico de ADN" };
     }
 }
 
@@ -510,7 +510,7 @@ export async function getAdnDiagnostics() {
         return { success: true, diagnostics };
     } catch (error: any) {
         console.error("Error fetching ADN diagnostics:", error);
-        return { success: false, message: error.message || "Error al obtener diagnÃ³sticos de ADN" };
+        return { success: false, message: error.message || "Error al obtener diagnÃƒÆ’Ã‚Â³sticos de ADN" };
     }
 }
 
@@ -526,13 +526,13 @@ export async function createAgentUser(data: { name: string; email: string; role:
             include: { agency: true }
         });
 
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
-        // RestricciÃ³n: solo el propietario (enrique.ahumada@aacommx.com) puede dar de alta a otros administradores
+        // RestricciÃƒÆ’Ã‚Â³n: solo el propietario (enrique.ahumada@aacommx.com) puede dar de alta a otros administradores
         if (data.role === 'ADMIN' && currentUser.email !== 'enrique.ahumada@aacommx.com') {
-            return { success: false, message: "Solo el administrador principal (Enrique Ahumada) estÃ¡ facultado para dar de alta cuentas administrativas." };
+            return { success: false, message: "Solo el administrador principal (Enrique Ahumada) estÃƒÆ’Ã‚Â¡ facultado para dar de alta cuentas administrativas." };
         }
 
         const existingUser = await prisma.user.findUnique({
@@ -552,7 +552,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
             if (activeUsersCount >= limit) {
                 return { 
                     success: false, 
-                    message: `LÃ­mite alcanzado (${limit} usuarios). Adquiere mÃ¡s licencias en tu Portal de Pagos o envÃ­ale a este agente una invitaciÃ³n para que pague su propia cuenta.` 
+                    message: `LÃƒÆ’Ã‚Â­mite alcanzado (${limit} usuarios). Adquiere mÃƒÆ’Ã‚Â¡s licencias en tu Portal de Pagos o envÃƒÆ’Ã‚Â­ale a este agente una invitaciÃƒÆ’Ã‚Â³n para que pague su propia cuenta.` 
                 };
             }
         }
@@ -566,11 +566,11 @@ export async function createAgentUser(data: { name: string; email: string; role:
                 phone: data.phone || null,
                 active: data.active !== undefined ? data.active : true,
                 password: data.password || "password123", // Simple plain text consistent with current auth config
-                mustChangePassword: true // Bloqueo temporal para obligar a que cambie su contraseÃ±a
+                mustChangePassword: true // Bloqueo temporal para obligar a que cambie su contraseÃƒÆ’Ã‚Â±a
             }
         });
 
-        // SincronizaciÃ³n con el modelo Agent para el Cotizador
+        // SincronizaciÃƒÆ’Ã‚Â³n con el modelo Agent para el Cotizador
         if (data.syncToAgent) {
             const trimmedName = data.name.trim();
             const existingAgent = await prisma.agent.findUnique({
@@ -633,7 +633,7 @@ export async function updateUserPassword(id: string, newPassword: string) {
             where: { email: session.user.email }
         });
 
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
@@ -646,7 +646,7 @@ export async function updateUserPassword(id: string, newPassword: string) {
         return { success: true, user: updatedUser };
     } catch (error: any) {
         console.error("Error updating user password:", error);
-        return { success: false, message: error.message || "Error al actualizar contraseÃ±a" };
+        return { success: false, message: error.message || "Error al actualizar contraseÃƒÆ’Ã‚Â±a" };
     }
 }
 
@@ -661,7 +661,7 @@ export async function toggleUserActiveStatus(id: string) {
             where: { email: session.user.email }
         });
 
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
@@ -701,7 +701,7 @@ export async function deleteUser(id: string) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
-        // Evitar que el administrador se elimine a sÃ­ mismo
+        // Evitar que el administrador se elimine a sÃƒÆ’Ã‚Â­ mismo
         if (currentUser.id === id) {
             return { success: false, message: "No puedes eliminar tu propia cuenta de administrador" };
         }
@@ -714,9 +714,9 @@ export async function deleteUser(id: string) {
             return { success: false, message: "Usuario no encontrado" };
         }
 
-        // RestricciÃ³n: impedir la eliminaciÃ³n del propietario Enrique Ahumada
+        // RestricciÃƒÆ’Ã‚Â³n: impedir la eliminaciÃƒÆ’Ã‚Â³n del propietario Enrique Ahumada
         if (targetUser.email === "enrique.ahumada@aacommx.com") {
-            return { success: false, message: "No estÃ¡ permitido eliminar la cuenta principal del propietario (Enrique Ahumada)." };
+            return { success: false, message: "No estÃƒÆ’Ã‚Â¡ permitido eliminar la cuenta principal del propietario (Enrique Ahumada)." };
         }
 
         // Primero borrar dependencias si no hay CASCADE
@@ -749,7 +749,7 @@ export async function toggleAdnDiagnosticClosedStatus(id: string) {
         });
 
         if (!adn) {
-            return { success: false, message: "DiagnÃ³stico no encontrado" };
+            return { success: false, message: "DiagnÃƒÆ’Ã‚Â³stico no encontrado" };
         }
 
         const updated = await prisma.adnDiagnostic.update({
@@ -790,7 +790,7 @@ export async function createAnnouncement(base64Data: string, fileName: string, l
             where: { email: session.user.email }
         });
 
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
@@ -808,7 +808,7 @@ export async function createAnnouncement(base64Data: string, fileName: string, l
         
         // Double-check file size is under 5MB (5 * 1024 * 1024 bytes)
         if (buffer.length > 5 * 1024 * 1024) {
-            return { success: false, message: "El tamaÃ±o del archivo supera los 5 MB permitidos." };
+            return { success: false, message: "El tamaÃƒÆ’Ã‚Â±o del archivo supera los 5 MB permitidos." };
         }
 
         // Save image as base64 data URI directly in database
@@ -845,7 +845,7 @@ export async function toggleAnnouncementActiveStatus(id: string) {
             where: { email: session.user.email }
         });
 
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
@@ -882,7 +882,7 @@ export async function deleteAnnouncement(id: string) {
             where: { email: session.user.email }
         });
 
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
@@ -922,7 +922,7 @@ export async function deleteAnnouncement(id: string) {
 }
 
 // ==========================================
-// MÃ“DULO AACOM 25 & ACTIVIDAD DIARIA ACTIONS
+// MÃƒÆ’Ã¢â‚¬Å“DULO AACOM 25 & ACTIVIDAD DIARIA ACTIONS
 // ==========================================
 
 export async function saveActivityLogEntry(activityId: string, prospectName?: string) {
@@ -942,7 +942,7 @@ export async function saveActivityLogEntry(activityId: string, prospectName?: st
 
     const activity = SALES_ACTIVITIES.find(a => a.id === activityId);
     if (!activity) {
-        return { success: false, message: "Actividad no vÃ¡lida" };
+        return { success: false, message: "Actividad no vÃƒÆ’Ã‚Â¡lida" };
     }
 
     // Validation: prospectName is mandatory for 'Cita agendada' (ID '2') or 'Cita Efectiva' (ID '3')
@@ -1126,7 +1126,7 @@ export async function getMonthlyAdnRankings() {
         });
         if (!user) return { success: false, rankings: [], rankingAd: null, message: "Usuario no encontrado" };
 
-        // --- MIGRACIÃ“N DE RESCATE (ADNs y Cotizaciones huÃ©rfanas) ---
+        // --- MIGRACIÃƒÆ’Ã¢â‚¬Å“N DE RESCATE (ADNs y Cotizaciones huÃƒÆ’Ã‚Â©rfanas) ---
         await prisma.adnDiagnostic.updateMany({
             where: { agencyId: null },
             data: { agencyId: 'aacom' }
@@ -1247,7 +1247,7 @@ export async function createRankingAd(base64Data: string, fileName: string, link
             where: { email: session.user.email }
         });
 
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
@@ -1279,7 +1279,7 @@ export async function createRankingAd(base64Data: string, fileName: string, link
         return { success: true, rankingAd: newAd };
     } catch (error: any) {
         console.error("Error creating ranking ad:", error);
-        return { success: false, message: error.message || "Error al subir campaÃ±a de incentivo" };
+        return { success: false, message: error.message || "Error al subir campaÃƒÆ’Ã‚Â±a de incentivo" };
     }
 }
 
@@ -1298,7 +1298,7 @@ export async function getAdminActivityReport(userId?: string, startDate?: string
             where: { email: session.user.email }
         });
 
-        if (!currentUser || currentUser.role !== 'ADMIN') {
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes", logs: [] };
         }
 
@@ -1353,7 +1353,7 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
         }
 
         // Only allow self updates or ADMIN updates
-        if (currentUser.id !== userId && currentUser.role !== 'ADMIN') {
+        if (currentUser.id !== userId && (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
@@ -1536,7 +1536,7 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
         });
 
         if (!currentUser) {
-            return { success: false, message: "Usuario en sesiÃ³n no encontrado" };
+            return { success: false, message: "Usuario en sesiÃƒÆ’Ã‚Â³n no encontrado" };
         }
 
         const isAdmin = (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN');
@@ -1598,7 +1598,7 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
         revalidatePath('/admin');
         revalidatePath('/');
 
-        return { success: true, user: updatedUser, message: "Perfil actualizado con Ã©xito" };
+        return { success: true, user: updatedUser, message: "Perfil actualizado con ÃƒÆ’Ã‚Â©xito" };
     } catch (error: any) {
         console.error("Error updating user profile details:", error);
         return { success: false, message: error.message || "Error al actualizar perfil" };
@@ -1678,7 +1678,7 @@ export async function saveKnowledgeDocument(id: string | null, title: string, co
                 data: { title, content, agencyId: user.agencyId, isGlobalTemplate: user.role === 'SUPER_ADMIN' ? isGlobalTemplate : false }
             });
             revalidatePath('/admin');
-            return { success: true, doc: created, message: "Documento guardado con Ã©xito" };
+            return { success: true, doc: created, message: "Documento guardado con ÃƒÆ’Ã‚Â©xito" };
         }
     } catch (error: any) {
         console.error("Error saving knowledge document:", error);
@@ -1759,7 +1759,7 @@ export async function toggleKnowledgeDocumentActiveStatus(id: string) {
 }
 
 // ==========================================
-// MÃ“DULO PUSH NOTIFICATIONS
+// MÃƒÆ’Ã¢â‚¬Å“DULO PUSH NOTIFICATIONS
 // ==========================================
 
 export async function savePushSubscription(subscription: any) {
@@ -1771,7 +1771,7 @@ export async function savePushSubscription(subscription: any) {
         if (!user) return { success: false, message: "Usuario no encontrado" };
 
         const { endpoint, keys } = subscription;
-        if (!endpoint || !keys?.p256dh || !keys?.auth) return { success: false, message: "SuscripciÃ³n invÃ¡lida" };
+        if (!endpoint || !keys?.p256dh || !keys?.auth) return { success: false, message: "SuscripciÃƒÆ’Ã‚Â³n invÃƒÆ’Ã‚Â¡lida" };
 
         await prisma.pushSubscription.upsert({
             where: { endpoint },
@@ -1788,7 +1788,7 @@ export async function savePushSubscription(subscription: any) {
             }
         });
 
-        return { success: true, message: "SuscripciÃ³n guardada" };
+        return { success: true, message: "SuscripciÃƒÆ’Ã‚Â³n guardada" };
     } catch (err: any) {
         console.error("Error saving push subscription:", err);
         return { success: false, message: err.message };
@@ -1814,7 +1814,7 @@ export async function sendTestPushNotification(userId: string) {
 
         const payload = JSON.stringify({
             title: "Prueba AACOM",
-            body: "Esta es una notificaciÃ³n de prueba desde el sistema.",
+            body: "Esta es una notificaciÃƒÆ’Ã‚Â³n de prueba desde el sistema.",
             url: "/"
         });
 
@@ -1827,7 +1827,7 @@ export async function sendTestPushNotification(userId: string) {
 
         await Promise.all(promises);
 
-        return { success: true, message: "NotificaciÃ³n enviada" };
+        return { success: true, message: "NotificaciÃƒÆ’Ã‚Â³n enviada" };
     } catch (err: any) {
         console.error("Error sending push notification:", err);
         return { success: false, message: err.message };
@@ -1845,7 +1845,7 @@ export async function sendAdminPushNotification(recipientId: string, message: st
         }
         
         if (currentUser.password !== pin) {
-            return { success: false, message: "ContraseÃ±a incorrecta." };
+            return { success: false, message: "ContraseÃƒÆ’Ã‚Â±a incorrecta." };
         }
 
         let subs = [];
@@ -1869,7 +1869,7 @@ export async function sendAdminPushNotification(recipientId: string, message: st
         );
 
         const payload = JSON.stringify({
-            title: "AACOM NotificaciÃ³n",
+            title: "AACOM NotificaciÃƒÆ’Ã‚Â³n",
             body: message,
             url: "/"
         });
@@ -1885,7 +1885,7 @@ export async function sendAdminPushNotification(recipientId: string, message: st
 
         await Promise.all(promises);
 
-        return { success: true, message: `NotificaciÃ³n enviada a ${subs.length} dispositivo(s).` };
+        return { success: true, message: `NotificaciÃƒÆ’Ã‚Â³n enviada a ${subs.length} dispositivo(s).` };
     } catch (err: any) {
         console.error("Error sending admin push notification:", err);
         return { success: false, message: err.message };
@@ -1902,7 +1902,7 @@ export async function forceUpdatePassword(userId: string, newPassword: string) {
         });
 
         if (!currentUser || currentUser.id !== userId) {
-            return { success: false, message: "No tienes permiso para actualizar esta contraseÃ±a" };
+            return { success: false, message: "No tienes permiso para actualizar esta contraseÃƒÆ’Ã‚Â±a" };
         }
 
         await prisma.user.update({
@@ -1913,10 +1913,10 @@ export async function forceUpdatePassword(userId: string, newPassword: string) {
             }
         });
 
-        return { success: true, message: "ContraseÃ±a actualizada correctamente" };
+        return { success: true, message: "ContraseÃƒÆ’Ã‚Â±a actualizada correctamente" };
     } catch (error: any) {
-        console.error("Error al actualizar la contraseÃ±a:", error);
-        return { success: false, message: error.message || "Error al actualizar contraseÃ±a" };
+        console.error("Error al actualizar la contraseÃƒÆ’Ã‚Â±a:", error);
+        return { success: false, message: error.message || "Error al actualizar contraseÃƒÆ’Ã‚Â±a" };
     }
 }
 
@@ -1925,9 +1925,9 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
     if (!session?.user?.email) return { success: false, message: "No autenticado" };
 
     try {
-        // --- MIGRACIÃ“N MASIVA DE RESCATE ---
-        // Vercel estaba apuntando a una DB que nunca recibiÃ³ la migraciÃ³n local.
-        // Forzamos a que todos los usuarios y actividades huÃ©rfanas se asignen a 'aacom'.
+        // --- MIGRACIÃƒÆ’Ã¢â‚¬Å“N MASIVA DE RESCATE ---
+        // Vercel estaba apuntando a una DB que nunca recibiÃƒÆ’Ã‚Â³ la migraciÃƒÆ’Ã‚Â³n local.
+        // Forzamos a que todos los usuarios y actividades huÃƒÆ’Ã‚Â©rfanas se asignen a 'aacom'.
         await prisma.user.updateMany({
             where: { agencyId: null },
             data: { agencyId: 'aacom' }
@@ -1944,7 +1944,7 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
         }
 
         const agencyId = currentUser.agencyId;
-        if (!agencyId) return { success: false, message: "El administrador no tiene una agencia vÃ¡lida asignada." };
+        if (!agencyId) return { success: false, message: "El administrador no tiene una agencia vÃƒÆ’Ã‚Â¡lida asignada." };
 
         const agents = await prisma.user.findMany({
             where: { active: true, agencyId },
@@ -2027,7 +2027,7 @@ export async function createScheduledPush(data: { message: string, frequency: st
     const user = await prisma.user.findUnique({ where: { email: session.user.email } });
     if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) return { success: false, message: "No autorizado." };
     
-    if (user.password !== pin) return { success: false, message: "ContraseÃ±a incorrecta." };
+    if (user.password !== pin) return { success: false, message: "ContraseÃƒÆ’Ã‚Â±a incorrecta." };
 
     try {
         await prisma.scheduledPush.create({ data });
@@ -2043,7 +2043,7 @@ export async function deleteScheduledPush(id: string, pin: string) {
     const user = await prisma.user.findUnique({ where: { email: session.user.email } });
     if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) return { success: false, message: "No autorizado." };
     
-    if (user.password !== pin) return { success: false, message: "ContraseÃ±a incorrecta." };
+    if (user.password !== pin) return { success: false, message: "ContraseÃƒÆ’Ã‚Â±a incorrecta." };
 
     try {
         await prisma.scheduledPush.delete({ where: { id } });
@@ -2075,7 +2075,7 @@ export async function resolveTicket(ticketId: string) {
 
 
 // ----------------------------------------------------------------------------
-// Módulo de Votaciones (Polls)
+// MÃƒÂ³dulo de Votaciones (Polls)
 // ----------------------------------------------------------------------------
 
 export async function createPoll(title: string, question: string, optionsText: string[]) {
@@ -2122,7 +2122,7 @@ export async function getActivePolls() {
                 },
                 _count: { select: { votes: true } },
                 votes: {
-                    where: { userId: user.id } // Traemos solo los votos de este usuario para ver si ya votó
+                    where: { userId: user.id } // Traemos solo los votos de este usuario para ver si ya votÃƒÂ³
                 }
             },
             orderBy: { createdAt: 'desc' }
@@ -2140,11 +2140,11 @@ export async function voteOnPoll(pollId: string, optionId: string) {
         const session = await auth();
         if (!session?.user?.email) return { success: false, message: "No autenticado" };
         const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-        if (!user || !user.agencyId) return { success: false, message: "Usuario no válido" };
+        if (!user || !user.agencyId) return { success: false, message: "Usuario no vÃƒÂ¡lido" };
 
         // Check if poll is active
         const poll = await prisma.poll.findUnique({ where: { id: pollId } });
-        if (!poll || !poll.active) return { success: false, message: "La encuesta ya no está activa" };
+        if (!poll || !poll.active) return { success: false, message: "La encuesta ya no estÃƒÂ¡ activa" };
 
         // Upsert para garantizar un solo voto (create or fail by unique constraint)
         const vote = await prisma.pollVote.create({
