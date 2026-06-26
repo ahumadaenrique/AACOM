@@ -5,7 +5,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { LifeBuoy, Send, CheckCircle2 } from "lucide-react";
+import { LifeBuoy, Send, CheckCircle2, BookOpen } from "lucide-react";
+import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
 export default function SupportPage() {
@@ -69,6 +70,27 @@ export default function SupportPage() {
                     <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Centro de Ayuda y Soporte</h1>
                     <p className="text-slate-500 dark:text-zinc-400">¿Tienes algún problema con la plataforma? Levanta un ticket aquí.</p>
                 </div>
+            </div>
+
+            <div className="mb-8">
+                <Card className="border-blue-100 dark:border-blue-900/50 bg-blue-50/50 dark:bg-blue-900/10 shadow-sm">
+                    <CardContent className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                            <div className="p-3 bg-blue-600 text-white rounded-full">
+                                <BookOpen className="w-6 h-6" />
+                            </div>
+                            <div>
+                                <h3 className="font-bold text-slate-800 dark:text-slate-200">Manual de Usuario</h3>
+                                <p className="text-sm text-slate-600 dark:text-slate-400">Descubre cómo aprovechar al máximo todas las herramientas de la plataforma.</p>
+                            </div>
+                        </div>
+                        <Link href="/support/manual">
+                            <Button className="bg-blue-600 hover:bg-blue-700 text-white whitespace-nowrap">
+                                Leer Manual
+                            </Button>
+                        </Link>
+                    </CardContent>
+                </Card>
             </div>
 
             <Card className="border-slate-200 dark:border-zinc-800 shadow-sm">
