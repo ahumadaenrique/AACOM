@@ -18,11 +18,11 @@ export async function GET(request: Request) {
     }
 
     try {
-        // Obtenemos la fecha actual en formato YYYY-MM-DD (Ajustando a zona horaria de MX aprox si es necesario, pero UTC 8am es el mismo dia en MX)
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
+        // Obtenemos la fecha actual forzada a la zona horaria de la Ciudad de México
+        const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+        const year = mxDate.getFullYear();
+        const month = String(mxDate.getMonth() + 1).padStart(2, '0');
+        const day = String(mxDate.getDate()).padStart(2, '0');
         const todayStr = `${year}-${month}-${day}`;
 
         // Le pedimos a Banxico exclusivamente la UDI del día de HOY, no la "oportuna" que es la proyectada a futuro
