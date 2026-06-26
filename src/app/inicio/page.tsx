@@ -42,10 +42,10 @@ export default function InicioPage() {
         {/* React Bits Soft Aurora Background */}
         <div className="absolute inset-0 w-full h-full -z-10 overflow-hidden">
           <SoftAurora 
-            color1="#f7f7f7"
-            color2="#0d9488" /* Teal 600 para que haga match con tu marca */
+            color1="#10B981"
+            color2="#06B6D4"
             brightness={1.2}
-            speed={0.4}
+            speed={1.0}
           />
         </div>
 
