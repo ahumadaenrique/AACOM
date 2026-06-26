@@ -18,7 +18,7 @@ export default function ManualPage() {
                         <BookOpen className="h-6 w-6 text-blue-600" />
                         Manual de Usuario Oficial
                     </h1>
-                    <p className="text-slate-500 dark:text-zinc-400">Todo lo que necesitas saber para dominar AACOM-25.</p>
+                    <p className="text-slate-500 dark:text-zinc-400">Todo lo que necesitas saber para dominar SYSGPYA.</p>
                 </div>
             </div>
 
