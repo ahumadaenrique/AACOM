@@ -2586,6 +2586,22 @@ export default function AdnPage() {
                     <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Situación Laboral</span>
                     <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedSavedAdn.situacionLaboral}</span>
                   </div>
+                  <div>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Estatura</span>
+                    <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedSavedAdn.estatura || 'No registrada'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Peso</span>
+                    <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedSavedAdn.peso || 'No registrado'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Fumador</span>
+                    <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedSavedAdn.fumador ? 'Sí' : 'No'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest block">Padecimientos</span>
+                    <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedSavedAdn.padecimientos || 'Ninguno'}</span>
+                  </div>
                 </div>
 
                 {/* Hijos list */}
