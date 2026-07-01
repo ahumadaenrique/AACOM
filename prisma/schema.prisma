@@ -429,6 +429,9 @@ model PerformanceReview {
   status             String   @default("PENDING") // PENDING, REVIEWED, REJECTED
   feedback           String?  // Comentarios del Admin en caso de rechazo
   
+  evalMonth          String?
+  evalWeek           String?
+  
   metaPrimasMensual  Float
   avancePrimasActual Float
   puntosActividad    Int

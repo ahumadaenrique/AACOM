@@ -37,6 +37,13 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
     const [expectedAdns, setExpectedAdns] = useState(0);
     
     // Captura manual
+    const getCurrentMonthName = () => {
+        const date = new Date();
+        const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+        return monthNames[date.getMonth()];
+    };
+    const [evalMonth, setEvalMonth] = useState(getCurrentMonthName());
+    const [evalWeek, setEvalWeek] = useState("Semana 1");
     const [metaPrimasMensual, setMetaPrimasMensual] = useState("");
     const [avancePrimasActual, setAvancePrimasActual] = useState("");
     const [compromisos, setCompromisos] = useState("");
@@ -81,6 +88,8 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
         if (open) {
             if (!editingReviewId) {
                 loadStats();
+                setEvalMonth(getCurrentMonthName());
+                setEvalWeek("Semana 1");
                 setMetaPrimasMensual("");
                 setAvancePrimasActual("");
                 setCompromisos("");
@@ -92,6 +101,8 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
 
     const handleEdit = (rev: any) => {
         setEditingReviewId(rev.id);
+        setEvalMonth(rev.evalMonth || getCurrentMonthName());
+        setEvalWeek(rev.evalWeek || "Semana 1");
         setMetaPrimasMensual(rev.metaPrimasMensual.toString());
         setAvancePrimasActual(rev.avancePrimasActual.toString());
         setCompromisos(rev.compromisos || "");
@@ -104,6 +115,8 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
         setFormLoading(true);
         const res = await submitPerformanceReview({
             reviewId: editingReviewId || undefined,
+            evalMonth,
+            evalWeek,
             metaPrimasMensual: Number(metaPrimasMensual),
             avancePrimasActual: Number(avancePrimasActual),
             puntosActividad,
@@ -178,6 +191,9 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                             )}
                         </div>
                         <h3 className="text-lg font-black">{isAdmin ? rev.agent.name : "Tu Reporte"}</h3>
+                        <p className="text-sm font-semibold text-indigo-600 dark:text-indigo-400 mb-2">
+                            {rev.evalMonth || "Mes Actual"} - {rev.evalWeek || "Corte de Mes"}
+                        </p>
                         <div className="mt-4 space-y-3">
                             <div className="flex justify-between items-center text-sm">
                                 <span className="text-muted-foreground flex items-center gap-1"><Target className="w-4 h-4"/> Meta:</span>
@@ -283,6 +299,25 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="grid gap-4 py-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label htmlFor="evalMonth">Mes de la Meta</Label>
+                                            <select id="evalMonth" value={evalMonth} onChange={(e) => setEvalMonth(e.target.value)} className="flex h-10 w-full items-center justify-between rounded-md border border-slate-200 dark:border-zinc-800 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50">
+                                                {["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"].map(m => (
+                                                    <option key={m} value={m} className="dark:bg-zinc-950">{m}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label htmlFor="evalWeek">Corte a Evaluar</Label>
+                                            <select id="evalWeek" value={evalWeek} onChange={(e) => setEvalWeek(e.target.value)} className="flex h-10 w-full items-center justify-between rounded-md border border-slate-200 dark:border-zinc-800 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 disabled:cursor-not-allowed disabled:opacity-50">
+                                                {["Semana 1", "Semana 2", "Semana 3", "Semana 4", "Cierre de Mes"].map(w => (
+                                                    <option key={w} value={w} className="dark:bg-zinc-950">{w}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-slate-50 dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 p-3 rounded-lg text-center">
                                             <p className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-1">Acumulado Mes (Pts)</p>

@@ -58,6 +58,8 @@ export async function getCurrentMonthStats() {
 // 2. Enviar Evaluación (Agente) -> Dispara IA
 export async function submitPerformanceReview(data: {
     reviewId?: string;
+    evalMonth?: string;
+    evalWeek?: string;
     metaPrimasMensual: number;
     avancePrimasActual: number;
     puntosActividad: number;
@@ -76,33 +78,37 @@ export async function submitPerformanceReview(data: {
         if (!user) throw new Error("Usuario no encontrado");
 
         // Calcular prorrateo para la IA
-        const now = new Date();
-        const start = startOfMonth(now);
-        let businessDays = 0;
-        let currentDate = start;
-        while (currentDate <= now) {
-            if (!isWeekend(currentDate)) { businessDays++; }
-            currentDate = addDays(currentDate, 1);
-        }
-        const expectedPuntos = businessDays * 25;
-        const expectedAdns = businessDays * 2;
+        let factorProrrateo = 1;
+        if (data.evalWeek === "Semana 1") factorProrrateo = 0.25;
+        if (data.evalWeek === "Semana 2") factorProrrateo = 0.50;
+        if (data.evalWeek === "Semana 3") factorProrrateo = 0.75;
+        if (data.evalWeek === "Semana 4" || data.evalWeek === "Cierre de Mes") factorProrrateo = 1;
+
+        // Asumimos un mes promedio de 20 días hábiles (500 pts / 40 ADNs al mes)
+        const expectedPuntos = 500 * factorProrrateo;
+        const expectedAdns = 40 * factorProrrateo;
 
         // Preparar el PROMPT MAESTRO
         const systemInstruction = `
 Rol: Eres el "Motor de Inteligencia de Desempeño" de AACOM. Tu función es gestionar el ciclo de vida de metas del agente, integrando estrictamente la actividad operativa con la ejecución financiera.
 
+Contexto Temporal (CRÍTICO):
+- Mes Evaluado: ${data.evalMonth || "Mes actual"}
+- Corte de Evaluación: ${data.evalWeek || "Cierre de Mes"}
+- Progreso Teórico del Mes transcurrido (Run Rate esperado): ${factorProrrateo * 100}%
+
 Entradas de datos a procesar:
-- Data Operativa Mensual (Prorrateada al día de hoy): Puntos logrados = ${data.puntosActividad} (Meta esperada: ${expectedPuntos}), ADN's nuevos logrados = ${data.adnsRealizados} (Meta esperada: ${expectedAdns}).
+- Data Operativa Mensual (Prorrateada al corte temporal actual): Puntos logrados = ${data.puntosActividad} (Meta esperada al corte: ${expectedPuntos}), ADN's nuevos logrados = ${data.adnsRealizados} (Meta esperada al corte: ${expectedAdns}).
 - Compromisos cualitativos pactados: "${data.compromisos || "Ninguno"}"
 - Data Financiera: Meta Primas Mensual: $${data.metaPrimasMensual}, Avance Primas Actual: $${data.avancePrimasActual}.
 
 Tu metodología de procesamiento:
-1. Evaluación de Sostenibilidad: Compara el avance contra el tiempo transcurrido del mes. Determina si la meta es alcanzable.
+1. Evaluación de Sostenibilidad: Analiza el progreso del agente tomando en cuenta el "Corte de Evaluación". Si estamos en la "Semana 1", el avance financiero esperado es solo del 25% de la meta mensual. Evalúa el progreso basándote en este "Run Rate" esperado y bajo ninguna circunstancia asumas que el mes ha terminado. No castigues un avance financiero bajo si es el inicio del periodo; enfócate en trazar la ruta para lograr el 100% al cierre del mes.
 2. Correlación Actividad vs Resultado: 
-   - Analiza si la actividad real está alineada a la actividad esperada para las fechas actuales.
+   - Analiza si la actividad real está alineada a la actividad esperada para el corte actual.
    - Si avance es bajo pero actividad es alta, analiza si el problema es la tasa de conversión (calidad del ADN o cierre).
    - Si la actividad es baja, advierte que el incumplimiento es inminente.
-3. Gestión de Entradas: Calcula el "gap" diario o semanal necesario para alcanzar la meta.
+3. Gestión de Entradas: Calcula el "gap" diario o semanal necesario para alcanzar la meta y recomiéndale acciones.
 
 Salida del Output (Reporte Estructurado):
 Debes generar tu respuesta en HTML limpio usando exactamente la siguiente estructura de etiquetas para poder ser renderizada:
@@ -155,6 +161,8 @@ No uses markdown (\`\`\`), devuelve únicamente el HTML exacto con las clases de
 
         const updateData = {
             status: "PENDING",
+            evalMonth: data.evalMonth,
+            evalWeek: data.evalWeek,
             metaPrimasMensual: data.metaPrimasMensual,
             avancePrimasActual: data.avancePrimasActual,
             puntosActividad: data.puntosActividad,
