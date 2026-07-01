@@ -732,7 +732,7 @@ export default function AdnPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-3xl mx-auto">
             {/* Card 1: Capturar ADN */}
             <div 
               onClick={() => { setViewMode('WIZARD'); setStep(0) }}
@@ -768,25 +768,6 @@ export default function AdnPage() {
               </div>
               <span className="mt-8 text-xs font-black text-teal-600 group-hover:underline flex items-center justify-center gap-1">
                 Ver mis diagnósticos <ArrowRight className="h-3.5 w-3.5" />
-              </span>
-            </div>
-
-            {/* Card 3: Simulador Cédula A */}
-            <div 
-              onClick={() => { window.location.href = '/cedula-a/index.html' }}
-              className="group cursor-pointer border hover:border-teal-500 rounded-3xl p-8 bg-white dark:bg-zinc-900 shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 text-center flex flex-col justify-between"
-            >
-              <div className="space-y-4">
-                <div className="h-20 w-20 mx-auto bg-teal-50 dark:bg-teal-950/40 rounded-2xl flex items-center justify-center text-teal-600 transition-colors group-hover:bg-teal-500 group-hover:text-white">
-                  <GraduationCap className="h-10 w-10" />
-                </div>
-                <h3 className="text-xl font-black text-slate-800 dark:text-slate-200">Simulador Cédula A</h3>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Accede al portal interactivo de estudio, repasa los 6 módulos con audio explicativo y realiza simulacros con la estructura oficial de la CNSF.
-                </p>
-              </div>
-              <span className="mt-8 text-xs font-black text-teal-600 group-hover:underline flex items-center justify-center gap-1">
-                Ingresar al portal <ArrowRight className="h-3.5 w-3.5" />
               </span>
             </div>
           </div>
