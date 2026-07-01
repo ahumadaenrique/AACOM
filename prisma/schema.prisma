@@ -110,6 +110,8 @@ model User {
   stripeCustomerId  String?
   stripeSubscriptionId String?
   
+  aiAgents      AIAgent[]
+  
   pollVotes     PollVote[]
   
   createdAt     DateTime  @default(now())
@@ -489,4 +491,11 @@ model PollVote {
   agency   Agency?    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
 
   @@unique([pollId, userId])
+}
+
+// Modelo temporal para corregir error de Prisma Drift en Vercel
+model AIAgent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
 }
