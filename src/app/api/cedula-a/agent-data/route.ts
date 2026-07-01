@@ -33,7 +33,8 @@ export async function GET(req: NextRequest) {
       }
     } else {
       // If user is promoter, they have permanent access to study
-      if (email.toLowerCase().includes("promotor")) {
+      const isPromoter = email.toLowerCase().includes("promotor") || session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN" || session.user.role === "PROMOTER" || session.user.role === "PROMOTOR";
+      if (isPromoter) {
         remainingDays = 999
       }
     }

@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { pool } from "@/lib/db"
 
-function isPromoter(email: string) {
-  return email.toLowerCase().includes("promotor");
+function isPromoter(email: string, role?: string) {
+  const lowerEmail = email.toLowerCase();
+  return lowerEmail.includes("promotor") || role === "ADMIN" || role === "SUPER_ADMIN" || role === "PROMOTER" || role === "PROMOTOR";
 }
 
 export async function GET(req: NextRequest) {
@@ -15,7 +16,7 @@ export async function GET(req: NextRequest) {
 
   const promoterEmail = session.user.email
 
-  if (!isPromoter(promoterEmail)) {
+  if (!isPromoter(promoterEmail, session.user.role)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 })
   }
 

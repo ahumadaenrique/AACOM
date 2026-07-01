@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { pool } from "@/lib/db"
 
-function isPromoter(email: string) {
-  return email.toLowerCase().includes("promotor");
+function isPromoter(email: string, role?: string) {
+  const lowerEmail = email.toLowerCase();
+  return lowerEmail.includes("promotor") || role === "ADMIN" || role === "SUPER_ADMIN" || role === "PROMOTER" || role === "PROMOTOR";
 }
 
 export async function GET(req: NextRequest) {
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
   const currentUserEmail = session.user.email
 
   try {
-    if (isPromoter(currentUserEmail)) {
+    if (isPromoter(currentUserEmail, session.user.role)) {
       // Get promoter balance
       let promoterBalance = 7; // Default initial tokens
       const balanceRes = await pool.query(
@@ -85,7 +86,7 @@ export async function POST(req: NextRequest) {
 
   const currentUserEmail = session.user.email
 
-  if (!isPromoter(currentUserEmail)) {
+  if (!isPromoter(currentUserEmail, session.user.role)) {
     return NextResponse.json({ error: "Only promoters can purchase or assign licenses" }, { status: 403 })
   }
 

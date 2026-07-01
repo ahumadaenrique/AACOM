@@ -200,7 +200,7 @@ async function checkSession() {
         console.log("Logged in user:", currentUser);
         
         // Determine role
-        currentRole = currentUser.email.toLowerCase().includes("promotor") ? "promoter" : "agent";
+        currentRole = (currentUser.email.toLowerCase().includes("promotor") || currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN" || currentUser.role === "PROMOTER" || currentUser.role === "PROMOTOR") ? "promoter" : "agent";
         
         // Load data from DB
         await refreshUserData();

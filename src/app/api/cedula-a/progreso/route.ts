@@ -3,8 +3,9 @@ import { auth } from "@/auth"
 import { pool } from "@/lib/db"
 
 // Helper to check if email belongs to promoter
-function isPromoter(email: string) {
-  return email.toLowerCase().includes("promotor");
+function isPromoter(email: string, role?: string) {
+  const lowerEmail = email.toLowerCase();
+  return lowerEmail.includes("promotor") || role === "ADMIN" || role === "SUPER_ADMIN" || role === "PROMOTER" || role === "PROMOTOR";
 }
 
 export async function GET(req: NextRequest) {
@@ -19,7 +20,7 @@ export async function GET(req: NextRequest) {
   const targetEmail = searchParams.get("email")
 
   try {
-    if (isPromoter(currentUserEmail)) {
+    if (isPromoter(currentUserEmail, session.user.role)) {
       // Promoter can read any agent's progress
       if (targetEmail) {
         const { rows } = await pool.query(

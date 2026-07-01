@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { pool } from "@/lib/db"
 
-function isPromoter(email: string) {
-  return email.toLowerCase().includes("promotor");
+function isPromoter(email: string, role?: string) {
+  const lowerEmail = email.toLowerCase();
+  return lowerEmail.includes("promotor") || role === "ADMIN" || role === "SUPER_ADMIN" || role === "PROMOTER" || role === "PROMOTOR";
 }
 
 export async function GET(req: NextRequest) {
@@ -18,7 +19,7 @@ export async function GET(req: NextRequest) {
   const targetEmail = searchParams.get("email")
 
   try {
-    if (isPromoter(currentUserEmail)) {
+    if (isPromoter(currentUserEmail, session.user.role)) {
       if (targetEmail) {
         const { rows } = await pool.query(
           "SELECT id, calificacion, aprobado, respuestas_correctas, total_preguntas, detalles_modulos, fecha FROM examen_intentos WHERE email = $1 ORDER BY fecha DESC",
