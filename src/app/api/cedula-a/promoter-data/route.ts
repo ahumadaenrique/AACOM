@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { pool } from "@/lib/db"
+import { prisma } from "@/lib/prisma"
 
 function isPromoter(email: string, role?: string) {
   const lowerEmail = email.toLowerCase();
@@ -31,26 +32,59 @@ export async function GET(req: NextRequest) {
       tokens = balanceRes.rows[0].dias_disponibles
     }
 
-    // 2. Get promoter's agents (from licenses table)
-    const agentsRes = await pool.query(
-      "SELECT agente_email, dias_asignados, fecha_expiracion FROM estudio_licencias WHERE promotor_email = $1",
-      [promoterEmail.toLowerCase()]
-    )
+    // 2. Load promoter's agency details
+    const dbUser = await prisma.user.findUnique({
+      where: { email: promoterEmail.toLowerCase() }
+    })
+    
+    const agencyId = dbUser?.agencyId
+    
+    // Find all real agents belonging to this agency
+    let dbAgents: Array<{ email: string; name: string | null }> = []
+    if (agencyId) {
+      dbAgents = await prisma.user.findMany({
+        where: {
+          agencyId,
+          role: "AGENTE"
+        },
+        select: {
+          email: true,
+          name: true
+        }
+      })
+    } else if (dbUser?.role === 'SUPER_ADMIN') {
+      // Super admin sees all agents in the platform
+      dbAgents = await prisma.user.findMany({
+        where: { role: "AGENTE" },
+        select: {
+          email: true,
+          name: true
+        }
+      })
+    }
 
     const agentsList = [];
 
-    for (const row of agentsRes.rows) {
-      const email = row.agente_email;
-      const name = email.split('@')[0]; // fallback name
+    for (const dbAgent of dbAgents) {
+      const email = dbAgent.email;
+      const name = dbAgent.name || email.split('@')[0];
       const initials = name.substring(0, 2).toUpperCase();
       
-      // Calculate remaining days
+      // Get license/days details for this agent
+      const licenseRes = await pool.query(
+        "SELECT dias_asignados, fecha_expiracion FROM estudio_licencias WHERE agente_email = $1",
+        [email.toLowerCase()]
+      )
+      
       let remainingDays = 0;
-      if (row.fecha_expiracion) {
-        const exp = new Date(row.fecha_expiracion).getTime();
-        const now = new Date().getTime();
-        if (exp > now) {
-          remainingDays = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
+      if (licenseRes.rows.length > 0) {
+        const row = licenseRes.rows[0];
+        if (row.fecha_expiracion) {
+          const exp = new Date(row.fecha_expiracion).getTime();
+          const now = new Date().getTime();
+          if (exp > now) {
+            remainingDays = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
+          }
         }
       }
 
@@ -107,7 +141,6 @@ export async function GET(req: NextRequest) {
       )
       if (latestAttemptRes.rows.length > 0 && latestAttemptRes.rows[0].detalles_modulos) {
         const details = latestAttemptRes.rows[0].detalles_modulos;
-        // Format of details: { "Aspectos Generales": { correct: X, total: Y }, ... }
         Object.keys(details).forEach(mod => {
           const modData = details[mod];
           if (modData && modData.total > 0) {
