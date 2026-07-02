@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { pool } from "@/lib/db"
+import { prisma } from "@/lib/prisma"
 
 export async function GET(req: NextRequest) {
   const session = await auth()
@@ -17,12 +17,12 @@ export async function GET(req: NextRequest) {
     // 1. Get license details
     let remainingDays = 0;
     let dias_asignados = 0;
-    const licenseRes = await pool.query(
+    const licenseRows = await prisma.$queryRawUnsafe<any[]>(
       "SELECT dias_asignados, fecha_expiracion FROM estudio_licencias WHERE agente_email = $1",
-      [email.toLowerCase()]
+      email.toLowerCase()
     )
-    if (licenseRes.rows.length > 0) {
-      const license = licenseRes.rows[0]
+    if (licenseRows.length > 0) {
+      const license = licenseRows[0]
       dias_asignados = license.dias_asignados
       if (license.fecha_expiracion) {
         const exp = new Date(license.fecha_expiracion).getTime()
@@ -40,9 +40,9 @@ export async function GET(req: NextRequest) {
     }
 
     // 2. Get study times per module
-    const progressRes = await pool.query(
+    const progressRows = await prisma.$queryRawUnsafe<any[]>(
       "SELECT module, tiempo_segundos FROM estudio_progreso WHERE email = $1",
-      [email.toLowerCase()]
+      email.toLowerCase()
     )
     
     const timesPerModule: Record<string, number> = {
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
     };
 
     let totalStudySeconds = 0;
-    progressRes.rows.forEach(p => {
+    progressRows.forEach(p => {
       if (timesPerModule[p.module] !== undefined) {
         timesPerModule[p.module] = p.tiempo_segundos / 60; // convert to minutes
         totalStudySeconds += p.tiempo_segundos;
@@ -63,12 +63,12 @@ export async function GET(req: NextRequest) {
     });
 
     // 3. Get attempts
-    const attemptsRes = await pool.query(
+    const attemptsRows = await prisma.$queryRawUnsafe<any[]>(
       "SELECT calificacion, aprobado, fecha FROM examen_intentos WHERE email = $1 ORDER BY fecha ASC",
-      [email.toLowerCase()]
+      email.toLowerCase()
     )
 
-    const attempts = attemptsRes.rows.map(att => ({
+    const attempts = attemptsRows.map(att => ({
       date: new Date(att.fecha).toISOString().split('T')[0],
       score: parseFloat(att.calificacion),
       passed: att.aprobado
@@ -84,12 +84,12 @@ export async function GET(req: NextRequest) {
       "Sistema y Mercados Financieros": 0
     };
 
-    const latestAttemptRes = await pool.query(
+    const latestAttemptRows = await prisma.$queryRawUnsafe<any[]>(
       "SELECT detalles_modulos FROM examen_intentos WHERE email = $1 ORDER BY fecha DESC LIMIT 1",
-      [email.toLowerCase()]
+      email.toLowerCase()
     )
-    if (latestAttemptRes.rows.length > 0 && latestAttemptRes.rows[0].detalles_modulos) {
-      const details = latestAttemptRes.rows[0].detalles_modulos;
+    if (latestAttemptRows.length > 0 && latestAttemptRows[0].detalles_modulos) {
+      const details = latestAttemptRows[0].detalles_modulos;
       Object.keys(details).forEach(mod => {
         const modData = details[mod];
         if (modData && modData.total > 0) {

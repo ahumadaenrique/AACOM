@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { pool } from "@/lib/db"
+import { prisma } from "@/lib/prisma"
 
 function isPromoter(email: string, role?: string) {
   const lowerEmail = email.toLowerCase();
@@ -20,39 +20,39 @@ export async function GET(req: NextRequest) {
     if (isPromoter(currentUserEmail, session.user.role)) {
       // Get promoter balance
       let promoterBalance = 7; // Default initial tokens
-      const balanceRes = await pool.query(
+      const balanceRows = await prisma.$queryRawUnsafe<any[]>(
         "SELECT dias_disponibles FROM promotor_saldos WHERE promotor_email = $1",
-        [currentUserEmail.toLowerCase()]
+        currentUserEmail.toLowerCase()
       )
-      if (balanceRes.rows.length > 0) {
-        promoterBalance = balanceRes.rows[0].dias_disponibles
+      if (balanceRows.length > 0) {
+        promoterBalance = balanceRows[0].dias_disponibles
       } else {
         // Initialize balance
-        await pool.query(
+        await prisma.$queryRawUnsafe(
           "INSERT INTO promotor_saldos (promotor_email, dias_disponibles) VALUES ($1, $2)",
-          [currentUserEmail.toLowerCase(), 7]
+          currentUserEmail.toLowerCase(), 7
         )
       }
 
       // Get assigned licenses list
-      const licensesRes = await pool.query(
+      const licensesRows = await prisma.$queryRawUnsafe<any[]>(
         "SELECT agente_email, dias_asignados, fecha_asignacion, fecha_expiracion FROM estudio_licencias WHERE promotor_email = $1",
-        [currentUserEmail.toLowerCase()]
+        currentUserEmail.toLowerCase()
       )
 
       return NextResponse.json({
         role: "promoter",
         tokens: promoterBalance,
-        licenses: licensesRes.rows
+        licenses: licensesRows
       })
     } else {
       // Get agent license details
-      const agentRes = await pool.query(
+      const agentRows = await prisma.$queryRawUnsafe<any[]>(
         "SELECT dias_asignados, fecha_expiracion FROM estudio_licencias WHERE agente_email = $1",
-        [currentUserEmail.toLowerCase()]
+        currentUserEmail.toLowerCase()
       )
       
-      const license = agentRes.rows[0] || { dias_asignados: 0, fecha_expiracion: null }
+      const license = agentRows[0] || { dias_asignados: 0, fecha_expiracion: null }
       
       // Calculate remaining days
       let remainingDays = 0
@@ -96,13 +96,13 @@ export async function POST(req: NextRequest) {
     if (action === "buy") {
       const buyDays = days || 7
       // Increment promoter tokens
-      const { rows } = await pool.query(
+      const rows = await prisma.$queryRawUnsafe<any[]>(
         `INSERT INTO promotor_saldos (promotor_email, dias_disponibles) 
          VALUES ($1, $2) 
          ON CONFLICT (promotor_email) 
          DO UPDATE SET dias_disponibles = promotor_saldos.dias_disponibles + EXCLUDED.dias_disponibles 
          RETURNING dias_disponibles`,
-        [currentUserEmail.toLowerCase(), buyDays]
+        currentUserEmail.toLowerCase(), buyDays
       )
       return NextResponse.json({ success: true, tokens: rows[0].dias_disponibles })
     }
@@ -113,11 +113,11 @@ export async function POST(req: NextRequest) {
       }
 
       // Check promoter balance
-      const balanceRes = await pool.query(
+      const balanceRows = await prisma.$queryRawUnsafe<any[]>(
         "SELECT dias_disponibles FROM promotor_saldos WHERE promotor_email = $1",
-        [currentUserEmail.toLowerCase()]
+        currentUserEmail.toLowerCase()
       )
-      const currentBalance = balanceRes.rows[0]?.dias_disponibles || 0
+      const currentBalance = balanceRows[0]?.dias_disponibles || 0
 
       if (currentBalance < days) {
         return NextResponse.json({ error: "Insufficient days in balance" }, { status: 400 })
@@ -127,19 +127,13 @@ export async function POST(req: NextRequest) {
       const expDate = new Date()
       expDate.setDate(expDate.getDate() + days)
 
-      // Start Transaction
-      const client = await pool.connect()
-      try {
-        await client.query("BEGIN")
-
-        // 1. Deduct from promoter
-        await client.query(
+      // Start Transaction using Prisma native $transaction
+      await prisma.$transaction([
+        prisma.$executeRawUnsafe(
           "UPDATE promotor_saldos SET dias_disponibles = dias_disponibles - $1 WHERE promotor_email = $2",
-          [days, currentUserEmail.toLowerCase()]
-        )
-
-        // 2. Assign to agent
-        await client.query(
+          days, currentUserEmail.toLowerCase()
+        ),
+        prisma.$executeRawUnsafe(
           `INSERT INTO estudio_licencias (promotor_email, agente_email, dias_asignados, fecha_expiracion) 
            VALUES ($1, $2, $3, $4) 
            ON CONFLICT (promotor_email, agente_email) 
@@ -149,16 +143,9 @@ export async function POST(req: NextRequest) {
                WHEN estudio_licencias.fecha_expiracion > NOW() THEN estudio_licencias.fecha_expiracion + INTERVAL '${days} days'
                ELSE NOW() + INTERVAL '${days} days'
              END`,
-          [currentUserEmail.toLowerCase(), agentEmail.toLowerCase(), days, expDate]
+          currentUserEmail.toLowerCase(), agentEmail.toLowerCase(), days, expDate
         )
-
-        await client.query("COMMIT")
-      } catch (transErr) {
-        await client.query("ROLLBACK")
-        throw transErr
-      } finally {
-        client.release()
-      }
+      ])
 
       return NextResponse.json({ success: true })
     }

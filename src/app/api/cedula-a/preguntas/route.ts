@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { pool } from "@/lib/db"
+import { prisma } from "@/lib/prisma"
 
 export async function GET() {
   const session = await auth()
@@ -10,7 +10,7 @@ export async function GET() {
   }
 
   try {
-    const { rows } = await pool.query(
+    const rows = await prisma.$queryRawUnsafe<any[]>(
       "SELECT id, number, module, question, options, correct, has_error FROM preguntas ORDER BY id ASC"
     )
     return NextResponse.json(rows)

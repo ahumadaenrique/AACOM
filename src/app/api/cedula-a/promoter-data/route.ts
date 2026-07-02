@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { pool } from "@/lib/db"
 import { prisma } from "@/lib/prisma"
 
 function isPromoter(email: string, role?: string) {
@@ -24,17 +23,18 @@ export async function GET(req: NextRequest) {
   try {
     // 1. Get promoter balance
     let tokens = 7;
-    const balanceRes = await pool.query(
+    const balanceRows = await prisma.$queryRawUnsafe<any[]>(
       "SELECT dias_disponibles FROM promotor_saldos WHERE promotor_email = $1",
-      [promoterEmail.toLowerCase()]
+      promoterEmail.toLowerCase()
     )
-    if (balanceRes.rows.length > 0) {
-      tokens = balanceRes.rows[0].dias_disponibles
+    if (balanceRows.length > 0) {
+      tokens = balanceRows[0].dias_disponibles
     } else {
       // Initialize welcome balance in database
-      await pool.query(
+      await prisma.$queryRawUnsafe(
         "INSERT INTO promotor_saldos (promotor_email, dias_disponibles) VALUES ($1, $2)",
-        [promoterEmail.toLowerCase(), 7]
+        promoterEmail.toLowerCase(),
+        7
       )
     }
 
@@ -79,20 +79,20 @@ export async function GET(req: NextRequest) {
 
     if (emails.length > 0) {
       // Bulk 1: Licenses
-      const licensesRes = await pool.query(
+      const licensesRows = await prisma.$queryRawUnsafe<any[]>(
         "SELECT agente_email, dias_asignados, fecha_expiracion FROM estudio_licencias WHERE agente_email = ANY($1)",
-        [emails]
+        emails
       );
-      licensesRes.rows.forEach(row => {
+      licensesRows.forEach(row => {
         licensesMap[row.agente_email.toLowerCase()] = row;
       });
 
       // Bulk 2: Progress
-      const progressRes = await pool.query(
+      const progressRows = await prisma.$queryRawUnsafe<any[]>(
         "SELECT email, module, tiempo_segundos FROM estudio_progreso WHERE email = ANY($1)",
-        [emails]
+        emails
       );
-      progressRes.rows.forEach(row => {
+      progressRows.forEach(row => {
         const email = row.email.toLowerCase();
         if (!progressMap[email]) {
           progressMap[email] = {
@@ -108,11 +108,11 @@ export async function GET(req: NextRequest) {
       });
 
       // Bulk 3: Attempts
-      const attemptsRes = await pool.query(
+      const attemptsRows = await prisma.$queryRawUnsafe<any[]>(
         "SELECT email, calificacion, aprobado, fecha, detalles_modulos FROM examen_intentos WHERE email = ANY($1) ORDER BY fecha ASC",
-        [emails]
+        emails
       );
-      attemptsRes.rows.forEach(row => {
+      attemptsRows.forEach(row => {
         const email = row.email.toLowerCase();
         if (!attemptsMap[email]) {
           attemptsMap[email] = [];

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
-import { pool } from "@/lib/db"
+import { prisma } from "@/lib/prisma"
 
-// Helper to check if email belongs to promoter
 function isPromoter(email: string, role?: string) {
   const lowerEmail = email.toLowerCase();
   return lowerEmail.includes("promotor") || role === "ADMIN" || role === "SUPER_ADMIN" || role === "PROMOTER" || role === "PROMOTOR";
@@ -23,23 +22,23 @@ export async function GET(req: NextRequest) {
     if (isPromoter(currentUserEmail, session.user.role)) {
       // Promoter can read any agent's progress
       if (targetEmail) {
-        const { rows } = await pool.query(
+        const rows = await prisma.$queryRawUnsafe<any[]>(
           "SELECT module, tiempo_segundos FROM estudio_progreso WHERE email = $1",
-          [targetEmail.toLowerCase()]
+          targetEmail.toLowerCase()
         )
         return NextResponse.json(rows)
       } else {
         // Return progress for all agents
-        const { rows } = await pool.query(
+        const rows = await prisma.$queryRawUnsafe<any[]>(
           "SELECT email, module, tiempo_segundos FROM estudio_progreso"
         )
         return NextResponse.json(rows)
       }
     } else {
       // Agent can only read their own progress
-      const { rows } = await pool.query(
+      const rows = await prisma.$queryRawUnsafe<any[]>(
         "SELECT module, tiempo_segundos FROM estudio_progreso WHERE email = $1",
-        [currentUserEmail.toLowerCase()]
+        currentUserEmail.toLowerCase()
       )
       return NextResponse.json(rows)
     }
@@ -66,12 +65,12 @@ export async function POST(req: NextRequest) {
     }
 
     // Upsert progress for the user
-    await pool.query(
+    await prisma.$queryRawUnsafe(
       `INSERT INTO estudio_progreso (email, module, tiempo_segundos) 
        VALUES ($1, $2, $3) 
        ON CONFLICT (email, module) 
        DO UPDATE SET tiempo_segundos = EXCLUDED.tiempo_segundos, fecha_actualizacion = CURRENT_TIMESTAMP`,
-      [currentUserEmail.toLowerCase(), module, tiempo_segundos]
+      currentUserEmail.toLowerCase(), module, tiempo_segundos
     )
 
     return NextResponse.json({ success: true })
