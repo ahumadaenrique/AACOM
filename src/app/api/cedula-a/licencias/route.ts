@@ -135,15 +135,15 @@ export async function POST(req: NextRequest) {
         ),
         prisma.$executeRawUnsafe(
           `INSERT INTO estudio_licencias (promotor_email, agente_email, dias_asignados, fecha_expiracion) 
-           VALUES ($1, $2, $3, $4) 
+           VALUES ($1, $2, $3, $4::timestamp) 
            ON CONFLICT (promotor_email, agente_email) 
            DO UPDATE SET 
              dias_asignados = estudio_licencias.dias_asignados + EXCLUDED.dias_asignados,
              fecha_expiracion = CASE 
-               WHEN estudio_licencias.fecha_expiracion > NOW() THEN estudio_licencias.fecha_expiracion + INTERVAL '${days} days'
-               ELSE NOW() + INTERVAL '${days} days'
+               WHEN estudio_licencias.fecha_expiracion > NOW() THEN estudio_licencias.fecha_expiracion + ($3 * INTERVAL '1 day')
+               ELSE NOW() + ($3 * INTERVAL '1 day')
              END`,
-          currentUserEmail.toLowerCase(), agentEmail.toLowerCase(), days, expDate
+          currentUserEmail.toLowerCase(), agentEmail.toLowerCase(), days, expDate.toISOString()
         )
       ])
 

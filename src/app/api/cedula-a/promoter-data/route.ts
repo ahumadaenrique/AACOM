@@ -78,10 +78,12 @@ export async function GET(req: NextRequest) {
     const latestAttemptMap: Record<string, any> = {};
 
     if (emails.length > 0) {
+      const placeholders = emails.map((_, i) => `$${i + 1}`).join(", ");
+
       // Bulk 1: Licenses
       const licensesRows = await prisma.$queryRawUnsafe<any[]>(
-        "SELECT agente_email, dias_asignados, fecha_expiracion FROM estudio_licencias WHERE agente_email = ANY($1)",
-        emails
+        `SELECT agente_email, dias_asignados, fecha_expiracion FROM estudio_licencias WHERE agente_email IN (${placeholders})`,
+        ...emails
       );
       licensesRows.forEach(row => {
         licensesMap[row.agente_email.toLowerCase()] = row;
@@ -89,8 +91,8 @@ export async function GET(req: NextRequest) {
 
       // Bulk 2: Progress
       const progressRows = await prisma.$queryRawUnsafe<any[]>(
-        "SELECT email, module, tiempo_segundos FROM estudio_progreso WHERE email = ANY($1)",
-        emails
+        `SELECT email, module, tiempo_segundos FROM estudio_progreso WHERE email IN (${placeholders})`,
+        ...emails
       );
       progressRows.forEach(row => {
         const email = row.email.toLowerCase();
@@ -109,8 +111,8 @@ export async function GET(req: NextRequest) {
 
       // Bulk 3: Attempts
       const attemptsRows = await prisma.$queryRawUnsafe<any[]>(
-        "SELECT email, calificacion, aprobado, fecha, detalles_modulos FROM examen_intentos WHERE email = ANY($1) ORDER BY fecha ASC",
-        emails
+        `SELECT email, calificacion, aprobado, fecha, detalles_modulos FROM examen_intentos WHERE email IN (${placeholders}) ORDER BY fecha ASC`,
+        ...emails
       );
       attemptsRows.forEach(row => {
         const email = row.email.toLowerCase();
