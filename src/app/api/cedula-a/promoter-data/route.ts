@@ -30,6 +30,12 @@ export async function GET(req: NextRequest) {
     )
     if (balanceRes.rows.length > 0) {
       tokens = balanceRes.rows[0].dias_disponibles
+    } else {
+      // Initialize welcome balance in database
+      await pool.query(
+        "INSERT INTO promotor_saldos (promotor_email, dias_disponibles) VALUES ($1, $2)",
+        [promoterEmail.toLowerCase(), 7]
+      )
     }
 
     // 2. Load promoter's agency details
