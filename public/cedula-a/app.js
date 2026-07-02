@@ -602,15 +602,15 @@ function updatePromoterDashboard() {
             <td style="font-weight: 600;">${agent.remainingDays} Días</td>
             <td><span class="status-badge ${statusClass}">${statusText}</span></td>
             <td>
-                <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px;" onclick="assignDaysPrompt('${agent.id}')">+ Asignar Días</button>
+                <button class="btn-secondary" style="padding: 6px 12px; font-size: 13px;" onclick="assignDaysPrompt(${agent.id})">+ Asignar Días</button>
             </td>
         `;
         tbody.appendChild(tr);
     });
 }
 
-async function assignDaysPrompt(agentEmail) {
-    const agent = promoterData.agents.find(a => a.id === agentEmail);
+async function assignDaysPrompt(agentId) {
+    const agent = promoterData.agents.find(a => a.id === agentId);
     if (!agent) return;
     
     const days = prompt(`¿Cuántos días de simulador deseas asignarle a ${agent.name}? (Tienes ${promoterData.tokens} días disponibles)`);
@@ -630,7 +630,7 @@ async function assignDaysPrompt(agentEmail) {
         const res = await fetch('/api/cedula-a/licencias', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ action: 'assign', agentEmail, days: parsedDays })
+            body: JSON.stringify({ action: 'assign', agentEmail: agent.email, days: parsedDays })
         });
         if (res.ok) {
             await refreshUserData();

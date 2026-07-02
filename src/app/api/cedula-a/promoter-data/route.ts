@@ -128,6 +128,7 @@ export async function GET(req: NextRequest) {
     }
 
     const agentsList = [];
+    let idCounter = 1; // start sequential IDs from 1
 
     for (const dbAgent of dbAgents) {
       const email = dbAgent.email.toLowerCase();
@@ -180,7 +181,7 @@ export async function GET(req: NextRequest) {
       }
 
       agentsList.push({
-        id: email,
+        id: idCounter++, // Integer ID to prevent string quotes and parsing errors
         name: name.charAt(0).toUpperCase() + name.slice(1),
         initials,
         email,
@@ -197,7 +198,7 @@ export async function GET(req: NextRequest) {
     let promoterSelfAgent = agentsList.find(a => a.email === promoterEmail.toLowerCase());
     if (!promoterSelfAgent) {
       agentsList.push({
-        id: promoterEmail.toLowerCase(),
+        id: 99, // promoter self-study ID matches existing switchRole expectations
         name: "Tú (Cuenta de Estudio)",
         initials: "PR",
         email: promoterEmail.toLowerCase(),
