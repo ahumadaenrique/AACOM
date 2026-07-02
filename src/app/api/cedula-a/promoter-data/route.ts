@@ -1,10 +1,112 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import fs from "fs"
+import path from "path"
 
 function isPromoter(email: string, role?: string) {
   const lowerEmail = email.toLowerCase();
   return lowerEmail.includes("promotor") || role === "ADMIN" || role === "SUPER_ADMIN" || role === "PROMOTER" || role === "PROMOTOR";
+}
+
+async function ensureTablesExist() {
+  try {
+    // Check if tables already exist
+    await prisma.$queryRawUnsafe("SELECT 1 FROM promotor_saldos LIMIT 1")
+  } catch (e) {
+    console.log("Simulator tables not found. Initializing database schema...")
+    
+    // 1. Create promotor_saldos
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS promotor_saldos (
+          promotor_email VARCHAR(255) PRIMARY KEY,
+          dias_disponibles INT DEFAULT 7,
+          fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `)
+
+    // 2. Create estudio_licencias
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS estudio_licencias (
+          id SERIAL PRIMARY KEY,
+          promotor_email VARCHAR(255) NOT NULL,
+          agente_email VARCHAR(255) NOT NULL,
+          dias_asignados INT DEFAULT 0,
+          fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          fecha_expiracion TIMESTAMP,
+          UNIQUE(promotor_email, agente_email)
+      );
+    `)
+
+    // 3. Create estudio_progreso
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS estudio_progreso (
+          id SERIAL PRIMARY KEY,
+          email VARCHAR(255) NOT NULL,
+          module VARCHAR(100) NOT NULL,
+          tiempo_segundos INT DEFAULT 0,
+          fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          UNIQUE(email, module)
+      );
+    `)
+
+    // 4. Create examen_intentos
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS examen_intentos (
+          id SERIAL PRIMARY KEY,
+          email VARCHAR(255) NOT NULL,
+          calificacion NUMERIC(5, 2) NOT NULL,
+          aprobado BOOLEAN NOT NULL,
+          respuestas_correctas INT NOT NULL,
+          total_preguntas INT NOT NULL,
+          detalles_modulos JSONB,
+          fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      );
+    `)
+
+    // 5. Create preguntas
+    await prisma.$executeRawUnsafe(`
+      CREATE TABLE IF NOT EXISTS preguntas (
+          id SERIAL PRIMARY KEY,
+          number INT NOT NULL,
+          module VARCHAR(100) NOT NULL,
+          question TEXT NOT NULL,
+          options JSONB NOT NULL,
+          correct INT NOT NULL,
+          has_error BOOLEAN DEFAULT FALSE
+      );
+    `)
+
+    console.log("Simulator tables initialized successfully.")
+
+    // Seed questions from preguntas.json if empty
+    try {
+      const questionsCount = await prisma.$queryRawUnsafe<any[]>("SELECT COUNT(*) FROM preguntas")
+      const count = parseInt(questionsCount[0]?.count || "0")
+      if (count === 0) {
+        const jsonPath = path.join(process.cwd(), 'public', 'cedula-a', 'preguntas.json')
+        if (fs.existsSync(jsonPath)) {
+          const questionsData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'))
+          console.log(`Seeding ${questionsData.length} questions into questions database...`)
+          // Batch seed in chunks of 50
+          for (let i = 0; i < questionsData.length; i += 50) {
+            const batch = questionsData.slice(i, i + 50)
+            for (const q of batch) {
+              await prisma.$executeRawUnsafe(
+                "INSERT INTO preguntas (number, module, question, options, correct, has_error) VALUES ($1, $2, $3, $4::jsonb, $5, $6)",
+                q.number, q.module, q.question, JSON.stringify(q.options), q.correct, q.has_error || false
+              )
+            }
+          }
+          console.log("Questions database successfully seeded.")
+        } else {
+          console.warn("preguntas.json file not found, skipping questions seeding.")
+        }
+      }
+    } catch (seedErr) {
+      console.error("Error seeding questions:", seedErr)
+    }
+  }
 }
 
 export async function GET(req: NextRequest) {
@@ -21,6 +123,9 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // Ensure all tables exist before querying them
+    await ensureTablesExist()
+
     // 1. Get promoter balance
     let tokens = 7;
     const balanceRows = await prisma.$queryRawUnsafe<any[]>(
