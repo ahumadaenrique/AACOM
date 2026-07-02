@@ -126,6 +126,13 @@ export async function GET(req: NextRequest) {
     // Ensure all tables exist before querying them
     await ensureTablesExist()
 
+    // Self-healing check: Ensure pregunta_actual column is added
+    try {
+      await prisma.$executeRawUnsafe("ALTER TABLE estudio_progreso ADD COLUMN IF NOT EXISTS pregunta_actual INT DEFAULT 0;")
+    } catch (alterErr) {
+      console.log("Column check/add failed or already exists:", alterErr)
+    }
+
     // 1. Get promoter balance
     let tokens = 7;
     const balanceRows = await prisma.$queryRawUnsafe<any[]>(
@@ -179,6 +186,7 @@ export async function GET(req: NextRequest) {
     // Pre-load data in bulk to avoid N+1 serverless timeouts
     const licensesMap: Record<string, any> = {};
     const progressMap: Record<string, Record<string, number>> = {};
+    const progressIndexMap: Record<string, Record<string, number>> = {};
     const attemptsMap: Record<string, any[]> = {};
     const latestAttemptMap: Record<string, any> = {};
 
@@ -196,7 +204,7 @@ export async function GET(req: NextRequest) {
 
       // Bulk 2: Progress
       const progressRows = await prisma.$queryRawUnsafe<any[]>(
-        `SELECT email, module, tiempo_segundos FROM estudio_progreso WHERE email IN (${placeholders})`,
+        `SELECT email, module, tiempo_segundos, pregunta_actual FROM estudio_progreso WHERE email IN (${placeholders})`,
         ...emails
       );
       progressRows.forEach(row => {
@@ -210,8 +218,17 @@ export async function GET(req: NextRequest) {
             "Seguros de Daños": 0,
             "Sistema y Mercados Financieros": 0
           };
+          progressIndexMap[email] = {
+            "Aspectos Generales": 0,
+            "Regulación CNSF": 0,
+            "Vida Individual": 0,
+            "Accidentes y Enfermedades": 0,
+            "Seguros de Daños": 0,
+            "Sistema y Mercados Financieros": 0
+          };
         }
         progressMap[email][row.module] = row.tiempo_segundos / 60; // convert to minutes
+        progressIndexMap[email][row.module] = row.pregunta_actual || 0;
       });
 
       // Bulk 3: Attempts
@@ -261,6 +278,15 @@ export async function GET(req: NextRequest) {
         "Sistema y Mercados Financieros": 0
       };
 
+      const studyProgress = progressIndexMap[email] || {
+        "Aspectos Generales": 0,
+        "Regulación CNSF": 0,
+        "Vida Individual": 0,
+        "Accidentes y Enfermedades": 0,
+        "Seguros de Daños": 0,
+        "Sistema y Mercados Financieros": 0
+      };
+
       let totalStudyMinutes = 0;
       Object.values(timesPerModule).forEach(v => {
         totalStudyMinutes += v;
@@ -297,30 +323,59 @@ export async function GET(req: NextRequest) {
         remainingDays,
         attempts: agentAttempts,
         timesPerModule,
-        moduleScores
+        moduleScores,
+        studyProgress
       });
     }
 
     // Add promoter's own study account if they study
     let promoterSelfAgent = agentsList.find(a => a.email === promoterEmail.toLowerCase());
     if (!promoterSelfAgent) {
+      const promoterProgressRows = await prisma.$queryRawUnsafe<any[]>(
+        "SELECT module, tiempo_segundos, pregunta_actual FROM estudio_progreso WHERE email = $1",
+        promoterEmail.toLowerCase()
+      );
+      
+      const promoterTimesPerModule: Record<string, number> = {
+        "Aspectos Generales": 0,
+        "Regulación CNSF": 0,
+        "Vida Individual": 0,
+        "Accidentes y Enfermedades": 0,
+        "Seguros de Daños": 0,
+        "Sistema y Mercados Financieros": 0
+      };
+      
+      const promoterStudyProgress: Record<string, number> = {
+        "Aspectos Generales": 0,
+        "Regulación CNSF": 0,
+        "Vida Individual": 0,
+        "Accidentes y Enfermedades": 0,
+        "Seguros de Daños": 0,
+        "Sistema y Mercados Financieros": 0
+      };
+      
+      promoterProgressRows.forEach(row => {
+        if (promoterTimesPerModule[row.module] !== undefined) {
+          promoterTimesPerModule[row.module] = row.tiempo_segundos / 60;
+          promoterStudyProgress[row.module] = row.pregunta_actual || 0;
+        }
+      });
+
+      let promoterStudyTime = 0;
+      Object.values(promoterTimesPerModule).forEach(v => {
+        promoterStudyTime += v;
+      });
+
       agentsList.push({
         id: 99, // promoter self-study ID matches existing switchRole expectations
         name: "Tú (Cuenta de Estudio)",
         initials: "PR",
         email: promoterEmail.toLowerCase(),
         status: "active",
-        studyTime: 0,
+        studyTime: promoterStudyTime,
         remainingDays: 999, // promoter has permanent access
         attempts: [],
-        timesPerModule: {
-          "Aspectos Generales": 0,
-          "Regulación CNSF": 0,
-          "Vida Individual": 0,
-          "Accidentes y Enfermedades": 0,
-          "Seguros de Daños": 0,
-          "Sistema y Mercados Financieros": 0
-        },
+        timesPerModule: promoterTimesPerModule,
         moduleScores: {
           "Aspectos Generales": 0,
           "Regulación CNSF": 0,
@@ -328,7 +383,8 @@ export async function GET(req: NextRequest) {
           "Accidentes y Enfermedades": 0,
           "Seguros de Daños": 0,
           "Sistema y Mercados Financieros": 0
-        }
+        },
+        studyProgress: promoterStudyProgress
       });
     }
 

@@ -41,11 +41,20 @@ export async function GET(req: NextRequest) {
 
     // 2. Get study times per module
     const progressRows = await prisma.$queryRawUnsafe<any[]>(
-      "SELECT module, tiempo_segundos FROM estudio_progreso WHERE email = $1",
+      "SELECT module, tiempo_segundos, pregunta_actual FROM estudio_progreso WHERE email = $1",
       email.toLowerCase()
     )
     
     const timesPerModule: Record<string, number> = {
+      "Aspectos Generales": 0,
+      "Regulación CNSF": 0,
+      "Vida Individual": 0,
+      "Accidentes y Enfermedades": 0,
+      "Seguros de Daños": 0,
+      "Sistema y Mercados Financieros": 0
+    };
+
+    const studyProgress: Record<string, number> = {
       "Aspectos Generales": 0,
       "Regulación CNSF": 0,
       "Vida Individual": 0,
@@ -59,6 +68,7 @@ export async function GET(req: NextRequest) {
       if (timesPerModule[p.module] !== undefined) {
         timesPerModule[p.module] = p.tiempo_segundos / 60; // convert to minutes
         totalStudySeconds += p.tiempo_segundos;
+        studyProgress[p.module] = p.pregunta_actual || 0;
       }
     });
 
@@ -108,7 +118,8 @@ export async function GET(req: NextRequest) {
       remainingDays,
       attempts,
       timesPerModule,
-      moduleScores
+      moduleScores,
+      studyProgress
     });
 
   } catch (err: any) {

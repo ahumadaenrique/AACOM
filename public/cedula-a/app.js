@@ -455,7 +455,8 @@ function initGlobalTimers() {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             module: studyModule,
-                            tiempo_segundos: Math.round(activeAgent.timesPerModule[studyModule] * 60)
+                            tiempo_segundos: Math.round(activeAgent.timesPerModule[studyModule] * 60),
+                            pregunta_actual: activeAgent.studyProgress[studyModule] || 0
                         })
                     });
                 } catch (e) {
@@ -517,6 +518,7 @@ function switchRole(role) {
         const lastAttempt = activeAgent.attempts[activeAgent.attempts.length - 1];
         document.getElementById("agent-last-score").innerText = lastAttempt ? `${lastAttempt.score}%` : "N/A";
         
+        updateAgentDashboard();
         switchTab("agent-dash");
     }
 }
@@ -551,6 +553,104 @@ function switchTab(tabId) {
         updatePromoterDashboard();
     } else if (tabId === "promoter-reports") {
         loadAgentReport();
+    } else if (tabId === "agent-dash") {
+        updateAgentDashboard();
+    }
+}
+
+// -------------------------------------------------------------
+// AGENT DASHBOARD & PROGRESS LOGIC
+// -------------------------------------------------------------
+function updateAgentDashboard() {
+    const container = document.getElementById("modules-container");
+    if (!container) return;
+    
+    container.innerHTML = "";
+    
+    const modulesData = [
+        { name: "Aspectos Generales", total: 134, display: "1. Aspectos Generales" },
+        { name: "Regulación CNSF", total: 31, display: "2. Regulación CNSF" },
+        { name: "Vida Individual", total: 79, display: "3. Vida Individual" },
+        { name: "Accidentes y Enfermedades", total: 71, display: "4. Accidentes y Enfermedades" },
+        { name: "Seguros de Daños", total: 147, display: "5. Seguros de Daños" },
+        { name: "Sistema y Mercados Financieros", total: 168, display: "6. Sistema y Mercados Fin." }
+    ];
+
+    if (!activeAgent.studyProgress) {
+        activeAgent.studyProgress = {};
+    }
+
+    let totalCompletedModules = 0;
+
+    modulesData.forEach(mod => {
+        const currentIdx = activeAgent.studyProgress[mod.name] || 0;
+        
+        let pct = 0;
+        if (currentIdx > 0) {
+            pct = Math.min(100, Math.round((currentIdx / mod.total) * 100));
+        }
+        
+        if (pct >= 100) {
+            totalCompletedModules++;
+        }
+
+        const progressFillStyle = `width: ${pct}%;`;
+        
+        let btnClass = "btn-primary";
+        let btnText = "Iniciar";
+        
+        if (pct >= 100) {
+            btnClass = "btn-secondary";
+            btnText = "Repasar";
+        } else if (pct > 0) {
+            btnClass = "btn-primary";
+            btnText = "Estudiar";
+        }
+
+        const card = document.createElement("div");
+        card.className = "glass-card";
+        card.style.cssText = "border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.15);";
+        
+        card.innerHTML = `
+            <h4 style="margin-bottom: 8px;">${mod.display}</h4>
+            <div class="progress-bar-container" style="margin-bottom: 12px;">
+                <div class="progress-bar-fill" style="${progressFillStyle}"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-size:12px; color:var(--text-secondary);">${mod.total} Preguntas • ${pct}% Comp.</span>
+                <button class="${btnClass}" style="padding: 6px 12px; font-size: 12px;" onclick="launchStudyModule('${mod.name}')">${btnText}</button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+
+    const overallCompletionPct = Math.round((totalCompletedModules / 6) * 100);
+    const overallText = `${totalCompletedModules} de 6 Módulos completados`;
+    
+    const progressPercentEl = document.getElementById("agent-curriculum-progress");
+    if (progressPercentEl) {
+        progressPercentEl.innerText = `${overallCompletionPct}%`;
+    }
+    const progressDescEl = document.getElementById("agent-curriculum-desc");
+    if (progressDescEl) {
+        progressDescEl.innerText = overallText;
+    }
+}
+
+async function syncStudyProgressImmediate() {
+    if (currentRole !== "agent" || !studyModule) return;
+    try {
+        await fetch('/api/cedula-a/progreso', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                module: studyModule,
+                tiempo_segundos: Math.round((activeAgent.timesPerModule[studyModule] || 0) * 60),
+                pregunta_actual: activeAgent.studyProgress[studyModule] || 0
+            })
+        });
+    } catch (e) {
+        console.error("Failed to immediate sync progress:", e);
     }
 }
 
@@ -978,6 +1078,7 @@ function prevStudyQuestion() {
         studyCurrentIdx--;
         if (!activeAgent.studyProgress) activeAgent.studyProgress = {};
         activeAgent.studyProgress[studyModule] = studyCurrentIdx;
+        syncStudyProgressImmediate();
         renderStudyQuestion();
     }
 }
@@ -991,11 +1092,13 @@ function nextStudyQuestion() {
         studyCurrentIdx++;
         if (!activeAgent.studyProgress) activeAgent.studyProgress = {};
         activeAgent.studyProgress[studyModule] = studyCurrentIdx;
+        syncStudyProgressImmediate();
         renderStudyQuestion();
     } else {
         alert("¡Has completado todas las preguntas de este módulo!");
         if (!activeAgent.studyProgress) activeAgent.studyProgress = {};
         activeAgent.studyProgress[studyModule] = 0; // Reset index on complete
+        syncStudyProgressImmediate();
         switchTab("agent-dash");
     }
 }
