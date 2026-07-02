@@ -1,5 +1,10 @@
 // app.js: Cédula A Simulator & E-Learning Platform Lógica
 
+window.onerror = function(message, source, lineno, colno, error) {
+    alert("Runtime Error: " + message + "\nLine: " + lineno + "\nSource: " + source);
+    return false;
+};
+
 // Mock Database of Agents and SaaS details
 let promoterData = {
     tokens: 7, // remaining days to assign
