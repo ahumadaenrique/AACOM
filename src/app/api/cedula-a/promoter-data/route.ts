@@ -244,7 +244,8 @@ export async function GET(req: NextRequest) {
         attemptsMap[email].push({
           date: new Date(row.fecha).toISOString().split('T')[0],
           score: parseFloat(row.calificacion),
-          passed: row.aprobado
+          passed: row.aprobado,
+          details: row.detalles_modulos
         });
         // Last processed item is the latest attempt
         latestAttemptMap[email] = row.detalles_modulos;

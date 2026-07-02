@@ -819,9 +819,32 @@ function loadAgentReport() {
             const badgeText = att.passed ? "Aprobado" : "Reprobado";
             const timeStr = att.time || "12:00";
             const typeStr = att.type || "Examen Completo";
+            
+            let detailsHTML = "";
+            if (att.details) {
+                detailsHTML = `<div style="font-size: 11px; color: var(--text-secondary); margin-top: 6px; display: flex; flex-wrap: wrap; gap: 6px;">`;
+                Object.keys(att.details).forEach(mod => {
+                    const score = att.details[mod];
+                    const modPct = score.total > 0 ? Math.round((score.correct / score.total) * 100) : 0;
+                    const colorClass = modPct >= 70 ? "#2dd4bf" : "#f87171";
+                    
+                    let shortMod = mod;
+                    if (mod === "Sistema y Mercados Financieros") shortMod = "Finanzas";
+                    else if (mod === "Accidentes y Enfermedades") shortMod = "Accidentes";
+                    
+                    detailsHTML += `<span style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
+                        ${shortMod}: <strong style="color: ${colorClass}">${score.correct}/${score.total} (${modPct}%)</strong>
+                    </span>`;
+                });
+                detailsHTML += `</div>`;
+            }
+            
             tr.innerHTML = `
                 <td>${att.date} ${timeStr}</td>
-                <td>${typeStr}</td>
+                <td>
+                    <div style="font-weight: 500;">${typeStr}</div>
+                    ${detailsHTML}
+                </td>
                 <td style="font-weight:600;">${att.score}%</td>
                 <td><span class="status-badge ${badgeClass}">${badgeText}</span></td>
             `;
@@ -1944,18 +1967,18 @@ function startSimulatorMode() {
         return;
     }
 
-    const startConfirm = confirm("¿Deseas iniciar el simulador oficial? Tendrás 40 preguntas aleatorias de los 6 módulos y 2 horas límite.");
+    const startConfirm = confirm("¿Deseas iniciar el simulador oficial? Tendrás 80 preguntas aleatorias de los 6 módulos y 2 horas límite.");
     if (!startConfirm) return;
     
-    // Pick 40 random questions with balanced CNSF module sizes
-    // 8 from Aspectos, 3 from Regulación, 7 from Vida, 6 from Accidentes, 8 from Daños, 8 from Finanzas
+    // Pick 80 random questions with balanced CNSF module sizes
+    // 16 from Aspectos, 6 from Regulación, 14 from Vida, 12 from Accidentes, 16 from Daños, 16 from Finanzas
     const config = [
-        { mod: "Aspectos Generales", count: 8 },
-        { mod: "Regulación CNSF", count: 3 },
-        { mod: "Vida Individual", count: 7 },
-        { mod: "Accidentes y Enfermedades", count: 6 },
-        { mod: "Seguros de Daños", count: 8 },
-        { mod: "Sistema y Mercados Financieros", count: 8 }
+        { mod: "Aspectos Generales", count: 16 },
+        { mod: "Regulación CNSF", count: 6 },
+        { mod: "Vida Individual", count: 14 },
+        { mod: "Accidentes y Enfermedades", count: 12 },
+        { mod: "Seguros de Daños", count: 16 },
+        { mod: "Sistema y Mercados Financieros", count: 16 }
     ];
     
     simQuestions = [];
@@ -1972,10 +1995,10 @@ function startSimulatorMode() {
     });
     
     // Safety check if we couldn't load enough
-    if (simQuestions.length < 40) {
+    if (simQuestions.length < 80) {
         let pool = questionsDb.concat(fallbackQuestions);
         const shuffled = pool.sort(() => 0.5 - Math.random());
-        simQuestions = shuffled.slice(0, 40);
+        simQuestions = shuffled.slice(0, 80);
     }
     
     simCurrentIdx = 0;

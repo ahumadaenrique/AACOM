@@ -74,14 +74,15 @@ export async function GET(req: NextRequest) {
 
     // 3. Get attempts
     const attemptsRows = await prisma.$queryRawUnsafe<any[]>(
-      "SELECT calificacion, aprobado, fecha FROM examen_intentos WHERE email = $1 ORDER BY fecha ASC",
+      "SELECT calificacion, aprobado, fecha, detalles_modulos FROM examen_intentos WHERE email = $1 ORDER BY fecha ASC",
       email.toLowerCase()
     )
 
     const attempts = attemptsRows.map(att => ({
       date: new Date(att.fecha).toISOString().split('T')[0],
       score: parseFloat(att.calificacion),
-      passed: att.aprobado
+      passed: att.aprobado,
+      details: att.detalles_modulos
     }));
 
     // Calculate module scores based on last attempt details
