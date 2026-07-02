@@ -562,10 +562,30 @@ function switchTab(tabId) {
 // AGENT DASHBOARD & PROGRESS LOGIC
 // -------------------------------------------------------------
 function updateAgentDashboard() {
+    const bannerContainer = document.getElementById("agent-restricted-banner-container");
     const container = document.getElementById("modules-container");
     if (!container) return;
     
     container.innerHTML = "";
+    
+    const isAccessRestricted = activeAgent.remainingDays <= 0;
+    
+    // Render restricted warning banner
+    if (bannerContainer) {
+        if (isAccessRestricted) {
+            bannerContainer.innerHTML = `
+                <div class="glass-card" style="border: 1px solid rgba(239, 68, 68, 0.25); background: rgba(239, 68, 68, 0.08); color: #f87171; padding: 16px; margin-bottom: 24px; border-radius: 12px; display: flex; align-items: center; gap: 12px;">
+                    <svg style="width:24px; height:24px; fill:currentColor; flex-shrink: 0;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+                    <div>
+                        <div style="font-weight: 600; font-size: 15px; margin-bottom: 2px;">Acceso Restringido</div>
+                        <div style="font-size: 13px; opacity: 0.95;">Tu promotor tiene que asignarte días de estudio para poder iniciar o continuar los módulos del curso.</div>
+                    </div>
+                </div>
+            `;
+        } else {
+            bannerContainer.innerHTML = "";
+        }
+    }
     
     const modulesData = [
         { name: "Aspectos Generales", total: 134, display: "1. Aspectos Generales" },
@@ -610,6 +630,13 @@ function updateAgentDashboard() {
         const card = document.createElement("div");
         card.className = "glass-card";
         card.style.cssText = "border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.15);";
+        if (isAccessRestricted) {
+            card.style.opacity = "0.6";
+        }
+        
+        const buttonHTML = isAccessRestricted 
+            ? `<button class="${btnClass}" style="padding: 6px 12px; font-size: 12px; opacity: 0.5; cursor: not-allowed;" onclick="event.stopPropagation(); alert('Tu promotor tiene que asignarte días de estudio.');" disabled>${btnText}</button>`
+            : `<button class="${btnClass}" style="padding: 6px 12px; font-size: 12px;" onclick="launchStudyModule('${mod.name}')">${btnText}</button>`;
         
         card.innerHTML = `
             <h4 style="margin-bottom: 8px;">${mod.display}</h4>
@@ -618,7 +645,7 @@ function updateAgentDashboard() {
             </div>
             <div style="display:flex; justify-content:space-between; align-items:center;">
                 <span style="font-size:12px; color:var(--text-secondary);">${mod.total} Preguntas • ${pct}% Comp.</span>
-                <button class="${btnClass}" style="padding: 6px 12px; font-size: 12px;" onclick="launchStudyModule('${mod.name}')">${btnText}</button>
+                ${buttonHTML}
             </div>
         `;
         container.appendChild(card);
