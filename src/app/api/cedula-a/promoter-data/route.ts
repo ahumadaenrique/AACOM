@@ -69,38 +69,82 @@ export async function GET(req: NextRequest) {
       })
     }
 
+    const emails = dbAgents.map(a => a.email.toLowerCase());
+    
+    // Pre-load data in bulk to avoid N+1 serverless timeouts
+    const licensesMap: Record<string, any> = {};
+    const progressMap: Record<string, Record<string, number>> = {};
+    const attemptsMap: Record<string, any[]> = {};
+    const latestAttemptMap: Record<string, any> = {};
+
+    if (emails.length > 0) {
+      // Bulk 1: Licenses
+      const licensesRes = await pool.query(
+        "SELECT agente_email, dias_asignados, fecha_expiracion FROM estudio_licencias WHERE agente_email = ANY($1)",
+        [emails]
+      );
+      licensesRes.rows.forEach(row => {
+        licensesMap[row.agente_email.toLowerCase()] = row;
+      });
+
+      // Bulk 2: Progress
+      const progressRes = await pool.query(
+        "SELECT email, module, tiempo_segundos FROM estudio_progreso WHERE email = ANY($1)",
+        [emails]
+      );
+      progressRes.rows.forEach(row => {
+        const email = row.email.toLowerCase();
+        if (!progressMap[email]) {
+          progressMap[email] = {
+            "Aspectos Generales": 0,
+            "Regulación CNSF": 0,
+            "Vida Individual": 0,
+            "Accidentes y Enfermedades": 0,
+            "Seguros de Daños": 0,
+            "Sistema y Mercados Financieros": 0
+          };
+        }
+        progressMap[email][row.module] = row.tiempo_segundos / 60; // convert to minutes
+      });
+
+      // Bulk 3: Attempts
+      const attemptsRes = await pool.query(
+        "SELECT email, calificacion, aprobado, fecha, detalles_modulos FROM examen_intentos WHERE email = ANY($1) ORDER BY fecha ASC",
+        [emails]
+      );
+      attemptsRes.rows.forEach(row => {
+        const email = row.email.toLowerCase();
+        if (!attemptsMap[email]) {
+          attemptsMap[email] = [];
+        }
+        attemptsMap[email].push({
+          date: new Date(row.fecha).toISOString().split('T')[0],
+          score: parseFloat(row.calificacion),
+          passed: row.aprobado
+        });
+        // Last processed item is the latest attempt
+        latestAttemptMap[email] = row.detalles_modulos;
+      });
+    }
+
     const agentsList = [];
 
     for (const dbAgent of dbAgents) {
-      const email = dbAgent.email;
+      const email = dbAgent.email.toLowerCase();
       const name = dbAgent.name || email.split('@')[0];
       const initials = name.substring(0, 2).toUpperCase();
       
-      // Get license/days details for this agent
-      const licenseRes = await pool.query(
-        "SELECT dias_asignados, fecha_expiracion FROM estudio_licencias WHERE agente_email = $1",
-        [email.toLowerCase()]
-      )
-      
+      const lic = licensesMap[email];
       let remainingDays = 0;
-      if (licenseRes.rows.length > 0) {
-        const row = licenseRes.rows[0];
-        if (row.fecha_expiracion) {
-          const exp = new Date(row.fecha_expiracion).getTime();
-          const now = new Date().getTime();
-          if (exp > now) {
-            remainingDays = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
-          }
+      if (lic && lic.fecha_expiracion) {
+        const exp = new Date(lic.fecha_expiracion).getTime();
+        const now = new Date().getTime();
+        if (exp > now) {
+          remainingDays = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
         }
       }
 
-      // 3. Get study times per module for this agent
-      const progressRes = await pool.query(
-        "SELECT module, tiempo_segundos FROM estudio_progreso WHERE email = $1",
-        [email.toLowerCase()]
-      )
-      
-      const timesPerModule: Record<string, number> = {
+      const timesPerModule = progressMap[email] || {
         "Aspectos Generales": 0,
         "Regulación CNSF": 0,
         "Vida Individual": 0,
@@ -109,28 +153,13 @@ export async function GET(req: NextRequest) {
         "Sistema y Mercados Financieros": 0
       };
 
-      let totalStudySeconds = 0;
-      progressRes.rows.forEach(p => {
-        if (timesPerModule[p.module] !== undefined) {
-          // Convert seconds to minutes (decimal)
-          timesPerModule[p.module] = p.tiempo_segundos / 60;
-          totalStudySeconds += p.tiempo_segundos;
-        }
+      let totalStudyMinutes = 0;
+      Object.values(timesPerModule).forEach(v => {
+        totalStudyMinutes += v;
       });
 
-      // 4. Get attempts for this agent
-      const attemptsRes = await pool.query(
-        "SELECT calificacion, aprobado, fecha FROM examen_intentos WHERE email = $1 ORDER BY fecha ASC",
-        [email.toLowerCase()]
-      )
+      const agentAttempts = attemptsMap[email] || [];
 
-      const attempts = attemptsRes.rows.map(att => ({
-        date: new Date(att.fecha).toISOString().split('T')[0],
-        score: parseFloat(att.calificacion),
-        passed: att.aprobado
-      }));
-
-      // Calculate module scores based on last attempt details if available
       const moduleScores: Record<string, number> = {
         "Aspectos Generales": 0,
         "Regulación CNSF": 0,
@@ -140,15 +169,10 @@ export async function GET(req: NextRequest) {
         "Sistema y Mercados Financieros": 0
       };
 
-      // Get latest scores from last exam attempt if available
-      const latestAttemptRes = await pool.query(
-        "SELECT detalles_modulos FROM examen_intentos WHERE email = $1 ORDER BY fecha DESC LIMIT 1",
-        [email.toLowerCase()]
-      )
-      if (latestAttemptRes.rows.length > 0 && latestAttemptRes.rows[0].detalles_modulos) {
-        const details = latestAttemptRes.rows[0].detalles_modulos;
-        Object.keys(details).forEach(mod => {
-          const modData = details[mod];
+      const latestDetails = latestAttemptMap[email];
+      if (latestDetails) {
+        Object.keys(latestDetails).forEach(mod => {
+          const modData = latestDetails[mod];
           if (modData && modData.total > 0) {
             moduleScores[mod] = Math.round((modData.correct / modData.total) * 100);
           }
@@ -161,9 +185,9 @@ export async function GET(req: NextRequest) {
         initials,
         email,
         status: remainingDays > 0 ? "active" : "inactive",
-        studyTime: totalStudySeconds / 60, // in minutes
+        studyTime: totalStudyMinutes, // in minutes
         remainingDays,
-        attempts,
+        attempts: agentAttempts,
         timesPerModule,
         moduleScores
       });
@@ -172,7 +196,6 @@ export async function GET(req: NextRequest) {
     // Add promoter's own study account if they study
     let promoterSelfAgent = agentsList.find(a => a.email === promoterEmail.toLowerCase());
     if (!promoterSelfAgent) {
-      // Create empty record for promoter
       agentsList.push({
         id: promoterEmail.toLowerCase(),
         name: "Tú (Cuenta de Estudio)",
