@@ -310,6 +310,43 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
             if (typeof val === 'number') {
                 return new Date(Math.round((val - 25569) * 864e5));
             }
+            
+            let dateStr = String(val).trim();
+            
+            // Intento 1: Formato DD/MM/YYYY o DD-MM-YYYY
+            const mxFormatMatch = dateStr.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+            if (mxFormatMatch) {
+                let [_, day, month, year] = mxFormatMatch;
+                if (year.length === 2) {
+                    year = (parseInt(year) > 50 ? "19" : "20") + year;
+                }
+                const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                if (!isNaN(d.getTime())) return d;
+            }
+
+            // Intento 2: Formato YYYY-MM-DD o YYYY/MM/DD
+            const isoFormatMatch = dateStr.match(/^(\d{4})[\/\-](\d{1,2})[\/\-](\d{1,2})$/);
+            if (isoFormatMatch) {
+                const [_, year, month, day] = isoFormatMatch;
+                const d = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+                if (!isNaN(d.getTime())) return d;
+            }
+
+            // Intento 3: Textos como "19 de agosto de 2026"
+            const textDateMatch = dateStr.toLowerCase().match(/^(\d{1,2})\s+de\s+([a-z]+)\s+(?:del?|de)\s+(\d{4})$/);
+            if (textDateMatch) {
+                const [_, day, monthStr, year] = textDateMatch;
+                const months: Record<string, number> = {
+                    "enero": 0, "febrero": 1, "marzo": 2, "abril": 3, "mayo": 4, "junio": 5,
+                    "julio": 6, "agosto": 7, "septiembre": 8, "octubre": 9, "noviembre": 10, "diciembre": 11
+                };
+                if (months[monthStr] !== undefined) {
+                    const d = new Date(parseInt(year), months[monthStr], parseInt(day));
+                    if (!isNaN(d.getTime())) return d;
+                }
+            }
+
+            // Fallback
             const d = new Date(val);
             return isNaN(d.getTime()) ? null : d;
         };
