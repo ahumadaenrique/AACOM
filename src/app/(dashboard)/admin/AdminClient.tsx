@@ -895,105 +895,105 @@ export default function AdminClient() {
   const currentYear = now.getFullYear()
   const currentMonth = now.getMonth() // 0-indexed
 
-  const isThisMonth = (date: Date) => {
-    return date.getFullYear() === currentYear && date.getMonth() === currentMonth
-  }
-
-  const isLastMonth = (date: Date) => {
-    const targetYear = currentMonth === 0 ? currentYear - 1 : currentYear
-    const targetMonth = currentMonth === 0 ? 11 : currentMonth - 1
-    return date.getFullYear() === targetYear && date.getMonth() === targetMonth
-  }
-
-  const isThisYear = (date: Date) => {
-    return date.getFullYear() === currentYear
-  }
-
-  const getWeekDiff = (date: Date) => {
-    const diffTime = now.getTime() - date.getTime()
-    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-    return Math.floor(diffDays / 7)
-  }
-
-  // AGENT PRODUCTIVITY CALCULATIONS
-  const agentStatsMap: {
-    [agentName: string]: {
-      name: string
-      total: number
-      thisMonth: number
-      lastMonth: number
-      thisYear: number
-      totalPremium: number
-      avgPremium: number
-      mostCotizedProduct: string
-      weeklyCounts: number[] // [semanaActual, hace1Sem, hace2Sem, hace3Sem]
-    }
-  } = {}
-
-  const agentProductCounts: { [agentName: string]: { [product: string]: number } } = {}
-  const globalProductCounts: { [product: string]: number } = {}
-
-  cotizaciones.forEach(item => {
-    const agentName = item.agente || "Sin Agente"
-    const date = new Date(item.createdAt)
-    const prod = item.producto
-
-    // Global counts
-    globalProductCounts[prod] = (globalProductCounts[prod] || 0) + 1
-
-    // Agent counts
-    if (!agentProductCounts[agentName]) {
-      agentProductCounts[agentName] = {}
-    }
-    agentProductCounts[agentName][prod] = (agentProductCounts[agentName][prod] || 0) + 1
-
-    if (!agentStatsMap[agentName]) {
-      agentStatsMap[agentName] = {
-        name: agentName,
-        total: 0,
-        thisMonth: 0,
-        lastMonth: 0,
-        thisYear: 0,
-        totalPremium: 0,
-        avgPremium: 0,
-        mostCotizedProduct: "",
-        weeklyCounts: [0, 0, 0, 0]
+  // AGENT PRODUCTIVITY CALCULATIONS MEMOIZED
+  const { agentStatsList, globalProductCounts } = React.useMemo(() => {
+    const agentStatsMap: {
+      [agentName: string]: {
+        name: string
+        total: number
+        thisMonth: number
+        lastMonth: number
+        thisYear: number
+        totalPremium: number
+        avgPremium: number
+        mostCotizedProduct: string
+        weeklyCounts: number[] // [semanaActual, hace1Sem, hace2Sem, hace3Sem]
       }
+    } = {}
+
+    const agentProductCounts: { [agentName: string]: { [product: string]: number } } = {}
+    const globalProductCounts: { [product: string]: number } = {}
+    const rightNow = new Date()
+    const currYear = rightNow.getFullYear()
+    const currMonth = rightNow.getMonth()
+
+    const isThisMonth = (date: Date) => date.getFullYear() === currYear && date.getMonth() === currMonth
+    const isLastMonth = (date: Date) => {
+      const targetYear = currMonth === 0 ? currYear - 1 : currYear
+      const targetMonth = currMonth === 0 ? 11 : currMonth - 1
+      return date.getFullYear() === targetYear && date.getMonth() === targetMonth
+    }
+    const isThisYear = (date: Date) => date.getFullYear() === currYear
+    const getWeekDiff = (date: Date) => {
+      const diffTime = rightNow.getTime() - date.getTime()
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
+      return Math.floor(diffDays / 7)
     }
 
-    const stats = agentStatsMap[agentName]
-    stats.total += 1
-    stats.totalPremium += item.primaAnual
+    cotizaciones.forEach(item => {
+      const agentName = item.agente || "Sin Agente"
+      const date = new Date(item.createdAt)
+      const prod = item.producto
 
-    if (isThisMonth(date)) stats.thisMonth += 1
-    if (isLastMonth(date)) stats.lastMonth += 1
-    if (isThisYear(date)) stats.thisYear += 1
+      // Global counts
+      globalProductCounts[prod] = (globalProductCounts[prod] || 0) + 1
 
-    const weekDiff = getWeekDiff(date)
-    if (weekDiff >= 0 && weekDiff < 4) {
-      stats.weeklyCounts[weekDiff] += 1
-    }
-  })
+      // Agent counts
+      if (!agentProductCounts[agentName]) {
+        agentProductCounts[agentName] = {}
+      }
+      agentProductCounts[agentName][prod] = (agentProductCounts[agentName][prod] || 0) + 1
 
-  // Finalize averages and favorite products
-  const agentStatsList = Object.values(agentStatsMap).map(stats => {
-    stats.avgPremium = stats.total > 0 ? stats.totalPremium / stats.total : 0
-    
-    // Find favorite product
-    const counts = agentProductCounts[stats.name]
-    let favoriteProduct = "Ninguno"
-    let maxCount = -1
-    if (counts) {
-      Object.entries(counts).forEach(([prod, count]) => {
-        if (count > maxCount) {
-          maxCount = count
-          favoriteProduct = prod
+      if (!agentStatsMap[agentName]) {
+        agentStatsMap[agentName] = {
+          name: agentName,
+          total: 0,
+          thisMonth: 0,
+          lastMonth: 0,
+          thisYear: 0,
+          totalPremium: 0,
+          avgPremium: 0,
+          mostCotizedProduct: "",
+          weeklyCounts: [0, 0, 0, 0]
         }
-      })
-    }
-    stats.mostCotizedProduct = favoriteProduct
-    return stats
-  }).sort((a, b) => b.total - a.total) // Sort by total quotes desc
+      }
+
+      const stats = agentStatsMap[agentName]
+      stats.total += 1
+      stats.totalPremium += item.primaAnual
+
+      if (isThisMonth(date)) stats.thisMonth += 1
+      if (isLastMonth(date)) stats.lastMonth += 1
+      if (isThisYear(date)) stats.thisYear += 1
+
+      const weekDiff = getWeekDiff(date)
+      if (weekDiff >= 0 && weekDiff < 4) {
+        stats.weeklyCounts[weekDiff] += 1
+      }
+    })
+
+    // Finalize averages and favorite products
+    const agentStatsList = Object.values(agentStatsMap).map(stats => {
+      stats.avgPremium = stats.total > 0 ? stats.totalPremium / stats.total : 0
+      
+      // Find favorite product
+      const counts = agentProductCounts[stats.name]
+      let favoriteProduct = "Ninguno"
+      let maxCount = -1
+      if (counts) {
+        Object.entries(counts).forEach(([prod, count]) => {
+          if (count > maxCount) {
+            maxCount = count
+            favoriteProduct = prod
+          }
+        })
+      }
+      stats.mostCotizedProduct = favoriteProduct
+      return stats
+    }).sort((a, b) => b.total - a.total) // Sort by total quotes desc
+
+    return { agentStatsList, globalProductCounts }
+  }, [cotizaciones])
 
   // Calculate Global Metrics
   const totalCount = filteredCotizaciones.length
