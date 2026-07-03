@@ -503,54 +503,54 @@ export default function AdminClient() {
   const loadData = async () => {
     setLoading(true)
     setError("")
+    setLoadingAdn(true)
     try {
-      const userRes = await getCurrentUser()
-      if (userRes.success && userRes.user) {
-        setCurrentUserRole(userRes.user.role)
-        setCurrentUserData(userRes.user)
-      }
+      const userPromise = getCurrentUser().then(res => {
+        if (res.success && res.user) {
+          setCurrentUserRole(res.user.role)
+          setCurrentUserData(res.user)
+        }
+      });
 
-      // 1. Get quotes
-      const res = await getCotizaciones()
-      if (res.success && res.cotizaciones) {
-        setCotizaciones(res.cotizaciones)
-      } else {
-        setError(res.message || "Error al cargar los datos.")
-      }
+      const quotesPromise = getCotizaciones().then(res => {
+        if (res.success && res.cotizaciones) {
+          setCotizaciones(res.cotizaciones)
+        } else {
+          setError(res.message || "Error al cargar los datos.")
+        }
+      });
 
-      // 2. Get UDI default setting
-      const udiRes = await getUdiSetting()
-      if (udiRes.success && udiRes.value) {
-        setDefaultUdi(udiRes.value)
-      }
+      const udiPromise = getUdiSetting().then(res => {
+        if (res.success && res.value) {
+          setDefaultUdi(res.value)
+        }
+      });
 
-      // 3. Fetch agents
-      await fetchAgentsList()
+      const adnPromise = getAdnDiagnostics().then(res => {
+        if (res.success && res.diagnostics) {
+          setAdnList(res.diagnostics)
+        }
+      });
 
-      // 4. Fetch ADN diagnostics
-      setLoadingAdn(true)
-      const adnRes = await getAdnDiagnostics()
-      if (adnRes.success && adnRes.diagnostics) {
-        setAdnList(adnRes.diagnostics)
-      }
+      const rankingPromise = getMonthlyAdnRankings().then(res => {
+        if (res.success && res.rankingAd) {
+          setRankingBanner(res.rankingAd.imageUrl)
+        }
+      });
 
-      // 5. Fetch all users
-      await fetchUsersList()
-
-      // 6. Fetch landing page announcements
-      await fetchAnnouncementsList()
-
-      // 7. Fetch activity logs for admin reporting
-      await fetchActivityLogsList()
-
-      // 8. Fetch chatbot knowledge documents
-      await fetchKnowledgeDocsList()
-
-      // 9. Fetch Ranking Banner
-      const rankingRes = await getMonthlyAdnRankings()
-      if (rankingRes.success && rankingRes.rankingAd) {
-        setRankingBanner(rankingRes.rankingAd.imageUrl)
-      }
+      await Promise.all([
+        userPromise,
+        quotesPromise,
+        udiPromise,
+        adnPromise,
+        rankingPromise,
+        fetchAgentsList(),
+        fetchUsersList(),
+        fetchAnnouncementsList(),
+        fetchActivityLogsList(),
+        fetchKnowledgeDocsList()
+      ]);
+      
     } catch (err) {
       console.error(err)
       setError("Fallo al conectar con el servidor.")
