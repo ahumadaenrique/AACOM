@@ -197,7 +197,7 @@ export async function saveCotizacion(data: {
     }
 }
 
-export async function getCotizaciones() {
+export async function getCotizaciones(options?: { month?: number, year?: number, limitTo30Days?: boolean }) {
     const session = await auth();
     if (!session?.user?.email) {
         return { success: false, message: "No autenticado", cotizaciones: [] };
@@ -217,6 +217,21 @@ export async function getCotizaciones() {
             whereClause.userId = user.id;
         }
 
+        if (options?.year !== undefined && options?.month !== undefined) {
+            const startDate = new Date(options.year, options.month, 1);
+            const endDate = new Date(options.year, options.month + 1, 1);
+            whereClause.createdAt = {
+                gte: startDate,
+                lt: endDate
+            };
+        } else if (options?.limitTo30Days !== false) {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            whereClause.createdAt = {
+                gte: thirtyDaysAgo
+            };
+        }
+
         const list = await prisma.cotizacion.findMany({
             where: whereClause,
             orderBy: {
@@ -227,6 +242,119 @@ export async function getCotizaciones() {
     } catch (error: any) {
         console.error("Error fetching cotizaciones:", error);
         return { success: false, message: error.message || "Error al consultar cotizaciones" };
+    }
+}
+
+export async function getAdminDashboardStats() {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+            return { success: false, message: "No autorizado" };
+        }
+
+        // Obtener solo campos necesarios para TODO el historial
+        const list = await prisma.cotizacion.findMany({
+            where: { agencyId: user.agencyId },
+            select: { agente: true, createdAt: true, producto: true, primaAnual: true }
+        });
+
+        const agentStatsMap: any = {};
+        const globalProductCounts: any = {};
+        const agentProductCounts: any = {};
+
+        const rightNow = new Date();
+        const currYear = rightNow.getFullYear();
+        const currMonth = rightNow.getMonth();
+
+        const isThisMonth = (date: Date) => date.getFullYear() === currYear && date.getMonth() === currMonth;
+        const isLastMonth = (date: Date) => {
+            const targetYear = currMonth === 0 ? currYear - 1 : currYear;
+            const targetMonth = currMonth === 0 ? 11 : currMonth - 1;
+            return date.getFullYear() === targetYear && date.getMonth() === targetMonth;
+        };
+        const isThisYear = (date: Date) => date.getFullYear() === currYear;
+        const getWeekDiff = (date: Date) => {
+            const diffTime = rightNow.getTime() - date.getTime();
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return Math.floor(diffDays / 7);
+        };
+
+        list.forEach((item: any) => {
+            const agentName = item.agente || "Sin Agente";
+            const date = new Date(item.createdAt);
+            const prod = item.producto;
+
+            globalProductCounts[prod] = (globalProductCounts[prod] || 0) + 1;
+
+            if (!agentProductCounts[agentName]) agentProductCounts[agentName] = {};
+            agentProductCounts[agentName][prod] = (agentProductCounts[agentName][prod] || 0) + 1;
+
+            if (!agentStatsMap[agentName]) {
+                agentStatsMap[agentName] = {
+                    name: agentName,
+                    total: 0,
+                    thisMonth: 0,
+                    lastMonth: 0,
+                    thisYear: 0,
+                    totalPremium: 0,
+                    avgPremium: 0,
+                    mostCotizedProduct: "",
+                    weeklyCounts: [0, 0, 0, 0]
+                };
+            }
+
+            const stats = agentStatsMap[agentName];
+            stats.total += 1;
+            stats.totalPremium += item.primaAnual;
+
+            if (isThisMonth(date)) stats.thisMonth += 1;
+            if (isLastMonth(date)) stats.lastMonth += 1;
+            if (isThisYear(date)) stats.thisYear += 1;
+
+            const weekDiff = getWeekDiff(date);
+            if (weekDiff >= 0 && weekDiff < 4) {
+                stats.weeklyCounts[weekDiff] += 1;
+            }
+        });
+
+        const agentStatsList = Object.values(agentStatsMap).map((stats: any) => {
+            stats.avgPremium = stats.total > 0 ? stats.totalPremium / stats.total : 0;
+            const counts = agentProductCounts[stats.name];
+            let favoriteProduct = "Ninguno";
+            let maxCount = -1;
+            if (counts) {
+                Object.entries(counts).forEach(([prod, count]: any) => {
+                    if (count > maxCount) {
+                        maxCount = count;
+                        favoriteProduct = prod;
+                    }
+                });
+            }
+            stats.mostCotizedProduct = favoriteProduct;
+            return stats;
+        }).sort((a: any, b: any) => b.total - a.total);
+
+        const totalCount = list.length;
+        const totalPrimasPesos = list.reduce((acc: number, item: any) => acc + item.primaAnual, 0);
+
+        return { 
+            success: true, 
+            agentStatsList, 
+            globalProductCounts,
+            totalCount,
+            totalPrimasPesos
+        };
+    } catch (error: any) {
+        console.error("Error computing dashboard stats:", error);
+        return { success: false, message: error.message || "Error al calcular estadísticas" };
     }
 }
 
@@ -458,7 +586,7 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
     }
 }
 
-export async function getAdnDiagnostics() {
+export async function getAdnDiagnostics(options?: { month?: number, year?: number, limitTo30Days?: boolean }) {
     try {
         const session = await auth();
         if (!session?.user?.email) {
@@ -473,11 +601,33 @@ export async function getAdnDiagnostics() {
             return { success: false, message: "Usuario no encontrado en base de datos" };
         }
 
+        let whereClause: any = {};
+        if ((user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
+            whereClause = { agencyId: user.agencyId };
+        } else {
+            whereClause = { userId: user.id };
+        }
+
+        if (options?.year !== undefined && options?.month !== undefined) {
+            const startDate = new Date(options.year, options.month, 1);
+            const endDate = new Date(options.year, options.month + 1, 1);
+            whereClause.createdAt = {
+                gte: startDate,
+                lt: endDate
+            };
+        } else if (options?.limitTo30Days !== false) {
+            const thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+            whereClause.createdAt = {
+                gte: thirtyDaysAgo
+            };
+        }
+
         let diagnostics;
         if ((user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
             // Admin sees all diagnostics from their agency
             diagnostics = await prisma.adnDiagnostic.findMany({
-                where: { agencyId: user.agencyId },
+                where: whereClause,
                 include: {
                     user: {
                         select: { name: true }
@@ -490,9 +640,7 @@ export async function getAdnDiagnostics() {
         } else {
             // Agent only sees their own diagnostics
             diagnostics = await prisma.adnDiagnostic.findMany({
-                where: {
-                    userId: user.id
-                },
+                where: whereClause,
                 include: {
                     user: {
                         select: {
