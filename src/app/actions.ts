@@ -217,13 +217,22 @@ export async function getCotizaciones(options?: { month?: number, year?: number,
             whereClause.userId = user.id;
         }
 
-        if (options?.year !== undefined && options?.month !== undefined) {
-            const startDate = new Date(options.year, options.month, 1);
-            const endDate = new Date(options.year, options.month + 1, 1);
-            whereClause.createdAt = {
-                gte: startDate,
-                lt: endDate
-            };
+        if (options?.year !== undefined) {
+            if (options?.month !== undefined) {
+                const startDate = new Date(options.year, options.month, 1);
+                const endDate = new Date(options.year, options.month + 1, 1);
+                whereClause.createdAt = {
+                    gte: startDate,
+                    lt: endDate
+                };
+            } else {
+                const startDate = new Date(options.year, 0, 1);
+                const endDate = new Date(options.year + 1, 0, 1);
+                whereClause.createdAt = {
+                    gte: startDate,
+                    lt: endDate
+                };
+            }
         } else if (options?.limitTo30Days !== false) {
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -608,13 +617,22 @@ export async function getAdnDiagnostics(options?: { month?: number, year?: numbe
             whereClause = { userId: user.id };
         }
 
-        if (options?.year !== undefined && options?.month !== undefined) {
-            const startDate = new Date(options.year, options.month, 1);
-            const endDate = new Date(options.year, options.month + 1, 1);
-            whereClause.createdAt = {
-                gte: startDate,
-                lt: endDate
-            };
+        if (options?.year !== undefined) {
+            if (options?.month !== undefined) {
+                const startDate = new Date(options.year, options.month, 1);
+                const endDate = new Date(options.year, options.month + 1, 1);
+                whereClause.createdAt = {
+                    gte: startDate,
+                    lt: endDate
+                };
+            } else {
+                const startDate = new Date(options.year, 0, 1);
+                const endDate = new Date(options.year + 1, 0, 1);
+                whereClause.createdAt = {
+                    gte: startDate,
+                    lt: endDate
+                };
+            }
         } else if (options?.limitTo30Days !== false) {
             const thirtyDaysAgo = new Date();
             thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);

@@ -778,12 +778,30 @@ async function assignDaysPrompt(agentId) {
     }
 }
 
-function buyTokens() {
-    const confirmBuy = confirm("¿Deseas comprar un paquete de 7 días de simulador para tu estructura por $299 MXN?");
-    if (confirmBuy) {
-        promoterData.tokens += 7;
-        alert("¡Compra procesada con éxito! Se han añadido 7 días a tu saldo disponible.");
-        updatePromoterDashboard();
+async function buyTokens() {
+    const promoCode = prompt("¿Deseas comprar un paquete de 7 días para tu estructura por $299 MXN?\n\nSi tienes un código de descuento, ingrésalo aquí (déjalo vacío si no tienes):");
+    
+    if (promoCode === null) {
+        return;
+    }
+
+    try {
+        const response = await fetch('/api/checkout/promoter-package', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ promoCode: promoCode.trim() })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.url) {
+            window.location.href = data.url;
+        } else {
+            alert(data.error || "Ocurrió un error al iniciar la compra.");
+        }
+    } catch (error) {
+        console.error("Error al iniciar checkout:", error);
+        alert("Error de conexión. Inténtalo más tarde.");
     }
 }
 
