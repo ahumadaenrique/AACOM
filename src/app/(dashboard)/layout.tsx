@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -209,6 +209,13 @@ export default async function DashboardLayout({
                                     <HeartPulse className="h-4 w-4 text-red-500" />
                                     ADN
                                 </Link>
+                                <Link
+                                    href="/academia"
+                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                                >
+                                    <GraduationCap className="h-4 w-4 text-purple-500" />
+                                    Academia
+                                </Link>
 
                                 {isAdmin && (
                                     <>
@@ -331,6 +338,13 @@ export default async function DashboardLayout({
                                         >
                                             <HeartPulse className="h-5 w-5 text-red-500" />
                                             ADN {shortAgencyName}
+                                        </Link>
+                                        <Link
+                                            href="/academia"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                        >
+                                            <GraduationCap className="h-5 w-5 text-purple-500" />
+                                            Academia
                                         </Link>
 
                                         {isAdmin && (
