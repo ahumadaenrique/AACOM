@@ -157,13 +157,12 @@ export async function GET(req: NextRequest) {
     
     const agencyId = dbUser?.agencyId
     
-    // Find all real agents belonging to this agency
+    // Find all real agents/users belonging to this agency (including admins/promoters except current promoter)
     let dbAgents: Array<{ email: string; name: string | null }> = []
     if (agencyId) {
       dbAgents = await prisma.user.findMany({
         where: {
-          agencyId,
-          role: "AGENTE"
+          agencyId
         },
         select: {
           email: true,
@@ -171,15 +170,17 @@ export async function GET(req: NextRequest) {
         }
       })
     } else if (dbUser?.role === 'SUPER_ADMIN') {
-      // Super admin sees all agents in the platform
+      // Super admin sees all users in the platform
       dbAgents = await prisma.user.findMany({
-        where: { role: "AGENTE" },
         select: {
           email: true,
           name: true
         }
       })
     }
+
+    // Filter out the current promoter themselves to avoid duplication
+    dbAgents = dbAgents.filter(a => a.email.toLowerCase() !== promoterEmail.toLowerCase())
 
     const emails = dbAgents.map(a => a.email.toLowerCase());
     
@@ -367,6 +368,41 @@ export async function GET(req: NextRequest) {
         promoterStudyTime += v;
       });
 
+      // Load promoter's own attempts
+      const promoterAttemptsRows = await prisma.$queryRawUnsafe<any[]>(
+        "SELECT calificacion, aprobado, fecha, detalles_modulos FROM examen_intentos WHERE email = $1 ORDER BY fecha ASC",
+        promoterEmail.toLowerCase()
+      );
+      
+      const promoterAttempts = promoterAttemptsRows.map(row => ({
+        date: new Date(row.fecha).toISOString().split('T')[0],
+        score: parseFloat(row.calificacion),
+        passed: row.aprobado,
+        details: row.detalles_modulos
+      }));
+
+      // Calculate promoter's own module scores based on latest attempt
+      const promoterModuleScores: Record<string, number> = {
+        "Aspectos Generales": 0,
+        "Regulación CNSF": 0,
+        "Vida Individual": 0,
+        "Accidentes y Enfermedades": 0,
+        "Seguros de Daños": 0,
+        "Sistema y Mercados Financieros": 0
+      };
+      
+      if (promoterAttemptsRows.length > 0) {
+        const latestDetails = promoterAttemptsRows[promoterAttemptsRows.length - 1].detalles_modulos;
+        if (latestDetails) {
+          Object.keys(latestDetails).forEach(mod => {
+            const modData = latestDetails[mod];
+            if (modData && modData.total > 0) {
+              promoterModuleScores[mod] = Math.round((modData.correct / modData.total) * 100);
+            }
+          });
+        }
+      }
+
       agentsList.push({
         id: 99, // promoter self-study ID matches existing switchRole expectations
         name: "Tú (Cuenta de Estudio)",
@@ -375,16 +411,9 @@ export async function GET(req: NextRequest) {
         status: "active",
         studyTime: promoterStudyTime,
         remainingDays: 999, // promoter has permanent access
-        attempts: [],
+        attempts: promoterAttempts,
         timesPerModule: promoterTimesPerModule,
-        moduleScores: {
-          "Aspectos Generales": 0,
-          "Regulación CNSF": 0,
-          "Vida Individual": 0,
-          "Accidentes y Enfermedades": 0,
-          "Seguros de Daños": 0,
-          "Sistema y Mercados Financieros": 0
-        },
+        moduleScores: promoterModuleScores,
         studyProgress: promoterStudyProgress
       });
     }
