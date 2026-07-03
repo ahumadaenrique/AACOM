@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush } from "@/app/actions"
+import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import BibliotecaAdmin from "./BibliotecaAdmin"
@@ -63,6 +63,19 @@ export default function AdminClient() {
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [productFilter, setProductFilter] = useState<string>("todos")
   const [error, setError] = useState<string>("")
+
+  // Dashboard Server Stats
+  const [agentStatsList, setAgentStatsList] = useState<any[]>([])
+  const [globalProductCounts, setGlobalProductCounts] = useState<any>({})
+  const [globalTotalCount, setGlobalTotalCount] = useState<number>(0)
+  const [globalTotalPrimasPesos, setGlobalTotalPrimasPesos] = useState<number>(0)
+
+  // Date Filters
+  const [cotiMonth, setCotiMonth] = useState<string>("all")
+  const [cotiYear, setCotiYear] = useState<string>(new Date().getFullYear().toString())
+  
+  const [adnMonthFilter, setAdnMonthFilter] = useState<string>("all")
+  const [adnYearFilter, setAdnYearFilter] = useState<string>(new Date().getFullYear().toString())
 
   // Admin Dashboard Tabs
   const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca" | "votaciones">("productividad")
@@ -499,6 +512,50 @@ export default function AdminClient() {
     }
   }
 
+  const fetchCotizacionesRaw = async () => {
+    setLoading(true)
+    const month = cotiMonth === "all" ? undefined : parseInt(cotiMonth)
+    const year = parseInt(cotiYear)
+    try {
+      const res = await getCotizaciones({ month, year, limitTo30Days: cotiMonth === "all" })
+      if (res.success && res.cotizaciones) {
+        setCotizaciones(res.cotizaciones)
+      } else {
+        setError(res.message || "Error al cargar las cotizaciones.")
+      }
+    } catch (err) {
+      console.error(err)
+      setError("Error al consultar cotizaciones")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchAdnRaw = async () => {
+    setLoadingAdn(true)
+    const month = adnMonthFilter === "all" ? undefined : parseInt(adnMonthFilter)
+    const year = parseInt(adnYearFilter)
+    try {
+      const adnRes = await getAdnDiagnostics({ month, year, limitTo30Days: adnMonthFilter === "all" })
+      if (adnRes.success && adnRes.diagnostics) {
+        setAdnList(adnRes.diagnostics)
+      }
+    } catch (err) {
+      console.error(err)
+    } finally {
+      setLoadingAdn(false)
+    }
+  }
+
+  // Effect to refetch raw data when filters change
+  useEffect(() => {
+    fetchCotizacionesRaw()
+  }, [cotiMonth, cotiYear])
+
+  useEffect(() => {
+    fetchAdnRaw()
+  }, [adnMonthFilter, adnYearFilter])
+
   // Load cotizaciones and UDI setting from DB
   const loadData = async () => {
     setLoading(true)
@@ -512,23 +569,18 @@ export default function AdminClient() {
         }
       });
 
-      const quotesPromise = getCotizaciones().then(res => {
-        if (res.success && res.cotizaciones) {
-          setCotizaciones(res.cotizaciones)
-        } else {
-          setError(res.message || "Error al cargar los datos.")
+      const statsPromise = getAdminDashboardStats().then(res => {
+        if (res.success) {
+          setAgentStatsList(res.agentStatsList || [])
+          setGlobalProductCounts(res.globalProductCounts || {})
+          setGlobalTotalCount(res.totalCount || 0)
+          setGlobalTotalPrimasPesos(res.totalPrimasPesos || 0)
         }
       });
 
       const udiPromise = getUdiSetting().then(res => {
         if (res.success && res.value) {
           setDefaultUdi(res.value)
-        }
-      });
-
-      const adnPromise = getAdnDiagnostics().then(res => {
-        if (res.success && res.diagnostics) {
-          setAdnList(res.diagnostics)
         }
       });
 
@@ -540,10 +592,11 @@ export default function AdminClient() {
 
       await Promise.all([
         userPromise,
-        quotesPromise,
+        statsPromise,
         udiPromise,
-        adnPromise,
         rankingPromise,
+        fetchCotizacionesRaw(),
+        fetchAdnRaw(),
         fetchAgentsList(),
         fetchUsersList(),
         fetchAnnouncementsList(),
@@ -895,105 +948,7 @@ export default function AdminClient() {
   const currentYear = now.getFullYear()
   const currentMonth = now.getMonth() // 0-indexed
 
-  // AGENT PRODUCTIVITY CALCULATIONS MEMOIZED
-  const { agentStatsList, globalProductCounts } = React.useMemo(() => {
-    const agentStatsMap: {
-      [agentName: string]: {
-        name: string
-        total: number
-        thisMonth: number
-        lastMonth: number
-        thisYear: number
-        totalPremium: number
-        avgPremium: number
-        mostCotizedProduct: string
-        weeklyCounts: number[] // [semanaActual, hace1Sem, hace2Sem, hace3Sem]
-      }
-    } = {}
 
-    const agentProductCounts: { [agentName: string]: { [product: string]: number } } = {}
-    const globalProductCounts: { [product: string]: number } = {}
-    const rightNow = new Date()
-    const currYear = rightNow.getFullYear()
-    const currMonth = rightNow.getMonth()
-
-    const isThisMonth = (date: Date) => date.getFullYear() === currYear && date.getMonth() === currMonth
-    const isLastMonth = (date: Date) => {
-      const targetYear = currMonth === 0 ? currYear - 1 : currYear
-      const targetMonth = currMonth === 0 ? 11 : currMonth - 1
-      return date.getFullYear() === targetYear && date.getMonth() === targetMonth
-    }
-    const isThisYear = (date: Date) => date.getFullYear() === currYear
-    const getWeekDiff = (date: Date) => {
-      const diffTime = rightNow.getTime() - date.getTime()
-      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-      return Math.floor(diffDays / 7)
-    }
-
-    cotizaciones.forEach(item => {
-      const agentName = item.agente || "Sin Agente"
-      const date = new Date(item.createdAt)
-      const prod = item.producto
-
-      // Global counts
-      globalProductCounts[prod] = (globalProductCounts[prod] || 0) + 1
-
-      // Agent counts
-      if (!agentProductCounts[agentName]) {
-        agentProductCounts[agentName] = {}
-      }
-      agentProductCounts[agentName][prod] = (agentProductCounts[agentName][prod] || 0) + 1
-
-      if (!agentStatsMap[agentName]) {
-        agentStatsMap[agentName] = {
-          name: agentName,
-          total: 0,
-          thisMonth: 0,
-          lastMonth: 0,
-          thisYear: 0,
-          totalPremium: 0,
-          avgPremium: 0,
-          mostCotizedProduct: "",
-          weeklyCounts: [0, 0, 0, 0]
-        }
-      }
-
-      const stats = agentStatsMap[agentName]
-      stats.total += 1
-      stats.totalPremium += item.primaAnual
-
-      if (isThisMonth(date)) stats.thisMonth += 1
-      if (isLastMonth(date)) stats.lastMonth += 1
-      if (isThisYear(date)) stats.thisYear += 1
-
-      const weekDiff = getWeekDiff(date)
-      if (weekDiff >= 0 && weekDiff < 4) {
-        stats.weeklyCounts[weekDiff] += 1
-      }
-    })
-
-    // Finalize averages and favorite products
-    const agentStatsList = Object.values(agentStatsMap).map(stats => {
-      stats.avgPremium = stats.total > 0 ? stats.totalPremium / stats.total : 0
-      
-      // Find favorite product
-      const counts = agentProductCounts[stats.name]
-      let favoriteProduct = "Ninguno"
-      let maxCount = -1
-      if (counts) {
-        Object.entries(counts).forEach(([prod, count]) => {
-          if (count > maxCount) {
-            maxCount = count
-            favoriteProduct = prod
-          }
-        })
-      }
-      stats.mostCotizedProduct = favoriteProduct
-      return stats
-    }).sort((a, b) => b.total - a.total) // Sort by total quotes desc
-
-    return { agentStatsList, globalProductCounts }
-  }, [cotizaciones])
 
   // Calculate Global Metrics
   const totalCount = filteredCotizaciones.length
@@ -1248,7 +1203,7 @@ export default function AdminClient() {
                 {Object.keys(globalProductCounts).length === 0 ? (
                   <div className="text-center py-6 text-muted-foreground text-xs">Sin registros de productos</div>
                 ) : (
-                  Object.entries(globalProductCounts).map(([prod, count]) => {
+                  Object.entries(globalProductCounts as Record<string, number>).map(([prod, count]) => {
                     const pct = totalCount > 0 ? (count / totalCount) * 100 : 0
                     return (
                       <div key={prod} className="space-y-1">
@@ -1291,7 +1246,7 @@ export default function AdminClient() {
                   <div>
                     <span className="text-[10px] font-bold text-slate-500 uppercase block tracking-wider">Volumen Primas Global</span>
                     <span className="text-2xl font-black text-teal-600 dark:text-teal-400 mt-1 block leading-tight">
-                      ${totalPrimasPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                      ${globalTotalPrimasPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
                     </span>
                     <span className="text-xs text-slate-400 block mt-1">Suma de primas anuales</span>
                   </div>
@@ -1346,7 +1301,7 @@ export default function AdminClient() {
                           <TableCell className="font-bold text-slate-800 dark:text-slate-200 py-3.5 pl-4">
                             <div className="flex items-center gap-2">
                               <span className="h-7 w-7 rounded-full bg-teal-600 text-white flex items-center justify-center font-black text-[10px] shadow-sm uppercase">
-                                {agent.name.split(" ").map(w => w[0]).slice(0, 2).join("")}
+                                {String(agent.name).split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
                               </span>
                               <span>{agent.name}</span>
                             </div>
@@ -1384,7 +1339,7 @@ export default function AdminClient() {
                           {/* Weekly Sparkline/Indicator */}
                           <TableCell className="py-3.5 pr-4">
                             <div className="flex items-center justify-center gap-1.5">
-                              {agent.weeklyCounts.map((count, wIdx) => {
+                              {(agent.weeklyCounts as number[]).map((count: number, wIdx: number) => {
                                 const labels = ["Act", "Sem1", "Sem2", "Sem3"]
                                 return (
                                   <div 
@@ -1493,8 +1448,41 @@ export default function AdminClient() {
                   className="flex h-10 w-full md:w-56 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none"
                 >
                   <option value="todos">Todos los Productos</option>
-                  <option value="VPL">VPL</option>
-                  <option value="VPL PPR">VPL PPR</option>
+                  {Array.from(new Set(cotizaciones.map(c => c.producto))).filter(Boolean).sort().map(prod => (
+                    <option key={prod} value={prod}>{prod}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={cotiMonth}
+                  onChange={(e) => setCotiMonth(e.target.value)}
+                  className="flex h-10 w-full md:w-36 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                >
+                  <option value="all">Últimos 30 días</option>
+                  <option value="0">Enero</option>
+                  <option value="1">Febrero</option>
+                  <option value="2">Marzo</option>
+                  <option value="3">Abril</option>
+                  <option value="4">Mayo</option>
+                  <option value="5">Junio</option>
+                  <option value="6">Julio</option>
+                  <option value="7">Agosto</option>
+                  <option value="8">Septiembre</option>
+                  <option value="9">Octubre</option>
+                  <option value="10">Noviembre</option>
+                  <option value="11">Diciembre</option>
+                </select>
+
+                <select
+                  value={cotiYear}
+                  onChange={(e) => setCotiYear(e.target.value)}
+                  className="flex h-10 w-full md:w-28 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none"
+                  disabled={cotiMonth === "all"}
+                >
+                  <option value="2024">2024</option>
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                  <option value="2027">2027</option>
                 </select>
 
                 {(searchQuery !== "" || productFilter !== "todos") && (
@@ -2032,6 +2020,44 @@ export default function AdminClient() {
             <CardContent className="p-4 space-y-4">
               {/* Filters Area */}
               <div className="flex flex-col md:flex-row gap-4 items-center bg-slate-50/40 dark:bg-zinc-900/30 p-4 rounded-xl border border-slate-100">
+                <div className="w-full md:w-36 space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase block font-black">Carga (Mes)</label>
+                  <select
+                    value={adnMonthFilter}
+                    onChange={(e) => setAdnMonthFilter(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs focus-visible:outline-none"
+                  >
+                    <option value="all">Últimos 30 días</option>
+                    <option value="0">Enero</option>
+                    <option value="1">Febrero</option>
+                    <option value="2">Marzo</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Mayo</option>
+                    <option value="5">Junio</option>
+                    <option value="6">Julio</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Septiembre</option>
+                    <option value="9">Octubre</option>
+                    <option value="10">Noviembre</option>
+                    <option value="11">Diciembre</option>
+                  </select>
+                </div>
+
+                <div className="w-full md:w-28 space-y-1">
+                  <label className="text-[10px] font-bold text-slate-500 uppercase block font-black">Carga (Año)</label>
+                  <select
+                    value={adnYearFilter}
+                    onChange={(e) => setAdnYearFilter(e.target.value)}
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs focus-visible:outline-none"
+                    disabled={adnMonthFilter === "all"}
+                  >
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                  </select>
+                </div>
+
                 <div className="w-full md:w-56 space-y-1">
                   <label className="text-[10px] font-bold text-slate-500 uppercase block font-black">Filtrar por Agente</label>
                   <select
