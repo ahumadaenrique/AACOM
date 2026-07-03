@@ -517,7 +517,7 @@ export default function AdminClient() {
     const month = cotiMonth === "all" ? undefined : parseInt(cotiMonth)
     const year = parseInt(cotiYear)
     try {
-      const res = await getCotizaciones({ month, year, limitTo30Days: cotiMonth === "all" })
+      const res = await getCotizaciones({ month, year, limitTo30Days: false })
       if (res.success && res.cotizaciones) {
         setCotizaciones(res.cotizaciones)
       } else {
@@ -536,7 +536,7 @@ export default function AdminClient() {
     const month = adnMonthFilter === "all" ? undefined : parseInt(adnMonthFilter)
     const year = parseInt(adnYearFilter)
     try {
-      const adnRes = await getAdnDiagnostics({ month, year, limitTo30Days: adnMonthFilter === "all" })
+      const adnRes = await getAdnDiagnostics({ month, year, limitTo30Days: false })
       if (adnRes.success && adnRes.diagnostics) {
         setAdnList(adnRes.diagnostics)
       }
@@ -1458,7 +1458,7 @@ export default function AdminClient() {
                   onChange={(e) => setCotiMonth(e.target.value)}
                   className="flex h-10 w-full md:w-36 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none"
                 >
-                  <option value="all">Últimos 30 días</option>
+                  <option value="all">Todo el Histórico</option>
                   <option value="0">Enero</option>
                   <option value="1">Febrero</option>
                   <option value="2">Marzo</option>
@@ -1477,7 +1477,6 @@ export default function AdminClient() {
                   value={cotiYear}
                   onChange={(e) => setCotiYear(e.target.value)}
                   className="flex h-10 w-full md:w-28 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none"
-                  disabled={cotiMonth === "all"}
                 >
                   <option value="2024">2024</option>
                   <option value="2025">2025</option>
@@ -2027,7 +2026,7 @@ export default function AdminClient() {
                     onChange={(e) => setAdnMonthFilter(e.target.value)}
                     className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs focus-visible:outline-none"
                   >
-                    <option value="all">Últimos 30 días</option>
+                    <option value="all">Todo el Histórico</option>
                     <option value="0">Enero</option>
                     <option value="1">Febrero</option>
                     <option value="2">Marzo</option>
@@ -2049,7 +2048,6 @@ export default function AdminClient() {
                     value={adnYearFilter}
                     onChange={(e) => setAdnYearFilter(e.target.value)}
                     className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1.5 text-xs focus-visible:outline-none"
-                    disabled={adnMonthFilter === "all"}
                   >
                     <option value="2024">2024</option>
                     <option value="2025">2025</option>

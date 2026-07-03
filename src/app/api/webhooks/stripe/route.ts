@@ -126,6 +126,28 @@ export async function POST(req: Request) {
           data: { purchasedSeats: { increment: 1 } }
         });
       }
+    } else if (session.metadata?.isPromoterPackage === 'true') {
+      const promoterEmail = session.metadata?.promoterEmail;
+      const discountCodeStr = session.metadata?.discountCodeStr;
+
+      if (promoterEmail) {
+        await prisma.promotorSaldo.upsert({
+          where: { promotor_email: promoterEmail },
+          create: { promotor_email: promoterEmail, dias_disponibles: 7 },
+          update: { dias_disponibles: { increment: 7 } },
+        });
+      }
+
+      if (discountCodeStr) {
+        try {
+          await prisma.discountCode.update({
+            where: { code: discountCodeStr },
+            data: { uses: { increment: 1 } },
+          });
+        } catch (err) {
+          console.error("Error updating discount code uses:", err);
+        }
+      }
     } else {
       const agencyId = session.metadata?.agencyId;
       const daysToAddStr = session.metadata?.daysToAdd;
