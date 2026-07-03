@@ -5,7 +5,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { LifeBuoy, Send, CheckCircle2, BookOpen } from "lucide-react";
+import { LifeBuoy, Send, CheckCircle2, BookOpen, X, ImageIcon } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
@@ -13,6 +13,7 @@ export default function SupportPage() {
     const [subject, setSubject] = useState("");
     const [description, setDescription] = useState("");
     const [contactPhone, setContactPhone] = useState("");
+    const [file, setFile] = useState<File | null>(null);
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const { toast } = useToast();
@@ -22,10 +23,17 @@ export default function SupportPage() {
         setLoading(true);
 
         try {
+            const formData = new FormData();
+            formData.append("subject", subject);
+            formData.append("description", description);
+            formData.append("contactPhone", contactPhone);
+            if (file) {
+                formData.append("file", file);
+            }
+
             const res = await fetch("/api/support", {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ subject, description, contactPhone })
+                body: formData // NO setear Content-Type, fetch lo calcula auto para boundary multipart
             });
 
             const data = await res.json();
@@ -53,7 +61,7 @@ export default function SupportPage() {
                 <CheckCircle2 className="w-16 h-16 text-green-500 mb-4" />
                 <h2 className="text-2xl font-bold text-slate-800 dark:text-zinc-200">¡Ticket Registrado!</h2>
                 <p className="text-slate-500 mt-2 max-w-md text-center">Nuestro equipo de soporte técnico ha sido notificado y se pondrá en contacto contigo muy pronto.</p>
-                <Button className="mt-6" onClick={() => { setSuccess(false); setSubject(""); setDescription(""); setContactPhone(""); }}>
+                <Button className="mt-6" onClick={() => { setSuccess(false); setSubject(""); setDescription(""); setContactPhone(""); setFile(null); }}>
                     Enviar otro ticket
                 </Button>
             </div>
@@ -117,7 +125,52 @@ export default function SupportPage() {
                                 required 
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
+                                onPaste={(e) => {
+                                    const items = e.clipboardData?.items;
+                                    if (!items) return;
+                                    for (let i = 0; i < items.length; i++) {
+                                        if (items[i].type.indexOf("image") !== -1) {
+                                            const blob = items[i].getAsFile();
+                                            if (blob) setFile(blob);
+                                        }
+                                    }
+                                }}
                             />
+                        </div>
+                        
+                        <div className="space-y-2">
+                            <label className="text-sm font-semibold text-slate-700 dark:text-zinc-300 flex items-center gap-2">
+                                <ImageIcon className="w-4 h-4 text-blue-500" /> Adjuntar Captura de Pantalla (Opcional)
+                            </label>
+                            
+                            {file ? (
+                                <div className="relative inline-block mt-2 border border-slate-200 dark:border-zinc-800 rounded-lg p-2 bg-slate-50 dark:bg-zinc-900 w-fit">
+                                    <img 
+                                        src={URL.createObjectURL(file)} 
+                                        alt="Preview" 
+                                        className="h-32 object-contain rounded-md"
+                                    />
+                                    <button 
+                                        type="button" 
+                                        onClick={() => setFile(null)}
+                                        className="absolute -top-3 -right-3 bg-rose-500 text-white rounded-full p-1.5 shadow hover:bg-rose-600 transition-colors"
+                                    >
+                                        <X className="w-3 h-3" />
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="mt-2">
+                                    <Input 
+                                        type="file" 
+                                        accept="image/*"
+                                        onChange={(e) => setFile(e.target.files?.[0] || null)}
+                                        className="cursor-pointer"
+                                    />
+                                    <p className="text-xs text-slate-500 mt-2">
+                                        💡 <strong>Tip:</strong> Puedes tomar una captura y pegarla directamente usando <strong>Ctrl+V</strong> sobre la caja de texto de arriba.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-slate-700 dark:text-zinc-300">Número de Contacto (WhatsApp / Teléfono)</label>

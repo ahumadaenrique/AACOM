@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
+import { put } from "@vercel/blob";
 
 export async function POST(req: Request) {
     try {
@@ -10,7 +11,11 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "No autenticado" }, { status: 401 });
         }
 
-        const { subject, description, contactPhone } = await req.json();
+        const formData = await req.formData();
+        const subject = formData.get("subject") as string;
+        const description = formData.get("description") as string;
+        const contactPhone = formData.get("contactPhone") as string;
+        const file = formData.get("file") as File | null;
 
         if (!subject || !description || !contactPhone) {
             return NextResponse.json({ error: "Faltan datos en el ticket" }, { status: 400 });
@@ -25,6 +30,17 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
         }
 
+        let imageUrl = null;
+        if (file) {
+            try {
+                const filename = `tickets/${user.id}-${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
+                const blob = await put(filename, file, { access: 'public' });
+                imageUrl = blob.url;
+            } catch (err) {
+                console.error("Error subiendo imagen a Vercel Blob:", err);
+            }
+        }
+
         // 1. Guardar el Ticket en la Base de Datos
         const newTicket = await prisma.ticket.create({
             data: {
@@ -33,7 +49,8 @@ export async function POST(req: Request) {
                 subject,
                 description,
                 contactPhone,
-                status: "OPEN"
+                status: "OPEN",
+                imageUrl
             }
         });
 
@@ -61,6 +78,10 @@ export async function POST(req: Request) {
                         <hr />
                         <h3>Descripción del Problema:</h3>
                         <p>${description}</p>
+                        ${imageUrl ? `<br /><h3>Captura de Pantalla:</h3>
+                        <a href="${imageUrl}" target="_blank">
+                          <img src="${imageUrl}" alt="Captura del bug" style="max-width:100%; max-height:400px; border-radius:8px; border:1px solid #ccc;"/>
+                        </a>` : ''}
                         <br />
                         <p><i>Para responder a este ticket, contacta directamente al usuario o revisa tu panel de SuperAdmin.</i></p>
                     `

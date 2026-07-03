@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import ResolveButton from "./ResolveButton";
-import { LifeBuoy, Inbox, CheckCircle } from "lucide-react";
+import { LifeBuoy, Inbox, CheckCircle, Image as ImageIcon } from "lucide-react";
 
 export const metadata = {
   title: "Bandeja de Soporte - AACOM",
@@ -86,6 +86,15 @@ export default async function TicketsAdminPage() {
                     <div>
                       <h3 className="text-lg font-black text-slate-800 dark:text-slate-100">{ticket.subject}</h3>
                       <p className="text-sm text-slate-600 dark:text-slate-400 mt-1 whitespace-pre-wrap">{ticket.description}</p>
+                      
+                      {ticket.imageUrl && (
+                        <div className="mt-4 mb-2">
+                          <a href={ticket.imageUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline bg-blue-50 dark:bg-blue-900/30 border border-blue-100 dark:border-blue-900/50 px-3 py-1.5 rounded-lg transition-colors">
+                            <ImageIcon className="w-4 h-4" />
+                            Ver Captura Adjunta
+                          </a>
+                        </div>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-4 text-xs font-semibold text-slate-500 bg-slate-50 dark:bg-zinc-900 w-fit px-3 py-2 rounded-xl border border-slate-100 dark:border-zinc-800">
                       <div><span className="text-slate-400">Usuario:</span> {ticket.user.name} ({ticket.user.email})</div>
@@ -116,7 +125,10 @@ export default async function TicketsAdminPage() {
                     <span className="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 text-[10px] font-black px-2 py-0.5 rounded uppercase tracking-wider">
                       {ticket.status}
                     </span>
-                    <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300">{ticket.subject}</h3>
+                    <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                      {ticket.subject}
+                      {ticket.imageUrl && <ImageIcon className="w-3.5 h-3.5 text-slate-400" title="Contiene imagen" />}
+                    </h3>
                   </div>
                   <p className="text-xs text-slate-500 line-clamp-1">{ticket.description}</p>
                 </div>
