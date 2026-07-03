@@ -127,7 +127,11 @@ export default async function TicketsAdminPage() {
                     </span>
                     <h3 className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-2">
                       {ticket.subject}
-                      {ticket.imageUrl && <ImageIcon className="w-3.5 h-3.5 text-slate-400" title="Contiene imagen" />}
+                      {ticket.imageUrl && (
+                        <span title="Contiene imagen">
+                          <ImageIcon className="w-3.5 h-3.5 text-slate-400" />
+                        </span>
+                      )}
                     </h3>
                   </div>
                   <p className="text-xs text-slate-500 line-clamp-1">{ticket.description}</p>
