@@ -1139,7 +1139,7 @@ export async function getActivityHistory(targetUserId?: string) {
 // RANKING DE AGENTES & ADNs ACTIONS
 // ==========================================
 
-export async function getMonthlyAdnRankings() {
+export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear?: number) {
     try {
         const session = await auth();
         if (!session?.user?.email) return { success: false, rankings: [], rankingAd: null, message: "No autenticado" };
@@ -1162,8 +1162,8 @@ export async function getMonthlyAdnRankings() {
         // -------------------------------------------------------------
 
         const now = new Date();
-        const year = now.getFullYear();
-        const month = now.getMonth(); // 0-indexed
+        const year = selectedYear !== undefined ? selectedYear : now.getFullYear();
+        const month = selectedMonth !== undefined ? selectedMonth : now.getMonth(); // 0-indexed
 
         // Mexico City Time Month Start and End
         // We can do it safely by defining standard dates:

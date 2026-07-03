@@ -34,6 +34,10 @@ interface RankingAd {
 }
 
 export default function RankingPage() {
+    const now = new Date();
+    const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth());
+    const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
+    
     const [rankings, setRankings] = useState<UserRank[]>([]);
     const [campaignAd, setCampaignAd] = useState<RankingAd | null>(null);
     const [agencyName, setAgencyName] = useState<string>("la Agencia");
@@ -43,7 +47,7 @@ export default function RankingPage() {
     const loadRankings = async () => {
         try {
             setLoading(true);
-            const res = await getMonthlyAdnRankings();
+            const res = await getMonthlyAdnRankings(selectedMonth, selectedYear);
             if (res.success) {
                 setRankings(res.rankings as any);
                 setCampaignAd(res.rankingAd as any);
@@ -58,7 +62,7 @@ export default function RankingPage() {
 
     useEffect(() => {
         loadRankings();
-    }, []);
+    }, [selectedMonth, selectedYear]);
 
     // Get initials for profile picture fallback
     const getInitials = (name: string) => {
@@ -117,7 +121,13 @@ export default function RankingPage() {
         );
     }
 
-    const currentMonthName = new Date().toLocaleDateString("es-MX", { month: "long" });
+    const months = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+    
+    const currentYear = new Date().getFullYear();
+    const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
     // Separate Top 3 from the rest (Top 10 lists)
     const topThree = rankings.slice(0, 3);
@@ -127,17 +137,35 @@ export default function RankingPage() {
         <div className="flex flex-col gap-8 w-full max-w-lg mx-auto py-2 md:max-w-6xl md:px-0">
             {/* HEADER */}
             <div className="flex flex-col gap-1.5 px-4 md:px-0">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                     <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-zinc-100">
                         Ranking de Agentes
                     </h1>
-                    <span className="bg-teal-100 text-teal-800 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider dark:bg-teal-900/40 dark:text-teal-400">
-                        Mes de {currentMonthName}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <select 
+                            value={selectedMonth} 
+                            onChange={(e) => setSelectedMonth(Number(e.target.value))}
+                            className="bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900 text-teal-800 dark:text-teal-400 text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider outline-none focus:ring-2 focus:ring-teal-500 transition-all cursor-pointer"
+                        >
+                            {months.map((m, i) => (
+                                <option key={i} value={i}>{m}</option>
+                            ))}
+                        </select>
+                        
+                        <select 
+                            value={selectedYear} 
+                            onChange={(e) => setSelectedYear(Number(e.target.value))}
+                            className="bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900 text-teal-800 dark:text-teal-400 text-xs font-black px-3 py-1.5 rounded-full outline-none focus:ring-2 focus:ring-teal-500 transition-all cursor-pointer"
+                        >
+                            {years.map(y => (
+                                <option key={y} value={y}>{y}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
                 <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
                     <TrendingUp className="h-3.5 w-3.5 text-teal-600" />
-                    Líderes de la promotoria ordenados por la cantidad de diagnósticos de ADN completados este mes.
+                    Líderes de la promotoria ordenados por la cantidad de diagnósticos de ADN completados en {months[selectedMonth].toLowerCase()} del {selectedYear}.
                 </p>
             </div>
 
