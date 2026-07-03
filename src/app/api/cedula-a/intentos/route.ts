@@ -21,22 +21,22 @@ export async function GET(req: NextRequest) {
   try {
     if (isPromoter(currentUserEmail, session.user.role)) {
       if (targetEmail) {
-        const rows = await prisma.$queryRawUnsafe<any[]>(
-          "SELECT id, calificacion, aprobado, respuestas_correctas, total_preguntas, detalles_modulos, fecha FROM examen_intentos WHERE email = $1 ORDER BY fecha DESC",
-          targetEmail.toLowerCase()
-        )
+        const rows = await prisma.examenIntento.findMany({
+          where: { email: targetEmail.toLowerCase() },
+          orderBy: { fecha: 'desc' }
+        })
         return NextResponse.json(rows)
       } else {
-        const rows = await prisma.$queryRawUnsafe<any[]>(
-          "SELECT id, email, calificacion, aprobado, respuestas_correctas, total_preguntas, detalles_modulos, fecha FROM examen_intentos ORDER BY fecha DESC"
-        )
+        const rows = await prisma.examenIntento.findMany({
+          orderBy: { fecha: 'desc' }
+        })
         return NextResponse.json(rows)
       }
     } else {
-      const rows = await prisma.$queryRawUnsafe<any[]>(
-        "SELECT id, calificacion, aprobado, respuestas_correctas, total_preguntas, detalles_modulos, fecha FROM examen_intentos WHERE email = $1 ORDER BY fecha DESC",
-        currentUserEmail.toLowerCase()
-      )
+      const rows = await prisma.examenIntento.findMany({
+        where: { email: currentUserEmail.toLowerCase() },
+        orderBy: { fecha: 'desc' }
+      })
       return NextResponse.json(rows)
     }
   } catch (err: any) {
@@ -61,14 +61,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    const rows = await prisma.$queryRawUnsafe<any[]>(
-      `INSERT INTO examen_intentos (email, calificacion, aprobado, respuestas_correctas, total_preguntas, detalles_modulos) 
-       VALUES ($1, $2, $3, $4, $5, $6) 
-       RETURNING id, fecha`,
-      currentUserEmail.toLowerCase(), calificacion, aprobado, respuestas_correctas, total_preguntas, JSON.stringify(detalles_modulos || {})
-    )
+    const intento = await prisma.examenIntento.create({
+      data: {
+        email: currentUserEmail.toLowerCase(),
+        calificacion,
+        aprobado,
+        respuestas_correctas,
+        total_preguntas,
+        detalles_modulos: detalles_modulos || {}
+      }
+    })
 
-    return NextResponse.json({ success: true, attempt: rows[0] })
+    return NextResponse.json({ success: true, attempt: { id: intento.id, fecha: intento.fecha } })
   } catch (err: any) {
     console.error("Error in POST intentos:", err)
     return NextResponse.json({ error: "Database error", details: err.message }, { status: 500 })

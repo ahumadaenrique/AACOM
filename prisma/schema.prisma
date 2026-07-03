@@ -499,3 +499,64 @@ model AIAgent {
   userId    String
   user      User     @relation(fields: [userId], references: [id])
 }
+
+// ----------------------------------------------------------------------------
+// Módulo de Academia (Cédula A)
+// ----------------------------------------------------------------------------
+
+model Pregunta {
+  id        Int     @id @default(autoincrement())
+  number    Int
+  module    String
+  question  String
+  options   Json
+  correct   Int
+  has_error Boolean @default(false)
+
+  @@map("preguntas")
+}
+
+model EstudioProgreso {
+  id                  Int       @id @default(autoincrement())
+  email               String
+  module              String
+  tiempo_segundos     Int?      @default(0)
+  pregunta_actual     Int?      @default(0)
+  fecha_actualizacion DateTime? @default(now())
+
+  @@unique([email, module])
+  @@map("estudio_progreso")
+}
+
+model ExamenIntento {
+  id                   Int       @id @default(autoincrement())
+  email                String
+  calificacion         Decimal
+  aprobado             Boolean
+  respuestas_correctas Int
+  total_preguntas      Int
+  detalles_modulos     Json?
+  fecha                DateTime? @default(now())
+
+  @@map("examen_intentos")
+}
+
+model EstudioLicencia {
+  id               Int       @id @default(autoincrement())
+  promotor_email   String
+  agente_email     String
+  dias_asignados   Int?      @default(0)
+  fecha_asignacion DateTime? @default(now())
+  fecha_expiracion DateTime?
+
+  @@unique([promotor_email, agente_email])
+  @@map("estudio_licencias")
+}
+
+model PromotorSaldo {
+  promotor_email      String    @id
+  dias_disponibles    Int?      @default(7)
+  fecha_actualizacion DateTime? @default(now())
+
+  @@map("promotor_saldos")
+}

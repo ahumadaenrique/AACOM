@@ -9,105 +9,7 @@ function isPromoter(email: string, role?: string) {
   return lowerEmail.includes("promotor") || role === "ADMIN" || role === "SUPER_ADMIN" || role === "PROMOTER" || role === "PROMOTOR";
 }
 
-async function ensureTablesExist() {
-  try {
-    // Check if tables already exist
-    await prisma.$queryRawUnsafe("SELECT 1 FROM promotor_saldos LIMIT 1")
-  } catch (e) {
-    console.log("Simulator tables not found. Initializing database schema...")
-    
-    // 1. Create promotor_saldos
-    await prisma.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS promotor_saldos (
-          promotor_email VARCHAR(255) PRIMARY KEY,
-          dias_disponibles INT DEFAULT 7,
-          fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `)
 
-    // 2. Create estudio_licencias
-    await prisma.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS estudio_licencias (
-          id SERIAL PRIMARY KEY,
-          promotor_email VARCHAR(255) NOT NULL,
-          agente_email VARCHAR(255) NOT NULL,
-          dias_asignados INT DEFAULT 0,
-          fecha_asignacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          fecha_expiracion TIMESTAMP,
-          UNIQUE(promotor_email, agente_email)
-      );
-    `)
-
-    // 3. Create estudio_progreso
-    await prisma.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS estudio_progreso (
-          id SERIAL PRIMARY KEY,
-          email VARCHAR(255) NOT NULL,
-          module VARCHAR(100) NOT NULL,
-          tiempo_segundos INT DEFAULT 0,
-          fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-          UNIQUE(email, module)
-      );
-    `)
-
-    // 4. Create examen_intentos
-    await prisma.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS examen_intentos (
-          id SERIAL PRIMARY KEY,
-          email VARCHAR(255) NOT NULL,
-          calificacion NUMERIC(5, 2) NOT NULL,
-          aprobado BOOLEAN NOT NULL,
-          respuestas_correctas INT NOT NULL,
-          total_preguntas INT NOT NULL,
-          detalles_modulos JSONB,
-          fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      );
-    `)
-
-    // 5. Create preguntas
-    await prisma.$executeRawUnsafe(`
-      CREATE TABLE IF NOT EXISTS preguntas (
-          id SERIAL PRIMARY KEY,
-          number INT NOT NULL,
-          module VARCHAR(100) NOT NULL,
-          question TEXT NOT NULL,
-          options JSONB NOT NULL,
-          correct INT NOT NULL,
-          has_error BOOLEAN DEFAULT FALSE
-      );
-    `)
-
-    console.log("Simulator tables initialized successfully.")
-
-    // Seed questions from preguntas.json if empty
-    try {
-      const questionsCount = await prisma.$queryRawUnsafe<any[]>("SELECT COUNT(*) FROM preguntas")
-      const count = parseInt(questionsCount[0]?.count || "0")
-      if (count === 0) {
-        const jsonPath = path.join(process.cwd(), 'public', 'cedula-a', 'preguntas.json')
-        if (fs.existsSync(jsonPath)) {
-          const questionsData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'))
-          console.log(`Seeding ${questionsData.length} questions into questions database...`)
-          // Batch seed in chunks of 50
-          for (let i = 0; i < questionsData.length; i += 50) {
-            const batch = questionsData.slice(i, i + 50)
-            for (const q of batch) {
-              await prisma.$executeRawUnsafe(
-                "INSERT INTO preguntas (number, module, question, options, correct, has_error) VALUES ($1, $2, $3, $4::jsonb, $5, $6)",
-                q.number, q.module, q.question, JSON.stringify(q.options), q.correct, q.has_error || false
-              )
-            }
-          }
-          console.log("Questions database successfully seeded.")
-        } else {
-          console.warn("preguntas.json file not found, skipping questions seeding.")
-        }
-      }
-    } catch (seedErr) {
-      console.error("Error seeding questions:", seedErr)
-    }
-  }
-}
 
 export async function GET(req: NextRequest) {
   const session = await auth()
@@ -123,31 +25,19 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Ensure all tables exist before querying them
-    await ensureTablesExist()
-
-    // Self-healing check: Ensure pregunta_actual column is added
-    try {
-      await prisma.$executeRawUnsafe("ALTER TABLE estudio_progreso ADD COLUMN IF NOT EXISTS pregunta_actual INT DEFAULT 0;")
-    } catch (alterErr) {
-      console.log("Column check/add failed or already exists:", alterErr)
-    }
-
     // 1. Get promoter balance
     let tokens = 7;
-    const balanceRows = await prisma.$queryRawUnsafe<any[]>(
-      "SELECT dias_disponibles FROM promotor_saldos WHERE promotor_email = $1",
-      promoterEmail.toLowerCase()
-    )
-    if (balanceRows.length > 0) {
-      tokens = balanceRows[0].dias_disponibles
+    const promotorEmailLow = promoterEmail.toLowerCase();
+    const saldo = await prisma.promotorSaldo.findUnique({
+      where: { promotor_email: promotorEmailLow }
+    });
+    if (saldo) {
+      tokens = saldo.dias_disponibles || 0;
     } else {
       // Initialize welcome balance in database
-      await prisma.$queryRawUnsafe(
-        "INSERT INTO promotor_saldos (promotor_email, dias_disponibles) VALUES ($1, $2)",
-        promoterEmail.toLowerCase(),
-        7
-      )
+      await prisma.promotorSaldo.create({
+        data: { promotor_email: promotorEmailLow, dias_disponibles: 7 }
+      });
     }
 
     // 2. Load promoter's agency details
@@ -192,22 +82,20 @@ export async function GET(req: NextRequest) {
     const latestAttemptMap: Record<string, any> = {};
 
     if (emails.length > 0) {
-      const placeholders = emails.map((_, i) => `$${i + 1}`).join(", ");
-
       // Bulk 1: Licenses
-      const licensesRows = await prisma.$queryRawUnsafe<any[]>(
-        `SELECT agente_email, dias_asignados, fecha_expiracion FROM estudio_licencias WHERE agente_email IN (${placeholders})`,
-        ...emails
-      );
+      const licensesRows = await prisma.estudioLicencia.findMany({
+        where: { agente_email: { in: emails } },
+        select: { agente_email: true, dias_asignados: true, fecha_expiracion: true }
+      });
       licensesRows.forEach(row => {
         licensesMap[row.agente_email.toLowerCase()] = row;
       });
 
       // Bulk 2: Progress
-      const progressRows = await prisma.$queryRawUnsafe<any[]>(
-        `SELECT email, module, tiempo_segundos, pregunta_actual FROM estudio_progreso WHERE email IN (${placeholders})`,
-        ...emails
-      );
+      const progressRows = await prisma.estudioProgreso.findMany({
+        where: { email: { in: emails } },
+        select: { email: true, module: true, tiempo_segundos: true, pregunta_actual: true }
+      });
       progressRows.forEach(row => {
         const email = row.email.toLowerCase();
         if (!progressMap[email]) {
@@ -228,23 +116,24 @@ export async function GET(req: NextRequest) {
             "Sistema y Mercados Financieros": 0
           };
         }
-        progressMap[email][row.module] = row.tiempo_segundos / 60; // convert to minutes
+        progressMap[email][row.module] = (row.tiempo_segundos || 0) / 60; // convert to minutes
         progressIndexMap[email][row.module] = row.pregunta_actual || 0;
       });
 
       // Bulk 3: Attempts
-      const attemptsRows = await prisma.$queryRawUnsafe<any[]>(
-        `SELECT email, calificacion, aprobado, fecha, detalles_modulos FROM examen_intentos WHERE email IN (${placeholders}) ORDER BY fecha ASC`,
-        ...emails
-      );
+      const attemptsRows = await prisma.examenIntento.findMany({
+        where: { email: { in: emails } },
+        orderBy: { fecha: 'asc' },
+        select: { email: true, calificacion: true, aprobado: true, fecha: true, detalles_modulos: true }
+      });
       attemptsRows.forEach(row => {
         const email = row.email.toLowerCase();
         if (!attemptsMap[email]) {
           attemptsMap[email] = [];
         }
         attemptsMap[email].push({
-          date: new Date(row.fecha).toISOString().split('T')[0],
-          score: parseFloat(row.calificacion),
+          date: row.fecha ? new Date(row.fecha).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+          score: Number(row.calificacion),
           passed: row.aprobado,
           details: row.detalles_modulos
         });
@@ -305,7 +194,7 @@ export async function GET(req: NextRequest) {
         "Sistema y Mercados Financieros": 0
       };
 
-      const latestDetails = latestAttemptMap[email];
+      const latestDetails = latestAttemptMap[email] as Record<string, any>;
       if (latestDetails) {
         Object.keys(latestDetails).forEach(mod => {
           const modData = latestDetails[mod];
@@ -333,10 +222,10 @@ export async function GET(req: NextRequest) {
     // Add promoter's own study account if they study
     let promoterSelfAgent = agentsList.find(a => a.email === promoterEmail.toLowerCase());
     if (!promoterSelfAgent) {
-      const promoterProgressRows = await prisma.$queryRawUnsafe<any[]>(
-        "SELECT module, tiempo_segundos, pregunta_actual FROM estudio_progreso WHERE email = $1",
-        promoterEmail.toLowerCase()
-      );
+      const promoterProgressRows = await prisma.estudioProgreso.findMany({
+        where: { email: promoterEmail.toLowerCase() },
+        select: { module: true, tiempo_segundos: true, pregunta_actual: true }
+      });
       
       const promoterTimesPerModule: Record<string, number> = {
         "Aspectos Generales": 0,
@@ -358,7 +247,7 @@ export async function GET(req: NextRequest) {
       
       promoterProgressRows.forEach(row => {
         if (promoterTimesPerModule[row.module] !== undefined) {
-          promoterTimesPerModule[row.module] = row.tiempo_segundos / 60;
+          promoterTimesPerModule[row.module] = (row.tiempo_segundos || 0) / 60;
           promoterStudyProgress[row.module] = row.pregunta_actual || 0;
         }
       });
@@ -369,14 +258,15 @@ export async function GET(req: NextRequest) {
       });
 
       // Load promoter's own attempts
-      const promoterAttemptsRows = await prisma.$queryRawUnsafe<any[]>(
-        "SELECT calificacion, aprobado, fecha, detalles_modulos FROM examen_intentos WHERE email = $1 ORDER BY fecha ASC",
-        promoterEmail.toLowerCase()
-      );
+      const promoterAttemptsRows = await prisma.examenIntento.findMany({
+        where: { email: promoterEmail.toLowerCase() },
+        orderBy: { fecha: 'asc' },
+        select: { calificacion: true, aprobado: true, fecha: true, detalles_modulos: true }
+      });
       
       const promoterAttempts = promoterAttemptsRows.map(row => ({
-        date: new Date(row.fecha).toISOString().split('T')[0],
-        score: parseFloat(row.calificacion),
+        date: row.fecha ? new Date(row.fecha).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        score: Number(row.calificacion),
         passed: row.aprobado,
         details: row.detalles_modulos
       }));
@@ -392,7 +282,7 @@ export async function GET(req: NextRequest) {
       };
       
       if (promoterAttemptsRows.length > 0) {
-        const latestDetails = promoterAttemptsRows[promoterAttemptsRows.length - 1].detalles_modulos;
+        const latestDetails = promoterAttemptsRows[promoterAttemptsRows.length - 1].detalles_modulos as Record<string, any>;
         if (latestDetails) {
           Object.keys(latestDetails).forEach(mod => {
             const modData = latestDetails[mod];

@@ -22,24 +22,24 @@ export async function GET(req: NextRequest) {
     if (isPromoter(currentUserEmail, session.user.role)) {
       // Promoter can read any agent's progress
       if (targetEmail) {
-        const rows = await prisma.$queryRawUnsafe<any[]>(
-          "SELECT module, tiempo_segundos, pregunta_actual FROM estudio_progreso WHERE email = $1",
-          targetEmail.toLowerCase()
-        )
+        const rows = await prisma.estudioProgreso.findMany({
+          where: { email: targetEmail.toLowerCase() },
+          select: { module: true, tiempo_segundos: true, pregunta_actual: true }
+        })
         return NextResponse.json(rows)
       } else {
         // Return progress for all agents
-        const rows = await prisma.$queryRawUnsafe<any[]>(
-          "SELECT email, module, tiempo_segundos, pregunta_actual FROM estudio_progreso"
-        )
+        const rows = await prisma.estudioProgreso.findMany({
+          select: { email: true, module: true, tiempo_segundos: true, pregunta_actual: true }
+        })
         return NextResponse.json(rows)
       }
     } else {
       // Agent can only read their own progress
-      const rows = await prisma.$queryRawUnsafe<any[]>(
-        "SELECT module, tiempo_segundos, pregunta_actual FROM estudio_progreso WHERE email = $1",
-        currentUserEmail.toLowerCase()
-      )
+      const rows = await prisma.estudioProgreso.findMany({
+        where: { email: currentUserEmail.toLowerCase() },
+        select: { module: true, tiempo_segundos: true, pregunta_actual: true }
+      })
       return NextResponse.json(rows)
     }
   } catch (err: any) {
@@ -65,16 +65,23 @@ export async function POST(req: NextRequest) {
     }
 
     // Upsert progress for the user including pregunta_actual
-    await prisma.$executeRawUnsafe(
-      `INSERT INTO estudio_progreso (email, module, tiempo_segundos, pregunta_actual) 
-       VALUES ($1, $2, $3, $4) 
-       ON CONFLICT (email, module) 
-       DO UPDATE SET 
-         tiempo_segundos = EXCLUDED.tiempo_segundos, 
-         pregunta_actual = EXCLUDED.pregunta_actual,
-         fecha_actualizacion = CURRENT_TIMESTAMP`,
-      currentUserEmail.toLowerCase(), module, tiempo_segundos, pregunta_actual || 0
-    )
+    const email = currentUserEmail.toLowerCase()
+    await prisma.estudioProgreso.upsert({
+      where: {
+        email_module: { email, module }
+      },
+      update: {
+        tiempo_segundos,
+        pregunta_actual: pregunta_actual || 0,
+        fecha_actualizacion: new Date()
+      },
+      create: {
+        email,
+        module,
+        tiempo_segundos,
+        pregunta_actual: pregunta_actual || 0
+      }
+    })
 
     return NextResponse.json({ success: true })
   } catch (err: any) {

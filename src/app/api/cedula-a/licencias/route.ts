@@ -19,26 +19,26 @@ export async function GET(req: NextRequest) {
   try {
     if (isPromoter(currentUserEmail, session.user.role)) {
       // Get promoter balance
+      const email = currentUserEmail.toLowerCase();
       let promoterBalance = 7; // Default initial tokens
-      const balanceRows = await prisma.$queryRawUnsafe<any[]>(
-        "SELECT dias_disponibles FROM promotor_saldos WHERE promotor_email = $1",
-        currentUserEmail.toLowerCase()
-      )
-      if (balanceRows.length > 0) {
-        promoterBalance = balanceRows[0].dias_disponibles
+      const saldo = await prisma.promotorSaldo.findUnique({
+        where: { promotor_email: email }
+      });
+      
+      if (saldo) {
+        promoterBalance = saldo.dias_disponibles || 0;
       } else {
         // Initialize balance
-        await prisma.$queryRawUnsafe(
-          "INSERT INTO promotor_saldos (promotor_email, dias_disponibles) VALUES ($1, $2)",
-          currentUserEmail.toLowerCase(), 7
-        )
+        await prisma.promotorSaldo.create({
+          data: { promotor_email: email, dias_disponibles: 7 }
+        });
       }
 
       // Get assigned licenses list
-      const licensesRows = await prisma.$queryRawUnsafe<any[]>(
-        "SELECT agente_email, dias_asignados, fecha_asignacion, fecha_expiracion FROM estudio_licencias WHERE promotor_email = $1",
-        currentUserEmail.toLowerCase()
-      )
+      const licensesRows = await prisma.estudioLicencia.findMany({
+        where: { promotor_email: email },
+        select: { agente_email: true, dias_asignados: true, fecha_asignacion: true, fecha_expiracion: true }
+      });
 
       return NextResponse.json({
         role: "promoter",
@@ -47,10 +47,10 @@ export async function GET(req: NextRequest) {
       })
     } else {
       // Get agent license details
-      const agentRows = await prisma.$queryRawUnsafe<any[]>(
-        "SELECT dias_asignados, fecha_expiracion FROM estudio_licencias WHERE agente_email = $1",
-        currentUserEmail.toLowerCase()
-      )
+      const agentRows = await prisma.estudioLicencia.findMany({
+        where: { agente_email: currentUserEmail.toLowerCase() },
+        select: { dias_asignados: true, fecha_expiracion: true }
+      });
       
       const license = agentRows[0] || { dias_asignados: 0, fecha_expiracion: null }
       
@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
   }
 
   const currentUserEmail = session.user.email
+  const email = currentUserEmail.toLowerCase()
 
   if (!isPromoter(currentUserEmail, session.user.role)) {
     return NextResponse.json({ error: "Only promoters can purchase or assign licenses" }, { status: 403 })
@@ -96,15 +97,12 @@ export async function POST(req: NextRequest) {
     if (action === "buy") {
       const buyDays = days || 7
       // Increment promoter tokens
-      const rows = await prisma.$queryRawUnsafe<any[]>(
-        `INSERT INTO promotor_saldos (promotor_email, dias_disponibles) 
-         VALUES ($1, $2) 
-         ON CONFLICT (promotor_email) 
-         DO UPDATE SET dias_disponibles = promotor_saldos.dias_disponibles + EXCLUDED.dias_disponibles 
-         RETURNING dias_disponibles`,
-        currentUserEmail.toLowerCase(), buyDays
-      )
-      return NextResponse.json({ success: true, tokens: rows[0].dias_disponibles })
+      const result = await prisma.promotorSaldo.upsert({
+        where: { promotor_email: email },
+        update: { dias_disponibles: { increment: buyDays } },
+        create: { promotor_email: email, dias_disponibles: buyDays }
+      });
+      return NextResponse.json({ success: true, tokens: result.dias_disponibles })
     }
 
     if (action === "assign") {
@@ -112,40 +110,54 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: "Missing agentEmail or days to assign" }, { status: 400 })
       }
 
+      const targetAgentEmail = agentEmail.toLowerCase();
+
       // Check promoter balance
-      const balanceRows = await prisma.$queryRawUnsafe<any[]>(
-        "SELECT dias_disponibles FROM promotor_saldos WHERE promotor_email = $1",
-        currentUserEmail.toLowerCase()
-      )
-      const currentBalance = balanceRows[0]?.dias_disponibles || 0
+      const saldo = await prisma.promotorSaldo.findUnique({
+        where: { promotor_email: email }
+      });
+      const currentBalance = saldo?.dias_disponibles || 0
 
       if (currentBalance < days) {
         return NextResponse.json({ error: "Insufficient days in balance" }, { status: 400 })
       }
 
-      // Calculate expiration date
-      const expDate = new Date()
-      expDate.setDate(expDate.getDate() + days)
+      await prisma.$transaction(async (tx) => {
+        // Decrease balance
+        await tx.promotorSaldo.update({
+          where: { promotor_email: email },
+          data: { dias_disponibles: { decrement: days } }
+        });
 
-      // Start Transaction using Prisma native $transaction
-      await prisma.$transaction([
-        prisma.$executeRawUnsafe(
-          "UPDATE promotor_saldos SET dias_disponibles = dias_disponibles - $1 WHERE promotor_email = $2",
-          days, currentUserEmail.toLowerCase()
-        ),
-        prisma.$executeRawUnsafe(
-          `INSERT INTO estudio_licencias (promotor_email, agente_email, dias_asignados, fecha_expiracion) 
-           VALUES ($1, $2, $3, $4::timestamp) 
-           ON CONFLICT (promotor_email, agente_email) 
-           DO UPDATE SET 
-             dias_asignados = estudio_licencias.dias_asignados + EXCLUDED.dias_asignados,
-             fecha_expiracion = CASE 
-               WHEN estudio_licencias.fecha_expiracion > NOW() THEN estudio_licencias.fecha_expiracion + ($3 * INTERVAL '1 day')
-               ELSE NOW() + ($3 * INTERVAL '1 day')
-             END`,
-          currentUserEmail.toLowerCase(), agentEmail.toLowerCase(), days, expDate.toISOString()
-        )
-      ])
+        // Get existing license to calculate new expiration date
+        const existingLic = await tx.estudioLicencia.findUnique({
+          where: {
+            promotor_email_agente_email: { promotor_email: email, agente_email: targetAgentEmail }
+          }
+        });
+
+        let newExpDate = new Date();
+        if (existingLic && existingLic.fecha_expiracion && existingLic.fecha_expiracion.getTime() > newExpDate.getTime()) {
+          newExpDate = new Date(existingLic.fecha_expiracion.getTime());
+        }
+        newExpDate.setDate(newExpDate.getDate() + days);
+
+        await tx.estudioLicencia.upsert({
+          where: {
+            promotor_email_agente_email: { promotor_email: email, agente_email: targetAgentEmail }
+          },
+          update: {
+            dias_asignados: { increment: days },
+            fecha_expiracion: newExpDate
+          },
+          create: {
+            promotor_email: email,
+            agente_email: targetAgentEmail,
+            dias_asignados: days,
+            fecha_expiracion: newExpDate
+          }
+        });
+      });
 
       return NextResponse.json({ success: true })
     }
