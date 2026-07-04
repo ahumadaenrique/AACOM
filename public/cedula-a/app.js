@@ -204,8 +204,9 @@ async function checkSession() {
         currentUser = session.user;
         console.log("Logged in user:", currentUser);
         
-        // Determine role
-        currentRole = (currentUser.email.toLowerCase().includes("promotor") || currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN" || currentUser.role === "PROMOTER" || currentUser.role === "PROMOTOR") ? "promoter" : "agent";
+        // Determine role (add hardcoded fallback for super admin email in case JWT session is stale)
+        const isSuperAdminEmail = currentUser.email === "enrique.ahumada@aacommx.com" || currentUser.email === "desarrollo.agencias@gmail.com";
+        currentRole = (currentUser.email.toLowerCase().includes("promotor") || isSuperAdminEmail || currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN" || currentUser.role === "PROMOTER" || currentUser.role === "PROMOTOR") ? "promoter" : "agent";
         
         // Load data from DB
         await refreshUserData();
