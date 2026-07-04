@@ -2196,3 +2196,31 @@ async function finishSimulatorExam(auto = false) {
     // Switch to agent dashboard and update values
     switchRole("agent");
 }
+
+// --- Mobile Navigation ---
+function toggleMobileMenu() {
+    const sidebar = document.getElementById('main-sidebar');
+    const body = document.body;
+    sidebar.classList.toggle('open');
+    body.classList.toggle('menu-open');
+}
+
+// Close menu when clicking outside backdrop (implemented via body click if target is body::after? 
+// No, CSS pseudo-elements don't trigger direct clicks easily, but we can add a listener to document.
+document.addEventListener('click', function(e) {
+    const sidebar = document.getElementById('main-sidebar');
+    if (document.body.classList.contains('menu-open') && 
+        !sidebar.contains(e.target) && 
+        !e.target.closest('.mobile-menu-btn')) {
+        toggleMobileMenu();
+    }
+});
+
+// Auto-close menu when navigating
+const originalSwitchTab = switchTab;
+switchTab = function(tabId) {
+    originalSwitchTab(tabId);
+    if (document.body.classList.contains('menu-open')) {
+        toggleMobileMenu();
+    }
+}

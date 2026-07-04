@@ -10,9 +10,25 @@
 </head>
 <body>
     <div class="app-container">
+        <!-- Mobile Header -->
+        <div class="mobile-header">
+            <div class="logo-container" style="margin-bottom:0;">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24">
+                        <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.47 18.6l-1.2-1.2L12 9.8l7.73 7.6-1.2 1.2L12 12.2l-6.53 6.4z"/>
+                    </svg>
+                </div>
+                <h1 class="logo-text">Academia</h1>
+            </div>
+            <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/></svg>
+            </button>
+        </div>
+
         <!-- Sidebar Navigation -->
-        <aside class="sidebar">
-            <div class="logo-container">
+        <aside class="sidebar" id="main-sidebar">
+            <button class="close-sidebar-btn" onclick="toggleMobileMenu()"></button>
+            <div class="logo-container desktop-logo">
                 <div class="logo-icon">
                     <svg viewBox="0 0 24 24">
                         <path d="M12 3L1 9l11 6 9-4.91V17h2V9L12 3zM5.47 18.6l-1.2-1.2L12 9.8l7.73 7.6-1.2 1.2L12 12.2l-6.53 6.4z"/>
