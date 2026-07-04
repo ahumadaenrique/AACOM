@@ -842,3 +842,103 @@ body {
     border-radius: 0 8px 8px 0;
     animation: fadeIn 0.4s ease-out;
 }
+/* Mobile Responsive Overrides */
+.mobile-header {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 24px;
+    background: rgba(18, 19, 36, 0.9);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    z-index: 20;
+}
+
+.mobile-menu-btn {
+    background: none;
+    border: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    transition: background 0.2s;
+}
+
+.mobile-menu-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.close-sidebar-btn {
+    display: none;
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 32px;
+    height: 32px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    z-index: 30;
+}
+
+.close-sidebar-btn::before, .close-sidebar-btn::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 2px;
+    background: white;
+}
+.close-sidebar-btn::before { transform: translate(-50%, -50%) rotate(45deg); }
+.close-sidebar-btn::after { transform: translate(-50%, -50%) rotate(-45deg); }
+
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+    }
+    .mobile-header {
+        display: flex;
+    }
+    .main-content {
+        height: calc(100vh - 70px);
+        padding: 16px;
+    }
+    .sidebar {
+        position: fixed;
+        top: 0;
+        left: -100%;
+        width: 280px;
+        height: 100vh;
+        transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 10px 0 30px rgba(0,0,0,0.5);
+        z-index: 100;
+    }
+    .sidebar.open {
+        left: 0;
+    }
+    .desktop-logo {
+        display: none;
+    }
+    .close-sidebar-btn {
+        display: block;
+    }
+    /* Backdrop */
+    body::after {
+        content: '';
+        position: fixed;
+        top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.5);
+        backdrop-filter: blur(4px);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s;
+        z-index: 90;
+    }
+    body.menu-open::after {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
