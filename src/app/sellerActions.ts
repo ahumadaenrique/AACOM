@@ -55,6 +55,42 @@ export async function createSeller(data: { name: string, email: string, commissi
     return seller;
 }
 
+export async function updateSeller(sellerId: string, data: { name: string, commissionRate: number }) {
+    const session = await auth();
+    if (!session?.user || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'ADMIN')) {
+        throw new Error("Unauthorized");
+    }
+
+    const seller = await prisma.user.update({
+        where: { id: sellerId },
+        data: {
+            name: data.name,
+            sellerCommissionRate: data.commissionRate
+        }
+    });
+
+    revalidatePath("/admin/vendedores");
+    return seller;
+}
+
+export async function deleteSeller(sellerId: string) {
+    const session = await auth();
+    if (!session?.user || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'ADMIN')) {
+        throw new Error("Unauthorized");
+    }
+
+    // Soft delete para mantener historial de comisiones y agencias referidas
+    const seller = await prisma.user.update({
+        where: { id: sellerId },
+        data: {
+            active: false
+        }
+    });
+
+    revalidatePath("/admin/vendedores");
+    return seller;
+}
+
 export async function updateSellerCommission(sellerId: string, commissionRate: number) {
     const session = await auth();
     if (!session?.user || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'ADMIN')) {

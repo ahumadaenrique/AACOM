@@ -6,16 +6,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Users, DollarSign, Tag, CheckCircle, Plus } from "lucide-react"
-import { createSeller, updateSellerCommission, generateSellerCoupon, markCommissionAsPaid, markAllSellerCommissionsAsPaid } from "@/app/sellerActions"
+import { Users, DollarSign, Tag, CheckCircle, Plus, Trash2, Edit2, X, Save } from "lucide-react"
+import { createSeller, updateSeller, deleteSeller, updateSellerCommission, generateSellerCoupon, markCommissionAsPaid, markAllSellerCommissionsAsPaid } from "@/app/sellerActions"
 import { useToast } from "@/hooks/use-toast"
 
 export default function VendedoresClient({ initialSellers }: { initialSellers: any[] }) {
     const { toast } = useToast()
-    const [sellers, setSellers] = useState(initialSellers)
+    const [sellers, setSellers] = useState(initialSellers.filter(s => s.active))
     const [loading, setLoading] = useState(false)
     const [newSeller, setNewSeller] = useState({ name: "", email: "", commissionRate: 40 })
     const [newCoupon, setNewCoupon] = useState({ sellerId: "", code: "", discountPercentage: 10 })
+    const [editingSellerId, setEditingSellerId] = useState<string | null>(null)
+    const [editSellerData, setEditSellerData] = useState({ name: "", commissionRate: 40 })
 
     const handleCreateSeller = async () => {
         if (!newSeller.name || !newSeller.email) return toast({ variant: "destructive", title: "Faltan datos" });
@@ -23,6 +25,32 @@ export default function VendedoresClient({ initialSellers }: { initialSellers: a
         try {
             await createSeller(newSeller);
             toast({ title: "Vendedor creado (Contraseña: seller123)" });
+            window.location.reload();
+        } catch (e: any) {
+            toast({ variant: "destructive", title: e.message });
+        }
+        setLoading(false);
+    }
+
+    const handleDeleteSeller = async (sellerId: string) => {
+        if (!confirm("¿Estás seguro de eliminar a este vendedor? Ya no tendrá acceso al sistema ni cobrará comisiones nuevas.")) return;
+        setLoading(true);
+        try {
+            await deleteSeller(sellerId);
+            toast({ title: "Vendedor eliminado" });
+            window.location.reload();
+        } catch (e: any) {
+            toast({ variant: "destructive", title: e.message });
+        }
+        setLoading(false);
+    }
+
+    const handleUpdateSeller = async (sellerId: string) => {
+        if (!editSellerData.name) return toast({ variant: "destructive", title: "El nombre no puede estar vacío" });
+        setLoading(true);
+        try {
+            await updateSeller(sellerId, editSellerData);
+            toast({ title: "Vendedor actualizado" });
             window.location.reload();
         } catch (e: any) {
             toast({ variant: "destructive", title: e.message });
@@ -107,8 +135,18 @@ export default function VendedoresClient({ initialSellers }: { initialSellers: a
                                         <Users className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
                                     </div>
                                     <div>
-                                        <h3 className="text-lg font-semibold text-indigo-900 dark:text-indigo-300">{seller.name}</h3>
-                                        <p className="text-sm text-indigo-700/70 dark:text-indigo-400/70">{seller.email} • Comisión Base: {seller.sellerCommissionRate}%</p>
+                                        {editingSellerId === seller.id ? (
+                                            <div className="flex items-center gap-2">
+                                                <Input className="h-7 w-40 text-sm" value={editSellerData.name} onChange={e => setEditSellerData({...editSellerData, name: e.target.value})} />
+                                                <span className="text-sm">Comisión:</span>
+                                                <Input type="number" className="h-7 w-20 text-sm" max="100" value={editSellerData.commissionRate} onChange={e => setEditSellerData({...editSellerData, commissionRate: Number(e.target.value)})} />%
+                                            </div>
+                                        ) : (
+                                            <>
+                                                <h3 className="text-lg font-semibold text-indigo-900 dark:text-indigo-300">{seller.name}</h3>
+                                                <p className="text-sm text-indigo-700/70 dark:text-indigo-400/70">{seller.email} • Comisión Base: {seller.sellerCommissionRate}%</p>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex gap-4 text-center">
@@ -123,6 +161,29 @@ export default function VendedoresClient({ initialSellers }: { initialSellers: a
                                     <div>
                                         <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Pagado</p>
                                         <p className="font-bold text-emerald-600 dark:text-emerald-500">${paidCommissions.toFixed(2)}</p>
+                                    </div>
+                                    
+                                    {/* Controles del Vendedor */}
+                                    <div className="flex flex-col gap-2 ml-4 border-l pl-4 border-indigo-100 dark:border-indigo-900/30">
+                                        {editingSellerId === seller.id ? (
+                                            <>
+                                                <Button size="sm" variant="default" onClick={() => handleUpdateSeller(seller.id)} disabled={loading} className="h-7 text-xs bg-indigo-600 hover:bg-indigo-700 text-white">
+                                                    <Save className="w-3 h-3 mr-1" /> Guardar
+                                                </Button>
+                                                <Button size="sm" variant="ghost" onClick={() => setEditingSellerId(null)} disabled={loading} className="h-7 text-xs">
+                                                    <X className="w-3 h-3 mr-1" /> Cancelar
+                                                </Button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Button size="sm" variant="outline" onClick={() => { setEditingSellerId(seller.id); setEditSellerData({ name: seller.name, commissionRate: seller.sellerCommissionRate || 0 }); }} disabled={loading} className="h-7 text-xs text-indigo-700 border-indigo-200 hover:bg-indigo-50">
+                                                    <Edit2 className="w-3 h-3 mr-1" /> Editar
+                                                </Button>
+                                                <Button size="sm" variant="outline" onClick={() => handleDeleteSeller(seller.id)} disabled={loading} className="h-7 text-xs text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700">
+                                                    <Trash2 className="w-3 h-3 mr-1" /> Eliminar
+                                                </Button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
