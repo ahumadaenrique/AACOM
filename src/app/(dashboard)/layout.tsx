@@ -181,82 +181,97 @@ export default async function DashboardLayout({
                                     <Wallet className="h-4 w-4 text-green-600" />
                                     Mi Cartera
                                 </Link>
-                                <Link
-                                    href="/assistant"
-                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                                >
-                                    <MessageSquare className="h-4 w-4 text-pink-500" />
-                                    Asistente {shortAgencyName}
-                                </Link>
-                                <Link
-                                    href="/documentacion"
-                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1 text-teal-600 dark:text-teal-400"
-                                >
-                                    <Book className="h-4 w-4" />
-                                    Mi Biblioteca
-                                </Link>
-                                <Link
-                                    href="/cotizador"
-                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1 text-teal-600 dark:text-teal-400"
-                                >
-                                    <Calculator className="h-4 w-4" />
-                                    Cotizador
-                                </Link>
-                                <Link
-                                    href="/adn"
-                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                                >
-                                    <HeartPulse className="h-4 w-4 text-red-500" />
-                                    ADN
-                                </Link>
-                                <Link
-                                    href="/academia"
-                                    className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                                >
-                                    <GraduationCap className="h-4 w-4 text-purple-500" />
-                                    Academia
-                                </Link>
 
+                                {/* Dropdown Herramientas */}
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1 outline-none">
+                                            <Sparkles className="h-4 w-4 text-pink-500" />
+                                            Herramientas
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="start" className="w-48">
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/assistant" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                <MessageSquare className="h-4 w-4 text-pink-500" />
+                                                Asistente {shortAgencyName}
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/documentacion" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                <Book className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                                                Mi Biblioteca
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/cotizador" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                <Calculator className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                                                Cotizador
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/adn" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                <HeartPulse className="h-4 w-4 text-red-500" />
+                                                ADN
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/academia" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                <GraduationCap className="h-4 w-4 text-purple-500" />
+                                                Academia
+                                            </Link>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+
+                                {/* Dropdown Administración */}
                                 {isAdmin && (
-                                    <>
-                                        <Link
-                                            href="/votaciones"
-                                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                                        >
-                                            <Sparkles className="h-4 w-4 text-amber-500" />
-                                            Votaciones
-                                        </Link>
-                                        <Link
-                                            href="/admin"
-                                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold"
-                                        >
-                                            Admin
-                                        </Link>
-                                        <Link
-                                            href="/reportes"
-                                            className="text-muted-foreground transition-colors hover:text-foreground font-semibold"
-                                        >
-                                            Reportes
-                                        </Link>
-                                    </>
-                                )}
-                                {isSuperAdmin && (
-                                    <Link
-                                        href="/agencias"
-                                        className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                                    >
-                                        <Building2 className="h-4 w-4 text-purple-600" />
-                                        Agencias SaaS
-                                    </Link>
-                                )}
-                                {isSuperAdmin && (
-                                    <Link
-                                        href="/admin/vendedores"
-                                        className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
-                                    >
-                                        <Users className="h-4 w-4 text-rose-500" />
-                                        Vendedores
-                                    </Link>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1 outline-none">
+                                                <Settings className="h-4 w-4 text-slate-500" />
+                                                Admin
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="start" className="w-48">
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/votaciones" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <Sparkles className="h-4 w-4 text-amber-500" />
+                                                    Votaciones
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <Settings className="h-4 w-4" />
+                                                    Dashboard Admin
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/reportes" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <ClipboardCheck className="h-4 w-4" />
+                                                    Reportes
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            
+                                            {isSuperAdmin && (
+                                                <>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href="/agencias" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                            <Building2 className="h-4 w-4 text-purple-600" />
+                                                            Agencias SaaS
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href="/admin/vendedores" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                            <Users className="h-4 w-4 text-rose-500" />
+                                                            Vendedores
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                </>
+                                            )}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
                                 )}
                             </>
                         )}
@@ -274,8 +289,8 @@ export default async function DashboardLayout({
                                 <span className="sr-only">Toggle navigation menu</span>
                             </Button>
                         </SheetTrigger>
-                        <SheetContent side="left" className="w-[280px]">
-                            <nav className="grid gap-6 text-lg font-medium">
+                        <SheetContent side="left" className="w-[280px] sm:w-[350px] overflow-y-auto pb-10">
+                            <nav className="flex flex-col gap-6 text-lg font-medium">
                                 <Link
                                     href="/"
                                     className="flex items-center gap-2 text-lg font-semibold mb-4"
