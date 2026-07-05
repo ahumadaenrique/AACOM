@@ -52,13 +52,37 @@ export default async function CarteraDashboard({
 
   const totalPremium = policies.reduce((acc, curr) => acc + (curr.annualPremium || 0), 0);
 
-  // Filtrar las que están por vencer en los próximos X días
-  const upcomingRenewals = policies.filter(
+  // Filtrar las que están por vencer o cumplen aniversario en los próximos X días
+  const getNextAnniversary = (effectiveDate: Date | null, renewalDate: Date | null) => {
+    if (!effectiveDate) return null;
+    const todayZero = new Date();
+    todayZero.setHours(0, 0, 0, 0); // Para evitar problemas de horas
+    const anniv = new Date(effectiveDate);
+    anniv.setFullYear(todayZero.getFullYear());
+    
+    // Si el aniversario de este año ya pasó, el próximo es el año que viene
+    if (isBefore(anniv, todayZero)) {
+      anniv.setFullYear(todayZero.getFullYear() + 1);
+    }
+    
+    // Si el próximo aniversario es después de la fecha de vencimiento real, usamos el vencimiento
+    if (renewalDate && isAfter(anniv, new Date(renewalDate))) {
+      return new Date(renewalDate);
+    }
+    
+    return anniv;
+  };
+
+  const upcomingRenewals = policies.map(p => {
+    const nextAnniv = getNextAnniversary(p.effectiveDate ? new Date(p.effectiveDate) : null, p.renewalDate ? new Date(p.renewalDate) : null);
+    const dateToCheck = nextAnniv || (p.renewalDate ? new Date(p.renewalDate) : null);
+    return { ...p, dateToCheck };
+  }).filter(
     (p) =>
-      p.renewalDate &&
-      isAfter(new Date(p.renewalDate), today) &&
-      isBefore(new Date(p.renewalDate), futureDate)
-  );
+      p.dateToCheck &&
+      isAfter(new Date(p.dateToCheck), today) &&
+      isBefore(new Date(p.dateToCheck), futureDate)
+  ).sort((a, b) => (a.dateToCheck as Date).getTime() - (b.dateToCheck as Date).getTime());
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-8">
@@ -169,7 +193,7 @@ export default async function CarteraDashboard({
                     </div>
                     <div className="flex flex-col items-end mt-2 md:mt-0 text-right">
                       <span className="font-bold text-orange-600">
-                        Vence: {policy.renewalDate ? format(new Date(policy.renewalDate), "dd MMM yyyy", { locale: es }) : "N/A"}
+                        Vence/Aniv: {policy.dateToCheck ? format(new Date(policy.dateToCheck), "dd MMM yyyy", { locale: es }) : "N/A"}
                       </span>
                       <span className="text-sm">
                         Prima:{" "}
