@@ -8,36 +8,37 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Users, DollarSign, Tag, CheckCircle, Plus } from "lucide-react"
 import { createSeller, updateSellerCommission, generateSellerCoupon, markCommissionAsPaid, markAllSellerCommissionsAsPaid } from "@/app/sellerActions"
-import { toast } from "sonner"
+import { useToast } from "@/hooks/use-toast"
 
 export default function VendedoresClient({ initialSellers }: { initialSellers: any[] }) {
+    const { toast } = useToast()
     const [sellers, setSellers] = useState(initialSellers)
     const [loading, setLoading] = useState(false)
     const [newSeller, setNewSeller] = useState({ name: "", email: "", commissionRate: 40 })
     const [newCoupon, setNewCoupon] = useState({ sellerId: "", code: "", discountPercentage: 10 })
 
     const handleCreateSeller = async () => {
-        if (!newSeller.name || !newSeller.email) return toast.error("Faltan datos");
+        if (!newSeller.name || !newSeller.email) return toast({ variant: "destructive", title: "Faltan datos" });
         setLoading(true);
         try {
             await createSeller(newSeller);
-            toast.success("Vendedor creado (Contraseña: seller123)");
+            toast({ title: "Vendedor creado (Contraseña: seller123)" });
             window.location.reload();
         } catch (e: any) {
-            toast.error(e.message);
+            toast({ variant: "destructive", title: e.message });
         }
         setLoading(false);
     }
 
     const handleCreateCoupon = async (sellerId: string) => {
-        if (!newCoupon.code || newCoupon.discountPercentage > 30) return toast.error("Código inválido o descuento > 30%");
+        if (!newCoupon.code || newCoupon.discountPercentage > 30) return toast({ variant: "destructive", title: "Código inválido o descuento > 30%" });
         setLoading(true);
         try {
             await generateSellerCoupon(sellerId, newCoupon.code, newCoupon.discountPercentage);
-            toast.success("Cupón creado con éxito");
+            toast({ title: "Cupón creado con éxito" });
             window.location.reload();
         } catch (e: any) {
-            toast.error(e.message);
+            toast({ variant: "destructive", title: e.message });
         }
         setLoading(false);
     }
@@ -47,10 +48,10 @@ export default function VendedoresClient({ initialSellers }: { initialSellers: a
         setLoading(true);
         try {
             await markAllSellerCommissionsAsPaid(sellerId);
-            toast.success("Comisiones marcadas como pagadas");
+            toast({ title: "Comisiones marcadas como pagadas" });
             window.location.reload();
         } catch (e: any) {
-            toast.error(e.message);
+            toast({ variant: "destructive", title: e.message });
         }
         setLoading(false);
     }

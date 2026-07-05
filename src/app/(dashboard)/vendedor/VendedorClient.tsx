@@ -4,10 +4,11 @@ import React, { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { DollarSign, Tag, PlayCircle, Users, ExternalLink, Calendar, Copy, CheckCircle2 } from "lucide-react"
-import { toast } from "sonner"
+import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 
 export default function VendedorClient({ sellerData }: { sellerData: any }) {
+    const { toast } = useToast()
     const [copiedCode, setCopiedCode] = useState<string | null>(null);
 
     const pendingCommissions = sellerData.commissions.filter((c:any) => c.status === 'PENDING').reduce((acc: number, c: any) => acc + c.commissionEarned, 0);
@@ -17,23 +18,23 @@ export default function VendedorClient({ sellerData }: { sellerData: any }) {
     const handleCopy = (code: string) => {
         navigator.clipboard.writeText(code);
         setCopiedCode(code);
-        toast.success(`Código ${code} copiado al portapapeles`);
+        toast({ title: `Código ${code} copiado al portapapeles` });
         setTimeout(() => setCopiedCode(null), 2000);
     }
 
     const startDemo = async () => {
         // Enviar la request al API para inyectar la cookie "demoMode=true"
-        toast.loading("Preparando Entorno de Demo...");
+        toast({ title: "Preparando Entorno de Demo..." });
         try {
             const res = await fetch("/api/auth/demo", { method: "POST" });
             if (res.ok) {
-                toast.success("¡Modo Demo Activado!");
+                toast({ title: "¡Modo Demo Activado!" });
                 window.location.href = "/";
             } else {
-                toast.error("Error al iniciar Demo");
+                toast({ variant: "destructive", title: "Error al iniciar Demo" });
             }
         } catch (error) {
-            toast.error("Error al iniciar Demo");
+            toast({ variant: "destructive", title: "Error al iniciar Demo" });
         }
     }
 
