@@ -62,6 +62,7 @@ model Agency {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  CompanyProfile CompanyProfile?
 }
 
 model DiscountCode {
@@ -120,6 +121,14 @@ model User {
   reportsToId  String?
   reportsTo    User?   @relation("Hierarchy", fields: [reportsToId], references: [id])
   subordinates User[]  @relation("Hierarchy")
+
+  // Integraciones IA (Agentes)
+  googleAccessToken  String?
+  googleRefreshToken String?
+  googleTokenExpiry  DateTime?
+  InteractionLog     InteractionLog[]
+  Meeting            Meeting[]
+  Task               Task[]
 
   // For Double Promotoria or shared access (Simple implementation: Secondary access list)
   // This could be a many-to-many relation if needed
@@ -526,9 +535,100 @@ model PollVote {
 
 // Modelo temporal para corregir error de Prisma Drift en Vercel
 model AIAgent {
-  id     String @id @default(cuid())
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
+  designStyle       String?          @default("Realista")
+  id                String           @id @default(cuid())
+  name              String           @default("Agente")
+  type              String           @default("SOCIAL_MEDIA_MANAGER")
+  systemPrompt      String?
+  isActive          Boolean          @default(true)
+  socialAccounts    String?
+  toneUrl           String?
+  useImprovedEngine Boolean          @default(false)
+  guidelines        String?
+  userId            String
+  User              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @default(now()) @updatedAt
+  DraftPost         DraftPost[]
+  InteractionLog    InteractionLog[]
+}
+
+model DraftPost {
+  id        String   @id @default(cuid())
+  aiAgentId String
+  AIAgent   AIAgent  @relation(fields: [aiAgentId], references: [id], onDelete: Cascade)
+  content   String
+  imageUrl  String?
+  status    String   @default("DRAFT")
+  platform  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model InteractionLog {
+  id              String   @id @default(cuid())
+  aiAgentId       String
+  AIAgent         AIAgent  @relation(fields: [aiAgentId], references: [id], onDelete: Cascade)
+  userId          String
+  User            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role            String
+  content         String   @db.Text
+  toolInvocations Json?
+  createdAt       DateTime @default(now())
+}
+
+model CompanyProfile {
+  id              String    @id @default(cuid())
+  agencyId        String    @unique
+  Agency          Agency    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  industry        String?
+  targetAudience  String?
+  websiteUrl      String?
+  description     String?
+  imagesGenerated Int       @default(0)
+  quotaResetDate  DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model KnowledgeAsset {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  url       String?
+  type      String   @default("DOCUMENT")
+  agentId   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Meeting {
+  id              String   @id @default(cuid())
+  title           String
+  date            String   // YYYY-MM-DD
+  time            String   // HH:MM
+  duration        Int      // in minutes
+  description     String?
+  userId          String
+  User            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  googleEventId   String?
+  googleEventLink String?
+  googleMeetLink  String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  completed   Boolean  @default(false)
+  dueDate     String?  // YYYY-MM-DD
+  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH
+  userId      String
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 // ----------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -392,6 +392,10 @@ export default async function DashboardLayout({
                                                 >
                                                     Reportes
                                                 </Link>
+                                            <Link href="/agents" className="text-muted-foreground hover:text-foreground flex items-center gap-2">
+                                              <Bot className="h-5 w-5 text-indigo-600" />
+                                              Agentes IA
+                                            </Link>
                                             </>
                                         )}
                                         {isSuperAdmin && (
