@@ -58,7 +58,7 @@ model Agency {
   // Affiliate System
   referredById   String?
   referrer       User?   @relation("AgencyReferrer", fields: [referredById], references: [id])
-  discountLocked Float?
+  discountLocked Boolean? @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
