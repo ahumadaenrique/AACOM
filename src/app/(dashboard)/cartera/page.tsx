@@ -188,7 +188,7 @@ export default async function CarteraDashboard({
                     <div className="flex flex-col">
                       <span className="font-semibold text-lg">{policy.contractor}</span>
                       <span className="text-sm text-muted-foreground">
-                        {policy.product || "Producto no especificado"} â€¢ {policy.insuranceCompany}
+                        {policy.product || "Producto no especificado"} • {policy.insuranceCompany}
                       </span>
                     </div>
                     <div className="flex flex-col items-end mt-2 md:mt-0 text-right">
