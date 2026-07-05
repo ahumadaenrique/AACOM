@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Building2, Users, Wallet, Clock, FileText, Upload, Plus } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import CarteraTableClient from "./CarteraTableClient";
 
 export const dynamic = "force-dynamic";
 
@@ -187,65 +187,13 @@ export default async function CarteraDashboard({
         </Card>
       </div>
 
-      {/* FULL POLICIES TABLE */}
+      {/* FULL POLICIES TABLE (CLIENT COMPONENT) */}
       <div className="mt-8">
         <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
           <FileText className="w-5 h-5 text-blue-500" />
           Detalle Completo de Pólizas
         </h2>
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-auto max-h-[500px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Póliza</TableHead>
-                    {(dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN') && <TableHead>Agente</TableHead>}
-                    <TableHead>Contratante</TableHead>
-                    <TableHead>Producto</TableHead>
-                    <TableHead>Aseguradora</TableHead>
-                    <TableHead>Vigencia</TableHead>
-                    <TableHead className="text-right">Prima</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {policies.map((policy) => (
-                    <TableRow key={policy.id} className="hover:bg-muted/50">
-                      <TableCell className="font-medium text-xs">
-                        {policy.policyNumber}
-                      </TableCell>
-                      {(dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN') && (
-                        <TableCell className="text-xs font-semibold text-indigo-600">
-                          {policy.user?.name || "Sin Asignar"}
-                        </TableCell>
-                      )}
-                      <TableCell>
-                        <Link href={`/cartera/clientes/${policy.clientId}`} className="hover:underline font-semibold text-primary">
-                          {policy.contractor}
-                        </Link>
-                      </TableCell>
-                      <TableCell>{policy.product}</TableCell>
-                      <TableCell>{policy.insuranceCompany}</TableCell>
-                      <TableCell className="text-xs">
-                        {policy.effectiveDate ? format(new Date(policy.effectiveDate), "dd/MM/yyyy") : "-"} a {policy.renewalDate ? format(new Date(policy.renewalDate), "dd/MM/yyyy") : "-"}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(policy.annualPremium || 0)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {policies.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={(dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN') ? 7 : 6} className="text-center p-4 text-muted-foreground">
-                        No hay pólizas registradas.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        <CarteraTableClient policies={policies} isAdmin={dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN'} />
       </div>
     </div>
   );
