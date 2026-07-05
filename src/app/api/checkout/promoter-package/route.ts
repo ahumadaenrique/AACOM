@@ -26,6 +26,7 @@ export async function POST(req: Request) {
         const body = await req.json().catch(() => ({}));
         const promoCode = body.promoCode;
         let stripeCoupon = null;
+        let sellerId = null;
 
         if (promoCode && promoCode.trim() !== "") {
             const codeStr = promoCode.trim().toUpperCase();
@@ -39,6 +40,7 @@ export async function POST(req: Request) {
                     return NextResponse.json({ error: "El código de descuento ha expirado." }, { status: 400 });
                 }
                 stripeCoupon = discount.code;
+                sellerId = discount.sellerId;
             } else {
                 return NextResponse.json({ error: "Código de descuento inválido o inactivo." }, { status: 400 });
             }
@@ -68,7 +70,8 @@ export async function POST(req: Request) {
             metadata: {
                 isPromoterPackage: 'true',
                 promoterEmail: user.email,
-                ...(stripeCoupon ? { discountCodeStr: stripeCoupon } : {})
+                ...(stripeCoupon ? { discountCodeStr: stripeCoupon } : {}),
+                ...(sellerId ? { sellerId } : {})
             },
         });
 

@@ -1,5 +1,6 @@
 
 import type { NextAuthConfig } from "next-auth"
+import { cookies } from "next/headers"
 
 export const authConfig = {
     pages: {
@@ -27,6 +28,21 @@ export const authConfig = {
                 session.user.id = token.sub;
                 session.user.agencyId = token.agencyId;
                 session.user.role = token.role;
+
+                // --- MODO DEMO ---
+                // Si el usuario tiene la cookie demoMode activa y es un vendedor/admin,
+                // reescribimos su sesión en tiempo real para que Next.js y Prisma
+                // crean que es el Promotor Demo de la Agencia Demo.
+                const cookieStore = cookies();
+                if (cookieStore.get('demoMode')?.value === 'true') {
+                    if (session.user.role === 'SELLER' || session.user.role === 'SUPER_ADMIN') {
+                        session.user.id = 'demo-user-id';
+                        session.user.agencyId = 'demo-agency-id';
+                        session.user.role = 'ADMIN';
+                        session.user.name = 'Promotor Demo (Modo Lectura)';
+                        session.user.email = 'demo@aacommx.com';
+                    }
+                }
             }
             return session;
         },

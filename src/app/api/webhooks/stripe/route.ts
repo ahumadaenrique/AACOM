@@ -79,6 +79,70 @@ export async function POST(req: Request) {
     }
   };
 
+  const logCommission = async (
+    sellerId: string | null,
+    agencyId: string | null,
+    description: string,
+    amountPaid: number,
+    stripeChargeId: string,
+    discountCodeStr?: string | null
+  ) => {
+    try {
+      if (!sellerId && !agencyId) return;
+
+      // Si no pasaron sellerId explícito (ej. en renovaciones de agencia), buscamos si la agencia tiene un afiliador
+      let finalSellerId = sellerId;
+      if (!finalSellerId && agencyId) {
+        const agency = await prisma.agency.findUnique({ where: { id: agencyId } });
+        if (agency?.referredById) {
+          finalSellerId = agency.referredById;
+        }
+      }
+
+      if (!finalSellerId) return;
+
+      const seller = await prisma.user.findUnique({ where: { id: finalSellerId } });
+      if (!seller || !seller.sellerCommissionRate) return;
+
+      let discountPercentage = 0;
+      if (discountCodeStr) {
+        const code = await prisma.discountCode.findUnique({ where: { code: discountCodeStr } });
+        if (code) discountPercentage = code.discountPercentage;
+      }
+
+      let netRate = seller.sellerCommissionRate - discountPercentage;
+      if (netRate <= 0) return; // Si el descuento se comió la comisión, no ganan nada
+      
+      const commissionEarned = amountPaid * (netRate / 100);
+
+      // Si el pago viene de un descuento nuevo y la agencia no estaba ligada, la ligamos
+      if (agencyId && finalSellerId && !sellerId) {
+          // Ya estaba ligada si la sacamos de la db
+      } else if (agencyId && sellerId) {
+          await prisma.agency.update({
+              where: { id: agencyId },
+              data: { referredById: sellerId, discountLocked: true }
+          });
+      }
+
+      await prisma.commissionLedger.create({
+        data: {
+          sellerId: finalSellerId,
+          agencyId,
+          stripeChargeId,
+          description,
+          originalPrice: amountPaid / (1 - (discountPercentage / 100)), // Estimado
+          amountPaid,
+          discountPercentage,
+          commissionEarned,
+          status: 'PENDING'
+        }
+      });
+    } catch (err) {
+      console.error("Error logging commission:", err);
+    }
+  };
+
   // Handle checkout.session.completed (First payment)
   if (event.type === "checkout.session.completed") {
     const session = event.data.object as Stripe.Checkout.Session;
@@ -118,25 +182,43 @@ export async function POST(req: Request) {
             });
         }
       }
-    } else if (isAgencySeat) {
-      const agencyId = session.metadata?.agencyId;
-      if (agencyId) {
-        await prisma.agency.update({
-          where: { id: agencyId },
-          data: { purchasedSeats: { increment: 1 } }
-        });
-      }
-    } else if (session.metadata?.isPromoterPackage === 'true') {
-      const promoterEmail = session.metadata?.promoterEmail;
-      const discountCodeStr = session.metadata?.discountCodeStr;
+      } else if (isAgencySeat) {
+        const agencyId = session.metadata?.agencyId;
+        if (agencyId) {
+          await prisma.agency.update({
+            where: { id: agencyId },
+            data: { purchasedSeats: { increment: 1 } }
+          });
+          
+          await logCommission(
+            session.metadata?.sellerId || null, 
+            agencyId, 
+            "Compra de Asiento Extra", 
+            (session.amount_total || 0) / 100, 
+            session.payment_intent as string
+          );
+        }
+      } else if (session.metadata?.isPromoterPackage === 'true') {
+        const promoterEmail = session.metadata?.promoterEmail;
+        const discountCodeStr = session.metadata?.discountCodeStr;
+        const sellerId = session.metadata?.sellerId || null;
+  
+        if (promoterEmail) {
+          await prisma.promotorSaldo.upsert({
+            where: { promotor_email: promoterEmail },
+            create: { promotor_email: promoterEmail, dias_disponibles: 7 },
+            update: { dias_disponibles: { increment: 7 } },
+          });
 
-      if (promoterEmail) {
-        await prisma.promotorSaldo.upsert({
-          where: { promotor_email: promoterEmail },
-          create: { promotor_email: promoterEmail, dias_disponibles: 7 },
-          update: { dias_disponibles: { increment: 7 } },
-        });
-      }
+          await logCommission(
+            sellerId, 
+            null, 
+            "Paquete Promotor (7 días Academia)", 
+            (session.amount_total || 0) / 100, 
+            session.payment_intent as string,
+            discountCodeStr
+          );
+        }
 
       if (discountCodeStr) {
         try {
@@ -149,14 +231,24 @@ export async function POST(req: Request) {
         }
       }
     } else {
-      const agencyId = session.metadata?.agencyId;
-      const daysToAddStr = session.metadata?.daysToAdd;
-      const monthsToAddStr = session.metadata?.monthsToAdd;
-      const discountCodeStr = session.metadata?.discountCodeStr;
-      
-      if (agencyId) {
-        await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr);
-      }
+        const agencyId = session.metadata?.agencyId;
+        const daysToAddStr = session.metadata?.daysToAdd;
+        const monthsToAddStr = session.metadata?.monthsToAdd;
+        const discountCodeStr = session.metadata?.discountCodeStr;
+        const sellerId = session.metadata?.sellerId || null;
+        
+        if (agencyId) {
+          await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr);
+
+          await logCommission(
+            sellerId, 
+            agencyId, 
+            "Suscripción SaaS Agencia", 
+            (session.amount_total || 0) / 100, 
+            session.payment_intent as string,
+            discountCodeStr
+          );
+        }
 
       if (discountCodeStr) {
         try {
@@ -184,8 +276,16 @@ export async function POST(req: Request) {
         const monthsToAddStr = subscription.metadata?.monthsToAdd;
         
         if (agencyId) {
-          await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr);
-        }
+            await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr);
+
+            await logCommission(
+              null, 
+              agencyId, 
+              "Renovación Suscripción SaaS Agencia", 
+              (invoice.amount_paid || 0) / 100, 
+              invoice.payment_intent as string
+            );
+          }
       }
     }
   }

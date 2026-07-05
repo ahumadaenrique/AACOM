@@ -249,6 +249,15 @@ export default async function DashboardLayout({
                                         Agencias SaaS
                                     </Link>
                                 )}
+                                {isSuperAdmin && (
+                                    <Link
+                                        href="/admin/vendedores"
+                                        className="text-muted-foreground transition-colors hover:text-foreground font-semibold flex items-center gap-1"
+                                    >
+                                        <Users className="h-4 w-4 text-rose-500" />
+                                        Vendedores
+                                    </Link>
+                                )}
                             </>
                         )}
                     </nav>
@@ -377,6 +386,15 @@ export default async function DashboardLayout({
                                             >
                                                 <Building2 className="h-5 w-5 text-purple-600" />
                                                 Agencias SaaS
+                                            </Link>
+                                        )}
+                                        {isSuperAdmin && (
+                                            <Link
+                                                href="/admin/vendedores"
+                                                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                            >
+                                                <Users className="h-5 w-5 text-rose-500" />
+                                                Vendedores
                                             </Link>
                                         )}
                                     </>
