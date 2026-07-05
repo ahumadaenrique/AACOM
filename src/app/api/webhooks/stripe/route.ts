@@ -283,7 +283,7 @@ export async function POST(req: Request) {
               agencyId, 
               "Renovación Suscripción SaaS Agencia", 
               (invoice.amount_paid || 0) / 100, 
-              invoice.payment_intent as string
+              ((invoice as any).payment_intent as string) || invoice.id
             );
           }
       }
