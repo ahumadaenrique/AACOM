@@ -103,7 +103,7 @@ export default async function AgentWorkspaceLayout({
   }
 
   return (
-    <div className="flex h-full bg-neutral-950 text-neutral-50 overflow-hidden w-full">
+    <div className="flex h-[calc(100vh-4rem)] bg-neutral-950 text-neutral-50 overflow-hidden w-full -m-4 md:-m-8">
       {/* Sidebar - Agents List */}
       <aside className="hidden lg:flex flex-col w-72 bg-neutral-900 border-r border-neutral-800 shrink-0">
         <div className="p-4 border-b border-neutral-800 flex items-center gap-2">
