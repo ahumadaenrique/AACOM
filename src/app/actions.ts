@@ -7,6 +7,12 @@ import { SALES_ACTIVITIES } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
 import webpush from "web-push";
 
+function enforceDemoSafety(session: any) {
+    if (session?.user?.id === 'demo-user-id') {
+        throw new Error("Estás en Modo Demo (Solo Lectura). Esta acción ha sido bloqueada para proteger la base de datos.");
+    }
+}
+
 export interface ActivityInput {
     activityId: string;
     planned: number;
@@ -19,6 +25,8 @@ export async function saveActivity(records: ActivityInput[]) {
     if (!session?.user?.email) {
         return { success: false, message: "No autenticado" };
     }
+    
+    enforceDemoSafety(session);
 
     const userEmail = session.user.email;
     // Use Mexico City time to avoid UTC rollover issues late at night
@@ -1122,6 +1130,8 @@ export async function saveActivityLogEntry(activityId: string, prospectName?: st
         return { success: false, message: "No autenticado" };
     }
 
+    enforceDemoSafety(session);
+
     const user = await prisma.user.findUnique({
         where: { email: session.user.email }
     });
@@ -1132,7 +1142,7 @@ export async function saveActivityLogEntry(activityId: string, prospectName?: st
 
     const activity = SALES_ACTIVITIES.find(a => a.id === activityId);
     if (!activity) {
-        return { success: false, message: "Actividad no vÃƒÆ’Ã‚Â¡lida" };
+        return { success: false, message: "Actividad no válida" };
     }
 
     // Validation: prospectName is mandatory for 'Cita agendada' (ID '2') or 'Cita Efectiva' (ID '3')
@@ -1172,6 +1182,8 @@ export async function deleteActivityLogEntry(logId: string) {
     if (!session?.user?.email) {
         return { success: false, message: "No autenticado" };
     }
+
+    enforceDemoSafety(session);
 
     try {
         const log = await prisma.activityLog.findUnique({
@@ -1316,7 +1328,7 @@ export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear
         });
         if (!user) return { success: false, rankings: [], rankingAd: null, message: "Usuario no encontrado" };
 
-        // --- MIGRACIÃƒÆ’Ã¢â‚¬Å“N DE RESCATE (ADNs y Cotizaciones huÃƒÆ’Ã‚Â©rfanas) ---
+        // --- MIGRACIÓN DE RESCATE (ADNs y Cotizaciones huérfanas) ---
         await prisma.adnDiagnostic.updateMany({
             where: { agencyId: null },
             data: { agencyId: 'aacom' }
@@ -1433,6 +1445,8 @@ export async function createRankingAd(base64Data: string, fileName: string, link
             return { success: false, message: "No autenticado" };
         }
 
+        enforceDemoSafety(session);
+
         const currentUser = await prisma.user.findUnique({
             where: { email: session.user.email }
         });
@@ -1469,7 +1483,7 @@ export async function createRankingAd(base64Data: string, fileName: string, link
         return { success: true, rankingAd: newAd };
     } catch (error: any) {
         console.error("Error creating ranking ad:", error);
-        return { success: false, message: error.message || "Error al subir campaÃƒÆ’Ã‚Â±a de incentivo" };
+        return { success: false, message: error.message || "Error al subir campaña de incentivo" };
     }
 }
 
@@ -1532,6 +1546,8 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
     if (!session?.user?.email) {
         return { success: false, message: "No autenticado" };
     }
+
+    enforceDemoSafety(session);
 
     try {
         const currentUser = await prisma.user.findUnique({
@@ -1615,6 +1631,8 @@ export async function removeLastActivityLogEntry(activityId: string) {
     if (!session?.user?.email) {
         return { success: false, message: "No autenticado" };
     }
+
+    enforceDemoSafety(session);
 
     try {
         const user = await prisma.user.findUnique({
@@ -1720,13 +1738,15 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
         return { success: false, message: "No autenticado" };
     }
 
+    enforceDemoSafety(session);
+
     try {
         const currentUser = await prisma.user.findUnique({
             where: { email: session.user.email }
         });
 
         if (!currentUser) {
-            return { success: false, message: "Usuario en sesiÃƒÆ’Ã‚Â³n no encontrado" };
+            return { success: false, message: "Usuario en sesión no encontrado" };
         }
 
         const isAdmin = (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN');
@@ -1788,7 +1808,7 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
         revalidatePath('/admin');
         revalidatePath('/');
 
-        return { success: true, user: updatedUser, message: "Perfil actualizado con ÃƒÆ’Ã‚Â©xito" };
+        return { success: true, user: updatedUser, message: "Perfil actualizado con éxito" };
     } catch (error: any) {
         console.error("Error updating user profile details:", error);
         return { success: false, message: error.message || "Error al actualizar perfil" };
@@ -1839,6 +1859,8 @@ export async function saveKnowledgeDocument(id: string | null, title: string, co
     if (!session?.user?.email) {
         return { success: false, message: "No autenticado" };
     }
+
+    enforceDemoSafety(session);
 
     try {
         const user = await prisma.user.findUnique({

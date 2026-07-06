@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Building2, Users, Wallet, Clock, FileText, Upload, Plus } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import CarteraTableClient from "./CarteraTableClient";
 
 export const dynamic = "force-dynamic";
 
@@ -52,13 +52,37 @@ export default async function CarteraDashboard({
 
   const totalPremium = policies.reduce((acc, curr) => acc + (curr.annualPremium || 0), 0);
 
-  // Filtrar las que están por vencer en los próximos X días
-  const upcomingRenewals = policies.filter(
+  // Filtrar las que están por vencer o cumplen aniversario en los próximos X días
+  const getNextAnniversary = (effectiveDate: Date | null, renewalDate: Date | null) => {
+    if (!effectiveDate) return null;
+    const todayZero = new Date();
+    todayZero.setHours(0, 0, 0, 0); // Para evitar problemas de horas
+    const anniv = new Date(effectiveDate);
+    anniv.setFullYear(todayZero.getFullYear());
+    
+    // Si el aniversario de este año ya pasó, el próximo es el año que viene
+    if (isBefore(anniv, todayZero)) {
+      anniv.setFullYear(todayZero.getFullYear() + 1);
+    }
+    
+    // Si el próximo aniversario es después de la fecha de vencimiento real, usamos el vencimiento
+    if (renewalDate && isAfter(anniv, new Date(renewalDate))) {
+      return new Date(renewalDate);
+    }
+    
+    return anniv;
+  };
+
+  const upcomingRenewals = policies.map(p => {
+    const nextAnniv = getNextAnniversary(p.effectiveDate ? new Date(p.effectiveDate) : null, p.renewalDate ? new Date(p.renewalDate) : null);
+    const dateToCheck = nextAnniv || (p.renewalDate ? new Date(p.renewalDate) : null);
+    return { ...p, dateToCheck };
+  }).filter(
     (p) =>
-      p.renewalDate &&
-      isAfter(new Date(p.renewalDate), today) &&
-      isBefore(new Date(p.renewalDate), futureDate)
-  );
+      p.dateToCheck &&
+      isAfter(new Date(p.dateToCheck), today) &&
+      isBefore(new Date(p.dateToCheck), futureDate)
+  ).sort((a, b) => (a.dateToCheck as Date).getTime() - (b.dateToCheck as Date).getTime());
 
   return (
     <div className="flex flex-col gap-6 p-4 md:p-8">
@@ -164,12 +188,12 @@ export default async function CarteraDashboard({
                     <div className="flex flex-col">
                       <span className="font-semibold text-lg">{policy.contractor}</span>
                       <span className="text-sm text-muted-foreground">
-                        {policy.product || "Producto no especificado"} â€¢ {policy.insuranceCompany}
+                        {policy.product || "Producto no especificado"} • {policy.insuranceCompany}
                       </span>
                     </div>
                     <div className="flex flex-col items-end mt-2 md:mt-0 text-right">
                       <span className="font-bold text-orange-600">
-                        Vence: {policy.renewalDate ? format(new Date(policy.renewalDate), "dd MMM yyyy", { locale: es }) : "N/A"}
+                        Vence/Aniv: {policy.dateToCheck ? format(new Date(policy.dateToCheck), "dd MMM yyyy", { locale: es }) : "N/A"}
                       </span>
                       <span className="text-sm">
                         Prima:{" "}
@@ -187,65 +211,13 @@ export default async function CarteraDashboard({
         </Card>
       </div>
 
-      {/* FULL POLICIES TABLE */}
+      {/* FULL POLICIES TABLE (CLIENT COMPONENT) */}
       <div className="mt-8">
         <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
           <FileText className="w-5 h-5 text-blue-500" />
           Detalle Completo de Pólizas
         </h2>
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-auto max-h-[500px]">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Póliza</TableHead>
-                    {(dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN') && <TableHead>Agente</TableHead>}
-                    <TableHead>Contratante</TableHead>
-                    <TableHead>Producto</TableHead>
-                    <TableHead>Aseguradora</TableHead>
-                    <TableHead>Vigencia</TableHead>
-                    <TableHead className="text-right">Prima</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {policies.map((policy) => (
-                    <TableRow key={policy.id} className="hover:bg-muted/50">
-                      <TableCell className="font-medium text-xs">
-                        {policy.policyNumber}
-                      </TableCell>
-                      {(dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN') && (
-                        <TableCell className="text-xs font-semibold text-indigo-600">
-                          {policy.user?.name || "Sin Asignar"}
-                        </TableCell>
-                      )}
-                      <TableCell>
-                        <Link href={`/cartera/clientes/${policy.clientId}`} className="hover:underline font-semibold text-primary">
-                          {policy.contractor}
-                        </Link>
-                      </TableCell>
-                      <TableCell>{policy.product}</TableCell>
-                      <TableCell>{policy.insuranceCompany}</TableCell>
-                      <TableCell className="text-xs">
-                        {policy.effectiveDate ? format(new Date(policy.effectiveDate), "dd/MM/yyyy") : "-"} a {policy.renewalDate ? format(new Date(policy.renewalDate), "dd/MM/yyyy") : "-"}
-                      </TableCell>
-                      <TableCell className="text-right font-medium">
-                        {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(policy.annualPremium || 0)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                  {policies.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={(dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN') ? 7 : 6} className="text-center p-4 text-muted-foreground">
-                        No hay pólizas registradas.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
+        <CarteraTableClient policies={policies} isAdmin={dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN'} />
       </div>
     </div>
   );
