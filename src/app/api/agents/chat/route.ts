@@ -1,7 +1,7 @@
 import { google } from '@ai-sdk/google'
 import { streamText, tool, generateText } from 'ai'
 import { z } from 'zod'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
 import { google as googleApi } from 'googleapis'
 

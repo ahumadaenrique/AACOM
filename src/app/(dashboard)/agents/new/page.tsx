@@ -1,4 +1,4 @@
-import prisma from "@/lib/prisma"
+import { prisma } from "@/lib/prisma"
 import { AgentForm } from "@/components/AgentForm"
 import { SyncDbButton } from "@/components/SyncDbButton"
 import { Settings } from "lucide-react"

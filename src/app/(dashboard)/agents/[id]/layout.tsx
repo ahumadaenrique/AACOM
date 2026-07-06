@@ -1,6 +1,6 @@
 import { ReactNode } from "react"
 import Link from "next/link"
-import prisma from "@/lib/prisma"
+import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import { Settings, MessageSquare, Calendar, ChevronLeft, ArrowLeft, FileText, Phone, CheckSquare } from "lucide-react"
 import { AgentAvatar } from "@/components/AgentAvatar"
