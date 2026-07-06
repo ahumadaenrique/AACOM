@@ -1,0 +1,244 @@
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Plus, Bot, Mic, Share2, Calendar, Settings, MessageSquare } from "lucide-react"
+import Link from "next/link"
+import { prisma } from "@/lib/prisma"
+import Radar from "@/components/ui/Radar"
+import { AgentAvatar } from "@/components/AgentAvatar"
+import { SyncDbButton } from "@/components/SyncDbButton"
+
+const AgentIcon = ({ type }: { type: string }) => {
+  switch (type) {
+    case 'EXECUTIVE_ASSISTANT': return <Calendar className="w-6 h-6 text-blue-400" />;
+    case 'SOCIAL_MEDIA_MANAGER': return <Share2 className="w-6 h-6 text-pink-400" />;
+    case 'RECEPTIONIST': return <Mic className="w-6 h-6 text-emerald-400" />;
+    default: return <Bot className="w-6 h-6 text-gray-400" />;
+  }
+}
+
+const AgentTypeLabel = ({ type }: { type: string }) => {
+  switch (type) {
+    case 'EXECUTIVE_ASSISTANT': return "Asistente Ejecutiva";
+    case 'SOCIAL_MEDIA_MANAGER': return "Social Media Manager";
+    case 'RECEPTIONIST': return "Recepcionista";
+    default: return "Agente Genérico";
+  }
+}
+
+export const dynamic = 'force-dynamic'
+
+export default async function Dashboard() {
+  // Self-healing seeding: upsert default configurations for Maria and Ramiro
+  try {
+    const userId = "cmpqhbby60001m8szttlu4but"
+    await prisma.aIAgent.upsert({
+      where: { id: "cmr07htpq0001fnyv39kss0id" },
+      update: {
+        name: "María la Asistente",
+        type: "EXECUTIVE_ASSISTANT",
+        systemPrompt: "Eres un Asistente Ejecutivo altamente proactivo y profesional. Tu objetivo es ayudar a organizar la agenda, crear minutas de reuniones y enviar recordatorios."
+      },
+      create: {
+        id: "cmr07htpq0001fnyv39kss0id",
+        name: "María la Asistente",
+        type: "EXECUTIVE_ASSISTANT",
+        userId: userId,
+        isActive: true,
+        systemPrompt: "Eres un Asistente Ejecutivo altamente proactivo y profesional. Tu objetivo es ayudar a organizar la agenda, crear minutas de reuniones y enviar recordatorios."
+      }
+    })
+
+    await prisma.aIAgent.upsert({
+      where: { id: "cmr1a5avi0001fwryikglgsdo" },
+      update: {
+        name: "Ramiro el de MKT",
+        type: "SOCIAL_MEDIA_MANAGER",
+        systemPrompt: "Eres Ramiro el de MKT, un creativo social media manager encargado de diseñar posts, mockups e imágenes publicitarias para redes sociales de AACOM."
+      },
+      create: {
+        id: "cmr1a5avi0001fwryikglgsdo",
+        name: "Ramiro el de MKT",
+        type: "SOCIAL_MEDIA_MANAGER",
+        userId: userId,
+        isActive: true,
+        systemPrompt: "Eres Ramiro el de MKT, un creativo social media manager encargado de diseñar posts, mockups e imágenes publicitarias para redes sociales de AACOM."
+      }
+    })
+  } catch (e) {
+    console.error("Seeding/Upserting error:", e)
+  }
+
+  let agents: any[] = []
+  let schemaError = false
+  try {
+    agents = await prisma.aIAgent.findMany({
+      orderBy: { createdAt: 'desc' }
+    })
+  } catch (e) {
+    console.error("Failed to query agents:", e)
+    schemaError = true
+  }
+
+  if (schemaError) {
+    return (
+      <div className="min-h-screen bg-neutral-950 flex flex-col items-center justify-center p-6 text-neutral-200">
+        <div className="max-w-md w-full bg-neutral-900 border border-neutral-800 rounded-3xl p-8 text-center flex flex-col items-center gap-6 shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+            <Settings className="w-8 h-8" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white mb-2">Base de datos desincronizada</h2>
+            <p className="text-sm text-neutral-400 leading-relaxed mb-1">
+              La base de datos compartida en Neon ha sido modificada por cambios o despliegues de otra rama y no contiene la estructura requerida para los agentes.
+            </p>
+          </div>
+          <SyncDbButton />
+        </div>
+      </div>
+    )
+  }
+
+  const startOfMonth = new Date()
+  startOfMonth.setDate(1)
+  startOfMonth.setHours(0,0,0,0)
+
+  let agentsWithLogs = []
+  try {
+    agentsWithLogs = await Promise.all(
+      agents.map(async (agent) => {
+        const logs = await prisma.interactionLog.findMany({
+          where: {
+            aiAgentId: agent.id,
+            createdAt: {
+              gte: startOfMonth
+            }
+          }
+        })
+      let generationCount = 0
+      logs.forEach(log => {
+        if (log.toolInvocations) {
+          try {
+            const parsed = typeof log.toolInvocations === 'string'
+              ? JSON.parse(log.toolInvocations)
+              : log.toolInvocations;
+            if (Array.isArray(parsed)) {
+              const hasGraphicDesign = parsed.some((inv: any) => inv.toolName === 'generateGraphicDesign');
+              if (hasGraphicDesign) generationCount++;
+            }
+          } catch (e) {}
+        }
+      })
+      return {
+        ...agent,
+        generationCount
+      }
+    })
+  )
+  } catch (e) {
+    console.error("Failed to map agents with logs:", e)
+    agentsWithLogs = agents.map(agent => ({ ...agent, generationCount: 0 }))
+  }
+
+  return (
+    <div className="h-full overflow-auto relative text-neutral-5 selection:bg-indigo-500/30">
+      {/* Background gradients for glassmorphism effect */}
+      <div className="absolute inset-0 z-0 bg-neutral-950 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-900/20 via-neutral-950 to-neutral-950 pointer-events-none"></div>
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-emerald-900/10 via-neutral-950/0 to-neutral-950/0 pointer-events-none"></div>
+
+      {/* Dynamic WebGL Radar Background */}
+      <div className="absolute inset-0 z-0 opacity-[0.25] pointer-events-none">
+        <Radar
+          speed={0.5}
+          scale={0.8}
+          ringCount={8}
+          spokeCount={6}
+          ringThickness={0.03}
+          spokeThickness={0.005}
+          sweepSpeed={2.5}
+          sweepWidth={6}
+          sweepLobes={1}
+          color="#06b6d4" // Cyan shader for high-tech premium aesthetics
+          backgroundColor="#000000"
+          falloff={1.5}
+          brightness={0.7}
+          enableMouseInteraction={true}
+          mouseInfluence={0.15}
+        />
+      </div>
+
+      <main className="relative z-10 container mx-auto p-8 max-w-7xl">
+        <header className="flex justify-between items-center mb-12">
+          <div>
+            <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-neutral-100 to-neutral-500">
+              Módulo de Agentes
+            </h1>
+            <p className="text-neutral-400 mt-2">Gestiona tu equipo de inteligencia artificial AACOM.</p>
+          </div>
+          <Link href="/agents/new">
+            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-6 transition-all duration-300 hover:shadow-[0_0_20px_rgba(79,70,229,0.4)]">
+              <Plus className="mr-2 h-4 w-4" />
+              Crear Agente
+            </Button>
+          </Link>
+        </header>
+
+        {agents.length === 0 ? (
+          <div className="text-center py-24 rounded-3xl border border-white/5 bg-white/5 backdrop-blur-xl">
+            <Bot className="mx-auto h-16 w-16 text-neutral-500 mb-4 opacity-50" />
+            <h2 className="text-2xl font-semibold mb-2">No tienes agentes activos</h2>
+            <p className="text-neutral-400 mb-6 max-w-md mx-auto">
+              Configura tu primer asistente ejecutiva, recepcionista o social media manager para comenzar a automatizar tus tareas.
+            </p>
+            <Link href="/agents/new">
+              <Button variant="outline" className="border-white/10 hover:bg-white/10 text-black dark:text-white">
+                Comenzar ahora
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {agentsWithLogs.map((agent) => (
+              <Card key={agent.id} className="bg-white/5 border-white/10 backdrop-blur-md hover:bg-white/10 transition-all duration-300 group">
+                <CardHeader className="flex flex-row items-center gap-4 pb-2">
+                  <AgentAvatar type={agent.type} name={agent.name} className="w-14 h-14 group-hover:scale-110 transition-transform duration-300 shrink-0" />
+                  <div>
+                    <CardTitle className="text-xl text-neutral-100">{agent.name}</CardTitle>
+                    <CardDescription className="text-neutral-400">
+                      <AgentTypeLabel type={(agent as any).type} />
+                    </CardDescription>
+                  </div>
+                </CardHeader>
+                  <div className="flex flex-col gap-2 mt-4 px-6 pb-4">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={agent.isActive ? "default" : "secondary"} className={agent.isActive ? "bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30" : ""}>
+                        {agent.isActive ? 'Activo' : 'Inactivo'}
+                      </Badge>
+                    </div>
+                    {agent.type === 'SOCIAL_MEDIA_MANAGER' && (
+                      <div className="mt-2 text-xs text-neutral-400">
+                        Uso mensual: <span className="text-white font-medium">{agent.generationCount}/90 generaciones</span>
+                      </div>
+                    )}
+                  </div>
+                <CardFooter className="flex justify-between pt-4 border-t border-white/5">
+                  <Link href={`/agents/${agent.id}/chat`}>
+                    <Button variant="ghost" size="sm" className="text-neutral-300 hover:text-white hover:bg-white/10">
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Interactuar
+                    </Button>
+                  </Link>
+                  <Link href={`/agents/${agent.id}/settings`}>
+                    <Button variant="ghost" size="sm" className="text-neutral-400 hover:text-white hover:bg-white/10">
+                      <Settings className="w-4 h-4" />
+                    </Button>
+                  </Link>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        )}
+      </main>
+    </div>
+  )
+}
