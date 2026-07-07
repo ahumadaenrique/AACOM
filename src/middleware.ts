@@ -24,11 +24,22 @@ export default auth((req) => {
     }
 
     const isLoggedIn = !!req.auth;
-    const isPublicRoute = req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/registro');
+    const isPublicRoute = 
+        req.nextUrl.pathname === '/' ||
+        req.nextUrl.pathname.startsWith('/inicio') || 
+        req.nextUrl.pathname.startsWith('/privacidad') || 
+        req.nextUrl.pathname.startsWith('/terminos') || 
+        req.nextUrl.pathname.startsWith('/login') || 
+        req.nextUrl.pathname.startsWith('/registro');
 
     // If user is not logged in and tries to access a private route, kick them to login
     if (!isLoggedIn && !isPublicRoute) {
         return NextResponse.redirect(new URL('/login', req.nextUrl));
+    }
+
+    // If user is not logged in and accesses root "/", redirect to the landing page "/inicio"
+    if (!isLoggedIn && req.nextUrl.pathname === '/') {
+        return NextResponse.redirect(new URL('/inicio', req.nextUrl));
     }
 
     const requestHeaders = new Headers(req.headers);
