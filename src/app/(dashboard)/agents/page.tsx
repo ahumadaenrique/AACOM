@@ -73,6 +73,9 @@ export default async function Dashboard() {
   let schemaError = false
   try {
     agents = await prisma.aIAgent.findMany({
+      where: {
+        type: { not: 'RECEPTIONIST' }
+      },
       orderBy: { createdAt: 'desc' }
     })
   } catch (e) {
@@ -140,6 +143,10 @@ export default async function Dashboard() {
     agentsWithLogs = agents.map(agent => ({ ...agent, generationCount: 0 }))
   }
 
+  const hasExecutive = agents.some(a => a.type === 'EXECUTIVE_ASSISTANT')
+  const hasMkt = agents.some(a => a.type === 'SOCIAL_MEDIA_MANAGER')
+  const isCreateDisabled = hasExecutive && hasMkt
+
   return (
     <div className="h-full overflow-auto relative text-neutral-5 selection:bg-indigo-500/30">
       {/* Background gradients for glassmorphism effect */}
@@ -147,24 +154,20 @@ export default async function Dashboard() {
       <div className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-emerald-900/10 via-neutral-950/0 to-neutral-950/0 pointer-events-none"></div>
 
       {/* Dynamic WebGL Radar Background */}
-      <div className="absolute inset-0 z-0 opacity-[0.25] pointer-events-none">
-        <Radar
-          speed={0.5}
-          scale={0.8}
-          ringCount={8}
-          spokeCount={6}
-          ringThickness={0.03}
-          spokeThickness={0.005}
-          sweepSpeed={2.5}
-          sweepWidth={6}
-          sweepLobes={1}
-          color="#06b6d4" // Cyan shader for high-tech premium aesthetics
-          backgroundColor="#000000"
-          falloff={1.5}
-          brightness={0.7}
-          enableMouseInteraction={true}
-          mouseInfluence={0.15}
-        />
+      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none mix-blend-screen">
+        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="radar-glow" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#4f46e5" stopOpacity="0.15" />
+              <stop offset="100%" stopColor="#4f46e5" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <circle cx="50%" cy="50%" r="40%" fill="url(#radar-glow)" />
+          <circle cx="50%" cy="50%" r="30%" stroke="#312e81" strokeWidth="1" strokeDasharray="4 8" fill="none" />
+          <circle cx="50%" cy="50%" r="20%" stroke="#1e1b4b" strokeWidth="1" fill="none" />
+          <line x1="50%" y1="0%" x2="50%" y2="100%" stroke="#1e1b4b" strokeWidth="0.5" strokeDasharray="2 4" />
+          <line x1="0%" y1="50%" x2="100%" y2="50%" stroke="#1e1b4b" strokeWidth="0.5" strokeDasharray="2 4" />
+        </svg>
       </div>
 
       <main className="relative z-10 container mx-auto p-8 max-w-7xl">
@@ -175,12 +178,19 @@ export default async function Dashboard() {
             </h1>
             <p className="text-neutral-400 mt-2">Gestiona tu equipo de inteligencia artificial AACOM.</p>
           </div>
-          <Link href="/agents/new">
-            <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-6 transition-all duration-300 hover:shadow-[0_0_20px_rgba(79,70,229,0.4)]">
+          {isCreateDisabled ? (
+            <Button disabled className="bg-neutral-800 text-neutral-500 rounded-full px-6 cursor-not-allowed border border-white/5">
               <Plus className="mr-2 h-4 w-4" />
-              Crear Agente
+              Crear Agente (Límite alcanzado)
             </Button>
-          </Link>
+          ) : (
+            <Link href="/agents/new">
+              <Button className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-full px-6 transition-all duration-300 hover:shadow-[0_0_20px_rgba(79,70,229,0.4)]">
+                <Plus className="mr-2 h-4 w-4" />
+                Crear Agente
+              </Button>
+            </Link>
+          )}
         </header>
 
         {agents.length === 0 ? (

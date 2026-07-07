@@ -46,7 +46,7 @@ export function AgentForm({
 
   const showExecutive = !deployedTypes.includes("EXECUTIVE_ASSISTANT") || agent?.type === "EXECUTIVE_ASSISTANT";
   const showSocialMedia = !deployedTypes.includes("SOCIAL_MEDIA_MANAGER") || agent?.type === "SOCIAL_MEDIA_MANAGER";
-  const showReceptionist = !deployedTypes.includes("RECEPTIONIST") || agent?.type === "RECEPTIONIST";
+  const showReceptionist = false;
 
   const allDeployed = !showExecutive && !showSocialMedia && !showReceptionist && !agent?.id;
 
