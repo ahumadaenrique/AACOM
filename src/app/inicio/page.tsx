@@ -15,7 +15,7 @@ export default function InicioPage() {
             <div className="bg-teal-600 text-white p-1.5 rounded-lg">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <span className="text-xl font-black tracking-tight text-slate-800">AACOM</span>
+            <span className="text-xl font-black tracking-tight text-slate-800">SYSGPYA</span>
           </div>
           <nav className="hidden md:flex gap-8 text-sm font-medium text-slate-600">
             <a href="#caracteristicas" className="hover:text-teal-600 transition-colors">Características</a>
