@@ -445,6 +445,7 @@ export default function AdminClient() {
       console.error(err)
       setRankingBannerMsg("Error inesperado")
       setSavingRankingBanner(false)
+    }
   }
  
   // Delete Ranking Banner
