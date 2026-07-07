@@ -4330,13 +4330,13 @@ export default function AdminClient() {
             <Card className="border shadow-sm">
               <CardHeader className="bg-slate-50 border-b pb-4">
                 <CardTitle className="text-lg font-black text-slate-700 flex items-center gap-2">
-                  <BellRing className="h-5 w-5" /> Notificaciones Autom�ticas (Sistema)
+                  <BellRing className="h-5 w-5" /> Notificaciones Automáticas (Sistema)
                 </CardTitle>
               </CardHeader>
               <CardContent className="pt-6 space-y-4">
                 <div className="flex items-center justify-between p-3 border rounded-xl">
                   <div>
-                    <h4 className="font-bold text-sm">Validaci�n 25 Puntos</h4>
+                    <h4 className="font-bold text-sm">Validación 25 Puntos</h4>
                     <p className="text-xs text-slate-500">Alerta de Lunes a Viernes a las 5:00 PM</p>
                   </div>
                   <Button variant={pushPointsEnabled ? "default" : "outline"} onClick={handleTogglePointsSetting} className={pushPointsEnabled ? "bg-teal-600 hover:bg-teal-700 text-white" : ""}>
@@ -4345,7 +4345,7 @@ export default function AdminClient() {
                 </div>
                 <div className="flex items-center justify-between p-3 border rounded-xl">
                   <div>
-                    <h4 className="font-bold text-sm">Planeaci�n Diaria</h4>
+                    <h4 className="font-bold text-sm">Planeación Diaria</h4>
                     <p className="text-xs text-slate-500">Alerta de Lunes a Viernes a las 8:30 AM</p>
                   </div>
                   <Button variant={pushPlanningEnabled ? "default" : "outline"} onClick={handleTogglePlanningSetting} className={pushPlanningEnabled ? "bg-teal-600 hover:bg-teal-700 text-white" : ""}>
@@ -4359,10 +4359,10 @@ export default function AdminClient() {
             <Card className="border shadow-sm border-blue-100 dark:border-blue-900/30">
               <CardHeader className="bg-blue-50/50 dark:bg-blue-950/20 border-b pb-4">
                 <CardTitle className="text-lg font-black text-blue-700 dark:text-blue-400 flex items-center gap-2">
-                  <BellRing className="h-5 w-5" /> Enviar o Programar Notificaci�n Push
+                  <BellRing className="h-5 w-5" /> Enviar o Programar Notificación Push
                 </CardTitle>
                 <CardDescription>
-                  Env�a un mensaje al instante o progr�malo para que se env�e autom�ticamente.
+                  Envía un mensaje al instante o prográmalo para que se envíe automáticamente.
                 </CardDescription>
               </CardHeader>
               <CardContent className="pt-6">
@@ -4384,7 +4384,7 @@ export default function AdminClient() {
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Mensaje a mostrar</label>
                     <Input 
-                      placeholder="Ej. �ltimo d�a de cierre! Manda tus cotizaciones antes de las 4 PM." 
+                      placeholder="Ej. ¡Último día de cierre! Manda tus cotizaciones antes de las 4 PM." 
                       value={pushMessage}
                       onChange={(e) => setPushMessage(e.target.value)}
                       maxLength={150}
@@ -4394,7 +4394,7 @@ export default function AdminClient() {
                   </div>
 
                   <div className="space-y-2 border-t pt-4">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">�Cu�ndo enviar?</label>
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">¿Cuándo enviar?</label>
                     <select
                       className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm focus:outline-teal-600"
                       value={schedFreq}
@@ -4409,7 +4409,7 @@ export default function AdminClient() {
                   {schedFreq !== "NOW" && (
                     <div className="flex gap-3">
                       <div className="flex-1 space-y-2">
-                        <label className="text-xs font-bold text-slate-500">Hora (M�xico)</label>
+                        <label className="text-xs font-bold text-slate-500">Hora (México)</label>
                         <select
                           className="flex h-10 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm"
                           value={schedHour}
@@ -4430,10 +4430,10 @@ export default function AdminClient() {
                   )}
 
                   <div className="space-y-2 border-t pt-4">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">PIN de Autorizaci�n</label>
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">PIN de Autorización</label>
                     <Input 
                       type="password"
-                      placeholder="Ingresa el PIN de seguridad de 10 d�gitos" 
+                      placeholder="Ingresa el PIN de seguridad de 10 dígitos" 
                       value={pushPin}
                       onChange={(e) => setPushPin(e.target.value)}
                       className="rounded-xl border-slate-200"
@@ -4453,7 +4453,7 @@ export default function AdminClient() {
                       </Button>
                     ) : (
                       <Button onClick={handleCreateSchedule} disabled={pushLoading} className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl h-11">
-                        {pushLoading ? "Programando..." : "Guardar Programaci�n"}
+                        {pushLoading ? "Programando..." : "Guardar Programación"}
                       </Button>
                     )}
                   </div>
