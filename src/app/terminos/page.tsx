@@ -19,7 +19,7 @@ export default function TerminosPage() {
             <div className="bg-teal-600 text-white p-1.5 rounded-lg">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <span className="text-xl font-black tracking-tight text-slate-800">AACOM</span>
+            <span className="text-xl font-black tracking-tight text-slate-800">SYSGPYA</span>
           </div>
         </div>
       </header>
