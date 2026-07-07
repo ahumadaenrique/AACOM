@@ -78,8 +78,10 @@ export function GraphicDesignPreview({
           ctx.drawImage(img, x, y, w, h)
           resolve()
         }
-        img.onerror = reject
-        img.src = url.startsWith('http') ? `/api/agents/proxy-image?url=${encodeURIComponent(url)}` : url
+        img.onerror = () => {
+          reject(new Error(`No se pudo cargar la imagen: ${url.substring(0, 50)}...`))
+        }
+        img.src = url.startsWith('http') ? `/api/agents/proxy-image?url=${encodeURIComponent(url)}&t=${Date.now()}` : url
       })
     }
 
@@ -178,8 +180,9 @@ export function GraphicDesignPreview({
           URL.revokeObjectURL(finalUrl)
         }, 'image/png')
 
-      } catch(err) {
+      } catch(err: any) {
         console.error('Error drawing canvas', err)
+        alert('Error al procesar la descarga de la imagen: ' + (err.message || err))
       }
     }
     
