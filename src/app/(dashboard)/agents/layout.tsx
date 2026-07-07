@@ -8,6 +8,9 @@ export default async function AgentsLayout({ children }: { children: ReactNode }
   let agents: any[] = []
   try {
     agents = await prisma.aIAgent.findMany({
+      where: {
+        type: { not: 'RECEPTIONIST' }
+      },
       orderBy: { createdAt: 'asc' }
     })
   } catch (e) {
