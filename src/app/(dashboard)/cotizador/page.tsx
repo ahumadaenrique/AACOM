@@ -22,6 +22,25 @@ export default async function CotizadorPage() {
   
   const agencyName = agency?.name || 'SYSGPYA';
   const agencyLogo = agency?.logoUrl || '/logo.png';
+
+  let currentUserName = "";
+  let agencyUsers: string[] = [];
+
+  if (session?.user?.email) {
+    const dbUser = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    });
+    if (dbUser) {
+      currentUserName = dbUser.name || "";
+      
+      const users = await prisma.user.findMany({
+        where: { agencyId: dbUser.agencyId },
+        select: { name: true },
+        orderBy: { name: 'asc' }
+      });
+      agencyUsers = users.map(u => u.name).filter((name): name is string => !!name);
+    }
+  }
   
-  return <CotizadorClient agencyName={agencyName} agencyLogo={agencyLogo} />;
+  return <CotizadorClient agencyName={agencyName} agencyLogo={agencyLogo} currentUserName={currentUserName} agencyUsers={agencyUsers} />;
 }

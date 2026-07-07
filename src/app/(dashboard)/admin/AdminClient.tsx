@@ -1880,68 +1880,7 @@ export default function AdminClient() {
                 </CardContent>
               </Card>
 
-              {/* Cotizador Agent List */}
-              <Card className="border shadow-sm overflow-hidden flex flex-col justify-between">
-                <CardHeader className="py-4 border-b bg-slate-50/50">
-                  <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider">
-                    Nombres Autorizados en Cotizador
-                  </CardTitle>
-                  <CardDescription className="text-xs">
-                    Lista oficial de nombres que aparecen en el dropdown del Cotizador de propuestas técnicas.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="p-0">
-                  {loadingAgents ? (
-                    <div className="p-12 text-center text-slate-400 text-xs">
-                      <RefreshCw className="h-6 w-6 animate-spin text-teal-600 mx-auto mb-2" />
-                      Cargando lista de agentes del cotizador...
-                    </div>
-                  ) : dbAgentsList.length === 0 ? (
-                    <div className="p-12 text-center text-slate-400 text-xs italic">
-                      No hay agentes registrados en la lista del Cotizador.
-                    </div>
-                  ) : (
-                    <div className="overflow-x-auto">
-                      <Table className="text-xs">
-                        <TableHeader className="bg-slate-50 font-bold">
-                          <TableRow>
-                            <TableHead className="font-bold py-3 pl-4">Nombre del Agente</TableHead>
-                            <TableHead className="font-bold py-3">Fecha de Alta</TableHead>
-                            <TableHead className="font-bold py-3 text-center pr-4">Acciones</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {dbAgentsList.map((agent) => (
-                            <TableRow key={agent.id} className="hover:bg-slate-50/50 border-b">
-                              <TableCell className="font-bold text-slate-800 py-3 pl-4">
-                                <div className="flex items-center gap-1.5">
-                                  <span className="h-6 w-6 rounded-full bg-slate-600 text-white flex items-center justify-center font-black text-[9px] uppercase shadow-sm">
-                                    {agent.name.split(" ").map((w: string) => w[0]).slice(0, 2).join("")}
-                                  </span>
-                                  <span>{agent.name}</span>
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-slate-500 py-3 font-normal">
-                                {new Date(agent.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City',  day: "numeric", month: "long", year: "numeric" })}
-                              </TableCell>
-                              <TableCell className="text-center py-3 pr-4">
-                                <Button
-                                  onClick={() => handleDeleteAgent(agent.id)}
-                                  variant="ghost"
-                                  size="sm"
-                                  className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-xs h-7 px-2.5"
-                                >
-                                  Eliminar
-                                </Button>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+
 
             </div>
 

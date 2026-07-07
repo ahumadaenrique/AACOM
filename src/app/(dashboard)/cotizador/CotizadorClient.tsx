@@ -75,7 +75,17 @@ interface ColumnMapping {
   primaAhorro: number
 }
 
-export default function CotizadorPage({ agencyName = "AACOM Seguros", agencyLogo = "/logo.png" }: { agencyName?: string, agencyLogo?: string }) {
+export default function CotizadorPage({ 
+  agencyName = "AACOM Seguros", 
+  agencyLogo = "/logo.png",
+  currentUserName = "",
+  agencyUsers = []
+}: { 
+  agencyName?: string
+  agencyLogo?: string
+  currentUserName?: string
+  agencyUsers?: string[]
+}) {
   // Navigation Mode
   const [viewMode, setViewMode] = useState<'MENU' | 'HISTORY' | 'EDITOR'>('MENU')
   const [historyList, setHistoryList] = useState<any[]>([])
@@ -88,7 +98,7 @@ export default function CotizadorPage({ agencyName = "AACOM Seguros", agencyLogo
   // Coberturas: MAA & MAB deleted (Correction 6)
   const [formData, setFormData] = useState<FormData>({
     cliente: "",
-    agente: "",
+    agente: currentUserName || "",
     telefono: "",
     edadCliente: 35,
     producto: "VPL",
@@ -106,17 +116,7 @@ export default function CotizadorPage({ agencyName = "AACOM Seguros", agencyLogo
   })
 
   // Load default UDI rate set by Admin from DB on mount (Correction 5) and agents list
-  const [agents, setAgents] = useState<string[]>([
-    "Miguel Angel Cruz",
-    "Alejandra Ahumada",
-    "Jorge Antonio Araoz",
-    "Raul Alberto Coka",
-    "Dalia Sandoval",
-    "Samantha Ramos",
-    "Viridiana Habana",
-    "Claudia Quijada",
-    "Areli Arce"
-  ])
+  const [agents, setAgents] = useState<string[]>(agencyUsers && agencyUsers.length > 0 ? agencyUsers : (currentUserName ? [currentUserName] : []))
 
   useEffect(() => {
     const fetchDefaultUdi = async () => {
@@ -133,19 +133,7 @@ export default function CotizadorPage({ agencyName = "AACOM Seguros", agencyLogo
       }
     }
     
-    const fetchAgents = async () => {
-      try {
-        const res = await getAgents()
-        if (res.success && res.agents && res.agents.length > 0) {
-          setAgents(res.agents.map((a: any) => a.name))
-        }
-      } catch (err) {
-        console.error("Error fetching agents:", err)
-      }
-    }
-
     fetchDefaultUdi()
-    fetchAgents()
   }, [])
 
   // Step 2: Upload Data
