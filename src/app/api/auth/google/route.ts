@@ -13,10 +13,21 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: 'Google OAuth credentials not configured in server' }, { status: 500 })
   }
 
+  const urlObj = new URL(request.url)
+  const originalOrigin = urlObj.origin
+  let redirectUri = `${originalOrigin}/api/auth/google/callback`
+
+  // Centralized redirect for subdomains to avoid google redirect_uri_mismatch
+  if (urlObj.hostname.endsWith('aacomsoft.com')) {
+    redirectUri = 'https://www.aacomsoft.com/api/auth/google/callback'
+  } else if (urlObj.hostname.endsWith('vercel.app')) {
+    redirectUri = 'https://aacom-lilac.vercel.app/api/auth/google/callback'
+  }
+
   const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${new URL(request.url).origin}/api/auth/google/callback`
+    redirectUri
   )
 
   const scopes = [
@@ -28,7 +39,7 @@ export async function GET(request: Request) {
   const url = oauth2Client.generateAuthUrl({
     access_type: 'offline',
     scope: scopes,
-    state: userId,
+    state: `${userId}:${originalOrigin}`,
     prompt: 'consent'
   })
 

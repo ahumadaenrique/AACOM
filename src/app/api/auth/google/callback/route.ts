@@ -5,17 +5,36 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const code = searchParams.get('code')
-  const userId = searchParams.get('state')
+  const stateStr = searchParams.get('state')
 
-  if (!code || !userId) {
-    return NextResponse.json({ error: 'Code or state (userId) missing' }, { status: 400 })
+  if (!code || !stateStr) {
+    return NextResponse.json({ error: 'Code or state missing' }, { status: 400 })
+  }
+
+  // Parse state (contains userId and originalOrigin separated by a colon)
+  const colonIndex = stateStr.indexOf(':')
+  let userId = stateStr
+  let originalOrigin = `${new URL(request.url).origin}` // fallback
+
+  if (colonIndex !== -1) {
+    userId = stateStr.substring(0, colonIndex)
+    originalOrigin = stateStr.substring(colonIndex + 1)
   }
 
   try {
+    const urlObj = new URL(request.url)
+    let redirectUri = `${urlObj.origin}/api/auth/google/callback`
+
+    if (urlObj.hostname.endsWith('aacomsoft.com')) {
+      redirectUri = 'https://www.aacomsoft.com/api/auth/google/callback'
+    } else if (urlObj.hostname.endsWith('vercel.app')) {
+      redirectUri = 'https://aacom-lilac.vercel.app/api/auth/google/callback'
+    }
+
     const oauth2Client = new google.auth.OAuth2(
       process.env.GOOGLE_CLIENT_ID,
       process.env.GOOGLE_CLIENT_SECRET,
-      `${new URL(request.url).origin}/api/auth/google/callback`
+      redirectUri
     )
 
     const { tokens } = await oauth2Client.getToken(code)
@@ -29,10 +48,10 @@ export async function GET(request: Request) {
       }
     })
 
-    // Redirect back to dashboard. To bypass the client cache and reload the layout, we redirect with a success flag
-    return NextResponse.redirect(`${new URL(request.url).origin}/?success=google`)
+    // Redirect back to original origin dashboard
+    return NextResponse.redirect(`${originalOrigin}/agents?success=google`)
   } catch (error: any) {
     console.error('Error exchanging Google OAuth code:', error)
-    return NextResponse.redirect(`${new URL(request.url).origin}/?error=google`)
+    return NextResponse.redirect(`${originalOrigin}/agents?error=google`)
   }
 }
