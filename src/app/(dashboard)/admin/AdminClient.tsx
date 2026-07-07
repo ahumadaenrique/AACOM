@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush } from "@/app/actions"
+import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, deleteRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import BibliotecaAdmin from "./BibliotecaAdmin"
@@ -444,6 +444,26 @@ export default function AdminClient() {
     } catch (err) {
       console.error(err)
       setRankingBannerMsg("Error inesperado")
+      setSavingRankingBanner(false)
+  }
+ 
+  // Delete Ranking Banner
+  const handleDeleteRankingBanner = async () => {
+    if (!confirm("¿Estás seguro de que deseas eliminar la campaña de premiación actual? Los agentes ya no verán ningún banner de incentivo en el Ranking.")) return
+    setSavingRankingBanner(true)
+    setRankingBannerMsg("Eliminando campaña...")
+    try {
+      const res = await deleteRankingAd()
+      if (res.success) {
+        setRankingBanner(null)
+        setRankingBannerMsg("¡Campaña eliminada con éxito!")
+        setTimeout(() => setRankingBannerMsg(""), 5000)
+      } else {
+        setRankingBannerMsg(res.message || "Error al eliminar la campaña")
+      }
+    } catch (err: any) {
+      setRankingBannerMsg(`Error: ${err.message || 'Fallo de red'}`)
+    } finally {
       setSavingRankingBanner(false)
     }
   }
@@ -1174,8 +1194,18 @@ export default function AdminClient() {
                 </div>
                 <div className="w-full md:w-1/2 flex justify-center">
                   {rankingBanner ? (
-                    <div className="relative rounded-xl overflow-hidden shadow-sm border border-amber-200 w-full flex items-center justify-center bg-white p-2">
+                    <div className="relative rounded-xl overflow-hidden shadow-sm border border-amber-200 w-full flex items-center justify-center bg-white p-2 group">
                       <img src={rankingBanner} alt="Campaña de Ranking" className="max-w-full max-h-48 object-contain rounded" />
+                      
+                      <button
+                        type="button"
+                        onClick={handleDeleteRankingBanner}
+                        disabled={savingRankingBanner}
+                        className="absolute top-2 right-2 bg-red-600 hover:bg-red-700 text-white p-2 rounded-full shadow-lg transition-all opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer"
+                        title="Eliminar Campaña"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   ) : (
                     <div className="h-32 w-full rounded-xl border border-dashed border-amber-200 flex items-center justify-center text-amber-500 font-medium text-xs italic bg-white/40">

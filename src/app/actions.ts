@@ -1487,6 +1487,38 @@ export async function createRankingAd(base64Data: string, fileName: string, link
     }
 }
 
+export async function deleteRankingAd() {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        enforceDemoSafety(session);
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        // Deactivate all ranking ads
+        await prisma.content.updateMany({
+            where: { type: 'RANKING_AD' },
+            data: { active: false }
+        });
+
+        revalidatePath('/ranking');
+        revalidatePath('/admin');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error deleting ranking ad:", error);
+        return { success: false, message: error.message || "Error al eliminar la campaña" };
+    }
+}
+
 // ==========================================
 // ADMIN AACOM 25 REPORTS & PROFILE ACTIONS
 // ==========================================
