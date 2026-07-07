@@ -54,9 +54,12 @@ export default async function DashboardLayout({
     }
 
     // If no user/agency, fall back to the slug from middleware
+    const headersList = headers();
+    const slug = headersList.get('x-agency-slug') || 'aacom';
+    const pathname = headersList.get('x-pathname') || '';
+    const isAgentsRoute = pathname.startsWith('/agents');
+
     if (!agency) {
-        const headersList = headers();
-        const slug = headersList.get('x-agency-slug') || 'aacom';
         agency = await prisma.agency.findUnique({ where: { slug } });
     }
 
@@ -128,6 +131,18 @@ export default async function DashboardLayout({
                 <ForcePasswordChange userId={dbUser.id} email={dbUser.email} />
                 <div className="hidden" aria-hidden="true">{children}</div>
             </>
+        )
+    }
+
+    if (isAgentsRoute) {
+        return (
+            <div className="flex h-screen w-screen flex-col overflow-hidden bg-neutral-950">
+                <SubscriptionBlocker isActive={isSubscriptionActive} isSuperAdmin={isSuperAdmin}>
+                    {children}
+                </SubscriptionBlocker>
+                <PwaInstaller agencyName={agencyName} />
+                <PushNotificationManager />
+            </div>
         )
     }
 
