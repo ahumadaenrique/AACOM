@@ -22,6 +22,9 @@ export async function generateMetadata(): Promise<Metadata> {
     return {
         title: `SYSGPYA | ${agencyName}`,
         description: "Sistema de Gestión de Promotorías y Agencias",
+        verification: {
+            google: "5kX4pRTxF91CuddNpfrYcKAN-EeTtDVfRu6KvFi69RU",
+        },
         appleWebApp: {
             capable: true,
             statusBarStyle: "default",
