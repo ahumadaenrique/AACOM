@@ -33,6 +33,7 @@ export default auth((req) => {
 
     const requestHeaders = new Headers(req.headers);
     requestHeaders.set('x-agency-slug', slug);
+    requestHeaders.set('x-pathname', req.nextUrl.pathname);
 
     return NextResponse.next({
         request: {

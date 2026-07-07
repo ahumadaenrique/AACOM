@@ -18,7 +18,7 @@ export default async function AgentsLayout({ children }: { children: ReactNode }
   }
 
   return (
-    <div className="flex flex-col md:flex-row h-[calc(100vh-4rem)] bg-neutral-950 text-neutral-50 overflow-hidden w-full -m-4 md:-m-8">
+    <div className="flex flex-col md:flex-row h-screen bg-neutral-950 text-neutral-50 overflow-hidden w-full">
       <AgentsSidebar agents={agents} />
       <div className="flex-1 flex flex-col min-w-0 h-full relative overflow-hidden">
         {children}
