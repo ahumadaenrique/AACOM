@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { FooterWrapper } from "@/components/FooterWrapper";
 
 // const inter = Inter({ subsets: ["latin"] });
 
@@ -100,11 +101,13 @@ export default async function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const headersList = headers();
-    const slug = headersList.get('x-agency-slug') || 'aacom';
-
-    let agency = await prisma.agency.findUnique({
-        where: { slug }
+    let agency = await prisma.agency.findFirst({
+        where: {
+            OR: [
+                { slug: 'aacom' },
+                { slug: 'aacom-25' }
+            ]
+        }
     });
 
     if (!agency) {
@@ -129,11 +132,7 @@ export default async function RootLayout({
                 <div className="flex-1 flex flex-col">
                     {children}
                 </div>
-                <footer className="py-4 bg-slate-50 dark:bg-zinc-950 border-t border-slate-200 dark:border-zinc-800 text-center z-50">
-                    <p className="text-xs font-medium text-slate-500 dark:text-zinc-400">
-                        Este es un producto desarrollado por <span className="text-indigo-600 font-bold dark:text-indigo-400">AACOMSoft</span> una empresa de Grupo AACOM
-                    </p>
-                </footer>
+                <FooterWrapper />
                 <Toaster />
                 <Analytics />
                 <SpeedInsights />

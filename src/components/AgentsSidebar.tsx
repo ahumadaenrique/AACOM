@@ -30,12 +30,6 @@ export function AgentsSidebar({ agents }: { agents: Agent[] }) {
       icon: LayoutDashboard,
       isActive: pathname.startsWith("/agents/workspace/identity"),
     },
-    {
-      label: "Base de conocimientos",
-      href: "/agents/workspace/knowledge",
-      icon: Brain,
-      isActive: pathname.startsWith("/agents/workspace/knowledge"),
-    },
   ]
 
   const getRoleDisplayName = (type: string) => {

@@ -1427,10 +1427,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
 
     const coreMessages = convertUiMessagesToModelMessages(messages)
 
-    let currentMessages = [
-      { role: 'system' as const, content: systemPrompt },
-      ...coreMessages
-    ]
+    let currentMessages = [...coreMessages]
 
     let loopCount = 0
     const maxLoops = 3
@@ -1441,6 +1438,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
       
       const response = await generateText({
         model: google('gemini-2.5-flash'),
+        system: systemPrompt,
         messages: currentMessages,
         tools: tools as any,
       })
@@ -1497,6 +1495,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
 
     const result = await streamText({
       model: google('gemini-2.5-flash'),
+      system: systemPrompt,
       messages: currentMessages,
       tools: tools as any,
       async onFinish(eventArgs) {
