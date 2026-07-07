@@ -99,7 +99,7 @@ export default function IdentityForm({ initialData }: { initialData: any }) {
           value={formData.description}
           onChange={(e) => handleChange("description", e.target.value)}
           onBlur={handleBlur}
-          placeholder="Ej. AACOM es una promotoría enfocada en desarrollar a los mejores agentes de seguros..."
+          placeholder="Ej. (Tu promotoría) es una promotoría enfocada en desarrollar a los mejores agentes de seguros..."
         />
       </div>
       
