@@ -1,23 +1,42 @@
 import { prisma } from "@/lib/prisma"
 import { notFound } from "next/navigation"
 import ChatInterface from "./ChatInterface"
+import { auth } from "@/auth"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
+
 export default async function AgentChatPage({ params }: { params: { id: string } }) {
+  const session = await auth()
+  if (!session || !session.user || !session.user.email) {
+    notFound()
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { email: session.user.email }
+  })
+  if (!dbUser) notFound()
+
   const agent = await prisma.aIAgent.findUnique({
     where: { id: params.id }
   })
 
-  if (!agent) notFound()
+  if (!agent || agent.userId !== dbUser.id) notFound()
 
-  const companyProfile = await prisma.companyProfile.findFirst({
-    include: { Agency: true }
-  })
-  const fallbackLogoUrl = companyProfile?.Agency?.logoUrl || null
+  let fallbackLogoUrl = null
+  if (dbUser.agencyId) {
+    const companyProfile = await prisma.companyProfile.findUnique({
+      where: { agencyId: dbUser.agencyId },
+      include: { Agency: true }
+    })
+    fallbackLogoUrl = companyProfile?.Agency?.logoUrl || null
+  }
 
   const interactionLogs = await prisma.interactionLog.findMany({
-    where: { aiAgentId: agent.id },
+    where: { 
+      aiAgentId: agent.id,
+      userId: dbUser.id
+    },
     orderBy: { createdAt: 'asc' }
   })
 
@@ -64,6 +83,7 @@ export default async function AgentChatPage({ params }: { params: { id: string }
   const logsForMonth = await prisma.interactionLog.findMany({
     where: {
       aiAgentId: agent.id,
+      userId: dbUser.id,
       createdAt: {
         gte: startOfMonth
       }

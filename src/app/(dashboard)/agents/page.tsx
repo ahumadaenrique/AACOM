@@ -32,9 +32,10 @@ export const dynamic = 'force-dynamic'
 export default async function Dashboard() {
   const session = await auth()
   let agencyName = "AACOM"
+  let dbUser = null
   try {
     if (session?.user?.email) {
-      const dbUser = await prisma.user.findUnique({
+      dbUser = await prisma.user.findUnique({
         where: { email: session.user.email },
         include: { agency: true }
       })
@@ -46,55 +47,55 @@ export default async function Dashboard() {
     console.error("Failed to query agency name for agents dashboard:", e)
   }
 
-  // Self-healing seeding: upsert default configurations for Maria and Ramiro
-  try {
-    const userId = "cmpqhbby60001m8szttlu4but"
-    await prisma.aIAgent.upsert({
-      where: { id: "cmr07htpq0001fnyv39kss0id" },
-      update: {
-        name: "María la Asistente",
-        type: "EXECUTIVE_ASSISTANT",
-        systemPrompt: "Eres un Asistente Ejecutivo altamente proactivo y profesional. Tu objetivo es ayudar a organizar la agenda, crear minutas de reuniones y enviar recordatorios."
-      },
-      create: {
-        id: "cmr07htpq0001fnyv39kss0id",
-        name: "María la Asistente",
-        type: "EXECUTIVE_ASSISTANT",
-        userId: userId,
-        isActive: true,
-        systemPrompt: "Eres un Asistente Ejecutivo altamente proactivo y profesional. Tu objetivo es ayudar a organizar la agenda, crear minutas de reuniones y enviar recordatorios."
+  // Ensure default agents exist for this user
+  if (dbUser) {
+    try {
+      const existingExecutive = await prisma.aIAgent.findFirst({
+        where: { userId: dbUser.id, type: "EXECUTIVE_ASSISTANT" }
+      })
+      if (!existingExecutive) {
+        await prisma.aIAgent.create({
+          data: {
+            name: "María la Asistente",
+            type: "EXECUTIVE_ASSISTANT",
+            userId: dbUser.id,
+            isActive: true,
+            systemPrompt: "Eres un Asistente Ejecutivo altamente proactivo y profesional. Tu objetivo es ayudar a organizar la agenda, crear minutas de reuniones y enviar recordatorios."
+          }
+        })
       }
-    })
 
-    await prisma.aIAgent.upsert({
-      where: { id: "cmr1a5avi0001fwryikglgsdo" },
-      update: {
-        name: "Ramiro el de MKT",
-        type: "SOCIAL_MEDIA_MANAGER",
-        systemPrompt: "Eres Ramiro el de MKT, un creativo social media manager encargado de diseñar posts, mockups e imágenes publicitarias para redes sociales de AACOM."
-      },
-      create: {
-        id: "cmr1a5avi0001fwryikglgsdo",
-        name: "Ramiro el de MKT",
-        type: "SOCIAL_MEDIA_MANAGER",
-        userId: userId,
-        isActive: true,
-        systemPrompt: "Eres Ramiro el de MKT, un creativo social media manager encargado de diseñar posts, mockups e imágenes publicitarias para redes sociales de AACOM."
+      const existingMkt = await prisma.aIAgent.findFirst({
+        where: { userId: dbUser.id, type: "SOCIAL_MEDIA_MANAGER" }
+      })
+      if (!existingMkt) {
+        await prisma.aIAgent.create({
+          data: {
+            name: "Ramiro el de MKT",
+            type: "SOCIAL_MEDIA_MANAGER",
+            userId: dbUser.id,
+            isActive: true,
+            systemPrompt: "Eres Ramiro el de MKT, un creativo social media manager encargado de diseñar posts, mockups e imágenes publicitarias para redes sociales de tu agencia."
+          }
+        })
       }
-    })
-  } catch (e) {
-    console.error("Seeding/Upserting error:", e)
+    } catch (e) {
+      console.error("Seeding/Upserting error:", e)
+    }
   }
 
   let agents: any[] = []
   let schemaError = false
   try {
-    agents = await prisma.aIAgent.findMany({
-      where: {
-        type: { not: 'RECEPTIONIST' }
-      },
-      orderBy: { createdAt: 'desc' }
-    })
+    if (dbUser) {
+      agents = await prisma.aIAgent.findMany({
+        where: {
+          userId: dbUser.id,
+          type: { not: 'RECEPTIONIST' }
+        },
+        orderBy: { createdAt: 'desc' }
+      })
+    }
   } catch (e) {
     console.error("Failed to query agents:", e)
     schemaError = true
