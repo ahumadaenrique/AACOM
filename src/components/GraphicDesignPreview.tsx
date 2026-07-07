@@ -79,7 +79,7 @@ export function GraphicDesignPreview({
           resolve()
         }
         img.onerror = reject
-        img.src = url.startsWith('http') ? `/api/proxy-image?url=${encodeURIComponent(url)}` : url
+        img.src = url.startsWith('http') ? `/api/agents/proxy-image?url=${encodeURIComponent(url)}` : url
       })
     }
 
