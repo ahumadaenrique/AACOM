@@ -5,10 +5,10 @@ import { updateCompanyProfile } from "../actions"
 
 export default function IdentityForm({ initialData }: { initialData: any }) {
   const [formData, setFormData] = useState({
-    targetAudience: initialData?.targetAudience || "1) Potenciales candidatos a convertirse en agentes de seguros exitosos\n2) Agentes consolidados con necesidades de servicio.",
-    websiteUrl: initialData?.websiteUrl || "www.aacommx.com",
-    industry: initialData?.industry || "Insurance & Financial Services",
-    description: initialData?.description || "AACOM es una promotoria lider en el mercado de seguros.",
+    targetAudience: initialData?.targetAudience || "",
+    websiteUrl: initialData?.websiteUrl || "",
+    industry: initialData?.industry || "",
+    description: initialData?.description || "",
     primaryColor: initialData?.primaryColor || "#4f46e5",
     secondaryColor: initialData?.secondaryColor || "#10b981",
     logoUrl: initialData?.logoUrl || ""

@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma"
 import Radar from "@/components/ui/Radar"
 import { AgentAvatar } from "@/components/AgentAvatar"
 import { SyncDbButton } from "@/components/SyncDbButton"
+import { auth } from "@/auth"
 
 const AgentIcon = ({ type }: { type: string }) => {
   switch (type) {
@@ -29,6 +30,22 @@ const AgentTypeLabel = ({ type }: { type: string }) => {
 export const dynamic = 'force-dynamic'
 
 export default async function Dashboard() {
+  const session = await auth()
+  let agencyName = "AACOM"
+  try {
+    if (session?.user?.email) {
+      const dbUser = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        include: { agency: true }
+      })
+      if (dbUser?.agency?.name) {
+        agencyName = dbUser.agency.name
+      }
+    }
+  } catch (e) {
+    console.error("Failed to query agency name for agents dashboard:", e)
+  }
+
   // Self-healing seeding: upsert default configurations for Maria and Ramiro
   try {
     const userId = "cmpqhbby60001m8szttlu4but"
@@ -176,7 +193,7 @@ export default async function Dashboard() {
             <h1 className="text-4xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-neutral-100 to-neutral-500">
               Módulo de Agentes
             </h1>
-            <p className="text-neutral-400 mt-2">Gestiona tu equipo de inteligencia artificial AACOM.</p>
+            <p className="text-neutral-400 mt-2">Gestiona tu equipo de inteligencia artificial {agencyName}.</p>
           </div>
           {isCreateDisabled ? (
             <Button disabled className="bg-neutral-800 text-neutral-500 rounded-full px-6 cursor-not-allowed border border-white/5">

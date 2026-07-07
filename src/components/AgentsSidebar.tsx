@@ -13,7 +13,7 @@ interface Agent {
   type: string
 }
 
-export function AgentsSidebar({ agents }: { agents: Agent[] }) {
+export function AgentsSidebar({ agents, agencyName = "AACOM" }: { agents: Agent[], agencyName?: string }) {
   const pathname = usePathname()
   const [open, setOpen] = useState(false)
 
@@ -49,8 +49,10 @@ export function AgentsSidebar({ agents }: { agents: Agent[] }) {
           <ArrowLeft className="w-4 h-4" />
         </Link>
         <div className="flex items-center gap-2 font-bold text-lg tracking-tight">
-          <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center text-xs text-white">AA</div>
-          AACOM
+          <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center text-xs text-white uppercase font-black">
+            {agencyName.slice(0, 2)}
+          </div>
+          {agencyName}
         </div>
       </div>
 
@@ -130,7 +132,7 @@ export function AgentsSidebar({ agents }: { agents: Agent[] }) {
               <SidebarContent />
             </SheetContent>
           </Sheet>
-          <span className="font-bold text-sm tracking-tight">AACOM IA</span>
+          <span className="font-bold text-sm tracking-tight">{agencyName} IA</span>
         </div>
       </div>
     </>
