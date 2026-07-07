@@ -232,7 +232,7 @@ export default function InicioPage() {
             <div>
               <h4 className="font-bold text-slate-900 mb-6 uppercase tracking-wider text-sm">Legal</h4>
               <ul className="space-y-4">
-                <li><a href="#" className="text-slate-500 hover:text-teal-600 font-medium">Términos y Condiciones</a></li>
+                <li><Link href="/terminos" className="text-slate-500 hover:text-teal-600 font-medium">Términos y Condiciones</Link></li>
                 <li><Link href="/privacidad" className="text-slate-500 hover:text-teal-600 font-medium">Aviso de Privacidad</Link></li>
                 <li><a href="#" className="text-slate-500 hover:text-teal-600 font-medium">Políticas de Reembolso</a></li>
               </ul>
