@@ -10,7 +10,15 @@ function isPromoter(email: string, role?: string) {
   return lowerEmail.includes("promotor") || isSuperAdminEmail || role === "ADMIN" || role === "SUPER_ADMIN" || role === "PROMOTER" || role === "PROMOTOR";
 }
 
-
+function getNextReplenishDate(createdAt: Date): Date {
+  const now = new Date();
+  const created = new Date(createdAt);
+  let replenish = new Date(created);
+  while (replenish.getTime() <= now.getTime()) {
+    replenish.setMonth(replenish.getMonth() + 3);
+  }
+  return replenish;
+}
 
 export async function GET(req: NextRequest) {
   const session = await auth()
@@ -26,25 +34,52 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // Load promoter's user and agency details
+    const dbUser = await prisma.user.findUnique({
+      where: { email: promoterEmail.toLowerCase() },
+      include: { agency: true }
+    })
+
+    if (dbUser?.agency?.subscriptionStatus === "trialing") {
+      return NextResponse.json({ error: "Módulo se desbloquea con cuentas permanentes", trial: true }, { status: 403 })
+    }
+
+    const createdDate = dbUser?.createdAt ? new Date(dbUser.createdAt) : new Date();
+    const nextReplenishDate = getNextReplenishDate(createdDate);
+    const lastReplenishDate = new Date(nextReplenishDate);
+    lastReplenishDate.setMonth(lastReplenishDate.getMonth() - 3);
+
     // 1. Get promoter balance
     let tokens = 7;
     const promotorEmailLow = promoterEmail.toLowerCase();
     const saldo = await prisma.promotorSaldo.findUnique({
       where: { promotor_email: promotorEmailLow }
     });
+
     if (saldo) {
       tokens = saldo.dias_disponibles || 0;
+      const lastUpdate = saldo.fecha_actualizacion ? new Date(saldo.fecha_actualizacion) : new Date(0);
+      if (lastUpdate.getTime() < lastReplenishDate.getTime()) {
+        // Trimestral reset: not cumulative, resets to 7 (or stays current tokens if they have more than 7 due to purchases)
+        tokens = Math.max(7, tokens);
+        await prisma.promotorSaldo.update({
+          where: { promotor_email: promotorEmailLow },
+          data: {
+            dias_disponibles: tokens,
+            fecha_actualizacion: new Date()
+          }
+        });
+      }
     } else {
       // Initialize welcome balance in database
       await prisma.promotorSaldo.create({
-        data: { promotor_email: promotorEmailLow, dias_disponibles: 7 }
+        data: {
+          promotor_email: promotorEmailLow,
+          dias_disponibles: 7,
+          fecha_actualizacion: new Date()
+        }
       });
     }
-
-    // 2. Load promoter's agency details
-    const dbUser = await prisma.user.findUnique({
-      where: { email: promoterEmail.toLowerCase() }
-    })
     
     const agencyId = dbUser?.agencyId
     
@@ -70,10 +105,11 @@ export async function GET(req: NextRequest) {
       })
     }
 
-    // Filter out the current promoter themselves to avoid duplication
+    // Filter out the current promoter themselves to avoid duplication in agents list
     dbAgents = dbAgents.filter(a => a.email.toLowerCase() !== promoterEmail.toLowerCase())
 
-    const emails = dbAgents.map(a => a.email.toLowerCase());
+    // Include promoter email in bulk data loading
+    const emails = [promoterEmail.toLowerCase(), ...dbAgents.map(a => a.email.toLowerCase())];
     
     // Pre-load data in bulk to avoid N+1 serverless timeouts
     const licensesMap: Record<string, any> = {};
@@ -220,98 +256,108 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Add promoter's own study account if they study
-    let promoterSelfAgent = agentsList.find(a => a.email === promoterEmail.toLowerCase());
-    if (!promoterSelfAgent) {
-      const promoterProgressRows = await prisma.estudioProgreso.findMany({
-        where: { email: promoterEmail.toLowerCase() },
-        select: { module: true, tiempo_segundos: true, pregunta_actual: true }
-      });
-      
-      const promoterTimesPerModule: Record<string, number> = {
-        "Aspectos Generales": 0,
-        "Regulación CNSF": 0,
-        "Vida Individual": 0,
-        "Accidentes y Enfermedades": 0,
-        "Seguros de Daños": 0,
-        "Sistema y Mercados Financieros": 0
-      };
-      
-      const promoterStudyProgress: Record<string, number> = {
-        "Aspectos Generales": 0,
-        "Regulación CNSF": 0,
-        "Vida Individual": 0,
-        "Accidentes y Enfermedades": 0,
-        "Seguros de Daños": 0,
-        "Sistema y Mercados Financieros": 0
-      };
-      
-      promoterProgressRows.forEach(row => {
-        if (promoterTimesPerModule[row.module] !== undefined) {
-          promoterTimesPerModule[row.module] = (row.tiempo_segundos || 0) / 60;
-          promoterStudyProgress[row.module] = row.pregunta_actual || 0;
-        }
-      });
-
-      let promoterStudyTime = 0;
-      Object.values(promoterTimesPerModule).forEach(v => {
-        promoterStudyTime += v;
-      });
-
-      // Load promoter's own attempts
-      const promoterAttemptsRows = await prisma.examenIntento.findMany({
-        where: { email: promoterEmail.toLowerCase() },
-        orderBy: { fecha: 'asc' },
-        select: { calificacion: true, aprobado: true, fecha: true, detalles_modulos: true }
-      });
-      
-      const promoterAttempts = promoterAttemptsRows.map(row => ({
-        date: row.fecha ? new Date(row.fecha).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-        score: Number(row.calificacion),
-        passed: row.aprobado,
-        details: row.detalles_modulos
-      }));
-
-      // Calculate promoter's own module scores based on latest attempt
-      const promoterModuleScores: Record<string, number> = {
-        "Aspectos Generales": 0,
-        "Regulación CNSF": 0,
-        "Vida Individual": 0,
-        "Accidentes y Enfermedades": 0,
-        "Seguros de Daños": 0,
-        "Sistema y Mercados Financieros": 0
-      };
-      
-      if (promoterAttemptsRows.length > 0) {
-        const latestDetails = promoterAttemptsRows[promoterAttemptsRows.length - 1].detalles_modulos as Record<string, any>;
-        if (latestDetails) {
-          Object.keys(latestDetails).forEach(mod => {
-            const modData = latestDetails[mod];
-            if (modData && modData.total > 0) {
-              promoterModuleScores[mod] = Math.round((modData.correct / modData.total) * 100);
-            }
-          });
-        }
+    // Add promoter's own study account if they study (Calculate remainingDays based on their actual license!)
+    const promoterSelfEmail = promoterEmail.toLowerCase();
+    const promoterProgressRows = await prisma.estudioProgreso.findMany({
+      where: { email: promoterSelfEmail },
+      select: { module: true, tiempo_segundos: true, pregunta_actual: true }
+    });
+    
+    const promoterTimesPerModule: Record<string, number> = {
+      "Aspectos Generales": 0,
+      "Regulación CNSF": 0,
+      "Vida Individual": 0,
+      "Accidentes y Enfermedades": 0,
+      "Seguros de Daños": 0,
+      "Sistema y Mercados Financieros": 0
+    };
+    
+    const promoterStudyProgress: Record<string, number> = {
+      "Aspectos Generales": 0,
+      "Regulación CNSF": 0,
+      "Vida Individual": 0,
+      "Accidentes y Enfermedades": 0,
+      "Seguros de Daños": 0,
+      "Sistema y Mercados Financieros": 0
+    };
+    
+    promoterProgressRows.forEach(row => {
+      if (promoterTimesPerModule[row.module] !== undefined) {
+        promoterTimesPerModule[row.module] = (row.tiempo_segundos || 0) / 60;
+        promoterStudyProgress[row.module] = row.pregunta_actual || 0;
       }
+    });
 
-      agentsList.push({
-        id: 99, // promoter self-study ID matches existing switchRole expectations
-        name: "Tú (Cuenta de Estudio)",
-        initials: "PR",
-        email: promoterEmail.toLowerCase(),
-        status: "active",
-        studyTime: promoterStudyTime,
-        remainingDays: 999, // promoter has permanent access
-        attempts: promoterAttempts,
-        timesPerModule: promoterTimesPerModule,
-        moduleScores: promoterModuleScores,
-        studyProgress: promoterStudyProgress
-      });
+    let promoterStudyTime = 0;
+    Object.values(promoterTimesPerModule).forEach(v => {
+      promoterStudyTime += v;
+    });
+
+    // Load promoter's own attempts
+    const promoterAttemptsRows = await prisma.examenIntento.findMany({
+      where: { email: promoterSelfEmail },
+      orderBy: { fecha: 'asc' },
+      select: { calificacion: true, aprobado: true, fecha: true, detalles_modulos: true }
+    });
+    
+    const promoterAttempts = promoterAttemptsRows.map(row => ({
+      date: row.fecha ? new Date(row.fecha).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+      score: Number(row.calificacion),
+      passed: row.aprobado,
+      details: row.detalles_modulos
+    }));
+
+    // Calculate promoter's own module scores based on latest attempt
+    const promoterModuleScores: Record<string, number> = {
+      "Aspectos Generales": 0,
+      "Regulación CNSF": 0,
+      "Vida Individual": 0,
+      "Accidentes y Enfermedades": 0,
+      "Seguros de Daños": 0,
+      "Sistema y Mercados Financieros": 0
+    };
+    
+    if (promoterAttemptsRows.length > 0) {
+      const latestDetails = promoterAttemptsRows[promoterAttemptsRows.length - 1].detalles_modulos as Record<string, any>;
+      if (latestDetails) {
+        Object.keys(latestDetails).forEach(mod => {
+          const modData = latestDetails[mod];
+          if (modData && modData.total > 0) {
+            promoterModuleScores[mod] = Math.round((modData.correct / modData.total) * 100);
+          }
+        });
+      }
     }
+
+    // Fetch actual remaining days from license for promoter
+    const promoterLic = licensesMap[promoterSelfEmail];
+    let promoterRemainingDays = 0;
+    if (promoterLic && promoterLic.fecha_expiracion) {
+      const exp = new Date(promoterLic.fecha_expiracion).getTime();
+      const now = new Date().getTime();
+      if (exp > now) {
+        promoterRemainingDays = Math.ceil((exp - now) / (1000 * 60 * 60 * 24));
+      }
+    }
+
+    agentsList.push({
+      id: 99, // promoter self-study ID matches existing switchRole expectations
+      name: "Tú (Cuenta de Estudio)",
+      initials: "PR",
+      email: promoterSelfEmail,
+      status: promoterRemainingDays > 0 ? "active" : "inactive",
+      studyTime: promoterStudyTime,
+      remainingDays: promoterRemainingDays,
+      attempts: promoterAttempts,
+      timesPerModule: promoterTimesPerModule,
+      moduleScores: promoterModuleScores,
+      studyProgress: promoterStudyProgress
+    });
 
     return NextResponse.json({
       tokens,
       totalGiftedThisQuarter: 7, // mock
+      nextReplenishDate: nextReplenishDate.toISOString(),
       agents: agentsList
     });
 

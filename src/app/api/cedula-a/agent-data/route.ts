@@ -14,10 +14,21 @@ export async function GET(req: NextRequest) {
   const initials = name.substring(0, 2).toUpperCase()
 
   try {
+    const emailLower = email.toLowerCase();
+    
+    // Check if the agency is trialing
+    const dbUser = await prisma.user.findUnique({
+      where: { email: emailLower },
+      include: { agency: true }
+    });
+
+    if (dbUser?.agency?.subscriptionStatus === "trialing") {
+      return NextResponse.json({ error: "Módulo se desbloquea con cuentas permanentes", trial: true }, { status: 403 })
+    }
+
     // 1. Get license details
     let remainingDays = 0;
     let dias_asignados = 0;
-    const emailLower = email.toLowerCase();
     
     const licenseRows = await prisma.estudioLicencia.findMany({
       where: { agente_email: emailLower },
@@ -32,12 +43,6 @@ export async function GET(req: NextRequest) {
         if (exp > now) {
           remainingDays = Math.ceil((exp - now) / (1000 * 60 * 60 * 24))
         }
-      }
-    } else {
-      // If user is promoter, they have permanent access to study
-      const isPromoter = email.toLowerCase().includes("promotor") || session.user.role === "ADMIN" || session.user.role === "SUPER_ADMIN" || session.user.role === "PROMOTER" || session.user.role === "PROMOTOR";
-      if (isPromoter) {
-        remainingDays = 999
       }
     }
 

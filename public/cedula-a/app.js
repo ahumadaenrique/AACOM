@@ -221,14 +221,42 @@ async function refreshUserData() {
     try {
         if (currentRole === "promoter") {
             const res = await fetch('/api/cedula-a/promoter-data');
+            if (res.status === 403) {
+                const data = await res.json();
+                if (data.trial) {
+                    showTrialBlockedScreen();
+                    return false;
+                }
+            }
             if (res.ok) {
                 promoterData = await res.json();
                 console.log("Loaded promoterData from Neon DB:", promoterData);
+                
+                // Render replenish date if element exists
+                if (promoterData.nextReplenishDate) {
+                    const nextDateStr = new Date(promoterData.nextReplenishDate).toLocaleDateString('es-MX', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                    });
+                    const dateEl = document.getElementById('replenish-date');
+                    if (dateEl) {
+                        dateEl.innerText = `Fecha de reposición de créditos: ${nextDateStr}`;
+                    }
+                }
+                
                 // Also set activeAgent to promoter's self account
                 activeAgent = promoterData.agents.find(a => a.email === currentUser.email.toLowerCase()) || promoterData.agents[0];
             }
         } else {
             const res = await fetch('/api/cedula-a/agent-data');
+            if (res.status === 403) {
+                const data = await res.json();
+                if (data.trial) {
+                    showTrialBlockedScreen();
+                    return false;
+                }
+            }
             if (res.ok) {
                 activeAgent = await res.json();
                 console.log("Loaded agent data from Neon DB:", activeAgent);
@@ -241,8 +269,10 @@ async function refreshUserData() {
                 };
             }
         }
+        return true;
     } catch (err) {
         console.error("Failed to refresh user data from DB:", err);
+        return false;
     }
 }
 
@@ -2224,4 +2254,41 @@ switchTab = function(tabId) {
     if (document.body.classList.contains('menu-open')) {
         toggleMobileMenu();
     }
+}
+
+function showTrialBlockedScreen() {
+    const overlay = document.createElement('div');
+    overlay.style.position = 'fixed';
+    overlay.style.top = '0';
+    overlay.style.left = '0';
+    overlay.style.width = '100vw';
+    overlay.style.height = '100vh';
+    overlay.style.backgroundColor = 'rgba(15, 23, 42, 0.9)';
+    overlay.style.backdropFilter = 'blur(12px)';
+    overlay.style.zIndex = '99999';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.style.color = '#fff';
+    overlay.style.fontFamily = 'system-ui, -apple-system, sans-serif';
+    overlay.style.padding = '20px';
+    overlay.style.textAlign = 'center';
+
+    overlay.innerHTML = `
+        <div style="max-width: 400px; padding: 40px; background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(99, 102, 241, 0.2); border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.5);">
+            <svg style="width: 64px; height: 64px; fill: #f59e0b; margin-bottom: 24px; display: inline-block;" viewBox="0 0 24 24">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+            </svg>
+            <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #fff;">Módulo Bloqueado</h2>
+            <p style="font-size: 14px; color: #94a3b8; margin-bottom: 24px; line-height: 1.5;">El simulador y academia de Cédula A no está disponible en período de pruebas.</p>
+            <div style="font-size: 13px; font-weight: 700; color: #f59e0b; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); padding: 10px 16px; border-radius: 12px; margin-bottom: 24px;">
+                Módulo se desbloquea con cuentas permanentes.
+            </div>
+            <a href="/academia" style="display: inline-block; padding: 12px 24px; background: #4f46e5; color: #fff; text-decoration: none; border-radius: 12px; font-weight: 700; font-size: 14px; transition: background 0.2s;">
+                Volver a la Academia
+            </a>
+        </div>
+    `;
+    document.body.appendChild(overlay);
 }

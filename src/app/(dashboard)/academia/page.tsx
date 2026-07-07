@@ -8,10 +8,12 @@ export default async function AcademiaPage() {
   let dbUser = null
   if (session?.user?.email) {
     dbUser = await prisma.user.findUnique({
-      where: { email: session.user.email }
+      where: { email: session.user.email },
+      include: { agency: true }
     })
   }
 
+  const isTrial = dbUser?.agency?.subscriptionStatus === "trialing"
   const isPromoter = session?.user?.email?.toLowerCase().includes("promotor") || dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN'
 
   return (
@@ -67,12 +69,26 @@ export default async function AcademiaPage() {
             </div>
           </div>
 
-          <a 
-            href="/cedula-a/index.html" 
-            className="mt-8 flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all duration-200 shadow-md shadow-indigo-900/20"
-          >
-            Ingresar al Portal <ArrowRight className="h-4 w-4" />
-          </a>
+          {isTrial ? (
+            <div className="mt-8 flex flex-col gap-2">
+              <button 
+                disabled 
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-950/40 text-slate-500 font-bold text-sm cursor-not-allowed border border-indigo-500/10"
+              >
+                Módulo Bloqueado <ArrowRight className="h-4 w-4" />
+              </button>
+              <p className="text-[10px] text-amber-500 font-semibold text-center mt-1 bg-amber-500/10 py-1.5 px-3 rounded-lg border border-amber-500/20 animate-pulse">
+                ⚠️ Módulo se desbloquea con cuentas permanentes.
+              </p>
+            </div>
+          ) : (
+            <a 
+              href="/cedula-a/index.html" 
+              className="mt-8 flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all duration-200 shadow-md shadow-indigo-900/20"
+            >
+              Ingresar al Portal <ArrowRight className="h-4 w-4" />
+            </a>
+          )}
         </div>
 
         {/* Card 2: Cédula B (Próximamente) */}

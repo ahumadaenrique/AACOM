@@ -115,15 +115,20 @@
                             Tienes <strong>7 días gratuitos</strong> garantizados por trimestre. Adquiere paquetes adicionales de 7 días por <strong>$299 MXN</strong> para distribuirlos entre tus agentes en formación.
                         </p>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 24px;">
-                        <div style="text-align: right;">
-                            <div class="token-value" id="promoter-tokens">14 Días</div>
-                            <span style="font-size: 12px; color: var(--text-secondary);">Disponibles para asignar</span>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 24px;">
+                            <div style="text-align: right;">
+                                <div class="token-value" id="promoter-tokens">14 Días</div>
+                                <span style="font-size: 12px; color: var(--text-secondary);">Disponibles para asignar</span>
+                            </div>
+                            <button class="btn-primary" onclick="buyTokens()">
+                                <svg style="width:18px; height:18px; fill:currentColor;" viewBox="0 0 24 24"><path d="M11 15h2v-3h3v-2h-3V7h-2v3H8v2h3zM20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12z"/></svg>
+                                Comprar Paquete
+                            </button>
                         </div>
-                        <button class="btn-primary" onclick="buyTokens()">
-                            <svg style="width:18px; height:18px; fill:currentColor;" viewBox="0 0 24 24"><path d="M11 15h2v-3h3v-2h-3V7h-2v3H8v2h3zM20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V6h16v12z"/></svg>
-                            Comprar Paquete
-                        </button>
+                        <div id="replenish-date" style="font-size: 11px; color: var(--text-secondary); margin-top: 4px;">
+                            Fecha de reposición de créditos: Cargando...
+                        </div>
                     </div>
                 </div>
 
