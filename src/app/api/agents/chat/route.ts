@@ -1,5 +1,5 @@
 import { createGoogleGenerativeAI } from '@ai-sdk/google'
-import { streamText, tool, generateText } from 'ai'
+import { streamText, tool, generateText, isStepCount } from 'ai'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
@@ -506,26 +506,24 @@ REGLAS DE FLUJO DE TRABAJO CRÍTICAS:
             }
 
             const [y, m, d] = cleanDate.split('-').map(Number);
-            let utcStart = new Date(Date.UTC(y, m - 1, d, hours, minutes, 0));
-            if (isNaN(utcStart.getTime())) {
-              const now = new Date();
-              utcStart = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate(), hours, minutes, 0));
-            }
-            
-            const safeDuration = typeof duration === 'number' && !isNaN(duration) ? duration : 60;
-            const utcEnd = new Date(utcStart.getTime() + safeDuration * 60000);
-            
             const pad = (n: number) => String(n).padStart(2, '0');
             
-            const startIso = `${cleanDate}T${pad(hours)}:${pad(minutes)}:00`;
+            const startIso = `${cleanDate}T${pad(hours)}:${pad(minutes)}:00-06:00`;
             
-            const endYear = utcEnd.getUTCFullYear();
-            const endMonth = pad(utcEnd.getUTCMonth() + 1);
-            const endDate = pad(utcEnd.getUTCDate());
-            const endHour = pad(utcEnd.getUTCHours());
-            const endMinute = pad(utcEnd.getUTCMinutes());
+            const safeDuration = typeof duration === 'number' && !isNaN(duration) ? duration : 60;
             
-            const endIso = `${endYear}-${endMonth}-${endDate}T${endHour}:${endMinute}:00`;
+            const startMillis = Date.parse(startIso);
+            const endMillis = isNaN(startMillis) ? (Date.now() + safeDuration * 60000) : (startMillis + safeDuration * 60000);
+            
+            const cdmxDate = new Date(endMillis - (6 * 60 * 60 * 1000));
+            
+            const endYear = cdmxDate.getUTCFullYear();
+            const endMonth = pad(cdmxDate.getUTCMonth() + 1);
+            const endDate = pad(cdmxDate.getUTCDate());
+            const endHour = pad(cdmxDate.getUTCHours());
+            const endMinute = pad(cdmxDate.getUTCMinutes());
+            
+            const endIso = `${endYear}-${endMonth}-${endDate}T${endHour}:${endMinute}:00-06:00`;
 
             // Check for duplicate execution (idempotency check) in the last 15 seconds
             // Note: We remove title check here because title phrasing might vary slightly on browser reconnection retries
@@ -723,12 +721,17 @@ ${meeting.description ? `Descripción: ${meeting.description}` : ''}`
             const isWeek = range === 'week'
 
             if (calendar) {
-              const timeMin = new Date(`${targetDate}T00:00:00`).toISOString()
-              const endDateObj = new Date(`${targetDate}T23:59:59`)
+              const timeMin = `${targetDate}T00:00:00-06:00`
+              
+              const [y, m, d] = targetDate.split('-').map(Number);
+              const endDateObj = new Date(Date.UTC(y, m - 1, d, 23, 59, 59));
               if (isWeek) {
-                endDateObj.setDate(endDateObj.getDate() + 6)
+                endDateObj.setUTCDate(endDateObj.getUTCDate() + 6);
               }
-              const timeMax = endDateObj.toISOString()
+              const endY = endDateObj.getUTCFullYear();
+              const endM = String(endDateObj.getUTCMonth() + 1).padStart(2, '0');
+              const endD = String(endDateObj.getUTCDate()).padStart(2, '0');
+              const timeMax = `${endY}-${endM}-${endD}T23:59:59-06:00`;
 
               // Fetch the list of calendars, only querying those that are primary or selected/visible
               const calendarsRes = await calendar.calendarList.list()
@@ -747,6 +750,7 @@ ${meeting.description ? `Descripción: ${meeting.description}` : ''}`
                     calendarId: calId,
                     timeMin,
                     timeMax,
+                    timeZone: 'America/Mexico_City',
                     singleEvents: true,
                   })
                   return r.data.items || []
@@ -781,11 +785,12 @@ ${meeting.description ? `Descripción: ${meeting.description}` : ''}`
               }).join('\n')
             }
 
-            const endDateObj = new Date(`${targetDate}T23:59:59`)
+            const [ly, lm, ld] = targetDate.split('-').map(Number);
+            const localEndDateObj = new Date(Date.UTC(ly, lm - 1, ld));
             if (isWeek) {
-              endDateObj.setDate(endDateObj.getDate() + 6)
+              localEndDateObj.setUTCDate(localEndDateObj.getUTCDate() + 6);
             }
-            const endDateStr = `${endDateObj.getFullYear()}-${String(endDateObj.getMonth() + 1).padStart(2, '0')}-${String(endDateObj.getDate()).padStart(2, '0')}`
+            const endDateStr = `${localEndDateObj.getUTCFullYear()}-${String(localEndDateObj.getUTCMonth() + 1).padStart(2, '0')}-${String(localEndDateObj.getUTCDate()).padStart(2, '0')}`;
 
             const meetings = await prisma.meeting.findMany({
               where: {
@@ -1502,6 +1507,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
       system: systemPrompt,
       messages: currentMessages,
       tools: tools as any,
+      stopWhen: isStepCount(5),
       async onFinish(eventArgs) {
         const { text, toolCalls, toolResults } = eventArgs
         console.log("--- onFinish called ---", { textLength: text?.length, toolCalls: toolCalls?.length })
