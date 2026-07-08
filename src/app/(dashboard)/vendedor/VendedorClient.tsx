@@ -22,13 +22,13 @@ export default function VendedorClient({ sellerData }: { sellerData: any }) {
         setTimeout(() => setCopiedCode(null), 2000);
     }
 
-    const startDemo = async () => {
-        // Enviar la request al API para inyectar la cookie "demoMode=true"
+    const startDemo = async (mode: 'admin' | 'agent') => {
+        // Enviar la request al API para inyectar la cookie "demoMode"
         toast({ title: "Preparando Entorno de Demo..." });
         try {
-            const res = await fetch("/api/auth/demo", { method: "POST" });
+            const res = await fetch(`/api/auth/demo?mode=${mode}`, { method: "POST" });
             if (res.ok) {
-                toast({ title: "¡Modo Demo Activado!" });
+                toast({ title: `¡Modo Demo (${mode === 'admin' ? 'Promotor' : 'Agente'}) Activado!` });
                 window.location.href = "/";
             } else {
                 toast({ variant: "destructive", title: "Error al iniciar Demo" });
@@ -45,10 +45,16 @@ export default function VendedorClient({ sellerData }: { sellerData: any }) {
                     <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-zinc-100">Hola, {sellerData.name}</h1>
                     <p className="text-muted-foreground mt-1">Bienvenido a tu panel de socio afiliado.</p>
                 </div>
-                <Button onClick={startDemo} className="bg-amber-500 hover:bg-amber-600 text-white font-bold h-12 px-6 shadow-lg shadow-amber-500/20 animate-pulse gap-2 rounded-xl">
-                    <PlayCircle className="w-5 h-5" />
-                    Iniciar Presentación Demo
-                </Button>
+                <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto">
+                    <Button onClick={() => startDemo('admin')} className="bg-amber-500 hover:bg-amber-600 text-white font-bold h-12 px-5 shadow-lg shadow-amber-500/20 gap-2 rounded-xl transition-all hover:scale-[1.02]">
+                        <PlayCircle className="w-5 h-5" />
+                        Presentar Demo (Promotor/Admin)
+                    </Button>
+                    <Button onClick={() => startDemo('agent')} className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold h-12 px-5 shadow-lg shadow-indigo-600/20 gap-2 rounded-xl transition-all hover:scale-[1.02]">
+                        <PlayCircle className="w-5 h-5" />
+                        Presentar Demo (Agente)
+                    </Button>
+                </div>
             </div>
 
             {/* Resumen Financiero */}

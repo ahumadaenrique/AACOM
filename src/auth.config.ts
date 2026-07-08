@@ -34,8 +34,15 @@ export const authConfig = {
                 // reescribimos su sesión en tiempo real para que Next.js y Prisma
                 // crean que es el Promotor Demo de la Agencia Demo.
                 const cookieStore = cookies();
-                if (cookieStore.get('demoMode')?.value === 'true') {
-                    if (session.user.role === 'SELLER' || session.user.role === 'SUPER_ADMIN') {
+                const demoValue = cookieStore.get('demoMode')?.value;
+                if (demoValue && (session.user.role === 'SELLER' || session.user.role === 'SUPER_ADMIN' || session.user.role === 'ADMIN')) {
+                    if (demoValue === 'agent') {
+                        session.user.id = 'demo-agent-user-id';
+                        session.user.agencyId = 'demo-agency-id';
+                        session.user.role = 'AGENTE';
+                        session.user.name = 'Carlos Agente Estrella (Modo Lectura)';
+                        session.user.email = 'agente.demo@aacommx.com';
+                    } else {
                         session.user.id = 'demo-user-id';
                         session.user.agencyId = 'demo-agency-id';
                         session.user.role = 'ADMIN';
