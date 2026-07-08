@@ -97,6 +97,8 @@ export default async function DashboardLayout({
                     </p>
                     <form action={async () => {
                         "use server";
+                        const { cookies } = await import("next/headers");
+                        cookies().delete('demoMode');
                         const { signOut } = await import("@/auth");
                         await signOut();
                     }}>
@@ -133,6 +135,8 @@ export default async function DashboardLayout({
     // Server-side native logout action
     const handleLogout = async () => {
         "use server";
+        const { cookies } = await import("next/headers");
+        cookies().delete('demoMode');
         await signOut({ redirectTo: "/login" });
     };
 

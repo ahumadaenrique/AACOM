@@ -5,6 +5,13 @@ import { NextResponse } from "next/server";
 const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
+    // Clear demoMode cookie when accessing the login page to avoid getting stuck
+    if (req.nextUrl.pathname === '/login') {
+        const response = NextResponse.next();
+        response.cookies.delete('demoMode');
+        return response;
+    }
+
     const hostname = req.headers.get("host") || "";
 
     // Parse the slug from the hostname
