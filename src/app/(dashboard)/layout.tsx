@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -116,7 +116,14 @@ export default async function DashboardLayout({
     const endDate = agency?.subscriptionEndDate ? new Date(agency.subscriptionEndDate) : null;
     const now = new Date();
     const isSubscriptionActive = (agency?.subscriptionStatus === "active" || agency?.subscriptionStatus === "trialing") && (!endDate || endDate >= now);
-    const showNavLinks = isSubscriptionActive || isSuperAdmin;
+    
+    const isSeller = dbUser?.role === 'SELLER';
+    if (isSeller && pathname !== '/vendedor') {
+        const { redirect } = await import("next/navigation");
+        redirect("/vendedor");
+    }
+
+    const showNavLinks = (isSubscriptionActive || isSuperAdmin) && !isSeller;
 
     // Server-side native logout action
     const handleLogout = async () => {
@@ -161,6 +168,16 @@ export default async function DashboardLayout({
                             <img src={agencyLogo} alt={agencyName} className="h-7 w-auto object-contain" />
                             <span className="sr-only">{shortAgencyName} cotizador</span>
                         </Link>
+                        {isSeller && (
+                            <Link
+                                href="/vendedor"
+                                className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname === '/vendedor' ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                            >
+                                <Tag className="h-4 w-4 text-amber-500" />
+                                Mi Panel de Vendedor
+                                {pathname === '/vendedor' && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                            </Link>
+                        )}
                         {showNavLinks && (
                             <>
                                 <Link
@@ -328,6 +345,15 @@ export default async function DashboardLayout({
                                     <img src={agencyLogo} alt={agencyName} className="h-8 w-auto object-contain" />
                                     <span className="sr-only">{shortAgencyName} cotizador</span>
                                 </Link>
+                                {isSeller && (
+                                    <Link
+                                        href="/vendedor"
+                                        className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                    >
+                                        <Tag className="h-5 w-5 text-amber-500" />
+                                        Mi Panel de Vendedor
+                                    </Link>
+                                )}
                                 {showNavLinks && (
                                     <>
                                         <Link

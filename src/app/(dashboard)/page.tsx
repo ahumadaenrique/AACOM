@@ -32,6 +32,11 @@ export default async function HomePage() {
             }
         });
 
+        if (currentUser?.role === 'SELLER') {
+            const { redirect } = await import("next/navigation");
+            redirect("/vendedor");
+        }
+
         if (currentUser?.birthDate) {
             // Calculate Mexico City date YYYY-MM-DD
             const cdmxTodayStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
