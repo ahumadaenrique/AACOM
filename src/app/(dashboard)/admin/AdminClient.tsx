@@ -1692,19 +1692,6 @@ export default function AdminClient() {
                       </select>
                     </div>
 
-                    {/* Checkbox to sync with Agent list (Cotizador) */}
-                    <div className="flex items-center gap-2 py-1">
-                      <input
-                        type="checkbox"
-                        id="sync-to-agent-checkbox"
-                        checked={syncToAgentCheckbox}
-                        onChange={e => setSyncToAgentCheckbox(e.target.checked)}
-                        className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
-                      />
-                      <label htmlFor="sync-to-agent-checkbox" className="text-[11px] font-bold text-slate-600 cursor-pointer">
-                        Habilitar en el Cotizador (Nombre Agente)
-                      </label>
-                    </div>
 
                     {userRegistrationMessage && (
                       <p className={`text-xs font-bold text-center mt-2 ${userRegistrationMessage.includes("exitosamente") || userRegistrationMessage.includes("éxito") ? "text-teal-600" : "text-red-500"}`}>
