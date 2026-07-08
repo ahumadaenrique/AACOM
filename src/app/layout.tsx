@@ -99,6 +99,8 @@ function hexToHsl(hex: string) {
     return `${(h * 360).toFixed(1)} ${(s * 100).toFixed(1)}% ${(l * 100).toFixed(1)}%`;
 }
 
+import { auth } from "@/auth";
+
 export const dynamic = 'force-dynamic';
 
 export default async function RootLayout({
@@ -106,11 +108,26 @@ export default async function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    const headersList = headers();
-    const slug = headersList.get('x-agency-slug') || 'aacom';
-    let agency = await prisma.agency.findUnique({ where: { slug } });
+    const session = await auth();
+    let agency = null;
+
+    if (session?.user?.email) {
+        const dbUser = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            include: { agency: true }
+        });
+        if (dbUser?.agency) {
+            agency = dbUser.agency;
+        }
+    }
+
     if (!agency) {
-        agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
+        const headersList = headers();
+        const slug = headersList.get('x-agency-slug') || 'aacom';
+        agency = await prisma.agency.findUnique({ where: { slug } });
+        if (!agency) {
+            agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
+        }
     }
 
     let agencyColor = null;
