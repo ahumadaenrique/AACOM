@@ -54,6 +54,35 @@ export async function POST(req: Request) {
 
         const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://aacomsoft.com';
 
+        // Stripe minimum charge amount in MXN is $10.00 MXN (1000 cents)
+        // If the coupon brings the price down to $0 (100% discount)
+        if (unitAmount === 0) {
+            // Apply promoter package benefits immediately since it is free
+            await prisma.promotorSaldo.upsert({
+                where: { promotor_email: user.email },
+                create: { promotor_email: user.email, dias_disponibles: 7 },
+                update: { dias_disponibles: { increment: 7 } },
+            });
+
+            if (stripeCoupon) {
+                try {
+                    await prisma.discountCode.update({
+                        where: { code: stripeCoupon },
+                        data: { uses: { increment: 1 } },
+                    });
+                } catch (err) {
+                    console.error("Error updating discount code uses:", err);
+                }
+            }
+
+            return NextResponse.json({ url: `${origin}/academia?purchase_success=true` });
+        }
+
+        // If amount is positive but below Stripe's minimum charge of $10.00 MXN
+        if (unitAmount > 0 && unitAmount < 1000) {
+            unitAmount = 1000; // Enforce Stripe minimum of $10.00 MXN to prevent API crash
+        }
+
         const checkoutSession = await stripe.checkout.sessions.create({
             payment_method_types: ["card"],
             line_items: [
