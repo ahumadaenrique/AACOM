@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { FooterWrapper } from "@/components/FooterWrapper";
+import { auth } from "@/auth";
 
 // const inter = Inter({ subsets: ["latin"] });
 
@@ -99,7 +100,6 @@ function hexToHsl(hex: string) {
     return `${(h * 360).toFixed(1)} ${(s * 100).toFixed(1)}% ${(l * 100).toFixed(1)}%`;
 }
 
-import { auth } from "@/auth";
 
 export const dynamic = 'force-dynamic';
 
