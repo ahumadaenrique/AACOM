@@ -66,7 +66,7 @@ export default async function DashboardLayout({
     }
 
     // SECURITY BLOCK: If the user is logged in but their agency was deleted or deactivated
-    const isOrphan = dbUser && !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.email !== 'enrique.ahumada@aacommx.com';
+    const isOrphan = dbUser && !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.role !== 'SELLER' && dbUser?.email !== 'enrique.ahumada@aacommx.com';
     // Bloqueo Legal de Términos y Condiciones
     if (dbUser && !dbUser.termsAccepted) {
         return (
