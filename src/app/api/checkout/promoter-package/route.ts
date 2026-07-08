@@ -27,6 +27,7 @@ export async function POST(req: Request) {
         const promoCode = body.promoCode;
         let stripeCoupon = null;
         let sellerId = null;
+        let unitAmount = 29900; // $299.00 MXN default
 
         if (promoCode && promoCode.trim() !== "") {
             const codeStr = promoCode.trim().toUpperCase();
@@ -39,6 +40,11 @@ export async function POST(req: Request) {
                 if (discount.expiresAt && discount.expiresAt < new Date()) {
                     return NextResponse.json({ error: "El código de descuento ha expirado." }, { status: 400 });
                 }
+
+                // Calculate discounted price locally
+                const discountAmount = Math.round(29900 * (discount.discountPercentage / 100));
+                unitAmount = Math.max(0, 29900 - discountAmount);
+
                 stripeCoupon = discount.code;
                 sellerId = discount.sellerId;
             } else {
@@ -58,13 +64,12 @@ export async function POST(req: Request) {
                             name: 'Paquete 7 Días Promotor - Academia',
                             description: 'Añade 7 días de acceso al simulador para distribuir entre tu estructura de agentes.',
                         },
-                        unit_amount: 29900, // $299.00 MXN
+                        unit_amount: unitAmount, // Dynamic discounted price
                     },
                     quantity: 1,
                 },
             ],
             mode: "payment",
-            ...(stripeCoupon ? { discounts: [{ coupon: stripeCoupon }] } : {}),
             success_url: `${origin}/academia?purchase_success=true`,
             cancel_url: `${origin}/academia`,
             metadata: {
