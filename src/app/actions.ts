@@ -178,6 +178,13 @@ export async function saveCotizacion(data: {
             return { success: false, message: "Usuario no encontrado" };
         }
 
+        if (user.agencyId === 'demo-agency-id') {
+            const count = await prisma.cotizacion.count({ where: { agencyId: 'demo-agency-id' } });
+            if (count >= 5) {
+                return { success: false, message: "Límite de demostración alcanzado (máx. 5 cotizaciones). Adquiere una suscripción para uso ilimitado." };
+            }
+        }
+
         const newCotizacion = await prisma.cotizacion.create({
             data: {
                 userId: user.id,
@@ -553,6 +560,13 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
 
         if (!user) {
             return { success: false, message: "Usuario no encontrado en base de datos" };
+        }
+
+        if (user.agencyId === 'demo-agency-id') {
+            const count = await prisma.adnDiagnostic.count({ where: { agencyId: 'demo-agency-id' } });
+            if (count >= 5) {
+                return { success: false, message: "Límite de demostración alcanzado (máx. 5 diagnósticos ADN). Adquiere una suscripción para uso ilimitado." };
+            }
         }
 
         const newDiagnostic = await prisma.adnDiagnostic.create({

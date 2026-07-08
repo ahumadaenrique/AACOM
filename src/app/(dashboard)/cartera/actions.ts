@@ -44,6 +44,13 @@ export async function createClient(data: z.infer<typeof clientSchema>) {
 
   const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { agencyId: true } });
 
+  if (dbUser?.agencyId === 'demo-agency-id') {
+    const clientCount = await prisma.client.count({ where: { agencyId: 'demo-agency-id' } });
+    if (clientCount >= 5) {
+      throw new Error("Límite de demostración alcanzado (máx. 5 clientes). Adquiere una suscripción para uso ilimitado.");
+    }
+  }
+
   const client = await prisma.client.create({
     data: {
       agencyId: dbUser?.agencyId,
@@ -147,6 +154,13 @@ export async function createPolicy(data: z.infer<typeof policySchema>) {
   }
 
   const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { agencyId: true } });
+
+  if (dbUser?.agencyId === 'demo-agency-id') {
+    const policyCount = await prisma.policy.count({ where: { agencyId: 'demo-agency-id' } });
+    if (policyCount >= 5) {
+      throw new Error("Límite de demostración alcanzado (máx. 5 pólizas). Adquiere una suscripción para uso ilimitado.");
+    }
+  }
 
   const policy = await prisma.policy.create({
     data: {
