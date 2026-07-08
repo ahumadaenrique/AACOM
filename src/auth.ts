@@ -35,7 +35,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                         // Check if the user's agency is suspended or deleted
                         if (!user.agencyId) {
-                            if (user.role !== 'SUPER_ADMIN' && user.email !== 'enrique.ahumada@aacommx.com') {
+                            if (user.role !== 'SUPER_ADMIN' && user.role !== 'SELLER' && user.email !== 'enrique.ahumada@aacommx.com') {
                                 console.log("[AUTH] Orphaned user without agency:", email);
                                 return null;
                             }
