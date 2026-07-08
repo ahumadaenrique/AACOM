@@ -14,7 +14,7 @@ export default function VendedoresClient({ initialSellers }: { initialSellers: a
     const { toast } = useToast()
     const [sellers, setSellers] = useState(initialSellers.filter(s => s.active))
     const [loading, setLoading] = useState(false)
-    const [newSeller, setNewSeller] = useState({ name: "", email: "", commissionRate: 40 })
+    const [newSeller, setNewSeller] = useState({ name: "", email: "", commissionRate: 40, password: "" })
     const [newCoupon, setNewCoupon] = useState({ sellerId: "", code: "", discountPercentage: 10 })
     const [editingSellerId, setEditingSellerId] = useState<string | null>(null)
     const [editSellerData, setEditSellerData] = useState({ name: "", commissionRate: 40 })
@@ -24,7 +24,7 @@ export default function VendedoresClient({ initialSellers }: { initialSellers: a
         setLoading(true);
         try {
             await createSeller(newSeller);
-            toast({ title: "Vendedor creado (Contraseña: seller123)" });
+            toast({ title: `Vendedor creado y contraseña temporal asignada` });
             window.location.reload();
         } catch (e: any) {
             toast({ variant: "destructive", title: e.message });
@@ -112,6 +112,10 @@ export default function VendedoresClient({ initialSellers }: { initialSellers: a
                         <div className="space-y-1">
                             <label className="text-xs font-medium">Comisión Base (%)</label>
                             <Input type="number" min="0" max="100" value={newSeller.commissionRate} onChange={(e) => setNewSeller({...newSeller, commissionRate: Number(e.target.value)})} />
+                        </div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-medium">Contraseña Temporal</label>
+                            <Input placeholder="Ej. Ventas2026*" value={newSeller.password} onChange={(e) => setNewSeller({...newSeller, password: e.target.value})} />
                         </div>
                         <Button onClick={handleCreateSeller} disabled={loading} className="gap-2">
                             <Plus className="w-4 h-4" /> Crear Vendedor

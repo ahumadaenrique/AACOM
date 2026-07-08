@@ -29,7 +29,7 @@ export async function getSellers() {
     return sellers;
 }
 
-export async function createSeller(data: { name: string, email: string, commissionRate: number }) {
+export async function createSeller(data: { name: string, email: string, commissionRate: number, password?: string }) {
     const session = await auth();
     if (!session?.user || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'ADMIN')) {
         throw new Error("Unauthorized");
@@ -44,10 +44,11 @@ export async function createSeller(data: { name: string, email: string, commissi
         data: {
             name: data.name,
             email: data.email,
-            password: "seller123", // Contraseña por defecto
+            password: data.password || "seller123", // Contraseña personalizada o por defecto
             role: 'SELLER',
             sellerCommissionRate: data.commissionRate,
-            active: true
+            active: true,
+            mustChangePassword: true // Forzar cambio de contraseña en primer acceso
         }
     });
 
