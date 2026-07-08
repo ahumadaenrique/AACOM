@@ -145,7 +145,7 @@ export default function RankingPage() {
                         <select 
                             value={selectedMonth} 
                             onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                            className="bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900 text-teal-800 dark:text-teal-400 text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider outline-none focus:ring-2 focus:ring-teal-500 transition-all cursor-pointer"
+                            className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary dark:text-primary text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider outline-none focus:ring-2 focus:ring-primary transition-all cursor-pointer"
                         >
                             {months.map((m, i) => (
                                 <option key={i} value={i}>{m}</option>
@@ -155,7 +155,7 @@ export default function RankingPage() {
                         <select 
                             value={selectedYear} 
                             onChange={(e) => setSelectedYear(Number(e.target.value))}
-                            className="bg-teal-50 dark:bg-teal-950/30 border border-teal-200 dark:border-teal-900 text-teal-800 dark:text-teal-400 text-xs font-black px-3 py-1.5 rounded-full outline-none focus:ring-2 focus:ring-teal-500 transition-all cursor-pointer"
+                            className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary dark:text-primary text-xs font-black px-3 py-1.5 rounded-full outline-none focus:ring-2 focus:ring-primary transition-all cursor-pointer"
                         >
                             {years.map(y => (
                                 <option key={y} value={y}>{y}</option>
@@ -164,7 +164,7 @@ export default function RankingPage() {
                     </div>
                 </div>
                 <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                    <TrendingUp className="h-3.5 w-3.5 text-teal-600" />
+                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
                     Líderes de la promotoria ordenados por la cantidad de diagnósticos de ADN completados en {months[selectedMonth].toLowerCase()} del {selectedYear}.
                 </p>
             </div>
@@ -202,12 +202,12 @@ export default function RankingPage() {
                                                 className="h-full w-full object-cover"
                                             />
                                         ) : (
-                                            <div className="h-full w-full bg-gradient-to-tr from-teal-500 to-indigo-600 flex items-center justify-center text-white text-3xl font-black">
+                                            <div className="h-full w-full bg-gradient-to-tr from-primary/80 to-primary flex items-center justify-center text-white text-3xl font-black">
                                                 {getInitials(item.user.name)}
                                             </div>
                                         )}
                                     </div>
-                                    <div className="absolute -bottom-1.5 -right-1.5 h-7 w-7 rounded-full bg-teal-600 text-white flex items-center justify-center shadow-md border border-white font-extrabold text-xs">
+                                    <div className="absolute -bottom-1.5 -right-1.5 h-7 w-7 rounded-full bg-primary text-white flex items-center justify-center shadow-md border border-white font-extrabold text-xs">
                                         {item.count}
                                     </div>
                                 </div>
@@ -329,7 +329,7 @@ export default function RankingPage() {
 
                             {/* Dark Overlay on Hover */}
                             <div className="absolute inset-0 bg-black/45 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col items-center justify-center gap-2 z-20">
-                                <div className="h-10 w-10 bg-teal-600 text-white rounded-full flex items-center justify-center shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
+                                <div className="h-10 w-10 bg-primary text-white rounded-full flex items-center justify-center shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-transform duration-300">
                                     <ZoomIn className="h-5 w-5" />
                                 </div>
                                 <span className="text-[10px] text-white font-bold uppercase tracking-wider">Ampliar Campaña</span>
@@ -372,7 +372,7 @@ export default function RankingPage() {
                         className="mt-6 flex flex-col sm:flex-row items-center gap-4 z-50 w-full max-w-xl text-center bg-zinc-900/80 border border-white/10 backdrop-blur-lg p-4 rounded-2xl shadow-xl text-white"
                     >
                         <div className="flex-1 text-left">
-                            <span className="text-[9px] bg-teal-500 text-white font-extrabold px-2 py-0.5 rounded tracking-widest uppercase block w-fit mb-1">
+                            <span className="text-[9px] bg-primary text-white font-extrabold px-2 py-0.5 rounded tracking-widest uppercase block w-fit mb-1">
                                 Campaña de Incentivos
                             </span>
                             <p className="text-xs text-zinc-300 truncate">
@@ -386,7 +386,7 @@ export default function RankingPage() {
                                     href={selectedAd.linkUrl}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="flex-1 sm:flex-none bg-teal-600 hover:bg-teal-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-1.5 shadow-md hover:shadow-teal-500/20 transition-all duration-200"
+                                    className="flex-1 sm:flex-none bg-primary hover:bg-primary/90 text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-1.5 shadow-md hover:shadow-primary/20 transition-all duration-200"
                                 >
                                     <ArrowUpRight className="h-4 w-4" /> Ver Enlace Asociado
                                 </a>

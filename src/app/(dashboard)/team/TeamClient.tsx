@@ -326,7 +326,7 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
                                 navigator.clipboard.writeText(inviteUrl);
                                 alert("¡Enlace de invitación copiado al portapapeles!\n\n" + inviteUrl);
                             }}
-                            className="bg-teal-600 hover:bg-teal-700 text-white font-bold whitespace-nowrap shadow-md w-full md:w-auto"
+                            className="bg-primary hover:bg-primary/90 text-white font-bold whitespace-nowrap shadow-md w-full md:w-auto"
                         >
                             <Building2 className="w-4 h-4 mr-2" />
                             Copiar Enlace de Invitación
@@ -347,7 +347,7 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
                         placeholder="Buscar por nombre, correo o aseguradora..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-card border border-slate-200 dark:border-zinc-800 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/30 shadow-sm text-slate-800 dark:text-zinc-200 placeholder-slate-400 transition-all"
+                        className="w-full bg-card border border-slate-200 dark:border-zinc-800 rounded-2xl pl-10 pr-4 py-2.5 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/30 shadow-sm text-slate-800 dark:text-zinc-200 placeholder-slate-400 transition-all"
                     />
                 </div>
             </div>
@@ -386,13 +386,13 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
                                                 className="h-full w-full object-cover"
                                             />
                                         ) : (
-                                            <div className="h-full w-full bg-gradient-to-tr from-indigo-500 to-teal-600 text-white text-2xl font-black flex items-center justify-center">
+                                            <div className="h-full w-full bg-gradient-to-tr from-primary/80 to-primary text-white text-2xl font-black flex items-center justify-center">
                                                 {getInitials(user.name, user.email)}
                                             </div>
                                         )}
                                     </div>
                                     <div className={`absolute -bottom-1 -right-1 h-5 w-5 rounded-full flex items-center justify-center shadow border border-white ${
-                                        (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? 'bg-amber-500 text-white' : 'bg-teal-600 text-white'
+                                        (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? 'bg-amber-500 text-white' : 'bg-primary text-white'
                                     }`} title={user.role}>
                                         <Shield className="h-3 w-3" />
                                     </div>
@@ -400,11 +400,11 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
 
                                 {/* User Details */}
                                 <div className="space-y-1.5 w-full">
-                                    <h3 className="text-sm font-black text-slate-800 dark:text-zinc-100 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-1">
+                                    <h3 className="text-sm font-black text-slate-800 dark:text-zinc-100 group-hover:text-primary transition-colors line-clamp-1">
                                         {user.name || user.email.split("@")[0]}
                                     </h3>
-                                    <span className={`inline-block text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
-                                        (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-teal-100 text-teal-800 dark:bg-teal-950/30 dark:text-teal-400'
+                                    <span className={`inline-block text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-wider border ${
+                                        (user.role === 'ADMIN' || user.role === 'SUPER_ADMIN') ? 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/50' : 'bg-primary/10 text-primary border-primary/20'
                                     }`}>
                                         {user.role}
                                     </span>
@@ -526,8 +526,8 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
                                                 )}
                                             </h2>
                                         )}
-                                        <span className={`w-fit mx-auto sm:mx-0 text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-wider ${
-                                            (selectedUser.role === 'ADMIN' || selectedUser.role === 'SUPER_ADMIN') ? 'bg-amber-100 text-amber-800 dark:bg-amber-950/30 dark:text-amber-400' : 'bg-teal-100 text-teal-800 dark:bg-teal-950/30 dark:text-teal-400'
+                                        <span className={`w-fit mx-auto sm:mx-0 text-[8px] font-black px-2 py-0.5 rounded uppercase tracking-wider border ${
+                                            (selectedUser.role === 'ADMIN' || selectedUser.role === 'SUPER_ADMIN') ? 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900/50' : 'bg-primary/10 text-primary border-primary/20'
                                         }`}>
                                             {selectedUser.role}
                                         </span>
@@ -748,7 +748,7 @@ export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName
                                                         {selectedUser.insurances.split(",").map((ins, idx) => (
                                                             <span 
                                                                 key={idx}
-                                                                className="bg-teal-50 text-teal-800 border border-teal-100/40 dark:bg-teal-950/20 dark:text-teal-400 dark:border-teal-900/30 text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider"
+                                                                className="bg-primary/10 text-primary border border-primary/20 dark:bg-primary/5 dark:text-primary dark:border-primary/10 text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider"
                                                             >
                                                                 {ins.trim()}
                                                             </span>
