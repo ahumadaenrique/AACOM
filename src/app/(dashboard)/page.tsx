@@ -23,7 +23,7 @@ export default async function HomePage() {
 
     if (session?.user?.email) {
         currentUser = await prisma.user.findUnique({
-            where: { email: session.user.email },
+            where: { email: session.user.email.toLowerCase() },
             select: {
                 name: true,
                 image: true,

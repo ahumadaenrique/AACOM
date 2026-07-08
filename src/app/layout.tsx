@@ -113,7 +113,7 @@ export default async function RootLayout({
 
     if (session?.user?.email) {
         const dbUser = await prisma.user.findUnique({
-            where: { email: session.user.email },
+            where: { email: session.user.email.toLowerCase() },
             include: { agency: true }
         });
         if (dbUser?.agency) {
