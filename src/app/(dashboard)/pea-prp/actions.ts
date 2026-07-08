@@ -72,10 +72,12 @@ export async function submitPerformanceReview(data: {
 
         const user = await prisma.user.findUnique({
             where: { id: session.user.id },
-            select: { id: true, name: true, agencyId: true }
+            select: { id: true, name: true, agencyId: true, agency: { select: { name: true } } }
         });
 
         if (!user) throw new Error("Usuario no encontrado");
+
+        const agencyName = user.agency?.name || "AACOM";
 
         // Calcular prorrateo para la IA
         let factorProrrateo = 1;
@@ -90,7 +92,7 @@ export async function submitPerformanceReview(data: {
 
         // Preparar el PROMPT MAESTRO
         const systemInstruction = `
-Rol: Eres el "Motor de Inteligencia de Desempeño" de AACOM. Tu función es gestionar el ciclo de vida de metas del agente, integrando estrictamente la actividad operativa con la ejecución financiera.
+Rol: Eres el "Motor de Inteligencia de Desempeño" de ${agencyName}. Tu función es gestionar el ciclo de vida de metas del agente, integrando estrictamente la actividad operativa con la ejecución financiera.
 
 Contexto Temporal (CRÍTICO):
 - Mes Evaluado: ${data.evalMonth || "Mes actual"}
@@ -128,7 +130,7 @@ Debes generar tu respuesta en HTML limpio usando exactamente la siguiente estruc
   </ul>
 </div>
 
-Tono: Exigente, analítico, enfocado en el crecimiento profesional y la excelencia operativa de AACOM. Dirígete en segunda persona (tú) al Agente.
+Tono: Exigente, analítico, enfocado en el crecimiento profesional y la excelencia operativa de ${agencyName}. Dirígete en segunda persona (tú) al Agente.
 No uses markdown (\`\`\`), devuelve únicamente el HTML exacto con las clases de Tailwind especificadas.
 `;
 
