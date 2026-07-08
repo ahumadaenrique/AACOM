@@ -82,6 +82,12 @@ export default function LoginPage({ agencyName = "AACOM Seguros", agencyLogo = "
                         </div>
                     </div>
 
+                    <div className="flex justify-end pt-1">
+                        <Link href="/forgot-password" className="text-xs font-bold text-indigo-600 hover:text-indigo-500 transition-colors">
+                            ¿Olvidaste tu contraseña?
+                        </Link>
+                    </div>
+
                     {error && (
                         <div className="text-red-500 text-sm text-center">{error}</div>
                     )}
