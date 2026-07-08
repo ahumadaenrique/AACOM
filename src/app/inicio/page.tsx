@@ -72,6 +72,24 @@ export default function InicioPage() {
         </div>
       </section>
 
+      {/* Video Demo Section */}
+      <section className="py-20 bg-slate-100/50 border-b border-slate-200">
+        <div className="container mx-auto px-4 max-w-4xl text-center">
+          <h2 className="text-3xl font-black text-slate-900 mb-4">Descubre cómo funciona SYSGPYA</h2>
+          <p className="text-slate-600 mb-10 max-w-xl mx-auto">Conoce de cerca la plataforma y cómo puede transformar la operación de tu promotoría.</p>
+          <div className="relative aspect-video rounded-3xl overflow-hidden shadow-2xl border border-slate-200 bg-black">
+            <iframe 
+              className="absolute inset-0 w-full h-full"
+              src="https://www.youtube.com/embed/WeWPvSkc3bk" 
+              title="SYSGPYA Demo Video" 
+              frameBorder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+              allowFullScreen
+            ></iframe>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section id="caracteristicas" className="py-24 bg-white border-y border-slate-100">
         <div className="container mx-auto px-4">
