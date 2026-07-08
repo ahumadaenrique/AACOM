@@ -177,14 +177,12 @@ export async function markAllSellerCommissionsAsPaid(sellerId: string) {
 
 export async function getSellerDashboard() {
     const session = await auth();
-    if (!session?.user || session.user.role !== 'SELLER') {
+    if (!session?.user?.email || session.user.role !== 'SELLER') {
         throw new Error("Unauthorized");
     }
 
-    const sellerId = session.user.id;
-
     const user = await prisma.user.findUnique({
-        where: { id: sellerId },
+        where: { email: session.user.email.toLowerCase() },
         include: {
             discountCodes: true,
             commissions: {
