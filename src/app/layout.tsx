@@ -99,6 +99,8 @@ function hexToHsl(hex: string) {
     return `${(h * 360).toFixed(1)} ${(s * 100).toFixed(1)}% ${(l * 100).toFixed(1)}%`;
 }
 
+export const dynamic = 'force-dynamic';
+
 export default async function RootLayout({
     children,
 }: Readonly<{
