@@ -30,6 +30,8 @@ export default auth((req) => {
         req.nextUrl.pathname.startsWith('/privacidad') || 
         req.nextUrl.pathname.startsWith('/terminos') || 
         req.nextUrl.pathname.startsWith('/login') || 
+        req.nextUrl.pathname.startsWith('/forgot-password') || 
+        req.nextUrl.pathname.startsWith('/reset-password') || 
         req.nextUrl.pathname.startsWith('/registro');
 
     // If user is not logged in and tries to access a private route, kick them to login
