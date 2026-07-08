@@ -90,10 +90,15 @@ export default async function DashboardLayout({
                     <h1 className="text-2xl font-extrabold text-slate-800 mb-2">Agencia No Disponible</h1>
                     <p className="text-slate-600 mb-8 leading-relaxed">
                         La agencia a la que pertenece esta cuenta ha sido desactivada o eliminada permanentemente del sistema. Por seguridad, tu acceso ha sido revocado.
+                        <br />
+                        <span className="text-[10px] text-muted-foreground block mt-2 font-mono">
+                          Debug: role={dbUser?.role} orphan={isOrphan ? "yes" : "no"} agencyInactive={isAgencyInactive ? "yes" : "no"} active={dbUser?.active ? "yes" : "no"} deleted={isDeletedUser ? "yes" : "no"} agencyId={dbUser?.agencyId} agency={agency ? "found" : "missing"}
+                        </span>
                     </p>
                     <form action={async () => {
-                        "use server"
-                        await signOut()
+                        "use server";
+                        const { signOut } = await import("@/auth");
+                        await signOut();
                     }}>
                         <Button type="submit" className="w-full h-12 bg-red-600 hover:bg-red-700 text-white font-bold text-lg rounded-xl shadow-md transition-all">
                             <LogOut className="w-5 h-5 mr-2" />
