@@ -44,7 +44,7 @@ export default function LoginPage({ agencyName = "AACOM Seguros", agencyLogo = "
                         Iniciar Sesión
                     </h2>
                     <p className="mt-2 text-sm text-gray-600">
-                        Ingresa a tu cuenta de {agencyName}
+                        Ingresa a tu cuenta
                     </p>
                 </div>
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
