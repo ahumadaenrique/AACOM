@@ -148,7 +148,7 @@ export default async function DashboardLayout({
 
     return (
         <div className="flex min-h-screen w-full flex-col">
-            <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur px-4 md:px-6 shadow-sm bg-gradient-to-l from-primary/10 to-transparent">
+            <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur px-4 md:px-6 shadow-sm bg-gradient-to-l from-primary from-[15%] via-primary/40 to-transparent">
                 <div className="flex items-center gap-4">
                     {/* Desktop Navigation */}
                     <nav className="hidden flex-row items-center gap-5 text-sm md:flex lg:gap-6">
