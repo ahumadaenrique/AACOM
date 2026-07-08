@@ -20,10 +20,22 @@ export async function GET() {
       }
     });
 
+    const agencies = await prisma.agency.findMany({
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        active: true,
+        subscriptionStatus: true,
+        subscriptionEndDate: true
+      }
+    });
+
     return NextResponse.json({
       dbUrl: maskedUrl,
       usersCount: users.length,
-      users
+      users,
+      agencies
     });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
