@@ -104,15 +104,9 @@ export default async function RootLayout({
 }: Readonly<{
     children: React.ReactNode;
 }>) {
-    let agency = await prisma.agency.findFirst({
-        where: {
-            OR: [
-                { slug: 'aacom' },
-                { slug: 'aacom-25' }
-            ]
-        }
-    });
-
+    const headersList = headers();
+    const slug = headersList.get('x-agency-slug') || 'aacom';
+    let agency = await prisma.agency.findUnique({ where: { slug } });
     if (!agency) {
         agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
     }
