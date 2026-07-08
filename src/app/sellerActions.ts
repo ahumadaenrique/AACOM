@@ -144,6 +144,20 @@ export async function generateSellerCoupon(sellerId: string, code: string, disco
     return coupon;
 }
 
+export async function deleteSellerCoupon(couponId: string) {
+    const session = await auth();
+    if (!session?.user || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'ADMIN')) {
+        throw new Error("Unauthorized");
+    }
+
+    await prisma.discountCode.delete({
+        where: { id: couponId }
+    });
+
+    revalidatePath("/admin/vendedores");
+    return { success: true };
+}
+
 export async function markCommissionAsPaid(commissionId: string) {
     const session = await auth();
     if (!session?.user || (session.user.role !== 'SUPER_ADMIN' && session.user.role !== 'ADMIN')) {

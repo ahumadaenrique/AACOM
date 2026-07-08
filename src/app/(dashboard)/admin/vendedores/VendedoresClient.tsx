@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Users, DollarSign, Tag, CheckCircle, Plus, Trash2, Edit2, X, Save } from "lucide-react"
-import { createSeller, updateSeller, deleteSeller, updateSellerCommission, generateSellerCoupon, markCommissionAsPaid, markAllSellerCommissionsAsPaid } from "@/app/sellerActions"
+import { createSeller, updateSeller, deleteSeller, updateSellerCommission, generateSellerCoupon, deleteSellerCoupon, markCommissionAsPaid, markAllSellerCommissionsAsPaid } from "@/app/sellerActions"
 import { useToast } from "@/hooks/use-toast"
 
 export default function VendedoresClient({ initialSellers }: { initialSellers: any[] }) {
@@ -25,6 +25,19 @@ export default function VendedoresClient({ initialSellers }: { initialSellers: a
         try {
             await createSeller(newSeller);
             toast({ title: `Vendedor creado y contraseña temporal asignada` });
+            window.location.reload();
+        } catch (e: any) {
+            toast({ variant: "destructive", title: e.message });
+        }
+        setLoading(false);
+    }
+
+    const handleDeleteCoupon = async (couponId: string) => {
+        if (!confirm("¿Estás seguro de eliminar este cupón de descuento?")) return;
+        setLoading(true);
+        try {
+            await deleteSellerCoupon(couponId);
+            toast({ title: "Cupón eliminado con éxito" });
             window.location.reload();
         } catch (e: any) {
             toast({ variant: "destructive", title: e.message });
@@ -205,8 +218,19 @@ export default function VendedoresClient({ initialSellers }: { initialSellers: a
                                                 <p className="text-xs text-muted-foreground">Sin cupones asignados</p>
                                             ) : seller.discountCodes.map((code: any) => (
                                                 <div key={code.id} className="flex justify-between items-center p-2 rounded-lg bg-slate-50 dark:bg-zinc-900/50 text-sm">
-                                                    <span className="font-mono font-bold tracking-wider">{code.code}</span>
-                                                    <Badge variant="outline">-{code.discountPercentage}%</Badge>
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-mono font-bold tracking-wider">{code.code}</span>
+                                                        <Badge variant="outline">-{code.discountPercentage}%</Badge>
+                                                    </div>
+                                                    <Button 
+                                                        size="icon" 
+                                                        variant="ghost" 
+                                                        className="h-7 w-7 text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-md"
+                                                        onClick={() => handleDeleteCoupon(code.id)}
+                                                        disabled={loading}
+                                                    >
+                                                        <Trash2 className="w-3.5 h-3.5" />
+                                                    </Button>
                                                 </div>
                                             ))}
                                         </div>
