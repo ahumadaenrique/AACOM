@@ -92,7 +92,7 @@ export default async function DashboardLayout({
                         La agencia a la que pertenece esta cuenta ha sido desactivada o eliminada permanentemente del sistema. Por seguridad, tu acceso ha sido revocado.
                         <br />
                         <span className="text-[10px] text-muted-foreground block mt-2 font-mono">
-                          Debug: role={dbUser?.role} orphan={isOrphan ? "yes" : "no"} agencyInactive={isAgencyInactive ? "yes" : "no"} active={dbUser?.active ? "yes" : "no"} deleted={isDeletedUser ? "yes" : "no"} agencyId={dbUser?.agencyId} agency={agency ? "found" : "missing"}
+                          Debug: email={session?.user?.email} role={dbUser?.role} orphan={isOrphan ? "yes" : "no"} agencyInactive={isAgencyInactive ? "yes" : "no"} active={dbUser?.active ? "yes" : "no"} deleted={isDeletedUser ? "yes" : "no"} agencyId={dbUser?.agencyId} agency={agency ? "found" : "missing"}
                         </span>
                     </p>
                     <form action={async () => {
