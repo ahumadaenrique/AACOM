@@ -57,12 +57,13 @@ model Agency {
 
   // Affiliate System
   referredById   String?
-  referrer       User?   @relation("AgencyReferrer", fields: [referredById], references: [id])
+  referrer       User?    @relation("AgencyReferrer", fields: [referredById], references: [id])
   discountLocked Boolean? @default(false)
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  CompanyProfile CompanyProfile?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+  CompanyProfile     CompanyProfile?
+  DevelopmentPlanDay DevelopmentPlanDay[]
 }
 
 model DiscountCode {
@@ -157,8 +158,9 @@ model User {
   resetToken       String?   @unique
   resetTokenExpiry DateTime?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  developmentProgress AgentDevelopmentProgress?
 }
 
 model Activity {
@@ -608,9 +610,9 @@ model KnowledgeAsset {
 model Meeting {
   id              String   @id @default(cuid())
   title           String
-  date            String   // YYYY-MM-DD
-  time            String   // HH:MM
-  duration        Int      // in minutes
+  date            String // YYYY-MM-DD
+  time            String // HH:MM
+  duration        Int // in minutes
   description     String?
   userId          String
   User            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -626,7 +628,7 @@ model Task {
   title       String
   description String?
   completed   Boolean  @default(false)
-  dueDate     String?  // YYYY-MM-DD
+  dueDate     String? // YYYY-MM-DD
   priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH
   userId      String
   User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -693,4 +695,37 @@ model PromotorSaldo {
   fecha_actualizacion DateTime? @default(now())
 
   @@map("promotor_saldos")
+}
+
+// Configuración de los días del plan de arranque para la agencia
+model DevelopmentPlanDay {
+  id       String @id @default(cuid())
+  agencyId String
+  agency   Agency @relation(fields: [agencyId], references: [id])
+
+  dayNumber             Int // Día 1, 2, 3...
+  title                 String // Ej: "Curso Onboarding"
+  instructions          String? // Instrucciones o metas del día
+  videoUrl              String? // Enlace a YouTube u otro video
+  fileUrl               String? // URL del PDF/PPT subido (Vercel Blob)
+  fileName              String? // Nombre original del archivo
+  requiresAdminApproval Boolean @default(false) // El candado
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([agencyId, dayNumber])
+}
+
+// Progreso individual de cada agente
+model AgentDevelopmentProgress {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  currentDayNumber Int    @default(1)
+  status           String @default("IN_PROGRESS") // 'IN_PROGRESS', 'WAITING_APPROVAL', 'COMPLETED'
+
+  startedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

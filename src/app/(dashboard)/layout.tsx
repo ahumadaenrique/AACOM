@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -233,10 +233,10 @@ export default async function DashboardLayout({
                                 {/* Dropdown Herramientas */}
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/assistant', '/documentacion', '/cotizador', '/adn', '/academia'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                                            <Sparkles className={`h-4 w-4 ${['/assistant', '/documentacion', '/cotizador', '/adn', '/academia'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-pink-500'}`} />
+                                        <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/assistant', '/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                                            <Sparkles className={`h-4 w-4 ${['/assistant', '/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-pink-500'}`} />
                                             Herramientas
-                                            {['/assistant', '/documentacion', '/cotizador', '/adn', '/academia'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                            {['/assistant', '/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                         </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="start" className="w-48">
@@ -262,6 +262,12 @@ export default async function DashboardLayout({
                                             <Link href="/adn" className="flex items-center gap-2 cursor-pointer font-medium">
                                                 <HeartPulse className="h-4 w-4 text-red-500" />
                                                 ADN
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/plan-arranque" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                <Rocket className="h-4 w-4 text-orange-500" />
+                                                Plan de Arranque
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuItem asChild>
@@ -294,6 +300,12 @@ export default async function DashboardLayout({
                                                 <Link href="/admin" className="flex items-center gap-2 cursor-pointer font-medium">
                                                     <Settings className="h-4 w-4" />
                                                     Dashboard Admin
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin/plan-arranque" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <Rocket className="h-4 w-4 text-orange-500" />
+                                                    Admin P. Arranque
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
@@ -429,6 +441,13 @@ export default async function DashboardLayout({
                                             ADN {shortAgencyName}
                                         </Link>
                                         <Link
+                                            href="/plan-arranque"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                        >
+                                            <Rocket className="h-5 w-5 text-orange-500" />
+                                            Plan de Arranque
+                                        </Link>
+                                        <Link
                                             href="/academia"
                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
                                         >
@@ -447,9 +466,17 @@ export default async function DashboardLayout({
                                                 </Link>
                                                 <Link
                                                     href="/admin"
-                                                    className="text-muted-foreground hover:text-foreground"
+                                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
                                                 >
+                                                    <Settings className="h-5 w-5 text-slate-500" />
                                                     Admin
+                                                </Link>
+                                                <Link
+                                                    href="/admin/plan-arranque"
+                                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                                >
+                                                    <Rocket className="h-5 w-5 text-orange-500" />
+                                                    Admin P. Arranque
                                                 </Link>
                                                 <Link
                                                     href="/reportes"
