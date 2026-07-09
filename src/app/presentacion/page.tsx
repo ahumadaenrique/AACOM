@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
   ShieldCheck, Check, X, Users, Wallet, Sparkles, Zap, 
-  ArrowRight, Shield, Globe, Award, Database, TrendingUp, Play
+  ArrowRight, Shield, Globe, Award, Database, TrendingUp, Play, MessageSquare, Flame, CheckSquare
 } from "lucide-react";
 import SoftAurora from "@/components/SoftAurora";
 
@@ -25,6 +25,7 @@ export default function PresentacionPage() {
     : baseAacomPrice + (agents - baseAgentsIncluded) * extraAgentPrice;
 
   // Alternative costs (which in reality scale per user/agent)
+  const assistantVirtualCost = 1500;
   const crmCost = 1000 + (150 * agents);
   const marketingCost = 3000;
   const cotizadorCost = 1000 + (100 * agents);
@@ -32,7 +33,7 @@ export default function PresentacionPage() {
   const aiGeneratorCost = 800;
   const academyCost = 1200;
 
-  const totalAlternativeCost = crmCost + marketingCost + cotizadorCost + digitalCardCost + aiGeneratorCost + academyCost;
+  const totalAlternativeCost = assistantVirtualCost + crmCost + marketingCost + cotizadorCost + digitalCardCost + aiGeneratorCost + academyCost;
   const totalSavings = totalAlternativeCost - aacomCost;
 
   const formatCurrency = (val: number) => {
@@ -46,25 +47,25 @@ export default function PresentacionPage() {
   const featureTabs = [
     {
       id: "cotizador",
-      title: "Multi-Cotizador GMM & Vida",
-      description: "Genera cotizaciones profesionales y comparativas para tus clientes en menos de 20 segundos.",
+      title: "Multi-Cotizador de Vida",
+      description: "Genera cotizaciones profesionales y proyecciones de ahorro y retiro para tus clientes en segundos.",
       details: [
-        "Cotizaciones de Gastos Médicos Mayores y Vida.",
-        "Proyecciones de rendimiento financiero y ahorro.",
-        "Exportación instantánea a PDF con la identidad de tu marca."
+        "Cotizaciones estructuradas de Vida con rendimientos.",
+        "Proyecciones personalizadas de ahorro a largo plazo.",
+        "Exportación instantánea a PDF con la marca de tu promotoría."
       ],
-      points: "Agiliza el tiempo de respuesta y aumenta tus ventas hasta un 40%."
+      points: "Agiliza el tiempo de respuesta y aumenta tus ventas de productos de Vida hasta un 40%."
     },
     {
       id: "marketing",
-      title: "Agente IA de Marketing",
-      description: "Genera imágenes, copys y campañas publicitarias optimizadas por Inteligencia Artificial.",
+      title: "Asistente Virtual e IA",
+      description: "Asistente inteligente para resolver dudas sobre condiciones de pólizas y generador de posts automáticos.",
       details: [
-        "Diseñador de posts y banners integrado.",
-        "Creador de textos persuasivos optimizados para redes sociales.",
-        "Alineado con el tono y estilo gráfico de tu promotoría."
+        "Asistente Virtual IA entrenada para atender consultas técnicas de tus agentes.",
+        "Generador de copys persuasivos para prospección e imágenes de marketing.",
+        "Alineado con el estilo gráfico y discursivo de tu promotoría."
       ],
-      points: "Ahorra miles de pesos en diseñadores gráficos y creadores de contenido."
+      points: "Ahorra miles de pesos en consultoría interna, diseñadores y creadores de contenido."
     },
     {
       id: "cartera",
@@ -79,10 +80,10 @@ export default function PresentacionPage() {
     },
     {
       id: "desempeno",
-      title: "Tableros PEA / PRP",
-      description: "Evalúa el desempeño de tus agentes basándote en datos reales y análisis predictivo de IA.",
+      title: "Tableros PEA / PRP y 25 Puntos",
+      description: "Monitorea la prospección diaria de tus agentes con la bitácora de 25 puntos y evaluaciones PEA/PRP.",
       details: [
-        "Seguimiento visual del avance de metas y primas cobradas.",
+        "Seguimiento visual del avance de metas diarias por puntos de prospección.",
         "Compromisos semanales documentados y firmados digitalmente.",
         "Análisis de brechas asistido por IA para guiar a tus agentes."
       ],
@@ -133,7 +134,7 @@ export default function PresentacionPage() {
             </span>
           </h1>
           <p className="text-lg md:text-xl text-slate-400 mb-10 max-w-2xl mx-auto leading-relaxed">
-            Deja atrás las herramientas fragmentadas y los costos redundantes. AACOMSoft reúne CRM, multi-cotizador, marketing de IA y academia en una sola consola premium.
+            Deja atrás las herramientas fragmentadas y los costos redundantes. AACOMSoft reúne CRM, multi-cotizador de Vida, asistente de IA y academia en una sola consola premium.
           </p>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4">
             <Link href="/login">
@@ -193,6 +194,10 @@ export default function PresentacionPage() {
                   
                   <div className="divide-y divide-white/5 text-sm">
                     <div className="flex justify-between py-2">
+                      <span className="text-slate-400">Asistente Virtual Inteligente (IA)</span>
+                      <span className="text-white font-semibold font-mono">{formatCurrency(assistantVirtualCost)} / mes</span>
+                    </div>
+                    <div className="flex justify-between py-2">
                       <span className="text-slate-400">Diseño & Contenido de Mkt (Agencia o Diseñador)</span>
                       <span className="text-white font-semibold font-mono">{formatCurrency(marketingCost)} / mes</span>
                     </div>
@@ -201,7 +206,7 @@ export default function PresentacionPage() {
                       <span className="text-white font-semibold font-mono">{formatCurrency(crmCost)} / mes</span>
                     </div>
                     <div className="flex justify-between py-2">
-                      <span className="text-slate-400">Multi-Cotizador Externo</span>
+                      <span className="text-slate-400">Multi-Cotizador Externo de Vida</span>
                       <span className="text-white font-semibold font-mono">{formatCurrency(cotizadorCost)} / mes</span>
                     </div>
                     <div className="flex justify-between py-2">
@@ -267,7 +272,7 @@ export default function PresentacionPage() {
         </div>
       </section>
 
-      {/* Feature Tour (Pestañas Dinámicas) */}
+      {/* Feature Tour (Miniaturas de Pantallas Reales e Interactivas) */}
       <section className="py-20 bg-slate-900/30 border-y border-white/5 relative z-10">
         <div className="container mx-auto px-4 max-w-5xl">
           <div className="text-center mb-16">
@@ -292,7 +297,7 @@ export default function PresentacionPage() {
                 }`}
               >
                 {tab.id === "cotizador" && <Wallet className="w-4 h-4" />}
-                {tab.id === "marketing" && <Sparkles className="w-4 h-4" />}
+                {tab.id === "marketing" && <MessageSquare className="w-4 h-4" />}
                 {tab.id === "cartera" && <Database className="w-4 h-4" />}
                 {tab.id === "desempeno" && <TrendingUp className="w-4 h-4" />}
                 {tab.title.split(" ")[0]}
@@ -331,29 +336,100 @@ export default function PresentacionPage() {
                   </div>
                 </div>
 
-                {/* Visual Mock (5 columns) */}
-                <div className="md:col-span-5 bg-gradient-to-br from-slate-900 to-indigo-950 rounded-2xl border border-white/5 p-6 aspect-[4/3] flex flex-col justify-center items-center relative overflow-hidden shadow-inner">
-                  <div className="absolute top-4 left-4 bg-white/5 border border-white/10 py-1 px-3 rounded-full text-[10px] uppercase font-mono tracking-widest text-slate-400">
-                    Vista Previa
+                {/* Visual Interactive Screen Mockups (5 columns) */}
+                <div className="md:col-span-5 bg-gradient-to-br from-slate-900 to-slate-950 rounded-2xl border border-white/10 p-5 min-h-[300px] flex flex-col justify-between relative overflow-hidden shadow-2xl">
+                  
+                  {/* Top Bar simulating real App */}
+                  <div className="flex items-center justify-between pb-3 border-b border-white/5 mb-3">
+                    <div className="flex items-center gap-1.5">
+                      <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></div>
+                      <div className="w-2.5 h-2.5 rounded-full bg-green-500/80"></div>
+                    </div>
+                    <div className="text-[10px] uppercase font-mono tracking-widest text-slate-500">
+                      aacomsoft.com/app
+                    </div>
                   </div>
                   
-                  {/* Floating Elements for aesthetics */}
-                  <div className="w-full space-y-3">
-                    <div className="h-6 bg-white/5 border border-white/10 rounded-lg w-3/4 flex items-center px-3 text-[10px] text-slate-400">
-                      SYSGPYA: Cartera Activa
-                    </div>
-                    <div className="h-20 bg-gradient-to-r from-teal-500/10 to-indigo-500/10 border border-teal-500/20 rounded-xl p-3 flex flex-col justify-between">
-                      <div className="flex justify-between items-center">
-                        <div className="h-2 bg-slate-700 rounded w-1/3"></div>
-                        <div className="h-4 bg-teal-500/20 text-[8px] text-teal-300 font-bold px-2 rounded-full flex items-center">ACTIVO</div>
+                  {/* Dynamic Module Interface */}
+                  <div className="flex-1 flex flex-col justify-center">
+                    {activeTab === "cotizador" && (
+                      <div className="space-y-3 text-xs">
+                        <div className="text-center font-bold text-slate-200 mb-2">Simulador de Ahorro / Retiro</div>
+                        <div className="bg-white/5 p-2.5 rounded-xl border border-white/5 space-y-2">
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Ahorro Mensual:</span>
+                            <span className="text-teal-400 font-mono font-bold">$2,500 MXN</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Plazo Elegido:</span>
+                            <span className="text-indigo-400 font-bold">25 Años</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span className="text-slate-400">Total Proyectado:</span>
+                            <span className="text-white font-mono font-bold">$1,894,500 MXN</span>
+                          </div>
+                        </div>
+                        <Button size="sm" className="w-full bg-teal-500 text-white font-bold h-8 rounded-lg text-[10px]">
+                          Generar Proyección PDF
+                        </Button>
                       </div>
-                      <div className="h-4 bg-slate-800 rounded w-1/2"></div>
-                      <div className="h-2 bg-slate-700 rounded w-2/3"></div>
-                    </div>
-                    <div className="h-10 bg-white/5 border border-white/5 rounded-xl flex items-center justify-between px-3">
-                      <div className="h-2 bg-slate-700 rounded w-1/4"></div>
-                      <div className="h-4 bg-indigo-500/30 w-12 rounded-lg"></div>
-                    </div>
+                    )}
+
+                    {activeTab === "marketing" && (
+                      <div className="space-y-3 text-[11px]">
+                        <div className="bg-slate-900 p-2.5 rounded-xl border border-teal-500/20 text-slate-300">
+                          <div className="font-bold text-teal-400 mb-1">🤖 Asistente Virtual:</div>
+                          "Carlos, las tarifas de comisión para este plan de Vida son del 40% en primer año y 5% de conservación..."
+                        </div>
+                        <div className="bg-white/5 p-2 rounded-xl border border-white/5 flex items-center justify-between">
+                          <span className="text-slate-400">Crear post de prospección</span>
+                          <Badge className="bg-indigo-500/20 text-indigo-300 border-none text-[9px]">Listo</Badge>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === "cartera" && (
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
+                          <div>
+                            <div className="font-bold text-slate-200">Montserrat Ruiz</div>
+                            <div className="text-[9px] text-slate-400">Póliza Vida Individual</div>
+                          </div>
+                          <Badge className="bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 text-[9px]">Vence 12d</Badge>
+                        </div>
+                        <div className="flex justify-between items-center p-2 rounded-lg bg-white/5 border border-white/5">
+                          <div>
+                            <div className="font-bold text-slate-200">Carlos Pérez</div>
+                            <div className="text-[9px] text-slate-400">Póliza Retiro Ahorro</div>
+                          </div>
+                          <Badge className="bg-teal-500/10 text-teal-400 border border-teal-500/20 text-[9px]">Vence 45d</Badge>
+                        </div>
+                      </div>
+                    )}
+
+                    {activeTab === "desempeno" && (
+                      <div className="space-y-2 text-xs">
+                        <div className="flex justify-between items-center bg-white/5 p-2 rounded-xl border border-white/5">
+                          <span className="text-slate-300">Montserrat Ruiz</span>
+                          <span className="font-mono font-bold text-teal-400">28 Puntos (Meta ✓)</span>
+                        </div>
+                        <div className="flex justify-between items-center bg-white/5 p-2 rounded-xl border border-white/5">
+                          <span className="text-slate-300">Carlos Pérez</span>
+                          <span className="font-mono font-bold text-yellow-400">15 Puntos</span>
+                        </div>
+                        <div className="flex justify-between text-[10px] text-slate-400 px-1 pt-1 font-mono">
+                          <span>PEA: 85%</span>
+                          <span>PRP: Activo</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {/* Decorative Footer */}
+                  <div className="pt-2 border-t border-white/5 mt-3 flex justify-between items-center text-[8px] text-slate-500 font-mono">
+                    <span>SEGUROS AACOM</span>
+                    <span>PRODUCCIÓN V1.2</span>
                   </div>
                 </div>
 
@@ -385,20 +461,20 @@ export default function PresentacionPage() {
                       AACOMSoft
                     </th>
                     <th className="p-4 sm:p-5 text-center text-slate-400 font-medium">Excel / Manual</th>
-                    <th className="p-4 sm:p-5 text-center text-slate-400 font-medium">CRM Genérico</th>
-                    <th className="p-4 sm:p-5 text-center text-slate-400 font-medium">Solo Cotizador</th>
+                    <th className="p-4 sm:p-5 text-center text-slate-400 font-medium">Monday.com</th>
+                    <th className="p-4 sm:p-5 text-center text-slate-400 font-medium">Salesforce</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   <tr>
-                    <td className="p-4 sm:p-5 font-bold text-white">Multi-Cotizador GMM & Vida</td>
+                    <td className="p-4 sm:p-5 font-bold text-white">Multi-Cotizador de Vida & Retiro</td>
                     <td className="p-4 sm:p-5 text-center bg-teal-500/5"><Check className="mx-auto w-5 h-5 text-teal-400" /></td>
                     <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
                     <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
-                    <td className="p-4 sm:p-5 text-center"><Check className="mx-auto w-5 h-5 text-teal-400/60" /></td>
+                    <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
                   </tr>
                   <tr>
-                    <td className="p-4 sm:p-5 font-bold text-white">Generador IA de Contenido Mkt</td>
+                    <td className="p-4 sm:p-5 font-bold text-white">Asistente Virtual Inteligente (IA)</td>
                     <td className="p-4 sm:p-5 text-center bg-teal-500/5"><Check className="mx-auto w-5 h-5 text-teal-400" /></td>
                     <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
                     <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
@@ -412,7 +488,7 @@ export default function PresentacionPage() {
                     <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
                   </tr>
                   <tr>
-                    <td className="p-4 sm:p-5 font-bold text-white">Tarjetas Digitales para Agentes</td>
+                    <td className="p-4 sm:p-5 font-bold text-white">Tarjetas Digitales Integradas</td>
                     <td className="p-4 sm:p-5 text-center bg-teal-500/5"><Check className="mx-auto w-5 h-5 text-teal-400" /></td>
                     <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
                     <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
@@ -422,18 +498,23 @@ export default function PresentacionPage() {
                     <td className="p-4 sm:p-5 font-bold text-white">Bitácora de Métricas de 25 Puntos</td>
                     <td className="p-4 sm:p-5 text-center bg-teal-500/5"><Check className="mx-auto w-5 h-5 text-teal-400" /></td>
                     <td className="p-4 sm:p-5 text-center text-slate-400 font-medium">Manual (Lento)</td>
-                    <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
+                    <td className="p-4 sm:p-5 text-center text-slate-400 font-medium">Manual (Lento)</td>
                     <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
                   </tr>
                   <tr>
                     <td className="p-4 sm:p-5 font-bold text-white">Evaluaciones de Desempeño PEA/PRP</td>
                     <td className="p-4 sm:p-5 text-center bg-teal-500/5"><Check className="mx-auto w-5 h-5 text-teal-400" /></td>
                     <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
-                    <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
-                    <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
+                    <td className="p-4 sm:p-5 text-center text-slate-400 font-medium">Parcial (Manual)</td>
+                    <td className="p-4 sm:p-5 text-center text-slate-400 font-medium">Parcial (Costoso)</td>
                   </tr>
                 </tbody>
               </table>
+            </div>
+            
+            {/* Note on Salesforce Cost */}
+            <div className="bg-slate-900/60 p-6 border-t border-white/10 text-xs text-slate-400 leading-relaxed">
+              <strong className="text-white">Nota de Costo Estimado:</strong> Salesforce, para poder implementar flujos y reportes equivalentes de CRM y Cartera (sin incluir módulos inexistentes como el Multi-Cotizador de Vida, bitácora de 25 puntos, tarjetas de presentación digitales o simulador de Cédula A), requiere un costo estimado inicial desde <strong>$12,000 MXN mensuales</strong> fijos + un cobro recurrente promedio de <strong>$500 MXN mensuales</strong> por cada licencia de usuario activa.
             </div>
           </div>
         </div>
