@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, Clock, CheckCircle2, UserCircle2 } from "lucide-react";
+import { CheckCircle, Clock, CheckCircle2, UserCircle2, Settings } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -46,9 +47,19 @@ export function SeguimientoClient({ initialAgents, totalDaysCount }: { initialAg
 
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Seguimiento de Agentes</h1>
-        <p className="text-slate-500 dark:text-slate-400">Revisa el progreso de los aspirantes y aprueba sus metas diarias.</p>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Seguimiento de Agentes</h1>
+          <p className="text-slate-500 dark:text-slate-400">Revisa el progreso de los aspirantes y aprueba sus metas diarias.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button asChild variant="outline" className="border-teal-200 text-teal-700 hover:bg-teal-50 dark:border-teal-900 dark:text-teal-400">
+            <Link href="/admin/plan-arranque">
+              <Settings className="h-4 w-4 mr-2" />
+              Configurar Temario
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Card className="border-0 shadow-lg shadow-slate-200/50 dark:shadow-none dark:border dark:border-zinc-800">

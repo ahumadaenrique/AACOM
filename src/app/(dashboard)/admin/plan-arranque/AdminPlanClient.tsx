@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, Link as LinkIcon, FileText, Lock, Unlock } from "lucide-react";
+import { Plus, Edit, Trash2, Link as LinkIcon, FileText, Lock, Unlock, Users } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -150,10 +151,18 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
           <h1 className="text-3xl font-bold tracking-tight text-slate-900 dark:text-white">Plan de Arranque</h1>
           <p className="text-slate-500 dark:text-slate-400">Configura el plan de desarrollo paso a paso para tus agentes.</p>
         </div>
-        <Button onClick={() => handleOpenDialog()} className="bg-teal-600 hover:bg-teal-700">
-          <Plus className="h-4 w-4 mr-2" />
-          Añadir Día
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button asChild variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50 dark:border-indigo-900 dark:text-indigo-400">
+            <Link href="/admin/plan-arranque/seguimiento">
+              <Users className="h-4 w-4 mr-2" />
+              Ver Avance de Agentes
+            </Link>
+          </Button>
+          <Button onClick={() => handleOpenDialog()} className="bg-teal-600 hover:bg-teal-700 shadow-md">
+            <Plus className="h-4 w-4 mr-2" />
+            Añadir Día
+          </Button>
+        </div>
       </div>
 
       <Card className="border-0 shadow-lg shadow-slate-200/50 dark:shadow-none dark:border dark:border-zinc-800">
