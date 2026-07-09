@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { getCurrentMonthStats, submitPerformanceReview, getPerformanceReviews, authorizeReview, rejectReview } from "./actions";
+import { getCurrentMonthStats, submitPerformanceReview, getPerformanceReviews, authorizeReview, rejectReview, deleteReview } from "./actions";
 
 // Recharts
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -148,6 +148,17 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
         }
     };
 
+    const handleDeleteReview = async (id: string) => {
+        if (!confirm("¿Estás seguro de eliminar permanentemente este reporte? Esta acción no se puede deshacer.")) return;
+        const res = await deleteReview(id);
+        if (res.success) {
+            toast({ title: "Reporte Eliminado", description: "El reporte ha sido eliminado permanentemente de la base de datos." });
+            loadReviews();
+        } else {
+            toast({ title: "Error", description: res.message, variant: "destructive" });
+        }
+    };
+
     const submitReject = async () => {
         if (!rejectingId || !rejectFeedback) return;
         const res = await rejectReview(rejectingId, rejectFeedback);
@@ -223,13 +234,20 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                         </Button>
                     )}
 
-                    {isAdmin && rev.status === 'PENDING' && (
+                    {isAdmin && (
                         <div className="flex flex-col gap-2 mt-6">
-                            <Button onClick={() => handleAuthorize(rev.id)} className="w-full bg-teal-600 hover:bg-teal-700">
-                                <CheckCircle2 className="w-4 h-4 mr-2" /> Autorizar
-                            </Button>
-                            <Button onClick={() => setRejectingId(rev.id)} variant="outline" className="w-full text-red-600 hover:bg-red-50 border-red-200">
-                                Rechazar
+                            {rev.status === 'PENDING' && (
+                                <>
+                                    <Button onClick={() => handleAuthorize(rev.id)} className="w-full bg-teal-600 hover:bg-teal-700">
+                                        <CheckCircle2 className="w-4 h-4 mr-2" /> Autorizar
+                                    </Button>
+                                    <Button onClick={() => setRejectingId(rev.id)} variant="outline" className="w-full text-red-600 hover:bg-red-50 border-red-200">
+                                        Rechazar
+                                    </Button>
+                                </>
+                            )}
+                            <Button onClick={() => handleDeleteReview(rev.id)} variant="destructive" className="w-full">
+                                Eliminar Reporte
                             </Button>
                         </div>
                     )}

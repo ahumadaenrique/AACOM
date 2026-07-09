@@ -286,3 +286,37 @@ export async function rejectReview(reviewId: string, feedback: string) {
         return { success: false, message: e.message };
     }
 }
+
+// 6. Eliminar Revisión (Admin)
+export async function deleteReview(reviewId: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) throw new Error("No autenticado");
+
+        const user = await prisma.user.findUnique({
+            where: { id: session.user.id },
+            select: { role: true, agencyId: true }
+        });
+
+        if (!user || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
+            throw new Error("No tienes permisos para eliminar.");
+        }
+
+        const review = await prisma.performanceReview.findUnique({
+            where: { id: reviewId },
+            select: { agencyId: true }
+        });
+
+        if (!review) throw new Error("Reporte no encontrado.");
+        if (review.agencyId !== user.agencyId) throw new Error("No puedes eliminar reportes de otra agencia.");
+
+        await prisma.performanceReview.delete({
+            where: { id: reviewId }
+        });
+
+        revalidatePath('/pea-prp');
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
