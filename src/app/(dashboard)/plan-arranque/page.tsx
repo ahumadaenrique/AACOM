@@ -10,10 +10,7 @@ export const metadata = {
 export default async function PlanArranquePage() {
   const session = await auth();
   
-  // Temporalmente solo visible para Super Admin
-  if (session?.user?.role !== "SUPER_ADMIN") {
-    redirect("/");
-  }
+
 
   const { progress, dayData, totalDaysCount, allDays } = await getAgentCurrentDay();
   
