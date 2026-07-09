@@ -24,10 +24,10 @@ export default function PresentacionPage() {
     ? baseAacomPrice 
     : baseAacomPrice + (agents - baseAgentsIncluded) * extraAgentPrice;
 
-  // Alternative costs
-  const crmCost = 2000;
+  // Alternative costs (which in reality scale per user/agent)
+  const crmCost = 1000 + (150 * agents);
   const marketingCost = 3000;
-  const cotizadorCost = 1500;
+  const cotizadorCost = 1000 + (100 * agents);
   const digitalCardCost = 99 * agents;
   const aiGeneratorCost = 800;
   const academyCost = 1200;
