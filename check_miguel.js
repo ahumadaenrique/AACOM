@@ -1,1 +1,26 @@
-const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); async function main() { const miguels = await prisma.user.findMany({ where: { name: { contains: 'Miguel' } } }); console.log('Miguels:', miguels); const admins = await prisma.user.findMany({ where: { role: { in: ['ADMIN', 'SUPER_ADMIN'] } } }); console.log('Admins:', admins); } main().catch(e => console.error(e)).finally(() => prisma.$disconnect());
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+async function main() {
+  const users = await prisma.user.findMany({
+    where: {
+      OR: [
+        { name: { contains: 'Miguel', mode: 'insensitive' } },
+        { email: { contains: 'miguel', mode: 'insensitive' } }
+      ]
+    },
+    include: {
+      agency: true
+    }
+  });
+  console.log("Users matching Miguel:", users);
+
+  for (const user of users) {
+    const agents = await prisma.aIAgent.findMany({
+      where: { userId: user.id }
+    });
+    console.log(`Agents for ${user.email} (${user.id}):`, agents);
+  }
+}
+
+main().catch(console.error).finally(() => prisma.$disconnect());

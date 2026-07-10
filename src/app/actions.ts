@@ -718,9 +718,23 @@ export async function createAgentUser(data: { name: string; email: string; role:
             return { success: false, message: "Permisos insuficientes" };
         }
 
-        // RestricciÃƒÆ’Ã‚Â³n: solo el propietario (enrique.ahumada@aacommx.com) puede dar de alta a otros administradores
+        // Restricción: solo el propietario (enrique.ahumada@aacommx.com) puede dar de alta a otros administradores
         if (data.role === 'ADMIN' && currentUser.email !== 'enrique.ahumada@aacommx.com') {
-            return { success: false, message: "Solo el administrador principal (Enrique Ahumada) estÃƒÆ’Ã‚Â¡ facultado para dar de alta cuentas administrativas." };
+            return { success: false, message: "Solo el administrador principal (Enrique Ahumada) está facultado para dar de alta cuentas administrativas." };
+        }
+
+        // Restricción adicional: límite de máximo 2 ADMINS por Agencia/Promotoría
+        if (data.role === 'ADMIN' && currentUser.agencyId) {
+            const activeAdminsCount = await prisma.user.count({
+                where: {
+                    agencyId: currentUser.agencyId,
+                    role: 'ADMIN',
+                    active: true
+                }
+            });
+            if (activeAdminsCount >= 2) {
+                return { success: false, message: "Límite alcanzado: solo se permiten un máximo de 2 administradores activos por Agencia/Promotoría." };
+            }
         }
 
         const existingUser = await prisma.user.findUnique({
