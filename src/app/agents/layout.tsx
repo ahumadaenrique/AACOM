@@ -54,7 +54,7 @@ export default async function AgentsLayout({ children }: { children: ReactNode }
   }
 
   const dbUser = await prisma.user.findUnique({
-      where: { email: session.user.email },
+      where: { email: session!.user!.email as string },
       include: { agency: true }
   })
 
