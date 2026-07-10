@@ -13,20 +13,26 @@ export async function GET(request: Request) {
     return new NextResponse("Falta URL", { status: 400 });
   }
 
-  const token = process.env.BLOB_READ_WRITE_TOKEN || "vercel_blob_rw_lXYhGKKGWTXJIQp0_j4iwqKaJJEy88BVAadlj42H1HNYn92";
+  const currentToken = process.env.BLOB_READ_WRITE_TOKEN;
+  const oldToken = "vercel_blob_rw_lXYhGKKGWTXJIQp0_j4iwqKaJJEy88BVAadlj42H1HNYn92";
+  const tokensToTry = [currentToken, oldToken].filter(Boolean) as string[];
+
+  let response: Response | null = null;
+  let errorText = "";
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      },
-      cache: 'no-store'
-    });
+    for (const token of tokensToTry) {
+      response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` },
+        cache: 'no-store'
+      });
+      if (response.ok) break;
+      errorText = await response.text().catch(() => '');
+    }
 
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => '');
-      console.error(`PDF Proxy failed for URL: ${url}. Status: ${response.status}. Error: ${errorText}`);
-      return new NextResponse(`Error al obtener PDF del servidor: HTTP ${response.status} - ${errorText}`, { status: response.status });
+    if (!response || !response.ok) {
+      console.error(`PDF Proxy failed for URL: ${url}. Status: ${response?.status}. Error: ${errorText}`);
+      return new NextResponse(`Error al obtener PDF del servidor: HTTP ${response?.status} - ${errorText}`, { status: response?.status || 500 });
     }
 
     return new NextResponse(response.body, {
