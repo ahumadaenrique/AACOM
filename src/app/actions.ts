@@ -1734,7 +1734,10 @@ export async function getTeamDirectory() {
         const users = await prisma.user.findMany({
             where: {
                 active: true,
-                agencyId: currentUser?.agencyId
+                agencyId: currentUser?.agencyId,
+                role: {
+                    not: 'SELLER'
+                }
             },
             select: {
                 id: true,
