@@ -153,8 +153,8 @@ model User {
   stripeCustomerId     String?
   stripeSubscriptionId String?
 
-  aiAgents AIAgent[]
-  Contact  Contact[]
+  aiAgents        AIAgent[]
+  FrequentContact FrequentContact[]
 
   pollVotes PollVote[]
 
@@ -734,7 +734,7 @@ model AgentDevelopmentProgress {
 }
 
 // Contactos frecuentes de la asistente
-model Contact {
+model FrequentContact {
   id        String   @id @default(cuid())
   name      String
   email     String
