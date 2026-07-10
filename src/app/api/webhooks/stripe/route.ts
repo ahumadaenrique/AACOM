@@ -90,19 +90,25 @@ export async function POST(req: Request) {
     try {
       if (!sellerId && !agencyId) return;
 
-      // Si no pasaron sellerId explícito (ej. en renovaciones de agencia), buscamos si la agencia tiene un afiliador
-      let finalSellerId = sellerId;
-      if (!finalSellerId && agencyId) {
-        const agency = await prisma.agency.findUnique({ where: { id: agencyId } });
-        if (agency?.referredById) {
-          finalSellerId = agency.referredById;
-        }
+      // Si el pago viene de un descuento nuevo y la agencia no estaba ligada, la ligamos
+      if (agencyId && sellerId) {
+          await prisma.agency.update({
+              where: { id: agencyId },
+              data: { referredById: sellerId, discountLocked: true }
+          });
       }
 
-      if (!finalSellerId) return;
+      // Obtener la agencia actual para recorrer el árbol
+      let currentAgency = null;
+      if (agencyId) {
+          currentAgency = await prisma.agency.findUnique({ where: { id: agencyId } });
+      }
 
-      const seller = await prisma.user.findUnique({ where: { id: finalSellerId } });
-      if (!seller || !seller.sellerCommissionRate) return;
+      // Nivel 1: Vendedor directo de la agencia (o pasado en metadata)
+      let finalSellerId = sellerId;
+      if (!finalSellerId && currentAgency?.referredById) {
+          finalSellerId = currentAgency.referredById;
+      }
 
       let discountPercentage = 0;
       if (discountCodeStr) {
@@ -110,34 +116,86 @@ export async function POST(req: Request) {
         if (code) discountPercentage = code.discountPercentage;
       }
 
-      let netRate = seller.sellerCommissionRate - discountPercentage;
-      if (netRate <= 0) return; // Si el descuento se comió la comisión, no ganan nada
-      
-      const commissionEarned = amountPaid * (netRate / 100);
+      const originalPrice = amountPaid / (1 - (discountPercentage / 100)); // Estimado
 
-      // Si el pago viene de un descuento nuevo y la agencia no estaba ligada, la ligamos
-      if (agencyId && finalSellerId && !sellerId) {
-          // Ya estaba ligada si la sacamos de la db
-      } else if (agencyId && sellerId) {
-          await prisma.agency.update({
-              where: { id: agencyId },
-              data: { referredById: sellerId, discountLocked: true }
-          });
+      // PAGO NIVEL 1 (40% - descuento)
+      if (finalSellerId) {
+          const seller1 = await prisma.user.findUnique({ where: { id: finalSellerId } });
+          if (seller1 && seller1.sellerCommissionRate) {
+              const netRate1 = seller1.sellerCommissionRate - discountPercentage;
+              if (netRate1 > 0) {
+                  const commissionEarned1 = amountPaid * (netRate1 / 100);
+                  await prisma.commissionLedger.create({
+                      data: {
+                          sellerId: finalSellerId,
+                          agencyId,
+                          sourceAgencyId: agencyId, // El mismo que pagó
+                          stripeChargeId,
+                          description: `${description} (Nivel 1)`,
+                          originalPrice,
+                          amountPaid,
+                          discountPercentage,
+                          commissionEarned: commissionEarned1,
+                          status: 'PENDING',
+                          level: 1
+                      }
+                  });
+              }
+          }
       }
 
-      await prisma.commissionLedger.create({
-        data: {
-          sellerId: finalSellerId,
-          agencyId,
-          stripeChargeId,
-          description,
-          originalPrice: amountPaid / (1 - (discountPercentage / 100)), // Estimado
-          amountPaid,
-          discountPercentage,
-          commissionEarned,
-          status: 'PENDING'
-        }
-      });
+      // PAGO NIVEL 2 (20%) - Buscamos la Agencia Padre
+      if (currentAgency?.referredByAgencyId) {
+          const agencyParent = await prisma.agency.findUnique({ where: { id: currentAgency.referredByAgencyId } });
+          if (agencyParent?.referredById) {
+              const seller2 = await prisma.user.findUnique({ where: { id: agencyParent.referredById } });
+              if (seller2) {
+                  const commissionEarned2 = amountPaid * 0.20; // Fijo 20%
+                  await prisma.commissionLedger.create({
+                      data: {
+                          sellerId: agencyParent.referredById,
+                          agencyId: agencyParent.id, // Se le asocia a la agencia que refirió
+                          sourceAgencyId: agencyId, // Pero el origen del dinero es esta agencia actual
+                          stripeChargeId,
+                          description: `${description} (Nivel 2)`,
+                          originalPrice,
+                          amountPaid,
+                          discountPercentage: 0, // No aplica descuento al Nivel 2
+                          commissionEarned: commissionEarned2,
+                          status: 'PENDING',
+                          level: 2
+                      }
+                  });
+              }
+          }
+
+          // PAGO NIVEL 3 (10%) - Buscamos la Agencia Abuelo
+          if (agencyParent?.referredByAgencyId) {
+              const agencyGrandparent = await prisma.agency.findUnique({ where: { id: agencyParent.referredByAgencyId } });
+              if (agencyGrandparent?.referredById) {
+                  const seller3 = await prisma.user.findUnique({ where: { id: agencyGrandparent.referredById } });
+                  if (seller3) {
+                      const commissionEarned3 = amountPaid * 0.10; // Fijo 10%
+                      await prisma.commissionLedger.create({
+                          data: {
+                              sellerId: agencyGrandparent.referredById,
+                              agencyId: agencyGrandparent.id, 
+                              sourceAgencyId: agencyId,
+                              stripeChargeId,
+                              description: `${description} (Nivel 3)`,
+                              originalPrice,
+                              amountPaid,
+                              discountPercentage: 0,
+                              commissionEarned: commissionEarned3,
+                              status: 'PENDING',
+                              level: 3
+                          }
+                      });
+                  }
+              }
+          }
+      }
+
     } catch (err) {
       console.error("Error logging commission:", err);
     }

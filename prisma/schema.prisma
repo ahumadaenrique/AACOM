@@ -22,6 +22,8 @@ model CommissionLedger {
   discountPercentage Float
   commissionEarned   Float
   status             String   @default("PENDING") // PENDING, PAID
+  level              Int      @default(1) // 1 = Venta Directa, 2 = 2da gen (20%), 3 = 3ra gen (10%)
+  sourceAgencyId     String?  // Opcional, para saber de dónde se originó el pago (útil en niveles 2 y 3)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 }

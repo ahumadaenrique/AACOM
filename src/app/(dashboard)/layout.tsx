@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -336,6 +336,12 @@ export default async function DashboardLayout({
                                                             Vendedores
                                                         </Link>
                                                     </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href="/admin/network" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                            <Network className="h-4 w-4 text-indigo-600" />
+                                                            Red Multinivel
+                                                        </Link>
+                                                    </DropdownMenuItem>
                                                 </>
                                             )}
                                         </DropdownMenuContent>
@@ -506,6 +512,15 @@ export default async function DashboardLayout({
                                             >
                                                 <Users className="h-5 w-5 text-rose-500" />
                                                 Vendedores
+                                            </Link>
+                                        )}
+                                        {isSuperAdmin && (
+                                            <Link
+                                                href="/admin/network"
+                                                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                            >
+                                                <Network className="h-5 w-5 text-indigo-600" />
+                                                Red Multinivel
                                             </Link>
                                         )}
                                     </>
