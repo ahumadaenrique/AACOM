@@ -56,15 +56,33 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                                 user.image = null;
                             }
 
-                            // Always guarantee Super Admin role for the main owner
-                            if (user.email === 'enrique.ahumada@aacommx.com' && user.role !== 'SUPER_ADMIN') {
-                                await prisma.user.update({
-                                    where: { email: user.email },
-                                    data: { role: 'SUPER_ADMIN' }
-                                });
-                                user.role = 'SUPER_ADMIN';
-                                console.log("[AUTH] Restored SUPER_ADMIN privileges for", user.email);
-                            }
+                             // Always guarantee Super Admin role and AACOM agency for the main owner
+                             if (user.email === 'enrique.ahumada@aacommx.com') {
+                                 let needsUpdate = false;
+                                 const updateData: any = {};
+                                 if (user.role !== 'SUPER_ADMIN') {
+                                     updateData.role = 'SUPER_ADMIN';
+                                     user.role = 'SUPER_ADMIN';
+                                     needsUpdate = true;
+                                 }
+                                 if (!user.agencyId) {
+                                     const aacomAgency = await prisma.agency.findFirst({
+                                         where: { slug: 'aacom' }
+                                     });
+                                     if (aacomAgency) {
+                                         updateData.agencyId = aacomAgency.id;
+                                         user.agencyId = aacomAgency.id;
+                                         needsUpdate = true;
+                                     }
+                                 }
+                                 if (needsUpdate) {
+                                     await prisma.user.update({
+                                         where: { email: user.email },
+                                         data: updateData
+                                     });
+                                     console.log("[AUTH] Restored SUPER_ADMIN and agency privileges for", user.email);
+                                 }
+                             }
 
                             return user;
                         }
