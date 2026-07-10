@@ -1211,27 +1211,46 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
               return 'No tienes una cuenta de Google conectada o no has concedido permisos para Gmail.'
             }
 
-            const emailLines = [
-              `To: ${to}`,
-              'Content-Type: text/html; charset=utf-8',
-              'MIME-Version: 1.0',
-              `Subject: =?utf-8?B?${Buffer.from(subject).toString('base64')}?=`,
-              '',
-              body
-            ]
-            const emailContent = emailLines.join('\r\n')
-            const raw = Buffer.from(emailContent)
-              .toString('base64')
-              .replace(/\+/g, '-')
-              .replace(/\//g, '_')
-              .replace(/=+$/, '')
+             // Sanitize and clean the "to" parameter to avoid invalid formatting errors (like quotes, angle brackets, spaces, etc.)
+             const cleanTo = to.split(',')
+               .map(email => {
+                 let trimmed = email.trim();
+                 const match = trimmed.match(/^([^<]*)\s*<([^>]+)>$/);
+                 if (match) {
+                   const name = match[1].trim().replace(/^['"]|['"]$/g, '');
+                   const addr = match[2].trim().replace(/^['"<]+|['">]+$/g, '').trim();
+                   if (name) {
+                     return `"${name.replace(/"/g, '\\"')}" <${addr}>`;
+                   }
+                   return addr;
+                 } else {
+                   return trimmed.replace(/^['"<]+|['">]+$/g, '').trim();
+                 }
+               })
+               .join(', ');
 
-            if (sendDirectly) {
-              await gmail.users.messages.send({
-                userId: 'me',
-                requestBody: { raw }
-              })
-              return `Correo enviado exitosamente a "${to}" con el asunto "${subject}".`
+             const emailLines = [
+               'From: me',
+               `To: ${cleanTo}`,
+               'Content-Type: text/html; charset=utf-8',
+               'MIME-Version: 1.0',
+               `Subject: =?utf-8?B?${Buffer.from(subject).toString('base64')}?=`,
+               '',
+               body
+             ]
+             const emailContent = emailLines.join('\r\n')
+             const raw = Buffer.from(emailContent)
+               .toString('base64')
+               .replace(/\+/g, '-')
+               .replace(/\//g, '_')
+               .replace(/=+$/, '')
+ 
+             if (sendDirectly) {
+               await gmail.users.messages.send({
+                 userId: 'me',
+                 requestBody: { raw }
+               })
+               return `Correo enviado exitosamente a "${cleanTo}" con el asunto "${subject}".`
             } else {
               await gmail.users.drafts.create({
                 userId: 'me',
@@ -1239,7 +1258,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
                   message: { raw }
                 }
               })
-              return `Borrador de correo creado exitosamente en tu Gmail para "${to}" con el asunto "${subject}". Ya puedes revisarlo y enviarlo desde tu bandeja de Borradores.`
+              return `Borrador de correo creado exitosamente en tu Gmail para "${cleanTo}" con el asunto "${subject}". Ya puedes revisarlo y enviarlo desde tu bandeja de Borradores.`
             }
           } catch (e: any) {
             console.error("Error with email tool:", e)
