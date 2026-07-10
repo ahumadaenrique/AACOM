@@ -1,9 +1,10 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Users, Palette, Image as ImageIcon, Zap, X, ShieldCheck, Mail, Calendar, PenTool, TrendingUp, Settings2, Code, PhoneCall } from "lucide-react"
+import { Users, Palette, Image as ImageIcon, Zap, X, ShieldCheck, Mail, Calendar, PenTool, TrendingUp, Settings2, Code, PhoneCall, Trash2 } from "lucide-react"
 import { disconnectGoogle } from "@/app/agents/workspace/actions"
+import { getContacts, createContact, deleteContact } from "@/app/actions"
 import { AgentAvatar } from "@/components/AgentAvatar"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
@@ -33,6 +34,7 @@ export function SettingsModal({ agent }: { agent: any }) {
     ...baseTabs,
     { id: "inbox", label: "Inbox", icon: Mail },
     { id: "calendario", label: "Calendario", icon: Calendar },
+    { id: "contactos", label: "Contactos Frecuentes", icon: Users },
   ]
 
   const recTabs = [
@@ -44,6 +46,77 @@ export function SettingsModal({ agent }: { agent: any }) {
   ]
 
   const tabs = isExecutive ? eaTabs : isReceptionist ? recTabs : cmTabs
+
+  // Contacts Tab State
+  const [contactsList, setContactsList] = useState<any[]>([])
+  const [loadingContacts, setLoadingContacts] = useState(false)
+  const [newContactName, setNewContactName] = useState("")
+  const [newContactEmail, setNewContactEmail] = useState("")
+  const [contactError, setContactError] = useState("")
+  const [contactSuccess, setContactSuccess] = useState("")
+
+  useEffect(() => {
+    if (activeTab === "contactos") {
+      loadContacts()
+    }
+  }, [activeTab])
+
+  const loadContacts = async () => {
+    setLoadingContacts(true)
+    setContactError("")
+    try {
+      const res = await getContacts()
+      if (res.success && res.contacts) {
+        setContactsList(res.contacts)
+      }
+    } catch (e) {
+      console.error(e)
+    } finally {
+      setLoadingContacts(false)
+    }
+  }
+
+  const handleAddContact = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setContactError("")
+    setContactSuccess("")
+
+    const name = newContactName.trim()
+    const email = newContactEmail.trim()
+
+    if (!name || !email) {
+      setContactError("Nombre y correo son obligatorios")
+      return
+    }
+
+    try {
+      const res = await createContact(name, email)
+      if (res.success) {
+        setNewContactName("")
+        setNewContactEmail("")
+        setContactSuccess("Contacto guardado exitosamente")
+        loadContacts()
+      } else {
+        setContactError(res.message || "Error al guardar contacto")
+      }
+    } catch (err: any) {
+      setContactError(err.message || "Error de red")
+    }
+  }
+
+  const handleDeleteContact = async (id: string) => {
+    if (!confirm("¿Estás seguro de que deseas eliminar este contacto?")) return
+    try {
+      const res = await deleteContact(id)
+      if (res.success) {
+        loadContacts()
+      } else {
+        alert(res.message || "Error al eliminar contacto")
+      }
+    } catch (err: any) {
+      alert(err.message || "Error de red")
+    }
+  }
 
   return (
     <div className="fixed inset-0 z-50 bg-neutral-950/80 backdrop-blur-sm flex items-center justify-center p-4">
@@ -294,6 +367,85 @@ export function SettingsModal({ agent }: { agent: any }) {
           )}
 
 
+
+          {activeTab === "contactos" && (
+            <div className="space-y-6 flex flex-col h-full overflow-hidden">
+              <div className="border-b border-neutral-800 pb-4 shrink-0">
+                <h3 className="text-lg font-medium text-white">Contactos Frecuentes</h3>
+                <p className="text-sm text-neutral-500 mt-1">Registra los correos de las personas con las que te comunicas más a menudo para agilizar tus correos y citas.</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8 flex-1 overflow-hidden min-h-0">
+                {/* Form to add */}
+                <div className="md:col-span-5 space-y-4">
+                  <h4 className="text-sm font-semibold text-neutral-300 uppercase tracking-wider">Nuevo Contacto</h4>
+                  <form onSubmit={handleAddContact} className="space-y-4 bg-neutral-900/50 p-4 border border-neutral-800 rounded-xl">
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400 font-medium">Nombre</label>
+                      <Input
+                        type="text"
+                        placeholder="Ej: Enrique Ahumada"
+                        value={newContactName}
+                        onChange={(e) => setNewContactName(e.target.value)}
+                        className="bg-neutral-950 border-neutral-800 text-white placeholder-neutral-600 focus-visible:ring-yellow-400 h-10 rounded-lg text-sm"
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-xs text-neutral-400 font-medium">Correo Electrónico</label>
+                      <Input
+                        type="email"
+                        placeholder="Ej: enrique.ahumada@aacommx.com"
+                        value={newContactEmail}
+                        onChange={(e) => setNewContactEmail(e.target.value)}
+                        className="bg-neutral-950 border-neutral-800 text-white placeholder-neutral-600 focus-visible:ring-yellow-400 h-10 rounded-lg text-sm"
+                      />
+                    </div>
+
+                    {contactError && (
+                      <p className="text-xs text-red-400 bg-red-950/20 border border-red-900/30 p-2 rounded-lg">{contactError}</p>
+                    )}
+                    {contactSuccess && (
+                      <p className="text-xs text-emerald-400 bg-emerald-950/20 border border-emerald-900/30 p-2 rounded-lg">{contactSuccess}</p>
+                    )}
+
+                    <Button type="submit" className="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-semibold h-10 rounded-lg text-sm active:scale-95 transition-all">
+                      Agregar Contacto
+                    </Button>
+                  </form>
+                </div>
+
+                {/* List of contacts */}
+                <div className="md:col-span-7 flex flex-col h-full overflow-hidden">
+                  <h4 className="text-sm font-semibold text-neutral-300 uppercase tracking-wider mb-4 shrink-0">Mis Contactos Guardados</h4>
+                  <div className="flex-1 overflow-y-auto pr-2 space-y-3 pb-6 min-h-0">
+                    {loadingContacts ? (
+                      <p className="text-sm text-neutral-500 italic py-4">Cargando libreta de contactos...</p>
+                    ) : contactsList.length === 0 ? (
+                      <div className="text-center py-10 border border-dashed border-neutral-800 rounded-xl bg-neutral-900/20">
+                        <Users className="w-8 h-8 text-neutral-600 mx-auto mb-2" />
+                        <p className="text-sm text-neutral-500 italic">No tienes contactos registrados todavía.</p>
+                      </div>
+                    ) : (
+                      contactsList.map((contact) => (
+                        <div key={contact.id} className="flex items-center justify-between p-3.5 bg-neutral-900 border border-neutral-800 rounded-xl hover:border-neutral-700 transition-all duration-200">
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-sm font-bold text-neutral-200 truncate">{contact.name}</span>
+                            <span className="text-xs text-neutral-400 truncate mt-0.5">{contact.email}</span>
+                          </div>
+                          <button
+                            onClick={() => handleDeleteContact(contact.id)}
+                            className="p-2 text-neutral-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors shrink-0"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* RECEPTIONIST TABS */}
           {activeTab === "experience" && (
