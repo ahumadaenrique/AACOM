@@ -90,17 +90,31 @@ export default async function Dashboard() {
 
   let agentsWithLogs = []
   try {
-    agentsWithLogs = await Promise.all(
-      agents.map(async (agent) => {
-        const logs = await prisma.interactionLog.findMany({
+    if (dbUser) {
+      // 1. Fetch all ADMIN and SUPER_ADMIN users in this agency
+      let adminUserIds = [dbUser.id]
+      if (dbUser.agencyId) {
+        const agencyAdmins = await prisma.user.findMany({
           where: {
-            aiAgentId: agent.id,
-            createdAt: {
-              gte: startOfMonth
-            }
-          }
+            agencyId: dbUser.agencyId,
+            role: { in: ['ADMIN', 'SUPER_ADMIN'] }
+          },
+          select: { id: true }
         })
-      let generationCount = 0
+        adminUserIds = agencyAdmins.map(u => u.id)
+      }
+
+      // 2. Query all logs for these admins in the current month
+      const logs = await prisma.interactionLog.findMany({
+        where: {
+          userId: { in: adminUserIds },
+          createdAt: {
+            gte: startOfMonth
+          }
+        }
+      })
+
+      let totalAdminGenerations = 0
       logs.forEach(log => {
         if (log.toolInvocations) {
           try {
@@ -109,17 +123,19 @@ export default async function Dashboard() {
               : log.toolInvocations;
             if (Array.isArray(parsed)) {
               const hasGraphicDesign = parsed.some((inv: any) => inv.toolName === 'generateGraphicDesign');
-              if (hasGraphicDesign) generationCount++;
+              if (hasGraphicDesign) totalAdminGenerations++;
             }
           } catch (e) {}
         }
       })
-      return {
+
+      agentsWithLogs = agents.map(agent => ({
         ...agent,
-        generationCount
-      }
-    })
-  )
+        generationCount: totalAdminGenerations
+      }))
+    } else {
+      agentsWithLogs = agents.map(agent => ({ ...agent, generationCount: 0 }))
+    }
   } catch (e) {
     console.error("Failed to map agents with logs:", e)
     agentsWithLogs = agents.map(agent => ({ ...agent, generationCount: 0 }))
