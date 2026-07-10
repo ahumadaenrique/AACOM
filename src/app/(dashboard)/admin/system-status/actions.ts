@@ -151,8 +151,7 @@ export async function checkAllSystemsStatus() {
                 const google = createGoogleGenerativeAI({ apiKey });
                 const res = await generateText({
                     model: google('gemini-1.5-flash'),
-                    prompt: 'a',
-                    maxTokens: 5
+                    prompt: 'a'
                 });
                 
                 if (res.text) {
