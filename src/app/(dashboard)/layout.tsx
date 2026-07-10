@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import DigitalCardModalButton from "@/components/DigitalCardModalButton"
+import { MobileNavigation } from "@/components/MobileNavigation"
 
 export const dynamic = 'force-dynamic';
 
@@ -345,18 +346,7 @@ export default async function DashboardLayout({
                     </nav>
 
                     {/* Mobile Drawer Trigger */}
-                    <Sheet>
-                        <SheetTrigger asChild>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="shrink-0 md:hidden"
-                            >
-                                <Menu className="h-5 w-5" />
-                                <span className="sr-only">Toggle navigation menu</span>
-                            </Button>
-                        </SheetTrigger>
-                        <SheetContent side="left" className="w-[280px] sm:w-[350px] overflow-y-auto pb-10">
+                    <MobileNavigation>
                             <nav className="flex flex-col gap-6 text-lg font-medium">
                                 <Link
                                     href="/"
@@ -528,8 +518,7 @@ export default async function DashboardLayout({
                                     </>
                                 )}
                             </nav>
-                        </SheetContent>
-                    </Sheet>
+                    </MobileNavigation>
                 </div>
 
                 {/* Header User Menu */}
