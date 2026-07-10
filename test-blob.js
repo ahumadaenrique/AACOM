@@ -1,16 +1,13 @@
-const { put } = require('@vercel/blob');
-
-
+require('dotenv').config({ path: '.env' });
 async function test() {
-    try {
-        console.log("Token:", process.env.BLOB_READ_WRITE_TOKEN?.substring(0, 10));
-        const blob = await put('test.txt', 'Hello World', {
-            access: 'public',
-            token: process.env.BLOB_READ_WRITE_TOKEN
-        });
-        console.log("Success:", blob);
-    } catch(e) {
-        console.error("Error:", e);
-    }
+    const url = 'https://lxyhgkkgwtxjiqp0.private.blob.vercel-storage.com/policies/cmpqhbby60001m8szttlu4but/1781582519183-POLIZA%2035223.pdf';
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    const response = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    });
+    console.log("Status:", response.status);
+    console.log("Response text:", await response.text());
 }
 test();
