@@ -19,15 +19,17 @@ export async function GET(request: Request) {
     const response = await fetch(url, {
       headers: {
         Authorization: `Bearer ${token}`
-      }
+      },
+      cache: 'no-store'
     });
 
     if (!response.ok) {
-      return new NextResponse("Error al obtener PDF del servidor", { status: response.status });
+      const errorText = await response.text().catch(() => '');
+      console.error(`PDF Proxy failed for URL: ${url}. Status: ${response.status}. Error: ${errorText}`);
+      return new NextResponse(`Error al obtener PDF del servidor: HTTP ${response.status} - ${errorText}`, { status: response.status });
     }
 
-    const blob = await response.blob();
-    return new NextResponse(blob, {
+    return new NextResponse(response.body, {
       headers: {
         "Content-Type": "application/pdf",
         "Content-Disposition": "inline",
