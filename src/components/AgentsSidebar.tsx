@@ -45,9 +45,9 @@ export function AgentsSidebar({ agents, agencyName = "AACOM" }: { agents: Agent[
     <div className="flex flex-col h-full bg-[#0A0A0A] border-r border-neutral-800 text-neutral-200">
       {/* Logo Area */}
       <div className="h-16 flex items-center gap-2 px-4 border-b border-neutral-800 shrink-0">
-        <Link href="/" className="p-1.5 hover:bg-neutral-800 rounded-md transition-colors text-neutral-400 hover:text-white">
+        <a href="/" className="p-1.5 hover:bg-neutral-800 rounded-md transition-colors text-neutral-400 hover:text-white">
           <ArrowLeft className="w-4 h-4" />
-        </Link>
+        </a>
         <div className="flex items-center gap-2 font-bold text-lg tracking-tight">
           <div className="w-6 h-6 bg-indigo-600 rounded flex items-center justify-center text-xs text-white uppercase font-black">
             {agencyName.slice(0, 2)}

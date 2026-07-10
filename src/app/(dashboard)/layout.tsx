@@ -302,10 +302,10 @@ export default async function DashboardLayout({
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
-                                                <Link href="/agents" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                <a href="/agents" className="flex items-center gap-2 cursor-pointer font-medium">
                                                     <Bot className="h-4 w-4 text-indigo-600" />
                                                     Agentes IA
-                                                </Link>
+                                                </a>
                                             </DropdownMenuItem>
                                             
                                             {isSuperAdmin && (
@@ -483,10 +483,10 @@ export default async function DashboardLayout({
                                                 >
                                                     Reportes
                                                 </Link>
-                                            <Link href="/agents" className="text-muted-foreground hover:text-foreground flex items-center gap-2">
+                                            <a href="/agents" className="text-muted-foreground hover:text-foreground flex items-center gap-2">
                                               <Bot className="h-5 w-5 text-indigo-600" />
                                               Agentes IA
-                                            </Link>
+                                            </a>
                                             </>
                                         )}
                                         {isSuperAdmin && (
