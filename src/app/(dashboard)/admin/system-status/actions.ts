@@ -145,12 +145,17 @@ export async function checkAllSystemsStatus() {
         try {
             const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
             if (apiKey) {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: "a" }] }] })
+                // Dynamically import to avoid top-level require issues
+                const { generateText } = await import('ai');
+                const { createGoogleGenerativeAI } = await import('@ai-sdk/google');
+                const google = createGoogleGenerativeAI({ apiKey });
+                const res = await generateText({
+                    model: google('gemini-1.5-flash'),
+                    prompt: 'a',
+                    maxTokens: 5
                 });
-                if (res.ok) {
+                
+                if (res.text) {
                     results.push({
                         id: 'gemini',
                         name: 'Gemini (Google AI)',
@@ -159,8 +164,7 @@ export async function checkAllSystemsStatus() {
                         link: 'https://aistudio.google.com/app/apikey'
                     });
                 } else {
-                    const errorText = await res.text().catch(() => '');
-                    throw new Error(`HTTP ${res.status} ${errorText}`);
+                    throw new Error("Respuesta vacía");
                 }
             } else {
                 throw new Error("API Key de Gemini faltante");
