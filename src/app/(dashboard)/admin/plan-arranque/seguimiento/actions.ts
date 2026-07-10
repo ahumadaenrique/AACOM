@@ -52,3 +52,31 @@ export async function approveAgentDay(userId: string) {
   revalidatePath("/admin/plan-arranque/seguimiento");
   return { success: true };
 }
+
+export async function updateAgentDay(userId: string, dayNumber: number) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+
+  const adminUser = await prisma.user.findUnique({
+    where: { id: session.user.id }
+  });
+  if (adminUser?.role !== 'ADMIN' && adminUser?.role !== 'SUPER_ADMIN') {
+    throw new Error("No autorizado");
+  }
+
+  await prisma.agentDevelopmentProgress.upsert({
+    where: { userId },
+    update: {
+      currentDayNumber: dayNumber,
+      status: "IN_PROGRESS",
+    },
+    create: {
+      userId,
+      currentDayNumber: dayNumber,
+      status: "IN_PROGRESS",
+    }
+  });
+
+  revalidatePath("/admin/plan-arranque/seguimiento");
+  return { success: true };
+}

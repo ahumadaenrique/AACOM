@@ -6,12 +6,19 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { approveAgentDay } from "./actions";
+import { approveAgentDay, updateAgentDay } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function SeguimientoClient({ initialAgents, totalDaysCount }: { initialAgents: any[], totalDaysCount: number }) {
   const { toast } = useToast();
@@ -38,6 +45,37 @@ export function SeguimientoClient({ initialAgents, totalDaysCount }: { initialAg
       }));
       
       toast({ title: "Agente aprobado", description: "Ha avanzado al siguiente día exitosamente." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleDayChange = async (userId: string, dayNumber: number) => {
+    try {
+      setLoadingId(userId);
+      await updateAgentDay(userId, dayNumber);
+      
+      setAgents(agents.map(a => {
+        if (a.id === userId) {
+          const prevProgress = a.developmentProgress || { currentDayNumber: 1, status: "IN_PROGRESS" };
+          return {
+            ...a,
+            developmentProgress: {
+              ...prevProgress,
+              currentDayNumber: dayNumber,
+              status: "IN_PROGRESS"
+            }
+          };
+        }
+        return a;
+      }));
+      
+      toast({ 
+        title: "Día actualizado", 
+        description: `El agente ha sido movido al ${dayNumber > totalDaysCount ? 'Plan Completado' : `Día ${dayNumber}`} exitosamente.` 
+      });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
@@ -145,15 +183,39 @@ export function SeguimientoClient({ initialAgents, totalDaysCount }: { initialAg
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        {status === "WAITING_APPROVAL" && (
-                          <Button 
-                            onClick={() => handleApprove(agent.id)} 
-                            disabled={loadingId === agent.id}
-                            className="bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/20"
-                          >
-                            {loadingId === agent.id ? "Aprobando..." : "Aprobar y Desbloquear"}
-                          </Button>
-                        )}
+                        <div className="flex items-center justify-end gap-2">
+                          {status === "WAITING_APPROVAL" && (
+                            <Button 
+                              onClick={() => handleApprove(agent.id)} 
+                              disabled={loadingId === agent.id}
+                              size="sm"
+                              className="bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 h-9"
+                            >
+                              {loadingId === agent.id ? "Aprobando..." : "Aprobar"}
+                            </Button>
+                          )}
+                          <div className="w-[130px] text-left">
+                            <Select
+                              value={String(dayNum)}
+                              onValueChange={(val) => handleDayChange(agent.id, Number(val))}
+                              disabled={loadingId === agent.id}
+                            >
+                              <SelectTrigger className="h-9">
+                                <SelectValue placeholder="Día" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {Array.from({ length: totalDaysCount }).map((_, i) => (
+                                  <SelectItem key={i + 1} value={String(i + 1)}>
+                                    Día {i + 1}
+                                  </SelectItem>
+                                ))}
+                                <SelectItem value={String(totalDaysCount + 1)}>
+                                  Completado
+                                </SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
