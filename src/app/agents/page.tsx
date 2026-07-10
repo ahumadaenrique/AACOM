@@ -47,42 +47,6 @@ export default async function Dashboard() {
     console.error("Failed to query agency name for agents dashboard:", e)
   }
 
-  // Ensure default agents exist for this user
-  if (dbUser) {
-    try {
-      const existingExecutive = await prisma.aIAgent.findFirst({
-        where: { userId: dbUser.id, type: "EXECUTIVE_ASSISTANT" }
-      })
-      if (!existingExecutive) {
-        await prisma.aIAgent.create({
-          data: {
-            name: "María la Asistente",
-            type: "EXECUTIVE_ASSISTANT",
-            userId: dbUser.id,
-            isActive: true,
-            systemPrompt: "Eres un Asistente Ejecutivo altamente proactivo y profesional. Tu objetivo es ayudar a organizar la agenda, crear minutas de reuniones y enviar recordatorios."
-          }
-        })
-      }
-
-      const existingMkt = await prisma.aIAgent.findFirst({
-        where: { userId: dbUser.id, type: "SOCIAL_MEDIA_MANAGER" }
-      })
-      if (!existingMkt) {
-        await prisma.aIAgent.create({
-          data: {
-            name: "Ramiro el de MKT",
-            type: "SOCIAL_MEDIA_MANAGER",
-            userId: dbUser.id,
-            isActive: true,
-            systemPrompt: "Eres Ramiro el de MKT, un creativo social media manager encargado de diseñar posts, mockups e imágenes publicitarias para redes sociales de tu agencia."
-          }
-        })
-      }
-    } catch (e) {
-      console.error("Seeding/Upserting error:", e)
-    }
-  }
 
   let agents: any[] = []
   let schemaError = false

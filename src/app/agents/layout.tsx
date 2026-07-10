@@ -11,18 +11,40 @@ export const dynamic = 'force-dynamic'
 
 async function ensureDefaultAgents(userId: string) {
   try {
+    // 1. Clean up duplicate agents of the same type for this user first
+    const userAgents = await prisma.aIAgent.findMany({
+      where: { userId, type: { not: 'RECEPTIONIST' } },
+      orderBy: { createdAt: 'asc' }
+    });
+
+    const seenTypes = new Set<string>();
+    for (const agent of userAgents) {
+      if (seenTypes.has(agent.type)) {
+        await prisma.aIAgent.delete({ where: { id: agent.id } });
+      } else {
+        seenTypes.add(agent.type);
+      }
+    }
+
+    // 2. Ensure default generic agents exist
     const existingExecutive = await prisma.aIAgent.findFirst({
       where: { userId, type: "EXECUTIVE_ASSISTANT" }
     })
     if (!existingExecutive) {
       await prisma.aIAgent.create({
         data: {
-          name: "María la Asistente",
+          name: "Asistente Ejecutiva",
           type: "EXECUTIVE_ASSISTANT",
           userId,
           isActive: true,
           systemPrompt: "Eres un Asistente Ejecutivo altamente proactivo y profesional. Tu objetivo es ayudar a organizar la agenda, crear minutas de reuniones y enviar recordatorios."
         }
+      })
+    } else if (existingExecutive.name === "María la Asistente") {
+      // Automatically genericize if it still has the old default name
+      await prisma.aIAgent.update({
+        where: { id: existingExecutive.id },
+        data: { name: "Asistente Ejecutiva" }
       })
     }
 
@@ -32,12 +54,18 @@ async function ensureDefaultAgents(userId: string) {
     if (!existingMkt) {
       await prisma.aIAgent.create({
         data: {
-          name: "Ramiro el de MKT",
+          name: "Social Media Manager",
           type: "SOCIAL_MEDIA_MANAGER",
           userId,
           isActive: true,
-          systemPrompt: "Eres Ramiro el de MKT, un creativo social media manager encargado de diseñar posts, mockups e imágenes publicitarias para redes sociales de tu agencia."
+          systemPrompt: "Eres un creativo social media manager encargado de diseñar posts, mockups e imágenes publicitarias para redes sociales de tu agencia."
         }
+      })
+    } else if (existingMkt.name === "Ramiro el de MKT") {
+      // Automatically genericize if it still has the old default name
+      await prisma.aIAgent.update({
+        where: { id: existingMkt.id },
+        data: { name: "Social Media Manager" }
       })
     }
   } catch (e) {
