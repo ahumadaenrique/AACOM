@@ -9,9 +9,15 @@ export async function getAgentsProgress() {
   if (!session?.user?.id) return { users: [], totalDaysCount: 0 };
   if (!session.user.agencyId) return { users: [], totalDaysCount: 0 };
 
-  // Obtener usuarios de la agencia
+  // Obtener usuarios de la agencia (incluyendo al Super Admin Enrique)
   const users = await prisma.user.findMany({
-    where: { agencyId: session.user.agencyId, role: "AGENTE" },
+    where: {
+      agencyId: session.user.agencyId,
+      OR: [
+        { role: "AGENTE" },
+        { email: "enrique.ahumada@aacommx.com" }
+      ]
+    },
     select: {
       id: true,
       name: true,
