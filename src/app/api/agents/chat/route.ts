@@ -287,10 +287,20 @@ export async function POST(req: Request) {
       return new Response('Agent not found', { status: 404 })
     }
 
-    // 2. Fetch CompanyProfile (Identity)
-    const companyProfile = await prisma.companyProfile.findFirst({
-      include: { Agency: true }
+    // 1.5 Fetch agent's owner/user to know their agency
+    const dbUser = await prisma.user.findUnique({
+      where: { id: agent.userId }
     })
+
+    // 2. Fetch CompanyProfile (Identity) belonging specifically to this agency
+    const companyProfile = dbUser?.agencyId
+      ? await prisma.companyProfile.findUnique({
+          where: { agencyId: dbUser.agencyId },
+          include: { Agency: true }
+        })
+      : await prisma.companyProfile.findFirst({
+          include: { Agency: true }
+        })
 
     // 3. Fetch Knowledge
     const knowledgeAssets = await prisma.knowledgeAsset.findMany()
@@ -1262,43 +1272,56 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
         }),
         execute: async ({ prompt, copyText, subtitle, socialMediaCaption, backgroundData }: { prompt?: string, copyText?: string, subtitle?: string, socialMediaCaption?: string, backgroundData?: string }) => {
           try {
-            // Check monthly generations limit (90 generations limit)
-            const startOfMonth = new Date()
-            startOfMonth.setDate(1)
-            startOfMonth.setHours(0,0,0,0)
+             // Check monthly generations limit (90 generations limit)
+             const startOfMonth = new Date()
+             startOfMonth.setDate(1)
+             startOfMonth.setHours(0,0,0,0)
 
-            const logs = await prisma.interactionLog.findMany({
-              where: {
-                aiAgentId: agent.id,
-                createdAt: {
-                  gte: startOfMonth
-                }
-              }
-            })
+             // Fetch all ADMIN and SUPER_ADMIN users in this agency
+             let adminUserIds = [agent.userId]
+             if (dbUser?.agencyId) {
+               const agencyAdmins = await prisma.user.findMany({
+                 where: {
+                   agencyId: dbUser.agencyId,
+                   role: { in: ['ADMIN', 'SUPER_ADMIN'] }
+                 },
+                 select: { id: true }
+               })
+               adminUserIds = agencyAdmins.map(u => u.id)
+             }
 
-            let generationCount = 0
-            logs.forEach(log => {
-              if (log.toolInvocations) {
-                try {
-                  const parsed = typeof log.toolInvocations === 'string'
-                    ? JSON.parse(log.toolInvocations)
-                    : log.toolInvocations;
-                  
-                  if (Array.isArray(parsed)) {
-                    const hasGraphicDesign = parsed.some((inv: any) => inv.toolName === 'generateGraphicDesign');
-                    if (hasGraphicDesign) {
-                      generationCount++;
-                    }
-                  }
-                } catch (err) {
-                  // Ignore parse errors
-                }
-              }
-            })
+             const logs = await prisma.interactionLog.findMany({
+               where: {
+                 userId: { in: adminUserIds },
+                 createdAt: {
+                   gte: startOfMonth
+                 }
+               }
+             })
 
-            if (generationCount >= 90) {
-              return `LIMIT_EXCEEDED: Has alcanzado el límite mensual de 90 generaciones de diseños gráficos para este agente. Has consumido ${generationCount}/90 generaciones.`
-            }
+             let generationCount = 0
+             logs.forEach(log => {
+               if (log.toolInvocations) {
+                 try {
+                   const parsed = typeof log.toolInvocations === 'string'
+                     ? JSON.parse(log.toolInvocations)
+                     : log.toolInvocations;
+                   
+                   if (Array.isArray(parsed)) {
+                     const hasGraphicDesign = parsed.some((inv: any) => inv.toolName === 'generateGraphicDesign');
+                     if (hasGraphicDesign) {
+                       generationCount++;
+                     }
+                   }
+                 } catch (err) {
+                   // Ignore parse errors
+                 }
+               }
+             })
+
+             if (generationCount >= 90) {
+               return `LIMIT_EXCEEDED: Se ha alcanzado el límite mensual de 90 generaciones de diseños gráficos para los administradores de esta agencia. Se han consumido ${generationCount}/90 generaciones.`
+             }
 
             // Provide default fallbacks if the LLM hallucinated an empty argument object
             prompt = prompt || "professional insurance agent smiling";
