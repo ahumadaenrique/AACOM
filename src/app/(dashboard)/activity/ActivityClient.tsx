@@ -58,6 +58,23 @@ export default function ActivityPage({ agencyName = "AACOM" }: { agencyName?: st
     const [prospectName, setProspectName] = useState("");
     const [modalError, setModalError] = useState("");
     
+    // Month filter for history
+    const generateLast6Months = () => {
+        const months = [];
+        const now = new Date();
+        for (let i = 0; i < 6; i++) {
+            const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            months.push({
+                value: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+                label: d.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase())
+            });
+        }
+        return months;
+    };
+    
+    const availableMonths = generateLast6Months();
+    const [selectedMonth, setSelectedMonth] = useState(availableMonths[0].value);
+
     // Accordion state for history
     const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({});
 
@@ -437,16 +454,27 @@ export default function ActivityPage({ agencyName = "AACOM" }: { agencyName?: st
 
             {/* HISTORICAL ACCORDION FEED */}
             <div className="bg-card rounded-2xl border shadow-md p-6">
-                <div className="flex items-center gap-2 border-b pb-2 mb-4">
-                    <CalendarDays className="h-4.5 w-4.5 text-teal-600 dark:text-teal-400" />
-                    <h2 className="text-sm font-black text-slate-700 dark:text-zinc-300 uppercase tracking-widest">
-                        Historial de Actividades
-                    </h2>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-4 mb-4">
+                    <div className="flex items-center gap-2">
+                        <CalendarDays className="h-4.5 w-4.5 text-teal-600 dark:text-teal-400" />
+                        <h2 className="text-sm font-black text-slate-700 dark:text-zinc-300 uppercase tracking-widest">
+                            Historial de Actividades
+                        </h2>
+                    </div>
+                    <select
+                        value={selectedMonth}
+                        onChange={(e) => setSelectedMonth(e.target.value)}
+                        className="rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-teal-500/20"
+                    >
+                        {availableMonths.map((m) => (
+                            <option key={m.value} value={m.value}>{m.label}</option>
+                        ))}
+                    </select>
                 </div>
 
-                {history.length > 0 ? (
+                {history.filter(g => g.dateStr.startsWith(selectedMonth)).length > 0 ? (
                     <div className="space-y-3">
-                        {history.map((group) => {
+                        {history.filter(g => g.dateStr.startsWith(selectedMonth)).map((group) => {
                             const isExpanded = expandedDates[group.dateStr];
                             const histSemaforo = getSemaforoDetails(group.totalPoints);
                             
