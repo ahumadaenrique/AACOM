@@ -2503,3 +2503,92 @@ export async function deletePoll(pollId: string) {
     }
 }
 
+export async function getContacts() {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado", contacts: [] };
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user) return { success: false, message: "Usuario no encontrado", contacts: [] };
+
+        const contacts = await prisma.contact.findMany({
+            where: { userId: user.id },
+            orderBy: { name: 'asc' }
+        });
+        return { success: true, contacts };
+    } catch (error: any) {
+        console.error("Error fetching contacts:", error);
+        return { success: false, message: "Error al obtener contactos", contacts: [] };
+    }
+}
+
+export async function createContact(name: string, email: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user) return { success: false, message: "Usuario no encontrado" };
+
+        const cleanName = name.trim();
+        const cleanEmail = email.trim().toLowerCase();
+
+        if (!cleanName || !cleanEmail) {
+            return { success: false, message: "Nombre y correo son obligatorios" };
+        }
+
+        // Basic email format check
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(cleanEmail)) {
+            return { success: false, message: "Formato de correo inválido" };
+        }
+
+        // Check if contact already exists
+        const existing = await prisma.contact.findUnique({
+            where: {
+                userId_email: {
+                    userId: user.id,
+                    email: cleanEmail
+                }
+            }
+        });
+
+        if (existing) {
+            return { success: false, message: "Ya tienes un contacto registrado con este correo" };
+        }
+
+        const newContact = await prisma.contact.create({
+            data: {
+                name: cleanName,
+                email: cleanEmail,
+                userId: user.id
+            }
+        });
+
+        return { success: true, contact: newContact };
+    } catch (error: any) {
+        console.error("Error creating contact:", error);
+        return { success: false, message: error.message || "Error al crear contacto" };
+    }
+}
+
+export async function deleteContact(id: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user) return { success: false, message: "Usuario no encontrado" };
+
+        // Verify contact ownership
+        const contact = await prisma.contact.findUnique({ where: { id } });
+        if (!contact || contact.userId !== user.id) {
+            return { success: false, message: "Contacto no encontrado o sin autorización" };
+        }
+
+        await prisma.contact.delete({ where: { id } });
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error deleting contact:", error);
+        return { success: false, message: error.message || "Error al eliminar contacto" };
+    }
+}
+
+

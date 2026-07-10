@@ -358,6 +358,18 @@ export async function POST(req: Request) {
     }
 
     if (agent.type === 'EXECUTIVE_ASSISTANT') {
+      const contacts = await prisma.contact.findMany({
+        where: { userId: agent.userId },
+        orderBy: { name: 'asc' }
+      })
+      if (contacts.length > 0) {
+        systemPrompt += `CONTACTOS FRECUENTES DE TU USUARIO (Úsalos para resolver nombres a direcciones de correo electrónico de forma directa y silenciosa sin preguntar):\n`
+        contacts.forEach(c => {
+          systemPrompt += `- ${c.name}: ${c.email}\n`
+        })
+        systemPrompt += `\n`
+      }
+
       systemPrompt += `INSTRUCCIONES DE ROL MANDATORIAS (Asistente Ejecutiva):
 Eres un Asistente Ejecutivo altamente proactivo y profesional. Tu objetivo es ayudar a organizar la agenda, crear resumenes de reuniones, enviar recordatorios, y el resumen de la agenda de manera diaria.
 
