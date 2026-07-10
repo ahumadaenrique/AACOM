@@ -91,6 +91,23 @@ export default function CotizadorPage({
   const [historyList, setHistoryList] = useState<any[]>([])
   const [loadingHistory, setLoadingHistory] = useState(false)
 
+  // Month filter for history
+  const generateLast6Months = () => {
+    const months = [];
+    const now = new Date();
+    for (let i = 0; i < 6; i++) {
+      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      months.push({
+        value: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`,
+        label: d.toLocaleDateString('es-MX', { month: 'long', year: 'numeric' }).replace(/^\w/, c => c.toUpperCase())
+      });
+    }
+    return months;
+  };
+
+  const availableMonths = generateLast6Months();
+  const [selectedMonth, setSelectedMonth] = useState(availableMonths[0].value);
+
   // Step navigation state
   const [step, setStep] = useState<number>(1)
   
@@ -787,9 +804,20 @@ export default function CotizadorPage({
               <h2 className="text-3xl font-black text-slate-800 dark:text-slate-100">Historial de Cotizaciones</h2>
               <p className="text-muted-foreground">Revisa tus proyecciones generadas recientemente.</p>
             </div>
-            <Button variant="outline" onClick={() => setViewMode('MENU')} className="gap-2">
-              <ArrowLeft className="w-4 h-4" /> Regresar
-            </Button>
+            <div className="flex items-center gap-3">
+              <select
+                value={selectedMonth}
+                onChange={(e) => setSelectedMonth(e.target.value)}
+                className="rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-zinc-300 focus:outline-none focus:ring-2 focus:ring-teal-500/20 cursor-pointer"
+              >
+                {availableMonths.map((m) => (
+                  <option key={m.value} value={m.value}>{m.label}</option>
+                ))}
+              </select>
+              <Button variant="outline" onClick={() => setViewMode('MENU')} className="gap-2">
+                <ArrowLeft className="w-4 h-4" /> Regresar
+              </Button>
+            </div>
           </div>
 
           <Card className="shadow-lg border-0 ring-1 ring-slate-200 dark:ring-zinc-800">
@@ -815,26 +843,46 @@ export default function CotizadorPage({
                       <TableCell colSpan={6} className="text-center py-8 text-slate-500">No tienes cotizaciones guardadas aún.</TableCell>
                     </TableRow>
                   ) : (
-                    historyList.map((cot, idx) => (
-                      <TableRow key={idx} className="hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors">
-                        <TableCell className="font-medium">{new Date(cot.createdAt).toLocaleDateString()}</TableCell>
-                        <TableCell>{cot.cliente}</TableCell>
-                        <TableCell>
-                          <span className="bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs font-bold">{cot.producto}</span>
-                        </TableCell>
-                        <TableCell className="text-right font-semibold">
-                          ${(cot.primaAnual || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </TableCell>
-                        <TableCell className="text-right text-indigo-600 dark:text-indigo-400 font-bold">
-                          ${(cot.ahorro || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Button variant="default" size="sm" onClick={() => loadHistoryRecord(cot)} className="bg-indigo-600 hover:bg-indigo-700">
-                            Ver Reporte
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                    (() => {
+                      const filteredHistory = historyList.filter(cot => {
+                        const cotDate = new Date(cot.createdAt);
+                        const cotYear = cotDate.getFullYear();
+                        const cotMonth = String(cotDate.getMonth() + 1).padStart(2, '0');
+                        const cotYearMonth = `${cotYear}-${cotMonth}`;
+                        return cotYearMonth === selectedMonth;
+                      });
+
+                      if (filteredHistory.length === 0) {
+                        return (
+                          <TableRow>
+                            <TableCell colSpan={6} className="text-center py-8 text-slate-500">
+                              No tienes cotizaciones guardadas para este mes.
+                            </TableCell>
+                          </TableRow>
+                        );
+                      }
+
+                      return filteredHistory.map((cot, idx) => (
+                        <TableRow key={idx} className="hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors">
+                          <TableCell className="font-medium">{new Date(cot.createdAt).toLocaleDateString()}</TableCell>
+                          <TableCell>{cot.cliente}</TableCell>
+                          <TableCell>
+                            <span className="bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs font-bold">{cot.producto}</span>
+                          </TableCell>
+                          <TableCell className="text-right font-semibold">
+                            ${(cot.primaAnual || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </TableCell>
+                          <TableCell className="text-right text-indigo-600 dark:text-indigo-400 font-bold">
+                            ${(cot.ahorro || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Button variant="default" size="sm" onClick={() => loadHistoryRecord(cot)} className="bg-indigo-600 hover:bg-indigo-700">
+                              Ver Reporte
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ));
+                    })()
                   )}
                 </TableBody>
               </Table>
