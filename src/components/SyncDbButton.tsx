@@ -1,6 +1,6 @@
 "use client"
 import { useState } from "react"
-import { syncDatabaseSchemaAction } from "@/app/(dashboard)/agents/workspace/actions"
+import { syncDatabaseSchemaAction } from "@/app/agents/workspace/actions"
 import { Loader2, RefreshCw } from "lucide-react"
 
 export function SyncDbButton() {

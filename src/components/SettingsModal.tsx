@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Users, Palette, Image as ImageIcon, Zap, X, ShieldCheck, Mail, Calendar, PenTool, TrendingUp, Settings2, Code, PhoneCall } from "lucide-react"
-import { disconnectGoogle } from "@/app/(dashboard)/agents/workspace/actions"
+import { disconnectGoogle } from "@/app/agents/workspace/actions"
 import { AgentAvatar } from "@/components/AgentAvatar"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
