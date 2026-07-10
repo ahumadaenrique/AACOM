@@ -77,7 +77,7 @@ export async function checkAllSystemsStatus() {
         // 4. Banxico (UDI)
         try {
             const token = process.env.BANXICO_TOKEN;
-            const res = await fetch("https://www.banxico.org.mx/SieAPIRest/valoresRutinas/series/SP68257/oportuno", {
+            const res = await fetch("https://www.banxico.org.mx/SieAPIRest/service/v1/series/SP68257/datos/oportuno", {
                 headers: { "Bmx-Token": token || "" },
                 cache: 'no-store'
             });
@@ -145,7 +145,7 @@ export async function checkAllSystemsStatus() {
         try {
             const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
             if (apiKey) {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ contents: [{ parts: [{ text: "a" }] }] })
@@ -159,7 +159,8 @@ export async function checkAllSystemsStatus() {
                         link: 'https://aistudio.google.com/app/apikey'
                     });
                 } else {
-                    throw new Error(`HTTP ${res.status}`);
+                    const errorText = await res.text().catch(() => '');
+                    throw new Error(`HTTP ${res.status} ${errorText}`);
                 }
             } else {
                 throw new Error("API Key de Gemini faltante");
