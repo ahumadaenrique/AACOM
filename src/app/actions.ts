@@ -2510,7 +2510,7 @@ export async function getContacts() {
         const user = await prisma.user.findUnique({ where: { email: session.user.email } });
         if (!user) return { success: false, message: "Usuario no encontrado", contacts: [] };
 
-        const contacts = await prisma.contact.findMany({
+        const contacts = await prisma.frequentContact.findMany({
             where: { userId: user.id },
             orderBy: { name: 'asc' }
         });
@@ -2542,7 +2542,7 @@ export async function createContact(name: string, email: string) {
         }
 
         // Check if contact already exists
-        const existing = await prisma.contact.findUnique({
+        const existing = await prisma.frequentContact.findUnique({
             where: {
                 userId_email: {
                     userId: user.id,
@@ -2555,7 +2555,7 @@ export async function createContact(name: string, email: string) {
             return { success: false, message: "Ya tienes un contacto registrado con este correo" };
         }
 
-        const newContact = await prisma.contact.create({
+        const newContact = await prisma.frequentContact.create({
             data: {
                 name: cleanName,
                 email: cleanEmail,
@@ -2578,12 +2578,12 @@ export async function deleteContact(id: string) {
         if (!user) return { success: false, message: "Usuario no encontrado" };
 
         // Verify contact ownership
-        const contact = await prisma.contact.findUnique({ where: { id } });
+        const contact = await prisma.frequentContact.findUnique({ where: { id } });
         if (!contact || contact.userId !== user.id) {
             return { success: false, message: "Contacto no encontrado o sin autorización" };
         }
 
-        await prisma.contact.delete({ where: { id } });
+        await prisma.frequentContact.delete({ where: { id } });
         return { success: true };
     } catch (error: any) {
         console.error("Error deleting contact:", error);

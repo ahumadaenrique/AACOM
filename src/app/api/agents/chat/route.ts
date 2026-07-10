@@ -358,7 +358,7 @@ export async function POST(req: Request) {
     }
 
     if (agent.type === 'EXECUTIVE_ASSISTANT') {
-      const contacts = await prisma.contact.findMany({
+      const contacts = await prisma.frequentContact.findMany({
         where: { userId: agent.userId },
         orderBy: { name: 'asc' }
       })
