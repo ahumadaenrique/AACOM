@@ -1,0 +1,1 @@
+const { PrismaClient } = require('@prisma/client'); const prisma = new PrismaClient(); async function main() { const days = await prisma.developmentPlanDay.findMany(); console.log('Days:', days); } main().catch(e => console.error(e)).finally(() => prisma.$disconnect());
