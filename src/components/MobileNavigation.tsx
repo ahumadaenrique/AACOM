@@ -14,6 +14,13 @@ export function MobileNavigation({ children }: { children: ReactNode }) {
         setOpen(false)
     }, [pathname])
 
+    const handleClose = (e: React.MouseEvent) => {
+        const target = e.target as HTMLElement
+        if (target.closest("a")) {
+            setOpen(false)
+        }
+    }
+
     return (
         <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger asChild>
@@ -27,7 +34,9 @@ export function MobileNavigation({ children }: { children: ReactNode }) {
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-[280px] sm:w-[350px] overflow-y-auto pb-10">
-                {children}
+                <div onClick={handleClose}>
+                    {children}
+                </div>
             </SheetContent>
         </Sheet>
     )
