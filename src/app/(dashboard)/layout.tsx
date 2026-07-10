@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -342,6 +342,12 @@ export default async function DashboardLayout({
                                                             Red Multinivel
                                                         </Link>
                                                     </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href="/admin/system-status" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                            <Activity className="h-4 w-4 text-blue-600" />
+                                                            Estado de APIs
+                                                        </Link>
+                                                    </DropdownMenuItem>
                                                 </>
                                             )}
                                         </DropdownMenuContent>
@@ -521,6 +527,15 @@ export default async function DashboardLayout({
                                             >
                                                 <Network className="h-5 w-5 text-indigo-600" />
                                                 Red Multinivel
+                                            </Link>
+                                        )}
+                                        {isSuperAdmin && (
+                                            <Link
+                                                href="/admin/system-status"
+                                                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                            >
+                                                <Activity className="h-5 w-5 text-blue-600" />
+                                                Estado de APIs
                                             </Link>
                                         )}
                                     </>
