@@ -1,0 +1,1080 @@
+{
+  "src\\app\\(dashboard)\\academia\\page.tsx": [
+    {
+      "line": 135,
+      "text": "Academia de Ventas AACOM"
+    }
+  ],
+  "src\\app\\(dashboard)\\activity\\ActivityClient.tsx": [
+    {
+      "line": 47,
+      "text": "export default function ActivityPage({ agencyName = \"AACOM\" }: { agencyName?: string }) {"
+    }
+  ],
+  "src\\app\\(dashboard)\\admin\\AdminClient.tsx": [
+    {
+      "line": 109,
+      "text": "// ADN AACOM states"
+    },
+    {
+      "line": 142,
+      "text": "// AACOM 25 Activity Report states"
+    },
+    {
+      "line": 1008,
+      "text": "<img src=\"/logo.png\" alt=\"AACOM Seguros\" className=\"h-10 w-auto object-contain\" />"
+    },
+    {
+      "line": 1654,
+      "text": "placeholder=\"ejemplo@aacommx.com\""
+    },
+    {
+      "line": 2490,
+      "text": "{/* TAB CONTENT 6: AACOM 25 ACTIVITY REPORT */}"
+    },
+    {
+      "line": 3206,
+      "text": "<img src=\"/logo.png\" alt=\"AACOM\" className=\"h-7 w-auto object-contain\" />"
+    },
+    {
+      "line": 3248,
+      "text": "ADN DIGITAL AACOM"
+    },
+    {
+      "line": 3259,
+      "text": "<img src=\"/logo.png\" alt=\"AACOM Seguros\" className=\"h-8 w-auto object-contain mb-1\" />"
+    },
+    {
+      "line": 3260,
+      "text": "<span className=\"text-[9px] font-black text-slate-500 uppercase tracking-wide\">AACOM cotizador</span>"
+    },
+    {
+      "line": 3744,
+      "text": "<img src=\"/logo.png\" alt=\"AACOM\" className=\"w-auto object-contain\" style={{ height: '18px' }} />"
+    },
+    {
+      "line": 3745,
+      "text": "<span>AACOM cotizador</span>"
+    },
+    {
+      "line": 3775,
+      "text": "<img src=\"/logo.png\" alt=\"AACOM\" className=\"h-7 w-auto object-contain\" />"
+    },
+    {
+      "line": 3848,
+      "text": "<img src=\"/logo.png\" alt=\"AACOM Seguros\" className=\"h-8 w-auto object-contain mb-1\" />"
+    },
+    {
+      "line": 3849,
+      "text": "<span className=\"text-[9px] font-black text-slate-500 uppercase tracking-wide\">AACOM cotizador</span>"
+    },
+    {
+      "line": 4285,
+      "text": "<span className=\"font-semibold text-slate-500\">AACOM cotizador</span>"
+    }
+  ],
+  "src\\app\\(dashboard)\\admin\\agencia\\AgencySettingsForm.tsx": [
+    {
+      "line": 91,
+      "text": "placeholder=\"Ej. AACOM Seguros\""
+    }
+  ],
+  "src\\app\\(dashboard)\\admin\\agencia\\page.tsx": [
+    {
+      "line": 20,
+      "text": "let slug = headersList.get('x-agency-slug') || 'aacom';"
+    }
+  ],
+  "src\\app\\(dashboard)\\admin\\network\\page.tsx": [
+    {
+      "line": 5,
+      "text": "title: \"Auditoría Multinivel | AACOM\","
+    }
+  ],
+  "src\\app\\(dashboard)\\admin\\page.tsx": [
+    {
+      "line": 32,
+      "text": "Tu cuenta (<strong className=\"text-slate-700 dark:text-zinc-300\">{session.user.email}</strong>) no tiene asignado el rol de Administrador. Si crees que esto es un error, por favor contacta al soporte técnico de AACOM."
+    }
+  ],
+  "src\\app\\(dashboard)\\admin\\plan-arranque\\seguimiento\\actions.ts": [
+    {
+      "line": 18,
+      "text": "{ email: \"enrique.ahumada@aacommx.com\" }"
+    }
+  ],
+  "src\\app\\(dashboard)\\admin\\suscripcion\\page.tsx": [
+    {
+      "line": 50,
+      "text": "const referralLink = `https://aacomsoft.com/registro?ref=${agency.slug}`;"
+    },
+    {
+      "line": 131,
+      "text": "Por cada agencia de seguros que se registre en AACOMSoft utilizando tu enlace único y pague su primera mensualidad, <strong>te agregaremos automáticamente 2 meses (60 días) de servicio gratuito</strong> a tu licencia actual."
+    }
+  ],
+  "src\\app\\(dashboard)\\admin\\system-status\\page.tsx": [
+    {
+      "line": 5,
+      "text": "title: \"Centro de Comando | AACOM\","
+    }
+  ],
+  "src\\app\\(dashboard)\\admin\\tickets\\page.tsx": [
+    {
+      "line": 8,
+      "text": "title: \"Bandeja de Soporte - AACOM\","
+    }
+  ],
+  "src\\app\\(dashboard)\\adn\\page.tsx": [
+    {
+      "line": 2139,
+      "text": "<img src=\"/logo.png\" alt=\"AACOM Seguros\" className=\"h-14 w-auto object-contain\" />"
+    }
+  ],
+  "src\\app\\(dashboard)\\agencias\\actions.ts": [
+    {
+      "line": 29,
+      "text": "const matrizExists = await prisma.agency.findUnique({ where: { id: \"aacom\" } });"
+    },
+    {
+      "line": 33,
+      "text": "id: \"aacom\","
+    },
+    {
+      "line": 34,
+      "text": "name: \"AACOM Seguros\","
+    },
+    {
+      "line": 35,
+      "text": "slug: \"aacom\""
+    }
+  ],
+  "src\\app\\(dashboard)\\agencias\\AgenciesTable.tsx": [
+    {
+      "line": 69,
+      "text": "<div className=\"text-xs text-slate-400 mt-0.5\">{agency.slug}.aacomsoft.com</div>"
+    }
+  ],
+  "src\\app\\(dashboard)\\agencias\\AgencyFormModal.tsx": [
+    {
+      "line": 80,
+      "text": "<span className=\"text-muted-foreground text-sm font-medium bg-slate-100 px-3 py-2 rounded-md border border-slate-200\">.aacomsoft.com</span>"
+    }
+  ],
+  "src\\app\\(dashboard)\\agencias\\page.tsx": [
+    {
+      "line": 98,
+      "text": "<span className=\"text-slate-500\">{agency.slug}.aacomsoft.com</span>"
+    },
+    {
+      "line": 140,
+      "text": "<Link href={`https://${agency.slug}.aacomsoft.com`} target=\"_blank\" className=\"w-full\" title=\"Visitar\">"
+    }
+  ],
+  "src\\app\\(dashboard)\\assistant\\AssistantClient.tsx": [
+    {
+      "line": 21,
+      "text": "export default function AssistantPage({ agencyName = \"AACOM\" }: { agencyName?: string }) {"
+    }
+  ],
+  "src\\app\\(dashboard)\\assistant\\page.tsx": [
+    {
+      "line": 16,
+      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+    },
+    {
+      "line": 20,
+      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+    }
+  ],
+  "src\\app\\(dashboard)\\cartera\\page.tsx": [
+    {
+      "line": 37,
+      "text": "await prisma.client.updateMany({ where: { agencyId: null }, data: { agencyId: 'aacom' } });"
+    },
+    {
+      "line": 38,
+      "text": "await prisma.policy.updateMany({ where: { agencyId: null }, data: { agencyId: 'aacom' } });"
+    },
+    {
+      "line": 39,
+      "text": "await prisma.dailyRecord.updateMany({ where: { agencyId: null }, data: { agencyId: 'aacom' } });"
+    }
+  ],
+  "src\\app\\(dashboard)\\ClientHome.tsx": [
+    {
+      "line": 28,
+      "text": "export default function ClientHome({ announcements, isBirthday = false, currentUser = null, agencyName = \"AACOM Seguros\", isAdmin = false }: ClientHomeProps) {"
+    }
+  ],
+  "src\\app\\(dashboard)\\cotizador\\CotizadorClient.tsx": [
+    {
+      "line": 79,
+      "text": "agencyName = \"AACOM Seguros\","
+    },
+    {
+      "line": 1465,
+      "text": "{/* Logo of AACOM Seguros integrated in the PDF header */}"
+    }
+  ],
+  "src\\app\\(dashboard)\\cotizador\\page.tsx": [
+    {
+      "line": 16,
+      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+    },
+    {
+      "line": 20,
+      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+    }
+  ],
+  "src\\app\\(dashboard)\\layout.tsx": [
+    {
+      "line": 61,
+      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+    },
+    {
+      "line": 69,
+      "text": "const isOrphan = dbUser && !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.role !== 'SELLER' && dbUser?.email !== 'enrique.ahumada@aacommx.com';"
+    },
+    {
+      "line": 117,
+      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+    },
+    {
+      "line": 119,
+      "text": "const agencyName = agency?.name || \"AACOM Seguros\";"
+    },
+    {
+      "line": 121,
+      "text": "const shortAgencyName = agency?.name || \"AACOM\";"
+    }
+  ],
+  "src\\app\\(dashboard)\\page.tsx": [
+    {
+      "line": 14,
+      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+    },
+    {
+      "line": 18,
+      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+    }
+  ],
+  "src\\app\\(dashboard)\\pea-prp\\actions.ts": [
+    {
+      "line": 80,
+      "text": "const agencyName = user.agency?.name || \"AACOM\";"
+    }
+  ],
+  "src\\app\\(dashboard)\\reportes\\page.tsx": [
+    {
+      "line": 13,
+      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+    },
+    {
+      "line": 16,
+      "text": "title: `Reportes Gerenciales - ${agency?.name || 'AACOM'}`"
+    },
+    {
+      "line": 41,
+      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+    },
+    {
+      "line": 45,
+      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+    }
+  ],
+  "src\\app\\(dashboard)\\reportes\\ReportesClient.tsx": [
+    {
+      "line": 26,
+      "text": "export default function ReportesClient({ agencyName = \"AACOM\" }: { agencyName?: string }) {"
+    }
+  ],
+  "src\\app\\(dashboard)\\support\\manual\\page.tsx": [
+    {
+      "line": 159,
+      "text": "<li><strong className=\"text-slate-700 dark:text-slate-300\">Uso:</strong> Llena el formulario financiero con tu cliente (ingresos, gastos, metas). Al terminar, la Inteligencia Artificial de AACOM analizará los datos y te entregará un \"Dictamen\" recomendando exactamente qué producto debes venderle y con qué argumentos.</li>"
+    }
+  ],
+  "src\\app\\(dashboard)\\team\\TeamClient.tsx": [
+    {
+      "line": 52,
+      "text": "export default function TeamDirectoryPage({ agencyName = \"AACOM\" }: { agencyName?: string }) {"
+    }
+  ],
+  "src\\app\\actions\\agencyActions.ts": [
+    {
+      "line": 47,
+      "text": "// Upload to public Vercel Blob store (aacom-images)"
+    }
+  ],
+  "src\\app\\actions\\passwordReset.ts": [
+    {
+      "line": 20,
+      "text": "const agencyName = user.agency?.name || \"AACOM Seguros\""
+    },
+    {
+      "line": 33,
+      "text": "const baseUrl = process.env.NEXTAUTH_URL || \"https://www.aacomsoft.com\""
+    },
+    {
+      "line": 49,
+      "text": "from: `${agencyName} <no-reply@aacomsoft.com>`,"
+    }
+  ],
+  "src\\app\\actions.ts": [
+    {
+      "line": 735,
+      "text": "// Restricción: solo el propietario (enrique.ahumada@aacommx.com) puede dar de alta a otros administradores"
+    },
+    {
+      "line": 736,
+      "text": "if (data.role === 'ADMIN' && currentUser.email !== 'enrique.ahumada@aacommx.com') {"
+    },
+    {
+      "line": 942,
+      "text": "if (targetUser.email === \"enrique.ahumada@aacommx.com\") {"
+    },
+    {
+      "line": 1160,
+      "text": "// MÃƒÆ’Ã¢â‚¬Å“DULO AACOM 25 & ACTIVIDAD DIARIA ACTIONS"
+    },
+    {
+      "line": 1395,
+      "text": "data: { agencyId: 'aacom' }"
+    },
+    {
+      "line": 1399,
+      "text": "data: { agencyId: 'aacom' }"
+    },
+    {
+      "line": 1589,
+      "text": "// ADMIN AACOM 25 REPORTS & PROFILE ACTIONS"
+    },
+    {
+      "line": 1920,
+      "text": "// ASISTENTE INTELIGENTE AACOM (GEMINI 1.5) ACTIONS"
+    },
+    {
+      "line": 2123,
+      "text": "process.env.VAPID_SUBJECT || 'mailto:test@aacommx.com',"
+    },
+    {
+      "line": 2129,
+      "text": "title: \"Prueba AACOM\","
+    },
+    {
+      "line": 2179,
+      "text": "process.env.VAPID_SUBJECT || 'mailto:test@aacommx.com',"
+    },
+    {
+      "line": 2185,
+      "text": "title: \"AACOM NotificaciÃƒÆ’Ã‚Â³n\","
+    },
+    {
+      "line": 2243,
+      "text": "// Forzamos a que todos los usuarios y actividades huÃƒÆ’Ã‚Â©rfanas se asignen a 'aacom'."
+    },
+    {
+      "line": 2246,
+      "text": "data: { agencyId: 'aacom' }"
+    },
+    {
+      "line": 2250,
+      "text": "data: { agencyId: 'aacom' }"
+    }
+  ],
+  "src\\app\\agents\\layout.tsx": [
+    {
+      "line": 32,
+      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+    },
+    {
+      "line": 35,
+      "text": "const isOrphan = dbUser && !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.role !== 'SELLER' && dbUser?.email !== 'enrique.ahumada@aacommx.com';"
+    },
+    {
+      "line": 67,
+      "text": "let agencyName = agency?.name || \"AACOM\""
+    }
+  ],
+  "src\\app\\agents\\page.tsx": [
+    {
+      "line": 34,
+      "text": "let agencyName = \"AACOM\""
+    }
+  ],
+  "src\\app\\agents\\[id]\\chat\\ChatInterface.tsx": [
+    {
+      "line": 32,
+      "text": "ctx.fillStyle = '#0f172a'; // AACOM dark blue/slate"
+    },
+    {
+      "line": 35,
+      "text": "// Draw AACOM text"
+    },
+    {
+      "line": 38,
+      "text": "ctx.fillText('AACOM', 40, img.height + 65);"
+    },
+    {
+      "line": 51,
+      "text": "a.download = 'AACOM-Post.png';"
+    },
+    {
+      "line": 77,
+      "text": "title=\"Descargar imagen con logo AACOM\""
+    }
+  ],
+  "src\\app\\api\\agents\\chat\\route.ts": [
+    {
+      "line": 319,
+      "text": "let agencyName = \"AACOM\""
+    },
+    {
+      "line": 452,
+      "text": "4. En caso de violación, DEBES responder textualmente con este mensaje y nada más: \"No se pudo generar por que de acuerdo a los lineamientos de AACOMSoft 'No se pueden generar imagenes con menores de edad solos'.\" (o ajusta el final a 'con contenido violento/sexual' según corresponda)."
+    }
+  ],
+  "src\\app\\api\\auth\\demo\\route.ts": [
+    {
+      "line": 38,
+      "text": "email: 'demo@aacommx.com',"
+    },
+    {
+      "line": 53,
+      "text": "email: 'agente.demo@aacommx.com',"
+    },
+    {
+      "line": 68,
+      "text": "email: 'sofia.agente@aacommx.com',"
+    },
+    {
+      "line": 82,
+      "text": "email: 'pedro.agente@aacommx.com',"
+    },
+    {
+      "line": 265,
+      "text": "name: 'Presentacion_Ventas_AACOM.pdf',"
+    },
+    {
+      "line": 266,
+      "text": "fileUrl: 'https://aacomsoft.com/demo-presentacion.pdf',"
+    }
+  ],
+  "src\\app\\api\\auth\\google\\callback\\route.ts": [
+    {
+      "line": 28,
+      "text": "if (urlObj.hostname.endsWith('aacomsoft.com')) {"
+    },
+    {
+      "line": 29,
+      "text": "redirectUri = 'https://www.aacomsoft.com/api/auth/google/callback'"
+    },
+    {
+      "line": 31,
+      "text": "redirectUri = 'https://aacom-lilac.vercel.app/api/auth/google/callback'"
+    }
+  ],
+  "src\\app\\api\\auth\\google\\route.ts": [
+    {
+      "line": 21,
+      "text": "if (urlObj.hostname.endsWith('aacomsoft.com')) {"
+    },
+    {
+      "line": 22,
+      "text": "redirectUri = 'https://www.aacomsoft.com/api/auth/google/callback'"
+    },
+    {
+      "line": 24,
+      "text": "redirectUri = 'https://aacom-lilac.vercel.app/api/auth/google/callback'"
+    }
+  ],
+  "src\\app\\api\\cedula-a\\promoter-data\\route.ts": [
+    {
+      "line": 9,
+      "text": "const isSuperAdminEmail = lowerEmail === \"enrique.ahumada@aacommx.com\" || lowerEmail === \"desarrollo.agencias@gmail.com\";"
+    }
+  ],
+  "src\\app\\api\\checkout\\promoter-package\\route.ts": [
+    {
+      "line": 55,
+      "text": "const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://aacomsoft.com';"
+    }
+  ],
+  "src\\app\\api\\checkout\\seat\\route.ts": [
+    {
+      "line": 41,
+      "text": "success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://aacomsoft.com'}/admin?seat_success=true`,"
+    },
+    {
+      "line": 42,
+      "text": "cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://aacomsoft.com'}/admin`,"
+    }
+  ],
+  "src\\app\\api\\cron\\check-apis\\route.ts": [
+    {
+      "line": 45,
+      "text": "body: `URGENTE: La API de ${apiNames} está fallando en AACOM. Revisa el centro de comando inmediatamente.`,"
+    }
+  ],
+  "src\\app\\api\\cron\\push-master\\route.ts": [
+    {
+      "line": 34,
+      "text": "process.env.VAPID_SUBJECT || 'mailto:test@aacommx.com',"
+    }
+  ],
+  "src\\app\\api\\cron\\push-planning\\route.ts": [
+    {
+      "line": 31,
+      "text": "process.env.VAPID_SUBJECT || 'mailto:test@aacommx.com',"
+    }
+  ],
+  "src\\app\\api\\cron\\push-points\\route.ts": [
+    {
+      "line": 37,
+      "text": "process.env.VAPID_SUBJECT || 'mailto:test@aacommx.com',"
+    }
+  ],
+  "src\\app\\api\\migrate\\route.ts": [
+    {
+      "line": 8,
+      "text": "const aacom = await prisma.agency.findUnique({"
+    },
+    {
+      "line": 9,
+      "text": "where: { slug: 'aacom' }"
+    },
+    {
+      "line": 12,
+      "text": "if (!aacom) {"
+    },
+    {
+      "line": 13,
+      "text": "return NextResponse.json({ success: false, error: \"Agencia AACOM no encontrada\" });"
+    },
+    {
+      "line": 16,
+      "text": "const agencyId = aacom.id;"
+    }
+  ],
+  "src\\app\\api\\support\\route.ts": [
+    {
+      "line": 70,
+      "text": "from: `\"Soporte AACOM\" <${process.env.SMTP_USER}>`,"
+    },
+    {
+      "line": 71,
+      "text": "to: \"enrique.ahumada@aacommx.com\", // Tu correo para recibir alertas"
+    }
+  ],
+  "src\\app\\inicio\\page.tsx": [
+    {
+      "line": 220,
+      "text": "<span className=\"text-2xl font-black text-slate-800 tracking-tight\">AACOM</span>"
+    },
+    {
+      "line": 228,
+      "text": "<a href=\"mailto:soporte@aacomsoft.com\" className=\"hover:text-teal-600 font-medium\">soporte@aacomsoft.com</a>"
+    },
+    {
+      "line": 263,
+      "text": "&copy; {new Date().getFullYear()} AACOM. Todos los derechos reservados."
+    },
+    {
+      "line": 266,
+      "text": "Aacomsoft es una empresa de grupo AACOM"
+    }
+  ],
+  "src\\app\\invite\\[agencyId]\\page.tsx": [
+    {
+      "line": 72,
+      "text": "<p className=\"text-slate-500 dark:text-zinc-400 mt-2\">Activa tu licencia personal de AACOM para acceder a todas las herramientas profesionales.</p>"
+    }
+  ],
+  "src\\app\\layout.tsx": [
+    {
+      "line": 16,
+      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+    },
+    {
+      "line": 19,
+      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+    },
+    {
+      "line": 21,
+      "text": "const agencyName = agency?.name || \"AACOM Seguros\";"
+    },
+    {
+      "line": 126,
+      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+    },
+    {
+      "line": 129,
+      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+    }
+  ],
+  "src\\app\\login\\LoginClient.tsx": [
+    {
+      "line": 10,
+      "text": "export default function LoginPage({ agencyName = \"AACOM Seguros\", agencyLogo = \"/logo.png\" }: { agencyName?: string, agencyLogo?: string }) {"
+    }
+  ],
+  "src\\app\\login\\page.tsx": [
+    {
+      "line": 7,
+      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+    },
+    {
+      "line": 11,
+      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+    },
+    {
+      "line": 14,
+      "text": "const agencyName = agency?.name || 'AACOM Seguros';"
+    }
+  ],
+  "src\\app\\manifest.ts": [
+    {
+      "line": 7,
+      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+    },
+    {
+      "line": 11,
+      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+    }
+  ],
+  "src\\app\\presentacion\\page.tsx": [
+    {
+      "line": 20,
+      "text": "const baseAacomPrice = 2499;"
+    },
+    {
+      "line": 23,
+      "text": "const aacomCost = agents <= baseAgentsIncluded"
+    },
+    {
+      "line": 24,
+      "text": "? baseAacomPrice"
+    },
+    {
+      "line": 25,
+      "text": ": baseAacomPrice + (agents - baseAgentsIncluded) * extraAgentPrice;"
+    },
+    {
+      "line": 37,
+      "text": "const totalSavings = totalAlternativeCost - aacomCost;"
+    },
+    {
+      "line": 114,
+      "text": "<span className=\"text-2xl font-black tracking-tight text-white\">AACOM<span className=\"text-teal-400\">Soft</span></span>"
+    },
+    {
+      "line": 137,
+      "text": "Deja atrás las herramientas fragmentadas y los costos redundantes. AACOMSoft reúne CRM, multi-cotizador de Vida, asistente de IA y academia en una sola consola premium."
+    },
+    {
+      "line": 159,
+      "text": "<p className=\"text-slate-400 max-w-lg mx-auto\">Compara el costo de usar herramientas individuales versus la plataforma integrada de AACOMSoft.</p>"
+    },
+    {
+      "line": 235,
+      "text": "<div className=\"text-xs font-bold text-slate-500 uppercase tracking-widest\">Plan AACOMSoft Base + Extras</div>"
+    },
+    {
+      "line": 236,
+      "text": "<div className=\"text-2xl font-black text-white font-mono mt-1\">{formatCurrency(aacomCost)} <span className=\"text-xs text-slate-400 font-medium\">/ mes</span></div>"
+    },
+    {
+      "line": 350,
+      "text": "aacomsoft.com/app"
+    },
+    {
+      "line": 431,
+      "text": "<span>SEGUROS AACOM</span>"
+    },
+    {
+      "line": 461,
+      "text": "AACOMSoft"
+    },
+    {
+      "line": 530,
+      "text": "<span className=\"text-lg font-bold text-white\">AACOMSoft</span>"
+    },
+    {
+      "line": 532,
+      "text": "<p>&copy; {new Date().getFullYear()} AACOM. Todos los derechos reservados.</p>"
+    },
+    {
+      "line": 533,
+      "text": "<p className=\"text-xs\">Aacomsoft es una empresa de grupo AACOM</p>"
+    }
+  ],
+  "src\\app\\privacidad\\page.tsx": [
+    {
+      "line": 38,
+      "text": "Ahumada Andrade Comercialización (en lo sucesivo, \"AACOM\"), con domicilio en Van Dick 14 - 409, col. Santa Maria Nonoalco, Del. Benito Juarez, cdmx 03700, y portal web aacomsoft.com/inicio, es el responsable del tratamiento de los datos personales recabados a través de la aplicación informática denominada SYSGPYA (Sistema de Gestión de Promotorías y Agencias). AACOM se compromete a salvaguardar la privacidad de la información de conformidad con la Ley Federal de Protección de Datos Personales en Posesión de los Particulares (LFPDPPP)."
+    },
+    {
+      "line": 53,
+      "text": "<li>Que AACOM, como administrador de la aplicación, pueda brindar soporte técnico, mantenimiento y resolución de incidencias técnicas.</li>"
+    },
+    {
+      "line": 54,
+      "text": "<li>Que AACOM, como administrador de la aplicación, pueda gestionar el acceso, la seguridad y el correcto funcionamiento del sistema.</li>"
+    },
+    {
+      "line": 88,
+      "text": "<span>AACOM, como administrador de la aplicación, tenga acceso a dicha información para los fines de administración, soporte técnico, seguridad y correcto funcionamiento del sistema conforme a lo descrito en este aviso.</span>"
+    },
+    {
+      "line": 95,
+      "text": "<h3 className=\"text-lg font-bold text-slate-900 mb-3 border-b pb-2\">5. LIMITACIÓN DE ACCESO POR PARTE DE AACOM</h3>"
+    },
+    {
+      "line": 96,
+      "text": "<p className=\"mb-4\">Ahumada Andrade Comercialización (AACOM) manifiesta que NO consultará, revisará, accederá ni dará tratamiento a la información particular de las promotorías, agencias, agentes de seguros o clientes finales depositada en SYSGPYA, salvo en los siguientes casos:</p>"
+    },
+    {
+      "line": 100,
+      "text": "<span>Cuando el usuario titular de la información o el promotor/director de agencia correspondiente solicite expresamente la intervención de AACOM mediante la apertura de un ticket de soporte o ayuda dentro de la plataforma.</span>"
+    },
+    {
+      "line": 108,
+      "text": "<span>La intervención de AACOM se limitará estrictamente al propósito específico señalado en el ticket de soporte y únicamente respecto de la información necesaria para atender dicha solicitud.</span>"
+    },
+    {
+      "line": 112,
+      "text": "<span>En ningún caso AACOM utilizará la información a la que tenga acceso por este motivo para fines distintos a la atención del ticket de soporte, ni compartirá dicha información con terceros no autorizados.</span>"
+    },
+    {
+      "line": 122,
+      "text": "<li>AACOM, para fines de administración técnica, soporte y mantenimiento del sistema, en los términos y limitaciones establecidos en el presente aviso.</li>"
+    },
+    {
+      "line": 125,
+      "text": "<p>AACOM no transferirá datos personales a terceros ajenos a la relación contractual de la plataforma, salvo las excepciones previstas en el artículo 37 de la LFPDPPP o cuando sea requerido por autoridad competente mediante mandato legal.</p>"
+    },
+    {
+      "line": 132,
+      "text": "<li><strong className=\"text-slate-800\">Acceso:</strong> Acceder a sus datos personales en posesión de AACOM y conocer los detalles de su tratamiento.</li>"
+    },
+    {
+      "line": 138,
+      "text": "Para ejercer cualquiera de estos derechos, el titular deberá presentar una solicitud por escrito al correo electrónico: <a href=\"mailto:soporte@aacomsoft.com\" className=\"text-teal-600 font-bold hover:underline\">soporte@aacomsoft.com</a> o al domicilio de AACOM antes señalado, indicando:"
+    },
+    {
+      "line": 146,
+      "text": "<p className=\"mb-4\">AACOM dará respuesta a la solicitud en un plazo máximo de 20 días hábiles contados desde la fecha de recepción, conforme a lo dispuesto en la LFPDPPP.</p>"
+    },
+    {
+      "line": 149,
+      "text": "<p>El titular podrá limitar el uso o divulgación de sus datos personales enviando una solicitud al correo electrónico: <a href=\"mailto:soporte@aacomsoft.com\" className=\"text-teal-600 font-bold hover:underline\">soporte@aacomsoft.com</a>. La solicitud deberá contener los mismos elementos señalados para el ejercicio de derechos ARCO.</p>"
+    },
+    {
+      "line": 154,
+      "text": "<p>AACOM ha implementado medidas de seguridad administrativas, técnicas y físicas para proteger sus datos personales contra daño, pérdida, alteración, destrucción o el uso, acceso o tratamiento no autorizado.</p>"
+    },
+    {
+      "line": 159,
+      "text": "<p>El presente aviso de privacidad puede sufrir modificaciones, cambios o actualizaciones derivadas de nuevos requerimientos legales o de nuestras propias necesidades por los servicios que ofrecemos. AACOM notificará dichos cambios a través de la interfaz de la aplicación SYSGPYA o mediante el correo electrónico registrado por los usuarios.</p>"
+    }
+  ],
+  "src\\app\\registro\\page.tsx": [
+    {
+      "line": 189,
+      "text": "<img src=\"/logo.png\" alt=\"AACOM\" className=\"h-12 mx-auto mb-6\" />"
+    },
+    {
+      "line": 306,
+      "text": ".aacomsoft.com"
+    }
+  ],
+  "src\\app\\terminos\\page.tsx": [
+    {
+      "line": 38,
+      "text": "El presente documento (en adelante, los &quot;Términos y Condiciones&quot;) regula el acceso y uso de la aplicación SYSGPYA, propiedad de Ahumada Andrade Comercialización (en adelante &quot;AACOM&quot; o &quot;el Administrador&quot;), por parte de los usuarios que creen una cuenta en el sistema."
+    },
+    {
+      "line": 48,
+      "text": "<li><strong>AACOM / Administrador:</strong> Ahumada Andrade Comercialización, propietario y administrador de la plataforma SYSGPYA.</li>"
+    },
+    {
+      "line": 70,
+      "text": "<span>El Usuario será responsable de todas las actividades que se realicen desde su cuenta. En caso de uso no autorizado, el Usuario deberá notificar de inmediato a AACOM.</span>"
+    },
+    {
+      "line": 91,
+      "text": "<span className=\"font-bold text-teal-600\">4.3. Perfil de Administrador (AACOM):</span>"
+    },
+    {
+      "line": 92,
+      "text": "<span>AACOM tendrá acceso a la plataforma únicamente para fines de administración técnica, soporte, seguridad y correcto funcionamiento del sistema, conforme a lo establecido en la Cláusula 7 del presente documento y en el Aviso de Privacidad correspondiente.</span>"
+    },
+    {
+      "line": 109,
+      "text": "<span>Que AACOM, como administrador de la aplicación, tenga acceso a dicha información en los términos y con las limitaciones establecidas en la Cláusula 7 del presente documento y en el Aviso de Privacidad.</span>"
+    },
+    {
+      "line": 132,
+      "text": "<span>AACOM no adquiere ningún derecho de propiedad sobre la Información del Agente. Su papel se limita a ser el administrador técnico de la plataforma.</span>"
+    },
+    {
+      "line": 138,
+      "text": "<h3 className=\"text-lg font-bold text-slate-900 mb-3 border-b pb-2 uppercase\">7. LIMITACIÓN DE ACCESO DE AACOM A LA INFORMACIÓN</h3>"
+    },
+    {
+      "line": 142,
+      "text": "<span>AACOM manifiesta que NO consultará, revisará, accederá ni dará tratamiento a la información particular de las promotorías, agencias, Agentes de Seguros o clientes finales depositada en SYSGPYA, salvo en los siguientes casos:</span>"
+    },
+    {
+      "line": 148,
+      "text": "<span>Cuando el Usuario titular de la información, o el Promotor/Director de Agencia correspondiente, solicite expresamente la intervención de AACOM mediante la apertura de un Ticket de Soporte dentro de la plataforma SYSGPYA.</span>"
+    },
+    {
+      "line": 156,
+      "text": "<span>La intervención de AACOM se limitará estrictamente al propósito específico señalado en el Ticket de Soporte y únicamente respecto de la información necesaria para atender dicha solicitud.</span>"
+    },
+    {
+      "line": 160,
+      "text": "<span>En ningún caso AACOM utilizará la información a la que tenga acceso por este motivo para fines distintos a la atención del Ticket de Soporte, ni compartirá dicha información con terceros no autorizados.</span>"
+    },
+    {
+      "line": 164,
+      "text": "<span>AACOM mantendrá un registro de los Tickets de Soporte atendidos, incluyendo fecha, usuario solicitante y motivo de la intervención.</span>"
+    },
+    {
+      "line": 170,
+      "text": "<span>Cualquier acceso por parte de AACOM fuera de los supuestos anteriores constituirá una violación a estos Términos y Condiciones y al Aviso de Privacidad aplicable.</span>"
+    },
+    {
+      "line": 201,
+      "text": "<span>Notificar a AACOM cualquier falla de seguridad o acceso no autorizado a su cuenta.</span>"
+    },
+    {
+      "line": 211,
+      "text": "<span>AACOM brindará soporte técnico a los Usuarios de SYSGPYA a través del sistema de Tickets de Soporte integrado en la plataforma.</span>"
+    },
+    {
+      "line": 215,
+      "text": "<span>El tiempo de respuesta y resolución dependerá de la naturaleza y complejidad del ticket, así como de la disponibilidad de recursos técnicos de AACOM.</span>"
+    },
+    {
+      "line": 219,
+      "text": "<span>AACOM no garantiza la disponibilidad ininterrumpida del sistema, pero realizará esfuerzos comercialmente razonables para mantener la plataforma operativa.</span>"
+    },
+    {
+      "line": 229,
+      "text": "<span>AACOM se reserva el derecho de suspender o cancelar la cuenta de un Usuario que:</span>"
+    },
+    {
+      "line": 241,
+      "text": "<span>En caso de cancelación de cuenta, AACOM no estará obligada a conservar la Información del Agente por un período mayor al establecido en el Aviso de Privacidad.</span>"
+    },
+    {
+      "line": 251,
+      "text": "<span>SYSGPYA, incluyendo su código fuente, diseño, interfaz, logotipos y nombre, es propiedad exclusiva de AACOM.</span>"
+    },
+    {
+      "line": 270,
+      "text": "AACOM se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento. Las modificaciones entrarán en vigor al momento de su publicación en la aplicación SYSGPYA o en el sitio web www.aacommx.com. El uso continuado de la plataforma después de dichas modificaciones constituye la aceptación de las mismas."
+    }
+  ],
+  "src\\auth.config.ts": [
+    {
+      "line": 44,
+      "text": "session.user.email = 'agente.demo@aacommx.com';"
+    },
+    {
+      "line": 50,
+      "text": "session.user.email = 'demo@aacommx.com';"
+    }
+  ],
+  "src\\auth.ts": [
+    {
+      "line": 39,
+      "text": "if (user.role !== 'SUPER_ADMIN' && user.role !== 'SELLER' && user.email !== 'enrique.ahumada@aacommx.com') {"
+    },
+    {
+      "line": 77,
+      "text": "// Always guarantee Super Admin role and AACOM agency for the main owner"
+    },
+    {
+      "line": 78,
+      "text": "if (user.email === 'enrique.ahumada@aacommx.com') {"
+    },
+    {
+      "line": 87,
+      "text": "const aacomAgency = await prisma.agency.findFirst({"
+    },
+    {
+      "line": 88,
+      "text": "where: { slug: 'aacom' }"
+    },
+    {
+      "line": 90,
+      "text": "if (aacomAgency) {"
+    },
+    {
+      "line": 91,
+      "text": "updateData.agencyId = aacomAgency.id;"
+    },
+    {
+      "line": 92,
+      "text": "user.agencyId = aacomAgency.id;"
+    }
+  ],
+  "src\\components\\AgentsSidebar.tsx": [
+    {
+      "line": 16,
+      "text": "export function AgentsSidebar({ agents, agencyName = \"AACOM\" }: { agents: Agent[], agencyName?: string }) {"
+    }
+  ],
+  "src\\components\\DigitalCard.tsx": [
+    {
+      "line": 26,
+      "text": "const agencyName = user.agencyName || \"AACOM\";"
+    }
+  ],
+  "src\\components\\FooterWrapper.tsx": [
+    {
+      "line": 16,
+      "text": "Este es un producto desarrollado por <span className=\"text-indigo-600 font-bold dark:text-indigo-400\">AACOMSoft</span> una empresa de Grupo AACOM"
+    }
+  ],
+  "src\\components\\PwaInstaller.tsx": [
+    {
+      "line": 14,
+      "text": "export default function PwaInstaller({ agencyName = \"AACOM Seguros\" }: { agencyName?: string }) {"
+    }
+  ],
+  "src\\components\\SettingsModal.tsx": [
+    {
+      "line": 255,
+      "text": "<span className=\"text-sm text-neutral-200\">{agent.User.email || \"enrique.ahumada@aacommx.com\"}</span>"
+    },
+    {
+      "line": 422,
+      "text": "placeholder=\"Ej: enrique.ahumada@aacommx.com\""
+    },
+    {
+      "line": 521,
+      "text": "<Input defaultValue=\"Hola ¿Cómo estás? Soy Patty de AACOM, gracias por contactarnos ¿Cómo te puedo ayudar?\" className=\"bg-neutral-900 border-neutral-800 text-neutral-200\" />"
+    },
+    {
+      "line": 529,
+      "text": "defaultValue={`- Tu nombre es Patty. Tono amistoso, Respuestas cortas pero muy claras, hazlo sentir muy natural como una platica casual con un amigo, siempre amable y nunca estricta.\\nPronuncia el nombre de la empresa como \"Aacom\" (con acento en la primera A).\\n- Espacia un poco más tus respuestas cuando estés tomando notas o revisando información; no contestes de inmediato en menos de un segundo para que se sienta real.\\n- Si te hacen una pregunta capciosa o donde no tienes respuesta, solo haz una pequeña y sencilla broma y no caigas en el juego. Si insiste pídele de manera amable seriedad para continuar con la llamada.\\n\\nIdentidad y Propósito: Eres Patty, la recepcionista virtual de nuestra firma de consultoría`}"
+    },
+    {
+      "line": 655,
+      "text": "<span className=\"text-sm text-neutral-200\">enrique.ahumada@aacommx.com</span>"
+    },
+    {
+      "line": 676,
+      "text": "<span className=\"text-sm text-neutral-200\">enrique.ahumada@aacommx.com</span>"
+    }
+  ],
+  "src\\components\\TermsModal.tsx": [
+    {
+      "line": 74,
+      "text": "<p>El presente documento (en adelante, los \"Términos y Condiciones\") regula el acceso y uso de la aplicación SYSGPYA, propiedad de Ahumada Andrade Comercialización (en adelante \"AACOM\" o \"el Administrador\"), por parte de los usuarios que creen una cuenta en el sistema.</p>"
+    },
+    {
+      "line": 81,
+      "text": "<li><strong className=\"text-slate-800 dark:text-slate-200\">AACOM / Administrador:</strong> Ahumada Andrade Comercialización, propietario y administrador de la plataforma SYSGPYA.</li>"
+    },
+    {
+      "line": 94,
+      "text": "<p><strong>3.3.</strong> El Usuario será responsable de todas las actividades que se realicen desde su cuenta. En caso de uso no autorizado, el Usuario deberá notificar de inmediato a AACOM.</p>"
+    },
+    {
+      "line": 102,
+      "text": "<p className=\"mt-2\"><strong>4.3. Perfil de Administrador (AACOM):</strong> AACOM tendrá acceso a la plataforma únicamente para fines de administración técnica, soporte, seguridad y correcto funcionamiento del sistema, conforme a lo establecido en la Cláusula 7 del presente documento y en el Aviso de Privacidad correspondiente.</p>"
+    },
+    {
+      "line": 115,
+      "text": "<span>Que AACOM, como administrador de la aplicación, tenga acceso a dicha información en los términos y con las limitaciones establecidas en la Cláusula 7 del presente documento y en el Aviso de Privacidad.</span>"
+    },
+    {
+      "line": 129,
+      "text": "<p><strong>6.3.</strong> AACOM no adquiere ningún derecho de propiedad sobre la Información del Agente. Su papel se limita a ser el administrador técnico de la plataforma.</p>"
+    },
+    {
+      "line": 133,
+      "text": "<h4 className=\"font-bold text-slate-900 dark:text-white text-lg mb-2\">7. LIMITACIÓN DE ACCESO DE AACOM A LA INFORMACIÓN</h4>"
+    },
+    {
+      "line": 134,
+      "text": "<p className=\"mb-4\"><strong>7.1.</strong> AACOM manifiesta que NO consultará, revisará, accederá ni dará tratamiento a la información particular de las promotorías, agencias, Agentes de Seguros o clientes finales depositada en SYSGPYA, salvo en los siguientes casos:</p>"
+    },
+    {
+      "line": 138,
+      "text": "<span>Cuando el Usuario titular de la información, o el Promotor/Director de Agencia correspondiente, solicite expresamente la intervención de AACOM mediante la apertura de un Ticket de Soporte dentro de la plataforma SYSGPYA.</span>"
+    },
+    {
+      "line": 146,
+      "text": "<span>La intervención de AACOM se limitará estrictamente al propósito específico señalado en el Ticket de Soporte y únicamente respecto de la información necesaria para atender dicha solicitud.</span>"
+    },
+    {
+      "line": 150,
+      "text": "<span>En ningún caso AACOM utilizará la información a la que tenga acceso por este motivo para fines distintos a la atención del Ticket de Soporte, ni compartirá dicha información con terceros no autorizados.</span>"
+    },
+    {
+      "line": 154,
+      "text": "<span>AACOM mantendrá un registro de los Tickets de Soporte atendidos, incluyendo fecha, usuario solicitante y motivo de la intervención.</span>"
+    },
+    {
+      "line": 157,
+      "text": "<p><strong>7.2.</strong> Cualquier acceso por parte de AACOM fuera de los supuestos anteriores constituirá una violación a estos Términos y Condiciones y al Aviso de Privacidad aplicable.</p>"
+    },
+    {
+      "line": 169,
+      "text": "<li>Notificar a AACOM cualquier falla de seguridad o acceso no autorizado a su cuenta.</li>"
+    },
+    {
+      "line": 175,
+      "text": "<p><strong>9.1.</strong> AACOM brindará soporte técnico a los Usuarios de SYSGPYA a través del sistema de Tickets de Soporte integrado en la plataforma.</p>"
+    },
+    {
+      "line": 176,
+      "text": "<p><strong>9.2.</strong> El tiempo de respuesta y resolución dependerá de la naturaleza y complejidad del ticket, así como de la disponibilidad de recursos técnicos de AACOM.</p>"
+    },
+    {
+      "line": 177,
+      "text": "<p><strong>9.3.</strong> AACOM no garantiza la disponibilidad ininterrumpida del sistema, pero realizará esfuerzos comercialmente razonables para mantener la plataforma operativa.</p>"
+    },
+    {
+      "line": 182,
+      "text": "<p className=\"mb-2\"><strong>10.1.</strong> AACOM se reserva el derecho de suspender o cancelar la cuenta de un Usuario que:</p>"
+    },
+    {
+      "line": 189,
+      "text": "<p><strong>10.2.</strong> En caso de cancelación de cuenta, AACOM no estará obligada a conservar la Información del Agente por un período mayor al establecido en el Aviso de Privacidad.</p>"
+    },
+    {
+      "line": 194,
+      "text": "<p><strong>11.1.</strong> SYSGPYA, incluyendo su código fuente, diseño, interfaz, logotipos y nombre, es propiedad exclusiva de AACOM.</p>"
+    },
+    {
+      "line": 205,
+      "text": "<p>AACOM se reserva el derecho de modificar estos Términos y Condiciones en cualquier momento. Las modificaciones entrarán en vigor al momento de su publicación en la aplicación SYSGPYA o en el sitio web www.aacomsoft.com/inicio. El uso continuado de la plataforma después de dichas modificaciones constituye la aceptación de las mismas.</p>"
+    }
+  ],
+  "src\\middleware.ts": [
+    {
+      "line": 18,
+      "text": "// Example: aacom.aacomsoft.com -> 'aacom'"
+    },
+    {
+      "line": 19,
+      "text": "let slug = \"aacom\"; // Default fallback"
+    },
+    {
+      "line": 23,
+      "text": "slug = \"aacom\"; // Default agency for Vercel preview environments"
+    },
+    {
+      "line": 26,
+      "text": "// Check if it's a subdomain (e.g. not localhost:3000, not www.aacomsoft.com, etc)"
+    }
+  ]
+}
