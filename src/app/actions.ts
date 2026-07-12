@@ -443,9 +443,8 @@ export async function getAgents() {
         if (!user) throw new Error("Usuario no encontrado");
 
         const agents = await prisma.agent.findMany({
-            orderBy: {
-                name: 'asc'
-            }
+            where: { agencyId: user.agencyId || null },
+            orderBy: { name: 'asc' }
         });
         return { success: true, agents };
     } catch (error: any) {
@@ -456,14 +455,18 @@ export async function getAgents() {
 
 export async function createAgent(name: string) {
     try {
+        const session = await auth();
+        if (!session?.user?.email) throw new Error("No autenticado");
+        const user = await prisma.user.findUnique({where: {email: session.user.email}});
+        if (!user) throw new Error("Usuario no encontrado");
+
         const trimmedName = name.trim();
         if (!trimmedName) {
-            return { success: false, message: "El nombre del agente no puede estar vacÃƒÆ’Ã‚Â­o" };
+            return { success: false, message: "El nombre del agente no puede estar vacío" };
         }
         
-        // Check for duplicates (case insensitive search or direct unique key handle)
         const existing = await prisma.agent.findUnique({
-            where: { name: trimmedName }
+            where: { name_agencyId: { name: trimmedName, agencyId: user.agencyId || '' } }
         });
         
         if (existing) {
@@ -471,7 +474,7 @@ export async function createAgent(name: string) {
         }
 
         const newAgent = await prisma.agent.create({
-            data: { name: trimmedName }
+            data: { name: trimmedName, agencyId: user.agencyId || null }
         });
         return { success: true, agent: newAgent };
     } catch (error: any) {
@@ -482,6 +485,16 @@ export async function createAgent(name: string) {
 
 export async function deleteAgent(id: string) {
     try {
+        const session = await auth();
+        if (!session?.user?.email) throw new Error("No autenticado");
+        const user = await prisma.user.findUnique({where: {email: session.user.email}});
+        if (!user) throw new Error("Usuario no encontrado");
+
+        const existing = await prisma.agent.findUnique({ where: { id } });
+        if (!existing || existing.agencyId !== (user.agencyId || null)) {
+            return { success: false, message: "No autorizado" };
+        }
+
         const deleted = await prisma.agent.delete({
             where: { id }
         });
@@ -776,15 +789,15 @@ export async function createAgentUser(data: { name: string; email: string; role:
             }
         });
 
-        // SincronizaciÃƒÆ’Ã‚Â³n con el modelo Agent para el Cotizador
+        // Sincronización con el modelo Agent para el Cotizador
         if (data.syncToAgent) {
             const trimmedName = data.name.trim();
             const existingAgent = await prisma.agent.findUnique({
-                where: { name: trimmedName }
+                where: { name_agencyId: { name: trimmedName, agencyId: currentUser.agencyId || '' } }
             });
             if (!existingAgent) {
                 await prisma.agent.create({
-                    data: { name: trimmedName }
+                    data: { name: trimmedName, agencyId: currentUser.agencyId || null }
                 });
             }
         }
@@ -1668,15 +1681,15 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
         if (data.name && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) {
             const trimmedName = data.name.trim();
             const existingAgent = await prisma.agent.findUnique({
-                where: { name: trimmedName }
+                where: { name_agencyId: { name: trimmedName, agencyId: currentUser.agencyId || '' } }
             });
             if (!existingAgent) {
                 // Find if there is an agent with old name and update or create
                 // Simply create if not found, as we don't have secondary relation
                 await prisma.agent.upsert({
-                    where: { name: trimmedName },
+                    where: { name_agencyId: { name: trimmedName, agencyId: currentUser.agencyId || '' } },
                     update: {},
-                    create: { name: trimmedName }
+                    create: { name: trimmedName, agencyId: currentUser.agencyId || null }
                 });
             }
         }

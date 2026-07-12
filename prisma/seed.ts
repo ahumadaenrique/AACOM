@@ -34,9 +34,9 @@ async function main() {
     console.log("Seeding agents...")
     for (const agentName of initialAgents) {
         const agent = await prisma.agent.upsert({
-            where: { name: agentName },
+            where: { name_agencyId: { name: agentName, agencyId: 'aacom' } },
             update: {},
-            create: { name: agentName }
+            create: { name: agentName, agencyId: 'aacom' }
         })
         console.log(`Upserted agent: ${agent.name}`)
     }

@@ -55,6 +55,7 @@ model Agency {
   tickets            Ticket[]
   pollVotes          PollVote[]
   contents           Content[]
+  autocompleteAgents Agent[]
 
   purchasedSeats Int @default(0)
 
@@ -303,8 +304,12 @@ model Setting {
 
 model Agent {
   id        String   @id @default(cuid())
-  name      String   @unique
+  agencyId  String?
+  agency    Agency?  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  name      String
   createdAt DateTime @default(now())
+
+  @@unique([name, agencyId])
 }
 
 model AdnDiagnostic {
