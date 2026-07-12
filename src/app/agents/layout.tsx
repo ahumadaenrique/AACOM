@@ -10,67 +10,8 @@ import { SubscriptionBlocker } from "@/components/SubscriptionBlocker"
 export const dynamic = 'force-dynamic'
 
 async function ensureDefaultAgents(userId: string) {
-  try {
-    // 1. Clean up duplicate agents of the same type for this user first
-    const userAgents = await prisma.aIAgent.findMany({
-      where: { userId, type: { not: 'RECEPTIONIST' } },
-      orderBy: { createdAt: 'asc' }
-    });
-
-    const seenTypes = new Set<string>();
-    for (const agent of userAgents) {
-      if (seenTypes.has(agent.type)) {
-        await prisma.aIAgent.delete({ where: { id: agent.id } });
-      } else {
-        seenTypes.add(agent.type);
-      }
-    }
-
-    // 2. Ensure default generic agents exist
-    const existingExecutive = await prisma.aIAgent.findFirst({
-      where: { userId, type: "EXECUTIVE_ASSISTANT" }
-    })
-    if (!existingExecutive) {
-      await prisma.aIAgent.create({
-        data: {
-          name: "Asistente Ejecutiva",
-          type: "EXECUTIVE_ASSISTANT",
-          userId,
-          isActive: true,
-          systemPrompt: "Eres un Asistente Ejecutivo altamente proactivo y profesional. Tu objetivo es ayudar a organizar la agenda, crear minutas de reuniones y enviar recordatorios."
-        }
-      })
-    } else if (existingExecutive.name === "María la Asistente") {
-      // Automatically genericize if it still has the old default name
-      await prisma.aIAgent.update({
-        where: { id: existingExecutive.id },
-        data: { name: "Asistente Ejecutiva" }
-      })
-    }
-
-    const existingMkt = await prisma.aIAgent.findFirst({
-      where: { userId, type: "SOCIAL_MEDIA_MANAGER" }
-    })
-    if (!existingMkt) {
-      await prisma.aIAgent.create({
-        data: {
-          name: "Social Media Manager",
-          type: "SOCIAL_MEDIA_MANAGER",
-          userId,
-          isActive: true,
-          systemPrompt: "Eres un creativo social media manager encargado de diseñar posts, mockups e imágenes publicitarias para redes sociales de tu agencia."
-        }
-      })
-    } else if (existingMkt.name === "Ramiro el de MKT") {
-      // Automatically genericize if it still has the old default name
-      await prisma.aIAgent.update({
-        where: { id: existingMkt.id },
-        data: { name: "Social Media Manager" }
-      })
-    }
-  } catch (e) {
-    console.error("ensureDefaultAgents error:", e)
-  }
+  // Función desactivada: Los usuarios ahora arrancan desde cero y deben crear sus propios agentes
+  // para poder personalizarlos con su propia marca y filosofía.
 }
 
 export default async function AgentsLayout({ children }: { children: ReactNode }) {
