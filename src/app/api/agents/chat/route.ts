@@ -1398,20 +1398,20 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
             const normalizedStyle = agent.designStyle ? agent.designStyle.toLowerCase() : "realista";
 
             if (normalizedStyle === 'realista' || normalizedStyle === 'realism' || !agent.designStyle) {
-              styleModifier = ", realistic photograph style";
-              premiumModifiers = ", 8k resolution, cinematic studio lighting, shot on 85mm lens, ultra-detailed, sharp focus, professional advertisement photography, pure solid white background";
+              styleModifier = ", ultra-realistic macro photograph";
+              premiumModifiers = ", 8k resolution, cinematic studio lighting, shot on 85mm lens, extreme depth of field, hyper-detailed, award-winning advertising photography, centered main subject, pure solid white background";
             } else if (normalizedStyle === 'ilustración' || normalizedStyle === 'ilustracion' || normalizedStyle === 'illustration') {
-              styleModifier = ", clean vector illustration style";
-              premiumModifiers = ", flat design, solid shapes, minimalist, bold colors, professional digital illustration, high quality vector art, pure solid white background";
+              styleModifier = ", stunning 2.5D vector illustration";
+              premiumModifiers = ", dribbble trending, vivid bold colors, highly detailed, professional graphic design, masterpiece, thick outlines, solid shapes, pure solid white background";
             } else if (normalizedStyle === '3d' || normalizedStyle === '3d render' || normalizedStyle === 'modelado 3d') {
-              styleModifier = ", 3D render style";
-              premiumModifiers = ", claymation look, cute character design, bright studio lighting, smooth textures, octane render, artstation trending, pure solid white background";
+              styleModifier = ", hyper-realistic 3D octane render";
+              premiumModifiers = ", unreal engine 5, claymation masterpiece, cute incredibly detailed character, Pixar style, subsurface scattering, rim lighting, artstation trending, pure solid white background";
             } else if (normalizedStyle === 'dibujo animado' || normalizedStyle === 'cartoon' || normalizedStyle === 'caricatura') {
-              styleModifier = ", modern cartoon illustration style";
-              premiumModifiers = ", clean line art, vibrant colors, comic book style, digital art, high resolution, pure solid white background";
+              styleModifier = ", spectacular modern cartoon illustration";
+              premiumModifiers = ", crisp line art, vibrant neon colors, comic book masterpiece, highly detailed digital art, high resolution, pure solid white background";
             } else {
-              styleModifier = `, ${agent.designStyle} style`;
-              premiumModifiers = ", graphic design art, high quality, pure solid white background";
+              styleModifier = `, masterpiece ${agent.designStyle} style`;
+              premiumModifiers = ", ultra high quality, incredibly detailed, professional artwork, pure solid white background";
             }
 
             const fluxResult = await fal.subscribe("fal-ai/flux/schnell", {
