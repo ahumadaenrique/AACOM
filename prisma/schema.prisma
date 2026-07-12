@@ -119,6 +119,8 @@ model User {
   insurances   String? // Aseguradoras con las que trabaja
   favoriteBook String? // Libro favorito
   hobby        String? // Pasatiempo
+  brandColor   String? // Color corporativo individual del Agente
+  brandLogo    String? // Logo corporativo individual del Agente
 
   // Hierarchy
   reportsToId  String?
@@ -555,10 +557,14 @@ model AIAgent {
   guidelines        String?
   userId            String
   User              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @default(now()) @updatedAt
-  DraftPost         DraftPost[]
-  InteractionLog    InteractionLog[]
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @default(now()) @updatedAt
+  DraftPost             DraftPost[]
+  InteractionLog        InteractionLog[]
+
+  // Límites mensuales
+  imageGenerationsCount Int              @default(0)
+  imageGenerationsReset DateTime         @default(now())
 }
 
 model DraftPost {

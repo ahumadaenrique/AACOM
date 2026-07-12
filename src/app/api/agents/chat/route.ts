@@ -432,7 +432,14 @@ REGLAS DE FLUJO DE TRABAJO CRÍTICAS:
 1. Cuando el usuario te pida una publicación, post o una idea de publicación genérica, **NUNCA** debes generar el diseño gráfico ni llamar a la herramienta 'generateGraphicDesign' de inmediato.
 2. En su lugar, debes responder en texto plano proponiendo **entre 3 y 5 ideas o alternativas diferentes** para desarrollar, descritas brevemente en una lista numerada.
 3. Espera a que el usuario lea las propuestas y te confirme de forma explícita cuál de las ideas prefiere tratar o desarrollar.
-4. **ÚNICAMENTE** cuando el usuario haya seleccionado o confirmado un tema a tratar, procederás a redactar la publicación final y ejecutarás la herramienta 'generateGraphicDesign' para crear la imagen de la publicación y su correspondiente mockup completo.\n\n`
+4. **ÚNICAMENTE** cuando el usuario haya seleccionado o confirmado un tema a tratar, procederás a redactar la publicación final y ejecutarás la herramienta 'generateGraphicDesign' para crear la imagen de la publicación y su correspondiente mockup completo.
+
+--- LINEAMIENTOS DE SEGURIDAD (CRÍTICO) ---
+1. Tienes ESTRICTAMENTE PROHIBIDO generar diseños o imágenes que contengan agresión, violencia o contenido sexual.
+2. Tienes ESTRICTAMENTE PROHIBIDO generar imágenes con menores de edad SOLOS. Los menores de edad SOLO pueden aparecer si están en un contexto familiar explícito (con padres/adultos) o en un contexto claro de educación y protección infantil.
+3. Si el usuario pide un diseño que viole estos lineamientos (ej. un niño solo, o contenido violento), NO debes usar la herramienta 'generateGraphicDesign'.
+4. En caso de violación, DEBES responder textualmente con este mensaje y nada más: "No se pudo generar por que de acuerdo a los lineamientos de AACOMSoft 'No se pueden generar imagenes con menores de edad solos'." (o ajusta el final a 'con contenido violento/sexual' según corresponda).
+------------------------------------------\n\n`
     }
 
     if (agent.type === 'COMMUNITY_MANAGER' && agent.toneUrl) {
@@ -1371,7 +1378,21 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
             socialMediaCaption = socialMediaCaption || "¡Contáctanos hoy mismo para asegurar tu futuro! 🛡️💼 #Seguros";
             backgroundData = backgroundData || "100%";
 
-            // 1. Generate image with flux (Upgraded to dev for high quality)
+            // 1. Validate Agent Generation Limits
+            const now = new Date();
+            let currentCount = agent.imageGenerationsCount || 0;
+            const resetDate = agent.imageGenerationsReset ? new Date(agent.imageGenerationsReset) : null;
+            
+            // Check if month has changed, if so, reset counter
+            if (!resetDate || resetDate.getMonth() !== now.getMonth() || resetDate.getFullYear() !== now.getFullYear()) {
+              currentCount = 0;
+            }
+
+            if (currentCount >= 45) {
+              return "LIMIT_EXCEEDED: Se ha alcanzado el límite mensual de 45 diseños gráficos para este Agente IA. El límite se reiniciará el próximo mes.";
+            }
+
+            // 2. Generate image with flux (Downgraded to Schnell for cost optimization)
             let styleModifier = "";
             let premiumModifiers = "";
             const normalizedStyle = agent.designStyle ? agent.designStyle.toLowerCase() : "realista";
@@ -1393,11 +1414,11 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
               premiumModifiers = ", graphic design art, high quality, pure solid white background";
             }
 
-            const fluxResult = await fal.subscribe("fal-ai/flux/dev", {
+            const fluxResult = await fal.subscribe("fal-ai/flux/schnell", {
               input: {
                 prompt: prompt + styleModifier + premiumModifiers,
                 image_size: "square",
-                num_inference_steps: 28,
+                num_inference_steps: 4,
               },
             }) as any;
 
@@ -1418,15 +1439,24 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
             const logo = companyProfile?.Agency?.logoUrl;
             const isBase64 = logo && logo.startsWith('data:image');
             
+            // Update agent's generation count
+            await prisma.aIAgent.update({
+              where: { id: agent.id },
+              data: {
+                imageGenerationsCount: currentCount + 1,
+                imageGenerationsReset: now
+              }
+            });
+
             return {
               transparentUrl,
               copyText,
               subtitle,
               socialMediaCaption,
               backgroundData,
-              brandPrimaryColor: companyProfile?.Agency?.primaryColor || '#0f172a',
+              brandPrimaryColor: dbUser?.brandColor || companyProfile?.Agency?.primaryColor || '#0f172a',
               brandSecondaryColor: companyProfile?.Agency?.secondaryColor || null,
-              brandLogo: isBase64 ? null : logo,
+              brandLogo: isBase64 ? null : (dbUser?.brandLogo || logo),
               industry: companyProfile?.industry || 'Seguros'
             }
           } catch (e: any) {
