@@ -84,7 +84,7 @@ export function GraphicDesignPreview({
           ctx.drawImage(img, finalX, finalY, finalW, finalH)
           resolve()
         }
-        img.onerror = () => resolve() // resolve to avoid crashing the whole render on one failed image
+        img.onerror = () => resolve() // Resolve on error so we don't break the entire canvas
         img.src = url.startsWith('http') ? `/api/agents/proxy-image?url=${encodeURIComponent(url)}&t=${Date.now()}` : url
       })
     }
@@ -104,10 +104,10 @@ export function GraphicDesignPreview({
     }
 
     const drawTextMarblism = (text: string, x: number, y: number, isSubtitle = false, useDark = false) => {
-       ctx.font = isSubtitle ? 'bold 45px sans-serif' : '900 85px sans-serif'
+       ctx.font = isSubtitle ? 'bold 40px sans-serif' : '900 85px sans-serif'
        const metrics = ctx.measureText(text)
        const textWidth = metrics.width
-       const textHeight = isSubtitle ? 45 : 85
+       const textHeight = isSubtitle ? 40 : 85
        
        // Solid highlight behind text
        ctx.fillStyle = useDark ? 'rgba(0,0,0,0.85)' : '#ffffff'
@@ -124,32 +124,31 @@ export function GraphicDesignPreview({
        ctx.fillText(text, x, y + (paddingY / 2))
     }
 
-    const drawDynamicText = (useDark: boolean) => {
-      const words = safeCopyText.split(' ')
+    const drawTextWrapped = (text: string, startX: number, startY: number, maxWidth: number, isSubtitle: boolean, useDark: boolean) => {
+      ctx.font = isSubtitle ? 'bold 40px sans-serif' : '900 85px sans-serif'
+      const words = text.split(' ')
       let line = ''
-      let yPos = 140
+      let currentY = startY
+      const lineHeight = isSubtitle ? 70 : 110
+
       for (let i = 0; i < words.length; i++) {
         const testLine = line + words[i] + ' '
-        ctx.font = '900 85px sans-serif'
         const metrics = ctx.measureText(testLine)
-        if (metrics.width > 800 && i > 0) {
-          drawTextMarblism(line.trim(), 80, yPos, false, useDark)
+        if (metrics.width > maxWidth && i > 0) {
+          drawTextMarblism(line.trim(), startX, currentY, isSubtitle, useDark)
           line = words[i] + ' '
-          yPos += 110
+          currentY += lineHeight
         } else {
           line = testLine
         }
       }
-      drawTextMarblism(line.trim(), 80, yPos, false, useDark)
-
-      if (safeSubtitle) {
-        drawTextMarblism(safeSubtitle, 80, yPos + 100, true, !useDark)
-      }
+      drawTextMarblism(line.trim(), startX, currentY, isSubtitle, useDark)
+      return currentY + lineHeight
     }
 
     try {
       if (templateId === 0) {
-        // TEMPLATE 0: Marblism Glass (Radial gradient, white outline, glass pill logo)
+        // TEMPLATE 0: Marblism Glass
         const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
         gradient.addColorStop(0, primary)
         gradient.addColorStop(1, secondary)
@@ -167,27 +166,27 @@ export function GraphicDesignPreview({
           ctx.font = 'bold 350px sans-serif'
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
-          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2)
+          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 100)
         }
 
-        // White outline
         ctx.shadowColor = 'white'
         ctx.shadowBlur = 0
         for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
           await drawImage(result.transparentUrl, 100 + (Math.cos(angle)*12), 200 + (Math.sin(angle)*12), 880, 880)
         }
-        // Person
         ctx.shadowColor = 'rgba(0,0,0,0.3)'
         ctx.shadowBlur = 20
         ctx.shadowOffsetY = 15
         await drawImage(result.transparentUrl, 100, 200, 880, 880)
 
-        // Texts
         ctx.shadowBlur = 0
         ctx.shadowOffsetY = 0
-        drawDynamicText(false)
+        
+        const nextY = drawTextWrapped(safeCopyText, 80, 140, 850, false, false)
+        if (safeSubtitle) {
+          drawTextWrapped(safeSubtitle, 80, nextY + 20, 850, true, true)
+        }
 
-        // Logo Pill
         if (logoToUse) {
           const pw = 480, ph = 140, px = canvas.width - pw - 40, py = canvas.height - ph - 40
           ctx.shadowColor = 'rgba(0,0,0,0.15)'
@@ -202,11 +201,10 @@ export function GraphicDesignPreview({
         }
 
       } else if (templateId === 1) {
-        // TEMPLATE 1: Textured Paper (Solid color with noise overlay, free logo)
+        // TEMPLATE 1: Textured Paper
         ctx.fillStyle = primary
         ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-        // Fake noise texture
         ctx.fillStyle = 'rgba(255,255,255,0.05)'
         for (let i = 0; i < 5000; i++) {
           ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2)
@@ -221,13 +219,11 @@ export function GraphicDesignPreview({
           ctx.font = 'bold 350px sans-serif'
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
-          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2)
+          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 100)
         }
 
-        // Logo at top right without pill
         if (logoToUse) {
           const pw = 300, ph = 100, px = canvas.width - pw - 60, py = 60
-          // Premium drop shadow
           ctx.shadowColor = 'rgba(0,0,0,0.5)'
           ctx.shadowBlur = 20
           ctx.shadowOffsetY = 10
@@ -236,7 +232,6 @@ export function GraphicDesignPreview({
           ctx.shadowOffsetY = 0
         }
 
-        // Person with drop shadow only (no outline)
         ctx.shadowColor = 'rgba(0,0,0,0.5)'
         ctx.shadowBlur = 30
         ctx.shadowOffsetY = 20
@@ -244,10 +239,13 @@ export function GraphicDesignPreview({
         ctx.shadowBlur = 0
         ctx.shadowOffsetY = 0
 
-        drawDynamicText(true) // Dark text highlights
+        const nextY = drawTextWrapped(safeCopyText, 80, 140, 700, false, true)
+        if (safeSubtitle) {
+          drawTextWrapped(safeSubtitle, 80, nextY + 20, 850, true, false)
+        }
         
       } else {
-        // TEMPLATE 2: Solid Minimalist (Two tone split)
+        // TEMPLATE 2: Solid Minimalist
         ctx.fillStyle = primary
         ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7)
         ctx.fillStyle = secondary
@@ -258,10 +256,9 @@ export function GraphicDesignPreview({
           ctx.font = 'bold 350px sans-serif'
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
-          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2)
+          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 100)
         }
 
-        // Person centered
         ctx.shadowColor = 'rgba(0,0,0,0.4)'
         ctx.shadowBlur = 40
         ctx.shadowOffsetY = 30
@@ -269,9 +266,11 @@ export function GraphicDesignPreview({
         ctx.shadowBlur = 0
         ctx.shadowOffsetY = 0
 
-        drawDynamicText(false)
+        const nextY = drawTextWrapped(safeCopyText, 80, 140, 850, false, false)
+        if (safeSubtitle) {
+          drawTextWrapped(safeSubtitle, 80, nextY + 20, 850, true, true)
+        }
 
-        // Logo centered at bottom
         if (logoToUse) {
           const pw = 400, ph = 120, px = (canvas.width - pw) / 2, py = canvas.height - ph - 50
           await drawImageProportional(logoToUse, px, py, pw, ph)
@@ -298,7 +297,7 @@ export function GraphicDesignPreview({
     }
     renderPreview();
     return () => { isMounted = false; }
-  }, [result, primary, secondary, safeCopyText, safeSubtitle, logoToUse]);
+  }, [result, primary, secondary, safeCopyText, safeSubtitle, safeBgData, logoToUse]);
 
   const handleDownload = () => {
     if (isDownloading || !previewUrl) return;
@@ -323,9 +322,9 @@ export function GraphicDesignPreview({
       {/* Top Image Section (WYSIWYG Preview) */}
       <div className="w-full aspect-square relative flex flex-col items-center justify-center bg-neutral-100 overflow-hidden">
         {isRenderingPreview || !previewUrl ? (
-          <div className="flex flex-col items-center justify-center gap-3 text-neutral-400">
+          <div className="flex flex-col items-center justify-center gap-3 text-neutral-400 p-10 text-center h-[384px]">
             <Loader2 className="w-8 h-8 animate-spin text-neutral-300" />
-            <span className="text-sm font-medium">Renderizando diseño...</span>
+            <span className="text-sm font-medium">Renderizando diseño inteligente...</span>
           </div>
         ) : (
           <img 
@@ -356,7 +355,7 @@ export function GraphicDesignPreview({
             className="flex-1 flex items-center justify-center gap-2 bg-[#41e6db] hover:bg-[#34d3c5] text-neutral-900 font-bold text-xs px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-70"
           >
             {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} 
-            {isDownloading ? 'Descargando...' : 'Descargar 8k'}
+            {isDownloading ? 'Descargando...' : 'Descargar'}
           </button>
         </div>
       </div>
