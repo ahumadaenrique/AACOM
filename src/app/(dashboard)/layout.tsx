@@ -58,7 +58,7 @@ export default async function DashboardLayout({
 
     // If no user/agency, fall back to the slug from middleware
     const headersList = headers();
-    const slug = headersList.get('x-agency-slug') || 'aacom';
+    const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';
     const pathname = headersList.get('x-pathname') || '';
 
     if (!agency) {
@@ -66,7 +66,7 @@ export default async function DashboardLayout({
     }
 
     // SECURITY BLOCK: If the user is logged in but their agency was deleted or deactivated
-    const isOrphan = dbUser && !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.role !== 'SELLER' && dbUser?.email !== 'enrique.ahumada@aacommx.com';
+    const isOrphan = dbUser && !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.role !== 'SELLER' && !(process.env.SUPER_ADMIN_EMAILS || "enrique.ahumada@aacommx.com").includes(dbUser?.email || "");
     // Bloqueo Legal de Términos y Condiciones
     if (dbUser && !dbUser.termsAccepted) {
         return (
@@ -114,7 +114,7 @@ export default async function DashboardLayout({
 
     // Ultimate fallback
     if (!agency) {
-        agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
+        agency = await prisma.agency.findUnique({ where: { slug } });
     }
     const agencyName = agency?.name || "AACOM Seguros";
     const agencyLogo = agency?.logoUrl || "/logo.png";

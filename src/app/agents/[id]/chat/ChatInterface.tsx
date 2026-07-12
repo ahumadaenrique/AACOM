@@ -5,6 +5,7 @@ import { useChat } from "@ai-sdk/react"
 import { DefaultChatTransport } from "ai"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
+import { ElevenLabsVoiceButton } from "@/components/ElevenLabsVoiceButton"
 import { Send, User, Bot, Loader2, Download, Calendar, Clock, Trash, Mic, Mail, CheckSquare } from "lucide-react"
 import { GraphicDesignPreview } from "@/components/GraphicDesignPreview"
 import { AgentAvatar } from "@/components/AgentAvatar"
@@ -292,9 +293,13 @@ export default function ChatInterface({
       {/* Background Gradient */}
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/10 via-neutral-950 to-neutral-950"></div>
       
-      {/* Floating Clear Chat Button */}
-      {messages.length > 0 && (
-        <div className="absolute top-4 right-4 z-20">
+      {/* Top Actions Bar */}
+      <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
+        {agent.type === 'EXECUTIVE_ASSISTANT' && (
+          <ElevenLabsVoiceButton />
+        )}
+
+        {messages.length > 0 && (
           <Button
             variant="outline"
             size="sm"
@@ -309,8 +314,8 @@ export default function ChatInterface({
             )}
             Limpiar Conversación
           </Button>
-        </div>
-      )}
+        )}
+      </div>
       
       {/* Chat Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth">

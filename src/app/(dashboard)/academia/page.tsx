@@ -132,7 +132,7 @@ export default async function AcademiaPage() {
                 Próximamente
               </span>
               <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-200 mt-2">
-                Academia de Ventas AACOM
+                Academia de Ventas
               </h2>
             </div>
 

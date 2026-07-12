@@ -34,9 +34,9 @@ export default async function CarteraDashboard({
   }
 
   // --- MIGRACIÓN MASIVA DE RESCATE (Pólizas, Clientes y Registros huérfanos) ---
-  await prisma.client.updateMany({ where: { agencyId: null }, data: { agencyId: 'aacom' } });
-  await prisma.policy.updateMany({ where: { agencyId: null }, data: { agencyId: 'aacom' } });
-  await prisma.dailyRecord.updateMany({ where: { agencyId: null }, data: { agencyId: 'aacom' } });
+  await prisma.client.updateMany({ where: { agencyId: null }, data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' } });
+  await prisma.policy.updateMany({ where: { agencyId: null }, data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' } });
+  await prisma.dailyRecord.updateMany({ where: { agencyId: null }, data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' } });
   // ----------------------------------------------------------------------------
 
   // Obtener todas las pólizas del agente o de la agencia (si es admin)

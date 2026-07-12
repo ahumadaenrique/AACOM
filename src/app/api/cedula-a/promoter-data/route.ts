@@ -6,7 +6,7 @@ import path from "path"
 
 function isPromoter(email: string, role?: string) {
   const lowerEmail = email.toLowerCase();
-  const isSuperAdminEmail = lowerEmail === "enrique.ahumada@aacommx.com" || lowerEmail === "desarrollo.agencias@gmail.com";
+  const isSuperAdminEmail = (process.env.SUPER_ADMIN_EMAILS || "enrique.ahumada@aacommx.com,desarrollo.agencias@gmail.com").includes(lowerEmail);
   return lowerEmail.includes("promotor") || isSuperAdminEmail || role === "ADMIN" || role === "SUPER_ADMIN" || role === "PROMOTER" || role === "PROMOTOR";
 }
 

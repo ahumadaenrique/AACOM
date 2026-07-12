@@ -17,7 +17,7 @@ export default async function AgencySettingsPage() {
     }
 
     const headersList = headers();
-    let slug = headersList.get('x-agency-slug') || 'aacom';
+    let slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';
 
     let agency = null;
     if (dbUser?.agencyId) {

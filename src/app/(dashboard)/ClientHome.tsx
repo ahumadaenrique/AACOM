@@ -25,7 +25,7 @@ interface ClientHomeProps {
   isAdmin?: boolean
 }
 
-export default function ClientHome({ announcements, isBirthday = false, currentUser = null, agencyName = "AACOM Seguros", isAdmin = false }: ClientHomeProps) {
+export default function ClientHome({ announcements, isBirthday = false, currentUser = null, agencyName = "Tu Agencia", isAdmin = false }: ClientHomeProps) {
   const [selectedAd, setSelectedAd] = useState<Announcement | null>(null)
   const [showBirthday, setShowBirthday] = useState(false)
 

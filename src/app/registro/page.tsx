@@ -186,7 +186,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 flex flex-col items-center">
       <div className="w-full max-w-2xl text-center mb-8">
-        <img src="/logo.png" alt="AACOM" className="h-12 mx-auto mb-6" />
+        <img src="/logo.png" alt="Logotipo de la Agencia" className="h-12 mx-auto mb-6" />
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Crea tu Agencia SaaS</h1>
         <p className="mt-2 text-slate-500">Configura tu plataforma, personaliza tu marca y comienza en minutos.</p>
         

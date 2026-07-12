@@ -49,7 +49,7 @@ interface UserProfile {
     hobby: string | null;
 }
 
-export default function TeamDirectoryPage({ agencyName = "AACOM" }: { agencyName?: string }) {
+export default function TeamDirectoryPage({ agencyName = "Tu Agencia" }: { agencyName?: string }) {
     const [team, setTeam] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState("");

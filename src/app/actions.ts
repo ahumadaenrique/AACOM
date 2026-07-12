@@ -733,7 +733,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
         }
 
         // Restricción: solo el propietario (enrique.ahumada@aacommx.com) puede dar de alta a otros administradores
-        if (data.role === 'ADMIN' && currentUser.email !== 'enrique.ahumada@aacommx.com') {
+        if (data.role === 'ADMIN' && !(process.env.SUPER_ADMIN_EMAILS || "enrique.ahumada@aacommx.com").includes(currentUser.email)) {
             return { success: false, message: "Solo el administrador principal (Enrique Ahumada) está facultado para dar de alta cuentas administrativas." };
         }
 
@@ -939,7 +939,7 @@ export async function deleteUser(id: string) {
         }
 
         // RestricciÃƒÆ’Ã‚Â³n: impedir la eliminaciÃƒÆ’Ã‚Â³n del propietario Enrique Ahumada
-        if (targetUser.email === "enrique.ahumada@aacommx.com") {
+        if ((process.env.SUPER_ADMIN_EMAILS || "enrique.ahumada@aacommx.com").includes(targetUser.email)) {
             return { success: false, message: "No estÃƒÆ’Ã‚Â¡ permitido eliminar la cuenta principal del propietario (Enrique Ahumada)." };
         }
 
@@ -1392,11 +1392,11 @@ export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear
         // --- MIGRACIÓN DE RESCATE (ADNs y Cotizaciones huérfanas) ---
         await prisma.adnDiagnostic.updateMany({
             where: { agencyId: null },
-            data: { agencyId: 'aacom' }
+            data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }
         });
         await prisma.cotizacion.updateMany({
             where: { agencyId: null },
-            data: { agencyId: 'aacom' }
+            data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }
         });
         // -------------------------------------------------------------
 
@@ -2243,11 +2243,11 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
         // Forzamos a que todos los usuarios y actividades huÃƒÆ’Ã‚Â©rfanas se asignen a 'aacom'.
         await prisma.user.updateMany({
             where: { agencyId: null },
-            data: { agencyId: 'aacom' }
+            data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }
         });
         await prisma.activityLog.updateMany({
             where: { agencyId: null },
-            data: { agencyId: 'aacom' }
+            data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }
         });
         // -----------------------------------
 

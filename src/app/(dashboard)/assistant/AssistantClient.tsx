@@ -18,7 +18,7 @@ interface ChatMessage {
     parts: { text: string }[];
 }
 
-export default function AssistantPage({ agencyName = "AACOM" }: { agencyName?: string }) {
+export default function AssistantPage({ agencyName = "Tu Agencia" }: { agencyName?: string }) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);

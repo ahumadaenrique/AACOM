@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
     try {
         const aacom = await prisma.agency.findUnique({
-            where: { slug: 'aacom' }
+            where: { slug: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }
         });
 
         if (!aacom) {

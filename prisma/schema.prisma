@@ -133,6 +133,9 @@ model User {
   googleAccessToken  String?
   googleRefreshToken String?
   googleTokenExpiry  DateTime?
+  
+  // ElevenLabs Voice Integration
+  voiceSecondsBalance Int @default(420) // 7 minutos de capa gratuita inicial
   InteractionLog     InteractionLog[]
   Meeting            Meeting[]
   Task               Task[]

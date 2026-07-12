@@ -23,7 +23,7 @@ interface AgentReport {
     referidos: number;
 }
 
-export default function ReportesClient({ agencyName = "AACOM" }: { agencyName?: string }) {
+export default function ReportesClient({ agencyName = "Tu Agencia" }: { agencyName?: string }) {
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
     const [loading, setLoading] = useState(true);

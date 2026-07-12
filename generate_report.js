@@ -14,8 +14,8 @@ He categorizado los hallazgos en grupos, con su respectiva evaluación de si el 
 
 const categories = {
   fallbackSlugs: {
-    title: '1. Fallbacks del Slug de la Agencia (`|| \\'aacom\\'` y defaults de base de datos)',
-    desc: 'Se usa `\\'aacom\\'` como fallback cuando no se detecta el subdominio o no hay sesión. También se usa para asignar actividades huérfanas o inicializar datos base.\\n\\n> [!NOTE]\\n> **Evaluación: Mejorable**.\\n> Es aceptable temporalmente para evitar que la app falle, pero lo ideal sería usar una variable de entorno como `process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG` para que el código sea 100% agnóstico y no dependa de la cadena literal "aacom".',
+    title: "1. Fallbacks del Slug de la Agencia (`|| 'aacom'` y defaults de base de datos)",
+    desc: 'Se usa `\'aacom\'` como fallback cuando no se detecta el subdominio o no hay sesión. También se usa para asignar actividades huérfanas o inicializar datos base.\n\n> [!NOTE]\n> **Evaluación: Mejorable**.\n> Es aceptable temporalmente para evitar que la app falle, pero lo ideal sería usar una variable de entorno como `process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG` para que el código sea 100% agnóstico y no dependa de la cadena literal "aacom".',
     items: []
   },
   fallbackNames: {
@@ -55,7 +55,7 @@ Object.keys(data).forEach(file => {
     const text = entry.text.toLowerCase();
     let cat = 'others';
     
-    if (text.includes('\\'aacom\\'') && (text.includes('slug') || text.includes('agencyid') || text.includes('where'))) {
+    if (text.includes("'aacom'") && (text.includes('slug') || text.includes('agencyid') || text.includes('where'))) {
       cat = 'fallbackSlugs';
     } else if (text.includes('agencyname = ') || text.includes('agency?.name ||') || text.includes('|| "aacom"')) {
       cat = 'fallbackNames';
