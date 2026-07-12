@@ -3,6 +3,7 @@ import { streamText, tool, generateText, isStepCount } from 'ai'
 import { z } from 'zod'
 import { prisma } from '@/lib/prisma'
 import { revalidatePath } from 'next/cache'
+import { auth } from '@/auth'
 
 const google = createGoogleGenerativeAI({
   apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY
@@ -291,6 +292,15 @@ export async function POST(req: Request) {
     const dbUser = await prisma.user.findUnique({
       where: { id: agent.userId }
     })
+
+    const session = await auth();
+    if (!session?.user?.email) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+
+    if (dbUser?.email !== session.user.email && session.user.role !== 'SUPER_ADMIN') {
+      return new Response('Forbidden: You do not own this agent.', { status: 403 });
+    }
 
     // 2. Fetch CompanyProfile (Identity) belonging specifically to this agency
     const companyProfile = dbUser?.agencyId

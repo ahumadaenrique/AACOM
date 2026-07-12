@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials"
 import { z } from "zod"
 import { prisma } from "@/lib/prisma"
 import { authConfig } from "./auth.config"
+import bcrypt from "bcryptjs"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
     ...authConfig,
@@ -47,7 +48,24 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             }
                         }
 
-                        const passwordsMatch = password === user.password;
+                        let passwordsMatch = false;
+
+                        if (user.password && (user.password.startsWith('$2a$') || user.password.startsWith('$2b$') || user.password.startsWith('$2y$'))) {
+                            passwordsMatch = await bcrypt.compare(password, user.password);
+                        } else {
+                            passwordsMatch = password === user.password;
+                            
+                            // Hash-on-login: Upgrade plain text password securely to bcrypt
+                            if (passwordsMatch && user.password) {
+                                const hashedPassword = await bcrypt.hash(password, 10);
+                                await prisma.user.update({
+                                    where: { id: user.id },
+                                    data: { password: hashedPassword }
+                                });
+                                console.log("[AUTH] Upgraded user password to hash:", email);
+                            }
+                        }
+
                         console.log("[AUTH] Password match:", passwordsMatch);
 
                         if (passwordsMatch) {

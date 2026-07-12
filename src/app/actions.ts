@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { SALES_ACTIVITIES } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
+import bcrypt from "bcryptjs";
 import webpush from "web-push";
 
 function enforceDemoSafety(session: any) {
@@ -759,6 +760,9 @@ export async function createAgentUser(data: { name: string; email: string; role:
             }
         }
 
+        const plainPassword = data.password || "password123";
+        const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
         const newUser = await prisma.user.create({
             data: {
                 name: data.name,
@@ -767,7 +771,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
                 agencyId: currentUser.agencyId,
                 phone: data.phone || null,
                 active: data.active !== undefined ? data.active : true,
-                password: data.password || "password123", // Simple plain text consistent with current auth config
+                password: hashedPassword,
                 mustChangePassword: true // Bloqueo temporal para obligar a que cambie su contraseÃƒÆ’Ã‚Â±a
             }
         });
@@ -839,9 +843,14 @@ export async function updateUserPassword(id: string, newPassword: string) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+
         const updatedUser = await prisma.user.update({
             where: { id },
-            data: { password: newPassword }
+            data: { 
+                password: hashedPassword,
+                mustChangePassword: true 
+            }
         });
 
         revalidatePath('/admin');
@@ -2183,7 +2192,7 @@ export async function forceUpdatePassword(userId: string, newPassword: string) {
         await prisma.user.update({
             where: { id: userId },
             data: { 
-                password: newPassword,
+                password: await bcrypt.hash(newPassword, 10),
                 mustChangePassword: false 
             }
         });

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { auth } from "@/auth"
+import bcrypt from "bcryptjs"
 
 // ----------------------------------------------------------------------
 // SUPER ADMIN ACTIONS
@@ -40,11 +41,14 @@ export async function createSeller(data: { name: string, email: string, commissi
         throw new Error("El correo ya está registrado.");
     }
 
+    const plainPassword = data.password || "seller123";
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+
     const seller = await prisma.user.create({
         data: {
             name: data.name,
             email: data.email,
-            password: data.password || "seller123", // Contraseña personalizada o por defecto
+            password: hashedPassword,
             role: 'SELLER',
             sellerCommissionRate: data.commissionRate,
             active: true,

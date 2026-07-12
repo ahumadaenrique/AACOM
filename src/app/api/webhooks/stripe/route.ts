@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
+import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -215,6 +216,7 @@ export async function POST(req: Request) {
       if (agencyId && email) {
         const existing = await prisma.user.findUnique({ where: { email } });
         if (!existing) {
+            const hashedPassword = await bcrypt.hash("password123", 10);
             await prisma.user.create({
                 data: {
                     name: name || "Agente",
@@ -224,7 +226,7 @@ export async function POST(req: Request) {
                     isSelfPaid: true,
                     stripeCustomerId: session.customer as string,
                     stripeSubscriptionId: session.subscription as string,
-                    password: "password123",
+                    password: hashedPassword,
                     mustChangePassword: true,
                 }
             });
