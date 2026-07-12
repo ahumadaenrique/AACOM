@@ -2,31 +2,23 @@
 
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
+import { auth } from "@/auth"
 
 export async function getCompanyProfile() {
-  // En un entorno de producción, buscaríamos por userId o tenantId.
-  // Para este MVP, tomaremos la primera Agencia. Si no hay, la creamos.
-  let agency = await prisma.agency.findFirst()
-  if (!agency) {
-    try {
-      agency = await prisma.agency.create({
-        data: {
-          id: 'default-agency',
-          name: 'My Default Agency',
-          slug: 'default-agency',
-          active: true,
-          updatedAt: new Date()
-        }
-      })
-    } catch (e) {
-      const existing = await prisma.agency.findFirst()
-      if (existing) {
-        agency = existing
-      } else {
-        throw e
-      }
-    }
-  }
+  const session = await auth()
+  if (!session?.user?.email) throw new Error("No autenticado")
+  
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email }
+  })
+  
+  if (!user?.agencyId) throw new Error("El usuario no pertenece a ninguna agencia")
+  
+  let agency = await prisma.agency.findUnique({
+    where: { id: user.agencyId }
+  })
+  
+  if (!agency) throw new Error("Agencia no encontrada")
 
   const profile = await prisma.companyProfile.upsert({
     where: { agencyId: agency.id },
