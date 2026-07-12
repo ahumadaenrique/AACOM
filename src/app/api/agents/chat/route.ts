@@ -315,8 +315,19 @@ export async function POST(req: Request) {
     // 3. Fetch Knowledge
     const knowledgeAssets = await prisma.knowledgeAsset.findMany()
 
+    // Get Agency Name
+    let agencyName = "AACOM"
+    if (dbUser?.agencyId) {
+      const agency = await prisma.agency.findUnique({
+        where: { id: dbUser.agencyId }
+      })
+      if (agency?.name) {
+        agencyName = agency.name
+      }
+    }
+
     // 4. Build System Prompt
-    let systemPrompt = `Eres un asistente de IA trabajando para la plataforma AACOM.\n\n`
+    let systemPrompt = `Eres un asistente de IA trabajando para la plataforma ${agencyName}.\n\n`
     
     // Role based prompt
     systemPrompt += `ROL PRINCIPAL: Eres un ${agent.type.replace(/_/g, ' ').toLowerCase()}.\n`
