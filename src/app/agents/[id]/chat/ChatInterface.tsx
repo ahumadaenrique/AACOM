@@ -125,13 +125,15 @@ interface ChatInterfaceProps {
   initialMessages?: any[]
   fallbackLogoUrl?: string | null
   generationCount?: number
+  hasGoogleConnection?: boolean
 }
 
 export default function ChatInterface({ 
   agent, 
   initialMessages = [],
   fallbackLogoUrl = null,
-  generationCount = 0
+  generationCount = 0,
+  hasGoogleConnection = true
 }: ChatInterfaceProps) {
   const [localInput, setLocalInput] = useState("")
   const [isRecording, setIsRecording] = useState(false)
@@ -312,6 +314,19 @@ export default function ChatInterface({
       
       {/* Chat Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6 scroll-smooth">
+        {agent.type === 'EXECUTIVE_ASSISTANT' && hasGoogleConnection === false && (
+          <div className="mb-6 p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-2xl flex items-start gap-3 text-left">
+             <div className="p-2 bg-yellow-500/20 rounded-full shrink-0 mt-0.5">
+               <Mail className="w-4 h-4 text-yellow-500" />
+             </div>
+             <div>
+               <h4 className="font-semibold text-yellow-500 text-sm mb-1">¡Acción requerida! Conecta tu cuenta de Google</h4>
+               <p className="text-xs text-neutral-400 leading-relaxed">
+                 Para que tu Asistente Ejecutiva pueda gestionar tu agenda, revisar correos o agendar citas en tu nombre, necesitas vincular tu cuenta. Haz clic en el engranaje de configuración ⚙️ arriba a la derecha y selecciona <strong>Integración con Google</strong>.
+               </p>
+             </div>
+          </div>
+        )}
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-neutral-500 space-y-4">
             <div className="w-16 h-16 rounded-2xl bg-neutral-900 border border-neutral-800 flex items-center justify-center shadow-lg">
