@@ -91,6 +91,6 @@ export async function deleteAgent(id: string) {
     where: { id }
   })
   
-  revalidatePath('/')
-  redirect('/')
+  revalidatePath('/agents')
+  redirect('/agents')
 }

@@ -20,6 +20,22 @@ export function SettingsModal({ agent }: { agent: any }) {
   const isReceptionist = agent.type === 'RECEPTIONIST'
   
   const [activeTab, setActiveTab] = useState("perfil")
+  const [isDeleting, setIsDeleting] = useState(false)
+
+  const handleDeleteAgent = async () => {
+    if (!confirm(`¿Estás seguro de que deseas eliminar a ${agent.name}? Esta acción es permanente y borrará todo su historial.`)) return;
+    
+    setIsDeleting(true)
+    try {
+      const { deleteAgent: deleteAIAgent } = await import("@/app/actions/agent")
+      await deleteAIAgent(agent.id)
+      router.push("/agents")
+      router.refresh()
+    } catch (e: any) {
+      alert(e.message || "Error al eliminar el agente")
+      setIsDeleting(false)
+    }
+  }
 
   const baseTabs = [
     { id: "perfil", label: "Perfil", icon: Settings2 },
@@ -163,6 +179,15 @@ export function SettingsModal({ agent }: { agent: any }) {
                   <h3 className="text-lg font-medium text-white">Perfil del Agente</h3>
                   <p className="text-sm text-neutral-500">Modifica el nombre y las instrucciones base de tu IA.</p>
                 </div>
+                <Button
+                  variant="destructive"
+                  onClick={handleDeleteAgent}
+                  disabled={isDeleting}
+                  className="bg-red-600/15 hover:bg-red-600 text-red-400 hover:text-white border border-red-500/20 hover:border-red-600 rounded-lg px-4 h-9 text-xs transition-all duration-200"
+                >
+                  <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                  {isDeleting ? "Eliminando..." : "Eliminar Agente"}
+                </Button>
               </div>
               <div className="mt-8">
                 <AgentForm agent={agent} />
