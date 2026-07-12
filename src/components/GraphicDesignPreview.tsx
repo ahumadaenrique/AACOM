@@ -1,5 +1,5 @@
 import { Download, Copy, Check, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface GraphicDesignResult {
   transparentUrl: string
@@ -22,6 +22,8 @@ export function GraphicDesignPreview({
 }) {
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isRenderingPreview, setIsRenderingPreview] = useState(true);
 
   if (!result) return null;
   if (typeof result === 'string') {
@@ -46,16 +48,10 @@ export function GraphicDesignPreview({
     setTimeout(() => setCopied(false), 2000);
   }
 
-  const handleDownload = () => {
-    if (isDownloading) return;
-    setIsDownloading(true);
-
+  const generateCanvas = async (): Promise<HTMLCanvasElement | null> => {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      setIsDownloading(false)
-      return
-    }
+    if (!ctx) return null
     
     // Standard square post 1080x1080
     canvas.width = 1080
@@ -66,7 +62,7 @@ export function GraphicDesignPreview({
 
     // Helper to draw images proportionally (fixes logo distortion)
     const drawImageProportional = (url: string, containerX: number, containerY: number, containerW: number, containerH: number) => {
-      return new Promise<void>((resolve, reject) => {
+      return new Promise<void>((resolve) => {
         const img = new Image()
         img.crossOrigin = 'anonymous'
         img.onload = () => {
@@ -88,30 +84,30 @@ export function GraphicDesignPreview({
           ctx.drawImage(img, finalX, finalY, finalW, finalH)
           resolve()
         }
-        img.onerror = () => reject(new Error(`No se pudo cargar imagen`))
+        img.onerror = () => resolve() // Resolve on error so we don't break the entire canvas
         img.src = url.startsWith('http') ? `/api/agents/proxy-image?url=${encodeURIComponent(url)}&t=${Date.now()}` : url
       })
     }
 
     // Standard draw helper
     const drawImage = (url: string, x: number, y: number, w: number, h: number) => {
-      return new Promise<void>((resolve, reject) => {
+      return new Promise<void>((resolve) => {
         const img = new Image()
         img.crossOrigin = 'anonymous'
         img.onload = () => {
           ctx.drawImage(img, x, y, w, h)
           resolve()
         }
-        img.onerror = () => reject(new Error(`No se pudo cargar imagen`))
+        img.onerror = () => resolve()
         img.src = url.startsWith('http') ? `/api/agents/proxy-image?url=${encodeURIComponent(url)}&t=${Date.now()}` : url
       })
     }
 
     const drawTextMarblism = (text: string, x: number, y: number, isSubtitle = false, useDark = false) => {
-       ctx.font = isSubtitle ? 'bold 45px sans-serif' : '900 85px sans-serif'
+       ctx.font = isSubtitle ? 'bold 40px sans-serif' : '900 85px sans-serif'
        const metrics = ctx.measureText(text)
        const textWidth = metrics.width
-       const textHeight = isSubtitle ? 45 : 85
+       const textHeight = isSubtitle ? 40 : 85
        
        // Solid highlight behind text
        ctx.fillStyle = useDark ? 'rgba(0,0,0,0.85)' : '#ffffff'
@@ -128,249 +124,214 @@ export function GraphicDesignPreview({
        ctx.fillText(text, x, y + (paddingY / 2))
     }
 
-    const drawDynamicText = (useDark: boolean) => {
-      const words = safeCopyText.split(' ')
+    const drawTextWrapped = (text: string, startX: number, startY: number, maxWidth: number, isSubtitle: boolean, useDark: boolean) => {
+      ctx.font = isSubtitle ? 'bold 40px sans-serif' : '900 85px sans-serif'
+      const words = text.split(' ')
       let line = ''
-      let yPos = 140
+      let currentY = startY
+      const lineHeight = isSubtitle ? 70 : 110
+
       for (let i = 0; i < words.length; i++) {
         const testLine = line + words[i] + ' '
-        ctx.font = '900 85px sans-serif'
         const metrics = ctx.measureText(testLine)
-        if (metrics.width > 800 && i > 0) {
-          drawTextMarblism(line.trim(), 80, yPos, false, useDark)
+        if (metrics.width > maxWidth && i > 0) {
+          drawTextMarblism(line.trim(), startX, currentY, isSubtitle, useDark)
           line = words[i] + ' '
-          yPos += 110
+          currentY += lineHeight
         } else {
           line = testLine
         }
       }
-      drawTextMarblism(line.trim(), 80, yPos, false, useDark)
-
-      if (safeSubtitle) {
-        drawTextMarblism(safeSubtitle, 80, yPos + 100, true, !useDark)
-      }
+      drawTextMarblism(line.trim(), startX, currentY, isSubtitle, useDark)
+      return currentY + lineHeight
     }
 
-    const startDrawing = async () => {
-      try {
-        if (templateId === 0) {
-          // TEMPLATE 0: Marblism Glass (Radial gradient, white outline, glass pill logo)
-          const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
-          gradient.addColorStop(0, primary)
-          gradient.addColorStop(1, secondary)
-          ctx.fillStyle = gradient
-          ctx.fillRect(0, 0, canvas.width, canvas.height)
-          
-          const overlay = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 100, canvas.width/2, canvas.height/2, 800)
-          overlay.addColorStop(0, '#ffffff15')
-          overlay.addColorStop(1, '#00000040')
-          ctx.fillStyle = overlay
-          ctx.fillRect(0, 0, canvas.width, canvas.height)
+    try {
+      if (templateId === 0) {
+        // TEMPLATE 0: Marblism Glass
+        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
+        gradient.addColorStop(0, primary)
+        gradient.addColorStop(1, secondary)
+        ctx.fillStyle = gradient
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        
+        const overlay = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 100, canvas.width/2, canvas.height/2, 800)
+        overlay.addColorStop(0, '#ffffff15')
+        overlay.addColorStop(1, '#00000040')
+        ctx.fillStyle = overlay
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-          if (safeBgData) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-            ctx.font = 'bold 350px sans-serif'
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
-            ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2)
-          }
-
-          // White outline
-          ctx.shadowColor = 'white'
-          ctx.shadowBlur = 0
-          for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
-            await drawImage(result.transparentUrl, 100 + (Math.cos(angle)*12), 200 + (Math.sin(angle)*12), 880, 880)
-          }
-          // Person
-          ctx.shadowColor = 'rgba(0,0,0,0.3)'
-          ctx.shadowBlur = 20
-          ctx.shadowOffsetY = 15
-          await drawImage(result.transparentUrl, 100, 200, 880, 880)
-
-          // Texts
-          ctx.shadowBlur = 0
-          ctx.shadowOffsetY = 0
-          drawDynamicText(false)
-
-          // Logo Pill
-          if (logoToUse) {
-            const pw = 480, ph = 140, px = canvas.width - pw - 40, py = canvas.height - ph - 40
-            ctx.shadowColor = 'rgba(0,0,0,0.15)'
-            ctx.shadowBlur = 20
-            ctx.shadowOffsetY = 10
-            ctx.fillStyle = '#ffffff'
-            ctx.beginPath()
-            ctx.roundRect(px, py, pw, ph, 70)
-            ctx.fill()
-            ctx.shadowBlur = 0
-            await drawImageProportional(logoToUse, px + 30, py + 20, pw - 60, ph - 40)
-          }
-
-        } else if (templateId === 1) {
-          // TEMPLATE 1: Textured Paper (Solid color with noise overlay, free logo)
-          ctx.fillStyle = primary
-          ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-          // Fake noise texture
-          ctx.fillStyle = 'rgba(255,255,255,0.05)'
-          for (let i = 0; i < 5000; i++) {
-            ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2)
-          }
-          ctx.fillStyle = 'rgba(0,0,0,0.05)'
-          for (let i = 0; i < 5000; i++) {
-            ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2)
-          }
-
-          if (safeBgData) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'
-            ctx.font = 'bold 350px sans-serif'
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
-            ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2)
-          }
-
-          // Logo at top right without pill
-          if (logoToUse) {
-            const pw = 300, ph = 100, px = canvas.width - pw - 60, py = 60
-            // Premium drop shadow
-            ctx.shadowColor = 'rgba(0,0,0,0.5)'
-            ctx.shadowBlur = 20
-            ctx.shadowOffsetY = 10
-            await drawImageProportional(logoToUse, px, py, pw, ph)
-            ctx.shadowBlur = 0
-            ctx.shadowOffsetY = 0
-          }
-
-          // Person with drop shadow only (no outline)
-          ctx.shadowColor = 'rgba(0,0,0,0.5)'
-          ctx.shadowBlur = 30
-          ctx.shadowOffsetY = 20
-          await drawImage(result.transparentUrl, 100, 200, 880, 880)
-          ctx.shadowBlur = 0
-          ctx.shadowOffsetY = 0
-
-          drawDynamicText(true) // Dark text highlights
-          
-        } else {
-          // TEMPLATE 2: Solid Minimalist (Two tone split)
-          ctx.fillStyle = primary
-          ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7)
-          ctx.fillStyle = secondary
-          ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3)
-
-          if (safeBgData) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'
-            ctx.font = 'bold 350px sans-serif'
-            ctx.textAlign = 'center'
-            ctx.textBaseline = 'middle'
-            ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2)
-          }
-
-          // Person centered
-          ctx.shadowColor = 'rgba(0,0,0,0.4)'
-          ctx.shadowBlur = 40
-          ctx.shadowOffsetY = 30
-          await drawImage(result.transparentUrl, 100, 150, 880, 880)
-          ctx.shadowBlur = 0
-          ctx.shadowOffsetY = 0
-
-          drawDynamicText(false)
-
-          // Logo centered at bottom
-          if (logoToUse) {
-            const pw = 400, ph = 120, px = (canvas.width - pw) / 2, py = canvas.height - ph - 50
-            await drawImageProportional(logoToUse, px, py, pw, ph)
-          }
+        if (safeBgData) {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
+          ctx.font = 'bold 350px sans-serif'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 100)
         }
 
-        // Trigger download
-        canvas.toBlob((blob) => {
-          if (!blob) {
-            setIsDownloading(false)
-            return
-          }
-          const finalUrl = URL.createObjectURL(blob)
-          const a = document.createElement('a')
-          a.href = finalUrl
-          a.download = 'GraphicDesign.png'
-          document.body.appendChild(a)
-          a.click()
-          document.body.removeChild(a)
-          URL.revokeObjectURL(finalUrl)
-          setIsDownloading(false)
-        }, 'image/png')
+        ctx.shadowColor = 'white'
+        ctx.shadowBlur = 0
+        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
+          await drawImage(result.transparentUrl, 100 + (Math.cos(angle)*12), 200 + (Math.sin(angle)*12), 880, 880)
+        }
+        ctx.shadowColor = 'rgba(0,0,0,0.3)'
+        ctx.shadowBlur = 20
+        ctx.shadowOffsetY = 15
+        await drawImage(result.transparentUrl, 100, 200, 880, 880)
 
-      } catch(err: any) {
-        console.error('Error drawing canvas', err)
-        alert('Error al procesar la descarga de la imagen: ' + (err.message || err))
-        setIsDownloading(false)
+        ctx.shadowBlur = 0
+        ctx.shadowOffsetY = 0
+        
+        const nextY = drawTextWrapped(safeCopyText, 80, 140, 850, false, false)
+        if (safeSubtitle) {
+          drawTextWrapped(safeSubtitle, 80, nextY + 20, 850, true, true)
+        }
+
+        if (logoToUse) {
+          const pw = 480, ph = 140, px = canvas.width - pw - 40, py = canvas.height - ph - 40
+          ctx.shadowColor = 'rgba(0,0,0,0.15)'
+          ctx.shadowBlur = 20
+          ctx.shadowOffsetY = 10
+          ctx.fillStyle = '#ffffff'
+          ctx.beginPath()
+          ctx.roundRect(px, py, pw, ph, 70)
+          ctx.fill()
+          ctx.shadowBlur = 0
+          await drawImageProportional(logoToUse, px + 30, py + 20, pw - 60, ph - 40)
+        }
+
+      } else if (templateId === 1) {
+        // TEMPLATE 1: Textured Paper
+        ctx.fillStyle = primary
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        ctx.fillStyle = 'rgba(255,255,255,0.05)'
+        for (let i = 0; i < 5000; i++) {
+          ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2)
+        }
+        ctx.fillStyle = 'rgba(0,0,0,0.05)'
+        for (let i = 0; i < 5000; i++) {
+          ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2)
+        }
+
+        if (safeBgData) {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'
+          ctx.font = 'bold 350px sans-serif'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 100)
+        }
+
+        if (logoToUse) {
+          const pw = 300, ph = 100, px = canvas.width - pw - 60, py = 60
+          ctx.shadowColor = 'rgba(0,0,0,0.5)'
+          ctx.shadowBlur = 20
+          ctx.shadowOffsetY = 10
+          await drawImageProportional(logoToUse, px, py, pw, ph)
+          ctx.shadowBlur = 0
+          ctx.shadowOffsetY = 0
+        }
+
+        ctx.shadowColor = 'rgba(0,0,0,0.5)'
+        ctx.shadowBlur = 30
+        ctx.shadowOffsetY = 20
+        await drawImage(result.transparentUrl, 100, 200, 880, 880)
+        ctx.shadowBlur = 0
+        ctx.shadowOffsetY = 0
+
+        const nextY = drawTextWrapped(safeCopyText, 80, 140, 700, false, true)
+        if (safeSubtitle) {
+          drawTextWrapped(safeSubtitle, 80, nextY + 20, 850, true, false)
+        }
+        
+      } else {
+        // TEMPLATE 2: Solid Minimalist
+        ctx.fillStyle = primary
+        ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7)
+        ctx.fillStyle = secondary
+        ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3)
+
+        if (safeBgData) {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'
+          ctx.font = 'bold 350px sans-serif'
+          ctx.textAlign = 'center'
+          ctx.textBaseline = 'middle'
+          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 100)
+        }
+
+        ctx.shadowColor = 'rgba(0,0,0,0.4)'
+        ctx.shadowBlur = 40
+        ctx.shadowOffsetY = 30
+        await drawImage(result.transparentUrl, 100, 150, 880, 880)
+        ctx.shadowBlur = 0
+        ctx.shadowOffsetY = 0
+
+        const nextY = drawTextWrapped(safeCopyText, 80, 140, 850, false, false)
+        if (safeSubtitle) {
+          drawTextWrapped(safeSubtitle, 80, nextY + 20, 850, true, true)
+        }
+
+        if (logoToUse) {
+          const pw = 400, ph = 120, px = (canvas.width - pw) / 2, py = canvas.height - ph - 50
+          await drawImageProportional(logoToUse, px, py, pw, ph)
+        }
+      }
+      return canvas;
+    } catch(err) {
+      console.error(err)
+      return null
+    }
+  }
+
+  useEffect(() => {
+    let isMounted = true;
+    const renderPreview = async () => {
+      setIsRenderingPreview(true);
+      const canvas = await generateCanvas();
+      if (isMounted && canvas) {
+        setPreviewUrl(canvas.toDataURL('image/png'));
+      }
+      if (isMounted) {
+        setIsRenderingPreview(false);
       }
     }
-    
-    startDrawing()
+    renderPreview();
+    return () => { isMounted = false; }
+  }, [result, primary, secondary, safeCopyText, safeSubtitle, safeBgData, logoToUse]);
+
+  const handleDownload = () => {
+    if (isDownloading || !previewUrl) return;
+    setIsDownloading(true);
+
+    try {
+      const a = document.createElement('a')
+      a.href = previewUrl
+      a.download = `Publicacion_${Date.now()}.png`
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    } catch(err: any) {
+      alert('Error al descargar la imagen: ' + (err.message || err))
+    } finally {
+      setIsDownloading(false);
+    }
   }
 
   return (
     <div className="mt-4 border border-white/10 bg-white rounded-xl overflow-hidden w-full max-w-sm group relative shadow-2xl">
-      {/* Top Image Section */}
-      <div 
-        className="w-full aspect-square relative flex flex-col justify-between p-6 overflow-hidden"
-        style={{ 
-          background: `linear-gradient(135deg, ${primary} 0%, ${secondary} 100%)`
-        }}
-      >
-        {/* Radial overlay for extra depth */}
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.1)_0%,rgba(0,0,0,0.4)_100%)] mix-blend-overlay pointer-events-none" />
-
-        {/* Background Data Text */}
-        {safeBgData && (
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
-            <span className="text-[12rem] font-extrabold text-white/15 leading-none tracking-tighter">
-              {safeBgData}
-            </span>
+      {/* Top Image Section (WYSIWYG Preview) */}
+      <div className="w-full aspect-square relative flex flex-col items-center justify-center bg-neutral-100 overflow-hidden">
+        {isRenderingPreview || !previewUrl ? (
+          <div className="flex flex-col items-center justify-center gap-3 text-neutral-400 p-10 text-center h-[384px]">
+            <Loader2 className="w-8 h-8 animate-spin text-neutral-300" />
+            <span className="text-sm font-medium">Renderizando diseño inteligente...</span>
           </div>
-        )}
-
-        <div className="z-10 relative mt-4">
-          <h2 
-            className="text-4xl font-extrabold leading-tight text-white font-sans tracking-tight"
-            style={{ textShadow: '0 4px 12px rgba(0,0,0,0.7), 0 1px 3px rgba(0,0,0,0.9)' }}
-          >
-            {safeCopyText}
-          </h2>
-          {safeSubtitle && (
-            <p 
-              className="text-white/95 text-base mt-3 font-medium font-sans"
-              style={{ textShadow: '0 2px 8px rgba(0,0,0,0.8)' }}
-            >
-              {safeSubtitle}
-            </p>
-          )}
-        </div>
-
-        {/* The generated transparent person */}
-        <div className="absolute inset-0 z-0 flex items-end justify-center pt-20">
+        ) : (
           <img 
-            src={result.transparentUrl} 
-            alt="Generated Graphic Person" 
-            className="object-contain w-full h-full object-bottom"
-            style={{ 
-              filter: 'drop-shadow(3px 0 0 white) drop-shadow(-3px 0 0 white) drop-shadow(0 3px 0 white) drop-shadow(0 -3px 0 white) drop-shadow(0 0 10px rgba(255,255,255,0.6))'
-            }}
+            src={previewUrl} 
+            alt="Preview" 
+            className="w-full h-full object-cover transition-opacity duration-300"
           />
-        </div>
-
-        {/* Logo in bottom-right corner */}
-        {logoToUse && (
-          <div className="z-10 absolute bottom-4 right-4 flex justify-end">
-            <div className="bg-white/80 backdrop-blur-md px-6 py-2.5 rounded-full shadow-sm border border-white/20">
-              <img 
-                src={logoToUse} 
-                alt="Logo" 
-                className="h-10 object-contain mix-blend-multiply" 
-              />
-            </div>
-          </div>
         )}
       </div>
 
@@ -390,11 +351,11 @@ export function GraphicDesignPreview({
           </button>
           <button 
             onClick={handleDownload}
-            disabled={isDownloading}
+            disabled={isDownloading || isRenderingPreview || !previewUrl}
             className="flex-1 flex items-center justify-center gap-2 bg-[#41e6db] hover:bg-[#34d3c5] text-neutral-900 font-bold text-xs px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-70"
           >
             {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} 
-            {isDownloading ? 'Descargando...' : 'Descargar 8k'}
+            {isDownloading ? 'Descargando...' : 'Descargar'}
           </button>
         </div>
       </div>
