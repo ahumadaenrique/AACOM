@@ -17,6 +17,8 @@ export default async function AgentChatPage({ params }: { params: { id: string }
   })
   if (!dbUser) notFound()
 
+  const hasGoogleConnection = !!dbUser.googleRefreshToken;
+
   const agent = await prisma.aIAgent.findUnique({
     where: { id: params.id }
   })
@@ -107,7 +109,7 @@ export default async function AgentChatPage({ params }: { params: { id: string }
 
   return (
     <div className="h-full">
-      <ChatInterface agent={agent} initialMessages={initialMessages} fallbackLogoUrl={fallbackLogoUrl} generationCount={generationCount} />
+      <ChatInterface agent={agent} initialMessages={initialMessages} fallbackLogoUrl={fallbackLogoUrl} generationCount={generationCount} hasGoogleConnection={hasGoogleConnection} />
     </div>
   )
 }
