@@ -54,6 +54,7 @@ model Agency {
   knowledgeDocuments KnowledgeDocument[]
   tickets            Ticket[]
   pollVotes          PollVote[]
+  contents           Content[]
 
   purchasedSeats Int @default(0)
 
@@ -251,8 +252,10 @@ model Policy {
 }
 
 model Content {
-  id   String @id @default(cuid())
-  type String // 'HOME_AD', 'LINK_BANNER'
+  id       String  @id @default(cuid())
+  agencyId String?
+  agency   Agency? @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  type     String // 'HOME_AD', 'LINK_BANNER'
 
   imageUrl String
   linkUrl  String? // For banners

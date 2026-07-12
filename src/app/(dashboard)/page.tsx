@@ -56,7 +56,8 @@ export default async function HomePage() {
     const announcements = await prisma.content.findMany({
         where: {
             type: 'HOME_AD',
-            active: true
+            active: true,
+            agencyId: agency?.id || undefined
         },
         orderBy: {
             createdAt: 'desc'

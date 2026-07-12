@@ -979,8 +979,18 @@ export async function toggleAdnDiagnosticClosedStatus(id: string) {
 
 export async function getAnnouncements(type: string = 'HOME_AD') {
     try {
+        const session = await auth();
+        let userAgencyId: string | null = null;
+        if (session?.user?.email) {
+            const u = await prisma.user.findUnique({ where: { email: session.user.email } });
+            userAgencyId = u?.agencyId || null;
+        }
+
         const list = await prisma.content.findMany({
-            where: { type },
+            where: { 
+                type,
+                agencyId: userAgencyId
+            },
             orderBy: { createdAt: 'desc' }
         });
         return { success: true, announcements: list };
@@ -1032,7 +1042,8 @@ export async function createAnnouncement(base64Data: string, fileName: string, l
                 imageUrl,
                 linkUrl: linkUrl || null,
                 active: true,
-                order: 0
+                order: 0,
+                agencyId: currentUser.agencyId || null
             }
         });
 
@@ -1456,7 +1467,8 @@ export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear
         const rankingAd = await prisma.content.findFirst({
             where: {
                 type: 'RANKING_AD',
-                active: true
+                active: true,
+                agencyId: user.agencyId || null
             },
             orderBy: {
                 createdAt: 'desc'
@@ -1501,7 +1513,10 @@ export async function createRankingAd(base64Data: string, fileName: string, link
 
         // Deactivate other ranking ads to keep only the newest active
         await prisma.content.updateMany({
-            where: { type: 'RANKING_AD' },
+            where: { 
+                type: 'RANKING_AD',
+                agencyId: currentUser.agencyId || null
+            },
             data: { active: false }
         });
 
@@ -1511,7 +1526,8 @@ export async function createRankingAd(base64Data: string, fileName: string, link
                 imageUrl: base64Data,
                 linkUrl: linkUrl || null,
                 active: true,
-                order: 0
+                order: 0,
+                agencyId: currentUser.agencyId || null
             }
         });
 
