@@ -3,14 +3,36 @@ import { AgentForm } from "@/components/AgentForm"
 import { SyncDbButton } from "@/components/SyncDbButton"
 import { Settings } from "lucide-react"
 
+import { auth } from "@/auth"
+import { redirect } from "next/navigation"
+
 export const dynamic = 'force-dynamic'
 
 export default async function NewAgentPage() {
+  const session = await auth()
+  if (!session?.user?.email) {
+    redirect("/login")
+  }
+
+  let dbUser = null
+  try {
+    dbUser = await prisma.user.findUnique({
+      where: { email: session.user.email }
+    })
+  } catch (e) {
+    console.error("Failed to query user:", e)
+  }
+
+  if (!dbUser) {
+    redirect("/login")
+  }
+
   let deployedAgents: any[] = []
   let schemaError = false
 
   try {
     deployedAgents = await prisma.aIAgent.findMany({
+      where: { userId: dbUser.id },
       select: { type: true }
     })
   } catch (e) {

@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { auth } from "@/auth"
 
 export async function createAgent(formData: FormData) {
   const name = formData.get('name') as string
@@ -14,8 +15,14 @@ export async function createAgent(formData: FormData) {
     return { error: 'Name and type are required' }
   }
 
-  // Get a default user for MVP
-  const user = await prisma.user.findFirst()
+  const session = await auth()
+  if (!session?.user?.email) {
+    return { error: 'No autenticado' }
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email }
+  })
   if (!user) {
     return { error: 'No user found in database' }
   }
@@ -51,8 +58,8 @@ export async function createAgent(formData: FormData) {
     }
   })
 
-  revalidatePath('/')
-  redirect('/')
+  revalidatePath('/agents')
+  redirect('/agents')
 }
 
 export async function updateAgent(id: string, formData: FormData) {
@@ -61,9 +68,25 @@ export async function updateAgent(id: string, formData: FormData) {
   const systemPrompt = formData.get('systemPrompt') as string
   const designStyle = formData.get('designStyle') as string
 
-  // We skip type constraint check on update if it's the same type
+  const session = await auth()
+  if (!session?.user?.email) {
+    return { error: 'No autenticado' }
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email }
+  })
+  if (!user) {
+    return { error: 'Usuario no encontrado' }
+  }
+
   const agent = await prisma.aIAgent.findUnique({ where: { id } })
-  if (agent && agent.type !== type) {
+  if (!agent || agent.userId !== user.id) {
+    return { error: 'No autorizado' }
+  }
+
+  // We skip type constraint check on update if it's the same type
+  if (agent.type !== type) {
     const existingAgent = await prisma.aIAgent.findFirst({
       where: { type, userId: agent.userId }
     })
@@ -82,11 +105,28 @@ export async function updateAgent(id: string, formData: FormData) {
     }
   })
 
-  revalidatePath('/')
-  redirect('/')
+  revalidatePath('/agents')
+  redirect('/agents')
 }
 
 export async function deleteAgent(id: string) {
+  const session = await auth()
+  if (!session?.user?.email) {
+    return { error: 'No autenticado' }
+  }
+
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email }
+  })
+  if (!user) {
+    return { error: 'Usuario no encontrado' }
+  }
+
+  const agent = await prisma.aIAgent.findUnique({ where: { id } })
+  if (!agent || agent.userId !== user.id) {
+    return { error: 'No autorizado' }
+  }
+
   await prisma.aIAgent.delete({
     where: { id }
   })
