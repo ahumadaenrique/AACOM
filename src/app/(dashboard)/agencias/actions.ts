@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 
 const agencySchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -73,11 +74,12 @@ export async function createAgency(data: z.infer<typeof agencySchema>) {
   if (parsed.adminEmail && parsed.adminName && parsed.adminPassword) {
     const existingUser = await prisma.user.findUnique({ where: { email: parsed.adminEmail } });
     if (!existingUser) {
+        const hashedPassword = await bcrypt.hash(parsed.adminPassword, 10);
         await prisma.user.create({
             data: {
                 name: parsed.adminName,
                 email: parsed.adminEmail,
-                password: parsed.adminPassword, // In a real scenario, hash this password with bcrypt! But app uses plain text / basic hash depending on previous implementation. Assuming previous uses simple comparison for now based on context. Wait! I should hash it. Actually I will use bcryptjs if it exists, or just store it if the app uses plain text.
+                password: hashedPassword,
                 role: "ADMIN",
                 agencyId: agency.id,
                 active: true,

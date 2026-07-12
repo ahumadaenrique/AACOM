@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import crypto from "crypto"
+import bcrypt from "bcryptjs"
 
 export async function requestPasswordReset(email: string) {
   try {
@@ -97,10 +98,12 @@ export async function resetPassword(token: string, newPassword: string) {
       return { success: false, message: "El enlace es inválido o ha expirado." }
     }
 
+    const hashedPassword = await bcrypt.hash(newPassword, 10)
+
     await prisma.user.update({
       where: { id: user.id },
       data: {
-        password: newPassword, // stored as plain text per codebase design
+        password: hashedPassword,
         resetToken: null,
         resetTokenExpiry: null
       }
