@@ -103,177 +103,254 @@ export function GraphicDesignPreview({
       })
     }
 
-    const drawTextMarblism = (text: string, x: number, y: number, isSubtitle = false, useDark = false) => {
-       ctx.font = isSubtitle ? 'bold 40px sans-serif' : '900 85px sans-serif'
-       const metrics = ctx.measureText(text)
-       const textWidth = metrics.width
-       const textHeight = isSubtitle ? 40 : 85
-       
-       // Solid highlight behind text
-       ctx.fillStyle = useDark ? 'rgba(0,0,0,0.85)' : '#ffffff'
-       const paddingX = 20
-       const paddingY = 20
-       ctx.beginPath()
-       ctx.roundRect(x - paddingX, y - textHeight, textWidth + (paddingX*2), textHeight + (paddingY*2), 15)
-       ctx.fill()
-
-       // Text
-       ctx.fillStyle = useDark ? '#ffffff' : primary
-       ctx.textAlign = 'left'
+    const drawPremiumText = (text: string, x: number, y: number, isSubtitle = false, alignRight = false) => {
+       ctx.font = isSubtitle ? '600 45px sans-serif' : '900 85px sans-serif'
+       ctx.textAlign = alignRight ? 'right' : 'left'
        ctx.textBaseline = 'alphabetic'
-       ctx.fillText(text, x, y + (paddingY / 2))
+       
+       // Premium Text Glow (instead of solid boxes)
+       ctx.shadowColor = 'rgba(0,0,0,0.85)'
+       ctx.shadowBlur = 40
+       ctx.shadowOffsetY = 15
+       
+       // White text looks best on complex gradients
+       ctx.fillStyle = '#ffffff'
+       
+       // Multiple fill passes for extreme legibility over complex backgrounds
+       ctx.fillText(text, x, y)
+       
+       // Sharp tight shadow for edge clarity
+       ctx.shadowBlur = 5
+       ctx.shadowOffsetY = 2
+       ctx.fillText(text, x, y)
+       ctx.fillText(text, x, y) // Double hit for thickness
+       
+       // Reset shadows
+       ctx.shadowBlur = 0
+       ctx.shadowOffsetY = 0
     }
 
-    const drawTextWrapped = (text: string, startX: number, startY: number, maxWidth: number, isSubtitle: boolean, useDark: boolean) => {
-      ctx.font = isSubtitle ? 'bold 40px sans-serif' : '900 85px sans-serif'
+    const drawTextWrapped = (text: string, startX: number, startY: number, maxWidth: number, isSubtitle: boolean, alignRight = false) => {
+      ctx.font = isSubtitle ? '600 45px sans-serif' : '900 85px sans-serif'
       const words = text.split(' ')
       let line = ''
       let currentY = startY
-      const lineHeight = isSubtitle ? 70 : 110
+      const lineHeight = isSubtitle ? 60 : 100
 
       for (let i = 0; i < words.length; i++) {
         const testLine = line + words[i] + ' '
         const metrics = ctx.measureText(testLine)
         if (metrics.width > maxWidth && i > 0) {
-          drawTextMarblism(line.trim(), startX, currentY, isSubtitle, useDark)
+          drawPremiumText(line.trim(), startX, currentY, isSubtitle, alignRight)
           line = words[i] + ' '
           currentY += lineHeight
         } else {
           line = testLine
         }
       }
-      drawTextMarblism(line.trim(), startX, currentY, isSubtitle, useDark)
+      drawPremiumText(line.trim(), startX, currentY, isSubtitle, alignRight)
       return currentY + lineHeight
     }
 
     try {
       if (templateId === 0) {
-        // TEMPLATE 0: Marblism Glass
-        const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height)
-        gradient.addColorStop(0, primary)
-        gradient.addColorStop(1, secondary)
-        ctx.fillStyle = gradient
+        // TEMPLATE 0: Marblism Mesh Gradient (Ultra Premium)
+        
+        // Base color
+        ctx.fillStyle = primary
         ctx.fillRect(0, 0, canvas.width, canvas.height)
         
-        const overlay = ctx.createRadialGradient(canvas.width/2, canvas.height/2, 100, canvas.width/2, canvas.height/2, 800)
-        overlay.addColorStop(0, '#ffffff15')
-        overlay.addColorStop(1, '#00000040')
-        ctx.fillStyle = overlay
+        // Complex Mesh Gradients
+        const orb1 = ctx.createRadialGradient(0, 0, 100, 0, 0, 1000)
+        orb1.addColorStop(0, secondary)
+        orb1.addColorStop(1, 'transparent')
+        ctx.fillStyle = orb1
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        const orb2 = ctx.createRadialGradient(canvas.width, canvas.height, 100, canvas.width, canvas.height, 1200)
+        orb2.addColorStop(0, '#ffffff40')
+        orb2.addColorStop(1, 'transparent')
+        ctx.fillStyle = orb2
         ctx.fillRect(0, 0, canvas.width, canvas.height)
 
         if (safeBgData) {
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-          ctx.font = 'bold 350px sans-serif'
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.08)'
+          ctx.font = '900 400px sans-serif'
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
-          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 100)
+          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 80)
         }
 
-        ctx.shadowColor = 'white'
-        ctx.shadowBlur = 0
-        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
-          await drawImage(result.transparentUrl, 100 + (Math.cos(angle)*12), 200 + (Math.sin(angle)*12), 880, 880)
-        }
-        ctx.shadowColor = 'rgba(0,0,0,0.3)'
-        ctx.shadowBlur = 20
-        ctx.shadowOffsetY = 15
-        await drawImage(result.transparentUrl, 100, 200, 880, 880)
-
+        // Person with soft glow
+        ctx.shadowColor = 'rgba(255,255,255,0.1)'
+        ctx.shadowBlur = 40
+        ctx.shadowOffsetY = 0
+        await drawImage(result.transparentUrl, 100, 180, 880, 880)
+        
+        // Dark drop shadow behind person
+        ctx.shadowColor = 'rgba(0,0,0,0.6)'
+        ctx.shadowBlur = 60
+        ctx.shadowOffsetY = 30
+        await drawImage(result.transparentUrl, 100, 180, 880, 880)
         ctx.shadowBlur = 0
         ctx.shadowOffsetY = 0
         
-        const nextY = drawTextWrapped(safeCopyText, 80, 140, 850, false, false)
+        // Text Overlays
+        const nextY = drawTextWrapped(safeCopyText, 80, 150, 900, false)
         if (safeSubtitle) {
-          drawTextWrapped(safeSubtitle, 80, nextY + 20, 850, true, true)
+          drawTextWrapped(safeSubtitle, 80, nextY + 15, 900, true)
         }
 
+        // True Glassmorphism Logo Pill
         if (logoToUse) {
-          const pw = 480, ph = 140, px = canvas.width - pw - 40, py = canvas.height - ph - 40
-          ctx.shadowColor = 'rgba(0,0,0,0.15)'
-          ctx.shadowBlur = 20
-          ctx.shadowOffsetY = 10
-          ctx.fillStyle = '#ffffff'
+          const pw = 400, ph = 120, px = canvas.width - pw - 60, py = canvas.height - ph - 60
+          
+          // Glass Shadow
+          ctx.shadowColor = 'rgba(0,0,0,0.25)'
+          ctx.shadowBlur = 30
+          ctx.shadowOffsetY = 15
+          
+          // Glass Fill
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
           ctx.beginPath()
-          ctx.roundRect(px, py, pw, ph, 70)
+          ctx.roundRect(px, py, pw, ph, 60)
           ctx.fill()
-          ctx.shadowBlur = 0
+          
+          // Glass Stroke
+          ctx.shadowColor = 'transparent'
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'
+          ctx.lineWidth = 1.5
+          ctx.stroke()
+          
           await drawImageProportional(logoToUse, px + 30, py + 20, pw - 60, ph - 40)
         }
 
       } else if (templateId === 1) {
-        // TEMPLATE 1: Textured Paper
-        ctx.fillStyle = primary
+        // TEMPLATE 1: Dark Editorial (Moody & Elegant)
+        ctx.fillStyle = '#0a0a0a' // Almost black
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        
+        // Subtle spotlight
+        const spot = ctx.createRadialGradient(canvas.width/2, canvas.height/3, 50, canvas.width/2, canvas.height/2, 900)
+        spot.addColorStop(0, primary)
+        spot.addColorStop(1, 'transparent')
+        ctx.fillStyle = spot
         ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-        ctx.fillStyle = 'rgba(255,255,255,0.05)'
-        for (let i = 0; i < 5000; i++) {
-          ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2)
+        // Noise overlay
+        ctx.fillStyle = 'rgba(255,255,255,0.03)'
+        for (let i = 0; i < 15000; i++) {
+          ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1.5, 1.5)
         }
-        ctx.fillStyle = 'rgba(0,0,0,0.05)'
-        for (let i = 0; i < 5000; i++) {
-          ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 2, 2)
-        }
-
-        if (safeBgData) {
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.15)'
-          ctx.font = 'bold 350px sans-serif'
-          ctx.textAlign = 'center'
-          ctx.textBaseline = 'middle'
-          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 100)
-        }
-
-        if (logoToUse) {
-          const pw = 300, ph = 100, px = canvas.width - pw - 60, py = 60
-          ctx.shadowColor = 'rgba(0,0,0,0.5)'
-          ctx.shadowBlur = 20
-          ctx.shadowOffsetY = 10
-          await drawImageProportional(logoToUse, px, py, pw, ph)
-          ctx.shadowBlur = 0
-          ctx.shadowOffsetY = 0
-        }
-
-        ctx.shadowColor = 'rgba(0,0,0,0.5)'
-        ctx.shadowBlur = 30
-        ctx.shadowOffsetY = 20
-        await drawImage(result.transparentUrl, 100, 200, 880, 880)
-        ctx.shadowBlur = 0
-        ctx.shadowOffsetY = 0
-
-        const nextY = drawTextWrapped(safeCopyText, 80, 140, 700, false, true)
-        if (safeSubtitle) {
-          drawTextWrapped(safeSubtitle, 80, nextY + 20, 850, true, false)
-        }
-        
-      } else {
-        // TEMPLATE 2: Solid Minimalist
-        ctx.fillStyle = primary
-        ctx.fillRect(0, 0, canvas.width, canvas.height * 0.7)
-        ctx.fillStyle = secondary
-        ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3)
 
         if (safeBgData) {
           ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'
-          ctx.font = 'bold 350px sans-serif'
+          ctx.font = '900 350px sans-serif'
           ctx.textAlign = 'center'
           ctx.textBaseline = 'middle'
           ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 100)
         }
 
-        ctx.shadowColor = 'rgba(0,0,0,0.4)'
-        ctx.shadowBlur = 40
-        ctx.shadowOffsetY = 30
-        await drawImage(result.transparentUrl, 100, 150, 880, 880)
+        // Very harsh shadow for dramatic editorial effect
+        ctx.shadowColor = 'rgba(0,0,0,0.9)'
+        ctx.shadowBlur = 50
+        ctx.shadowOffsetY = 40
+        await drawImage(result.transparentUrl, 100, 220, 880, 880)
         ctx.shadowBlur = 0
         ctx.shadowOffsetY = 0
 
-        const nextY = drawTextWrapped(safeCopyText, 80, 140, 850, false, false)
+        // Text centered at top
+        ctx.textAlign = 'center'
+        const words = safeCopyText.split(' ')
+        let line = ''
+        let currentY = 160
+        ctx.font = '900 85px sans-serif'
+        ctx.fillStyle = '#ffffff'
+        
+        for (let i = 0; i < words.length; i++) {
+          const testLine = line + words[i] + ' '
+          if (ctx.measureText(testLine).width > 900 && i > 0) {
+            ctx.shadowColor = 'rgba(0,0,0,0.8)'
+            ctx.shadowBlur = 20
+            ctx.fillText(line.trim(), canvas.width/2, currentY)
+            line = words[i] + ' '
+            currentY += 100
+          } else {
+            line = testLine
+          }
+        }
+        ctx.shadowColor = 'rgba(0,0,0,0.8)'
+        ctx.shadowBlur = 20
+        ctx.fillText(line.trim(), canvas.width/2, currentY)
+        
         if (safeSubtitle) {
-          drawTextWrapped(safeSubtitle, 80, nextY + 20, 850, true, true)
+          ctx.font = '600 45px sans-serif'
+          ctx.fillStyle = 'rgba(255,255,255,0.8)'
+          ctx.fillText(safeSubtitle, canvas.width/2, currentY + 70, 950)
         }
 
         if (logoToUse) {
-          const pw = 400, ph = 120, px = (canvas.width - pw) / 2, py = canvas.height - ph - 50
+          const pw = 300, ph = 100, px = (canvas.width - pw)/2, py = canvas.height - ph - 50
           await drawImageProportional(logoToUse, px, py, pw, ph)
+        }
+        
+      } else {
+        // TEMPLATE 2: Dynamic Diagonal Split (Modern Startup)
+        ctx.fillStyle = secondary
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+        
+        // Draw diagonal polygon
+        ctx.fillStyle = primary
+        ctx.beginPath()
+        ctx.moveTo(0, 0)
+        ctx.lineTo(canvas.width, 0)
+        ctx.lineTo(canvas.width, canvas.height * 0.4)
+        ctx.lineTo(0, canvas.height * 0.7)
+        ctx.closePath()
+        ctx.fill()
+        
+        // Diagonal glow line
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)'
+        ctx.lineWidth = 10
+        ctx.beginPath()
+        ctx.moveTo(0, canvas.height * 0.7)
+        ctx.lineTo(canvas.width, canvas.height * 0.4)
+        ctx.stroke()
+
+        if (safeBgData) {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.08)'
+          ctx.font = '900 350px sans-serif'
+          ctx.textAlign = 'right'
+          ctx.textBaseline = 'middle'
+          ctx.fillText(safeBgData, canvas.width - 50, canvas.height * 0.85, canvas.width - 100)
+        }
+
+        ctx.shadowColor = 'rgba(0,0,0,0.5)'
+        ctx.shadowBlur = 50
+        ctx.shadowOffsetY = 30
+        await drawImage(result.transparentUrl, 50, 180, 980, 980)
+        ctx.shadowBlur = 0
+        ctx.shadowOffsetY = 0
+
+        // Right aligned text
+        const nextY = drawTextWrapped(safeCopyText, canvas.width - 60, 140, 850, false, true)
+        if (safeSubtitle) {
+          drawTextWrapped(safeSubtitle, canvas.width - 60, nextY + 15, 850, true, true)
+        }
+
+        if (logoToUse) {
+          const pw = 350, ph = 120, px = 50, py = canvas.height - ph - 50
+          
+          // Solid white rounded rect for logo contrast
+          ctx.fillStyle = '#ffffff'
+          ctx.shadowColor = 'rgba(0,0,0,0.2)'
+          ctx.shadowBlur = 20
+          ctx.beginPath()
+          ctx.roundRect(px, py, pw, ph, 30)
+          ctx.fill()
+          ctx.shadowBlur = 0
+          
+          await drawImageProportional(logoToUse, px + 20, py + 20, pw - 40, ph - 40)
         }
       }
       return canvas;
@@ -324,7 +401,7 @@ export function GraphicDesignPreview({
         {isRenderingPreview || !previewUrl ? (
           <div className="flex flex-col items-center justify-center gap-3 text-neutral-400 p-10 text-center h-[384px]">
             <Loader2 className="w-8 h-8 animate-spin text-neutral-300" />
-            <span className="text-sm font-medium">Renderizando diseño inteligente...</span>
+            <span className="text-sm font-medium">Renderizando diseño premium...</span>
           </div>
         ) : (
           <img 
