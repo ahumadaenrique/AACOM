@@ -2136,7 +2136,7 @@ export default function AdnPage() {
             {/* Elegant Cover Page Header */}
             <div className="border-b-4 border-teal-600 pb-5 flex flex-col sm:flex-row justify-between items-center gap-4">
               <div className="flex items-center gap-3">
-                <img src="/logo.png" alt="AACOM Seguros" className="h-14 w-auto object-contain" />
+                <img src="/logo.png" alt="Logotipo de la Agencia" className="h-14 w-auto object-contain" />
                 <div>
                   <h2 className="text-2xl font-black text-slate-800 uppercase tracking-widest">ADN DIGITAL</h2>
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Diagnóstico Financiero y Blindaje Patrimonial</span>

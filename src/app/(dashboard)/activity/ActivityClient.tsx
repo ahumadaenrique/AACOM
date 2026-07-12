@@ -44,7 +44,7 @@ interface HistoryGroup {
     logs: LogEntry[];
 }
 
-export default function ActivityPage({ agencyName = "AACOM" }: { agencyName?: string }) {
+export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName?: string }) {
     // State
     const [todayLogs, setTodayLogs] = useState<LogEntry[]>([]);
     const [totalPoints, setTotalPoints] = useState(0);

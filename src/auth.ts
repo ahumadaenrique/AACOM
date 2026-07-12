@@ -36,7 +36,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
                         // Check if the user's agency is suspended or deleted
                         if (!user.agencyId) {
-                            if (user.role !== 'SUPER_ADMIN' && user.role !== 'SELLER' && user.email !== 'enrique.ahumada@aacommx.com') {
+                            if (user.role !== 'SUPER_ADMIN' && user.role !== 'SELLER' && !(process.env.SUPER_ADMIN_EMAILS || "enrique.ahumada@aacommx.com").includes(user.email || "")) {
                                 console.log("[AUTH] Orphaned user without agency:", email);
                                 return null;
                             }
@@ -75,7 +75,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                             }
 
                              // Always guarantee Super Admin role and AACOM agency for the main owner
-                             if (user.email === 'enrique.ahumada@aacommx.com') {
+                             if ((process.env.SUPER_ADMIN_EMAILS || "enrique.ahumada@aacommx.com").includes(user.email || "")) {
                                  let needsUpdate = false;
                                  const updateData: any = {};
                                  if (user.role !== 'SUPER_ADMIN') {
@@ -85,7 +85,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                                  }
                                  if (!user.agencyId) {
                                      const aacomAgency = await prisma.agency.findFirst({
-                                         where: { slug: 'aacom' }
+                                         where: { slug: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }
                                      });
                                      if (aacomAgency) {
                                          updateData.agencyId = aacomAgency.id;

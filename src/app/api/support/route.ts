@@ -68,7 +68,7 @@ export async function POST(req: Request) {
 
                 const mailOptions = {
                     from: `"Soporte AACOM" <${process.env.SMTP_USER}>`,
-                    to: "enrique.ahumada@aacommx.com", // Tu correo para recibir alertas
+                    to: process.env.SUPPORT_EMAIL || "enrique.ahumada@aacommx.com", // Tu correo para recibir alertas
                     subject: `[Nuevo Ticket] ${subject}`,
                     html: `
                         <h2>Nuevo Ticket de Soporte Registrado</h2>

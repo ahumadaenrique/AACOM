@@ -76,7 +76,7 @@ interface ColumnMapping {
 }
 
 export default function CotizadorPage({ 
-  agencyName = "AACOM Seguros", 
+  agencyName = "Tu Agencia", 
   agencyLogo = "/logo.png",
   currentUserName = "",
   agencyUsers = []

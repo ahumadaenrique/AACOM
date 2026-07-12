@@ -4,11 +4,11 @@ import { prisma } from '@/lib/prisma';
 
 export default async function manifest(): Promise<MetadataRoute.Manifest> {
     const headersList = headers();
-    const slug = headersList.get('x-agency-slug') || 'aacom';
+    const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';
 
     let agency = await prisma.agency.findUnique({ where: { slug } });
     if (!agency) {
-        agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
+        agency = await prisma.agency.findUnique({ where: { slug } });
     }
 
     const agencyName = agency?.name || "Sistema Agencias";

@@ -29,10 +29,10 @@ export default async function AgentsLayout({ children }: { children: ReactNode }
 
   // SECURITY BLOCK
   const headersList = headers();
-  const slug = headersList.get('x-agency-slug') || 'aacom';
+  const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';
   let agency = dbUser?.agency || await prisma.agency.findUnique({ where: { slug } });
   
-  const isOrphan = dbUser && !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.role !== 'SELLER' && dbUser?.email !== 'enrique.ahumada@aacommx.com';
+  const isOrphan = dbUser && !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.role !== 'SELLER' && !(process.env.SUPER_ADMIN_EMAILS || "enrique.ahumada@aacommx.com").includes(dbUser?.email || "");
   const isAgencyInactive = dbUser?.agencyId && (!agency || agency.active === false);
   const isDeletedUser = session?.user?.email && !dbUser;
 

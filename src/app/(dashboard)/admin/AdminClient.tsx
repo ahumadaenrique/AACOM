@@ -1005,7 +1005,7 @@ export default function AdminClient() {
       {/* Header Area */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <img src="/logo.png" alt="AACOM Seguros" className="h-10 w-auto object-contain" />
+          <img src="/logo.png" alt="Logotipo" className="h-10 w-auto object-contain" />
           <div className="h-8 w-px bg-slate-300 dark:bg-zinc-700 hidden sm:block"></div>
           <div>
             <h1 className="text-2xl font-black text-slate-800 dark:text-slate-100 flex items-center gap-1.5">
@@ -3203,7 +3203,7 @@ export default function AdminClient() {
             {/* Modal Header */}
             <div className="bg-slate-100 dark:bg-zinc-900 border-b p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <img src="/logo.png" alt="AACOM" className="h-7 w-auto object-contain" />
+                <img src="/logo.png" alt="Logotipo" className="h-7 w-auto object-contain" />
                 <div className="h-5 w-px bg-slate-300"></div>
                 <div>
                   <h3 className="text-sm font-black text-slate-800 dark:text-slate-100">
@@ -3245,7 +3245,7 @@ export default function AdminClient() {
                       Diagnóstico Patrimonial Digital
                     </span>
                     <h2 className="text-xl font-extrabold text-slate-800">
-                      ADN DIGITAL AACOM
+                      ADN DIGITAL
                     </h2>
                     <div className="flex flex-wrap gap-x-4 gap-y-1 mt-1 text-[11px] text-slate-500">
                       <span><strong>Cliente:</strong> {selectedAdn.clienteNombre}</span>
@@ -3256,8 +3256,8 @@ export default function AdminClient() {
                     </div>
                   </div>
                   <div className="text-right flex flex-col items-end">
-                    <img src="/logo.png" alt="AACOM Seguros" className="h-8 w-auto object-contain mb-1" />
-                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wide">AACOM cotizador</span>
+                    <img src="/logo.png" alt="Logotipo" className="h-8 w-auto object-contain mb-1" />
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wide">Cotizador Multicía.</span>
                     <span className="text-[9px] text-slate-400"><strong>Agente:</strong> {selectedAdn.user?.name || selectedAdn.user?.email || "Sin Agente"}</span>
                   </div>
                 </div>
@@ -3741,8 +3741,8 @@ export default function AdminClient() {
                   <span>* Reporte de diagnóstico ilustrativo generado de forma segura desde la base de datos de desarrollo.</span>
                   <div className="flex items-center gap-1 font-bold text-slate-600">
                     <span>Respaldado por la plataforma</span>
-                    <img src="/logo.png" alt="AACOM" className="w-auto object-contain" style={{ height: '18px' }} />
-                    <span>AACOM cotizador</span>
+                    <img src="/logo.png" alt="Logotipo" className="w-auto object-contain" style={{ height: '18px' }} />
+                    <span>Cotizador Multicía.</span>
                   </div>
                 </div>
 
@@ -3772,7 +3772,7 @@ export default function AdminClient() {
             {/* Modal Header */}
             <div className="bg-slate-100 dark:bg-zinc-900 border-b p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <img src="/logo.png" alt="AACOM" className="h-7 w-auto object-contain" />
+                <img src="/logo.png" alt="Logotipo" className="h-7 w-auto object-contain" />
                 <div className="h-5 w-px bg-slate-300"></div>
                 <div>
                   <h3 className="text-sm font-black text-slate-800 dark:text-slate-100">
@@ -3845,8 +3845,8 @@ export default function AdminClient() {
                       </div>
                     </div>
                     <div className="text-right flex flex-col items-end">
-                      <img src="/logo.png" alt="AACOM Seguros" className="h-8 w-auto object-contain mb-1" />
-                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-wide">AACOM cotizador</span>
+                      <img src="/logo.png" alt="Logotipo" className="h-8 w-auto object-contain mb-1" />
+                      <span className="text-[9px] font-black text-slate-500 uppercase tracking-wide">Cotizador Multicía.</span>
                       <span className="text-[9px] text-slate-400"><strong>Agente:</strong> {selectedQuote.agente}</span>
                     </div>
                   </div>
@@ -4282,7 +4282,7 @@ export default function AdminClient() {
                         {/* Modal disclaimer footer */}
                         <div className="border-t pt-3 flex justify-between items-center text-[9px] text-slate-400">
                           <span>* Cotización rescatada desde el registro histórico central de la promotoría.</span>
-                          <span className="font-semibold text-slate-500">AACOM cotizador</span>
+                          <span className="font-semibold text-slate-500">Cotizador Multicía.</span>
                         </div>
                       </>
                     )

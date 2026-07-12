@@ -10,7 +10,7 @@ export async function generateMetadata() {
     const { headers } = await import("next/headers");
     const { prisma } = await import("@/lib/prisma");
     const headersList = headers();
-    const slug = headersList.get('x-agency-slug') || 'aacom';
+    const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';
     const agency = await prisma.agency.findUnique({ where: { slug } });
     return {
         title: `Reportes Gerenciales - ${agency?.name || 'AACOM'}`
@@ -38,11 +38,11 @@ export default async function ReportesPage() {
             agency = await prisma.agency.findUnique({ where: { id: session.user.agencyId } });
         }
         if (!agency) {
-            const slug = headersList.get('x-agency-slug') || 'aacom';
+            const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';
             agency = await prisma.agency.findUnique({ where: { slug } });
         }
         if (!agency) {
-            agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });
+            agency = await prisma.agency.findUnique({ where: { slug: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' } });
         }
         const agencyName = agency?.name || 'SYSGPYA';
 

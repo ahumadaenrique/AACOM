@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Eye, EyeOff } from "lucide-react"
 
-export default function LoginPage({ agencyName = "AACOM Seguros", agencyLogo = "/logo.png" }: { agencyName?: string, agencyLogo?: string }) {
+export default function LoginPage({ agencyName = "Tu Agencia", agencyLogo = "/logo.png" }: { agencyName?: string, agencyLogo?: string }) {
     const router = useRouter()
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
