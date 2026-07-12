@@ -226,13 +226,13 @@ export function GraphicDesignPreview({
         }
 
       } else if (templateId === 1) {
-        // TEMPLATE 1: Dark Editorial (Moody & Elegant)
-        ctx.fillStyle = '#0a0a0a' // Almost black
+        // TEMPLATE 1: Solid Primary with Secondary Spotlight
+        ctx.fillStyle = primary
         ctx.fillRect(0, 0, canvas.width, canvas.height)
         
         // Subtle spotlight
         const spot = ctx.createRadialGradient(canvas.width/2, canvas.height/3, 50, canvas.width/2, canvas.height/2, 900)
-        spot.addColorStop(0, primary)
+        spot.addColorStop(0, secondary)
         spot.addColorStop(1, 'transparent')
         ctx.fillStyle = spot
         ctx.fillRect(0, 0, canvas.width, canvas.height)

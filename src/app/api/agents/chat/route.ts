@@ -1465,9 +1465,9 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
               subtitle,
               socialMediaCaption,
               backgroundData,
-              brandPrimaryColor: dbUser?.brandColor || companyProfile?.Agency?.primaryColor || '#0f172a',
+              brandPrimaryColor: companyProfile?.Agency?.primaryColor || dbUser?.brandColor || '#0f172a',
               brandSecondaryColor: companyProfile?.Agency?.secondaryColor || null,
-              brandLogo: isBase64 ? null : (dbUser?.brandLogo || logo),
+              brandLogo: isBase64 ? null : (companyProfile?.Agency?.logoUrl || dbUser?.brandLogo || logo),
               industry: companyProfile?.industry || 'Seguros'
             }
           } catch (e: any) {
