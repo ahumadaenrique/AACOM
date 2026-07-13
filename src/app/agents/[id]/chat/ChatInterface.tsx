@@ -317,7 +317,9 @@ export default function ChatInterface({
       {/* Top Actions Bar */}
       <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
         {agent.type === 'EXECUTIVE_ASSISTANT' && (
-          <ElevenLabsVoiceButton />
+          <VoiceErrorBoundary>
+            <ElevenLabsVoiceButton />
+          </VoiceErrorBoundary>
         )}
 
         {messages.length > 0 && (
