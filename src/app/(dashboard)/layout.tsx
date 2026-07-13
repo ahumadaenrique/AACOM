@@ -218,22 +218,41 @@ export default async function DashboardLayout({
                                     {pathname.startsWith('/cartera') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                 </Link>
 
-                                {/* Dropdown Herramientas */}
+                                {/* Dropdown Inteligencia Artificial Avanzada */}
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/assistant', '/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                                            <Sparkles className={`h-4 w-4 ${['/assistant', '/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-pink-500'}`} />
-                                            Herramientas
-                                            {['/assistant', '/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                        <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/assistant', '/agents'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                                            <Bot className={`h-4 w-4 ${['/assistant', '/agents'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-indigo-500'}`} />
+                                            Inteligencia Artificial Avanzada
+                                            {['/assistant', '/agents'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                         </button>
                                     </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start" className="w-48">
+                                    <DropdownMenuContent align="start" className="w-52">
                                         <DropdownMenuItem asChild>
                                             <Link href="/assistant" className="flex items-center gap-2 cursor-pointer font-medium">
                                                 <MessageSquare className="h-4 w-4 text-pink-500" />
                                                 Asistente {shortAgencyName}
                                             </Link>
                                         </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <a href="/agents" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                <Bot className="h-4 w-4 text-indigo-600" />
+                                                Agentes IA
+                                            </a>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+
+                                {/* Dropdown Herramientas */}
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                                            <Sparkles className={`h-4 w-4 ${['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-pink-500'}`} />
+                                            Herramientas
+                                            {['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="start" className="w-48">
                                         <DropdownMenuItem asChild>
                                             <Link href="/documentacion" className="flex items-center gap-2 cursor-pointer font-medium">
                                                 <Book className="h-4 w-4 text-teal-600 dark:text-teal-400" />
@@ -271,10 +290,10 @@ export default async function DashboardLayout({
                                 {isAdmin && (
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/votaciones', '/admin', '/reportes', '/agents', '/agencias'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                                                <Settings className={`h-4 w-4 ${['/votaciones', '/admin', '/reportes', '/agents', '/agencias'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-slate-500'}`} />
+                                            <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/votaciones', '/admin', '/reportes', '/agencias'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                                                <Settings className={`h-4 w-4 ${['/votaciones', '/admin', '/reportes', '/agencias'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-slate-500'}`} />
                                                 Admin
-                                                {['/votaciones', '/admin', '/reportes', '/agents', '/agencias'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                                {['/votaciones', '/admin', '/reportes', '/agencias'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                             </button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="w-48">
@@ -301,12 +320,6 @@ export default async function DashboardLayout({
                                                     <ClipboardCheck className="h-4 w-4" />
                                                     Reportes
                                                 </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <a href="/agents" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                    <Bot className="h-4 w-4 text-indigo-600" />
-                                                    Agentes IA
-                                                </a>
                                             </DropdownMenuItem>
                                             
                                             {isSuperAdmin && (
@@ -408,6 +421,10 @@ export default async function DashboardLayout({
                                             <MessageSquare className="h-5 w-5 text-pink-500" />
                                             Asistente {shortAgencyName}
                                         </Link>
+                                        <a href="/agents" className="text-muted-foreground hover:text-foreground flex items-center gap-2">
+                                            <Bot className="h-5 w-5 text-indigo-600" />
+                                            Agentes IA
+                                        </a>
                                         <Link
                                             href="/documentacion"
                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
@@ -473,10 +490,6 @@ export default async function DashboardLayout({
                                                 >
                                                     Reportes
                                                 </Link>
-                                            <a href="/agents" className="text-muted-foreground hover:text-foreground flex items-center gap-2">
-                                              <Bot className="h-5 w-5 text-indigo-600" />
-                                              Agentes IA
-                                            </a>
                                             </>
                                         )}
                                         {isSuperAdmin && (
