@@ -43,13 +43,13 @@ export async function getVoiceAgentPrompt(agentId: string) {
   const session = await auth()
   if (!session?.user?.email) throw new Error("No autenticado")
 
-  const agent = await prisma.agent.findUnique({
+  const agent = await prisma.aIAgent.findUnique({
     where: { id: agentId }
   })
   if (!agent) return "Eres un asistente de Inteligencia Artificial."
 
-  const prompt = `Eres ${agent.name}, un agente de Inteligencia Artificial que trabaja en ${agent.company || 'AACOM'}.
-Rol: ${agent.role || 'Asistente Ejecutivo'}
+  const prompt = `Eres ${agent.name}, un agente de Inteligencia Artificial.
+Rol: Asistente Ejecutivo
 Directiva principal: ${agent.systemPrompt || ''}
 Lineamientos: ${agent.guidelines || ''}
 
@@ -62,12 +62,15 @@ export async function getVoiceAgenda(dateStr: string, agentId: string) {
   const session = await auth()
   if (!session?.user?.email) return "No estás autenticado para ver la agenda."
 
-  const agent = await prisma.agent.findUnique({ where: { id: agentId } })
+  const agent = await prisma.aIAgent.findUnique({ where: { id: agentId } })
   if (!agent) return "Agente no encontrado."
+
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } })
+  if (!user) return "Usuario no encontrado."
 
   const localMeetings = await prisma.meeting.findMany({
     where: {
-      agencyId: agent.agencyId,
+      userId: user.id,
       date: dateStr // YYYY-MM-DD
     },
     orderBy: { time: 'asc' }
@@ -77,6 +80,6 @@ export async function getVoiceAgenda(dateStr: string, agentId: string) {
     return `No tienes reuniones agendadas para la fecha ${dateStr}.`
   }
 
-  const list = localMeetings.map(m => `- ${m.time}: ${m.title} (Asistentes: ${m.attendees})`).join('\n')
+  const list = localMeetings.map(m => `- ${m.time}: ${m.title}`).join('\n')
   return `Reuniones agendadas para el ${dateStr}:\n${list}`
 }
