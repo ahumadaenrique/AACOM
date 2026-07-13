@@ -33,8 +33,17 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
         const result = await getVoiceAgenda(targetDate, agentId)
         return result;
       },
-      agendar_reunion: async (params: { titulo: string, fecha: string, hora: string, duracion: number }) => {
-        const result = await scheduleVoiceMeeting(params.titulo, params.fecha, params.hora, params.duracion || 60, agentId)
+      agendar_reunion: async (params: { titulo: string, fecha: string, hora: string, duracion: any }) => {
+        console.log("Voice Tool [agendar_reunion] called with:", params);
+        let duration = Number(params.duracion) || 60;
+        
+        // Autocorrección: si la IA manda un valor <= 4 (ej. 1 para '1 hora'),
+        // asumimos que omitió la conversión a minutos y multiplicamos por 60.
+        if (duration > 0 && duration <= 4) {
+          duration = duration * 60;
+        }
+        
+        const result = await scheduleVoiceMeeting(params.titulo, params.fecha, params.hora, duration, agentId)
         return result;
       },
       redactar_correo: async (params: { destinatario: string, asunto: string, mensaje: string }) => {
