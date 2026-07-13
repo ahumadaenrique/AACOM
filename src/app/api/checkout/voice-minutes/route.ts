@@ -84,6 +84,17 @@ export async function POST(req: Request) {
         },
       });
 
+      const now = new Date();
+      const expiresAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000); // 90 días
+      await prisma.voiceMinutesPurchase.create({
+        data: {
+          userId: user.id,
+          seconds: pkg.seconds,
+          secondsRemaining: pkg.seconds,
+          expiresAt
+        }
+      });
+
       if (stripeCoupon) {
         try {
           await prisma.discountCode.update({

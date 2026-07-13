@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { X, Check, Loader2, CreditCard, Sparkles } from "lucide-react"
+import { X, Check, Loader2, CreditCard, Sparkles, Clock } from "lucide-react"
 
 interface BuyMinutesModalProps {
   isOpen: boolean
@@ -166,6 +166,14 @@ export function BuyMinutesModal({ isOpen, onClose }: BuyMinutesModalProps) {
                 </button>
               )
             })}
+          </div>
+
+          {/* Expiration Notice Banner */}
+          <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-3 flex items-start gap-2.5">
+            <Clock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+            <div className="text-[11px] text-amber-500 leading-normal">
+              <span className="font-bold">Nota de vigencia:</span> Los minutos comprados tienen una validez de <span className="font-bold">90 días</span> a partir de la fecha de pago. Consumiremos primero tu saldo gratuito mensual de forma automática.
+            </div>
           </div>
 
           {/* Promo Code Input */}

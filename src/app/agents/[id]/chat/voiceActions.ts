@@ -3,16 +3,74 @@
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
 
+async function lazyResetAndGetBalance(userId: string) {
+  const now = new Date()
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    include: {
+      voicePurchases: {
+        where: {
+          expiresAt: { gt: now },
+          secondsRemaining: { gt: 0 }
+        },
+        orderBy: {
+          purchasedAt: 'asc'
+        }
+      }
+    }
+  })
+  
+  if (!user) throw new Error("Usuario no encontrado")
+
+  let freeBalance = user.freeSecondsBalance
+  let lastReset = user.lastFreeMinutesReset
+  
+  const msIn30Days = 30 * 24 * 60 * 60 * 1000
+  const elapsedMs = now.getTime() - lastReset.getTime()
+  
+  if (elapsedMs >= msIn30Days) {
+    const periods = Math.floor(elapsedMs / msIn30Days)
+    const newReset = new Date(lastReset.getTime() + periods * msIn30Days)
+    freeBalance = 300 // Resetea a 5 minutos, no acumulativo
+    
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        freeSecondsBalance: freeBalance,
+        lastFreeMinutesReset: newReset
+      }
+    })
+  }
+
+  const paidSeconds = user.voicePurchases.reduce((acc, p) => acc + p.secondsRemaining, 0)
+  const totalBalance = freeBalance + paidSeconds
+
+  if (user.voiceSecondsBalance !== totalBalance) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { voiceSecondsBalance: totalBalance }
+    })
+  }
+
+  return {
+    totalBalance,
+    freeSecondsBalance: freeBalance,
+    voicePurchases: user.voicePurchases
+  }
+}
+
 export async function getVoiceBalance() {
   const session = await auth()
   if (!session?.user?.email) throw new Error("No autenticado")
 
   const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    select: { voiceSecondsBalance: true }
+    select: { id: true }
   })
+  if (!user) return 0
 
-  return user?.voiceSecondsBalance || 0
+  const { totalBalance } = await lazyResetAndGetBalance(user.id)
+  return totalBalance
 }
 
 export async function deductVoiceSeconds(secondsUsed: number) {
@@ -21,16 +79,56 @@ export async function deductVoiceSeconds(secondsUsed: number) {
   const session = await auth()
   if (!session?.user?.email) throw new Error("No autenticado")
 
-  const user = await prisma.user.update({
+  const user = await prisma.user.findUnique({
     where: { email: session.user.email },
-    data: {
-      voiceSecondsBalance: {
-        decrement: secondsUsed
+    select: { id: true }
+  })
+  if (!user) throw new Error("Usuario no encontrado")
+
+  const { freeSecondsBalance, voicePurchases } = await lazyResetAndGetBalance(user.id)
+
+  let remainingToDeduct = secondsUsed
+  let newFreeBalance = freeSecondsBalance
+
+  if (remainingToDeduct <= freeSecondsBalance) {
+    newFreeBalance = freeSecondsBalance - remainingToDeduct
+    remainingToDeduct = 0
+  } else {
+    remainingToDeduct -= freeSecondsBalance
+    newFreeBalance = 0
+
+    // Descontar cronológicamente (más antiguos primero)
+    for (const purchase of voicePurchases) {
+      if (remainingToDeduct <= 0) break
+
+      if (remainingToDeduct <= purchase.secondsRemaining) {
+        await prisma.voiceMinutesPurchase.update({
+          where: { id: purchase.id },
+          data: { secondsRemaining: purchase.secondsRemaining - remainingToDeduct }
+        })
+        remainingToDeduct = 0
+      } else {
+        remainingToDeduct -= purchase.secondsRemaining
+        await prisma.voiceMinutesPurchase.update({
+          where: { id: purchase.id },
+          data: { secondsRemaining: 0 }
+        })
       }
+    }
+  }
+
+  // Actualizar el User
+  const updatedUser = await prisma.user.update({
+    where: { id: user.id },
+    data: {
+      freeSecondsBalance: newFreeBalance
     }
   })
 
-  return { success: true, remainingBalance: user.voiceSecondsBalance }
+  // Recalcular saldo total para caché
+  const { totalBalance } = await lazyResetAndGetBalance(user.id)
+
+  return { success: true, remainingBalance: totalBalance }
 }
 
 export async function getElevenLabsAgentId() {

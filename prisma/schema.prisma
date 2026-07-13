@@ -171,6 +171,21 @@ model User {
   createdAt                DateTime                  @default(now())
   updatedAt                DateTime                  @updatedAt
   developmentProgress AgentDevelopmentProgress?
+
+  // ElevenLabs Voice Details
+  freeSecondsBalance   Int                    @default(300)
+  lastFreeMinutesReset DateTime               @default(now())
+  voicePurchases       VoiceMinutesPurchase[]
+}
+
+model VoiceMinutesPurchase {
+  id               String   @id @default(cuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seconds          Int      // Segundos comprados originalmente
+  secondsRemaining Int      // Segundos que le quedan
+  purchasedAt      DateTime @default(now())
+  expiresAt        DateTime // purchasedAt + 90 días
 }
 
 model Activity {

@@ -303,6 +303,17 @@ export async function POST(req: Request) {
             data: { voiceSecondsBalance: { increment: secondsToAdd } }
           });
 
+          const now = new Date();
+          const expiresAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000); // 90 días
+          await prisma.voiceMinutesPurchase.create({
+            data: {
+              userId,
+              seconds: secondsToAdd,
+              secondsRemaining: secondsToAdd,
+              expiresAt
+            }
+          });
+
           await logCommission(
             sellerId,
             agencyId,
