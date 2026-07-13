@@ -55,15 +55,12 @@ export async function getVoiceAgentPrompt(agentId: string) {
   })
   if (!agent) return "Eres un asistente de Inteligencia Artificial."
 
-  const today = new Date();
-  const formattedDate = today.toISOString().split('T')[0];
-
   let prompt = `Eres ${agent.name}, un agente de Inteligencia Artificial.
 Rol: Asistente Ejecutivo
 Directiva principal: ${agent.systemPrompt || ''}
 Lineamientos: ${agent.guidelines || ''}
 
-Importante: Responde de forma hablada. Sé conciso y amigable. No uses viñetas ni formato Markdown. Hoy es ${formattedDate}. JAMÁS preguntes la fecha de hoy, calcúlala.`
+Importante: Responde de forma hablada. Sé conciso y amigable. No uses viñetas ni formato Markdown porque tu respuesta se convertirá en voz.`
 
   if (user?.FrequentContact && user.FrequentContact.length > 0) {
     const contactsList = user.FrequentContact.map(c => `- ${c.name}: ${c.email}`).join('\n')
