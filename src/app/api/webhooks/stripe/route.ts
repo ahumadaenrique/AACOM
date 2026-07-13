@@ -280,17 +280,50 @@ export async function POST(req: Request) {
           );
         }
 
-      if (discountCodeStr) {
-        try {
-          await prisma.discountCode.update({
-            where: { code: discountCodeStr },
-            data: { uses: { increment: 1 } },
-          });
-        } catch (err) {
-          console.error("Error updating discount code uses:", err);
+        if (discountCodeStr) {
+          try {
+            await prisma.discountCode.update({
+              where: { code: discountCodeStr },
+              data: { uses: { increment: 1 } },
+            });
+          } catch (err) {
+            console.error("Error updating discount code uses:", err);
+          }
         }
-      }
-    } else {
+      } else if (session.metadata?.isVoiceMinutesPackage === 'true') {
+        const userId = session.metadata?.userId;
+        const secondsToAdd = parseInt(session.metadata?.secondsToAdd || '0', 10);
+        const discountCodeStr = session.metadata?.discountCodeStr;
+        const sellerId = session.metadata?.sellerId || null;
+        const agencyId = session.metadata?.agencyId || null;
+
+        if (userId && secondsToAdd > 0) {
+          await prisma.user.update({
+            where: { id: userId },
+            data: { voiceSecondsBalance: { increment: secondsToAdd } }
+          });
+
+          await logCommission(
+            sellerId,
+            agencyId,
+            `Compra de ${Math.round(secondsToAdd / 60)} Minutos de Voz`,
+            (session.amount_total || 0) / 100,
+            session.payment_intent as string,
+            discountCodeStr
+          );
+        }
+
+        if (discountCodeStr) {
+          try {
+            await prisma.discountCode.update({
+              where: { code: discountCodeStr },
+              data: { uses: { increment: 1 } },
+            });
+          } catch (err) {
+            console.error("Error updating discount code uses:", err);
+          }
+        }
+      } else {
         const agencyId = session.metadata?.agencyId;
         const daysToAddStr = session.metadata?.daysToAdd;
         const monthsToAddStr = session.metadata?.monthsToAdd;

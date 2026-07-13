@@ -4,11 +4,13 @@ import { useState, useEffect, useRef } from "react"
 import { useConversation, ConversationProvider } from "@elevenlabs/react"
 import { Mic, MicOff, Loader2, PhoneOff, Phone } from "lucide-react"
 import { getVoiceBalance, deductVoiceSeconds, getElevenLabsAgentId, getVoiceAgentPrompt, getVoiceAgenda, scheduleVoiceMeeting, draftVoiceEmail, createVoiceTask, listVoiceTasks, completeVoiceTask, deleteVoiceTask } from "@/app/agents/[id]/chat/voiceActions"
+import { BuyMinutesModal } from "@/components/BuyMinutesModal"
 
 export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
   const [balanceSecs, setBalanceSecs] = useState<number>(0)
   const [sessionSeconds, setSessionSeconds] = useState<number>(0)
   const [dynamicPrompt, setDynamicPrompt] = useState<any>(null)
+  const [isBuyModalOpen, setIsBuyModalOpen] = useState<boolean>(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const connectionStartRef = useRef<number | null>(null)
 
@@ -174,20 +176,36 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
   }
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="flex flex-col items-end mr-1">
-        <span className="text-xs font-medium text-neutral-400">Llamada</span>
-        <span className="text-[10px] font-mono text-neutral-600">Disp: {formatTime(balanceSecs)}</span>
+    <>
+      <div className="flex items-center gap-3">
+        <div className="flex flex-col items-end mr-1">
+          <span className="text-xs font-medium text-neutral-400">Llamada</span>
+          <div className="flex items-center gap-1.5 mt-0.5">
+            <span className="text-[10px] font-mono text-neutral-600">Disp: {formatTime(balanceSecs)}</span>
+            <span className="text-[9px] text-neutral-700 font-bold">•</span>
+            <button 
+              onClick={() => setIsBuyModalOpen(true)}
+              className="text-[9px] text-indigo-400 hover:text-indigo-300 font-bold hover:underline transition-colors"
+            >
+              Cargar
+            </button>
+          </div>
+        </div>
+        <button
+          onClick={startConversation}
+          className="flex items-center justify-center w-12 h-12 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg hover:shadow-indigo-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={balanceSecs <= 0}
+          title="Llamada de voz con la Asistente"
+        >
+          <Phone className="w-5 h-5" />
+        </button>
       </div>
-      <button
-        onClick={startConversation}
-        className="flex items-center justify-center w-12 h-12 rounded-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg hover:shadow-indigo-500/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-        disabled={balanceSecs <= 0}
-        title="Llamada de voz con la Asistente"
-      >
-        <Phone className="w-5 h-5" />
-      </button>
-    </div>
+
+      <BuyMinutesModal 
+        isOpen={isBuyModalOpen} 
+        onClose={() => setIsBuyModalOpen(false)} 
+      />
+    </>
   )
 }
 
