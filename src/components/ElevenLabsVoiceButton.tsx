@@ -29,7 +29,8 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
   }, [agentId])
 
   const conversation = useConversation({
-    clientTools: {      consultar_agenda: async (params?: { fecha?: string }) => {
+    clientTools: {
+      consultar_agenda: async (params?: { fecha?: string }) => {
         console.log("Voice Tool [consultar_agenda] called with:", params)
         try {
           let targetDate = params?.fecha
@@ -110,7 +111,6 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
           return `Error al gestionar tareas: ${error.message}`
         }
       },
-      }
     },
     onConnect: (params?: any) => {
       if (params?.conversationId) {
@@ -230,7 +230,7 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
         <span className="text-xs font-mono text-neutral-500">
           Saldo: {formatTime(balanceSecs)}
         </span>
-
+        
         <div className="h-4 w-[1px] bg-neutral-800" />
 
         <button 
