@@ -3,16 +3,20 @@
 import { useState, useEffect, useRef } from "react"
 import { useConversation, ConversationProvider } from "@elevenlabs/react"
 import { Mic, MicOff, Loader2, PhoneOff, Phone } from "lucide-react"
-import { getVoiceBalance, deductVoiceSeconds, getElevenLabsAgentId, getVoiceAgentPrompt, getVoiceAgenda, scheduleVoiceMeeting, draftVoiceEmail, createVoiceTask, listVoiceTasks, completeVoiceTask, deleteVoiceTask } from "@/app/agents/[id]/chat/voiceActions"
+import { getVoiceBalance, deductVoiceSeconds, getElevenLabsAgentId, getVoiceAgentPrompt, getVoiceAgenda, scheduleVoiceMeeting, draftVoiceEmail, createVoiceTask, listVoiceTasks, completeVoiceTask, deleteVoiceTask, syncVoiceCallSummary } from "@/app/agents/[id]/chat/voiceActions"
 import { BuyMinutesModal } from "@/components/BuyMinutesModal"
 
+import { useRouter } from "next/navigation"
+
 export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
+  const router = useRouter()
   const [balanceSecs, setBalanceSecs] = useState<number>(0)
   const [sessionSeconds, setSessionSeconds] = useState<number>(0)
   const [dynamicPrompt, setDynamicPrompt] = useState<any>(null)
   const [isBuyModalOpen, setIsBuyModalOpen] = useState<boolean>(false)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const connectionStartRef = useRef<number | null>(null)
+  const conversationIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     // Cargar saldo inicial y prompt dinámico
@@ -75,7 +79,10 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
         }
       }
     },
-    onConnect: () => {
+    onConnect: (params?: any) => {
+      if (params?.conversationId) {
+        conversationIdRef.current = params.conversationId
+      }
       connectionStartRef.current = Date.now()
       setSessionSeconds(0)
       
@@ -108,6 +115,23 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
           }
         }
       }
+
+      if (conversationIdRef.current) {
+        const cId = conversationIdRef.current
+        conversationIdRef.current = null
+        
+        // Delay de 3 segundos para dar tiempo a ElevenLabs de compilar transcripción y análisis
+        setTimeout(async () => {
+          try {
+            const syncRes = await syncVoiceCallSummary(cId, agentId)
+            console.log("Call sync complete:", syncRes)
+            router.refresh()
+          } catch (syncErr) {
+            console.error("Error syncing voice call summary:", syncErr)
+          }
+        }, 3000)
+      }
+
       setSessionSeconds(0)
     },
     onError: (error: any) => {

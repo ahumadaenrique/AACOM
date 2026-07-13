@@ -454,3 +454,70 @@ export async function deleteVoiceTask(title: string, agentId: string) {
     return `Error al eliminar la tarea: ${e.message}`
   }
 }
+
+export async function syncVoiceCallSummary(conversationId: string, agentId: string) {
+  const session = await auth()
+  if (!session?.user?.email) return { success: false, error: "No autenticado" }
+
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } })
+  if (!user) return { success: false, error: "Usuario no encontrado" }
+
+  const apiKey = process.env.ELEVENLABS_API_KEY || "";
+  if (!apiKey) {
+    console.error("ELEVENLABS_API_KEY no está configurada en las variables de entorno.");
+    return { success: false, error: "API Key de ElevenLabs no configurada" }
+  }
+
+  try {
+    // 1. Consultar detalles de la conversación en ElevenLabs
+    const response = await fetch(`https://api.elevenlabs.io/v1/convai/conversations/${conversationId}`, {
+      method: 'GET',
+      headers: {
+        'xi-api-key': apiKey
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error de ElevenLabs: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    const summary = data.analysis?.summary || "";
+    const transcript = data.transcript || [];
+
+    if (!summary && transcript.length === 0) {
+      return { success: true, message: "Llamada vacía, no se generó resumen." };
+    }
+
+    // 2. Dar formato estético al mensaje en markdown
+    let content = `📞 **Resumen de Llamada de Voz**\n\n`;
+    if (summary) {
+      content += `> ${summary}\n\n`;
+    } else {
+      content += `> *Llamada completada (sin resumen disponible).* \n\n`;
+    }
+
+    if (transcript.length > 0) {
+      content += `💬 **Detalle de la Conversación:**\n`;
+      transcript.forEach((t: any) => {
+        const roleName = t.role === 'user' ? 'Tú' : 'María';
+        content += `* **${roleName}:** ${t.message}\n`;
+      });
+    }
+
+    // 3. Crear el registro en el historial de chat (InteractionLog)
+    await prisma.interactionLog.create({
+      data: {
+        aiAgentId: agentId,
+        userId: user.id,
+        role: 'assistant', // Lo guardamos como mensaje del asistente
+        content
+      }
+    });
+
+    return { success: true, summary, transcriptCount: transcript.length };
+  } catch (error: any) {
+    console.error("Error al sincronizar resumen de voz:", error);
+    return { success: false, error: error.message };
+  }
+}
