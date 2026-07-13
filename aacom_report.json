@@ -1,16 +1,4 @@
 {
-  "src\\app\\(dashboard)\\academia\\page.tsx": [
-    {
-      "line": 135,
-      "text": "Academia de Ventas AACOM"
-    }
-  ],
-  "src\\app\\(dashboard)\\activity\\ActivityClient.tsx": [
-    {
-      "line": 47,
-      "text": "export default function ActivityPage({ agencyName = \"AACOM\" }: { agencyName?: string }) {"
-    }
-  ],
   "src\\app\\(dashboard)\\admin\\AdminClient.tsx": [
     {
       "line": 109,
@@ -21,56 +9,12 @@
       "text": "// AACOM 25 Activity Report states"
     },
     {
-      "line": 1008,
-      "text": "<img src=\"/logo.png\" alt=\"AACOM Seguros\" className=\"h-10 w-auto object-contain\" />"
-    },
-    {
       "line": 1654,
       "text": "placeholder=\"ejemplo@aacommx.com\""
     },
     {
       "line": 2490,
       "text": "{/* TAB CONTENT 6: AACOM 25 ACTIVITY REPORT */}"
-    },
-    {
-      "line": 3206,
-      "text": "<img src=\"/logo.png\" alt=\"AACOM\" className=\"h-7 w-auto object-contain\" />"
-    },
-    {
-      "line": 3248,
-      "text": "ADN DIGITAL AACOM"
-    },
-    {
-      "line": 3259,
-      "text": "<img src=\"/logo.png\" alt=\"AACOM Seguros\" className=\"h-8 w-auto object-contain mb-1\" />"
-    },
-    {
-      "line": 3260,
-      "text": "<span className=\"text-[9px] font-black text-slate-500 uppercase tracking-wide\">AACOM cotizador</span>"
-    },
-    {
-      "line": 3744,
-      "text": "<img src=\"/logo.png\" alt=\"AACOM\" className=\"w-auto object-contain\" style={{ height: '18px' }} />"
-    },
-    {
-      "line": 3745,
-      "text": "<span>AACOM cotizador</span>"
-    },
-    {
-      "line": 3775,
-      "text": "<img src=\"/logo.png\" alt=\"AACOM\" className=\"h-7 w-auto object-contain\" />"
-    },
-    {
-      "line": 3848,
-      "text": "<img src=\"/logo.png\" alt=\"AACOM Seguros\" className=\"h-8 w-auto object-contain mb-1\" />"
-    },
-    {
-      "line": 3849,
-      "text": "<span className=\"text-[9px] font-black text-slate-500 uppercase tracking-wide\">AACOM cotizador</span>"
-    },
-    {
-      "line": 4285,
-      "text": "<span className=\"font-semibold text-slate-500\">AACOM cotizador</span>"
     }
   ],
   "src\\app\\(dashboard)\\admin\\agencia\\AgencySettingsForm.tsx": [
@@ -82,7 +26,7 @@
   "src\\app\\(dashboard)\\admin\\agencia\\page.tsx": [
     {
       "line": 20,
-      "text": "let slug = headersList.get('x-agency-slug') || 'aacom';"
+      "text": "let slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';"
     }
   ],
   "src\\app\\(dashboard)\\admin\\network\\page.tsx": [
@@ -125,12 +69,6 @@
       "text": "title: \"Bandeja de Soporte - AACOM\","
     }
   ],
-  "src\\app\\(dashboard)\\adn\\page.tsx": [
-    {
-      "line": 2139,
-      "text": "<img src=\"/logo.png\" alt=\"AACOM Seguros\" className=\"h-14 w-auto object-contain\" />"
-    }
-  ],
   "src\\app\\(dashboard)\\agencias\\actions.ts": [
     {
       "line": 29,
@@ -171,47 +109,31 @@
       "text": "<Link href={`https://${agency.slug}.aacomsoft.com`} target=\"_blank\" className=\"w-full\" title=\"Visitar\">"
     }
   ],
-  "src\\app\\(dashboard)\\assistant\\AssistantClient.tsx": [
-    {
-      "line": 21,
-      "text": "export default function AssistantPage({ agencyName = \"AACOM\" }: { agencyName?: string }) {"
-    }
-  ],
   "src\\app\\(dashboard)\\assistant\\page.tsx": [
     {
       "line": 16,
-      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+      "text": "const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';"
     },
     {
       "line": 20,
-      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+      "text": "agency = await prisma.agency.findUnique({ where: { slug: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' } });"
     }
   ],
   "src\\app\\(dashboard)\\cartera\\page.tsx": [
     {
       "line": 37,
-      "text": "await prisma.client.updateMany({ where: { agencyId: null }, data: { agencyId: 'aacom' } });"
+      "text": "await prisma.client.updateMany({ where: { agencyId: null }, data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' } });"
     },
     {
       "line": 38,
-      "text": "await prisma.policy.updateMany({ where: { agencyId: null }, data: { agencyId: 'aacom' } });"
+      "text": "await prisma.policy.updateMany({ where: { agencyId: null }, data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' } });"
     },
     {
       "line": 39,
-      "text": "await prisma.dailyRecord.updateMany({ where: { agencyId: null }, data: { agencyId: 'aacom' } });"
-    }
-  ],
-  "src\\app\\(dashboard)\\ClientHome.tsx": [
-    {
-      "line": 28,
-      "text": "export default function ClientHome({ announcements, isBirthday = false, currentUser = null, agencyName = \"AACOM Seguros\", isAdmin = false }: ClientHomeProps) {"
+      "text": "await prisma.dailyRecord.updateMany({ where: { agencyId: null }, data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' } });"
     }
   ],
   "src\\app\\(dashboard)\\cotizador\\CotizadorClient.tsx": [
-    {
-      "line": 79,
-      "text": "agencyName = \"AACOM Seguros\","
-    },
     {
       "line": 1465,
       "text": "{/* Logo of AACOM Seguros integrated in the PDF header */}"
@@ -220,25 +142,21 @@
   "src\\app\\(dashboard)\\cotizador\\page.tsx": [
     {
       "line": 16,
-      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+      "text": "const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';"
     },
     {
       "line": 20,
-      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+      "text": "agency = await prisma.agency.findUnique({ where: { slug: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' } });"
     }
   ],
   "src\\app\\(dashboard)\\layout.tsx": [
     {
       "line": 61,
-      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+      "text": "const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';"
     },
     {
       "line": 69,
-      "text": "const isOrphan = dbUser && !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.role !== 'SELLER' && dbUser?.email !== 'enrique.ahumada@aacommx.com';"
-    },
-    {
-      "line": 117,
-      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+      "text": "const isOrphan = dbUser && !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.role !== 'SELLER' && !(process.env.SUPER_ADMIN_EMAILS || \"enrique.ahumada@aacommx.com\").includes(dbUser?.email || \"\");"
     },
     {
       "line": 119,
@@ -252,11 +170,11 @@
   "src\\app\\(dashboard)\\page.tsx": [
     {
       "line": 14,
-      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+      "text": "const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';"
     },
     {
       "line": 18,
-      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+      "text": "agency = await prisma.agency.findUnique({ where: { slug: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' } });"
     }
   ],
   "src\\app\\(dashboard)\\pea-prp\\actions.ts": [
@@ -268,7 +186,7 @@
   "src\\app\\(dashboard)\\reportes\\page.tsx": [
     {
       "line": 13,
-      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+      "text": "const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';"
     },
     {
       "line": 16,
@@ -276,29 +194,17 @@
     },
     {
       "line": 41,
-      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+      "text": "const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';"
     },
     {
       "line": 45,
-      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
-    }
-  ],
-  "src\\app\\(dashboard)\\reportes\\ReportesClient.tsx": [
-    {
-      "line": 26,
-      "text": "export default function ReportesClient({ agencyName = \"AACOM\" }: { agencyName?: string }) {"
+      "text": "agency = await prisma.agency.findUnique({ where: { slug: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' } });"
     }
   ],
   "src\\app\\(dashboard)\\support\\manual\\page.tsx": [
     {
       "line": 159,
       "text": "<li><strong className=\"text-slate-700 dark:text-slate-300\">Uso:</strong> Llena el formulario financiero con tu cliente (ingresos, gastos, metas). Al terminar, la Inteligencia Artificial de AACOM analizará los datos y te entregará un \"Dictamen\" recomendando exactamente qué producto debes venderle y con qué argumentos.</li>"
-    }
-  ],
-  "src\\app\\(dashboard)\\team\\TeamClient.tsx": [
-    {
-      "line": 52,
-      "text": "export default function TeamDirectoryPage({ agencyName = \"AACOM\" }: { agencyName?: string }) {"
     }
   ],
   "src\\app\\actions\\agencyActions.ts": [
@@ -328,11 +234,11 @@
     },
     {
       "line": 736,
-      "text": "if (data.role === 'ADMIN' && currentUser.email !== 'enrique.ahumada@aacommx.com') {"
+      "text": "if (data.role === 'ADMIN' && !(process.env.SUPER_ADMIN_EMAILS || \"enrique.ahumada@aacommx.com\").includes(currentUser.email)) {"
     },
     {
       "line": 942,
-      "text": "if (targetUser.email === \"enrique.ahumada@aacommx.com\") {"
+      "text": "if ((process.env.SUPER_ADMIN_EMAILS || \"enrique.ahumada@aacommx.com\").includes(targetUser.email)) {"
     },
     {
       "line": 1160,
@@ -340,11 +246,11 @@
     },
     {
       "line": 1395,
-      "text": "data: { agencyId: 'aacom' }"
+      "text": "data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }"
     },
     {
       "line": 1399,
-      "text": "data: { agencyId: 'aacom' }"
+      "text": "data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }"
     },
     {
       "line": 1589,
@@ -376,21 +282,21 @@
     },
     {
       "line": 2246,
-      "text": "data: { agencyId: 'aacom' }"
+      "text": "data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }"
     },
     {
       "line": 2250,
-      "text": "data: { agencyId: 'aacom' }"
+      "text": "data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }"
     }
   ],
   "src\\app\\agents\\layout.tsx": [
     {
       "line": 32,
-      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
+      "text": "const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';"
     },
     {
       "line": 35,
-      "text": "const isOrphan = dbUser && !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.role !== 'SELLER' && dbUser?.email !== 'enrique.ahumada@aacommx.com';"
+      "text": "const isOrphan = dbUser && !dbUser?.agencyId && dbUser?.role !== 'SUPER_ADMIN' && dbUser?.role !== 'SELLER' && !(process.env.SUPER_ADMIN_EMAILS || \"enrique.ahumada@aacommx.com\").includes(dbUser?.email || \"\");"
     },
     {
       "line": 67,
@@ -405,23 +311,23 @@
   ],
   "src\\app\\agents\\[id]\\chat\\ChatInterface.tsx": [
     {
-      "line": 32,
+      "line": 33,
       "text": "ctx.fillStyle = '#0f172a'; // AACOM dark blue/slate"
     },
     {
-      "line": 35,
+      "line": 36,
       "text": "// Draw AACOM text"
     },
     {
-      "line": 38,
+      "line": 39,
       "text": "ctx.fillText('AACOM', 40, img.height + 65);"
     },
     {
-      "line": 51,
+      "line": 52,
       "text": "a.download = 'AACOM-Post.png';"
     },
     {
-      "line": 77,
+      "line": 78,
       "text": "title=\"Descargar imagen con logo AACOM\""
     }
   ],
@@ -431,7 +337,7 @@
       "text": "let agencyName = \"AACOM\""
     },
     {
-      "line": 452,
+      "line": 451,
       "text": "4. En caso de violación, DEBES responder textualmente con este mensaje y nada más: \"No se pudo generar por que de acuerdo a los lineamientos de AACOMSoft 'No se pueden generar imagenes con menores de edad solos'.\" (o ajusta el final a 'con contenido violento/sexual' según corresponda)."
     }
   ],
@@ -492,7 +398,7 @@
   "src\\app\\api\\cedula-a\\promoter-data\\route.ts": [
     {
       "line": 9,
-      "text": "const isSuperAdminEmail = lowerEmail === \"enrique.ahumada@aacommx.com\" || lowerEmail === \"desarrollo.agencias@gmail.com\";"
+      "text": "const isSuperAdminEmail = (process.env.SUPER_ADMIN_EMAILS || \"enrique.ahumada@aacommx.com,desarrollo.agencias@gmail.com\").includes(lowerEmail);"
     }
   ],
   "src\\app\\api\\checkout\\promoter-package\\route.ts": [
@@ -542,7 +448,7 @@
     },
     {
       "line": 9,
-      "text": "where: { slug: 'aacom' }"
+      "text": "where: { slug: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }"
     },
     {
       "line": 12,
@@ -564,7 +470,7 @@
     },
     {
       "line": 71,
-      "text": "to: \"enrique.ahumada@aacommx.com\", // Tu correo para recibir alertas"
+      "text": "to: process.env.SUPPORT_EMAIL || \"enrique.ahumada@aacommx.com\", // Tu correo para recibir alertas"
     }
   ],
   "src\\app\\inicio\\page.tsx": [
@@ -594,11 +500,7 @@
   "src\\app\\layout.tsx": [
     {
       "line": 16,
-      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
-    },
-    {
-      "line": 19,
-      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+      "text": "const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';"
     },
     {
       "line": 21,
@@ -606,27 +508,13 @@
     },
     {
       "line": 126,
-      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
-    },
-    {
-      "line": 129,
-      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
-    }
-  ],
-  "src\\app\\login\\LoginClient.tsx": [
-    {
-      "line": 10,
-      "text": "export default function LoginPage({ agencyName = \"AACOM Seguros\", agencyLogo = \"/logo.png\" }: { agencyName?: string, agencyLogo?: string }) {"
+      "text": "const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';"
     }
   ],
   "src\\app\\login\\page.tsx": [
     {
       "line": 7,
-      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
-    },
-    {
-      "line": 11,
-      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+      "text": "const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';"
     },
     {
       "line": 14,
@@ -636,11 +524,7 @@
   "src\\app\\manifest.ts": [
     {
       "line": 7,
-      "text": "const slug = headersList.get('x-agency-slug') || 'aacom';"
-    },
-    {
-      "line": 11,
-      "text": "agency = await prisma.agency.findUnique({ where: { slug: 'aacom' } });"
+      "text": "const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';"
     }
   ],
   "src\\app\\presentacion\\page.tsx": [
@@ -781,10 +665,6 @@
   ],
   "src\\app\\registro\\page.tsx": [
     {
-      "line": 189,
-      "text": "<img src=\"/logo.png\" alt=\"AACOM\" className=\"h-12 mx-auto mb-6\" />"
-    },
-    {
       "line": 306,
       "text": ".aacomsoft.com"
     }
@@ -892,7 +772,7 @@
   "src\\auth.ts": [
     {
       "line": 39,
-      "text": "if (user.role !== 'SUPER_ADMIN' && user.role !== 'SELLER' && user.email !== 'enrique.ahumada@aacommx.com') {"
+      "text": "if (user.role !== 'SUPER_ADMIN' && user.role !== 'SELLER' && !(process.env.SUPER_ADMIN_EMAILS || \"enrique.ahumada@aacommx.com\").includes(user.email || \"\")) {"
     },
     {
       "line": 77,
@@ -900,7 +780,7 @@
     },
     {
       "line": 78,
-      "text": "if (user.email === 'enrique.ahumada@aacommx.com') {"
+      "text": "if ((process.env.SUPER_ADMIN_EMAILS || \"enrique.ahumada@aacommx.com\").includes(user.email || \"\")) {"
     },
     {
       "line": 87,
@@ -908,7 +788,7 @@
     },
     {
       "line": 88,
-      "text": "where: { slug: 'aacom' }"
+      "text": "where: { slug: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }"
     },
     {
       "line": 90,

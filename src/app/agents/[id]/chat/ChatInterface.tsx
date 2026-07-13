@@ -10,6 +10,26 @@ const ElevenLabsVoiceButton = dynamic(() => import("@/components/ElevenLabsVoice
 import { Send, User, Bot, Loader2, Download, Calendar, Clock, Trash, Mic, Mail, CheckSquare } from "lucide-react"
 import { GraphicDesignPreview } from "@/components/GraphicDesignPreview"
 import { AgentAvatar } from "@/components/AgentAvatar"
+import React, { Component, ErrorInfo, ReactNode } from "react"
+
+class VoiceErrorBoundary extends Component<{children: ReactNode}, {hasError: boolean, errorMsg: string}> {
+  constructor(props: {children: ReactNode}) {
+    super(props);
+    this.state = { hasError: false, errorMsg: "" };
+  }
+  static getDerivedStateFromError(error: Error) {
+    return { hasError: true, errorMsg: error.message };
+  }
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("VoiceButton Error:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return <div className="text-red-500 text-xs">Error voz: {this.state.errorMsg}</div>;
+    }
+    return this.props.children;
+  }
+}
 
 const downloadBrandedImage = async (imageUrl: string) => {
   try {
