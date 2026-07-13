@@ -2,6 +2,8 @@
 
 import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
+import { createGoogleGenerativeAI } from '@ai-sdk/google'
+import { generateText } from 'ai'
 
 async function lazyResetAndGetBalance(userId: string) {
   const now = new Date()
@@ -559,23 +561,72 @@ export async function syncVoiceCallSummary(conversationId: string, agentId: stri
       return { success: true, message: "Llamada vacía, no se generó resumen." };
     }
 
-    // 2. Dar formato estético al mensaje en markdown
+    // 2. Intentar generar minuta estructurada con Gemini a partir de la transcripción
+    let executiveSummary = "";
+    if (transcript.length > 0) {
+      try {
+        const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+        if (geminiApiKey) {
+          const google = createGoogleGenerativeAI({ apiKey: geminiApiKey });
+          
+          const rawTranscriptText = transcript.map((t: any) => {
+            const role = t.role === 'user' ? 'Usuario' : 'Asistente';
+            return `${role}: ${t.message}`;
+          }).join('\n');
+
+          const prompt = `Actúa como un asistente administrativo profesional experto en redacción de minutas de negocio. A continuación se muestra la transcripción de una llamada de voz.
+Genera un resumen ejecutivo estructurado con este formato exacto en Markdown:
+
+### 📋 Minuta y Acuerdos de Llamada
+**Resumen General**:
+(Escribe aquí un resumen breve y directo de 2-3 oraciones sobre lo platicado)
+
+**Decisiones y Acuerdos**:
+- (Lista con viñetas de lo que se decidió)
+
+**Tareas y Compromisos (Action Items)**:
+- (Lista con viñetas de las tareas pendientes de cada uno)
+
+Transcripción de la llamada:
+"""
+${rawTranscriptText}
+"""
+
+Responde únicamente con la minuta estructurada en Markdown. Sé conciso y profesional, evita introducciones o saludos.`;
+
+          const { text } = await generateText({
+            model: google('gemini-2.5-flash'),
+            prompt,
+          });
+          
+          executiveSummary = text;
+        }
+      } catch (geminiError) {
+        console.error("Error generating executive summary with Gemini:", geminiError);
+      }
+    }
+
+    // 3. Dar formato estético final al mensaje
     let content = `📞 **Resumen de Llamada de Voz**\n\n`;
-    if (summary) {
-      content += `> ${summary}\n\n`;
+    
+    if (executiveSummary) {
+      content += `${executiveSummary}\n\n`;
+    } else if (summary) {
+      content += `### 📋 Resumen General\n${summary}\n\n`;
     } else {
       content += `> *Llamada completada (sin resumen disponible).* \n\n`;
     }
 
     if (transcript.length > 0) {
-      content += `💬 **Detalle de la Conversación:**\n`;
+      content += `\n---\n<details>\n<summary>💬 Ver transcripción completa de la llamada</summary>\n\n`;
       transcript.forEach((t: any) => {
         const roleName = t.role === 'user' ? 'Tú' : 'María';
         content += `* **${roleName}:** ${t.message}\n`;
       });
+      content += `\n</details>`;
     }
 
-    // 3. Crear el registro en el historial de chat (InteractionLog)
+    // 4. Crear el registro en el historial de chat (InteractionLog)
     await prisma.interactionLog.create({
       data: {
         aiAgentId: agentId,
