@@ -113,14 +113,43 @@ export async function scheduleVoiceMeeting(title: string, date: string, time: st
         userId: user.id
       }
     })
-    return `Reunión agendada exitosamente en el calendario local: "${meeting.title}" el ${meeting.date} a las ${meeting.time} (${meeting.duration} minutos).`
+
+    // Intentar sincronizar con Google Calendar
+    try {
+      const calendar = await getGoogleCalendarClient(user.id)
+      if (calendar) {
+        const startDate = new Date(`${date}T${time}:00`);
+        const endDate = new Date(startDate.getTime() + duration * 60000);
+
+        await calendar.events.insert({
+          calendarId: 'primary',
+          requestBody: {
+            summary: title,
+            start: {
+              dateTime: startDate.toISOString(),
+              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+            },
+            end: {
+              dateTime: endDate.toISOString(),
+              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+            }
+          }
+        });
+        return `Reunión agendada exitosamente en tu agenda local y sincronizada con Google Calendar: "${meeting.title}" el ${meeting.date} a las ${meeting.time} (${meeting.duration} minutos).`
+      }
+    } catch (calError) {
+      console.error("Error sincronizando con Google Calendar:", calError)
+      // Fallback silencioso si falla la sincronización, pero se guardó en local
+    }
+
+    return `Reunión agendada exitosamente en el calendario local (sin Google Calendar): "${meeting.title}" el ${meeting.date} a las ${meeting.time} (${meeting.duration} minutos).`
   } catch (error: any) {
     console.error("Error agendando reunión:", error)
     return `No se pudo agendar la reunión debido a un error: ${error.message}`
   }
 }
 
-import { getGmailClient } from '@/lib/google-clients'
+import { getGmailClient, getGoogleCalendarClient } from '@/lib/google-clients'
 
 export async function draftVoiceEmail(to: string, subject: string, body: string, agentId: string) {
   const session = await auth()
