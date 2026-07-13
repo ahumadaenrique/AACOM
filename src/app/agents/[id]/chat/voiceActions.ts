@@ -181,3 +181,107 @@ export async function draftVoiceEmail(to: string, subject: string, body: string,
     return `No se pudo procesar el correo debido a un error: ${error.message}`
   }
 }
+
+export async function createVoiceTask(title: string, description: string | undefined, priority: 'LOW' | 'MEDIUM' | 'HIGH', dueDate: string | undefined, agentId: string) {
+  const session = await auth()
+  if (!session?.user?.email) return "No autenticado"
+
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } })
+  if (!user) return "Usuario no encontrado"
+
+  try {
+    const existingTask = await prisma.task.findFirst({
+      where: { userId: user.id, title, createdAt: { gte: new Date(Date.now() - 15000) } }
+    })
+    
+    if (existingTask) {
+      return `La tarea ya fue creada hace un momento. ID: ${existingTask.id}`
+    }
+
+    const task = await prisma.task.create({
+      data: { title, description, priority: priority || 'MEDIUM', dueDate, userId: user.id }
+    })
+    
+    return `Tarea creada exitosamente: "${task.title}".`
+  } catch (e: any) {
+    return `Error al crear la tarea: ${e.message}`
+  }
+}
+
+export async function listVoiceTasks(completed: boolean, agentId: string) {
+  const session = await auth()
+  if (!session?.user?.email) return "No autenticado"
+
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } })
+  if (!user) return "Usuario no encontrado"
+
+  try {
+    const tasks = await prisma.task.findMany({
+      where: { userId: user.id, completed },
+      orderBy: { createdAt: 'desc' }
+    })
+
+    if (tasks.length === 0) {
+      return `No tienes tareas ${completed ? 'completadas' : 'pendientes'} actualmente.`
+    }
+
+    return `Tareas ${completed ? 'completadas' : 'pendientes'}:\n` + tasks.map(t => 
+      `- [${t.priority}] ${t.title} (ID: ${t.id})${t.dueDate ? ` - Vence: ${t.dueDate}` : ''}`
+    ).join('\n')
+  } catch (e: any) {
+    return `Error al listar las tareas: ${e.message}`
+  }
+}
+
+export async function completeVoiceTask(title: string, agentId: string) {
+  const session = await auth()
+  if (!session?.user?.email) return "No autenticado"
+
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } })
+  if (!user) return "Usuario no encontrado"
+
+  try {
+    const tasks = await prisma.task.findMany({
+      where: { userId: user.id, completed: false }
+    })
+    const matched = tasks.find(t => t.title.toLowerCase().includes(title.toLowerCase()))
+    
+    if (!matched) {
+      return `No encontré ninguna tarea pendiente que se llame "${title}".`
+    }
+
+    await prisma.task.update({
+      where: { id: matched.id },
+      data: { completed: true }
+    })
+    return `La tarea "${matched.title}" ha sido completada.`
+  } catch (e: any) {
+    return `Error al completar la tarea: ${e.message}`
+  }
+}
+
+export async function deleteVoiceTask(title: string, agentId: string) {
+  const session = await auth()
+  if (!session?.user?.email) return "No autenticado"
+
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } })
+  if (!user) return "Usuario no encontrado"
+
+  try {
+    const tasks = await prisma.task.findMany({
+      where: { userId: user.id }
+    })
+    const matched = tasks.find(t => t.title.toLowerCase().includes(title.toLowerCase()))
+    
+    if (!matched) {
+      return `No encontré ninguna tarea que se llame "${title}".`
+    }
+
+    await prisma.task.delete({
+      where: { id: matched.id }
+    })
+    return `La tarea "${matched.title}" ha sido eliminada.`
+  } catch (e: any) {
+    return `Error al eliminar la tarea: ${e.message}`
+  }
+}

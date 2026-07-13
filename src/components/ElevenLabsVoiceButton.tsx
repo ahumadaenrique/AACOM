@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useConversation, ConversationProvider } from "@elevenlabs/react"
 import { Mic, MicOff, Loader2, PhoneOff, Phone } from "lucide-react"
-import { getVoiceBalance, deductVoiceSeconds, getElevenLabsAgentId, getVoiceAgentPrompt, getVoiceAgenda, scheduleVoiceMeeting, draftVoiceEmail } from "@/app/agents/[id]/chat/voiceActions"
+import { getVoiceBalance, deductVoiceSeconds, getElevenLabsAgentId, getVoiceAgentPrompt, getVoiceAgenda, scheduleVoiceMeeting, draftVoiceEmail, createVoiceTask, listVoiceTasks, completeVoiceTask, deleteVoiceTask } from "@/app/agents/[id]/chat/voiceActions"
 
 export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
   const [balanceSecs, setBalanceSecs] = useState<number>(0)
@@ -37,6 +37,23 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
       },
       redactar_correo: async (params: { destinatario: string, asunto: string, mensaje: string }) => {
         const result = await draftVoiceEmail(params.destinatario, params.asunto, params.mensaje, agentId)
+        return result;
+      },
+      crear_tarea: async (params: { titulo: string, descripcion?: string, prioridad?: string, fecha_limite?: string }) => {
+        const priority = params.prioridad === 'ALTA' ? 'HIGH' : (params.prioridad === 'BAJA' ? 'LOW' : 'MEDIUM');
+        const result = await createVoiceTask(params.titulo, params.descripcion, priority, params.fecha_limite, agentId)
+        return result;
+      },
+      listar_tareas: async (params: { completadas?: boolean }) => {
+        const result = await listVoiceTasks(!!params.completadas, agentId)
+        return result;
+      },
+      completar_tarea: async (params: { titulo: string }) => {
+        const result = await completeVoiceTask(params.titulo, agentId)
+        return result;
+      },
+      eliminar_tarea: async (params: { titulo: string }) => {
+        const result = await deleteVoiceTask(params.titulo, agentId)
         return result;
       }
     },
