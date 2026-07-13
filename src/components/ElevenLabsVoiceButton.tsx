@@ -38,6 +38,7 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
     clientTools: {
       consultar_agenda: async (params?: { fecha?: string }) => {
         console.log("Voice Tool [consultar_agenda] called with:", params)
+        const startTime = Date.now()
         try {
           const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }))
           const todayStr = mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0')
@@ -75,8 +76,6 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
               const maxTime = new Date(max.year, max.month, max.day).getTime()
               
               if (!isNaN(targetTime) && !isNaN(todayTime) && !isNaN(maxTime) && targetTime >= todayTime && targetTime <= maxTime) {
-                console.log(`Voice Tool [consultar_agenda] returning CACHED weekly agenda for date: ${targetDate}`)
-                
                 // 1. Filtrar Google Events de la fecha objetivo
                 const googleEvents = (cache.googleEvents || []).filter((e: any) => {
                   const startStr = e.start?.dateTime || e.start?.date || ""
@@ -88,41 +87,50 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
                   return m.date === targetDate
                 })
                 
+                let responseText = ""
                 if (cache.fetchedFromGoogle) {
                   if (googleEvents.length === 0) {
-                    return `No tienes reuniones agendadas en tu Google Calendar para el día ${targetDate}.`
+                    responseText = `No tienes reuniones agendadas en tu Google Calendar para el día ${targetDate}.`
+                  } else {
+                    const list = googleEvents.map((e: any) => {
+                      const start = e.start?.dateTime || e.start?.date || ""
+                      let timeFormatted = "Todo el día"
+                      if (start.includes('T')) {
+                        const eventDate = new Date(start)
+                        const localTimeStr = eventDate.toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false })
+                        timeFormatted = localTimeStr
+                      }
+                      return `- ${timeFormatted}: ${e.summary}`
+                    }).join('\n')
+                    
+                    responseText = `Reuniones agendadas en tu Google Calendar para el ${targetDate}:\n${list}`
                   }
-                  
-                  const list = googleEvents.map((e: any) => {
-                    const start = e.start?.dateTime || e.start?.date || ""
-                    let timeFormatted = "Todo el día"
-                    if (start.includes('T')) {
-                      const eventDate = new Date(start)
-                      const localTimeStr = eventDate.toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false })
-                      timeFormatted = localTimeStr
-                    }
-                    return `- ${timeFormatted}: ${e.summary}`
-                  }).join('\n')
-                  
-                  return `Reuniones agendadas en tu Google Calendar para el ${targetDate}:\n${list}`
                 } else {
                   if (localMeetings.length === 0) {
-                    return `No tienes reuniones agendadas para la fecha ${targetDate}.`
+                    responseText = `No tienes reuniones agendadas para la fecha ${targetDate}.`
+                  } else {
+                    const list = localMeetings.map((m: any) => `- ${m.time}: ${m.title}`).join('\n')
+                    responseText = `Reuniones agendadas para el ${targetDate} (local):\n${list}`
                   }
-                  const list = localMeetings.map((m: any) => `- ${m.time}: ${m.title}`).join('\n')
-                  return `Reuniones agendadas para el ${targetDate} (local):\n${list}`
                 }
+
+                const elapsed = Date.now() - startTime
+                console.log(`Voice Tool [consultar_agenda] returned CACHED data in ${elapsed}ms. Content:`, responseText)
+                return responseText
               }
             } catch (parseErr) {
               console.error("Safari Date comparison failed, using server fallback:", parseErr)
             }
           }
 
+          console.log("Voice Tool [consultar_agenda] cache missed. Fetching from server...")
           const result = await getVoiceAgenda(targetDate, agentId)
-          console.log("Voice Tool [consultar_agenda] success result:", result)
+          const elapsed = Date.now() - startTime
+          console.log(`Voice Tool [consultar_agenda] server fallback returned in ${elapsed}ms. Result:`, result)
           return result
         } catch (error: any) {
-          console.error("Voice Tool [consultar_agenda] execution error:", error)
+          const elapsed = Date.now() - startTime
+          console.error(`Voice Tool [consultar_agenda] execution error after ${elapsed}ms:`, error)
           return `Error al consultar la agenda: ${error.message}`
         }
       },
