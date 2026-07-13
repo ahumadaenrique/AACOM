@@ -3,15 +3,35 @@
 import { useState, useEffect, useRef } from "react"
 import { useConversation, ConversationProvider } from "@elevenlabs/react"
 import { Mic, MicOff, Loader2, PhoneOff, Phone } from "lucide-react"
-import { getVoiceBalance, deductVoiceSeconds, getElevenLabsAgentId } from "@/app/agents/[id]/chat/voiceActions"
+import { getVoiceBalance, deductVoiceSeconds, getElevenLabsAgentId, getVoiceAgentPrompt, getVoiceAgenda } from "@/app/agents/[id]/chat/voiceActions"
 
-function ElevenLabsVoiceButtonInner() {
+export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
   const [balanceSecs, setBalanceSecs] = useState<number>(0)
   const [sessionSeconds, setSessionSeconds] = useState<number>(0)
+  const [dynamicPrompt, setDynamicPrompt] = useState<string>("")
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const connectionStartRef = useRef<number | null>(null)
 
+  useEffect(() => {
+    // Cargar saldo inicial y prompt dinámico
+    getVoiceBalance().then(balance => setBalanceSecs(balance))
+    getVoiceAgentPrompt(agentId).then(prompt => setDynamicPrompt(prompt))
+    
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  }, [agentId])
+
   const conversation = useConversation({
+    clientTools: {
+      consultar_agenda: async () => {
+        // En un caso real ElevenLabs podría pasar la fecha como parámetro, 
+        // pero por ahora consultaremos la agenda de hoy
+        const targetDate = new Date().toISOString().split('T')[0]
+        const result = await getVoiceAgenda(targetDate, agentId)
+        return result;
+      }
+    },
     onConnect: () => {
       connectionStartRef.current = Date.now()
       setSessionSeconds(0)
@@ -60,15 +80,6 @@ function ElevenLabsVoiceButtonInner() {
     }
   })
 
-  useEffect(() => {
-    // Cargar saldo inicial
-    getVoiceBalance().then(balance => setBalanceSecs(balance))
-    
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current)
-    }
-  }, [])
-
   const startConversation = async () => {
     if (balanceSecs <= 0) {
       alert("No tienes saldo de minutos disponible. Por favor recarga tu billetera.")
@@ -78,14 +89,24 @@ function ElevenLabsVoiceButtonInner() {
     try {
       await navigator.mediaDevices.getUserMedia({ audio: true })
       
-      // Obtener el ID del Agente desde el backend (o .env)
-      const agentId = await getElevenLabsAgentId()
-      if (!agentId) {
+      const elAgentId = await getElevenLabsAgentId()
+      if (!elAgentId) {
         alert("El ID del Agente ElevenLabs no está configurado.")
         return
       }
 
-      await conversation.startSession({ agentId })
+      const sessionOptions: any = { agentId: elAgentId }
+      if (dynamicPrompt) {
+        sessionOptions.overrides = {
+          agent: {
+            prompt: {
+              prompt: dynamicPrompt
+            }
+          }
+        }
+      }
+
+      await conversation.startSession(sessionOptions)
     } catch (error) {
       console.error("Error iniciando conversación:", error)
       alert("No se pudo acceder al micrófono o hubo un error al conectar.")
@@ -153,10 +174,10 @@ function ElevenLabsVoiceButtonInner() {
   )
 }
 
-export function ElevenLabsVoiceButton() {
+export function ElevenLabsVoiceButton({ agentId }: { agentId: string }) {
   return (
     <ConversationProvider>
-      <ElevenLabsVoiceButtonInner />
+      <ElevenLabsVoiceButtonInner agentId={agentId} />
     </ConversationProvider>
   )
 }

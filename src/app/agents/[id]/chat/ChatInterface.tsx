@@ -318,7 +318,7 @@ export default function ChatInterface({
       <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
         {agent.type === 'EXECUTIVE_ASSISTANT' && (
           <VoiceErrorBoundary>
-            <ElevenLabsVoiceButton />
+            <ElevenLabsVoiceButton agentId={agent.id} />
           </VoiceErrorBoundary>
         )}
 
