@@ -39,27 +39,28 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
         const result = await draftVoiceEmail(params.destinatario, params.asunto, params.mensaje, agentId)
         return result;
       },
-      crear_tarea: async (params: { titulo: string, descripcion?: string, prioridad?: string, fecha_limite?: string }) => {
-        const priority = params.prioridad === 'ALTA' ? 'HIGH' : (params.prioridad === 'BAJA' ? 'LOW' : 'MEDIUM');
-        const result = await createVoiceTask(params.titulo, params.descripcion, priority, params.fecha_limite, agentId)
-        return result;
-      },
-      /*
-      listar_tareas: async (params: { completadas?: boolean }) => {
-        const result = await listVoiceTasks(!!params.completadas, agentId)
-        return result;
+      gestionar_tareas: async (params: { accion: 'crear' | 'listar' | 'completar' | 'eliminar', titulo?: string, descripcion?: string, prioridad?: string, fecha_limite?: string, completadas?: boolean }) => {
+        switch (params.accion) {
+          case 'crear': {
+            if (!params.titulo) return "Falta el título de la tarea para poder crearla.";
+            const priority = params.prioridad === 'ALTA' ? 'HIGH' : (params.prioridad === 'BAJA' ? 'LOW' : 'MEDIUM');
+            return await createVoiceTask(params.titulo, params.descripcion, priority, params.fecha_limite, agentId);
+          }
+          case 'listar': {
+            return await listVoiceTasks(!!params.completadas, agentId);
+          }
+          case 'completar': {
+            if (!params.titulo) return "Falta el título de la tarea a completar.";
+            return await completeVoiceTask(params.titulo, agentId);
+          }
+          case 'eliminar': {
+            if (!params.titulo) return "Falta el título de la tarea a eliminar.";
+            return await deleteVoiceTask(params.titulo, agentId);
+          }
+          default:
+            return "Acción no reconocida.";
+        }
       }
-      */
-      /*
-      completar_tarea: async (params: { titulo: string }) => {
-        const result = await completeVoiceTask(params.titulo, agentId)
-        return result;
-      },
-      eliminar_tarea: async (params: { titulo: string }) => {
-        const result = await deleteVoiceTask(params.titulo, agentId)
-        return result;
-      }
-      */
     },
     onConnect: () => {
       connectionStartRef.current = Date.now()
