@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useConversation, ConversationProvider } from "@elevenlabs/react"
 import { Mic, MicOff, Loader2, PhoneOff, Phone } from "lucide-react"
-import { getVoiceBalance, deductVoiceSeconds, getElevenLabsAgentId, getVoiceAgentPrompt, getVoiceAgenda } from "@/app/agents/[id]/chat/voiceActions"
+import { getVoiceBalance, deductVoiceSeconds, getElevenLabsAgentId, getVoiceAgentPrompt, getVoiceAgenda, scheduleVoiceMeeting, draftVoiceEmail } from "@/app/agents/[id]/chat/voiceActions"
 
 export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
   const [balanceSecs, setBalanceSecs] = useState<number>(0)
@@ -29,6 +29,14 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
         // pero por ahora consultaremos la agenda de hoy
         const targetDate = new Date().toISOString().split('T')[0]
         const result = await getVoiceAgenda(targetDate, agentId)
+        return result;
+      },
+      agendar_reunion: async (params: { titulo: string, fecha: string, hora: string, duracion: number }) => {
+        const result = await scheduleVoiceMeeting(params.titulo, params.fecha, params.hora, params.duracion || 60, agentId)
+        return result;
+      },
+      redactar_correo: async (params: { destinatario: string, asunto: string, mensaje: string }) => {
+        const result = await draftVoiceEmail(params.destinatario, params.asunto, params.mensaje, agentId)
         return result;
       }
     },
