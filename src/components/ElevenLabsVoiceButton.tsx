@@ -38,7 +38,7 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
       redactar_correo: async (params: { destinatario: string, asunto: string, mensaje: string }) => {
         const result = await draftVoiceEmail(params.destinatario, params.asunto, params.mensaje, agentId)
         return result;
-      }
+      },
       gestionar_tareas: async (params: { accion: 'crear' | 'listar' | 'completar' | 'eliminar', titulo?: string, descripcion?: string, prioridad?: string, fecha_limite?: string, completadas?: boolean }) => {
         switch (params.accion) {
           case 'crear': {
