@@ -125,6 +125,7 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
       }
 
       const sessionOptions: any = { agentId: elAgentId }
+      /*
       if (dynamicPrompt) {
         sessionOptions.overrides = {
           agent: {
@@ -134,7 +135,7 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
           }
         }
       }
-
+      */
       await conversation.startSession(sessionOptions)
     } catch (error) {
       console.error("Error iniciando conversación:", error)
