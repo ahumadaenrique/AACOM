@@ -24,7 +24,7 @@ export default auth((req) => {
         } else {
              const parts = hostname.split('.');
              // Check if it's a subdomain (e.g. not localhost:3000, not www.aacomsoft.com, etc)
-             if (parts.length >= 2 && parts[0] !== 'www' && !hostname.startsWith('localhost:')) {
+             if (parts.length > 2 && parts[0] !== 'www' && !hostname.startsWith('localhost:')) {
                   slug = parts[0];
              }
         }
