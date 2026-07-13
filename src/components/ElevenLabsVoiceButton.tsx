@@ -39,11 +39,13 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
         const result = await draftVoiceEmail(params.destinatario, params.asunto, params.mensaje, agentId)
         return result;
       },
+      /*
       crear_tarea: async (params: { titulo: string, descripcion?: string, prioridad?: string, fecha_limite?: string }) => {
         const priority = params.prioridad === 'ALTA' ? 'HIGH' : (params.prioridad === 'BAJA' ? 'LOW' : 'MEDIUM');
         const result = await createVoiceTask(params.titulo, params.descripcion, priority, params.fecha_limite, agentId)
         return result;
       },
+      */
       listar_tareas: async (params: { completadas?: boolean }) => {
         const result = await listVoiceTasks(!!params.completadas, agentId)
         return result;
