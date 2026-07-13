@@ -315,29 +315,34 @@ export default function ChatInterface({
       <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/10 via-neutral-950 to-neutral-950"></div>
       
       {/* Top Actions Bar */}
-      <div className="absolute top-4 right-4 z-20 flex items-center gap-3">
-        {agent.type === 'EXECUTIVE_ASSISTANT' && (
-          <VoiceErrorBoundary>
-            <ElevenLabsVoiceButton agentId={agent.id} />
-          </VoiceErrorBoundary>
-        )}
+      <div className="w-full py-3 px-4 md:px-6 border-b border-neutral-900 bg-neutral-950/40 backdrop-blur-md flex items-center justify-between shrink-0 z-20">
+        <div className="text-xs text-neutral-500 font-medium">
+          {/* Espacio para estatus o vacío */}
+        </div>
+        <div className="flex items-center gap-3">
+          {agent.type === 'EXECUTIVE_ASSISTANT' && (
+            <VoiceErrorBoundary>
+              <ElevenLabsVoiceButton agentId={agent.id} />
+            </VoiceErrorBoundary>
+          )}
 
-        {messages.length > 0 && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleClearChat}
-            disabled={isClearing}
-            className="bg-neutral-900/90 border-neutral-800 text-neutral-400 hover:text-red-400 hover:bg-red-950/20 backdrop-blur transition-all text-xs flex items-center gap-1.5 shadow-md rounded-xl"
-          >
-            {isClearing ? (
-              <Loader2 className="w-3.5 h-3.5 animate-spin" />
-            ) : (
-              <Trash className="w-3.5 h-3.5" />
-            )}
-            Limpiar Conversación
-          </Button>
-        )}
+          {messages.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleClearChat}
+              disabled={isClearing}
+              className="bg-neutral-900/90 border-neutral-800 text-neutral-400 hover:text-red-400 hover:bg-red-950/20 backdrop-blur transition-all text-xs flex items-center gap-1.5 shadow-md rounded-xl py-2 px-3"
+            >
+              {isClearing ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Trash className="w-3.5 h-3.5" />
+              )}
+              <span className="hidden sm:inline">Limpiar Conversación</span>
+            </Button>
+          )}
+        </div>
       </div>
       
       {/* Chat Messages Area */}
