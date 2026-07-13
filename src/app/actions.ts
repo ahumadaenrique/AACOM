@@ -999,13 +999,21 @@ export async function getAnnouncements(type: string = 'HOME_AD') {
             userAgencyId = u?.agencyId || null;
         }
 
+        const defaultAgencySlug = process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';
+        let isDefaultAgency = false;
+        if (userAgencyId) {
+            const ag = await prisma.agency.findUnique({ where: { id: userAgencyId } });
+            isDefaultAgency = ag?.slug === defaultAgencySlug;
+        } else {
+            isDefaultAgency = true; // Orphaned users see orphaned ads
+        }
+
         const list = await prisma.content.findMany({
             where: { 
                 type,
-                OR: [
-                    { agencyId: userAgencyId },
-                    { agencyId: null }
-                ]
+                OR: isDefaultAgency
+                    ? [ { agencyId: userAgencyId }, { agencyId: null } ]
+                    : [ { agencyId: userAgencyId } ]
             },
             orderBy: { createdAt: 'desc' }
         });

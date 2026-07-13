@@ -53,14 +53,16 @@ export default async function HomePage() {
         }
     }
 
+    const defaultAgencySlug = process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';
+    const isDefaultAgency = agency?.slug === defaultAgencySlug;
+
     const announcements = await prisma.content.findMany({
         where: {
             type: 'HOME_AD',
             active: true,
-            OR: [
-                { agencyId: agency?.id || undefined },
-                { agencyId: null }
-            ]
+            OR: isDefaultAgency 
+                ? [ { agencyId: agency?.id || undefined }, { agencyId: null } ]
+                : [ { agencyId: agency?.id || undefined } ]
         },
         orderBy: {
             createdAt: 'desc'
