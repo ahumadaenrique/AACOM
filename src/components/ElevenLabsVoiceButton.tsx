@@ -26,10 +26,12 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
 
   const conversation = useConversation({
     clientTools: {
-      consultar_agenda: async () => {
-        // En un caso real ElevenLabs podría pasar la fecha como parámetro, 
-        // pero por ahora consultaremos la agenda de hoy
-        const targetDate = new Date().toISOString().split('T')[0]
+      consultar_agenda: async (params?: { fecha?: string }) => {
+        let targetDate = params?.fecha;
+        if (!targetDate) {
+          const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+          targetDate = mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0');
+        }
         const result = await getVoiceAgenda(targetDate, agentId)
         return result;
       },

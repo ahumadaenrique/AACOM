@@ -174,6 +174,44 @@ export async function getVoiceAgenda(dateStr: string, agentId: string) {
   const user = await prisma.user.findUnique({ where: { email: session.user.email } })
   if (!user) return "Usuario no encontrado."
 
+  // 1. Intentar obtener la agenda desde Google Calendar
+  try {
+    const calendar = await getGoogleCalendarClient(user.id)
+    if (calendar) {
+      const timeMin = `${dateStr}T00:00:00-06:00`
+      const timeMax = `${dateStr}T23:59:59-06:00`
+      
+      const response = await calendar.events.list({
+        calendarId: 'primary',
+        timeMin: new Date(timeMin).toISOString(),
+        timeMax: new Date(timeMax).toISOString(),
+        singleEvents: true,
+        orderBy: 'startTime'
+      })
+      
+      const events = response.data.items || []
+      if (events.length === 0) {
+        return `No tienes reuniones agendadas en tu Google Calendar para el día ${dateStr}.`
+      }
+      
+      const list = events.map(e => {
+        const start = e.start?.dateTime || e.start?.date || ""
+        let timeFormatted = "Todo el día"
+        if (start.includes('T')) {
+          const eventDate = new Date(start)
+          const localTimeStr = eventDate.toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false })
+          timeFormatted = localTimeStr
+        }
+        return `- ${timeFormatted}: ${e.summary}`
+      }).join('\n')
+      
+      return `Reuniones agendadas en tu Google Calendar para el ${dateStr}:\n${list}`
+    }
+  } catch (err) {
+    console.error("Error fetching from Google Calendar, falling back to local DB:", err)
+  }
+
+  // 2. Fallback a la base de datos local
   const localMeetings = await prisma.meeting.findMany({
     where: {
       userId: user.id,
@@ -187,7 +225,7 @@ export async function getVoiceAgenda(dateStr: string, agentId: string) {
   }
 
   const list = localMeetings.map(m => `- ${m.time}: ${m.title}`).join('\n')
-  return `Reuniones agendadas para el ${dateStr}:\n${list}`
+  return `Reuniones agendadas para el ${dateStr} (local):\n${list}`
 }
 
 export async function scheduleVoiceMeeting(title: string, date: string, time: string, duration: number, agentId: string) {
