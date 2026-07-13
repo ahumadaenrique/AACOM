@@ -150,9 +150,10 @@ export async function getVoiceAgentPrompt(agentId: string) {
 
   const agent = await prisma.aIAgent.findUnique({
     where: { id: agentId },
-    select: { name: true }
+    select: { name: true, systemPrompt: true }
   })
   const agentName = agent?.name || "María"
+  const instruccionesExtra = agent?.systemPrompt || ""
 
   // Retornamos las variables dinámicas
   let contactosList = "No tienes contactos frecuentes configurados."
@@ -167,7 +168,8 @@ export async function getVoiceAgentPrompt(agentId: string) {
   return {
     fecha_de_hoy: today,
     contactos_frecuentes: contactosList,
-    nombre_agente: agentName
+    nombre_agente: agentName,
+    instrucciones_adicionales: instruccionesExtra
   }
 }
 
