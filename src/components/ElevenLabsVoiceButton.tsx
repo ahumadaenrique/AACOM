@@ -1,11 +1,11 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { useConversation } from "@elevenlabs/react"
+import { useConversation, ConversationProvider } from "@elevenlabs/react"
 import { Mic, MicOff, Loader2, PhoneOff, Phone } from "lucide-react"
 import { getVoiceBalance, deductVoiceSeconds, getElevenLabsAgentId } from "@/app/agents/[id]/chat/voiceActions"
 
-export function ElevenLabsVoiceButton() {
+function ElevenLabsVoiceButtonInner() {
   const [balanceSecs, setBalanceSecs] = useState<number>(0)
   const [sessionSeconds, setSessionSeconds] = useState<number>(0)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
@@ -150,5 +150,13 @@ export function ElevenLabsVoiceButton() {
         <Phone className="w-5 h-5" />
       </button>
     </div>
+  )
+}
+
+export function ElevenLabsVoiceButton() {
+  return (
+    <ConversationProvider>
+      <ElevenLabsVoiceButtonInner />
+    </ConversationProvider>
   )
 }
