@@ -55,49 +55,66 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
           if (weeklyCacheRef.current?.success) {
             const cache = weeklyCacheRef.current
             
-            // Convertir fechas a timestamps para comparación
-            const targetTime = new Date(`${targetDate}T00:00:00`).getTime()
-            const todayTime = new Date(`${cache.todayStr}T00:00:00`).getTime()
-            const maxTime = new Date(`${cache.maxDateStr}T00:00:00`).getTime()
-            
-            if (targetTime >= todayTime && targetTime <= maxTime) {
-              console.log(`Voice Tool [consultar_agenda] returning CACHED weekly agenda for date: ${targetDate}`)
-              
-              // 1. Filtrar Google Events de la fecha objetivo
-              const googleEvents = (cache.googleEvents || []).filter((e: any) => {
-                const startStr = e.start?.dateTime || e.start?.date || ""
-                return startStr.startsWith(targetDate)
-              })
-              
-              // 2. Filtrar Local Meetings de la fecha objetivo
-              const localMeetings = (cache.localMeetings || []).filter((m: any) => {
-                return m.date === targetDate
-              })
-              
-              if (cache.fetchedFromGoogle) {
-                if (googleEvents.length === 0) {
-                  return `No tienes reuniones agendadas en tu Google Calendar para el día ${targetDate}.`
-                }
-                
-                const list = googleEvents.map((e: any) => {
-                  const start = e.start?.dateTime || e.start?.date || ""
-                  let timeFormatted = "Todo el día"
-                  if (start.includes('T')) {
-                    const eventDate = new Date(start)
-                    const localTimeStr = eventDate.toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false })
-                    timeFormatted = localTimeStr
-                  }
-                  return `- ${timeFormatted}: ${e.summary}`
-                }).join('\n')
-                
-                return `Reuniones agendadas en tu Google Calendar para el ${targetDate}:\n${list}`
-              } else {
-                if (localMeetings.length === 0) {
-                  return `No tienes reuniones agendadas para la fecha ${targetDate}.`
-                }
-                const list = localMeetings.map((m: any) => `- ${m.time}: ${m.title}`).join('\n')
-                return `Reuniones agendadas para el ${targetDate} (local):\n${list}`
+            // Parseo ultra seguro compatible con Safari y navegadores móviles
+            const parseDateParts = (dStr: string) => {
+              const parts = dStr.split('-');
+              return {
+                year: parseInt(parts[0], 10),
+                month: parseInt(parts[1], 10) - 1,
+                day: parseInt(parts[2], 10)
               }
+            }
+            
+            try {
+              const target = parseDateParts(targetDate)
+              const today = parseDateParts(cache.todayStr)
+              const max = parseDateParts(cache.maxDateStr)
+              
+              const targetTime = new Date(target.year, target.month, target.day).getTime()
+              const todayTime = new Date(today.year, today.month, today.day).getTime()
+              const maxTime = new Date(max.year, max.month, max.day).getTime()
+              
+              if (!isNaN(targetTime) && !isNaN(todayTime) && !isNaN(maxTime) && targetTime >= todayTime && targetTime <= maxTime) {
+                console.log(`Voice Tool [consultar_agenda] returning CACHED weekly agenda for date: ${targetDate}`)
+                
+                // 1. Filtrar Google Events de la fecha objetivo
+                const googleEvents = (cache.googleEvents || []).filter((e: any) => {
+                  const startStr = e.start?.dateTime || e.start?.date || ""
+                  return startStr.startsWith(targetDate)
+                })
+                
+                // 2. Filtrar Local Meetings de la fecha objetivo
+                const localMeetings = (cache.localMeetings || []).filter((m: any) => {
+                  return m.date === targetDate
+                })
+                
+                if (cache.fetchedFromGoogle) {
+                  if (googleEvents.length === 0) {
+                    return `No tienes reuniones agendadas en tu Google Calendar para el día ${targetDate}.`
+                  }
+                  
+                  const list = googleEvents.map((e: any) => {
+                    const start = e.start?.dateTime || e.start?.date || ""
+                    let timeFormatted = "Todo el día"
+                    if (start.includes('T')) {
+                      const eventDate = new Date(start)
+                      const localTimeStr = eventDate.toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false })
+                      timeFormatted = localTimeStr
+                    }
+                    return `- ${timeFormatted}: ${e.summary}`
+                  }).join('\n')
+                  
+                  return `Reuniones agendadas en tu Google Calendar para el ${targetDate}:\n${list}`
+                } else {
+                  if (localMeetings.length === 0) {
+                    return `No tienes reuniones agendadas para la fecha ${targetDate}.`
+                  }
+                  const list = localMeetings.map((m: any) => `- ${m.time}: ${m.title}`).join('\n')
+                  return `Reuniones agendadas para el ${targetDate} (local):\n${list}`
+                }
+              }
+            } catch (parseErr) {
+              console.error("Safari Date comparison failed, using server fallback:", parseErr)
             }
           }
 
@@ -182,11 +199,8 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
       connectionStartRef.current = Date.now()
       setSessionSeconds(0)
       
-      // Pre-cargar la agenda al conectar para que responda instantáneamente
-      getVoiceWeeklyEvents(agentId).then(weeklyData => {
-        weeklyCacheRef.current = weeklyData
-        console.log("Voice weekly agenda pre-fetched on connect:", weeklyData)
-      }).catch(() => {})
+      // NOTA: Eliminamos la pre-carga al conectar de aquí. Esto previene un pico de red en tu celular
+      // justo cuando se está negociando y transmitiendo el audio WebRTC (evitando cortes y lentitud).
       
       timerRef.current = setInterval(() => {
         setSessionSeconds(prev => prev + 1)
