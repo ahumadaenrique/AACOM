@@ -47,7 +47,8 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
       listar_tareas: async (params: { completadas?: boolean }) => {
         const result = await listVoiceTasks(!!params.completadas, agentId)
         return result;
-      },
+      }
+      /*
       completar_tarea: async (params: { titulo: string }) => {
         const result = await completeVoiceTask(params.titulo, agentId)
         return result;
@@ -56,6 +57,7 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
         const result = await deleteVoiceTask(params.titulo, agentId)
         return result;
       }
+      */
     },
     onConnect: () => {
       connectionStartRef.current = Date.now()
