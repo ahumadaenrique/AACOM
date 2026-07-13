@@ -1246,7 +1246,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
       tools.generateGraphicDesign = (tool as any)({
         description: 'Genera un diseño gráfico publicitario para redes sociales con una persona recortada sin fondo, colores de marca y texto superpuesto.',
         parameters: z.object({
-          prompt: z.string().describe('Descripción detallada en inglés de la persona a generar (ej. "a professional insurance agent smiling, studio lighting"). NUNCA incluyas fondos.'),
+          prompt: z.string().describe('Descripción detallada en inglés de la PERSONA o PERSONAS (sujetos humanos) a generar (ej. "a happy Mexican family hugging in a cozy living room, warm lighting" o "a relieved father inspecting a pipe in his kitchen"). DEBE contener humanos de forma obligatoria. NUNCA describas casas solas, objetos o símbolos sin personas, de lo contrario la eliminación de fondo (birefnet) borrará todo y el diseño quedará vacío.'),
           copyText: z.string().describe('El texto persuasivo corto (máximo 8 palabras) que aparecerá en el diseño.'),
           subtitle: z.string().describe('Un subtítulo muy corto (máximo 12 palabras) debajo del texto principal.'),
           socialMediaCaption: z.string().describe('El texto completo de la publicación para redes sociales (con emojis y hashtags) que acompañará a la imagen.'),
@@ -1457,6 +1457,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
            * Si el tema es inflación médica o precios altos de seguros: "a worried Mexican middle-aged man holding hospital bills, hospital background, cinematic lighting, sharp focus" o "a professional female doctor looking serious, pointing at a rising medical cost chart, studio lighting".
            * Si el tema es retiro o vejez: "a happy senior couple walking on a beach, cinematic sunset, warm colors".
            * Si el tema es accidentes o autos: "a family standing safely next to a car, modern urban background".
+           * Si el tema es hogar o casa: "a happy family hugging inside their cozy living room, warm ambient lighting" o "a relieved homeowner standing inside a safe house, soft cinematic lighting".
            * REGLA DE ORO DE LA FOTO: Evita generar siempre el típico "smiling agent". Ajusta la persona, su edad, profesión y emoción al contexto exacto de la nota. PROHIBIDO pedir logos, íconos, vectores planos, símbolos (como "un escudo", "un billete", "una flecha") o texto escrito dentro de la imagen. El 'prompt' debe describir EXCLUSIVAMENTE escenas fotográficas cinematográficas, sujetos humanos, o personajes 3D hiper-detallados en situaciones reales.
          - 'copyText': El título o gancho visual principal de la tarjeta. Debe ser un extracto llamativo y corto (máximo 8 palabras) de la noticia o el gancho principal (ej. "+20% Inflación Médica", "Seguro de Auto 2026", "Asegura Tu Retiro", "Gasto Médico Sube"). NUNCA uses "El mejor seguro para ti" a menos que sea genérico.
          - 'subtitle': Un subtítulo muy corto de soporte (máximo 12 palabras) que complemente al título (ej. "Los costos hospitalarios subirán este año en México" o "Protégete frente al incremento de precios").
