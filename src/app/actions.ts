@@ -1002,7 +1002,10 @@ export async function getAnnouncements(type: string = 'HOME_AD') {
         const list = await prisma.content.findMany({
             where: { 
                 type,
-                agencyId: userAgencyId
+                OR: [
+                    { agencyId: userAgencyId },
+                    { agencyId: null }
+                ]
             },
             orderBy: { createdAt: 'desc' }
         });

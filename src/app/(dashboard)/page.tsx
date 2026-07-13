@@ -57,7 +57,10 @@ export default async function HomePage() {
         where: {
             type: 'HOME_AD',
             active: true,
-            agencyId: agency?.id || undefined
+            OR: [
+                { agencyId: agency?.id || undefined },
+                { agencyId: null }
+            ]
         },
         orderBy: {
             createdAt: 'desc'
