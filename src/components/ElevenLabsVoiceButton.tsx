@@ -23,40 +23,7 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
   }, [agentId])
 
   const conversation = useConversation({
-    clientTools: {
-      consultar_agenda: async () => {
-        // En un caso real ElevenLabs podría pasar la fecha como parámetro, 
-        // pero por ahora consultaremos la agenda de hoy
-        const targetDate = new Date().toISOString().split('T')[0]
-        const result = await getVoiceAgenda(targetDate, agentId)
-        return result;
-      },
-      agendar_reunion: async (params: { titulo: string, fecha: string, hora: string, duracion: number }) => {
-        const result = await scheduleVoiceMeeting(params.titulo, params.fecha, params.hora, params.duracion || 60, agentId)
-        return result;
-      },
-      redactar_correo: async (params: { destinatario: string, asunto: string, mensaje: string }) => {
-        const result = await draftVoiceEmail(params.destinatario, params.asunto, params.mensaje, agentId)
-        return result;
-      },
-      crear_tarea: async (params: { titulo: string, descripcion?: string, prioridad?: string, fecha_limite?: string }) => {
-        const priority = params.prioridad === 'ALTA' ? 'HIGH' : (params.prioridad === 'BAJA' ? 'LOW' : 'MEDIUM');
-        const result = await createVoiceTask(params.titulo, params.descripcion, priority, params.fecha_limite, agentId)
-        return result;
-      },
-      listar_tareas: async (params: { completadas?: boolean }) => {
-        const result = await listVoiceTasks(!!params.completadas, agentId)
-        return result;
-      },
-      completar_tarea: async (params: { titulo: string }) => {
-        const result = await completeVoiceTask(params.titulo, agentId)
-        return result;
-      },
-      eliminar_tarea: async (params: { titulo: string }) => {
-        const result = await deleteVoiceTask(params.titulo, agentId)
-        return result;
-      }
-    },
+    // clientTools: {}
     onConnect: () => {
       connectionStartRef.current = Date.now()
       setSessionSeconds(0)
