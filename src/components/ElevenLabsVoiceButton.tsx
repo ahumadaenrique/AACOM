@@ -96,8 +96,9 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
       }
       setSessionSeconds(0)
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error en conversación:", error)
+      alert("Error de ElevenLabs: " + (error?.message || typeof error === 'string' ? error : JSON.stringify(error)))
     }
   })
 
