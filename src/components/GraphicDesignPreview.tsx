@@ -181,29 +181,29 @@ export function GraphicDesignPreview({
           ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 80)
         }
 
-        // Person with soft glow
+        // Person shifted to the right (Side-by-side layout)
         ctx.shadowColor = 'rgba(255,255,255,0.1)'
         ctx.shadowBlur = 40
         ctx.shadowOffsetY = 0
-        await drawImage(result.transparentUrl, 100, 180, 880, 880)
+        await drawImage(result.transparentUrl, 380, 200, 700, 880)
         
         // Dark drop shadow behind person
         ctx.shadowColor = 'rgba(0,0,0,0.6)'
         ctx.shadowBlur = 60
         ctx.shadowOffsetY = 30
-        await drawImage(result.transparentUrl, 100, 180, 880, 880)
+        await drawImage(result.transparentUrl, 380, 200, 700, 880)
         ctx.shadowBlur = 0
         ctx.shadowOffsetY = 0
         
-        // Text Overlays
-        const nextY = drawTextWrapped(safeCopyText, 80, 150, 900, false)
+        // Text Overlays on the left side (restricted to 520px width)
+        const nextY = drawTextWrapped(safeCopyText, 80, 200, 520, false)
         if (safeSubtitle) {
-          drawTextWrapped(safeSubtitle, 80, nextY + 15, 900, true)
+          drawTextWrapped(safeSubtitle, 80, nextY + 20, 520, true)
         }
 
         // True Glassmorphism Logo Pill
         if (logoToUse) {
-          const pw = 400, ph = 120, px = canvas.width - pw - 60, py = canvas.height - ph - 60
+          const pw = 350, ph = 110, px = 80, py = canvas.height - ph - 65
           
           // Glass Shadow
           ctx.shadowColor = 'rgba(0,0,0,0.25)'
@@ -222,7 +222,7 @@ export function GraphicDesignPreview({
           ctx.lineWidth = 1.5
           ctx.stroke()
           
-          await drawImageProportional(logoToUse, px + 30, py + 20, pw - 60, ph - 40)
+          await drawImageProportional(logoToUse, px + 30, py + 15, pw - 60, ph - 30)
         }
 
       } else if (templateId === 1) {
@@ -251,11 +251,11 @@ export function GraphicDesignPreview({
           ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 100)
         }
 
-        // Very harsh shadow for dramatic editorial effect
+        // Person pushed lower and smaller to leave top area clear for centered text
         ctx.shadowColor = 'rgba(0,0,0,0.9)'
         ctx.shadowBlur = 50
         ctx.shadowOffsetY = 40
-        await drawImage(result.transparentUrl, 100, 220, 880, 880)
+        await drawImage(result.transparentUrl, 190, 380, 700, 700)
         ctx.shadowBlur = 0
         ctx.shadowOffsetY = 0
 
@@ -325,21 +325,22 @@ export function GraphicDesignPreview({
           ctx.fillText(safeBgData, canvas.width - 50, canvas.height * 0.85, canvas.width - 100)
         }
 
+        // Person shifted to the left (leaving right side clear for right-aligned text)
         ctx.shadowColor = 'rgba(0,0,0,0.5)'
         ctx.shadowBlur = 50
         ctx.shadowOffsetY = 30
-        await drawImage(result.transparentUrl, 50, 180, 980, 980)
+        await drawImage(result.transparentUrl, -50, 200, 700, 880)
         ctx.shadowBlur = 0
         ctx.shadowOffsetY = 0
 
-        // Right aligned text
-        const nextY = drawTextWrapped(safeCopyText, canvas.width - 60, 140, 850, false, true)
+        // Right aligned text on the right side (restricted to 520px width)
+        const nextY = drawTextWrapped(safeCopyText, canvas.width - 80, 200, 520, false, true)
         if (safeSubtitle) {
-          drawTextWrapped(safeSubtitle, canvas.width - 60, nextY + 15, 850, true, true)
+          drawTextWrapped(safeSubtitle, canvas.width - 80, nextY + 20, 520, true, true)
         }
 
         if (logoToUse) {
-          const pw = 350, ph = 120, px = 50, py = canvas.height - ph - 50
+          const pw = 350, ph = 120, px = canvas.width - pw - 80, py = canvas.height - ph - 65
           
           // Solid white rounded rect for logo contrast
           ctx.fillStyle = '#ffffff'
