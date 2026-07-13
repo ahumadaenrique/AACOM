@@ -65,13 +65,9 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
       timerRef.current = setInterval(() => {
         setSessionSeconds(prev => prev + 1)
         
-        // Si el saldo visual (balance - session) llega a 0, colgar automáticamente
+        // Disminuir saldo visualmente, pero ya no colgamos automáticamente por si hay un bug de timing
         setBalanceSecs(currentBalance => {
-          if (currentBalance <= 1) {
-            conversation.endSession()
-            return 0
-          }
-          return currentBalance - 1
+          return currentBalance > 0 ? currentBalance - 1 : 0
         })
       }, 1000)
     },
