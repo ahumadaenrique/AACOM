@@ -173,6 +173,58 @@ export async function getVoiceAgentPrompt(agentId: string) {
   }
 }
 
+function parseRelativeDate(dateStr: string | undefined): string {
+  const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  
+  const formatDate = (d: Date) => {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0');
+  };
+
+  if (!dateStr) {
+    return formatDate(mxDate);
+  }
+
+  const normalized = dateStr.toLowerCase().trim();
+
+  if (normalized === 'hoy' || normalized === 'today') {
+    return formatDate(mxDate);
+  }
+  
+  if (normalized === 'mañana' || normalized === 'tomorrow') {
+    const tomorrow = new Date(mxDate);
+    tomorrow.setDate(mxDate.getDate() + 1);
+    return formatDate(tomorrow);
+  }
+
+  if (normalized === 'ayer' || normalized === 'yesterday') {
+    const yesterday = new Date(mxDate);
+    yesterday.setDate(mxDate.getDate() - 1);
+    return formatDate(yesterday);
+  }
+
+  // If it's already YYYY-MM-DD
+  if (/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
+    return normalized;
+  }
+
+  // If it has a T (e.g. ISO format)
+  if (normalized.includes('t')) {
+    const part = normalized.split('t')[0];
+    if (/^\d{4}-\d{2}-\d{2}$/.test(part)) {
+      return part;
+    }
+  }
+
+  try {
+    const parsedDate = new Date(dateStr);
+    if (!isNaN(parsedDate.getTime())) {
+      return formatDate(parsedDate);
+    }
+  } catch (e) {}
+
+  return formatDate(mxDate);
+}
+
 export async function getVoiceAgenda(dateStr: string, agentId: string) {
   const session = await auth()
   if (!session?.user?.email) return "No estás autenticado para ver la agenda."
@@ -183,6 +235,8 @@ export async function getVoiceAgenda(dateStr: string, agentId: string) {
   const user = await prisma.user.findUnique({ where: { email: session.user.email } })
   if (!user) return "Usuario no encontrado."
 
+  const sanitizedDate = parseRelativeDate(dateStr)
+
   // 1. Intentar obtener la agenda desde Google Calendar con un timeout de seguridad
   let events: any[] = []
   let fetchedFromGoogle = false
@@ -190,8 +244,8 @@ export async function getVoiceAgenda(dateStr: string, agentId: string) {
   try {
     const calendar = await getGoogleCalendarClient(user.id)
     if (calendar) {
-      const timeMin = `${dateStr}T00:00:00-06:00`
-      const timeMax = `${dateStr}T23:59:59-06:00`
+      const timeMin = `${sanitizedDate}T00:00:00-06:00`
+      const timeMax = `${sanitizedDate}T23:59:59-06:00`
       
       const googleCall = calendar.events.list({
         calendarId: 'primary',
@@ -215,7 +269,7 @@ export async function getVoiceAgenda(dateStr: string, agentId: string) {
 
   if (fetchedFromGoogle) {
     if (events.length === 0) {
-      return `No tienes reuniones agendadas en tu Google Calendar para el día ${dateStr}.`
+      return `No tienes reuniones agendadas en tu Google Calendar para el día ${sanitizedDate}.`
     }
     
     const list = events.map(e => {
@@ -229,24 +283,24 @@ export async function getVoiceAgenda(dateStr: string, agentId: string) {
       return `- ${timeFormatted}: ${e.summary}`
     }).join('\n')
     
-    return `Reuniones agendadas en tu Google Calendar para el ${dateStr}:\n${list}`
+    return `Reuniones agendadas en tu Google Calendar para el ${sanitizedDate}:\n${list}`
   }
 
   // 2. Fallback a la base de datos local
   const localMeetings = await prisma.meeting.findMany({
     where: {
       userId: user.id,
-      date: dateStr // YYYY-MM-DD
+      date: sanitizedDate // YYYY-MM-DD
     },
     orderBy: { time: 'asc' }
   })
 
   if (localMeetings.length === 0) {
-    return `No tienes reuniones agendadas para la fecha ${dateStr}.`
+    return `No tienes reuniones agendadas para la fecha ${sanitizedDate}.`
   }
 
   const list = localMeetings.map(m => `- ${m.time}: ${m.title}`).join('\n')
-  return `Reuniones agendadas para el ${dateStr} (local):\n${list}`
+  return `Reuniones agendadas para el ${sanitizedDate} (local):\n${list}`
 }
 
 export async function scheduleVoiceMeeting(title: string, date: string, time: string, duration: number, agentId: string) {
@@ -256,11 +310,13 @@ export async function scheduleVoiceMeeting(title: string, date: string, time: st
   const user = await prisma.user.findUnique({ where: { email: session.user.email } })
   if (!user) return "Usuario no encontrado."
 
+  const sanitizedDate = parseRelativeDate(date)
+
   try {
     const meeting = await prisma.meeting.create({
       data: {
         title,
-        date, // YYYY-MM-DD
+        date: sanitizedDate, // YYYY-MM-DD
         time, // HH:MM
         duration,
         userId: user.id
@@ -272,7 +328,7 @@ export async function scheduleVoiceMeeting(title: string, date: string, time: st
       const calendar = await getGoogleCalendarClient(user.id)
       if (calendar) {
         // Al crear la fecha en Vercel (UTC), agregamos el offset de México (-06:00) para que no la tome como UTC
-        const startDate = new Date(`${date}T${time}:00-06:00`);
+        const startDate = new Date(`${sanitizedDate}T${time}:00-06:00`);
         const endDate = new Date(startDate.getTime() + duration * 60000);
 
         await calendar.events.insert({
