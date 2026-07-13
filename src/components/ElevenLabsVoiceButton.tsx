@@ -8,7 +8,7 @@ import { getVoiceBalance, deductVoiceSeconds, getElevenLabsAgentId, getVoiceAgen
 export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
   const [balanceSecs, setBalanceSecs] = useState<number>(0)
   const [sessionSeconds, setSessionSeconds] = useState<number>(0)
-  const [dynamicPrompt, setDynamicPrompt] = useState<string>("")
+  const [dynamicPrompt, setDynamicPrompt] = useState<any>(null)
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const connectionStartRef = useRef<number | null>(null)
 
@@ -39,7 +39,6 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
         const result = await draftVoiceEmail(params.destinatario, params.asunto, params.mensaje, agentId)
         return result;
       }
-      /*
       gestionar_tareas: async (params: { accion: 'crear' | 'listar' | 'completar' | 'eliminar', titulo?: string, descripcion?: string, prioridad?: string, fecha_limite?: string, completadas?: boolean }) => {
         switch (params.accion) {
           case 'crear': {
@@ -62,30 +61,25 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
             return "Acción no reconocida.";
         }
       }
-      */
     },
     onConnect: () => {
       connectionStartRef.current = Date.now()
       setSessionSeconds(0)
       
-      // Iniciar cronómetro visual y control de saldo
       timerRef.current = setInterval(() => {
         setSessionSeconds(prev => prev + 1)
         
-        // Disminuir saldo visualmente, pero ya no colgamos automáticamente por si hay un bug de timing
         setBalanceSecs(currentBalance => {
           return currentBalance > 0 ? currentBalance - 1 : 0
         })
       }, 1000)
     },
     onDisconnect: async () => {
-      // Detener cronómetro
       if (timerRef.current) {
         clearInterval(timerRef.current)
         timerRef.current = null
       }
 
-      // Calcular segundos exactos
       if (connectionStartRef.current) {
         const exactSecondsUsed = Math.floor((Date.now() - connectionStartRef.current) / 1000)
         connectionStartRef.current = null
@@ -125,17 +119,10 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
       }
 
       const sessionOptions: any = { agentId: elAgentId }
-      /*
       if (dynamicPrompt) {
-        sessionOptions.overrides = {
-          agent: {
-            prompt: {
-              prompt: dynamicPrompt
-            }
-          }
-        }
+        sessionOptions.dynamicVariables = dynamicPrompt
       }
-      */
+
       await conversation.startSession(sessionOptions)
     } catch (error) {
       console.error("Error iniciando conversación:", error)

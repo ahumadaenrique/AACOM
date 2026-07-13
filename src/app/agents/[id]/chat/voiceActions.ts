@@ -50,24 +50,18 @@ export async function getVoiceAgentPrompt(agentId: string) {
     }
   })
 
-  const agent = await prisma.aIAgent.findUnique({
-    where: { id: agentId }
-  })
-  if (!agent) return "Eres un asistente de Inteligencia Artificial."
-
-  let prompt = `Eres ${agent.name}, un agente de Inteligencia Artificial.
-Rol: Asistente Ejecutivo
-Directiva principal: ${agent.systemPrompt || ''}
-Lineamientos: ${agent.guidelines || ''}
-
-Importante: Responde de forma hablada. Sé conciso y amigable. No uses viñetas ni formato Markdown porque tu respuesta se convertirá en voz.`
-
+  // Retornamos las variables dinámicas
+  let contactosList = "No tienes contactos frecuentes configurados."
   if (user?.FrequentContact && user.FrequentContact.length > 0) {
-    const contactsList = user.FrequentContact.map(c => `- ${c.name}: ${c.email}`).join('\n')
-    prompt += `\n\nCONTACTOS FRECUENTES DE TU USUARIO (Úsalos para resolver nombres a direcciones de correo electrónico de forma directa):\n${contactsList}`
+    contactosList = user.FrequentContact.map(c => `- ${c.name}: ${c.email}`).join(', ')
   }
 
-  return prompt
+  const today = new Date().toISOString().split('T')[0]
+
+  return {
+    fecha_de_hoy: today,
+    contactos_frecuentes: contactosList
+  }
 }
 
 export async function getVoiceAgenda(dateStr: string, agentId: string) {
