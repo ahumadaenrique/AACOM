@@ -29,54 +29,87 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
   }, [agentId])
 
   const conversation = useConversation({
-    clientTools: {
-      consultar_agenda: async (params?: { fecha?: string }) => {
-        let targetDate = params?.fecha;
-        if (!targetDate) {
-          const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
-          targetDate = mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0');
+    clientTools: {      consultar_agenda: async (params?: { fecha?: string }) => {
+        console.log("Voice Tool [consultar_agenda] called with:", params)
+        try {
+          let targetDate = params?.fecha
+          if (!targetDate) {
+            const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }))
+            targetDate = mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0')
+          }
+          const result = await getVoiceAgenda(targetDate, agentId)
+          console.log("Voice Tool [consultar_agenda] success result:", result)
+          return result
+        } catch (error: any) {
+          console.error("Voice Tool [consultar_agenda] execution error:", error)
+          return `Error al consultar la agenda: ${error.message}`
         }
-        const result = await getVoiceAgenda(targetDate, agentId)
-        return result;
       },
       agendar_reunion: async (params: { titulo: string, fecha: string, hora: string, duracion: any }) => {
-        console.log("Voice Tool [agendar_reunion] called with:", params);
-        let duration = Number(params.duracion) || 60;
-        
-        // Autocorrección: si la IA manda un valor <= 4 (ej. 1 para '1 hora'),
-        // asumimos que omitió la conversión a minutos y multiplicamos por 60.
-        if (duration > 0 && duration <= 4) {
-          duration = duration * 60;
+        console.log("Voice Tool [agendar_reunion] called with:", params)
+        try {
+          let duration = Number(params.duracion) || 60
+          
+          // Autocorrección: si la IA manda un valor <= 4 (ej. 1 para '1 hora'),
+          // asumimos que omitió la conversión a minutos y multiplicamos por 60.
+          if (duration > 0 && duration <= 4) {
+            duration = duration * 60
+          }
+          
+          const result = await scheduleVoiceMeeting(params.titulo, params.fecha, params.hora, duration, agentId)
+          console.log("Voice Tool [agendar_reunion] success result:", result)
+          return result
+        } catch (error: any) {
+          console.error("Voice Tool [agendar_reunion] execution error:", error)
+          return `Error al agendar reunión: ${error.message}`
         }
-        
-        const result = await scheduleVoiceMeeting(params.titulo, params.fecha, params.hora, duration, agentId)
-        return result;
       },
       redactar_correo: async (params: { destinatario: string, asunto: string, mensaje: string }) => {
-        const result = await draftVoiceEmail(params.destinatario, params.asunto, params.mensaje, agentId)
-        return result;
+        console.log("Voice Tool [redactar_correo] called with:", params)
+        try {
+          const result = await draftVoiceEmail(params.destinatario, params.asunto, params.mensaje, agentId)
+          console.log("Voice Tool [redactar_correo] success result:", result)
+          return result
+        } catch (error: any) {
+          console.error("Voice Tool [redactar_correo] execution error:", error)
+          return `Error al redactar correo: ${error.message}`
+        }
       },
       gestionar_tareas: async (params: { accion: 'crear' | 'listar' | 'completar' | 'eliminar', titulo?: string, descripcion?: string, prioridad?: string, fecha_limite?: string, completadas?: boolean }) => {
-        switch (params.accion) {
-          case 'crear': {
-            if (!params.titulo) return "Falta el título de la tarea para poder crearla.";
-            const priority = params.prioridad === 'ALTA' ? 'HIGH' : (params.prioridad === 'BAJA' ? 'LOW' : 'MEDIUM');
-            return await createVoiceTask(params.titulo, params.descripcion, priority, params.fecha_limite, agentId);
+        console.log("Voice Tool [gestionar_tareas] called with:", params)
+        try {
+          let result = ""
+          switch (params.accion) {
+            case 'crear': {
+              if (!params.titulo) return "Falta el título de la tarea para poder crearla."
+              const priority = params.prioridad === 'ALTA' ? 'HIGH' : (params.prioridad === 'BAJA' ? 'LOW' : 'MEDIUM')
+              result = await createVoiceTask(params.titulo, params.descripcion, priority, params.fecha_limite, agentId)
+              break
+            }
+            case 'listar': {
+              result = await listVoiceTasks(!!params.completadas, agentId)
+              break
+            }
+            case 'completar': {
+              if (!params.titulo) return "Falta el título de la tarea a completar."
+              result = await completeVoiceTask(params.titulo, agentId)
+              break
+            }
+            case 'eliminar': {
+              if (!params.titulo) return "Falta el título de la tarea a eliminar."
+              result = await deleteVoiceTask(params.titulo, agentId)
+              break
+            }
+            default:
+              result = "Acción no reconocida."
           }
-          case 'listar': {
-            return await listVoiceTasks(!!params.completadas, agentId);
-          }
-          case 'completar': {
-            if (!params.titulo) return "Falta el título de la tarea a completar.";
-            return await completeVoiceTask(params.titulo, agentId);
-          }
-          case 'eliminar': {
-            if (!params.titulo) return "Falta el título de la tarea a eliminar.";
-            return await deleteVoiceTask(params.titulo, agentId);
-          }
-          default:
-            return "Acción no reconocida.";
+          console.log("Voice Tool [gestionar_tareas] success result:", result)
+          return result
+        } catch (error: any) {
+          console.error("Voice Tool [gestionar_tareas] execution error:", error)
+          return `Error al gestionar tareas: ${error.message}`
         }
+      },
       }
     },
     onConnect: (params?: any) => {
