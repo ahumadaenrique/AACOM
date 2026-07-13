@@ -642,3 +642,86 @@ Responde únicamente con la minuta estructurada en Markdown. Sé conciso y profe
     return { success: false, error: error.message };
   }
 }
+
+export async function getVoiceWeeklyEvents(agentId: string) {
+  const session = await auth()
+  if (!session?.user?.email) return { success: false, error: "No autenticado" }
+
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } })
+  if (!user) return { success: false, error: "Usuario no encontrado" }
+
+  const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }))
+  
+  const formatDate = (d: Date) => {
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, '0') + "-" + String(d.getDate()).padStart(2, '0');
+  };
+
+  const todayStr = formatDate(mxDate)
+  
+  const futureDate = new Date(mxDate)
+  futureDate.setDate(mxDate.getDate() + 7)
+  const maxDateStr = formatDate(futureDate)
+
+  let googleEvents: any[] = []
+  let localMeetings: any[] = []
+  let fetchedFromGoogle = false
+
+  // 1. Fetch from Google Calendar
+  try {
+    const calendar = await getGoogleCalendarClient(user.id)
+    if (calendar) {
+      const timeMin = `${todayStr}T00:00:00-06:00`
+      const timeMax = `${maxDateStr}T23:59:59-06:00`
+      
+      const response = await calendar.events.list({
+        calendarId: 'primary',
+        timeMin: new Date(timeMin).toISOString(),
+        timeMax: new Date(timeMax).toISOString(),
+        singleEvents: true,
+        orderBy: 'startTime'
+      })
+      googleEvents = response.data.items || []
+      fetchedFromGoogle = true
+    }
+  } catch (err) {
+    console.error("Error fetching weekly google events:", err)
+  }
+
+  // 2. Fetch from Local Database
+  try {
+    localMeetings = await prisma.meeting.findMany({
+      where: {
+        userId: user.id,
+        date: {
+          gte: todayStr,
+          lte: maxDateStr
+        }
+      },
+      orderBy: [
+        { date: 'asc' },
+        { time: 'asc' }
+      ]
+    })
+  } catch (err) {
+    console.error("Error fetching weekly local meetings:", err)
+  }
+
+  return {
+    success: true,
+    fetchedFromGoogle,
+    todayStr,
+    maxDateStr,
+    googleEvents: googleEvents.map(e => ({
+      summary: e.summary,
+      start: e.start,
+      end: e.end,
+      id: e.id
+    })),
+    localMeetings: localMeetings.map(m => ({
+      title: m.title,
+      date: m.date,
+      time: m.time,
+      duration: m.duration
+    }))
+  }
+}

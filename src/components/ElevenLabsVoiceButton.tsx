@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react"
 import { useConversation, ConversationProvider } from "@elevenlabs/react"
 import { Mic, MicOff, Loader2, PhoneOff, Phone } from "lucide-react"
-import { getVoiceBalance, deductVoiceSeconds, getElevenLabsAgentId, getVoiceAgentPrompt, getVoiceAgenda, scheduleVoiceMeeting, draftVoiceEmail, createVoiceTask, listVoiceTasks, completeVoiceTask, deleteVoiceTask, syncVoiceCallSummary } from "@/app/agents/[id]/chat/voiceActions"
+import { getVoiceBalance, deductVoiceSeconds, getElevenLabsAgentId, getVoiceAgentPrompt, getVoiceAgenda, getVoiceWeeklyEvents, scheduleVoiceMeeting, draftVoiceEmail, createVoiceTask, listVoiceTasks, completeVoiceTask, deleteVoiceTask, syncVoiceCallSummary } from "@/app/agents/[id]/chat/voiceActions"
 import { BuyMinutesModal } from "@/components/BuyMinutesModal"
 
 import { useRouter } from "next/navigation"
@@ -17,18 +17,16 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const connectionStartRef = useRef<number | null>(null)
   const conversationIdRef = useRef<string | null>(null)
-  const agendaCacheRef = useRef<string | null>(null)
+  const weeklyCacheRef = useRef<any>(null)
 
   useEffect(() => {
     // Cargar saldo inicial y prompt dinámico
     getVoiceBalance().then(balance => setBalanceSecs(balance))
     getVoiceAgentPrompt(agentId).then(prompt => setDynamicPrompt(prompt))
     
-    // Pre-cargar la agenda de hoy proactivamente al montar el botón
-    const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }))
-    const todayStr = mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0')
-    getVoiceAgenda(todayStr, agentId).then(agenda => {
-      agendaCacheRef.current = agenda
+    // Pre-cargar la agenda semanal proactivamente al montar el botón
+    getVoiceWeeklyEvents(agentId).then(weeklyData => {
+      weeklyCacheRef.current = weeklyData
     }).catch(() => {})
 
     return () => {
@@ -47,12 +45,60 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
           let targetDate = params?.fecha
           if (!targetDate || targetDate === 'hoy' || targetDate === 'today') {
             targetDate = todayStr
+          } else if (targetDate === 'mañana' || targetDate === 'tomorrow') {
+            const tomorrow = new Date(mxDate)
+            tomorrow.setDate(mxDate.getDate() + 1)
+            targetDate = tomorrow.getFullYear() + "-" + String(tomorrow.getMonth() + 1).padStart(2, '0') + "-" + String(tomorrow.getDate()).padStart(2, '0')
           }
           
-          // Si es la agenda de hoy y ya la tenemos pre-cargada, la regresamos instantáneamente
-          if (targetDate === todayStr && agendaCacheRef.current) {
-            console.log("Voice Tool [consultar_agenda] returning CACHED agenda instantly")
-            return agendaCacheRef.current
+          // Si tenemos la agenda semanal pre-cargada y la fecha consultada cae dentro de la semana, respondemos de inmediato
+          if (weeklyCacheRef.current?.success) {
+            const cache = weeklyCacheRef.current
+            
+            // Convertir fechas a timestamps para comparación
+            const targetTime = new Date(`${targetDate}T00:00:00`).getTime()
+            const todayTime = new Date(`${cache.todayStr}T00:00:00`).getTime()
+            const maxTime = new Date(`${cache.maxDateStr}T00:00:00`).getTime()
+            
+            if (targetTime >= todayTime && targetTime <= maxTime) {
+              console.log(`Voice Tool [consultar_agenda] returning CACHED weekly agenda for date: ${targetDate}`)
+              
+              // 1. Filtrar Google Events de la fecha objetivo
+              const googleEvents = (cache.googleEvents || []).filter((e: any) => {
+                const startStr = e.start?.dateTime || e.start?.date || ""
+                return startStr.startsWith(targetDate)
+              })
+              
+              // 2. Filtrar Local Meetings de la fecha objetivo
+              const localMeetings = (cache.localMeetings || []).filter((m: any) => {
+                return m.date === targetDate
+              })
+              
+              if (cache.fetchedFromGoogle) {
+                if (googleEvents.length === 0) {
+                  return `No tienes reuniones agendadas en tu Google Calendar para el día ${targetDate}.`
+                }
+                
+                const list = googleEvents.map((e: any) => {
+                  const start = e.start?.dateTime || e.start?.date || ""
+                  let timeFormatted = "Todo el día"
+                  if (start.includes('T')) {
+                    const eventDate = new Date(start)
+                    const localTimeStr = eventDate.toLocaleTimeString('es-MX', { timeZone: 'America/Mexico_City', hour: '2-digit', minute: '2-digit', hour12: false })
+                    timeFormatted = localTimeStr
+                  }
+                  return `- ${timeFormatted}: ${e.summary}`
+                }).join('\n')
+                
+                return `Reuniones agendadas en tu Google Calendar para el ${targetDate}:\n${list}`
+              } else {
+                if (localMeetings.length === 0) {
+                  return `No tienes reuniones agendadas para la fecha ${targetDate}.`
+                }
+                const list = localMeetings.map((m: any) => `- ${m.time}: ${m.title}`).join('\n')
+                return `Reuniones agendadas para el ${targetDate} (local):\n${list}`
+              }
+            }
           }
 
           const result = await getVoiceAgenda(targetDate, agentId)
@@ -137,11 +183,9 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
       setSessionSeconds(0)
       
       // Pre-cargar la agenda al conectar para que responda instantáneamente
-      const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }))
-      const todayStr = mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0')
-      getVoiceAgenda(todayStr, agentId).then(agenda => {
-        agendaCacheRef.current = agenda
-        console.log("Voice agenda pre-fetched on connect:", agenda)
+      getVoiceWeeklyEvents(agentId).then(weeklyData => {
+        weeklyCacheRef.current = weeklyData
+        console.log("Voice weekly agenda pre-fetched on connect:", weeklyData)
       }).catch(() => {})
       
       timerRef.current = setInterval(() => {
@@ -190,7 +234,7 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
         }, 3000)
       }
 
-      agendaCacheRef.current = null
+      weeklyCacheRef.current = null
       setSessionSeconds(0)
     },
     onError: (error: any) => {
