@@ -56,7 +56,9 @@ export async function getVoiceAgentPrompt(agentId: string) {
     contactosList = user.FrequentContact.map(c => `- ${c.name}: ${c.email}`).join(', ')
   }
 
-  const today = new Date().toISOString().split('T')[0]
+  // Ajustar la fecha a la zona horaria de México para evitar saltos de día por UTC
+  const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }));
+  const today = mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0');
 
   return {
     fecha_de_hoy: today,

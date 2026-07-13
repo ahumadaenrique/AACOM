@@ -1,1 +1,0 @@
-const { PrismaClient } = require("@prisma/client"); const prisma = new PrismaClient(); async function main() { const subs = await prisma.pushSubscription.findMany({ include: { user: true } }); console.log(subs.map(s => s.user.email + " -> " + s.endpoint.substring(0, 50))); } main().catch(console.error).finally(() => prisma.$disconnect());
