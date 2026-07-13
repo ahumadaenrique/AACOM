@@ -8,7 +8,7 @@ export async function GET() {
     const dbUrl = process.env.DATABASE_URL;
     
     let user = null;
-    let purchases = [];
+    let purchases: any[] = [];
     if (session?.user?.email) {
       user = await prisma.user.findUnique({
         where: { email: session.user.email }
