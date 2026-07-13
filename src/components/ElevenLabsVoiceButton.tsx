@@ -17,12 +17,20 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
   const timerRef = useRef<NodeJS.Timeout | null>(null)
   const connectionStartRef = useRef<number | null>(null)
   const conversationIdRef = useRef<string | null>(null)
+  const agendaCacheRef = useRef<string | null>(null)
 
   useEffect(() => {
     // Cargar saldo inicial y prompt dinámico
     getVoiceBalance().then(balance => setBalanceSecs(balance))
     getVoiceAgentPrompt(agentId).then(prompt => setDynamicPrompt(prompt))
     
+    // Pre-cargar la agenda de hoy proactivamente al montar el botón
+    const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }))
+    const todayStr = mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0')
+    getVoiceAgenda(todayStr, agentId).then(agenda => {
+      agendaCacheRef.current = agenda
+    }).catch(() => {})
+
     return () => {
       if (timerRef.current) clearInterval(timerRef.current)
     }
@@ -33,11 +41,20 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
       consultar_agenda: async (params?: { fecha?: string }) => {
         console.log("Voice Tool [consultar_agenda] called with:", params)
         try {
+          const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }))
+          const todayStr = mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0')
+          
           let targetDate = params?.fecha
-          if (!targetDate) {
-            const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }))
-            targetDate = mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0')
+          if (!targetDate || targetDate === 'hoy' || targetDate === 'today') {
+            targetDate = todayStr
           }
+          
+          // Si es la agenda de hoy y ya la tenemos pre-cargada, la regresamos instantáneamente
+          if (targetDate === todayStr && agendaCacheRef.current) {
+            console.log("Voice Tool [consultar_agenda] returning CACHED agenda instantly")
+            return agendaCacheRef.current
+          }
+
           const result = await getVoiceAgenda(targetDate, agentId)
           console.log("Voice Tool [consultar_agenda] success result:", result)
           return result
@@ -119,6 +136,14 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
       connectionStartRef.current = Date.now()
       setSessionSeconds(0)
       
+      // Pre-cargar la agenda al conectar para que responda instantáneamente
+      const mxDate = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Mexico_City" }))
+      const todayStr = mxDate.getFullYear() + "-" + String(mxDate.getMonth() + 1).padStart(2, '0') + "-" + String(mxDate.getDate()).padStart(2, '0')
+      getVoiceAgenda(todayStr, agentId).then(agenda => {
+        agendaCacheRef.current = agenda
+        console.log("Voice agenda pre-fetched on connect:", agenda)
+      }).catch(() => {})
+      
       timerRef.current = setInterval(() => {
         setSessionSeconds(prev => prev + 1)
         
@@ -165,6 +190,7 @@ export function ElevenLabsVoiceButtonInner({ agentId }: { agentId: string }) {
         }, 3000)
       }
 
+      agendaCacheRef.current = null
       setSessionSeconds(0)
     },
     onError: (error: any) => {
