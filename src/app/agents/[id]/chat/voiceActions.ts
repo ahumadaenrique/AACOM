@@ -114,7 +114,8 @@ export async function scheduleVoiceMeeting(title: string, date: string, time: st
     try {
       const calendar = await getGoogleCalendarClient(user.id)
       if (calendar) {
-        const startDate = new Date(`${date}T${time}:00`);
+        // Al crear la fecha en Vercel (UTC), agregamos el offset de México (-06:00) para que no la tome como UTC
+        const startDate = new Date(`${date}T${time}:00-06:00`);
         const endDate = new Date(startDate.getTime() + duration * 60000);
 
         await calendar.events.insert({
@@ -123,11 +124,11 @@ export async function scheduleVoiceMeeting(title: string, date: string, time: st
             summary: title,
             start: {
               dateTime: startDate.toISOString(),
-              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+              timeZone: 'America/Mexico_City'
             },
             end: {
               dateTime: endDate.toISOString(),
-              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
+              timeZone: 'America/Mexico_City'
             }
           }
         });
