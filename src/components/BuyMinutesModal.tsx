@@ -21,20 +21,20 @@ const PACKAGES: Package[] = [
     id: "basic",
     name: "Paquete Básico",
     minutes: 30,
-    price: 99,
+    price: 199,
   },
   {
     id: "standard",
     name: "Paquete Estándar",
-    minutes: 100,
-    price: 249,
+    minutes: 60,
+    price: 299,
     popular: true,
   },
   {
     id: "pro",
     name: "Paquete Pro",
-    minutes: 300,
-    price: 599,
+    minutes: 100,
+    price: 349,
   },
 ]
 
