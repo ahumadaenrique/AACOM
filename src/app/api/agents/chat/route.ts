@@ -217,6 +217,10 @@ export async function POST(req: Request) {
       where: { id: agent.userId }
     })
 
+    if (!dbUser) {
+      return new Response('User not found', { status: 404 });
+    }
+
     const session = await auth();
     if (!session?.user?.email) {
       return new Response('Unauthorized', { status: 401 });
