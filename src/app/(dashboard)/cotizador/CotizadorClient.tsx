@@ -288,7 +288,14 @@ export default function CotizadorPage({
             if (newMapping.primaProteccion === -1) newMapping.primaProteccion = index
           } else if (lower.includes("prima de ahorro")) {
             if (newMapping.primaAhorro === -1) newMapping.primaAhorro = index
-          } else if (lower.includes("prima total") || lower.includes("prima") || lower.includes("aport") || lower.includes("anual")) {
+          } else if (
+            (lower.includes("prima total") || lower.includes("anual por forma de pago") || lower.includes("prima anual") || lower.includes("prima") || lower.includes("aport") || lower.includes("anual")) &&
+            !lower.includes("deducible") &&
+            !lower.includes("acumulada") &&
+            !lower.includes("protección") &&
+            !lower.includes("proteccion") &&
+            !lower.includes("ahorro")
+          ) {
             if (newMapping.prima === -1) newMapping.prima = index
           } else if (lower.includes("proteccion") || lower.includes("protección") || lower.includes("suma") || lower.includes("aseg") || lower.includes("sa") || lower.includes("fallecimiento")) {
             if (newMapping.sa === -1) newMapping.sa = index
@@ -301,6 +308,16 @@ export default function CotizadorPage({
           }
         })
         
+        // Fallback para prima si no se encuentra limpia (ej: si solo existen columnas con breakdown de prima)
+        if (newMapping.prima === -1) {
+          headers.forEach((header, index) => {
+            const lower = header.toLowerCase()
+            if (lower.includes("prima") && !lower.includes("acumulada") && !lower.includes("protección") && !lower.includes("proteccion") && !lower.includes("ahorro")) {
+              if (newMapping.prima === -1) newMapping.prima = index
+            }
+          })
+        }
+
         setMapping(newMapping)
       }
     }
