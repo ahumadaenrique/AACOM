@@ -60,6 +60,8 @@ export default async function DashboardLayout({
     const headersList = headers();
     const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';
     const pathname = headersList.get('x-pathname') || '';
+    const isSuperAdminPath = ['/agencias', '/admin/vendedores', '/admin/network', '/admin/system-status'].some(p => pathname.startsWith(p));
+    const isAdminPath = (pathname.startsWith('/admin') && !['/admin/vendedores', '/admin/network', '/admin/system-status'].some(p => pathname.startsWith(p))) || pathname.startsWith('/votaciones') || pathname.startsWith('/reportes');
 
     if (!agency) {
         agency = await prisma.agency.findUnique({ where: { slug } });
@@ -178,20 +180,20 @@ export default async function DashboardLayout({
                         {showNavLinks && (
                             <>
                                 <Link
+                                    href="/newsletters"
+                                    className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/newsletters') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                >
+                                    <Newspaper className={`h-4 w-4 ${pathname.startsWith('/newsletters') ? 'text-primary' : 'text-zinc-600 dark:text-zinc-400'}`} />
+                                    Newsletters
+                                    {pathname.startsWith('/newsletters') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                </Link>
+                                <Link
                                     href="/activity"
                                     className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/activity') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                                 >
                                     <ClipboardCheck className={`h-4 w-4 ${pathname.startsWith('/activity') ? 'text-primary' : 'text-teal-600 dark:text-teal-400'}`} />
-                                    {shortAgencyName} 25
+                                    25 puntos
                                     {pathname.startsWith('/activity') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                </Link>
-                                <Link
-                                    href="/ranking"
-                                    className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/ranking') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                >
-                                    <Award className={`h-4 w-4 ${pathname.startsWith('/ranking') ? 'text-primary' : 'text-amber-500'}`} />
-                                    Ranking
-                                    {pathname.startsWith('/ranking') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                 </Link>
                                 <Link
                                     href="/pea-prp"
@@ -202,14 +204,6 @@ export default async function DashboardLayout({
                                     {pathname.startsWith('/pea-prp') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                 </Link>
                                 <Link
-                                    href="/team"
-                                    className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/team') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                >
-                                    <Users className={`h-4 w-4 ${pathname.startsWith('/team') ? 'text-primary' : 'text-indigo-500'}`} />
-                                    Equipo {shortAgencyName}
-                                    {pathname.startsWith('/team') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                </Link>
-                                <Link
                                     href="/cartera"
                                     className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/cartera') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                                 >
@@ -218,38 +212,21 @@ export default async function DashboardLayout({
                                     {pathname.startsWith('/cartera') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                 </Link>
                                 <Link
-                                    href="/newsletters"
-                                    className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/newsletters') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                    href="/team"
+                                    className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/team') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                                 >
-                                    <Newspaper className={`h-4 w-4 ${pathname.startsWith('/newsletters') ? 'text-primary' : 'text-zinc-600 dark:text-zinc-400'}`} />
-                                    Newsletters
-                                    {pathname.startsWith('/newsletters') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                    <Users className={`h-4 w-4 ${pathname.startsWith('/team') ? 'text-primary' : 'text-indigo-500'}`} />
+                                    Equipo
+                                    {pathname.startsWith('/team') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                 </Link>
-
-                                {/* Dropdown Inteligencia Artificial Avanzada */}
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/assistant', '/agents'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                                            <Bot className={`h-4 w-4 ${['/assistant', '/agents'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-indigo-500'}`} />
-                                            Inteligencia Artificial Avanzada
-                                            {['/assistant', '/agents'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                        </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start" className="w-52">
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/assistant" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                <MessageSquare className="h-4 w-4 text-pink-500" />
-                                                Asistente {shortAgencyName}
-                                            </Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <a href="/agents" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                <Bot className="h-4 w-4 text-indigo-600" />
-                                                Agentes IA
-                                            </a>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                <Link
+                                    href="/ranking"
+                                    className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/ranking') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                >
+                                    <Award className={`h-4 w-4 ${pathname.startsWith('/ranking') ? 'text-primary' : 'text-amber-500'}`} />
+                                    Ranking
+                                    {pathname.startsWith('/ranking') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                </Link>
 
                                 {/* Dropdown Herramientas */}
                                 <DropdownMenu>
@@ -294,14 +271,39 @@ export default async function DashboardLayout({
                                     </DropdownMenuContent>
                                 </DropdownMenu>
 
+                                {/* Dropdown Inteligencia Artificial Avanzada */}
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/assistant', '/agents'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                                            <Bot className={`h-4 w-4 ${['/assistant', '/agents'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-indigo-500'}`} />
+                                            Inteligencia Artificial Avanzada
+                                            {['/assistant', '/agents'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="start" className="w-52">
+                                        <DropdownMenuItem asChild>
+                                            <Link href="/assistant" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                <MessageSquare className="h-4 w-4 text-pink-500" />
+                                                Asistente {shortAgencyName}
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuItem asChild>
+                                            <a href="/agents" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                <Bot className="h-4 w-4 text-indigo-600" />
+                                                Agentes IA
+                                            </a>
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+
                                 {/* Dropdown Administración */}
                                 {isAdmin && (
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/votaciones', '/admin', '/reportes', '/agencias'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                                                <Settings className={`h-4 w-4 ${['/votaciones', '/admin', '/reportes', '/agencias'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-slate-500'}`} />
+                                            <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${isAdminPath ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                                                <Settings className={`h-4 w-4 ${isAdminPath ? 'text-primary' : 'text-slate-500'}`} />
                                                 Admin
-                                                {['/votaciones', '/admin', '/reportes', '/agencias'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                                {isAdminPath && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                             </button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="w-48">
@@ -329,36 +331,51 @@ export default async function DashboardLayout({
                                                     Reportes
                                                 </Link>
                                             </DropdownMenuItem>
-                                            
-                                            {isSuperAdmin && (
-                                                <>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem asChild>
-                                                        <Link href="/agencias" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                            <Building2 className="h-4 w-4 text-purple-600" />
-                                                            Agencias SaaS
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
-                                                        <Link href="/admin/vendedores" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                            <Users className="h-4 w-4 text-rose-500" />
-                                                            Vendedores
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
-                                                        <Link href="/admin/network" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                            <Network className="h-4 w-4 text-indigo-600" />
-                                                            Red Multinivel
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
-                                                        <Link href="/admin/system-status" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                            <Activity className="h-4 w-4 text-blue-600" />
-                                                            Estado de APIs
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                </>
-                                            )}
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                )}
+
+                                {/* Dropdown Super Admin */}
+                                {isSuperAdmin && (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${isSuperAdminPath ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                                                <CircleUser className={`h-4 w-4 ${isSuperAdminPath ? 'text-primary' : 'text-rose-500'}`} />
+                                                Super Admin
+                                                {isSuperAdminPath && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="start" className="w-52">
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/agencias" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <Building2 className="h-4 w-4 text-purple-600" />
+                                                    Agencias SaaS
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin/vendedores" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <Users className="h-4 w-4 text-rose-500" />
+                                                    Vendedores
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin/network" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <Network className="h-4 w-4 text-indigo-600" />
+                                                    Red Multinivel
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin/system-status" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <Activity className="h-4 w-4 text-blue-600" />
+                                                    Estado de APIs
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin?tab=votaciones" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <Sparkles className="h-4 w-4 text-amber-500" />
+                                                    Control de Votaciones
+                                                </Link>
+                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 )}
@@ -386,164 +403,147 @@ export default async function DashboardLayout({
                                     </Link>
                                 )}
                                 {showNavLinks && (
-                                    <>
-                                        <Link
-                                            href="/activity"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <ClipboardCheck className="h-5 w-5 text-teal-600" />
-                                            {shortAgencyName} 25
-                                        </Link>
-                                        <Link
-                                            href="/ranking"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <Award className="h-5 w-5 text-amber-500" />
-                                            Ranking
-                                        </Link>
-                                        <Link
-                                            href="/pea-prp"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <Target className="h-5 w-5 text-indigo-600" />
-                                            PEA/PRP
-                                        </Link>
-                                        <Link
-                                            href="/team"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <Users className="h-5 w-5 text-indigo-500" />
-                                            Equipo {shortAgencyName}
-                                        </Link>
-                                        <Link
-                                            href="/cartera"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <Wallet className="h-5 w-5 text-green-600" />
-                                            Mi Cartera
-                                        </Link>
-                                        <Link
-                                            href="/newsletters"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <Newspaper className="h-5 w-5 text-zinc-500" />
-                                            Newsletters
-                                        </Link>
-                                        <Link
-                                            href="/assistant"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <MessageSquare className="h-5 w-5 text-pink-500" />
-                                            Asistente {shortAgencyName}
-                                        </Link>
-                                        <a href="/agents" className="text-muted-foreground hover:text-foreground flex items-center gap-2">
-                                            <Bot className="h-5 w-5 text-indigo-600" />
-                                            Agentes IA
-                                        </a>
-                                        <Link
-                                            href="/documentacion"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <Book className="h-5 w-5 text-teal-600" />
-                                            Mi Biblioteca
-                                        </Link>
-                                        <Link
-                                            href="/cotizador"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <Calculator className="h-5 w-5 text-teal-600" />
-                                            Cotizador
-                                        </Link>
-                                        <Link
-                                            href="/adn"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <HeartPulse className="h-5 w-5 text-red-500" />
-                                            ADN {shortAgencyName}
-                                        </Link>
-                                        <Link
-                                            href="/plan-arranque"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <Rocket className="h-5 w-5 text-orange-500" />
-                                            Plan de Arranque
-                                        </Link>
-                                        <Link
-                                            href="/academia"
-                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                        >
-                                            <GraduationCap className="h-5 w-5 text-purple-500" />
-                                            Academia
-                                        </Link>
+                                     <>
+                                         {/* Root Links */}
+                                         <Link
+                                             href="/newsletters"
+                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                         >
+                                             <Newspaper className="h-5 w-5 text-zinc-500" />
+                                             Newsletters
+                                         </Link>
+                                         <Link
+                                             href="/activity"
+                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                         >
+                                             <ClipboardCheck className="h-5 w-5 text-teal-600" />
+                                             25 puntos
+                                         </Link>
+                                         <Link
+                                             href="/pea-prp"
+                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                         >
+                                             <Target className="h-5 w-5 text-indigo-600" />
+                                             PEA/PRP
+                                         </Link>
+                                         <Link
+                                             href="/cartera"
+                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                         >
+                                             <Wallet className="h-5 w-5 text-green-600" />
+                                             Mi Cartera
+                                         </Link>
+                                         <Link
+                                             href="/team"
+                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                         >
+                                             <Users className="h-5 w-5 text-indigo-500" />
+                                             Equipo
+                                         </Link>
+                                         <Link
+                                             href="/ranking"
+                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                         >
+                                             <Award className="h-5 w-5 text-amber-500" />
+                                             Ranking
+                                         </Link>
 
-                                        {isAdmin && (
-                                            <>
-                                                <Link
-                                                    href="/votaciones"
-                                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                                >
-                                                    <Sparkles className="h-5 w-5 text-amber-500" />
-                                                    Votaciones
-                                                </Link>
-                                                <Link
-                                                    href="/admin"
-                                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                                >
-                                                    <Settings className="h-5 w-5 text-slate-500" />
-                                                    Admin
-                                                </Link>
-                                                <Link
-                                                    href="/admin/plan-arranque"
-                                                    className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                                >
-                                                    <Rocket className="h-5 w-5 text-orange-500" />
-                                                    Admin P. Arranque
-                                                </Link>
-                                                <Link
-                                                    href="/reportes"
-                                                    className="text-muted-foreground hover:text-foreground"
-                                                >
-                                                    Reportes
-                                                </Link>
-                                            </>
-                                        )}
-                                        {isSuperAdmin && (
-                                            <Link
-                                                href="/agencias"
-                                                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                            >
-                                                <Building2 className="h-5 w-5 text-purple-600" />
-                                                Agencias SaaS
-                                            </Link>
-                                        )}
-                                        {isSuperAdmin && (
-                                            <Link
-                                                href="/admin/vendedores"
-                                                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                            >
-                                                <Users className="h-5 w-5 text-rose-500" />
-                                                Vendedores
-                                            </Link>
-                                        )}
-                                        {isSuperAdmin && (
-                                            <Link
-                                                href="/admin/network"
-                                                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                            >
-                                                <Network className="h-5 w-5 text-indigo-600" />
-                                                Red Multinivel
-                                            </Link>
-                                        )}
-                                        {isSuperAdmin && (
-                                            <Link
-                                                href="/admin/system-status"
-                                                className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                            >
-                                                <Activity className="h-5 w-5 text-blue-600" />
-                                                Estado de APIs
-                                            </Link>
-                                        )}
-                                    </>
+                                         {/* Herramientas Section */}
+                                         <div className="space-y-2.5">
+                                             <div className="text-[10px] font-mono tracking-wider text-zinc-400 uppercase pt-2">Herramientas</div>
+                                             <div className="pl-3 space-y-2.5 border-l border-zinc-200 dark:border-zinc-800">
+                                                 <Link href="/documentacion" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                     <Book className="h-4.5 w-4.5 text-teal-600" />
+                                                     Mi Biblioteca
+                                                 </Link>
+                                                 <Link href="/cotizador" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                     <Calculator className="h-4.5 w-4.5 text-teal-600" />
+                                                     Cotizador
+                                                 </Link>
+                                                 <Link href="/adn" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                     <HeartPulse className="h-4.5 w-4.5 text-red-500" />
+                                                     ADN
+                                                 </Link>
+                                                 <Link href="/plan-arranque" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                     <Rocket className="h-4.5 w-4.5 text-orange-500" />
+                                                     Plan de Arranque
+                                                 </Link>
+                                                 <Link href="/academia" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                     <GraduationCap className="h-4.5 w-4.5 text-purple-500" />
+                                                     Academia
+                                                 </Link>
+                                             </div>
+                                         </div>
+
+                                         {/* IA Avanzada Section */}
+                                         <div className="space-y-2.5">
+                                             <div className="text-[10px] font-mono tracking-wider text-zinc-400 uppercase pt-2">IA Avanzada</div>
+                                             <div className="pl-3 space-y-2.5 border-l border-zinc-200 dark:border-zinc-800">
+                                                 <Link href="/assistant" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                     <MessageSquare className="h-4.5 w-4.5 text-pink-500" />
+                                                     Asistente {shortAgencyName}
+                                                 </Link>
+                                                 <Link href="/agents" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                     <Bot className="h-4.5 w-4.5 text-indigo-600" />
+                                                     Agentes IA
+                                                 </Link>
+                                             </div>
+                                         </div>
+
+                                         {/* Admin Section */}
+                                         {isAdmin && (
+                                             <div className="space-y-2.5">
+                                                 <div className="text-[10px] font-mono tracking-wider text-zinc-400 uppercase pt-2">Administración</div>
+                                                 <div className="pl-3 space-y-2.5 border-l border-zinc-200 dark:border-zinc-800">
+                                                     <Link href="/votaciones" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Sparkles className="h-4.5 w-4.5 text-amber-500" />
+                                                         Votaciones
+                                                     </Link>
+                                                     <Link href="/admin" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Settings className="h-4.5 w-4.5 text-slate-500" />
+                                                         Dashboard Admin
+                                                     </Link>
+                                                     <Link href="/admin/plan-arranque" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Rocket className="h-4.5 w-4.5 text-orange-500" />
+                                                         Admin P. Arranque
+                                                     </Link>
+                                                     <Link href="/reportes" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <ClipboardCheck className="h-4.5 w-4.5 text-slate-500" />
+                                                         Reportes
+                                                     </Link>
+                                                 </div>
+                                             </div>
+                                         )}
+
+                                         {/* Super Admin Section */}
+                                         {isSuperAdmin && (
+                                             <div className="space-y-2.5">
+                                                 <div className="text-[10px] font-mono tracking-wider text-rose-400 uppercase pt-2">Super Administración</div>
+                                                 <div className="pl-3 space-y-2.5 border-l border-rose-200 dark:border-rose-950/40">
+                                                     <Link href="/agencias" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Building2 className="h-4.5 w-4.5 text-purple-600" />
+                                                         Agencias SaaS
+                                                     </Link>
+                                                     <Link href="/admin/vendedores" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Users className="h-4.5 w-4.5 text-rose-500" />
+                                                         Vendedores
+                                                     </Link>
+                                                     <Link href="/admin/network" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Network className="h-4.5 w-4.5 text-indigo-600" />
+                                                         Red Multinivel
+                                                     </Link>
+                                                     <Link href="/admin/system-status" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Activity className="h-4.5 w-4.5 text-blue-600" />
+                                                         Estado de APIs
+                                                     </Link>
+                                                     <Link href="/admin?tab=votaciones" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Sparkles className="h-4.5 w-4.5 text-amber-500" />
+                                                         Control de Votaciones
+                                                     </Link>
+                                                 </div>
+                                             </div>
+                                         )}
+                                     </>
                                 )}
                             </nav>
                     </MobileNavigation>

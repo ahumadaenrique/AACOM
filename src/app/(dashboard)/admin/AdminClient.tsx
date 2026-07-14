@@ -859,6 +859,13 @@ export default function AdminClient() {
 
   useEffect(() => {
     loadData()
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const tabParam = params.get('tab')
+      if (tabParam && ["historico", "productividad", "agentes", "adn", "comunicados", "actividad", "asistente", "notificaciones", "biblioteca", "votaciones"].includes(tabParam)) {
+        setActiveTab(tabParam as any)
+      }
+    }
   }, [])
 
   // Save UDI default setting
