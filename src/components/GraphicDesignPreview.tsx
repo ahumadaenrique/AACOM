@@ -260,14 +260,23 @@ export function GraphicDesignPreview({
     }
 
     try {
-      // 1. Solid Textured Background (Verde claro / Menta corporativo texturizado)
-      // We read primary from branding, but if it is too dark, we can use a soft pastel variant for the aesthetic or use secondary.
-      // Marblism uses a soft pastel green background. Let's make a beautiful pastel overlay base.
+      // Helper to ensure text contrast (if brand color is too light, fallback to dark slate)
+      const getDarkTextColor = (hex: string): string => {
+        if (!hex || !hex.startsWith('#')) return '#1e293b';
+        let r = parseInt(hex.slice(1, 3), 16);
+        let g = parseInt(hex.slice(3, 5), 16);
+        let b = parseInt(hex.slice(5, 7), 16);
+        const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        return luma > 180 ? '#0f172a' : hex;
+      }
+      const textColorToUse = getDarkTextColor(primary);
+
+      // 1. Solid Textured Background (Corporate Brand Color lightened dynamically to a premium pastel shade)
       ctx.fillStyle = primary
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-      // Add a soft tint overlay to match the premium mint/green hue from the user's reference images
-      ctx.fillStyle = 'rgba(212, 237, 228, 0.85)' // Warm mint pastel overlay
+      // Add a semi-transparent white overlay to dynamically convert the brand color into a soft pastel background
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.88)'
       ctx.fillRect(0, 0, canvas.width, canvas.height)
 
       // Draw the premium Crumpled Paper Texture
@@ -291,7 +300,7 @@ export function GraphicDesignPreview({
         await drawImageProportional(logoToUse, lx, ly, lw, lh)
       } else {
         // Text fallback
-        ctx.fillStyle = '#0f172a'
+        ctx.fillStyle = textColorToUse
         ctx.font = 'bold 36px sans-serif'
         ctx.textAlign = 'center'
         ctx.textBaseline = 'middle'
@@ -308,7 +317,7 @@ export function GraphicDesignPreview({
 
         // Text rendering on the left
         ctx.textAlign = 'left'
-        ctx.fillStyle = '#1e293b' // Deep charcoal for professional contrast
+        ctx.fillStyle = textColorToUse // Dynamic corporate text color
 
         // Title Wrapped
         ctx.font = '900 72px sans-serif'
@@ -332,7 +341,7 @@ export function GraphicDesignPreview({
 
         // Draw horizontal divider line
         const dividerY = currentY + 40
-        ctx.strokeStyle = '#1e293b'
+        ctx.strokeStyle = textColorToUse
         ctx.lineWidth = 6
         ctx.beginPath()
         ctx.moveTo(80, dividerY)
@@ -341,7 +350,7 @@ export function GraphicDesignPreview({
 
         // Subtitle
         if (safeSubtitle) {
-          ctx.fillStyle = '#1e293b'
+          ctx.fillStyle = textColorToUse
           ctx.font = '900 64px sans-serif'
           drawTextWrapped(safeSubtitle.toUpperCase(), 80, dividerY + 110, 480, false)
         }
@@ -354,7 +363,7 @@ export function GraphicDesignPreview({
 
         // Title at the top center
         ctx.textAlign = 'center'
-        ctx.fillStyle = '#1e293b'
+        ctx.fillStyle = textColorToUse
         ctx.font = '900 68px sans-serif'
         
         const words = safeCopyText.toUpperCase().split(' ')
@@ -376,7 +385,7 @@ export function GraphicDesignPreview({
 
         if (safeSubtitle) {
           ctx.font = '600 36px sans-serif'
-          ctx.fillStyle = '#4b5563'
+          ctx.fillStyle = textColorToUse
           ctx.fillText(safeSubtitle, canvas.width / 2, currentY + 60)
         }
 
@@ -388,7 +397,7 @@ export function GraphicDesignPreview({
 
         // Header bold title
         ctx.textAlign = 'center'
-        ctx.fillStyle = '#1e293b'
+        ctx.fillStyle = textColorToUse
         ctx.font = '900 78px sans-serif'
 
         const words = safeCopyText.toUpperCase().split(' ')
@@ -410,7 +419,7 @@ export function GraphicDesignPreview({
 
         if (safeSubtitle) {
           ctx.font = '900 64px sans-serif'
-          ctx.fillStyle = '#1e293b'
+          ctx.fillStyle = textColorToUse
           ctx.fillText(safeSubtitle.toUpperCase(), canvas.width / 2, footerY - 50)
         }
       }
