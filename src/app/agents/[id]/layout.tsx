@@ -5,6 +5,7 @@ import { notFound } from "next/navigation"
 import { Settings, MessageSquare, Calendar, ChevronLeft, ArrowLeft, FileText, Phone, CheckSquare } from "lucide-react"
 import { AgentAvatar } from "@/components/AgentAvatar"
 import { SyncDbButton } from "@/components/SyncDbButton"
+import { auth } from "@/auth"
 
 export default async function AgentWorkspaceLayout({
   children,
@@ -13,6 +14,16 @@ export default async function AgentWorkspaceLayout({
   children: ReactNode
   params: { id: string }
 }) {
+  const session = await auth()
+  if (!session || !session.user || !session.user.email) {
+    notFound()
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { email: session.user.email }
+  })
+  if (!dbUser) notFound()
+
   let currentAgent = null
   let logsForMonth: any[] = []
   let allAgents: any[] = []
@@ -100,6 +111,30 @@ export default async function AgentWorkspaceLayout({
       default:
         return type.replace(/_/g, ' ').toLowerCase();
     }
+  }
+
+  if (currentAgent.type === 'EXECUTIVE_ASSISTANT' && dbUser.role !== 'SUPER_ADMIN') {
+    return (
+      <div className="flex-1 flex flex-col min-w-0 h-full bg-neutral-950 items-center justify-center p-6 text-neutral-200">
+        <div className="max-w-md w-full bg-neutral-900 border border-neutral-800 rounded-3xl p-8 text-center flex flex-col items-center gap-6 shadow-2xl">
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+            <MessageSquare className="w-8 h-8" />
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white mb-2">Asistente Ejecutiva</h2>
+            <p className="text-sm text-neutral-400 leading-relaxed">
+              En desarrollo, próximamente en funcionamiento.
+            </p>
+          </div>
+          <Link 
+            href="/agents" 
+            className="px-5 py-2.5 bg-neutral-800 hover:bg-neutral-700 text-white rounded-xl text-sm font-medium border border-neutral-700 transition-colors"
+          >
+            Volver a Agentes
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
