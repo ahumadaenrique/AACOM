@@ -1332,19 +1332,19 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
 
             if (normalizedStyle === 'realista' || normalizedStyle === 'realism' || !agent.designStyle) {
               styleModifier = ", ultra-realistic macro photograph";
-              premiumModifiers = ", 8k resolution, cinematic studio lighting, shot on 85mm lens, extreme depth of field, hyper-detailed, award-winning advertising photography, centered main subject, pure solid white background";
+              premiumModifiers = ", 8k resolution, cinematic studio lighting, shot on 85mm lens, extreme depth of field, hyper-detailed, award-winning advertising photography, centered main subject, isolated on a clean solid white backdrop with zero background artifacts, high contrast edge lighting";
             } else if (normalizedStyle === 'ilustración' || normalizedStyle === 'ilustracion' || normalizedStyle === 'illustration') {
               styleModifier = ", stunning 2.5D vector illustration";
-              premiumModifiers = ", dribbble trending, vivid bold colors, highly detailed, professional graphic design, masterpiece, thick outlines, solid shapes, pure solid white background";
+              premiumModifiers = ", dribbble trending, vivid bold colors, highly detailed, professional graphic design, masterpiece, thick outlines, solid shapes, isolated on a clean solid white backdrop with zero background artifacts";
             } else if (normalizedStyle === '3d' || normalizedStyle === '3d render' || normalizedStyle === 'modelado 3d') {
               styleModifier = ", hyper-realistic 3D octane render";
-              premiumModifiers = ", unreal engine 5, claymation masterpiece, cute incredibly detailed character, Pixar style, subsurface scattering, rim lighting, artstation trending, pure solid white background";
+              premiumModifiers = ", unreal engine 5, claymation masterpiece, cute incredibly detailed character, Pixar style, subsurface scattering, rim lighting, artstation trending, isolated on a clean solid white backdrop with zero background artifacts";
             } else if (normalizedStyle === 'dibujo animado' || normalizedStyle === 'cartoon' || normalizedStyle === 'caricatura') {
               styleModifier = ", spectacular modern cartoon illustration";
-              premiumModifiers = ", crisp line art, vibrant neon colors, comic book masterpiece, highly detailed digital art, high resolution, pure solid white background";
+              premiumModifiers = ", crisp line art, vibrant neon colors, comic book masterpiece, highly detailed digital art, high resolution, isolated on a clean solid white backdrop with zero background artifacts";
             } else {
               styleModifier = `, masterpiece ${agent.designStyle} style`;
-              premiumModifiers = ", ultra high quality, incredibly detailed, professional artwork, pure solid white background";
+              premiumModifiers = ", ultra high quality, incredibly detailed, professional artwork, isolated on a clean solid white backdrop with zero background artifacts";
             }
 
             const fluxResult = await fal.subscribe("fal-ai/flux/dev", {
