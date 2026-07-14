@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
     try {
         console.log('Running prisma db push on Vercel production database...');
-        const output = execSync('npx prisma db push --accept-data-loss', { 
+        const output = execSync('./node_modules/.bin/prisma db push --accept-data-loss', { 
             encoding: 'utf-8',
             env: { ...process.env }
         });
