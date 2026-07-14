@@ -148,6 +148,7 @@ interface ChatInterfaceProps {
   fallbackLogoUrl?: string | null
   generationCount?: number
   hasGoogleConnection?: boolean
+  userRole?: string
 }
 
 export default function ChatInterface({ 
@@ -155,7 +156,8 @@ export default function ChatInterface({
   initialMessages = [],
   fallbackLogoUrl = null,
   generationCount = 0,
-  hasGoogleConnection = true
+  hasGoogleConnection = true,
+  userRole = "AGENTE"
 }: ChatInterfaceProps) {
   const [localInput, setLocalInput] = useState("")
   const [isRecording, setIsRecording] = useState(false)
@@ -542,7 +544,7 @@ export default function ChatInterface({
                             )
                           ) : (
                             toolInvocation.toolName === 'generateGraphicDesign' ? (
-                              <GraphicDesignPreview result={toolInvocation.result} fallbackLogoUrl={fallbackLogoUrl} agentId={agent.id} />
+                              <GraphicDesignPreview result={toolInvocation.result} fallbackLogoUrl={fallbackLogoUrl} agentId={agent.id} userRole={userRole} />
                             ) : (toolInvocation.toolName === 'listMeetings' || toolInvocation.toolName === 'scheduleMeeting' || toolInvocation.toolName === 'cancelMeeting') ? (
                               <div className="p-4 bg-neutral-950/60 border border-neutral-800/80 rounded-xl max-w-md text-sm text-neutral-200">
                                 <div className="flex items-center gap-2 border-b border-neutral-800 pb-2 mb-2">
@@ -655,7 +657,7 @@ export default function ChatInterface({
                         ) : (
                           toolInvocation.toolName === 'generateGraphicDesign' ? (
                             toolInvocation.result ? (
-                              <GraphicDesignPreview result={toolInvocation.result} fallbackLogoUrl={fallbackLogoUrl} agentId={agent.id} />
+                              <GraphicDesignPreview result={toolInvocation.result} fallbackLogoUrl={fallbackLogoUrl} agentId={agent.id} userRole={userRole} />
                             ) : (
                               <div className="text-neutral-400 italic">Error: El diseño no pudo completarse. Por favor, intenta de nuevo.</div>
                             )

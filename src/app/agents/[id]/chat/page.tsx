@@ -106,7 +106,14 @@ export default async function AgentChatPage({ params }: { params: { id: string }
 
   return (
     <div className="h-full">
-      <ChatInterface agent={agent} initialMessages={initialMessages} fallbackLogoUrl={fallbackLogoUrl} generationCount={generationCount} hasGoogleConnection={hasGoogleConnection} />
+      <ChatInterface 
+        agent={agent} 
+        initialMessages={initialMessages} 
+        fallbackLogoUrl={fallbackLogoUrl} 
+        generationCount={generationCount} 
+        hasGoogleConnection={hasGoogleConnection} 
+        userRole={dbUser.role}
+      />
     </div>
   )
 }

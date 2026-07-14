@@ -17,11 +17,13 @@ interface GraphicDesignResult {
 export function GraphicDesignPreview({ 
   result, 
   fallbackLogoUrl,
-  agentId
+  agentId,
+  userRole = "AGENTE"
 }: { 
   result: GraphicDesignResult | string
   fallbackLogoUrl?: string | null
   agentId?: string
+  userRole?: string
 }) {
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -483,13 +485,23 @@ export function GraphicDesignPreview({
             </button>
           </div>
           {agentId && (
-            <button 
-              onClick={() => setShowModal(true)}
-              className="w-full flex items-center justify-center gap-2 bg-[#41e6db] hover:bg-[#34d3c5] text-neutral-900 font-bold text-xs px-4 py-2.5 rounded-lg transition-colors shadow-sm"
-            >
-              <Calendar className="w-4 h-4" />
-              Programar publicación
-            </button>
+            userRole === 'SUPER_ADMIN' ? (
+              <button 
+                onClick={() => setShowModal(true)}
+                className="w-full flex items-center justify-center gap-2 bg-[#41e6db] hover:bg-[#34d3c5] text-neutral-900 font-bold text-xs px-4 py-2.5 rounded-lg transition-colors shadow-sm"
+              >
+                <Calendar className="w-4 h-4" />
+                Programar publicación
+              </button>
+            ) : (
+              <button 
+                disabled
+                className="w-full flex items-center justify-center gap-2 bg-neutral-800 text-neutral-500 font-bold text-xs px-4 py-2.5 rounded-lg opacity-60 cursor-not-allowed border border-neutral-700"
+              >
+                <Calendar className="w-4 h-4" />
+                Programar publicación (Próximamente)
+              </button>
+            )
           )}
         </div>
       </div>
