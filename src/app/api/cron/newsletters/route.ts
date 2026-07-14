@@ -32,7 +32,7 @@ const MOCK_ARTICLES = [
     title: "Banxico evalúa el impacto de la inflación de servicios en la tasa de referencia",
     description: "La Junta de Gobierno de la banca central mexicana señala que la persistencia en el sector de servicios requiere mantener un enfoque prudente ante el escenario global.",
     content: "El Banco de México (Banxico) comunicó en su última minuta que continuará monitoreando el comportamiento de la inflación subyacente. Analistas anticipan que las tasas de interés se mantendrán elevadas para mitigar presiones en el sector de servicios, mientras la SHCP prevé un cierre de año estable dentro de las estimaciones presupuestales.",
-    url: "https://www.aacomsoft.com/news/banxico-tasas",
+    url: "https://www.banxico.org.mx/publicaciones-y-prensa/anuncios-de-politica-monetaria/anuncios-politica-monetaria-t.html",
     imageUrl: null,
     sourceName: "AACOM Financiero",
     category: "Mexico",
@@ -42,8 +42,8 @@ const MOCK_ARTICLES = [
   {
     title: "La Comisión Nacional de Seguros y Fianzas (CNSF) impulsa nuevas reglas de solvencia",
     description: "El organismo regulador de seguros en México introduce directrices para fortalecer la capitalización de las aseguradoras en la era digital.",
-    content: "Con el objetivo de garantizar la resiliencia del sector financiero, la CNSF anunció una serie de regulaciones enfocadas en el ecosistema Insurtech y los esquemas tradicionales de fianzas. Se espera que estas medidas aceleren la adopción tecnológica y protejan de manera más efectiva a los agentes de seguros y contratantes locales.",
-    url: "https://www.aacomsoft.com/news/cnsf-solvencia",
+    content: "Con el objetivo de garantizar la resiliencia del sector financiero, la CNSF anunció una serie de regulaciones enfocadas en el ecosistema Insurtech y los esquemas tradicionales de fianzas. Se espera que estas medidas aceleren la adoption tecnológica y protejan de manera más efectiva a los agentes de seguros y contratantes locales.",
+    url: "https://www.gob.mx/cnsf",
     imageUrl: null,
     sourceName: "Boletín CNSF",
     category: "Mexico",
@@ -54,7 +54,7 @@ const MOCK_ARTICLES = [
     title: "La Bolsa Mexicana de Valores (BMV) registra ganancias impulsada por firmas tecnológicas",
     description: "El principal índice de la BMV reporta un avance marginal debido al apetito por activos de riesgo y estabilidad cambiaria.",
     content: "La BMV cerró la jornada con números verdes apoyada por el buen desempeño de emisoras financieras y empresas del sector asegurador. La estabilidad de las tasas de interés ha dado respiro al mercado accionario local, según informaron corredurías nacionales.",
-    url: "https://www.aacomsoft.com/news/bmv-cierre",
+    url: "https://www.bmv.com.mx/",
     imageUrl: null,
     sourceName: "Finanzas MX",
     category: "Mexico",
@@ -65,7 +65,7 @@ const MOCK_ARTICLES = [
     title: "Inflación global muestra señales de moderación ante la desaceleración del consumo",
     description: "Los principales bancos centrales de Europa y Estados Unidos analizan pausar el endurecimiento monetario tras los últimos datos macroeconómicos.",
     content: "El comportamiento global de los precios al consumidor apunta a una estabilización gradual. Aunque la inflación subyacente sigue siendo un reto, las tasas de interés podrían haber alcanzado su techo este trimestre. Esto abre una oportunidad de expansión para las carteras globales de inversión y los mercados emergentes.",
-    url: "https://www.aacomsoft.com/news/inflacion-global",
+    url: "https://www.reuters.com/markets/",
     imageUrl: null,
     sourceName: "Global Finance",
     category: "Global",
@@ -76,7 +76,7 @@ const MOCK_ARTICLES = [
     title: "Insurtech en América Latina supera récord de inversión para automatización de siniestros",
     description: "Startups de seguros digitales en México y Brasil atraen capital internacional para modernizar la atención al cliente final.",
     content: "El sector de tecnología aplicada a seguros (Insurtech) continúa atrayendo el interés de fondos de capital de riesgo. La implementación de inteligencia artificial para cotizar y liquidar pólizas de gastos médicos y automóviles es uno de los principales motores de crecimiento del mercado asegurador este año.",
-    url: "https://www.aacomsoft.com/news/insurtech-latam",
+    url: "https://www.insurtechmexico.org/",
     imageUrl: null,
     sourceName: "TechInsure",
     category: "Mexico",
@@ -220,7 +220,13 @@ export async function GET(request: Request) {
       try {
         await prisma.newsArticle.upsert({
           where: { title: art.title },
-          update: {},
+          update: {
+            url: art.url,
+            description: art.description,
+            content: art.content,
+            imageUrl: art.imageUrl,
+            tags: matchedTags.slice(0, 5)
+          },
           create: {
             title: art.title,
             description: art.description,
