@@ -249,6 +249,62 @@ export function GraphicDesignPreview({
       return currentY + lineHeight
     }
 
+    const drawCrumpledPaperTexture = (ctx: CanvasRenderingContext2D, w: number, h: number) => {
+      // 1. General paper fiber/noise overlay
+      ctx.fillStyle = 'rgba(0,0,0,0.015)'
+      for (let i = 0; i < 30000; i++) {
+        ctx.fillRect(Math.random() * w, Math.random() * h, 1.5, 1.5)
+      }
+      ctx.fillStyle = 'rgba(255,255,255,0.01)'
+      for (let i = 0; i < 30000; i++) {
+        ctx.fillRect(Math.random() * w, Math.random() * h, 1.5, 1.5)
+      }
+
+      // 2. Creases/folds mapping
+      const numCreases = 10
+      for (let i = 0; i < numCreases; i++) {
+        const x1 = Math.random() * w
+        const y1 = Math.random() * h
+        const x2 = Math.random() * w
+        const y2 = Math.random() * h
+
+        const angle = Math.atan2(y2 - y1, x2 - x1)
+        const perpAngle = angle + Math.PI / 2
+        
+        ctx.lineWidth = 1.5
+
+        // Dark crease side
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.08)'
+        ctx.shadowBlur = 10
+        ctx.shadowOffsetX = Math.cos(perpAngle) * 5
+        ctx.shadowOffsetY = Math.sin(perpAngle) * 5
+
+        ctx.strokeStyle = 'rgba(0, 0, 0, 0.06)'
+        ctx.beginPath()
+        ctx.moveTo(x1, y1)
+        ctx.lineTo(x2, y2)
+        ctx.stroke()
+
+        // Light crease side
+        ctx.shadowColor = 'rgba(255, 255, 255, 0.18)'
+        ctx.shadowBlur = 8
+        ctx.shadowOffsetX = -Math.cos(perpAngle) * 3
+        ctx.shadowOffsetY = -Math.sin(perpAngle) * 3
+
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)'
+        ctx.beginPath()
+        ctx.moveTo(x1, y1)
+        ctx.lineTo(x2, y2)
+        ctx.stroke()
+      }
+
+      // Reset shadows
+      ctx.shadowColor = 'transparent'
+      ctx.shadowBlur = 0
+      ctx.shadowOffsetX = 0
+      ctx.shadowOffsetY = 0
+    }
+
     try {
       if (templateId === 0) {
         // TEMPLATE 0: Marblism Mesh Gradient (Ultra Premium)
@@ -269,6 +325,9 @@ export function GraphicDesignPreview({
         orb2.addColorStop(1, 'transparent')
         ctx.fillStyle = orb2
         ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        // Draw Crumpled Paper Texture
+        drawCrumpledPaperTexture(ctx, canvas.width, canvas.height)
 
         if (safeBgData) {
           ctx.fillStyle = 'rgba(255, 255, 255, 0.08)'
@@ -334,11 +393,8 @@ export function GraphicDesignPreview({
         ctx.fillStyle = spot
         ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-        // Noise overlay
-        ctx.fillStyle = 'rgba(255,255,255,0.03)'
-        for (let i = 0; i < 15000; i++) {
-          ctx.fillRect(Math.random() * canvas.width, Math.random() * canvas.height, 1.5, 1.5)
-        }
+        // Draw Crumpled Paper Texture
+        drawCrumpledPaperTexture(ctx, canvas.width, canvas.height)
 
         if (safeBgData) {
           ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'
@@ -413,6 +469,9 @@ export function GraphicDesignPreview({
         ctx.moveTo(0, canvas.height * 0.7)
         ctx.lineTo(canvas.width, canvas.height * 0.4)
         ctx.stroke()
+
+        // Draw Crumpled Paper Texture
+        drawCrumpledPaperTexture(ctx, canvas.width, canvas.height)
 
         if (safeBgData) {
           ctx.fillStyle = 'rgba(255, 255, 255, 0.08)'
