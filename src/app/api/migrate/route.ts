@@ -1,36 +1,61 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import twilio from 'twilio';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
     try {
-        const aacom = await prisma.agency.findUnique({
-            where: { slug: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }
-        });
+        const accountSid = process.env.TWILIO_ACCOUNT_SID;
+        const authToken = process.env.TWILIO_AUTH_TOKEN;
+        const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+        const targetPhone = '5515015502'; // Enrique's phone number
 
-        if (!aacom) {
-            return NextResponse.json({ success: false, error: "Agencia AACOM no encontrada" });
+        const envStatus = {
+            TWILIO_ACCOUNT_SID: !!accountSid,
+            TWILIO_AUTH_TOKEN: !!authToken,
+            TWILIO_PHONE_NUMBER: fromNumber || 'MISSING'
+        };
+
+        if (!accountSid || !authToken || !fromNumber) {
+            return NextResponse.json({ success: false, message: "Missing Twilio variables on Vercel.", envStatus });
         }
 
-        const agencyId = aacom.id;
+        const client = twilio(accountSid, authToken);
 
-        const users = await prisma.user.findMany({ select: { id: true, email: true, agencyId: true, role: true } });
-        const cots = await prisma.cotizacion.findMany({ select: { id: true, userId: true, agencyId: true } });
-        const adns = await prisma.adnDiagnostic.findMany({ select: { id: true, userId: true, agencyId: true } });
-        
-        return NextResponse.json({
-            success: true,
-            message: "Reporte de la base de datos actual de Vercel",
-            databaseState: {
-                users,
-                cotizacionesCount: cots.length,
-                cotizacionesSample: cots.slice(0, 10),
-                adnsCount: adns.length,
-                adnsSample: adns.slice(0, 10)
-            }
-        });
+        let formattedPhone = targetPhone.trim().replace(/[\s\-\(\)]/g, '');
+        if (formattedPhone.length === 10) {
+            formattedPhone = `+52${formattedPhone}`;
+        } else if (!formattedPhone.startsWith('+')) {
+            formattedPhone = `+${formattedPhone}`;
+        }
+
+        try {
+            const message = await client.messages.create({
+                body: 'Mensaje de diagnóstico desde Vercel de AACOM.',
+                from: `whatsapp:${fromNumber.startsWith('+') ? fromNumber : '+' + fromNumber}`,
+                to: `whatsapp:${formattedPhone}`
+            });
+
+            return NextResponse.json({
+                success: true,
+                message: "Twilio API accepted the request",
+                sid: message.sid,
+                status: message.status,
+                envStatus
+            });
+        } catch (twilioError: any) {
+            return NextResponse.json({
+                success: false,
+                message: "Twilio API returned an error",
+                error: {
+                    message: twilioError.message,
+                    code: twilioError.code,
+                    status: twilioError.status
+                },
+                envStatus
+            }, { status: 400 });
+        }
     } catch (e: any) {
-        return NextResponse.json({ success: false, error: e.message });
+        return NextResponse.json({ success: false, error: e.message }, { status: 500 });
     }
 }
