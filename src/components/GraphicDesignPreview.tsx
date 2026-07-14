@@ -114,81 +114,35 @@ export function GraphicDesignPreview({
           const drawY = y + (h - drawH)
 
           if (drawBorder) {
-            // Draw sticker white border outline (stunning modern premium effect)
-            const borderCanvas = document.createElement('canvas')
-            borderCanvas.width = img.width + 40
-            borderCanvas.height = img.height + 40
-            const bCtx = borderCanvas.getContext('2d')
-            if (bCtx) {
-              // Draw scaled original image offset in the border canvas
-              bCtx.drawImage(img, 20, 20)
+            // High-performance sticker outline using GPU-accelerated canvas offset
+            const tempCanvas = document.createElement('canvas')
+            tempCanvas.width = drawW
+            tempCanvas.height = drawH
+            const tCtx = tempCanvas.getContext('2d')
+            if (tCtx) {
+              // 1. Draw original scaled image onto offscreen canvas
+              tCtx.drawImage(img, 0, 0, drawW, drawH)
               
-              // Extract alpha channel to create a clean white silhouette outline
-              const imgData = bCtx.getImageData(0, 0, borderCanvas.width, borderCanvas.height)
-              const data = imgData.data
-              const borderSize = 10 // Border thickness
-
-              // Outline algorithm (dilation)
-              const mask = new Uint8Array(borderCanvas.width * borderCanvas.height)
-              for (let i = 3; i < data.length; i += 4) {
-                if (data[i] > 10) {
-                  const idx = Math.floor(i / 4)
-                  mask[idx] = 1
-                }
-              }
-
-              const dilatedMask = new Uint8Array(borderCanvas.width * borderCanvas.height)
-              const w = borderCanvas.width
-              const h = borderCanvas.height
-
-              for (let y = borderSize; y < h - borderSize; y++) {
-                for (let x = borderSize; x < w - borderSize; x++) {
-                  const idx = y * w + x
-                  if (mask[idx] === 1) {
-                    dilatedMask[idx] = 1
-                    continue
-                  }
-                  
-                  // Check neighbors
-                  let found = false
-                  for (let dy = -borderSize; dy <= borderSize; dy++) {
-                    for (let dx = -borderSize; dx <= borderSize; dx++) {
-                      if (dx*dx + dy*dy <= borderSize*borderSize) {
-                        if (mask[(y + dy) * w + (x + dx)] === 1) {
-                          found = true
-                          break
-                        }
-                      }
-                    }
-                    if (found) break
-                  }
-                  if (found) {
-                    dilatedMask[idx] = 1
-                  }
-                }
-              }
-
-              // Draw white border outline on main canvas
-              ctx.fillStyle = '#ffffff'
-              ctx.shadowColor = 'rgba(0,0,0,0.15)'
+              // 2. Tint it solid white
+              tCtx.globalCompositeOperation = 'source-in'
+              tCtx.fillStyle = '#ffffff'
+              tCtx.fillRect(0, 0, drawW, drawH)
+              
+              // 3. Draw the white silhouette offset in 16 directions to create a smooth outline
+              ctx.save()
+              ctx.shadowColor = 'rgba(0, 0, 0, 0.2)'
               ctx.shadowBlur = 20
-              ctx.shadowOffsetY = 10
+              ctx.shadowOffsetY = 12
               
-              const scaleX = drawW / img.width
-              const scaleY = drawH / img.height
-
-              for (let y = 0; y < h; y++) {
-                for (let x = 0; x < w; x++) {
-                  if (dilatedMask[y * w + x] === 1) {
-                    const canvasX = drawX + (x - 20) * scaleX
-                    const canvasY = drawY + (y - 20) * scaleY
-                    ctx.fillRect(canvasX, canvasY, Math.ceil(scaleX) + 1, Math.ceil(scaleY) + 1)
-                  }
-                }
+              const borderSize = 16 // Sticker border thickness
+              const steps = 16
+              for (let i = 0; i < steps; i++) {
+                const angle = (i / steps) * Math.PI * 2
+                const ox = Math.cos(angle) * borderSize
+                const oy = Math.sin(angle) * borderSize
+                ctx.drawImage(tempCanvas, drawX + ox, drawY + oy)
               }
-              ctx.shadowColor = 'transparent'
-              ctx.shadowBlur = 0
-              ctx.shadowOffsetY = 0
+              ctx.restore()
             }
           }
           
