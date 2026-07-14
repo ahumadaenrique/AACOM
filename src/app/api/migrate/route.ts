@@ -1,28 +1,36 @@
 import { NextResponse } from 'next/server';
-import { execSync } from 'child_process';
+import { prisma } from '@/lib/prisma';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
     try {
-        console.log('Running prisma db push on Vercel production database...');
-        const output = execSync('./node_modules/.bin/prisma db push --accept-data-loss', { 
-            encoding: 'utf-8',
-            env: { ...process.env }
+        const aacom = await prisma.agency.findUnique({
+            where: { slug: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }
         });
+
+        if (!aacom) {
+            return NextResponse.json({ success: false, error: "Agencia AACOM no encontrada" });
+        }
+
+        const agencyId = aacom.id;
+
+        const users = await prisma.user.findMany({ select: { id: true, email: true, agencyId: true, role: true } });
+        const cots = await prisma.cotizacion.findMany({ select: { id: true, userId: true, agencyId: true } });
+        const adns = await prisma.adnDiagnostic.findMany({ select: { id: true, userId: true, agencyId: true } });
         
         return NextResponse.json({
             success: true,
-            message: "Database schema successfully synchronized on Vercel production DB!",
-            output: output
+            message: "Reporte de la base de datos actual de Vercel",
+            databaseState: {
+                users,
+                cotizacionesCount: cots.length,
+                cotizacionesSample: cots.slice(0, 10),
+                adnsCount: adns.length,
+                adnsSample: adns.slice(0, 10)
+            }
         });
     } catch (e: any) {
-        console.error('Migration error:', e);
-        return NextResponse.json({ 
-            success: false, 
-            error: e.message,
-            stderr: e.stderr?.toString(),
-            stdout: e.stdout?.toString()
-        });
+        return NextResponse.json({ success: false, error: e.message });
     }
 }
