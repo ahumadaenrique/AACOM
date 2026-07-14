@@ -1325,7 +1325,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
               return "LIMIT_EXCEEDED: Se ha alcanzado el límite mensual de 45 diseños gráficos para este Agente IA. El límite se reiniciará el próximo mes.";
             }
 
-            // 2. Generate image with flux (Downgraded to Schnell for cost optimization)
+            // 2. Generate image with flux (Upgraded to Flux Dev for ultra-premium anatomical rendering and realistic human extremities)
             let styleModifier = "";
             let premiumModifiers = "";
             const normalizedStyle = agent.designStyle ? agent.designStyle.toLowerCase() : "realista";
@@ -1347,11 +1347,13 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
               premiumModifiers = ", ultra high quality, incredibly detailed, professional artwork, pure solid white background";
             }
 
-            const fluxResult = await fal.subscribe("fal-ai/flux/schnell", {
+            const fluxResult = await fal.subscribe("fal-ai/flux/dev", {
               input: {
                 prompt: prompt + styleModifier + premiumModifiers,
                 image_size: "square",
-                num_inference_steps: 4,
+                num_inference_steps: 28,
+                guidance_scale: 3.5,
+                enable_safety_checker: true
               },
             }) as any;
 
