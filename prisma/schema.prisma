@@ -594,15 +594,16 @@ model AIAgent {
 }
 
 model DraftPost {
-  id        String   @id @default(cuid())
-  aiAgentId String
-  AIAgent   AIAgent  @relation(fields: [aiAgentId], references: [id], onDelete: Cascade)
-  content   String
-  imageUrl  String?
-  status    String   @default("DRAFT")
-  platform  String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String    @id @default(cuid())
+  aiAgentId   String
+  AIAgent     AIAgent   @relation(fields: [aiAgentId], references: [id], onDelete: Cascade)
+  content     String
+  imageUrl    String?
+  status      String    @default("DRAFT")
+  platform    String
+  scheduledAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }
 
 model InteractionLog {

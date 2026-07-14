@@ -1,5 +1,6 @@
-import { Download, Copy, Check, Loader2 } from 'lucide-react'
+import { Download, Copy, Check, Loader2, Calendar, X } from 'lucide-react'
 import { useState, useEffect } from 'react'
+import { schedulePostAction } from '@/app/actions/post'
 
 interface GraphicDesignResult {
   transparentUrl: string
@@ -15,15 +16,25 @@ interface GraphicDesignResult {
 
 export function GraphicDesignPreview({ 
   result, 
-  fallbackLogoUrl 
+  fallbackLogoUrl,
+  agentId
 }: { 
   result: GraphicDesignResult | string
   fallbackLogoUrl?: string | null
+  agentId?: string
 }) {
   const [copied, setCopied] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isRenderingPreview, setIsRenderingPreview] = useState(true);
+
+  // Scheduling States
+  const [showModal, setShowModal] = useState(false);
+  const [selectedPlatform, setSelectedPlatform] = useState("Instagram");
+  const [scheduledDate, setScheduledDate] = useState("");
+  const [scheduledTime, setScheduledTime] = useState("");
+  const [isScheduling, setIsScheduling] = useState(false);
+  const [scheduledSuccess, setScheduledSuccess] = useState(false);
 
   if (!result) return null;
   if (typeof result === 'string') {
@@ -401,6 +412,27 @@ export function GraphicDesignPreview({
     }
   }
 
+  const handleSchedule = async () => {
+    if (!agentId || !scheduledDate || !scheduledTime) return;
+    setIsScheduling(true);
+
+    try {
+      const scheduledDateTimeStr = `${scheduledDate}T${scheduledTime}:00`;
+      await schedulePostAction({
+        aiAgentId: agentId,
+        content: safeCaption,
+        imageUrl: result.transparentUrl || null,
+        platform: selectedPlatform,
+        scheduledAt: scheduledDateTimeStr
+      });
+      setScheduledSuccess(true);
+    } catch(err: any) {
+      alert('Error al programar la publicación: ' + (err.message || err));
+    } finally {
+      setIsScheduling(false);
+    }
+  }
+
   return (
     <div className="mt-4 border border-white/10 bg-white rounded-xl overflow-hidden w-full max-w-sm group relative shadow-2xl">
       {/* Top Image Section (WYSIWYG Preview) */}
@@ -426,24 +458,127 @@ export function GraphicDesignPreview({
           {safeCaption}
         </div>
         
-        <div className="flex items-center gap-2 pt-2 border-t border-neutral-100">
-          <button 
-            onClick={handleCopy}
-            className="flex-1 flex items-center justify-center gap-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium text-xs px-4 py-2.5 rounded-lg transition-colors"
-          >
-            {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />} 
-            {copied ? 'Copiado!' : 'Copiar texto'}
-          </button>
-          <button 
-            onClick={handleDownload}
-            disabled={isDownloading || isRenderingPreview || !previewUrl}
-            className="flex-1 flex items-center justify-center gap-2 bg-[#41e6db] hover:bg-[#34d3c5] text-neutral-900 font-bold text-xs px-4 py-2.5 rounded-lg transition-colors shadow-sm disabled:opacity-70"
-          >
-            {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} 
-            {isDownloading ? 'Descargando...' : 'Descargar'}
-          </button>
+        <div className="flex flex-col gap-2 pt-2 border-t border-neutral-100">
+          <div className="flex items-center gap-2">
+            <button 
+              onClick={handleCopy}
+              className="flex-1 flex items-center justify-center gap-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium text-xs px-4 py-2.5 rounded-lg transition-colors"
+            >
+              {copied ? <Check className="w-4 h-4 text-green-600" /> : <Copy className="w-4 h-4" />} 
+              {copied ? 'Copiado!' : 'Copiar texto'}
+            </button>
+            <button 
+              onClick={handleDownload}
+              disabled={isDownloading || isRenderingPreview || !previewUrl}
+              className="flex-1 flex items-center justify-center gap-2 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium text-xs px-4 py-2.5 rounded-lg transition-colors disabled:opacity-70"
+            >
+              {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />} 
+              {isDownloading ? 'Descargando...' : 'Descargar'}
+            </button>
+          </div>
+          {agentId && (
+            <button 
+              onClick={() => setShowModal(true)}
+              className="w-full flex items-center justify-center gap-2 bg-[#41e6db] hover:bg-[#34d3c5] text-neutral-900 font-bold text-xs px-4 py-2.5 rounded-lg transition-colors shadow-sm"
+            >
+              <Calendar className="w-4 h-4" />
+              Programar publicación
+            </button>
+          )}
         </div>
       </div>
+
+      {/* Scheduling Modal */}
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-neutral-900 border border-neutral-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative animate-in fade-in zoom-in-95 duration-200">
+            <button 
+              onClick={() => {
+                setShowModal(false)
+                setScheduledSuccess(false)
+              }}
+              className="absolute top-4 right-4 text-neutral-400 hover:text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {scheduledSuccess ? (
+              <div className="flex flex-col items-center text-center py-4">
+                <div className="w-12 h-12 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
+                  <Check className="w-6 h-6 text-green-500" />
+                </div>
+                <h3 className="text-white font-bold text-lg mb-2">¡Publicación Programada!</h3>
+                <p className="text-neutral-400 text-sm mb-6 leading-relaxed">
+                  El diseño ha sido programado con éxito. Recibirás una notificación y recordatorio a la hora indicada.
+                </p>
+                <button
+                  onClick={() => {
+                    setShowModal(false)
+                    setScheduledSuccess(false)
+                  }}
+                  className="w-full bg-[#41e6db] hover:bg-[#34d3c5] text-neutral-900 font-bold text-sm py-2.5 rounded-xl transition-colors"
+                >
+                  Entendido
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4">
+                <div>
+                  <h3 className="text-white font-bold text-lg">Programar Publicación</h3>
+                  <p className="text-neutral-400 text-xs mt-1">
+                    Elige la plataforma y la hora para que tu asistente notifique la publicación.
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-neutral-300 text-xs font-semibold">Plataforma</label>
+                  <select
+                    value={selectedPlatform}
+                    onChange={(e) => setSelectedPlatform(e.target.value)}
+                    className="bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#41e6db]"
+                  >
+                    <option value="Instagram">Instagram</option>
+                    <option value="Facebook">Facebook</option>
+                    <option value="LinkedIn">LinkedIn</option>
+                    <option value="X">Twitter / X</option>
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-neutral-300 text-xs font-semibold">Fecha</label>
+                    <input
+                      type="date"
+                      value={scheduledDate}
+                      onChange={(e) => setScheduledDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className="bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#41e6db] scheme-dark"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-neutral-300 text-xs font-semibold">Hora</label>
+                    <input
+                      type="time"
+                      value={scheduledTime}
+                      onChange={(e) => setScheduledTime(e.target.value)}
+                      className="bg-neutral-950 border border-neutral-800 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-[#41e6db] scheme-dark"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleSchedule}
+                  disabled={isScheduling || !scheduledDate || !scheduledTime}
+                  className="w-full flex items-center justify-center gap-2 bg-[#41e6db] hover:bg-[#34d3c5] text-neutral-900 font-bold text-sm py-2.5 rounded-xl transition-colors disabled:opacity-50 mt-2 shadow-lg"
+                >
+                  {isScheduling ? <Loader2 className="w-4 h-4 animate-spin" /> : <Calendar className="w-4 h-4" />}
+                  Programar Post
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 }
