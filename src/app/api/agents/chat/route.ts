@@ -226,15 +226,10 @@ export async function POST(req: Request) {
       return new Response('Forbidden: You do not own this agent.', { status: 403 });
     }
 
-    // 2. Fetch CompanyProfile (Identity) belonging specifically to this agency
-    const companyProfile = dbUser?.agencyId
-      ? await prisma.companyProfile.findUnique({
-          where: { agencyId: dbUser.agencyId },
-          include: { Agency: true }
-        })
-      : await prisma.companyProfile.findFirst({
-          include: { Agency: true }
-        })
+    // 2. Fetch CompanyProfile (Identity) belonging specifically to this user
+    const companyProfile = await prisma.companyProfile.findUnique({
+      where: { userId: dbUser.id }
+    })
 
     // 3. Fetch Knowledge
     const knowledgeAssets = await prisma.knowledgeAsset.findMany()
@@ -1370,7 +1365,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
             const transparentUrl = bgRemovalResult.data.image.url
 
             // Prevent sending massive base64 strings in the stream payload
-            const logo = companyProfile?.Agency?.logoUrl;
+            const logo = companyProfile?.logoUrl || dbUser?.brandLogo;
             const isBase64 = logo && logo.startsWith('data:image');
             
             // Update agent's generation count
@@ -1388,9 +1383,9 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
               subtitle,
               socialMediaCaption,
               backgroundData,
-              brandPrimaryColor: companyProfile?.Agency?.primaryColor || dbUser?.brandColor || '#0f172a',
-              brandSecondaryColor: companyProfile?.Agency?.secondaryColor || null,
-              brandLogo: isBase64 ? null : (companyProfile?.Agency?.logoUrl || dbUser?.brandLogo || logo),
+              brandPrimaryColor: companyProfile?.primaryColor || dbUser?.brandColor || '#0f172a',
+              brandSecondaryColor: companyProfile?.secondaryColor || null,
+              brandLogo: isBase64 ? null : (companyProfile?.logoUrl || dbUser?.brandLogo || logo),
               industry: companyProfile?.industry || 'Seguros'
             }
           } catch (e: any) {

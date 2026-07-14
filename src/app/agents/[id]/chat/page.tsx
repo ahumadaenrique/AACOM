@@ -26,13 +26,10 @@ export default async function AgentChatPage({ params }: { params: { id: string }
   if (!agent || agent.userId !== dbUser.id) notFound()
 
   let fallbackLogoUrl = null
-  if (dbUser.agencyId) {
-    const companyProfile = await prisma.companyProfile.findUnique({
-      where: { agencyId: dbUser.agencyId },
-      include: { Agency: true }
-    })
-    fallbackLogoUrl = companyProfile?.Agency?.logoUrl || null
-  }
+  const companyProfile = await prisma.companyProfile.findUnique({
+    where: { userId: dbUser.id }
+  })
+  fallbackLogoUrl = companyProfile?.logoUrl || null
 
   const interactionLogs = await prisma.interactionLog.findMany({
     where: { 

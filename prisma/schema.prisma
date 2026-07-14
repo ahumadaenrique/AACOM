@@ -66,7 +66,6 @@ model Agency {
 
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
-  CompanyProfile     CompanyProfile?
   DevelopmentPlanDay DevelopmentPlanDay[]
 }
 
@@ -176,6 +175,7 @@ model User {
   freeSecondsBalance   Int                    @default(300)
   lastFreeMinutesReset DateTime               @default(now())
   voicePurchases       VoiceMinutesPurchase[]
+  CompanyProfile       CompanyProfile?
 }
 
 model VoiceMinutesPurchase {
@@ -619,8 +619,11 @@ model InteractionLog {
 
 model CompanyProfile {
   id              String    @id @default(cuid())
-  agencyId        String    @unique
-  Agency          Agency    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  userId          String    @unique
+  User            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  primaryColor    String?   @default("#4f46e5")
+  secondaryColor  String?   @default("#10b981")
+  logoUrl         String?
   industry        String?
   targetAudience  String?
   websiteUrl      String?

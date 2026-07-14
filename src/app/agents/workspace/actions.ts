@@ -12,28 +12,19 @@ export async function getCompanyProfile() {
     where: { email: session.user.email }
   })
   
-  if (!user?.agencyId) throw new Error("El usuario no pertenece a ninguna agencia")
-  
-  let agency = await prisma.agency.findUnique({
-    where: { id: user.agencyId }
-  })
-  
-  if (!agency) throw new Error("Agencia no encontrada")
+  if (!user) throw new Error("Usuario no encontrado")
 
   const profile = await prisma.companyProfile.upsert({
-    where: { agencyId: agency.id },
+    where: { userId: user.id },
     update: {},
     create: {
-      agencyId: agency.id
+      userId: user.id,
+      primaryColor: user.brandColor || "#4f46e5",
+      logoUrl: user.brandLogo || null
     }
   })
   
-  return {
-    ...profile,
-    primaryColor: agency.primaryColor,
-    secondaryColor: agency.secondaryColor,
-    logoUrl: agency.logoUrl
-  }
+  return profile
 }
 
 export async function updateCompanyProfile(data: {
@@ -45,28 +36,37 @@ export async function updateCompanyProfile(data: {
   secondaryColor?: string
   logoUrl?: string
 }) {
-  const profile = await getCompanyProfile()
+  const session = await auth()
+  if (!session?.user?.email) throw new Error("No autenticado")
   
-  // Guardamos los colores y logo directamente en Agency
-  await prisma.agency.update({
-    where: { id: profile.agencyId },
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email }
+  })
+  if (!user) throw new Error("Usuario no encontrado")
+  
+  await prisma.companyProfile.update({
+    where: { userId: user.id },
     data: {
       primaryColor: data.primaryColor,
       secondaryColor: data.secondaryColor,
-      logoUrl: data.logoUrl
-    }
-  })
-
-  // Guardamos el resto de la info en CompanyProfile
-  await prisma.companyProfile.update({
-    where: { agencyId: profile.agencyId },
-    data: {
+      logoUrl: data.logoUrl,
       targetAudience: data.targetAudience,
       websiteUrl: data.websiteUrl,
       industry: data.industry,
       description: data.description,
     }
   })
+
+  // Sincronizar también con los campos legacy del User para compatibilidad
+  if (data.primaryColor || data.logoUrl) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        brandColor: data.primaryColor,
+        brandLogo: data.logoUrl
+      }
+    })
+  }
   
   revalidatePath('/workspace/identity')
   return { success: true }
