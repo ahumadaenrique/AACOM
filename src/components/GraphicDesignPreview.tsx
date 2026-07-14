@@ -60,11 +60,24 @@ export function GraphicDesignPreview({
     // Deterministic template based on text length
     const templateId = safeCopyText.length % 3;
 
+    // Helper to ensure text contrast (if brand color is too light, fallback to dark slate)
+    const getDarkTextColor = (hex: string): string => {
+      if (!hex || !hex.startsWith('#')) return '#1e293b';
+      let r = parseInt(hex.slice(1, 3), 16);
+      let g = parseInt(hex.slice(3, 5), 16);
+      let b = parseInt(hex.slice(5, 7), 16);
+      const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      return luma > 180 ? '#0f172a' : hex;
+    }
+    const textColorToUse = getDarkTextColor(primary);
+
     // Helper to draw images proportionally (fixes logo distortion)
     const drawImageProportional = (url: string, containerX: number, containerY: number, containerW: number, containerH: number) => {
       return new Promise<void>((resolve) => {
         const img = new Image()
-        img.crossOrigin = 'anonymous'
+        if (url.startsWith('http')) {
+          img.crossOrigin = 'anonymous'
+        }
         img.onload = () => {
           const imgRatio = img.width / img.height
           const containerRatio = containerW / containerH
@@ -93,7 +106,9 @@ export function GraphicDesignPreview({
     const drawImage = (url: string, x: number, y: number, w: number, h: number, drawBorder = true) => {
       return new Promise<void>((resolve) => {
         const img = new Image()
-        img.crossOrigin = 'anonymous'
+        if (url.startsWith('http')) {
+          img.crossOrigin = 'anonymous'
+        }
         img.onload = () => {
           // Calculate scale keeping aspect ratio and fitting the target width/height
           const imgRatio = img.width / img.height
@@ -154,52 +169,32 @@ export function GraphicDesignPreview({
       })
     }
 
-    const drawPremiumText = (text: string, x: number, y: number, isSubtitle = false, alignRight = false) => {
-       ctx.font = isSubtitle ? '600 45px sans-serif' : '900 85px sans-serif'
+    const drawPremiumText = (text: string, x: number, y: number, fontStr: string, alignRight = false) => {
+       ctx.font = fontStr
        ctx.textAlign = alignRight ? 'right' : 'left'
        ctx.textBaseline = 'alphabetic'
-       
-       // Premium Text Glow (instead of solid boxes)
-       ctx.shadowColor = 'rgba(0,0,0,0.85)'
-       ctx.shadowBlur = 40
-       ctx.shadowOffsetY = 15
-       
-       // White text looks best on complex gradients
-       ctx.fillStyle = '#ffffff'
-       
-       // Multiple fill passes for extreme legibility over complex backgrounds
+       ctx.fillStyle = textColorToUse
        ctx.fillText(text, x, y)
-       
-       // Sharp tight shadow for edge clarity
-       ctx.shadowBlur = 5
-       ctx.shadowOffsetY = 2
-       ctx.fillText(text, x, y)
-       ctx.fillText(text, x, y) // Double hit for thickness
-       
-       // Reset shadows
-       ctx.shadowBlur = 0
-       ctx.shadowOffsetY = 0
     }
 
-    const drawTextWrapped = (text: string, startX: number, startY: number, maxWidth: number, isSubtitle: boolean, alignRight = false) => {
-      ctx.font = isSubtitle ? '600 45px sans-serif' : '900 85px sans-serif'
+    const drawTextWrapped = (text: string, startX: number, startY: number, maxWidth: number, fontStr: string, lineHeight: number, alignRight = false) => {
       const words = text.split(' ')
       let line = ''
       let currentY = startY
-      const lineHeight = isSubtitle ? 60 : 100
 
       for (let i = 0; i < words.length; i++) {
         const testLine = line + words[i] + ' '
+        ctx.font = fontStr
         const metrics = ctx.measureText(testLine)
         if (metrics.width > maxWidth && i > 0) {
-          drawPremiumText(line.trim(), startX, currentY, isSubtitle, alignRight)
+          drawPremiumText(line.trim(), startX, currentY, fontStr, alignRight)
           line = words[i] + ' '
           currentY += lineHeight
         } else {
           line = testLine
         }
       }
-      drawPremiumText(line.trim(), startX, currentY, isSubtitle, alignRight)
+      drawPremiumText(line.trim(), startX, currentY, fontStr, alignRight)
       return currentY + lineHeight
     }
 
@@ -260,17 +255,6 @@ export function GraphicDesignPreview({
     }
 
     try {
-      // Helper to ensure text contrast (if brand color is too light, fallback to dark slate)
-      const getDarkTextColor = (hex: string): string => {
-        if (!hex || !hex.startsWith('#')) return '#1e293b';
-        let r = parseInt(hex.slice(1, 3), 16);
-        let g = parseInt(hex.slice(3, 5), 16);
-        let b = parseInt(hex.slice(5, 7), 16);
-        const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b;
-        return luma > 180 ? '#0f172a' : hex;
-      }
-      const textColorToUse = getDarkTextColor(primary);
-
       // 1. Solid Textured Background (Corporate Brand Color lightened dynamically to a premium pastel shade)
       ctx.fillStyle = primary
       ctx.fillRect(0, 0, canvas.width, canvas.height)
@@ -312,47 +296,29 @@ export function GraphicDesignPreview({
         // TEMPLATE 0: Subject on the right, large left text (e.g. El Mercado del 7%)
         
         // Subject (Persona / Recorte)
-        // Set no shadow, clear aspect ratio protection
-        await drawImage(result.transparentUrl, 420, 80, 680, 850, true)
+        await drawImage(result.transparentUrl, 440, 80, 640, 850, true)
+
+        // Dynamic title font size based on length to prevent vertical stacking
+        const titleFontSize = safeCopyText.length > 25 ? '54px' : (safeCopyText.length > 15 ? '64px' : '72px');
+        const titleLineH = safeCopyText.length > 25 ? 65 : (safeCopyText.length > 15 ? 75 : 85);
+        const titleFont = `900 ${titleFontSize} sans-serif`;
 
         // Text rendering on the left
-        ctx.textAlign = 'left'
-        ctx.fillStyle = textColorToUse // Dynamic corporate text color
-
-        // Title Wrapped
-        ctx.font = '900 72px sans-serif'
-        const words = safeCopyText.toUpperCase().split(' ')
-        let line = ''
-        let currentY = 220
-        const lineH = 85
-
-        for (let i = 0; i < words.length; i++) {
-          const testLine = line + words[i] + ' '
-          const metrics = ctx.measureText(testLine)
-          if (metrics.width > 480 && i > 0) {
-            ctx.fillText(line.trim(), 80, currentY)
-            line = words[i] + ' '
-            currentY += lineH
-          } else {
-            line = testLine
-          }
-        }
-        ctx.fillText(line.trim(), 80, currentY)
+        const nextY = drawTextWrapped(safeCopyText.toUpperCase(), 80, 220, 480, titleFont, titleLineH)
 
         // Draw horizontal divider line
-        const dividerY = currentY + 40
+        const dividerY = nextY + 20
         ctx.strokeStyle = textColorToUse
         ctx.lineWidth = 6
         ctx.beginPath()
         ctx.moveTo(80, dividerY)
-        ctx.lineTo(480, dividerY)
+        ctx.lineTo(380, dividerY)
         ctx.stroke()
 
-        // Subtitle
+        // Subtitle (clean small font size, wraps correctly, no overlap)
         if (safeSubtitle) {
-          ctx.fillStyle = textColorToUse
-          ctx.font = '900 64px sans-serif'
-          drawTextWrapped(safeSubtitle.toUpperCase(), 80, dividerY + 110, 480, false)
+          const subtitleFont = '600 36px sans-serif'
+          drawTextWrapped(safeSubtitle.toUpperCase(), 80, dividerY + 70, 480, subtitleFont, 45)
         }
 
       } else if (templateId === 1) {
@@ -361,32 +327,17 @@ export function GraphicDesignPreview({
         // Center Subject
         await drawImage(result.transparentUrl, 140, 140, 800, 800, true)
 
-        // Title at the top center
-        ctx.textAlign = 'center'
-        ctx.fillStyle = textColorToUse
-        ctx.font = '900 68px sans-serif'
-        
-        const words = safeCopyText.toUpperCase().split(' ')
-        let line = ''
-        let currentY = 130
-        const lineH = 80
+        // Dynamic title font size based on length
+        const titleFontSize = safeCopyText.length > 25 ? '54px' : (safeCopyText.length > 15 ? '64px' : '72px');
+        const titleLineH = safeCopyText.length > 25 ? 65 : (safeCopyText.length > 15 ? 75 : 85);
+        const titleFont = `900 ${titleFontSize} sans-serif`;
 
-        for (let i = 0; i < words.length; i++) {
-          const testLine = line + words[i] + ' '
-          if (ctx.measureText(testLine).width > 900 && i > 0) {
-            ctx.fillText(line.trim(), canvas.width / 2, currentY)
-            line = words[i] + ' '
-            currentY += lineH
-          } else {
-            line = testLine
-          }
-        }
-        ctx.fillText(line.trim(), canvas.width / 2, currentY)
+        // Title at the top center
+        const nextY = drawTextWrapped(safeCopyText.toUpperCase(), canvas.width / 2, 140, 920, titleFont, titleLineH, true)
 
         if (safeSubtitle) {
-          ctx.font = '600 36px sans-serif'
-          ctx.fillStyle = textColorToUse
-          ctx.fillText(safeSubtitle, canvas.width / 2, currentY + 60)
+          const subtitleFont = '600 36px sans-serif'
+          drawTextWrapped(safeSubtitle.toUpperCase(), canvas.width / 2, nextY + 20, 920, subtitleFont, 45, true)
         }
 
       } else {
@@ -395,32 +346,17 @@ export function GraphicDesignPreview({
         // Subject (Glass jar with stethoscope)
         await drawImage(result.transparentUrl, 240, 240, 600, 640, true)
 
+        // Dynamic title font size based on length
+        const titleFontSize = safeCopyText.length > 25 ? '54px' : (safeCopyText.length > 15 ? '64px' : '72px');
+        const titleLineH = safeCopyText.length > 25 ? 65 : (safeCopyText.length > 15 ? 75 : 85);
+        const titleFont = `900 ${titleFontSize} sans-serif`;
+
         // Header bold title
-        ctx.textAlign = 'center'
-        ctx.fillStyle = textColorToUse
-        ctx.font = '900 78px sans-serif'
-
-        const words = safeCopyText.toUpperCase().split(' ')
-        let line = ''
-        let currentY = 140
-        const lineH = 90
-
-        for (let i = 0; i < words.length; i++) {
-          const testLine = line + words[i] + ' '
-          if (ctx.measureText(testLine).width > 960 && i > 0) {
-            ctx.fillText(line.trim(), canvas.width / 2, currentY)
-            line = words[i] + ' '
-            currentY += lineH
-          } else {
-            line = testLine
-          }
-        }
-        ctx.fillText(line.trim(), canvas.width / 2, currentY)
+        const nextY = drawTextWrapped(safeCopyText.toUpperCase(), canvas.width / 2, 140, 920, titleFont, titleLineH, true)
 
         if (safeSubtitle) {
-          ctx.font = '900 64px sans-serif'
-          ctx.fillStyle = textColorToUse
-          ctx.fillText(safeSubtitle.toUpperCase(), canvas.width / 2, footerY - 50)
+          const subtitleFont = '900 54px sans-serif'
+          drawTextWrapped(safeSubtitle.toUpperCase(), canvas.width / 2, footerY - 50, 920, subtitleFont, 65, true)
         }
       }
 
@@ -468,9 +404,9 @@ export function GraphicDesignPreview({
   return (
     <div className="mt-4 border border-white/10 bg-white rounded-xl overflow-hidden w-full max-w-sm group relative shadow-2xl">
       {/* Top Image Section (WYSIWYG Preview) */}
-      <div className="w-full aspect-square relative flex flex-col items-center justify-center bg-neutral-100 overflow-hidden">
+      <div className="w-full relative flex flex-col items-center justify-center bg-neutral-100 overflow-hidden" style={{ aspectRatio: '1 / 1' }}>
         {isRenderingPreview || !previewUrl ? (
-          <div className="flex flex-col items-center justify-center gap-3 text-neutral-400 p-10 text-center h-[384px]">
+          <div className="flex flex-col items-center justify-center gap-3 text-neutral-400 p-10 text-center h-[384px]" style={{ aspectRatio: '1 / 1' }}>
             <Loader2 className="w-8 h-8 animate-spin text-neutral-300" />
             <span className="text-sm font-medium">Renderizando diseño premium...</span>
           </div>
@@ -478,7 +414,8 @@ export function GraphicDesignPreview({
           <img 
             src={previewUrl} 
             alt="Preview" 
-            className="w-full h-full object-cover transition-opacity duration-300"
+            className="w-full h-full object-contain transition-opacity duration-300"
+            style={{ display: 'block', maxHeight: '100%' }}
           />
         )}
       </div>
