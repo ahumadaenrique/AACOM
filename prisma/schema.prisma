@@ -781,3 +781,18 @@ model FrequentContact {
 
   @@unique([userId, email])
 }
+
+model NewsArticle {
+  id          String   @id @default(cuid())
+  title       String   @unique
+  description String?
+  content     String?
+  url         String
+  imageUrl    String?
+  sourceName  String?
+  category    String   // "Mexico" o "Global"
+  tags        String[] // ["Seguros", "CNSF", "Banxico", etc.]
+  publishedAt DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}

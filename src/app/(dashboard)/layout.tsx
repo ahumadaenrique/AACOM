@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity, Newspaper } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -217,6 +217,14 @@ export default async function DashboardLayout({
                                     Mi Cartera
                                     {pathname.startsWith('/cartera') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                 </Link>
+                                <Link
+                                    href="/newsletters"
+                                    className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/newsletters') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                >
+                                    <Newspaper className={`h-4 w-4 ${pathname.startsWith('/newsletters') ? 'text-primary' : 'text-zinc-600 dark:text-zinc-400'}`} />
+                                    Newsletters
+                                    {pathname.startsWith('/newsletters') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                </Link>
 
                                 {/* Dropdown Inteligencia Artificial Avanzada */}
                                 <DropdownMenu>
@@ -413,6 +421,13 @@ export default async function DashboardLayout({
                                         >
                                             <Wallet className="h-5 w-5 text-green-600" />
                                             Mi Cartera
+                                        </Link>
+                                        <Link
+                                            href="/newsletters"
+                                            className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                        >
+                                            <Newspaper className="h-5 w-5 text-zinc-500" />
+                                            Newsletters
                                         </Link>
                                         <Link
                                             href="/assistant"
