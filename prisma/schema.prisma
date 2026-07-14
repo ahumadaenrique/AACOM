@@ -619,8 +619,8 @@ model InteractionLog {
 
 model CompanyProfile {
   id              String    @id @default(cuid())
-  userId          String    @unique
-  User            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId          String?   @unique
+  User            User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
   primaryColor    String?   @default("#4f46e5")
   secondaryColor  String?   @default("#10b981")
   logoUrl         String?
