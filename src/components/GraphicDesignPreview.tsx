@@ -418,14 +418,18 @@ export function GraphicDesignPreview({
 
     try {
       const scheduledDateTimeStr = `${scheduledDate}T${scheduledTime}:00`;
-      await schedulePostAction({
+      const res = await schedulePostAction({
         aiAgentId: agentId,
         content: safeCaption,
         imageUrl: result.transparentUrl || null,
         platform: selectedPlatform,
         scheduledAt: scheduledDateTimeStr
       });
-      setScheduledSuccess(true);
+      if (res.success) {
+        setScheduledSuccess(true);
+      } else {
+        alert('Error al programar la publicación: ' + res.error);
+      }
     } catch(err: any) {
       alert('Error al programar la publicación: ' + (err.message || err));
     } finally {
