@@ -1,36 +1,28 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { execSync } from 'child_process';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
     try {
-        const aacom = await prisma.agency.findUnique({
-            where: { slug: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }
+        console.log('Running prisma db push on Vercel production database...');
+        const output = execSync('npx prisma db push --accept-data-loss', { 
+            encoding: 'utf-8',
+            env: { ...process.env }
         });
-
-        if (!aacom) {
-            return NextResponse.json({ success: false, error: "Agencia AACOM no encontrada" });
-        }
-
-        const agencyId = aacom.id;
-
-        const users = await prisma.user.findMany({ select: { id: true, email: true, agencyId: true, role: true } });
-        const cots = await prisma.cotizacion.findMany({ select: { id: true, userId: true, agencyId: true } });
-        const adns = await prisma.adnDiagnostic.findMany({ select: { id: true, userId: true, agencyId: true } });
         
         return NextResponse.json({
             success: true,
-            message: "Reporte de la base de datos actual de Vercel",
-            databaseState: {
-                users,
-                cotizacionesCount: cots.length,
-                cotizacionesSample: cots.slice(0, 10),
-                adnsCount: adns.length,
-                adnsSample: adns.slice(0, 10)
-            }
+            message: "Database schema successfully synchronized on Vercel production DB!",
+            output: output
         });
     } catch (e: any) {
-        return NextResponse.json({ success: false, error: e.message });
+        console.error('Migration error:', e);
+        return NextResponse.json({ 
+            success: false, 
+            error: e.message,
+            stderr: e.stderr?.toString(),
+            stdout: e.stdout?.toString()
+        });
     }
 }
