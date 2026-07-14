@@ -260,210 +260,161 @@ export function GraphicDesignPreview({
     }
 
     try {
-      if (templateId === 0) {
-        // TEMPLATE 0: Marblism Mesh Gradient (Ultra Premium)
-        
-        // Base color
-        ctx.fillStyle = primary
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        
-        // Complex Mesh Gradients
-        const orb1 = ctx.createRadialGradient(0, 0, 100, 0, 0, 1000)
-        orb1.addColorStop(0, secondary)
-        orb1.addColorStop(1, 'transparent')
-        ctx.fillStyle = orb1
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
+      // 1. Solid Textured Background (Verde claro / Menta corporativo texturizado)
+      // We read primary from branding, but if it is too dark, we can use a soft pastel variant for the aesthetic or use secondary.
+      // Marblism uses a soft pastel green background. Let's make a beautiful pastel overlay base.
+      ctx.fillStyle = primary
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-        const orb2 = ctx.createRadialGradient(canvas.width, canvas.height, 100, canvas.width, canvas.height, 1200)
-        orb2.addColorStop(0, '#ffffff40')
-        orb2.addColorStop(1, 'transparent')
-        ctx.fillStyle = orb2
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
+      // Add a soft tint overlay to match the premium mint/green hue from the user's reference images
+      ctx.fillStyle = 'rgba(212, 237, 228, 0.85)' // Warm mint pastel overlay
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-        // Draw Crumpled Paper Texture
-        drawCrumpledPaperTexture(ctx, canvas.width, canvas.height)
+      // Draw the premium Crumpled Paper Texture
+      drawCrumpledPaperTexture(ctx, canvas.width, canvas.height)
 
-        if (safeBgData) {
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.08)'
-          ctx.font = '900 400px sans-serif'
-          ctx.textAlign = 'center'
-          ctx.textBaseline = 'middle'
-          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 80)
-        }
+      // 2. Render Footer Band (White Solid bar with centered Logo & Text)
+      const footerH = 150
+      const footerY = canvas.height - footerH
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, footerY, canvas.width, footerH)
+      
+      // Bottom border divider for footer clarity
+      ctx.fillStyle = '#eaeaea'
+      ctx.fillRect(0, footerY, canvas.width, 3)
 
-        // Person shifted to the right (Side-by-side layout)
-        ctx.shadowColor = 'rgba(255,255,255,0.1)'
-        ctx.shadowBlur = 40
-        ctx.shadowOffsetY = 0
-        await drawImage(result.transparentUrl, 380, 200, 700, 880)
-        
-        // Dark drop shadow behind person
-        ctx.shadowColor = 'rgba(0,0,0,0.6)'
-        ctx.shadowBlur = 60
-        ctx.shadowOffsetY = 30
-        await drawImage(result.transparentUrl, 380, 200, 700, 880)
-        ctx.shadowBlur = 0
-        ctx.shadowOffsetY = 0
-        
-        // Text Overlays on the left side (restricted to 520px width)
-        const nextY = drawTextWrapped(safeCopyText, 80, 200, 520, false)
-        if (safeSubtitle) {
-          drawTextWrapped(safeSubtitle, 80, nextY + 20, 520, true)
-        }
-
-        // True Glassmorphism Logo Pill
-        if (logoToUse) {
-          const pw = 350, ph = 110, px = 80, py = canvas.height - ph - 65
-          
-          // Glass Shadow
-          ctx.shadowColor = 'rgba(0,0,0,0.25)'
-          ctx.shadowBlur = 30
-          ctx.shadowOffsetY = 15
-          
-          // Glass Fill
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.1)'
-          ctx.beginPath()
-          ctx.roundRect(px, py, pw, ph, 60)
-          ctx.fill()
-          
-          // Glass Stroke
-          ctx.shadowColor = 'transparent'
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)'
-          ctx.lineWidth = 1.5
-          ctx.stroke()
-          
-          await drawImageProportional(logoToUse, px + 30, py + 15, pw - 60, ph - 30)
-        }
-
-      } else if (templateId === 1) {
-        // TEMPLATE 1: Solid Primary with Secondary Spotlight
-        ctx.fillStyle = primary
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        
-        // Subtle spotlight
-        const spot = ctx.createRadialGradient(canvas.width/2, canvas.height/3, 50, canvas.width/2, canvas.height/2, 900)
-        spot.addColorStop(0, secondary)
-        spot.addColorStop(1, 'transparent')
-        ctx.fillStyle = spot
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-
-        // Draw Crumpled Paper Texture
-        drawCrumpledPaperTexture(ctx, canvas.width, canvas.height)
-
-        if (safeBgData) {
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.05)'
-          ctx.font = '900 350px sans-serif'
-          ctx.textAlign = 'center'
-          ctx.textBaseline = 'middle'
-          ctx.fillText(safeBgData, canvas.width / 2, canvas.height / 2.2, canvas.width - 100)
-        }
-
-        // Person pushed lower and smaller to leave top area clear for centered text
-        ctx.shadowColor = 'rgba(0,0,0,0.9)'
-        ctx.shadowBlur = 50
-        ctx.shadowOffsetY = 40
-        await drawImage(result.transparentUrl, 190, 380, 700, 700)
-        ctx.shadowBlur = 0
-        ctx.shadowOffsetY = 0
-
-        // Text centered at top
+      if (logoToUse) {
+        // Center the Logo with company brand checkmark
+        const lw = 440, lh = 90
+        const lx = (canvas.width - lw) / 2
+        const ly = footerY + (footerH - lh) / 2
+        await drawImageProportional(logoToUse, lx, ly, lw, lh)
+      } else {
+        // Text fallback
+        ctx.fillStyle = '#0f172a'
+        ctx.font = 'bold 36px sans-serif'
         ctx.textAlign = 'center'
-        const words = safeCopyText.split(' ')
-        let line = ''
-        let currentY = 160
-        ctx.font = '900 85px sans-serif'
-        ctx.fillStyle = '#ffffff'
+        ctx.textBaseline = 'middle'
+        ctx.fillText('AACOM SEGUROS', canvas.width / 2, footerY + footerH / 2)
+      }
+
+      // 3. Template Layouts matching Marblism
+      if (templateId === 0) {
+        // TEMPLATE 0: Subject on the right, large left text (e.g. El Mercado del 7%)
         
+        // Subject (Persona / Recorte)
+        // Set no shadow, clear aspect ratio protection
+        await drawImage(result.transparentUrl, 420, 80, 680, 850, true)
+
+        // Text rendering on the left
+        ctx.textAlign = 'left'
+        ctx.fillStyle = '#1e293b' // Deep charcoal for professional contrast
+
+        // Title Wrapped
+        ctx.font = '900 72px sans-serif'
+        const words = safeCopyText.toUpperCase().split(' ')
+        let line = ''
+        let currentY = 220
+        const lineH = 85
+
         for (let i = 0; i < words.length; i++) {
           const testLine = line + words[i] + ' '
-          if (ctx.measureText(testLine).width > 900 && i > 0) {
-            ctx.shadowColor = 'rgba(0,0,0,0.8)'
-            ctx.shadowBlur = 20
-            ctx.fillText(line.trim(), canvas.width/2, currentY)
+          const metrics = ctx.measureText(testLine)
+          if (metrics.width > 480 && i > 0) {
+            ctx.fillText(line.trim(), 80, currentY)
             line = words[i] + ' '
-            currentY += 100
+            currentY += lineH
           } else {
             line = testLine
           }
         }
-        ctx.shadowColor = 'rgba(0,0,0,0.8)'
-        ctx.shadowBlur = 20
-        ctx.fillText(line.trim(), canvas.width/2, currentY)
-        
-        if (safeSubtitle) {
-          ctx.font = '600 45px sans-serif'
-          ctx.fillStyle = 'rgba(255,255,255,0.8)'
-          ctx.fillText(safeSubtitle, canvas.width/2, currentY + 70, 950)
-        }
+        ctx.fillText(line.trim(), 80, currentY)
 
-        if (logoToUse) {
-          const pw = 300, ph = 100, px = (canvas.width - pw)/2, py = canvas.height - ph - 50
-          await drawImageProportional(logoToUse, px, py, pw, ph)
-        }
-        
-      } else {
-        // TEMPLATE 2: Dynamic Diagonal Split (Modern Startup)
-        ctx.fillStyle = secondary
-        ctx.fillRect(0, 0, canvas.width, canvas.height)
-        
-        // Draw diagonal polygon
-        ctx.fillStyle = primary
+        // Draw horizontal divider line
+        const dividerY = currentY + 40
+        ctx.strokeStyle = '#1e293b'
+        ctx.lineWidth = 6
         ctx.beginPath()
-        ctx.moveTo(0, 0)
-        ctx.lineTo(canvas.width, 0)
-        ctx.lineTo(canvas.width, canvas.height * 0.4)
-        ctx.lineTo(0, canvas.height * 0.7)
-        ctx.closePath()
-        ctx.fill()
-        
-        // Diagonal glow line
-        ctx.strokeStyle = 'rgba(255,255,255,0.2)'
-        ctx.lineWidth = 10
-        ctx.beginPath()
-        ctx.moveTo(0, canvas.height * 0.7)
-        ctx.lineTo(canvas.width, canvas.height * 0.4)
+        ctx.moveTo(80, dividerY)
+        ctx.lineTo(480, dividerY)
         ctx.stroke()
 
-        // Draw Crumpled Paper Texture
-        drawCrumpledPaperTexture(ctx, canvas.width, canvas.height)
-
-        if (safeBgData) {
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.08)'
-          ctx.font = '900 350px sans-serif'
-          ctx.textAlign = 'right'
-          ctx.textBaseline = 'middle'
-          ctx.fillText(safeBgData, canvas.width - 50, canvas.height * 0.85, canvas.width - 100)
-        }
-
-        // Person shifted to the left (leaving right side clear for right-aligned text)
-        ctx.shadowColor = 'rgba(0,0,0,0.5)'
-        ctx.shadowBlur = 50
-        ctx.shadowOffsetY = 30
-        await drawImage(result.transparentUrl, -50, 200, 700, 880)
-        ctx.shadowBlur = 0
-        ctx.shadowOffsetY = 0
-
-        // Right aligned text on the right side (restricted to 520px width)
-        const nextY = drawTextWrapped(safeCopyText, canvas.width - 80, 200, 520, false, true)
+        // Subtitle
         if (safeSubtitle) {
-          drawTextWrapped(safeSubtitle, canvas.width - 80, nextY + 20, 520, true, true)
+          ctx.fillStyle = '#1e293b'
+          ctx.font = '900 64px sans-serif'
+          drawTextWrapped(safeSubtitle.toUpperCase(), 80, dividerY + 110, 480, false)
         }
 
-        if (logoToUse) {
-          const pw = 350, ph = 120, px = canvas.width - pw - 80, py = canvas.height - ph - 65
-          
-          // Solid white rounded rect for logo contrast
-          ctx.fillStyle = '#ffffff'
-          ctx.shadowColor = 'rgba(0,0,0,0.2)'
-          ctx.shadowBlur = 20
-          ctx.beginPath()
-          ctx.roundRect(px, py, pw, ph, 30)
-          ctx.fill()
-          ctx.shadowBlur = 0
-          
-          await drawImageProportional(logoToUse, px + 20, py + 20, pw - 40, ph - 40)
+      } else if (templateId === 1) {
+        // TEMPLATE 1: Subject centered, custom overlay badges
+        
+        // Center Subject
+        await drawImage(result.transparentUrl, 140, 140, 800, 800, true)
+
+        // Title at the top center
+        ctx.textAlign = 'center'
+        ctx.fillStyle = '#1e293b'
+        ctx.font = '900 68px sans-serif'
+        
+        const words = safeCopyText.toUpperCase().split(' ')
+        let line = ''
+        let currentY = 130
+        const lineH = 80
+
+        for (let i = 0; i < words.length; i++) {
+          const testLine = line + words[i] + ' '
+          if (ctx.measureText(testLine).width > 900 && i > 0) {
+            ctx.fillText(line.trim(), canvas.width / 2, currentY)
+            line = words[i] + ' '
+            currentY += lineH
+          } else {
+            line = testLine
+          }
+        }
+        ctx.fillText(line.trim(), canvas.width / 2, currentY)
+
+        if (safeSubtitle) {
+          ctx.font = '600 36px sans-serif'
+          ctx.fillStyle = '#4b5563'
+          ctx.fillText(safeSubtitle, canvas.width / 2, currentY + 60)
+        }
+
+      } else {
+        // TEMPLATE 2: Centered Object layout (e.g. Inflación médica vs Tu Retiro)
+        
+        // Subject (Glass jar with stethoscope)
+        await drawImage(result.transparentUrl, 240, 240, 600, 640, true)
+
+        // Header bold title
+        ctx.textAlign = 'center'
+        ctx.fillStyle = '#1e293b'
+        ctx.font = '900 78px sans-serif'
+
+        const words = safeCopyText.toUpperCase().split(' ')
+        let line = ''
+        let currentY = 140
+        const lineH = 90
+
+        for (let i = 0; i < words.length; i++) {
+          const testLine = line + words[i] + ' '
+          if (ctx.measureText(testLine).width > 960 && i > 0) {
+            ctx.fillText(line.trim(), canvas.width / 2, currentY)
+            line = words[i] + ' '
+            currentY += lineH
+          } else {
+            line = testLine
+          }
+        }
+        ctx.fillText(line.trim(), canvas.width / 2, currentY)
+
+        if (safeSubtitle) {
+          ctx.font = '900 64px sans-serif'
+          ctx.fillStyle = '#1e293b'
+          ctx.fillText(safeSubtitle.toUpperCase(), canvas.width / 2, footerY - 50)
         }
       }
+
       return canvas;
     } catch(err) {
       console.error(err)
