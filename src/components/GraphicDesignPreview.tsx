@@ -417,7 +417,9 @@ export function GraphicDesignPreview({
     setIsScheduling(true);
 
     try {
-      const scheduledDateTimeStr = `${scheduledDate}T${scheduledTime}:00`;
+      const localDate = new Date(`${scheduledDate}T${scheduledTime}:00`);
+      const scheduledDateTimeStr = localDate.toISOString();
+      
       const res = await schedulePostAction({
         aiAgentId: agentId,
         content: safeCaption,
