@@ -16,7 +16,22 @@ interface NewsArticle {
   publishedAt: Date | string
 }
 
-export default function NewslettersClient({ initialArticles, isSuperAdmin = false }: { initialArticles: NewsArticle[], isSuperAdmin?: boolean }) {
+interface FinancialIndicators {
+  udi: string | null
+  usd: string | null
+  eur: string | null
+  gbp: string | null
+}
+
+export default function NewslettersClient({ 
+  initialArticles, 
+  isSuperAdmin = false,
+  indicators = { udi: null, usd: null, eur: null, gbp: null }
+}: { 
+  initialArticles: NewsArticle[]
+  isSuperAdmin?: boolean
+  indicators?: FinancialIndicators
+}) {
   const [articles, setArticles] = useState<NewsArticle[]>(initialArticles)
   const [selectedCategory, setSelectedCategory] = useState<string>("Todos")
   const [searchQuery, setSearchQuery] = useState("")
@@ -103,6 +118,38 @@ export default function NewslettersClient({ initialArticles, isSuperAdmin = fals
                     {isRefreshing ? 'Actualizando...' : 'Actualizar'}
                   </button>
                 )}
+              </div>
+            </div>
+
+            {/* Financial Indicators Bar */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 mb-2">
+              <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/80 rounded-xl p-3.5 shadow-sm hover:shadow transition-shadow flex flex-col items-center md:items-start">
+                <span className="font-mono text-[9px] tracking-wider text-zinc-400 dark:text-zinc-500 uppercase font-semibold">DÓLAR (USD FIX)</span>
+                <span className="whitepaper-title text-lg md:text-xl font-black text-zinc-900 dark:text-white mt-1">
+                  {indicators.usd ? `$${parseFloat(indicators.usd).toFixed(4)}` : 'Cargando...'}
+                </span>
+                <span className="text-[9px] font-mono text-zinc-500 dark:text-zinc-400 mt-0.5">Pesos por Dólar</span>
+              </div>
+              <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/80 rounded-xl p-3.5 shadow-sm hover:shadow transition-shadow flex flex-col items-center md:items-start">
+                <span className="font-mono text-[9px] tracking-wider text-zinc-400 dark:text-zinc-500 uppercase font-semibold">EURO (EUR)</span>
+                <span className="whitepaper-title text-lg md:text-xl font-black text-zinc-900 dark:text-white mt-1">
+                  {indicators.eur ? `$${parseFloat(indicators.eur).toFixed(4)}` : 'Cargando...'}
+                </span>
+                <span className="text-[9px] font-mono text-zinc-500 dark:text-zinc-400 mt-0.5">Pesos por Euro</span>
+              </div>
+              <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/80 rounded-xl p-3.5 shadow-sm hover:shadow transition-shadow flex flex-col items-center md:items-start">
+                <span className="font-mono text-[9px] tracking-wider text-zinc-400 dark:text-zinc-500 uppercase font-semibold">LIBRA ESTERLINA (GBP)</span>
+                <span className="whitepaper-title text-lg md:text-xl font-black text-zinc-900 dark:text-white mt-1">
+                  {indicators.gbp ? `$${parseFloat(indicators.gbp).toFixed(4)}` : 'Cargando...'}
+                </span>
+                <span className="text-[9px] font-mono text-zinc-500 dark:text-zinc-400 mt-0.5">Pesos por Libra</span>
+              </div>
+              <div className="bg-white dark:bg-zinc-900/50 border border-zinc-200 dark:border-zinc-800/80 rounded-xl p-3.5 shadow-sm hover:shadow transition-shadow flex flex-col items-center md:items-start">
+                <span className="font-mono text-[9px] tracking-wider text-zinc-400 dark:text-zinc-500 uppercase font-semibold">VALOR UDI</span>
+                <span className="whitepaper-title text-lg md:text-xl font-black text-indigo-600 dark:text-indigo-400 mt-1">
+                  {indicators.udi ? parseFloat(indicators.udi).toFixed(6) : 'Cargando...'}
+                </span>
+                <span className="text-[9px] font-mono text-zinc-500 dark:text-zinc-400 mt-0.5">Unidades de Inversión</span>
               </div>
             </div>
             

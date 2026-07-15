@@ -14,7 +14,27 @@ export default async function NewslettersPage() {
   const userRes = await getCurrentUser()
   const isSuperAdmin = userRes.success && userRes.user?.role === 'SUPER_ADMIN'
 
+  // Fetch financial indicators from Settings
+  const settings = await prisma.setting.findMany({
+    where: {
+      key: {
+        in: ["udi_default", "usd_default", "eur_default", "gbp_default"]
+      }
+    }
+  })
+
+  const indicators = {
+    udi: settings.find(s => s.key === "udi_default")?.value || null,
+    usd: settings.find(s => s.key === "usd_default")?.value || null,
+    eur: settings.find(s => s.key === "eur_default")?.value || null,
+    gbp: settings.find(s => s.key === "gbp_default")?.value || null
+  }
+
   return (
-    <NewslettersClient initialArticles={articles} isSuperAdmin={isSuperAdmin} />
+    <NewslettersClient 
+      initialArticles={articles} 
+      isSuperAdmin={isSuperAdmin} 
+      indicators={indicators} 
+    />
   )
 }
