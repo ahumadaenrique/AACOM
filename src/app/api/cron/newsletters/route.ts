@@ -106,12 +106,13 @@ export async function GET(request: Request) {
 
   // Support clearing articles database
   const clear = searchParams.get('clear')
+  let cleared = false
   if (clear === 'true') {
     try {
-      const delRes = await prisma.newsArticle.deleteMany({})
-      return NextResponse.json({ success: true, message: `Cleared all ${delRes.count} articles` })
+      await prisma.newsArticle.deleteMany({})
+      cleared = true
     } catch (err: any) {
-      return NextResponse.json({ success: false, error: err.message }, { status: 500 })
+      return NextResponse.json({ success: false, error: `Failed to clear DB: ${err.message}` }, { status: 500 })
     }
   }
 
@@ -254,6 +255,41 @@ export async function GET(request: Request) {
       } catch (err) {
         // Handle race conditions/duplicate primary key safely
         console.error(`Failed to insert article: ${art.title}`, err)
+      }
+    }
+
+    // If the database is empty or we explicitly cleared it, seed it with MOCK_ARTICLES
+    const totalCount = await prisma.newsArticle.count()
+    if (totalCount === 0 || cleared) {
+      console.log("Seeding database with MOCK_ARTICLES")
+      for (const art of MOCK_ARTICLES) {
+        try {
+          await prisma.newsArticle.upsert({
+            where: { title: art.title },
+            update: {
+              description: art.description,
+              content: art.content,
+              url: art.url,
+              imageUrl: art.imageUrl,
+              tags: art.tags.slice(0, 5),
+              publishedAt: art.publishedAt
+            },
+            create: {
+              title: art.title,
+              description: art.description,
+              content: art.content,
+              url: art.url,
+              imageUrl: art.imageUrl,
+              sourceName: art.sourceName || "Finanzas",
+              category: art.category,
+              tags: art.tags.slice(0, 5),
+              publishedAt: art.publishedAt
+            }
+          })
+          insertedCount++
+        } catch (e) {
+          console.error(`Failed to seed mock article: ${art.title}`, e)
+        }
       }
     }
 
