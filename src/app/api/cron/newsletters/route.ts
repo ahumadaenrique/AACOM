@@ -121,10 +121,10 @@ export async function GET(request: Request) {
     let rawArticles: any[] = []
 
     if (apiKey) {
-      // 1. Fetch from Newsdata.io for Mexico
+      // 1. Fetch from Newsdata.io for Mexico using finance/insurance keywords
       try {
         const mxRes = await fetch(
-          `https://newsdata.io/api/1/news?apikey=${apiKey}&country=mx&category=business,technology,politics&language=es`,
+          `https://newsdata.io/api/1/news?apikey=${apiKey}&country=mx&q=Banxico%20OR%20CNSF%20OR%20SHCP%20OR%20BMV%20OR%20seguros%20OR%20inflacion%20OR%20Afore%20OR%20Cetes&language=es`,
           { next: { revalidate: 0 } }
         )
         if (mxRes.ok) {
@@ -147,11 +147,11 @@ export async function GET(request: Request) {
       } catch (err) {
         console.error("Error fetching MX news from Newsdata:", err)
       }
-
-      // 2. Fetch from Newsdata.io for Global Business
+ 
+      // 2. Fetch from Newsdata.io for Global using finance/insurance keywords
       try {
         const globalRes = await fetch(
-          `https://newsdata.io/api/1/news?apikey=${apiKey}&category=business&language=es`,
+          `https://newsdata.io/api/1/news?apikey=${apiKey}&q=economia%20OR%20finanzas%20OR%20seguros%20OR%20inflacion&language=es`,
           { next: { revalidate: 0 } }
         )
         if (globalRes.ok) {
@@ -177,12 +177,6 @@ export async function GET(request: Request) {
       } catch (err) {
         console.error("Error fetching Global news from Newsdata:", err)
       }
-    }
-
-    // 3. Fallback to mock data if no articles fetched or missing API key
-    if (rawArticles.length === 0) {
-      console.warn("Using MOCK news articles due to missing API Key or API errors.")
-      rawArticles = [...MOCK_ARTICLES]
     }
 
     // Fetch existing recent articles from DB (e.g. last 100) to check for duplicates
@@ -255,41 +249,6 @@ export async function GET(request: Request) {
       } catch (err) {
         // Handle race conditions/duplicate primary key safely
         console.error(`Failed to insert article: ${art.title}`, err)
-      }
-    }
-
-    // If the database is empty or we explicitly cleared it, seed it with MOCK_ARTICLES
-    const totalCount = await prisma.newsArticle.count()
-    if (totalCount === 0 || cleared) {
-      console.log("Seeding database with MOCK_ARTICLES")
-      for (const art of MOCK_ARTICLES) {
-        try {
-          await prisma.newsArticle.upsert({
-            where: { title: art.title },
-            update: {
-              description: art.description,
-              content: art.content,
-              url: art.url,
-              imageUrl: art.imageUrl,
-              tags: art.tags.slice(0, 5),
-              publishedAt: art.publishedAt
-            },
-            create: {
-              title: art.title,
-              description: art.description,
-              content: art.content,
-              url: art.url,
-              imageUrl: art.imageUrl,
-              sourceName: art.sourceName || "Finanzas",
-              category: art.category,
-              tags: art.tags.slice(0, 5),
-              publishedAt: art.publishedAt
-            }
-          })
-          insertedCount++
-        } catch (e) {
-          console.error(`Failed to seed mock article: ${art.title}`, e)
-        }
       }
     }
 
