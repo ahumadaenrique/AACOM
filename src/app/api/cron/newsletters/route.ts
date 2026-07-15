@@ -104,6 +104,17 @@ export async function GET(request: Request) {
     }
   }
 
+  // Support clearing articles database
+  const clear = searchParams.get('clear')
+  if (clear === 'true') {
+    try {
+      const delRes = await prisma.newsArticle.deleteMany({})
+      return NextResponse.json({ success: true, message: `Cleared all ${delRes.count} articles` })
+    } catch (err: any) {
+      return NextResponse.json({ success: false, error: err.message }, { status: 500 })
+    }
+  }
+
   try {
     const apiKey = process.env.NEWSDATA_API_KEY
     let rawArticles: any[] = []
