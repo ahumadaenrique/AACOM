@@ -198,6 +198,36 @@ export async function checkAllSystemsStatus() {
             results.push({ id: 'tavily', name: 'Tavily (Búsqueda IA)', status: 'error', message: e.message, link: 'https://app.tavily.com/home' });
         }
 
+        // 9. Newsdata.io (Noticias)
+        try {
+            const apiKey = process.env.NEWSDATA_API_KEY;
+            if (apiKey) {
+                const res = await fetch(`https://newsdata.io/api/1/news?apikey=${apiKey}&q=finanzas&size=1`, {
+                    cache: 'no-store'
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.status === "success") {
+                        results.push({
+                            id: 'newsdata',
+                            name: 'Newsdata.io (Noticias)',
+                            status: 'ok',
+                            message: 'API Respondiendo. Conexión establecida.',
+                            link: 'https://newsdata.io/register'
+                        });
+                    } else {
+                        throw new Error(data.results?.message || "Error devuelto por la API");
+                    }
+                } else {
+                    throw new Error(`HTTP ${res.status}`);
+                }
+            } else {
+                throw new Error("API Key de Newsdata.io faltante");
+            }
+        } catch (e: any) {
+            results.push({ id: 'newsdata', name: 'Newsdata.io (Noticias)', status: 'error', message: e.message, link: 'https://newsdata.io/register' });
+        }
+
         return { success: true, results };
     } catch (e: any) {
         return { success: false, message: e.message };

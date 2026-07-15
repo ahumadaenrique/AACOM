@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Activity, Server, Database, Globe, Mail, MessageSquare, CreditCard, RefreshCw, ExternalLink, CheckCircle2, XCircle } from "lucide-react";
+import { Activity, Server, Database, Globe, Mail, MessageSquare, CreditCard, RefreshCw, ExternalLink, CheckCircle2, XCircle, Newspaper } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -39,6 +39,7 @@ export default function SystemStatusClient() {
             case 'resend': return <Mail className="h-6 w-6" />;
             case 'gemini': return <Activity className="h-6 w-6" />;
             case 'tavily': return <Globe className="h-6 w-6" />;
+            case 'newsdata': return <Newspaper className="h-6 w-6" />;
             default: return <Server className="h-6 w-6" />;
         }
     };
