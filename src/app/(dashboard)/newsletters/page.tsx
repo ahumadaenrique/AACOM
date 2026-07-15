@@ -14,6 +14,18 @@ export default async function NewslettersPage() {
   const userRes = await getCurrentUser()
   const isSuperAdmin = userRes.success && userRes.user?.role === 'SUPER_ADMIN'
 
+  // Fetch current user's agency name
+  let agencyName = "AACOM"
+  if (userRes.success && userRes.user?.agencyId) {
+    const agency = await prisma.agency.findUnique({
+      where: { id: userRes.user.agencyId },
+      select: { name: true }
+    })
+    if (agency?.name) {
+      agencyName = agency.name
+    }
+  }
+
   // Fetch financial indicators from Settings
   const settings = await prisma.setting.findMany({
     where: {
@@ -35,6 +47,7 @@ export default async function NewslettersPage() {
       initialArticles={articles} 
       isSuperAdmin={isSuperAdmin} 
       indicators={indicators} 
+      agencyName={agencyName}
     />
   )
 }

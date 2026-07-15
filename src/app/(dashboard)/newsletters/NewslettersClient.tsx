@@ -26,11 +26,13 @@ interface FinancialIndicators {
 export default function NewslettersClient({ 
   initialArticles, 
   isSuperAdmin = false,
-  indicators = { udi: null, usd: null, eur: null, gbp: null }
+  indicators = { udi: null, usd: null, eur: null, gbp: null },
+  agencyName = "AACOM"
 }: { 
   initialArticles: NewsArticle[]
   isSuperAdmin?: boolean
   indicators?: FinancialIndicators
+  agencyName?: string
 }) {
   const [articles, setArticles] = useState<NewsArticle[]>(initialArticles)
   const [selectedCategory, setSelectedCategory] = useState<string>("Todos")
@@ -100,7 +102,7 @@ export default function NewslettersClient({
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <div>
                 <span className="font-mono text-xs tracking-[0.25em] uppercase text-zinc-500 dark:text-zinc-400">
-                  Terminal de Inteligencia Financiera AACOM
+                  Terminal de Inteligencia Financiera {agencyName}
                 </span>
                 <h1 className="whitepaper-title text-4xl md:text-5xl font-black mt-2 tracking-tight text-zinc-950 dark:text-white">
                   NEWSLETTERS
