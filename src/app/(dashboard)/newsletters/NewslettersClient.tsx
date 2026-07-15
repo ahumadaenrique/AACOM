@@ -269,7 +269,7 @@ export default function NewslettersClient({
 
           {/* Whitepaper Footer info */}
           <footer className="mt-20 border-t border-zinc-400 dark:border-zinc-800 pt-8 text-center text-[10px] font-mono tracking-wider text-zinc-500 uppercase">
-            <div>© {new Date().getFullYear()} AACOM Seguros. Todos los derechos reservados.</div>
+            <div>© 2026 AACOMSOFT. Todos los derechos reservados.</div>
             <div className="mt-1">Servicio de inteligencia de mercados y curación financiera automatizada v4.0.</div>
           </footer>
 
