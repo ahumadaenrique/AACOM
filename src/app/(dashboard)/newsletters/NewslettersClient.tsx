@@ -16,7 +16,7 @@ interface NewsArticle {
   publishedAt: Date | string
 }
 
-export default function NewslettersClient({ initialArticles }: { initialArticles: NewsArticle[] }) {
+export default function NewslettersClient({ initialArticles, isSuperAdmin = false }: { initialArticles: NewsArticle[], isSuperAdmin?: boolean }) {
   const [articles, setArticles] = useState<NewsArticle[]>(initialArticles)
   const [selectedCategory, setSelectedCategory] = useState<string>("Todos")
   const [searchQuery, setSearchQuery] = useState("")
@@ -92,15 +92,17 @@ export default function NewslettersClient({ initialArticles }: { initialArticles
                 </h1>
               </div>
               <div className="flex items-center gap-3">
-                <button
-                  onClick={handleRefresh}
-                  disabled={isRefreshing}
-                  className="flex items-center gap-2 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 text-xs font-bold px-4 py-2 rounded-lg transition-colors shadow-sm disabled:opacity-50"
-                  title="Actualizar feed de noticias"
-                >
-                  <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-                  {isRefreshing ? 'Actualizando...' : 'Actualizar'}
-                </button>
+                {isSuperAdmin && (
+                  <button
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
+                    className="flex items-center gap-2 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 text-xs font-bold px-4 py-2 rounded-lg transition-colors shadow-sm disabled:opacity-50"
+                    title="Actualizar feed de noticias"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
+                    {isRefreshing ? 'Actualizando...' : 'Actualizar'}
+                  </button>
+                )}
               </div>
             </div>
             
