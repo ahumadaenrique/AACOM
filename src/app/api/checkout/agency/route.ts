@@ -16,6 +16,7 @@ export async function POST(req: NextRequest) {
     // Validación de cupón o referidos
     let stripeCoupon = null;
     let referredByAgencyId = null;
+    let discountCodeStr = null;
 
     if (promoCode && promoCode.trim() !== "") {
       const codeStr = promoCode.trim().toUpperCase();
@@ -28,7 +29,10 @@ export async function POST(req: NextRequest) {
         if (discount.expiresAt && discount.expiresAt < new Date()) {
           return NextResponse.json({ error: "El código de descuento ha expirado." }, { status: 400 });
         }
-        stripeCoupon = discount.code;
+        if (discount.discountPercentage > 0) {
+          stripeCoupon = discount.code;
+        }
+        discountCodeStr = discount.code;
       } else {
         // Verificar si es un referral (slug de otra agencia)
         const referral = await prisma.agency.findUnique({ where: { slug: promoCode.trim().toLowerCase() } });
@@ -117,7 +121,7 @@ export async function POST(req: NextRequest) {
         agencyId: agency.id,
         isMainLicense: "true",
         monthsToAdd: monthsToAdd.toString(),
-        ...(stripeCoupon ? { discountCodeStr: stripeCoupon } : {})
+        discountCodeStr: discountCodeStr || ""
       },
       subscription_data: {
         metadata: {

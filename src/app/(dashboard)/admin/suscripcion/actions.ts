@@ -83,12 +83,14 @@ export async function createCheckoutSession(
         return { success: false, message: "Este código de descuento ha alcanzado su límite de usos." };
       }
 
-      const coupon = await stripe.coupons.create({
-        percent_off: discountCode.discountPercentage,
-        duration: "once",
-        name: `Cupón ${discountCodeStr} (${discountCode.discountPercentage}%)`,
-      });
-      stripeCouponId = coupon.id;
+      if (discountCode.discountPercentage > 0) {
+        const coupon = await stripe.coupons.create({
+          percent_off: discountCode.discountPercentage,
+          duration: "once",
+          name: `Cupón ${discountCodeStr} (${discountCode.discountPercentage}%)`,
+        });
+        stripeCouponId = coupon.id;
+      }
     }
 
     if (!actualPriceId) {
