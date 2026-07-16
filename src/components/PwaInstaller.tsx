@@ -11,7 +11,7 @@ import {
   Smartphone
 } from "lucide-react"
 
-export default function PwaInstaller({ agencyName = "AACOM Seguros" }: { agencyName?: string }) {
+export default function PwaInstaller({ agencyName = "AACOMSOFT" }: { agencyName?: string }) {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [showPrompt, setShowPrompt] = useState<boolean>(false)
   const [isIOS, setIsIOS] = useState<boolean>(false)

@@ -11,7 +11,7 @@ export default async function LoginPage() {
     agency = await prisma.agency.findUnique({ where: { slug } });
   }
   
-  const agencyName = agency?.name || 'AACOM Seguros';
+  const agencyName = agency?.name || 'AACOMSOFT';
   const agencyLogo = agency?.logoUrl || '/logo.png';
   
   return <LoginClient agencyName={agencyName} agencyLogo={agencyLogo} />;

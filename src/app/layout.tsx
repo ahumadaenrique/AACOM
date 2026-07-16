@@ -18,7 +18,7 @@ export async function generateMetadata(): Promise<Metadata> {
     if (!agency) {
         agency = await prisma.agency.findUnique({ where: { slug } });
     }
-    const agencyName = agency?.name || "AACOM Seguros";
+    const agencyName = agency?.name || "AACOMSOFT";
 
     return {
         title: `SYSGPYA | ${agencyName}`,

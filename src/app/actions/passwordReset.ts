@@ -17,7 +17,7 @@ export async function requestPasswordReset(email: string) {
       return { success: true, message: "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña." }
     }
 
-    const agencyName = user.agency?.name || "AACOM Seguros"
+    const agencyName = user.agency?.name || "AACOMSOFT"
 
     const token = crypto.randomBytes(32).toString("hex")
     const tokenExpiry = new Date(Date.now() + 3600000) // 1 hour expiration
