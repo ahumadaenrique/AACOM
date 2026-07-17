@@ -15,7 +15,11 @@ export async function POST(req: Request) {
 
     // This URL must be accessible publicly by the PDF API.
     // In production, use your actual domain. In dev, we use ngrok or similar, but for now we fallback.
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://aacom-25-dev.vercel.app"
+    // Dynamically get the current host (works for Vercel preview branches)
+    const host = req.headers.get("host")
+    const protocol = req.headers.get("x-forwarded-proto") || "https"
+    const baseUrl = host ? `${protocol}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || "https://aacom-25-dev.vercel.app")
+    
     const targetUrl = `${baseUrl}/print/cotizacion/${quoteId}`
 
     const apiKey = process.env.PDFSHIFT_API_KEY
