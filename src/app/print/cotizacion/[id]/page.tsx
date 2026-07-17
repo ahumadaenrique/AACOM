@@ -5,15 +5,8 @@ import { prisma } from "@/lib/prisma"
 import CotizadorPage from "@/app/(dashboard)/cotizador/CotizadorClient"
 
 export default async function PrintCotizacionPage({ params }: { params: { id: string } }) {
-  // Validate that the user is logged in
-  const session = await auth()
-  if (!session?.user?.id) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center p-8 text-center text-rose-500 font-bold bg-white">
-        ACCESO DENEGADO - Inicia sesión para descargar la cotización.
-      </div>
-    )
-  }
+  // Removing auth check because PDFShift server needs to access this URL directly
+  // and it won't have the user's session cookie. UUID is unguessable enough for print.
 
   // Fetch the quote from the database
   const cotizacion = await prisma.cotizacion.findUnique({

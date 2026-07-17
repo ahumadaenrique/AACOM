@@ -49,7 +49,7 @@ export async function POST(req: Request) {
     if (!response.ok) {
       const errorText = await response.text()
       console.error("PDF API Error:", errorText)
-      return NextResponse.json({ error: "Error generando el documento PDF" }, { status: 500 })
+      return NextResponse.json({ error: `Error de PDFShift: ${errorText}` }, { status: 500 })
     }
 
     // The response is a binary PDF
