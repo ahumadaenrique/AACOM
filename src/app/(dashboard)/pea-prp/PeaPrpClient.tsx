@@ -17,8 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { getCurrentMonthStats, submitPerformanceReview, getPerformanceReviews, authorizeReview, rejectReview, deleteReview } from "./actions";
 
-// Recharts
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
+
 
 export default function PeaPrpClient({ userRole }: { userRole: string }) {
     const { toast } = useToast();
@@ -175,14 +174,6 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
     // --- Lógica de Vistas (Tabs) ---
     const pendingReviews = reviews.filter(r => r.status === 'PENDING' || r.status === 'REJECTED');
     const historyReviews = reviews.filter(r => r.status === 'REVIEWED');
-
-    // Preparar datos para gráfica (Cronológico, más antiguo primero)
-    const chartData = [...historyReviews].reverse().map(r => ({
-        name: format(new Date(r.createdAt), "dd MMM", { locale: es }),
-        Puntos: r.puntosActividad,
-        ADNs: r.adnsRealizados,
-        agente: r.agent.name
-    }));
 
     // Componente reutilizable para las tarjetas pendientes
     const renderPendingCard = (rev: any) => (
@@ -395,55 +386,7 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                     </TabsList>
 
                     <TabsContent value="dashboard" className="space-y-6">
-                        {/* CHART SECTION */}
-                        {historyReviews.length > 0 && (
-                            <Card className="border-2 shadow-sm">
-                                <CardHeader className="pb-2">
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <TrendingUp className="w-5 h-5 text-indigo-500" />
-                                        Tendencia de Desempeño
-                                    </CardTitle>
-                                    <CardDescription>
-                                        Análisis visual de los reportes autorizados.
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent className="h-[300px] mt-4">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <LineChart data={chartData}>
-                                            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                                            <XAxis 
-                                                dataKey="name" 
-                                                axisLine={false} 
-                                                tickLine={false} 
-                                                tick={{ fill: '#64748b', fontSize: 12 }} 
-                                                dy={10}
-                                            />
-                                            <YAxis 
-                                                yAxisId="left"
-                                                axisLine={false} 
-                                                tickLine={false} 
-                                                tick={{ fill: '#64748b', fontSize: 12 }} 
-                                            />
-                                            <YAxis 
-                                                yAxisId="right" 
-                                                orientation="right" 
-                                                axisLine={false} 
-                                                tickLine={false} 
-                                                tick={{ fill: '#64748b', fontSize: 12 }} 
-                                            />
-                                            <RechartsTooltip 
-                                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                                                labelStyle={{ fontWeight: 'bold', color: '#1e293b' }}
-                                            />
-                                            <Legend verticalAlign="top" height={36}/>
-                                            <Line yAxisId="left" type="monotone" name="Puntos Operativos" dataKey="Puntos" stroke="#4f46e5" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                                            <Line yAxisId="right" type="monotone" name="ADN's Realizados" dataKey="ADNs" stroke="#14b8a6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                                        </LineChart>
-                                    </ResponsiveContainer>
-                                </CardContent>
-                            </Card>
-                        )}
-
+                        {/* CHART SECTION REMOVED AS PER REQUEST */}
                         {/* PENDING ACTIONS SECTION */}
                         <div className="pt-4">
                             <h2 className="text-lg font-black text-slate-800 dark:text-zinc-100 flex items-center gap-2 mb-4">
