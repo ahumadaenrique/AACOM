@@ -8,7 +8,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 })
     }
 
-    const { quoteId } = await req.json()
+    const { quoteId, type = 'cotizacion' } = await req.json()
     if (!quoteId) {
       return NextResponse.json({ error: "Se requiere quoteId" }, { status: 400 })
     }
@@ -20,7 +20,8 @@ export async function POST(req: Request) {
     const protocol = req.headers.get("x-forwarded-proto") || "https"
     const baseUrl = host ? `${protocol}://${host}` : (process.env.NEXT_PUBLIC_APP_URL || "https://aacom-25-dev.vercel.app")
     
-    const targetUrl = `${baseUrl}/print/cotizacion/${quoteId}`
+    // type can be 'cotizacion' or 'adn'
+    const targetUrl = `${baseUrl}/print/${type}/${quoteId}`
 
     const apiKey = process.env.PDFSHIFT_API_KEY
     if (!apiKey) {

@@ -198,6 +198,7 @@ export default function CotizadorPage({
 
   const [hasCalculated, setHasCalculated] = useState(printMode ? true : false)
   const [currentQuoteId, setCurrentQuoteId] = useState<string | null>(null)
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
 
   // Handle forms input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -657,18 +658,9 @@ export default function CotizadorPage({
 
   // Observation 1: Direct PDF download using our Server-Side PDF API
   const handleDownloadPdf = async () => {
-    // Show a loading toast or change button state if desired
-    // For now we just fetch
+    if (isDownloadingPdf) return
+    setIsDownloadingPdf(true)
     try {
-      // Find the ID of the latest saved quote.
-      // Since we just saved it in `handleResults`, we need to get it.
-      // Wait, `handleDownloadPdf` doesn't know the ID of the quote just saved!
-      // We should store the `quoteId` in state when `saveCotizacion` completes.
-      
-      // Let's modify handleDownloadPdf to receive or get the quoteId.
-      // Wait, since this is a quick fix, if we don't have quoteId yet, we can't print.
-      // We will add a state `currentQuoteId` and set it during `handleResults`.
-      // If we don't have it, we alert.
       if (!currentQuoteId) {
         alert("Aún no se ha guardado la cotización. Por favor recarga o haz una nueva.")
         return
@@ -677,7 +669,7 @@ export default function CotizadorPage({
       const res = await fetch("/api/generate-pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quoteId: currentQuoteId })
+        body: JSON.stringify({ quoteId: currentQuoteId, type: 'cotizacion' })
       })
 
       if (!res.ok) {
@@ -699,6 +691,8 @@ export default function CotizadorPage({
     } catch (error) {
       console.error("PDF Download failed", error)
       alert("Hubo un error al descargar el PDF. Intenta de nuevo.")
+    } finally {
+      setIsDownloadingPdf(false)
     }
   }
 
@@ -1457,9 +1451,15 @@ export default function CotizadorPage({
               
               <div className="flex items-center gap-3">
                 {/* Button 1: Download PDF (Direct Download - Observation 1) */}
+              {isDownloadingPdf ? (
+                <Button disabled className="bg-teal-600/50 text-white px-6 font-bold shadow flex items-center gap-1.5 cursor-not-allowed">
+                  <RefreshCw className="h-4.5 w-4.5 animate-spin" /> Generando PDF...
+                </Button>
+              ) : (
                 <Button onClick={handleDownloadPdf} className="bg-teal-600 hover:bg-teal-700 text-white px-6 font-bold shadow flex items-center gap-1.5">
                   <Download className="h-4.5 w-4.5" /> Descargar en PDF
                 </Button>
+              )}
                 
                 {/* Button 2: Print Quote */}
                 <Button onClick={handlePrint} variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50 px-6 font-semibold flex items-center gap-1.5">
