@@ -41,8 +41,7 @@ export async function POST(req: Request) {
         use_print: true, // Uses CSS @media print
         format: "A4",
         margin: "10mm",
-        wait_for: "networkidle0", // Wait until Recharts finishes rendering
-        delay: 1500 // Extra delay to ensure charts are fully drawn
+        delay: 2000 // Extra delay to ensure charts are fully drawn (Recharts animations take ~1500ms)
       })
     })
 
