@@ -79,15 +79,19 @@ export default function CotizadorPage({
   agencyName = "Tu Agencia", 
   agencyLogo = "/logo.png",
   currentUserName = "",
-  agencyUsers = []
+  agencyUsers = [],
+  printMode = false,
+  printData = null
 }: { 
   agencyName?: string
   agencyLogo?: string
   currentUserName?: string
   agencyUsers?: string[]
+  printMode?: boolean
+  printData?: any
 }) {
   // Navigation Mode
-  const [viewMode, setViewMode] = useState<'MENU' | 'HISTORY' | 'EDITOR'>('MENU')
+  const [viewMode, setViewMode] = useState<'MENU' | 'HISTORY' | 'EDITOR'>(printMode ? 'EDITOR' : 'MENU')
   const [historyList, setHistoryList] = useState<any[]>([])
   const [loadingHistory, setLoadingHistory] = useState(false)
 
@@ -109,11 +113,11 @@ export default function CotizadorPage({
   const [selectedMonth, setSelectedMonth] = useState(availableMonths[0].value);
 
   // Step navigation state
-  const [step, setStep] = useState<number>(1)
+  const [step, setStep] = useState<number>(printMode ? 4 : 1)
   
   // Step 1: Form Data - default ISR to 35%
   // Coberturas: MAA & MAB deleted (Correction 6)
-  const [formData, setFormData] = useState<FormData>({
+  const [formData, setFormData] = useState<FormData>(printData?.formData || {
     cliente: "",
     agente: currentUserName || "",
     telefono: "",
@@ -139,7 +143,7 @@ export default function CotizadorPage({
     const fetchDefaultUdi = async () => {
       try {
         const res = await getUdiSetting()
-        if (res.success && res.value) {
+        if (res.success && res.value && !printMode) {
           setFormData(prev => ({
             ...prev,
             valorUdi: res.value
@@ -151,7 +155,7 @@ export default function CotizadorPage({
     }
     
     fetchDefaultUdi()
-  }, [])
+  }, [printMode])
 
   // Step 2: Upload Data
   const [file, setFile] = useState<File | null>(null)
@@ -174,8 +178,8 @@ export default function CotizadorPage({
   })
 
   // Step 4: Results
-  const [calculatedData, setCalculatedData] = useState<any[]>([])
-  const [summaryMetrics, setSummaryMetrics] = useState({
+  const [calculatedData, setCalculatedData] = useState<any[]>(printData?.calculatedData || [])
+  const [summaryMetrics, setSummaryMetrics] = useState(printData?.summaryMetrics || {
     totalPrimasPesos: 0,
     totalAhorroPesos: 0,
     totalAhorroUdis: 0,
@@ -190,9 +194,10 @@ export default function CotizadorPage({
     y10: number;
     y20: number;
     y30: number;
-  }>({ y1: 0, y10: 0, y20: 0, y30: 0 })
+  }>(printData?.saProgression || { y1: 0, y10: 0, y20: 0, y30: 0 })
 
-  const [hasCalculated, setHasCalculated] = useState(false)
+  const [hasCalculated, setHasCalculated] = useState(printMode ? true : false)
+  const [currentQuoteId, setCurrentQuoteId] = useState<string | null>(null)
 
   // Handle forms input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -493,7 +498,7 @@ export default function CotizadorPage({
     setStep(4)
 
     try {
-      await saveCotizacion({
+      const res = await saveCotizacion({
         cliente: formData.cliente || "Cliente Sin Nombre",
         telefono: formData.telefono || "Sin Teléfono",
         agente: formData.agente || "Agente Sin Nombre",
@@ -509,6 +514,10 @@ export default function CotizadorPage({
         coberturas: JSON.stringify(formData.coberturas),
         projectionData: JSON.stringify(results)
       })
+
+      if (res.success && res.cotizacion) {
+        setCurrentQuoteId(res.cotizacion.id)
+      }
     } catch (err) {
       console.error("Silent DB save failed:", err)
     }
@@ -642,59 +651,55 @@ export default function CotizadorPage({
     })
     setSaProgression({ y1: 0, y10: 0, y20: 0, y30: 0 })
     setHasCalculated(false)
+    setCurrentQuoteId(null)
     setStep(1)
   }
 
-  // Observation 1: Direct PDF download using html2pdf.js dynamically
+  // Observation 1: Direct PDF download using our Server-Side PDF API
   const handleDownloadPdf = async () => {
-    const html2pdf = (await import("html2pdf.js")).default
-    const element = document.getElementById("printable-report")
-    if (!element) return
+    // Show a loading toast or change button state if desired
+    // For now we just fetch
+    try {
+      // Find the ID of the latest saved quote.
+      // Since we just saved it in `handleResults`, we need to get it.
+      // Wait, `handleDownloadPdf` doesn't know the ID of the quote just saved!
+      // We should store the `quoteId` in state when `saveCotizacion` completes.
+      
+      // Let's modify handleDownloadPdf to receive or get the quoteId.
+      // Wait, since this is a quick fix, if we don't have quoteId yet, we can't print.
+      // We will add a state `currentQuoteId` and set it during `handleResults`.
+      // If we don't have it, we alert.
+      if (!currentQuoteId) {
+        alert("Aún no se ha guardado la cotización. Por favor recarga o haz una nueva.")
+        return
+      }
 
-    // Force desktop width temporarily to prevent mobile cut-off, but allow it to grow if table is huge
-    const originalWidth = element.style.width
-    const originalMaxWidth = element.style.maxWidth
-    element.style.width = 'max-content'
-    element.style.minWidth = '1200px'
-    element.style.maxWidth = 'none'
-
-    // Remove overflow restrictions that hide table content in html2canvas
-    const overflowElements = element.querySelectorAll('.overflow-x-auto')
-    overflowElements.forEach(el => {
-      (el as HTMLElement).style.overflow = 'visible'
-    })
-
-    // CRITICAL: Wait 600ms for Recharts <ResponsiveContainer> to detect the new 1200px+ width and resize its SVG
-    // Otherwise, the right side of the chart is cut off
-    await new Promise(resolve => setTimeout(resolve, 600))
-
-    const captureWidth = Math.max(element.scrollWidth, 1200)
-    const sanitizedClientName = (formData.cliente || "Cotizacion").replace(/[^a-zA-Z0-9]/g, "_")
-    
-    const opt = {
-      margin:       10, // 10mm margin for better spacing
-      filename:     `Cotizacion_${sanitizedClientName}_${new Date().toISOString().slice(0,10)}.pdf`,
-      image:        { type: 'jpeg' as const, quality: 0.98 },
-      pagebreak:    { mode: ['avoid-all', 'css', 'legacy'] }, // Prevents cutting elements in half
-      html2canvas:  { 
-        scale: 2, // Slightly lower scale to prevent canvas limits on huge tables
-        useCORS: true, 
-        allowTaint: true, // Help with external logos
-        letterRendering: true,
-        windowWidth: captureWidth, // Dynamic width to prevent right-edge clipping
-        width: captureWidth
-      },
-      jsPDF:        { unit: 'mm' as const, format: 'letter' as const, orientation: 'landscape' as const }
-    }
-
-    // Direct download and restore styles
-    html2pdf().from(element).set(opt).save().then(() => {
-      element.style.width = originalWidth
-      element.style.maxWidth = originalMaxWidth
-      overflowElements.forEach(el => {
-        (el as HTMLElement).style.overflow = ''
+      const res = await fetch("/api/generate-pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ quoteId: currentQuoteId })
       })
-    })
+
+      if (!res.ok) {
+        const err = await res.json()
+        alert(`Error: ${err.error}`)
+        return
+      }
+
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `Cotizacion_${currentQuoteId}.pdf`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+
+    } catch (error) {
+      console.error("PDF Download failed", error)
+      alert("Hubo un error al descargar el PDF. Intenta de nuevo.")
+    }
   }
 
   // Calculations for Observation 2 (PPR): Ahorro real efectivo and Rentabilidad Real
@@ -738,6 +743,7 @@ export default function CotizadorPage({
     if (record.projectionData) {
       const parsedData = JSON.parse(record.projectionData)
       setCalculatedData(parsedData)
+      setCurrentQuoteId(record.id)
       
       const ahorroAt65Pesos = record.ahorro
       const ahorroAt65Udis = parsedData[parsedData.length - 1]?.ahorroUdis || 0
@@ -911,54 +917,57 @@ export default function CotizadorPage({
       {viewMode === 'EDITOR' && (
         <>
           {/* Header and Step Indicator - Hidden in printing */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden animate-in fade-in duration-200">
-        <div className="flex items-center gap-3">
-          {/* Logo in header */}
-          <img src={agencyLogo} alt={agencyName} className="h-10 w-auto object-contain" />
-          <div className="h-8 w-px bg-slate-300 dark:bg-zinc-700 hidden sm:block"></div>
-          <div className="flex flex-col gap-0.5">
-            <h1 className="text-2xl font-black tracking-tight text-slate-800 dark:text-slate-100">
-              {agencyName} cotizador - Tablas de Proyección
-            </h1>
-            <p className="text-xs text-muted-foreground">
-              Convierte archivos de aseguradoras en cotizaciones web premium e imprimibles para tus clientes.
-            </p>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Step Wizard Buttons - Hidden in printing */}
-      <div className="flex justify-between items-center w-full bg-slate-100 dark:bg-zinc-800 p-2 rounded-xl border print:hidden">
-        <div className="flex items-center gap-1 md:gap-4 w-full">
-          {[
-            { nr: 1, label: "Datos Generales" },
-            { nr: 2, label: "Cargar Archivo" },
-            { nr: 3, label: "Mapeo" },
-            { nr: 4, label: "Resultados" }
-          ].map((s) => (
-            <div key={s.nr} className="flex-1 flex items-center">
-              <button
-                disabled={s.nr > 1 && fileRows.length === 0 && !hasCalculated}
-                onClick={() => setStep(s.nr)}
-                className={`flex items-center gap-2 p-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-300 w-full justify-center md:justify-start ${
-                  step === s.nr
-                    ? "bg-teal-600 text-white shadow-md"
-                    : "text-slate-500 hover:text-slate-900 hover:bg-slate-200 dark:hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                }`}
-              >
-                <span className={`h-6 w-6 flex items-center justify-center rounded-full text-xs font-bold ${
-                  step === s.nr ? "bg-white text-teal-600" : "bg-slate-300 dark:bg-zinc-600 text-slate-700 dark:text-slate-300"
-                }`}>
-                  {s.nr}
-                </span>
-                <span className="hidden md:inline">{s.label}</span>
-              </button>
-              {s.nr < 4 && <ArrowRight className="h-4 w-4 text-slate-400 mx-2 hidden md:block" />}
+      {!printMode && (
+        <>
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 print:hidden animate-in fade-in duration-200">
+            <div className="flex items-center gap-3">
+              {/* Logo in header */}
+              <img src={agencyLogo} alt={agencyName} className="h-10 w-auto object-contain" />
+              <div className="h-8 w-px bg-slate-300 dark:bg-zinc-700 hidden sm:block"></div>
+              <div className="flex flex-col gap-0.5">
+                <h1 className="text-2xl font-black tracking-tight text-slate-800 dark:text-slate-100">
+                  {agencyName} cotizador - Tablas de Proyección
+                </h1>
+                <p className="text-xs text-muted-foreground">
+                  Convierte archivos de aseguradoras en cotizaciones web premium e imprimibles para tus clientes.
+                </p>
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
+
+          {/* Step Wizard Buttons - Hidden in printing */}
+          <div className="flex justify-between items-center w-full bg-slate-100 dark:bg-zinc-800 p-2 rounded-xl border print:hidden">
+            <div className="flex items-center gap-1 md:gap-4 w-full">
+              {[
+                { nr: 1, label: "Datos Generales" },
+                { nr: 2, label: "Cargar Archivo" },
+                { nr: 3, label: "Mapeo" },
+                { nr: 4, label: "Resultados" }
+              ].map((s) => (
+                <div key={s.nr} className="flex-1 flex items-center">
+                  <button
+                    disabled={s.nr > 1 && fileRows.length === 0 && !hasCalculated}
+                    onClick={() => setStep(s.nr)}
+                    className={`flex items-center gap-2 p-2 rounded-lg text-xs md:text-sm font-semibold transition-all duration-300 w-full justify-center md:justify-start ${
+                      step === s.nr
+                        ? "bg-teal-600 text-white shadow-md"
+                        : "text-slate-500 hover:text-slate-900 hover:bg-slate-200 dark:hover:bg-zinc-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                    }`}
+                  >
+                    <span className={`h-6 w-6 flex items-center justify-center rounded-full text-xs font-bold ${
+                      step === s.nr ? "bg-white text-teal-600" : "bg-slate-300 dark:bg-zinc-600 text-slate-700 dark:text-slate-300"
+                    }`}>
+                      {s.nr}
+                    </span>
+                    <span className="hidden md:inline">{s.label}</span>
+                  </button>
+                  {s.nr < 4 && <ArrowRight className="h-4 w-4 text-slate-400 mx-2 hidden md:block" />}
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
 
       {/* STAGE CONTENT */}
       
@@ -1430,33 +1439,35 @@ export default function CotizadorPage({
         <div className="space-y-6 animate-in fade-in duration-300">
           
           {/* Quick Toolbar - Hidden in Printing - Correction 10: Separated buttons */}
-          <div className="flex justify-between items-center w-full bg-slate-100 dark:bg-zinc-800 p-3 rounded-xl border print:hidden">
-            <div className="flex items-center gap-3">
-              <Button variant="outline" onClick={() => setStep(3)} className="px-5">
-                <ArrowLeft className="mr-2 h-4 w-4" /> Reajustar Mapeo
-              </Button>
+          {!printMode && (
+            <div className="flex justify-between items-center w-full bg-slate-100 dark:bg-zinc-800 p-3 rounded-xl border print:hidden">
+              <div className="flex items-center gap-3">
+                <Button variant="outline" onClick={() => setStep(3)} className="px-5">
+                  <ArrowLeft className="mr-2 h-4 w-4" /> Reajustar Mapeo
+                </Button>
+                
+                <Button 
+                  variant="secondary" 
+                  onClick={handleResetAndNewQuote} 
+                  className="bg-slate-200 hover:bg-slate-300 text-slate-800 dark:bg-zinc-700 dark:text-slate-200 px-5 font-bold flex items-center gap-1.5 border border-slate-300"
+                >
+                  <RefreshCw className="h-4 w-4" /> Hacer nueva cotización
+                </Button>
+              </div>
               
-              <Button 
-                variant="secondary" 
-                onClick={handleResetAndNewQuote} 
-                className="bg-slate-200 hover:bg-slate-300 text-slate-800 dark:bg-zinc-700 dark:text-slate-200 px-5 font-bold flex items-center gap-1.5 border border-slate-300"
-              >
-                <RefreshCw className="h-4 w-4" /> Hacer nueva cotización
-              </Button>
+              <div className="flex items-center gap-3">
+                {/* Button 1: Download PDF (Direct Download - Observation 1) */}
+                <Button onClick={handleDownloadPdf} className="bg-teal-600 hover:bg-teal-700 text-white px-6 font-bold shadow flex items-center gap-1.5">
+                  <Download className="h-4.5 w-4.5" /> Descargar en PDF
+                </Button>
+                
+                {/* Button 2: Print Quote */}
+                <Button onClick={handlePrint} variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50 px-6 font-semibold flex items-center gap-1.5">
+                  <Printer className="h-4.5 w-4.5" /> Imprimir Cotización
+                </Button>
+              </div>
             </div>
-            
-            <div className="flex items-center gap-3">
-              {/* Button 1: Download PDF (Direct Download - Observation 1) */}
-              <Button onClick={handleDownloadPdf} className="bg-teal-600 hover:bg-teal-700 text-white px-6 font-bold shadow flex items-center gap-1.5">
-                <Download className="h-4.5 w-4.5" /> Descargar en PDF
-              </Button>
-              
-              {/* Button 2: Print Quote */}
-              <Button onClick={handlePrint} variant="outline" className="border-slate-300 text-slate-700 hover:bg-slate-50 px-6 font-semibold flex items-center gap-1.5">
-                <Printer className="h-4.5 w-4.5" /> Imprimir Cotización
-              </Button>
-            </div>
-          </div>
+          )}
 
           {/* PRINT CONTAINER START */}
           <div id="printable-report" className="space-y-6 bg-white dark:bg-zinc-950 p-0 md:p-6 print:p-0 rounded-2xl print:border-0 border shadow-md print:shadow-none print:text-black">
@@ -2062,7 +2073,7 @@ export default function CotizadorPage({
               <span>* Esta cotización representa una proyección ilustrativa y no constituye un contrato definitivo.</span>
               <div className="flex items-center justify-center gap-2 text-slate-400 mt-1">
                 <img src={agencyLogo} alt={agencyName} className="h-4 w-auto object-contain" />
-                <span>{agencyName} cotizador</span>
+                <span>AACOMSOFT 2026</span>
               </div>
             </div>
             

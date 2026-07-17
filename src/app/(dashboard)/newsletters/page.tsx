@@ -15,7 +15,7 @@ export default async function NewslettersPage() {
   const isSuperAdmin = userRes.success && userRes.user?.role === 'SUPER_ADMIN'
 
   // Fetch current user's agency name
-  let agencyName = "AACOM"
+  let agencyName = "AACOMSOFT"
   if (userRes.success && userRes.user?.agencyId) {
     const agency = await prisma.agency.findUnique({
       where: { id: userRes.user.agencyId },

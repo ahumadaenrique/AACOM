@@ -120,7 +120,7 @@ export default async function DashboardLayout({
     }
     const agencyName = agency?.name || "AACOMSOFT";
     const agencyLogo = agency?.logoUrl || "/logo.png";
-    const shortAgencyName = agency?.name || "AACOM";
+    const shortAgencyName = agency?.name || "AACOMSOFT";
 
     const endDate = agency?.subscriptionEndDate ? new Date(agency.subscriptionEndDate) : null;
     const now = new Date();
