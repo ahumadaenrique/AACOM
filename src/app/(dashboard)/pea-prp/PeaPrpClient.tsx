@@ -5,7 +5,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { 
     Activity, Target, BrainCircuit, CheckCircle2, 
-    CalendarClock, Plus, TrendingUp, AlertTriangle, FileText, BarChart3, Archive
+    CalendarClock, Plus, TrendingUp, AlertTriangle, FileText, BarChart3, Archive, ChevronDown
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
@@ -174,6 +174,21 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
     // --- Lógica de Vistas (Tabs) ---
     const pendingReviews = reviews.filter(r => r.status === 'PENDING' || r.status === 'REJECTED');
     const historyReviews = reviews.filter(r => r.status === 'REVIEWED');
+
+    // Agrupar historial por Mes y luego por Agente
+    const groupedHistory = historyReviews.reduce((acc: any, rev) => {
+        const monthYear = format(new Date(rev.createdAt), "MMMM yyyy", { locale: es });
+        const monthKey = monthYear.charAt(0).toUpperCase() + monthYear.slice(1);
+        
+        if (!acc[monthKey]) acc[monthKey] = { total: 0, agents: {} };
+        
+        const agentName = rev.agent.name || "Sin Agente";
+        if (!acc[monthKey].agents[agentName]) acc[monthKey].agents[agentName] = [];
+        
+        acc[monthKey].agents[agentName].push(rev);
+        acc[monthKey].total++;
+        return acc;
+    }, {});
 
     // Componente reutilizable para las tarjetas pendientes
     const renderPendingCard = (rev: any) => (
@@ -424,39 +439,67 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                                         Aún no hay reportes autorizados en el historial.
                                     </div>
                                 ) : (
-                                    <div className="overflow-x-auto">
-                                        <table className="w-full text-sm text-left">
-                                            <thead className="text-xs text-slate-500 dark:text-zinc-400 uppercase bg-slate-50 dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800">
-                                                <tr>
-                                                    <th className="px-4 py-3 font-bold">Fecha</th>
-                                                    {isAdmin && <th className="px-4 py-3 font-bold">Agente</th>}
-                                                    <th className="px-4 py-3 font-bold text-center">Puntos</th>
-                                                    <th className="px-4 py-3 font-bold text-center">ADNs</th>
-                                                    <th className="px-4 py-3 font-bold text-right">Meta ($)</th>
-                                                    <th className="px-4 py-3 font-bold text-right">Avance ($)</th>
-                                                    <th className="px-4 py-3 font-bold text-center">Detalle IA</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {historyReviews.map((rev) => (
-                                                    <tr key={rev.id} className="border-b border-slate-100 dark:border-zinc-800 hover:bg-slate-50/50 dark:hover:bg-zinc-900/50 transition-colors">
-                                                        <td className="px-4 py-3 font-medium text-slate-900 dark:text-zinc-100 whitespace-nowrap">
-                                                            {format(new Date(rev.createdAt), "dd MMM yyyy", { locale: es })}
-                                                        </td>
-                                                        {isAdmin && <td className="px-4 py-3 font-bold text-indigo-600 dark:text-indigo-400">{rev.agent.name}</td>}
-                                                        <td className="px-4 py-3 text-center">{rev.puntosActividad}</td>
-                                                        <td className="px-4 py-3 text-center">{rev.adnsRealizados}</td>
-                                                        <td className="px-4 py-3 text-right text-slate-600 dark:text-zinc-400">${rev.metaPrimasMensual.toLocaleString()}</td>
-                                                        <td className="px-4 py-3 text-right font-bold text-slate-900 dark:text-zinc-100">${rev.avancePrimasActual.toLocaleString()}</td>
-                                                        <td className="px-4 py-3 text-center">
-                                                            <Button variant="ghost" size="sm" onClick={() => setReadingReview(rev)} className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 h-8 px-2">
-                                                                <BrainCircuit className="w-4 h-4" />
-                                                            </Button>
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
+                                    <div className="space-y-4">
+                                        {Object.entries(groupedHistory).map(([month, monthData]: [string, any]) => (
+                                            <details key={month} className="group border-2 border-slate-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-950 overflow-hidden shadow-sm">
+                                                <summary className="cursor-pointer font-bold px-5 py-4 bg-slate-50 dark:bg-zinc-900 border-b flex justify-between items-center outline-none hover:bg-slate-100 dark:hover:bg-zinc-800 transition-colors">
+                                                    <span className="text-lg text-slate-800 dark:text-zinc-100 flex items-center gap-3">
+                                                        {month} 
+                                                        <Badge variant="secondary" className="bg-slate-200 text-slate-700 dark:bg-zinc-800 dark:text-zinc-300">
+                                                            {monthData.total} reportes
+                                                        </Badge>
+                                                    </span>
+                                                    <ChevronDown className="w-5 h-5 text-slate-400 transition-transform group-open:rotate-180" />
+                                                </summary>
+                                                <div className="p-4 space-y-4 bg-slate-50/30 dark:bg-zinc-950">
+                                                    {Object.entries(monthData.agents).map(([agent, agentReviews]: [string, any]) => (
+                                                        <details key={agent} className="group/agent border border-slate-200 dark:border-zinc-800 rounded-lg bg-white dark:bg-zinc-900 overflow-hidden shadow-sm" open={!isAdmin}>
+                                                            {isAdmin && (
+                                                                <summary className="cursor-pointer font-bold px-4 py-3 bg-white dark:bg-zinc-950 flex justify-between items-center outline-none hover:bg-slate-50 dark:hover:bg-zinc-900 transition-colors border-b">
+                                                                    <span className="text-indigo-600 dark:text-indigo-400 flex items-center gap-2">
+                                                                        {agent} 
+                                                                        <Badge variant="outline" className="text-xs">{agentReviews.length}</Badge>
+                                                                    </span>
+                                                                    <ChevronDown className="w-4 h-4 text-slate-400 transition-transform group-open/agent:rotate-180" />
+                                                                </summary>
+                                                            )}
+                                                            <div className="overflow-x-auto bg-white dark:bg-zinc-950">
+                                                                <table className="w-full text-sm text-left">
+                                                                    <thead className="text-xs text-slate-500 dark:text-zinc-400 uppercase border-b border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900">
+                                                                        <tr>
+                                                                            <th className="px-4 py-3 font-bold">Fecha</th>
+                                                                            <th className="px-4 py-3 font-bold text-center">Puntos</th>
+                                                                            <th className="px-4 py-3 font-bold text-center">ADNs</th>
+                                                                            <th className="px-4 py-3 font-bold text-right">Meta ($)</th>
+                                                                            <th className="px-4 py-3 font-bold text-right">Avance ($)</th>
+                                                                            <th className="px-4 py-3 font-bold text-center">Detalle IA</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        {agentReviews.map((rev: any) => (
+                                                                            <tr key={rev.id} className="border-b border-slate-100 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-900/50 transition-colors last:border-0">
+                                                                                <td className="px-4 py-3 font-medium text-slate-900 dark:text-zinc-100 whitespace-nowrap">
+                                                                                    {format(new Date(rev.createdAt), "dd MMM yyyy", { locale: es })}
+                                                                                </td>
+                                                                                <td className="px-4 py-3 text-center font-medium">{rev.puntosActividad}</td>
+                                                                                <td className="px-4 py-3 text-center">{rev.adnsRealizados}</td>
+                                                                                <td className="px-4 py-3 text-right text-slate-600 dark:text-zinc-400">${rev.metaPrimasMensual.toLocaleString()}</td>
+                                                                                <td className="px-4 py-3 text-right font-bold text-emerald-600 dark:text-emerald-400">${rev.avancePrimasActual.toLocaleString()}</td>
+                                                                                <td className="px-4 py-3 text-center">
+                                                                                    <Button variant="ghost" size="sm" onClick={() => setReadingReview(rev)} className="text-indigo-600 hover:text-indigo-700 hover:bg-indigo-50 h-8 px-2 transition-all">
+                                                                                        <BrainCircuit className="w-4 h-4 mr-1.5" /> Ver IA
+                                                                                    </Button>
+                                                                                </td>
+                                                                            </tr>
+                                                                        ))}
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </details>
+                                                    ))}
+                                                </div>
+                                            </details>
+                                        ))}
                                     </div>
                                 )}
                             </CardContent>
