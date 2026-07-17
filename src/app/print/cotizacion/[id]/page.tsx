@@ -1,7 +1,7 @@
 import React from "react"
 import { notFound } from "next/navigation"
 import { auth } from "@/auth"
-import prisma from "@/lib/prisma"
+import { prisma } from "@/lib/prisma"
 import CotizadorPage from "@/app/(dashboard)/cotizador/CotizadorClient"
 
 export default async function PrintCotizacionPage({ params }: { params: { id: string } }) {
