@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, Link as LinkIcon, FileText, Lock, Unlock, Users } from "lucide-react";
+import { Plus, Edit, Trash2, Link as LinkIcon, FileText, Lock, Unlock, Users, PlusCircle, X } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -29,7 +29,11 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
     requiresAdminApproval: false,
     fileUrl: "",
     fileName: "",
+    hasQuestionnaire: false,
+    minPassingScore: "80",
   });
+
+  const [questions, setQuestions] = useState<any[]>([]);
 
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
@@ -44,7 +48,14 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
         requiresAdminApproval: day.requiresAdminApproval,
         fileUrl: day.fileUrl || "",
         fileName: day.fileName || "",
+        hasQuestionnaire: day.hasQuestionnaire || false,
+        minPassingScore: (day.minPassingScore || 80).toString(),
       });
+      try {
+        setQuestions(day.questionnaireJson ? JSON.parse(day.questionnaireJson) : []);
+      } catch (e) {
+        setQuestions([]);
+      }
     } else {
       setEditingDay(null);
       setFormData({
@@ -55,7 +66,10 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
         requiresAdminApproval: false,
         fileUrl: "",
         fileName: "",
+        hasQuestionnaire: false,
+        minPassingScore: "80",
       });
+      setQuestions([]);
     }
     setSelectedFile(null);
     setUploadProgress(0);
@@ -109,6 +123,8 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
         ...formData,
         fileUrl: uploadedFileUrl,
         fileName: uploadedFileName,
+        minPassingScore: parseInt(formData.minPassingScore),
+        questionnaireJson: formData.hasQuestionnaire ? JSON.stringify(questions) : null,
       };
 
       let newDay: any;
@@ -229,7 +245,7 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
       </Card>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{editingDay ? "Editar Día" : "Añadir Nuevo Día"}</DialogTitle>
           </DialogHeader>
@@ -300,15 +316,132 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
             </div>
             <div className="grid grid-cols-4 items-center gap-4 mt-2">
               <Label className="text-right font-bold">Candado</Label>
-              <div className="col-span-3 flex items-center space-x-2">
+              <div className="flex items-center space-x-2">
                 <Switch
+                  id="requiresApproval"
                   checked={formData.requiresAdminApproval}
-                  onCheckedChange={(checked) => setFormData({ ...formData, requiresAdminApproval: checked })}
+                  onCheckedChange={(c) => setFormData({ ...formData, requiresAdminApproval: c })}
                 />
-                <Label className="text-sm text-slate-500 font-normal">
-                  Requiere aprobación del promotor para avanzar al siguiente día.
+                <Label htmlFor="requiresApproval" className="cursor-pointer">
+                  Requerir aprobación del administrador para completar este día
                 </Label>
               </div>
+
+              <div className="flex items-center space-x-2 pt-2 border-t mt-4">
+                <Switch
+                  id="hasQuestionnaire"
+                  checked={formData.hasQuestionnaire}
+                  onCheckedChange={(c) => setFormData({ ...formData, hasQuestionnaire: c, requiresAdminApproval: c ? true : formData.requiresAdminApproval })}
+                />
+                <Label htmlFor="hasQuestionnaire" className="cursor-pointer font-bold text-indigo-700 dark:text-indigo-400">
+                  Incluir Cuestionario de Evaluación
+                </Label>
+              </div>
+
+              {formData.hasQuestionnaire && (
+                <div className="col-span-4 p-4 border rounded-xl bg-slate-50 dark:bg-zinc-900/50 space-y-6">
+                  <div className="flex items-center gap-4">
+                    <Label className="font-bold whitespace-nowrap">Calificación mínima aprobatoria (%)</Label>
+                    <Input
+                      type="number"
+                      value={formData.minPassingScore}
+                      onChange={(e) => setFormData({ ...formData, minPassingScore: e.target.value })}
+                      className="w-24"
+                    />
+                  </div>
+
+                  {questions.map((q, qIndex) => (
+                    <Card key={qIndex} className="p-4 relative">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-2 top-2 text-red-500"
+                        onClick={() => {
+                          const newQ = [...questions];
+                          newQ.splice(qIndex, 1);
+                          setQuestions(newQ);
+                        }}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                      <Label className="font-bold">Pregunta {qIndex + 1}</Label>
+                      <Input
+                        value={q.question}
+                        onChange={(e) => {
+                          const newQ = [...questions];
+                          newQ[qIndex].question = e.target.value;
+                          setQuestions(newQ);
+                        }}
+                        className="mt-2 mb-4"
+                        placeholder="Escribe la pregunta..."
+                      />
+                      
+                      <Label className="font-bold text-sm text-slate-500">Opciones (Selecciona la correcta)</Label>
+                      <div className="space-y-2 mt-2">
+                        {q.options.map((opt: string, optIndex: number) => (
+                          <div key={optIndex} className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name={`correct-${qIndex}`}
+                              checked={q.correctOptionIndex === optIndex}
+                              onChange={() => {
+                                const newQ = [...questions];
+                                newQ[qIndex].correctOptionIndex = optIndex;
+                                setQuestions(newQ);
+                              }}
+                              className="w-4 h-4 text-indigo-600"
+                            />
+                            <Input
+                              value={opt}
+                              onChange={(e) => {
+                                const newQ = [...questions];
+                                newQ[qIndex].options[optIndex] = e.target.value;
+                                setQuestions(newQ);
+                              }}
+                              placeholder={`Opción ${optIndex + 1}`}
+                            />
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-red-400"
+                              onClick={() => {
+                                const newQ = [...questions];
+                                newQ[qIndex].options.splice(optIndex, 1);
+                                if (newQ[qIndex].correctOptionIndex >= newQ[qIndex].options.length) {
+                                  newQ[qIndex].correctOptionIndex = 0;
+                                }
+                                setQuestions(newQ);
+                              }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ))}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="mt-2 text-xs"
+                          onClick={() => {
+                            const newQ = [...questions];
+                            newQ[qIndex].options.push("");
+                            setQuestions(newQ);
+                          }}
+                        >
+                          <PlusCircle className="h-3 w-3 mr-1" /> Añadir Opción
+                        </Button>
+                      </div>
+                    </Card>
+                  ))}
+
+                  <Button
+                    variant="outline"
+                    className="w-full border-dashed border-2 text-indigo-600"
+                    onClick={() => setQuestions([...questions, { question: "", options: ["", "", "", ""], correctOptionIndex: 0 }])}
+                  >
+                    <Plus className="h-4 w-4 mr-2" /> Añadir Nueva Pregunta
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
           <DialogFooter>

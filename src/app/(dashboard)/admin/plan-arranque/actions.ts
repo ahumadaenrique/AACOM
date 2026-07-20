@@ -31,6 +31,9 @@ export async function createDay(data: any) {
       fileUrl: data.fileUrl || null,
       fileName: data.fileName || null,
       requiresAdminApproval: data.requiresAdminApproval || false,
+      hasQuestionnaire: data.hasQuestionnaire || false,
+      questionnaireJson: data.questionnaireJson || null,
+      minPassingScore: data.minPassingScore || 80,
     },
   });
 
@@ -59,6 +62,9 @@ export async function updateDay(id: string, data: any) {
       fileUrl: data.fileUrl !== undefined ? data.fileUrl : existing.fileUrl,
       fileName: data.fileName !== undefined ? data.fileName : existing.fileName,
       requiresAdminApproval: data.requiresAdminApproval !== undefined ? data.requiresAdminApproval : existing.requiresAdminApproval,
+      hasQuestionnaire: data.hasQuestionnaire !== undefined ? data.hasQuestionnaire : existing.hasQuestionnaire,
+      questionnaireJson: data.questionnaireJson !== undefined ? data.questionnaireJson : existing.questionnaireJson,
+      minPassingScore: data.minPassingScore !== undefined ? data.minPassingScore : existing.minPassingScore,
     },
   });
 

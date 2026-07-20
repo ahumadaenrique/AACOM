@@ -59,6 +59,31 @@ export async function approveAgentDay(userId: string) {
   return { success: true };
 }
 
+export async function rejectAgentProgress(userId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+
+  const progress = await prisma.agentDevelopmentProgress.findUnique({
+    where: { userId },
+  });
+
+  if (!progress) throw new Error("Progreso no encontrado");
+  if (progress.status !== "WAITING_APPROVAL") throw new Error("El agente no está esperando aprobación");
+
+  // Regresar al estado de IN_PROGRESS pero en el mismo día
+  await prisma.agentDevelopmentProgress.update({
+    where: { userId },
+    data: {
+      status: "IN_PROGRESS",
+      latestScore: null,
+      latestAnswersJson: null,
+    },
+  });
+
+  revalidatePath("/admin/plan-arranque/seguimiento");
+  return { success: true };
+}
+
 export async function updateAgentDay(userId: string, dayNumber: number) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("No autorizado");

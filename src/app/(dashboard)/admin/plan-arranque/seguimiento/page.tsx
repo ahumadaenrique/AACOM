@@ -1,4 +1,5 @@
 import { getAgentsProgress } from "./actions";
+import { getDays } from "../actions";
 import { SeguimientoClient } from "./SeguimientoClient";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
@@ -10,6 +11,7 @@ export const metadata = {
 export default async function SeguimientoPage() {
   let users: any[] = [];
   let totalDaysCount = 0;
+  let days: any[] = [];
   let errorMsg = null;
   let session: any = null;
 
@@ -22,6 +24,7 @@ export default async function SeguimientoPage() {
     const res = await getAgentsProgress();
     users = res.users;
     totalDaysCount = res.totalDaysCount;
+    days = await getDays();
   } catch (err: any) {
     if (err.message === "NEXT_REDIRECT") {
       throw err; // Allow Next.js redirect to work
@@ -33,5 +36,5 @@ export default async function SeguimientoPage() {
     return <div className="p-8 text-red-500 font-bold">Error interno: {errorMsg}</div>;
   }
 
-  return <SeguimientoClient initialAgents={users} totalDaysCount={totalDaysCount} />;
+  return <SeguimientoClient initialAgents={users} totalDaysCount={totalDaysCount} days={days} />;
 }

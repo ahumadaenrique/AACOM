@@ -51,7 +51,7 @@ export async function getAgentCurrentDay() {
   };
 }
 
-export async function completeDay() {
+export async function completeDay(answersJson?: string, score?: number) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("No autorizado");
   if (!session.user.agencyId) throw new Error("No tienes agencia asignada");
@@ -74,19 +74,31 @@ export async function completeDay() {
 
   const agentName = session.user.name || "Un agente";
 
-  if (dayData.requiresAdminApproval) {
-    // Poner en espera de aprobación
+  if (dayData.requiresAdminApproval || dayData.hasQuestionnaire) {
+    // Poner en espera de aprobación y guardar intentos si aplica
+    const isQuestionnaire = dayData.hasQuestionnaire && score !== undefined;
+    
     await prisma.agentDevelopmentProgress.update({
       where: { userId: session.user.id },
-      data: { status: "WAITING_APPROVAL" },
+      data: { 
+        status: "WAITING_APPROVAL",
+        ...(isQuestionnaire ? {
+          latestScore: score,
+          latestAnswersJson: answersJson,
+          questionnaireAttempts: progress.questionnaireAttempts + 1
+        } : {})
+      },
     });
 
     // Enviar SMS a los administradores de la agencia
     try {
-      await sendSmsToAdmins(
-        session.user.agencyId!,
-        `Hola. Tu agente ${agentName} ha marcado el Día ${dayData.dayNumber} como completado y requiere de tu aprobación para avanzar en el Plan de Arranque.`
-      );
+      let message = `Hola. Tu agente ${agentName} ha marcado el Día ${dayData.dayNumber} como completado y requiere de tu aprobación para avanzar en el Plan de Arranque.`;
+      
+      if (isQuestionnaire) {
+        message = `Hola. Tu agente ${agentName} ha finalizado la evaluación del Día ${dayData.dayNumber} obteniendo un ${score}%. Por favor revisa sus resultados y aprueba su avance en el sistema.`;
+      }
+
+      await sendSmsToAdmins(session.user.agencyId!, message);
     } catch (e) {
       console.error("Error sending Twilio SMS:", e);
     }

@@ -14,6 +14,12 @@ import { cn } from "@/lib/utils";
 export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, userName }: { progress: any, dayData: any, totalDaysCount: number, allDays: any[], userName: string }) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [answers, setAnswers] = useState<number[]>([]);
+  const [questionnaireScore, setQuestionnaireScore] = useState<number | null>(null);
+
+  const questions = dayData?.questionnaireJson ? (() => {
+    try { return JSON.parse(dayData.questionnaireJson) } catch (e) { return [] }
+  })() : [];
 
   // Trigger confetti if the whole plan is completed and not waiting for approval
   useEffect(() => {
@@ -52,21 +58,52 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
   const handleCompleteDay = async () => {
     try {
       setIsLoading(true);
-      await completeDay();
-      
-      if (!dayData.requiresAdminApproval) {
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 },
-          colors: ["#0d9488", "#14b8a6", "#f59e0b"]
+
+      if (dayData.hasQuestionnaire) {
+        if (answers.length < questions.length || answers.some(a => a === undefined)) {
+          toast({ title: "Examen Incompleto", description: "Por favor responde todas las preguntas.", variant: "destructive" });
+          setIsLoading(false);
+          return;
+        }
+
+        let correctCount = 0;
+        questions.forEach((q: any, idx: number) => {
+          if (answers[idx] === q.correctOptionIndex) correctCount++;
+        });
+
+        const finalScore = Math.round((correctCount / questions.length) * 100);
+        setQuestionnaireScore(finalScore);
+
+        await completeDay(JSON.stringify(answers), finalScore);
+
+        if (finalScore >= (dayData.minPassingScore || 80)) {
+          confetti({
+            particleCount: 150,
+            spread: 80,
+            origin: { y: 0.6 },
+            colors: ["#0d9488", "#14b8a6", "#f59e0b"]
+          });
+          toast({ title: "¡Examen aprobado!", description: "Tu promotor ha sido notificado para revisar tus resultados." });
+        } else {
+          toast({ title: "Examen no aprobado", description: `Obtuviste ${finalScore}%. Tu promotor revisará tus resultados.` });
+        }
+      } else {
+        await completeDay();
+        
+        if (!dayData.requiresAdminApproval) {
+          confetti({
+            particleCount: 100,
+            spread: 70,
+            origin: { y: 0.6 },
+            colors: ["#0d9488", "#14b8a6", "#f59e0b"]
+          });
+        }
+
+        toast({ 
+          title: dayData.requiresAdminApproval ? "Objetivo enviado a revisión" : "¡Felicidades! Objetivo logrado.", 
+          description: dayData.requiresAdminApproval ? "Tu promotor recibirá un SMS para aprobar tu avance." : "Has avanzado al siguiente día de tu Plan de Arranque."
         });
       }
-
-      toast({ 
-        title: dayData.requiresAdminApproval ? "Objetivo enviado a revisión" : "¡Felicidades! Objetivo logrado.", 
-        description: dayData.requiresAdminApproval ? "Tu promotor recibirá un SMS para aprobar tu avance." : "Has avanzado al siguiente día de tu Plan de Arranque."
-      });
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
@@ -292,11 +329,91 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
                   </div>
                 )}
               </div>
+
+              {/* Cuestionario */}
+              {dayData.hasQuestionnaire && questions.length > 0 && (
+                <div className="space-y-6 pt-6 border-t border-slate-100 dark:border-zinc-800">
+                  <div className="flex items-center gap-3">
+                    <div className="bg-indigo-100 dark:bg-indigo-900/50 p-3 rounded-2xl">
+                      <FileText className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-xl text-slate-800 dark:text-slate-200">Evaluación del Día</h3>
+                      <p className="text-sm text-slate-500">Responde correctamente para avanzar. (Mínimo {dayData.minPassingScore}%)</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-6">
+                    {questions.map((q: any, qIndex: number) => (
+                      <div key={qIndex} className="bg-white dark:bg-zinc-900 p-6 rounded-2xl border border-slate-200 dark:border-zinc-800 shadow-sm">
+                        <p className="font-semibold text-lg text-slate-800 dark:text-slate-200 mb-4">
+                          {qIndex + 1}. {q.question}
+                        </p>
+                        <div className="space-y-3">
+                          {q.options.map((opt: string, optIndex: number) => (
+                            <label
+                              key={optIndex}
+                              onClick={() => {
+                                const newAnswers = [...answers];
+                                newAnswers[qIndex] = optIndex;
+                                setAnswers(newAnswers);
+                              }}
+                              className={cn(
+                                "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
+                                answers[qIndex] === optIndex
+                                  ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-500"
+                                  : "border-slate-100 hover:border-slate-300 dark:border-zinc-800 dark:hover:border-zinc-700 bg-slate-50 dark:bg-zinc-900/50"
+                              )}
+                            >
+                              <div className={cn(
+                                "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
+                                answers[qIndex] === optIndex
+                                  ? "border-indigo-600 dark:border-indigo-400"
+                                  : "border-slate-300 dark:border-zinc-600"
+                              )}>
+                                {answers[qIndex] === optIndex && (
+                                  <div className="w-2.5 h-2.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
+                                )}
+                              </div>
+                              <span className={cn(
+                                "font-medium",
+                                answers[qIndex] === optIndex ? "text-indigo-900 dark:text-indigo-200" : "text-slate-600 dark:text-slate-400"
+                              )}>
+                                {opt}
+                              </span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {questionnaireScore !== null && (
+                    <Alert className={cn(
+                      "mt-6 rounded-2xl p-6 border-2",
+                      questionnaireScore >= (dayData.minPassingScore || 80)
+                        ? "bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-900/20 dark:border-emerald-900/50 dark:text-emerald-300"
+                        : "bg-red-50 border-red-200 text-red-900 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-300"
+                    )}>
+                      <Trophy className="h-6 w-6 mt-1" />
+                      <div className="ml-3">
+                        <AlertTitle className="font-bold text-lg mb-1">Resultados de la Evaluación</AlertTitle>
+                        <AlertDescription className="text-base font-medium">
+                          Obtuviste una calificación de {questionnaireScore}%. 
+                          {questionnaireScore >= (dayData.minPassingScore || 80)
+                            ? " ¡Excelente trabajo! Espera la confirmación final de tu promotor."
+                            : " No alcanzaste el mínimo requerido. Tu promotor revisará tus resultados para retroalimentarte."}
+                        </AlertDescription>
+                      </div>
+                    </Alert>
+                  )}
+                </div>
+              )}
             </CardContent>
 
             <CardFooter className="bg-slate-50 dark:bg-zinc-950/50 p-8 lg:p-10 flex flex-col lg:flex-row items-center justify-between gap-6 border-t border-slate-100 dark:border-zinc-800">
               <div className="flex-1 w-full">
-                {dayData.requiresAdminApproval ? (
+                {dayData.requiresAdminApproval || dayData.hasQuestionnaire ? (
                   <div className="flex items-center gap-3 text-sm text-amber-700 dark:text-amber-500 font-semibold bg-amber-100/50 dark:bg-amber-900/20 px-4 py-3 rounded-xl w-fit border border-amber-200 dark:border-amber-900/50">
                     <Lock className="h-5 w-5" />
                     Este día requiere validación de tu promotor para avanzar
@@ -323,7 +440,7 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
                 ) : (
                   <>
                     <CheckCircle className="h-6 w-6 mr-3" />
-                    Logré el objetivo
+                    {dayData.hasQuestionnaire ? "Calificar Evaluación" : "Logré el objetivo"}
                   </>
                 )}
               </Button>

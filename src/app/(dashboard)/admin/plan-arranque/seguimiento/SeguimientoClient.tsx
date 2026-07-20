@@ -1,14 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { CheckCircle, Clock, CheckCircle2, UserCircle2, Settings } from "lucide-react";
+import { CheckCircle, Clock, CheckCircle2, UserCircle2, Settings, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { approveAgentDay, updateAgentDay } from "./actions";
+import { approveAgentDay, updateAgentDay, rejectAgentProgress } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
@@ -20,10 +21,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function SeguimientoClient({ initialAgents, totalDaysCount }: { initialAgents: any[], totalDaysCount: number }) {
+export function SeguimientoClient({ initialAgents, totalDaysCount, days }: { initialAgents: any[], totalDaysCount: number, days: any[] }) {
   const { toast } = useToast();
   const [agents, setAgents] = useState(initialAgents);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [reviewingAgent, setReviewingAgent] = useState<any | null>(null);
 
   const handleApprove = async (userId: string) => {
     try {
@@ -44,7 +46,22 @@ export function SeguimientoClient({ initialAgents, totalDaysCount }: { initialAg
         return a;
       }));
       
+      setReviewingAgent(null);
       toast({ title: "Agente aprobado", description: "Ha avanzado al siguiente día exitosamente." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  const handleReject = async (agentId: string) => {
+    try {
+      setLoadingId(agentId);
+      await rejectAgentProgress(agentId);
+      setAgents(agents.map(a => a.id === agentId ? { ...a, developmentProgress: { ...a.developmentProgress, status: "IN_PROGRESS" } } : a));
+      toast({ title: "Agente rechazado", description: "Se le ha pedido al agente que repita el módulo." });
+      setReviewingAgent(null);
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
@@ -186,12 +203,24 @@ export function SeguimientoClient({ initialAgents, totalDaysCount }: { initialAg
                         <div className="flex items-center justify-end gap-2">
                           {status === "WAITING_APPROVAL" && (
                             <Button 
-                              onClick={() => handleApprove(agent.id)} 
+                              onClick={() => {
+                                const currentDayData = days.find(d => d.dayNumber === dayNum);
+                                if (currentDayData?.hasQuestionnaire) {
+                                  setReviewingAgent(agent);
+                                } else {
+                                  handleApprove(agent.id);
+                                }
+                              }} 
                               disabled={loadingId === agent.id}
                               size="sm"
-                              className="bg-amber-500 hover:bg-amber-600 text-white shadow-md shadow-amber-500/20 h-9"
+                              className={cn(
+                                "text-white shadow-md h-9",
+                                days.find(d => d.dayNumber === dayNum)?.hasQuestionnaire
+                                  ? "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-600/20"
+                                  : "bg-amber-500 hover:bg-amber-600 shadow-amber-500/20"
+                              )}
                             >
-                              {loadingId === agent.id ? "Aprobando..." : "Aprobar"}
+                              {loadingId === agent.id ? "Cargando..." : (days.find(d => d.dayNumber === dayNum)?.hasQuestionnaire ? "Revisar Evaluación" : "Aprobar")}
                             </Button>
                           )}
                           <div className="w-[130px] text-left">
@@ -225,6 +254,102 @@ export function SeguimientoClient({ initialAgents, totalDaysCount }: { initialAg
           </Table>
         </CardContent>
       </Card>
+
+      {reviewingAgent && (() => {
+        const progress = reviewingAgent.developmentProgress;
+        const dayNum = progress.currentDayNumber;
+        const dayData = days.find(d => d.dayNumber === dayNum);
+        const questions = dayData?.questionnaireJson ? JSON.parse(dayData.questionnaireJson) : [];
+        const answers = progress.latestAnswersJson ? JSON.parse(progress.latestAnswersJson) : [];
+        const isPassed = (progress.latestScore || 0) >= (dayData?.minPassingScore || 80);
+
+        return (
+          <Dialog open={!!reviewingAgent} onOpenChange={(o) => !o && setReviewingAgent(null)}>
+            <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Resultados de Evaluación - Día {dayNum}</DialogTitle>
+                <DialogDescription>
+                  Revisión del agente <span className="font-bold text-slate-800 dark:text-slate-200">{reviewingAgent.name}</span>. 
+                  Intentos realizados: {progress.questionnaireAttempts}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="py-4 space-y-6">
+                <div className="flex items-center justify-between bg-slate-50 dark:bg-zinc-900 p-4 rounded-xl border">
+                  <div>
+                    <p className="text-sm text-slate-500">Calificación obtenida</p>
+                    <p className={cn(
+                      "text-3xl font-black",
+                      isPassed ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
+                    )}>
+                      {progress.latestScore}%
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm text-slate-500">Mínimo requerido</p>
+                    <p className="text-xl font-bold text-slate-700 dark:text-slate-300">{dayData?.minPassingScore}%</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="font-bold text-lg border-b pb-2">Desglose de Respuestas</h3>
+                  {questions.map((q: any, qIndex: number) => {
+                    const agentAnswerIdx = answers[qIndex];
+                    const isCorrect = agentAnswerIdx === q.correctOptionIndex;
+
+                    return (
+                      <div key={qIndex} className="p-4 rounded-xl border bg-slate-50 dark:bg-zinc-950/50">
+                        <p className="font-semibold text-slate-800 dark:text-slate-200 mb-2">
+                          {qIndex + 1}. {q.question}
+                        </p>
+                        <div className="grid gap-2">
+                          {q.options.map((opt: string, optIndex: number) => {
+                            const isAgentChoice = agentAnswerIdx === optIndex;
+                            const isActualCorrect = q.correctOptionIndex === optIndex;
+                            let style = "border-slate-200 bg-white text-slate-600 dark:border-zinc-800 dark:bg-zinc-900";
+                            
+                            if (isActualCorrect) {
+                              style = "border-emerald-500 bg-emerald-50 text-emerald-900 dark:bg-emerald-900/30 dark:border-emerald-800 dark:text-emerald-300 font-medium";
+                            } else if (isAgentChoice && !isActualCorrect) {
+                              style = "border-red-500 bg-red-50 text-red-900 dark:bg-red-900/30 dark:border-red-800 dark:text-red-300 font-medium line-through opacity-80";
+                            }
+
+                            return (
+                              <div key={optIndex} className={cn("p-2 rounded-lg border text-sm flex items-center justify-between", style)}>
+                                <span>{opt}</span>
+                                {isActualCorrect && <CheckCircle2 className="h-4 w-4" />}
+                                {isAgentChoice && !isActualCorrect && <AlertCircle className="h-4 w-4" />}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <DialogFooter className="gap-2 sm:justify-between">
+                <Button 
+                  variant="outline" 
+                  onClick={() => handleReject(reviewingAgent.id)}
+                  disabled={loadingId === reviewingAgent.id}
+                  className="border-red-200 text-red-700 hover:bg-red-50 dark:border-red-900 dark:text-red-400 dark:hover:bg-red-900/20"
+                >
+                  {loadingId === reviewingAgent.id ? "Procesando..." : "Rechazar y Forzar Repetición"}
+                </Button>
+                <Button 
+                  onClick={() => handleApprove(reviewingAgent.id)}
+                  disabled={loadingId === reviewingAgent.id}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  {loadingId === reviewingAgent.id ? "Aprobando..." : "Aprobar Avance al Siguiente Día"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        );
+      })()}
     </div>
   );
 }
