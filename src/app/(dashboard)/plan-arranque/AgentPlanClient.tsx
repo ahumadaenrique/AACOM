@@ -239,7 +239,27 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
                 Has logrado el objetivo del Día {progress.currentDayNumber}, pero requiere verificación para continuar.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-8">
+            <CardContent className="p-8 space-y-6">
+              {dayData?.hasQuestionnaire && progress.latestScore !== null && (
+                <Alert className={cn(
+                  "rounded-2xl p-6 border-2",
+                  progress.latestScore >= (dayData.minPassingScore || 80)
+                    ? "bg-emerald-50 border-emerald-200 text-emerald-900 dark:bg-emerald-900/20 dark:border-emerald-900/50 dark:text-emerald-300"
+                    : "bg-red-50 border-red-200 text-red-900 dark:bg-red-900/20 dark:border-red-900/50 dark:text-red-300"
+                )}>
+                  <Trophy className="h-6 w-6 mt-1" />
+                  <div className="ml-3">
+                    <AlertTitle className="font-bold text-lg mb-1">Resultados de la Evaluación</AlertTitle>
+                    <AlertDescription className="text-base font-medium">
+                      Obtuviste una calificación de {progress.latestScore}%. 
+                      {progress.latestScore >= (dayData.minPassingScore || 80)
+                        ? " ¡Excelente trabajo! Espera la confirmación final de tu promotor."
+                        : " No alcanzaste el mínimo requerido. Tu promotor revisará tus resultados para retroalimentarte."}
+                    </AlertDescription>
+                  </div>
+                </Alert>
+              )}
+
               <Alert className="bg-amber-100/50 border-amber-200 text-amber-900 dark:bg-amber-900/20 dark:border-amber-900/50 dark:text-amber-300 rounded-2xl p-6">
                 <Lock className="h-6 w-6 mt-1" />
                 <div className="ml-3">
