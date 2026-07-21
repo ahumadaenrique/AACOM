@@ -203,7 +203,7 @@ export default function BibliotecaAdmin() {
                                                     const docsInCat = pack.documents?.filter((d: any) => (d.category || "Otros") === cat) || [];
                                                     if (docsInCat.length === 0) return null;
                                                     return (
-                                                        <details key={cat} className="mb-2 group" open>
+                                                        <details key={cat} className="mb-2 group">
                                                             <summary className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1 cursor-pointer list-none select-none hover:text-teal-600 transition-colors">
                                                                 <ChevronRight className="h-3 w-3 text-slate-400 transition-transform group-open:rotate-90" />
                                                                 <FolderOpen className="h-3 w-3" /> {cat}
@@ -409,7 +409,7 @@ export default function BibliotecaAdmin() {
                                             const docsInCat = data?.agencyDocs?.filter((d: any) => (d.category || "Otros") === cat) || [];
                                             if (docsInCat.length === 0) return null;
                                             return (
-                                                <details key={cat} className="border rounded-md overflow-hidden group bg-white" open>
+                                                <details key={cat} className="border rounded-md overflow-hidden group bg-white">
                                                     <summary className="bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 flex items-center gap-2 border-b cursor-pointer list-none select-none hover:bg-slate-100 transition-colors">
                                                         <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-open:rotate-90" />
                                                         <FolderOpen className="h-4 w-4 text-slate-500" /> {cat}

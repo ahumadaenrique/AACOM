@@ -70,7 +70,7 @@ export default function AgentLibraryClient({ agencyName }: { agencyName: string 
                             if (docsInCat.length === 0) return null;
                             
                             return (
-                                <details key={cat} className="group" open>
+                                <details key={cat} className="group">
                                     <summary className="text-sm font-bold text-slate-700 flex items-center gap-2 border-b pb-2 cursor-pointer list-none select-none hover:text-teal-600 transition-colors">
                                         <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-open:rotate-90" />
                                         <FolderOpen className="h-4 w-4" /> {cat}
@@ -135,7 +135,7 @@ export default function AgentLibraryClient({ agencyName }: { agencyName: string 
                                                     if (docsInCat.length === 0) return null;
                                                     
                                                     return (
-                                                        <details key={cat} className="pt-2 pb-1 group" open>
+                                                        <details key={cat} className="pt-2 pb-1 group">
                                                             <summary className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 cursor-pointer list-none select-none hover:bg-slate-50 transition-colors">
                                                                 <ChevronRight className="h-3 w-3 text-slate-400 transition-transform group-open:rotate-90" />
                                                                 <FolderOpen className="h-3 w-3" /> {cat}
