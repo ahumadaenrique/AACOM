@@ -252,3 +252,122 @@ export async function deleteDiscountCode(id: string) {
   revalidatePath("/agencias");
   return { success: true };
 }
+
+// ---- REGALOS (GIFTING) ACTIONS ---- //
+
+export async function addAgencySaaSDays(agencyId: string, days: number) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+  const agency = await prisma.agency.findUnique({ where: { id: agencyId } });
+  if (!agency) throw new Error("Agencia no encontrada");
+
+  let newDate = new Date();
+  if (agency.subscriptionEndDate && agency.subscriptionEndDate > newDate) {
+    newDate = new Date(agency.subscriptionEndDate);
+  }
+  newDate.setDate(newDate.getDate() + days);
+
+  await prisma.agency.update({
+    where: { id: agencyId },
+    data: { 
+      subscriptionEndDate: newDate,
+      subscriptionStatus: "active" 
+    },
+  });
+
+  revalidatePath("/agencias");
+  return { success: true, message: `Se añadieron ${days} días a la suscripción.` };
+}
+
+export async function addAcademiaDaysToPromoter(agencyId: string, days: number) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+  // Encontrar al admin de la agencia
+  const agencyAdmin = await prisma.user.findFirst({
+    where: { agencyId, role: "ADMIN" }
+  });
+
+  if (!agencyAdmin || !agencyAdmin.email) {
+    throw new Error("La agencia no tiene un administrador principal válido.");
+  }
+
+  const saldo = await prisma.promotorSaldo.upsert({
+    where: { promotor_email: agencyAdmin.email },
+    update: { dias_disponibles: { increment: days }, fecha_actualizacion: new Date() },
+    create: { promotor_email: agencyAdmin.email, dias_disponibles: days, fecha_actualizacion: new Date() }
+  });
+
+  revalidatePath("/agencias");
+  return { success: true, message: `Se añadieron ${days} días al saldo de ${agencyAdmin.email}.` };
+}
+
+export async function addAcademiaDaysToUser(agentEmail: string, agencyId: string, days: number) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+  // Encontrar al admin de la agencia (promotor)
+  const agencyAdmin = await prisma.user.findFirst({
+    where: { agencyId, role: "ADMIN" }
+  });
+  const promoterEmail = agencyAdmin?.email || "superadmin@aacom.com";
+
+  const currentLicense = await prisma.estudioLicencia.findUnique({
+    where: {
+      promotor_email_agente_email: {
+        promotor_email: promoterEmail,
+        agente_email: agentEmail
+      }
+    }
+  });
+
+  let newExpiration = new Date();
+  if (currentLicense?.fecha_expiracion && currentLicense.fecha_expiracion > newExpiration) {
+    newExpiration = new Date(currentLicense.fecha_expiracion);
+  }
+  newExpiration.setDate(newExpiration.getDate() + days);
+
+  await prisma.estudioLicencia.upsert({
+    where: {
+      promotor_email_agente_email: {
+        promotor_email: promoterEmail,
+        agente_email: agentEmail
+      }
+    },
+    update: {
+      dias_asignados: { increment: days },
+      fecha_expiracion: newExpiration
+    },
+    create: {
+      promotor_email: promoterEmail,
+      agente_email: agentEmail,
+      dias_asignados: days,
+      fecha_asignacion: new Date(),
+      fecha_expiracion: newExpiration
+    }
+  });
+
+  return { success: true, message: `Se añadieron ${days} días de estudio a ${agentEmail}.` };
+}
+
+export async function getAgencyUsers(agencyId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+  const users = await prisma.user.findMany({
+    where: { agencyId, active: true },
+    select: { id: true, name: true, email: true, role: true },
+    orderBy: { name: 'asc' }
+  });
+
+  return users;
+}

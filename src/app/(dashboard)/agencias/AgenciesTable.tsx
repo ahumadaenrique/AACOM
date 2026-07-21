@@ -4,13 +4,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { differenceInDays, format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ShieldAlert, CheckCircle2, XCircle, Trash2 } from "lucide-react";
+import { ShieldAlert, CheckCircle2, XCircle, Trash2, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { deleteAgency } from "./actions";
+import { deleteAgency, getAgencyUsers } from "./actions";
 import { useState } from "react";
+import { GiftModal } from "./GiftModal";
 
 export function AgenciesTable({ agencies }: { agencies: any[] }) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  
+  // Gift Modal States
+  const [giftAgency, setGiftAgency] = useState<any | null>(null);
+  const [giftAgencyUsers, setGiftAgencyUsers] = useState<any[]>([]);
+  const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
 
   const handleDelete = async (agencyId: string, agencyName: string) => {
     if (!confirm(`¿ESTÁS ABSOLUTAMENTE SEGURO de querer borrar a la agencia "${agencyName}"? Esta acción borrará la agencia por completo y no se puede deshacer.`)) {
@@ -24,6 +31,21 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
       alert("Error al borrar agencia: " + err.message);
     } finally {
       setDeletingId(null);
+    }
+  };
+
+  const handleOpenGiftModal = async (agency: any) => {
+    setLoadingUsers(true);
+    setGiftAgency(agency);
+    try {
+      const users = await getAgencyUsers(agency.id);
+      setGiftAgencyUsers(users);
+      setIsGiftModalOpen(true);
+    } catch (error) {
+      console.error(error);
+      alert("Error al obtener usuarios de la agencia.");
+    } finally {
+      setLoadingUsers(false);
     }
   };
 
@@ -128,15 +150,28 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                   </TableCell>
 
                   <TableCell className="text-right">
-                    <Button 
-                      variant="destructive" 
-                      size="sm" 
-                      onClick={() => handleDelete(agency.id, agency.name)}
-                      disabled={deletingId === agency.id}
-                      className="text-xs h-7 px-2 bg-red-100 hover:bg-red-200 text-red-600 border border-red-200"
-                    >
-                      {deletingId === agency.id ? "Borrando..." : <Trash2 className="h-3.5 w-3.5" />}
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleOpenGiftModal(agency)}
+                        disabled={loadingUsers}
+                        className="text-xs h-7 px-2 border-indigo-200 text-indigo-600 hover:bg-indigo-50"
+                        title="Regalos y Cortesías"
+                      >
+                        <Gift className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button 
+                        variant="destructive" 
+                        size="sm" 
+                        onClick={() => handleDelete(agency.id, agency.name)}
+                        disabled={deletingId === agency.id}
+                        className="text-xs h-7 px-2 bg-red-100 hover:bg-red-200 text-red-600 border border-red-200"
+                        title="Borrar Agencia"
+                      >
+                        {deletingId === agency.id ? "..." : <Trash2 className="h-3.5 w-3.5" />}
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               );
@@ -152,6 +187,13 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
           </TableBody>
         </Table>
       </div>
+
+      <GiftModal 
+        isOpen={isGiftModalOpen}
+        onClose={() => setIsGiftModalOpen(false)}
+        agency={giftAgency}
+        agencyUsers={giftAgencyUsers}
+      />
     </div>
   );
 }
