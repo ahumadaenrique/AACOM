@@ -21,7 +21,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RefreshCw, Trash2, Upload, FileText, Plus, Folder, AlertCircle } from "lucide-react"
+import { RefreshCw, Trash2, Upload, FileText, Plus, Folder, AlertCircle, FolderOpen, ChevronRight } from "lucide-react"
 
 const CATEGORIES = ["Comercial", "Marketing", "Formatos", "Condiciones generales", "Otros"]
 
@@ -203,11 +203,12 @@ export default function BibliotecaAdmin() {
                                                     const docsInCat = pack.documents?.filter((d: any) => (d.category || "Otros") === cat) || [];
                                                     if (docsInCat.length === 0) return null;
                                                     return (
-                                                        <div key={cat} className="mb-2">
-                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
-                                                                <Folder className="h-3 w-3" /> {cat}
-                                                            </div>
-                                                            <div className="space-y-1 pl-2 border-l-2 border-slate-100">
+                                                        <details key={cat} className="mb-2 group" open>
+                                                            <summary className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-1 cursor-pointer list-none select-none hover:text-teal-600 transition-colors">
+                                                                <ChevronRight className="h-3 w-3 text-slate-400 transition-transform group-open:rotate-90" />
+                                                                <FolderOpen className="h-3 w-3" /> {cat}
+                                                            </summary>
+                                                            <div className="space-y-1 pl-2 border-l-2 border-slate-100 ml-1.5">
                                                                 {docsInCat.map((doc: any) => (
                                                                     <div key={doc.id} className="flex items-center justify-between bg-white border p-1.5 rounded text-xs">
                                                                         <div className="flex items-center gap-2 truncate flex-1">
@@ -238,7 +239,7 @@ export default function BibliotecaAdmin() {
                                                                     </div>
                                                                 ))}
                                                             </div>
-                                                        </div>
+                                                        </details>
                                                     )
                                                 })
                                             )}
@@ -408,11 +409,12 @@ export default function BibliotecaAdmin() {
                                             const docsInCat = data?.agencyDocs?.filter((d: any) => (d.category || "Otros") === cat) || [];
                                             if (docsInCat.length === 0) return null;
                                             return (
-                                                <div key={cat} className="border rounded-md overflow-hidden">
-                                                    <div className="bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 flex items-center gap-2 border-b">
-                                                        <Folder className="h-4 w-4 text-slate-500" /> {cat}
-                                                    </div>
-                                                    <div className="divide-y">
+                                                <details key={cat} className="border rounded-md overflow-hidden group bg-white" open>
+                                                    <summary className="bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 flex items-center gap-2 border-b cursor-pointer list-none select-none hover:bg-slate-100 transition-colors">
+                                                        <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-open:rotate-90" />
+                                                        <FolderOpen className="h-4 w-4 text-slate-500" /> {cat}
+                                                    </summary>
+                                                    <div className="divide-y bg-white">
                                                         {docsInCat.map((doc: any) => (
                                                             <div key={doc.id} className="flex items-center justify-between p-3 hover:bg-slate-50 transition-colors">
                                                                 <div className="flex items-center gap-3">
@@ -455,7 +457,7 @@ export default function BibliotecaAdmin() {
                                                             </div>
                                                         ))}
                                                     </div>
-                                                </div>
+                                                </details>
                                             )
                                         })}
                                     </div>

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { getLibraryData } from "./actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { FileText, Folder, Download, RefreshCw, FolderOpen } from "lucide-react"
+import { FileText, Folder, Download, RefreshCw, FolderOpen, ChevronRight } from "lucide-react"
 
 const CATEGORIES = ["Comercial", "Marketing", "Formatos", "Condiciones generales", "Otros"]
 
@@ -70,16 +70,17 @@ export default function AgentLibraryClient({ agencyName }: { agencyName: string 
                             if (docsInCat.length === 0) return null;
                             
                             return (
-                                <div key={cat} className="space-y-3">
-                                    <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2 border-b pb-2">
-                                        <FolderOpen className="h-4 w-4 text-slate-400" /> {cat}
-                                    </h3>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <details key={cat} className="group" open>
+                                    <summary className="text-sm font-bold text-slate-700 flex items-center gap-2 border-b pb-2 cursor-pointer list-none select-none hover:text-teal-600 transition-colors">
+                                        <ChevronRight className="h-4 w-4 text-slate-400 transition-transform group-open:rotate-90" />
+                                        <FolderOpen className="h-4 w-4" /> {cat}
+                                    </summary>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-3">
                                         {docsInCat.map((doc: any) => (
-                                            <Card key={doc.id} className="border shadow-sm hover:shadow-md transition-shadow group">
+                                            <Card key={doc.id} className="border shadow-sm hover:shadow-md transition-shadow group/card">
                                                 <CardContent className="p-5 flex items-start gap-4">
-                                                    <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-50 transition-colors">
-                                                        <FileText className="h-6 w-6 text-slate-400 group-hover:text-teal-600 transition-colors" />
+                                                    <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0 group-hover/card:bg-teal-50 transition-colors">
+                                                        <FileText className="h-6 w-6 text-slate-400 group-hover/card:text-teal-600 transition-colors" />
                                                     </div>
                                                     <div className="flex-1 min-w-0">
                                                         <h3 className="font-bold text-sm text-slate-800 line-clamp-2" title={doc.name}>{doc.name}</h3>
@@ -92,7 +93,7 @@ export default function AgentLibraryClient({ agencyName }: { agencyName: string 
                                             </Card>
                                         ))}
                                     </div>
-                                </div>
+                                </details>
                             )
                         })}
                     </div>
@@ -134,10 +135,11 @@ export default function AgentLibraryClient({ agencyName }: { agencyName: string 
                                                     if (docsInCat.length === 0) return null;
                                                     
                                                     return (
-                                                        <div key={cat} className="pt-2 pb-1">
-                                                            <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                                                        <details key={cat} className="pt-2 pb-1 group" open>
+                                                            <summary className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2 cursor-pointer list-none select-none hover:bg-slate-50 transition-colors">
+                                                                <ChevronRight className="h-3 w-3 text-slate-400 transition-transform group-open:rotate-90" />
                                                                 <FolderOpen className="h-3 w-3" /> {cat}
-                                                            </div>
+                                                            </summary>
                                                             <div className="space-y-1">
                                                                 {docsInCat.map((doc: any) => (
                                                                     <div key={doc.id} className="flex items-center justify-between p-2 pl-8 hover:bg-slate-50 transition-colors">
@@ -154,7 +156,7 @@ export default function AgentLibraryClient({ agencyName }: { agencyName: string 
                                                                     </div>
                                                                 ))}
                                                             </div>
-                                                        </div>
+                                                        </details>
                                                     )
                                                 })}
                                             </div>
