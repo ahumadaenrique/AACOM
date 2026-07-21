@@ -804,3 +804,14 @@ model NewsArticle {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 }
+
+model AppErrorLog {
+  id        String   @id @default(cuid())
+  message   String
+  stack     String?  @db.Text
+  path      String?
+  userId    String?
+  userName  String?
+  agencyId  String?
+  createdAt DateTime @default(now())
+}

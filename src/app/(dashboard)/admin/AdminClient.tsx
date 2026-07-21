@@ -158,6 +158,48 @@ export default function AdminClient() {
   const [announcementMsg, setAnnouncementMsg] = useState<string>("")
   const [savingAnnouncement, setSavingAnnouncement] = useState<boolean>(false)
 
+  // Seats Modal States
+  const [isSeatModalOpen, setSeatModalOpen] = useState(false);
+  const [selectedExtraSeats, setSelectedExtraSeats] = useState<number>(1);
+  const [isProcessingSeat, setProcessingSeat] = useState(false);
+
+  const getSeatTierPrice = (extraSeats: number) => {
+    if (extraSeats <= 10) return 299;
+    if (extraSeats <= 20) return 249;
+    if (extraSeats <= 40) return 209;
+    return 199;
+  };
+
+  const handleOpenSeatModal = () => {
+    setSelectedExtraSeats(currentUserData?.agency?.purchasedSeats || 1);
+    setSeatModalOpen(true);
+  };
+
+  const handleCheckoutSeats = async () => {
+    setProcessingSeat(true);
+    try {
+      const res = await fetch('/api/checkout/seat', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ quantity: selectedExtraSeats })
+      });
+      const data = await res.json();
+      if (data.success && !data.url) {
+        // Prorated update success
+        alert(data.message || "Suscripción actualizada correctamente.");
+        window.location.reload();
+      } else if (data.url) {
+        window.location.href = data.url;
+      } else {
+        alert("Error al iniciar la compra. Contacta a soporte.");
+      }
+    } catch (err) {
+      alert("Error de conexión al servidor de pagos.");
+    } finally {
+      setProcessingSeat(false);
+    }
+  };
+
   // Push Notifications Admin States
   const [pushRecipient, setPushRecipient] = useState<string>("ALL")
   const [pushMessage, setPushMessage] = useState<string>("")
@@ -1747,23 +1789,102 @@ export default function AdminClient() {
                       </p>
                       <Button 
                         size="sm" 
-                        onClick={async () => {
-                          try {
-                            const res = await fetch('/api/checkout/seat', { method: 'POST' });
-                            if (res.ok) {
-                              const data = await res.json();
-                              window.location.href = data.url;
-                            } else {
-                              alert("Error al iniciar la compra del asiento. Por favor contacta a soporte.");
-                            }
-                          } catch (err) {
-                            alert("Error de conexión al servidor de pagos.");
-                          }
-                        }}
+                        onClick={handleOpenSeatModal}
                         className="w-full mt-1 bg-teal-600 hover:bg-teal-700 text-white text-[10px] h-7 rounded-lg shadow-sm font-bold"
                       >
-                        Aumentar Capacidad (+1 Lugar) - $299 MXN
+                        Gestionar Asientos Extras
                       </Button>
+                    </div>
+                  )}
+
+                  {/* MODAL DE ASIENTOS EXTRAS */}
+                  {isSeatModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden relative animate-in fade-in zoom-in-95 duration-200">
+                        <div className="bg-slate-900 p-6 text-white">
+                          <h3 className="text-xl font-bold">Comprar Asientos Extras</h3>
+                          <p className="text-slate-300 text-sm mt-1">
+                            Calcula el costo total de tus asientos. ¡Entre más tengas, el precio baja automáticamente!
+                          </p>
+                        </div>
+                        
+                        <div className="p-6 space-y-6">
+                          <div>
+                            <label className="text-sm font-bold text-slate-700 flex justify-between">
+                              <span>Cantidad de asientos extras</span>
+                              <span className="text-indigo-600 text-lg">{selectedExtraSeats}</span>
+                            </label>
+                            <input 
+                              type="range" 
+                              min="1" 
+                              max="100" 
+                              value={selectedExtraSeats} 
+                              onChange={(e) => setSelectedExtraSeats(parseInt(e.target.value))}
+                              className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer mt-3"
+                            />
+                            <div className="flex justify-between text-xs text-slate-400 mt-2 font-medium">
+                              <span>1</span>
+                              <span>50</span>
+                              <span>100</span>
+                            </div>
+                          </div>
+
+                          <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+                            <div className="flex justify-between text-sm">
+                              <span className="text-slate-500">Asientos Base (Incluidos)</span>
+                              <span className="font-bold text-slate-700">10</span>
+                            </div>
+                            <div className="flex justify-between text-sm">
+                              <span className="text-slate-500">Asientos Extras</span>
+                              <span className="font-bold text-indigo-600">+{selectedExtraSeats}</span>
+                            </div>
+                            <div className="pt-3 border-t border-slate-200 flex justify-between items-center">
+                              <span className="text-sm font-bold text-slate-700">Total Capacidad (Usuarios)</span>
+                              <span className="text-xl font-black text-slate-900">{10 + selectedExtraSeats}</span>
+                            </div>
+                          </div>
+
+                          <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100">
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="text-indigo-600/80 font-semibold">Precio por asiento extra</span>
+                              <span className="font-bold text-indigo-700">${getSeatTierPrice(selectedExtraSeats)} MXN</span>
+                            </div>
+                            <div className="flex justify-between items-end mt-2">
+                              <span className="text-sm font-bold text-indigo-900">Total Mensual</span>
+                              <div className="text-right">
+                                <span className="text-2xl font-black text-indigo-700">${selectedExtraSeats * getSeatTierPrice(selectedExtraSeats)}</span>
+                                <span className="text-xs text-indigo-600/80 font-bold ml-1">MXN / mes</span>
+                              </div>
+                            </div>
+                            {currentUserData?.agency?.purchasedSeats > 0 && (
+                               <p className="text-[10px] text-indigo-500 mt-3 leading-tight font-medium">
+                                 Nota: Ya cuentas con {currentUserData.agency.purchasedSeats} asiento(s). Stripe calculará automáticamente el saldo a favor de los días no usados (prorrateo) y solo cobrará la diferencia proporcional hoy.
+                               </p>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="p-4 border-t border-slate-100 bg-slate-50 flex gap-3 justify-end">
+                          <Button 
+                            variant="outline" 
+                            onClick={() => setSeatModalOpen(false)}
+                            disabled={isProcessingSeat}
+                            className="font-semibold"
+                          >
+                            Cancelar
+                          </Button>
+                          <Button 
+                            onClick={handleCheckoutSeats}
+                            disabled={isProcessingSeat}
+                            className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold px-6"
+                          >
+                            {isProcessingSeat ? (
+                                <RefreshCw className="h-4 w-4 animate-spin mr-2" /> 
+                            ) : null}
+                            {isProcessingSeat ? "Procesando..." : "Proceder al Pago"}
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </CardHeader>

@@ -244,16 +244,19 @@ export async function POST(req: Request) {
       }
       } else if (isAgencySeat) {
         const agencyId = session.metadata?.agencyId;
+        const seatQuantityStr = session.metadata?.seatQuantity || "1";
+        const seatQuantity = parseInt(seatQuantityStr, 10);
+
         if (agencyId) {
           await prisma.agency.update({
             where: { id: agencyId },
-            data: { purchasedSeats: { increment: 1 } }
+            data: { purchasedSeats: seatQuantity }
           });
           
           await logCommission(
             session.metadata?.sellerId || null, 
             agencyId, 
-            "Compra de Asiento Extra", 
+            `Compra de ${seatQuantity} Asiento(s) Extra(s)`, 
             (session.amount_total || 0) / 100, 
             session.payment_intent as string
           );
