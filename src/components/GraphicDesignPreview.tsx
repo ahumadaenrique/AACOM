@@ -182,15 +182,15 @@ export function GraphicDesignPreview({
       })
     }
 
-    const drawPremiumText = (text: string, x: number, y: number, fontStr: string, alignRight = false) => {
+    const drawPremiumText = (text: string, x: number, y: number, fontStr: string, align: 'left' | 'center' | 'right' = 'left') => {
        ctx.font = fontStr
-       ctx.textAlign = alignRight ? 'right' : 'left'
+       ctx.textAlign = align
        ctx.textBaseline = 'alphabetic'
        ctx.fillStyle = textColorToUse
        ctx.fillText(text, x, y)
     }
 
-    const drawTextWrapped = (text: string, startX: number, startY: number, maxWidth: number, fontStr: string, lineHeight: number, alignRight = false) => {
+    const drawTextWrapped = (text: string, startX: number, startY: number, maxWidth: number, fontStr: string, lineHeight: number, align: 'left' | 'center' | 'right' = 'left') => {
       const words = text.split(' ')
       let line = ''
       let currentY = startY
@@ -200,14 +200,14 @@ export function GraphicDesignPreview({
         ctx.font = fontStr
         const metrics = ctx.measureText(testLine)
         if (metrics.width > maxWidth && i > 0) {
-          drawPremiumText(line.trim(), startX, currentY, fontStr, alignRight)
+          drawPremiumText(line.trim(), startX, currentY, fontStr, align)
           line = words[i] + ' '
           currentY += lineHeight
         } else {
           line = testLine
         }
       }
-      drawPremiumText(line.trim(), startX, currentY, fontStr, alignRight)
+      drawPremiumText(line.trim(), startX, currentY, fontStr, align)
       return currentY + lineHeight
     }
 
@@ -317,7 +317,7 @@ export function GraphicDesignPreview({
         const titleFont = `900 ${titleFontSize} sans-serif`;
 
         // Text rendering on the left
-        const nextY = drawTextWrapped(safeCopyText.toUpperCase(), 80, 220, 480, titleFont, titleLineH)
+        const nextY = drawTextWrapped(safeCopyText.toUpperCase(), 80, 220, 480, titleFont, titleLineH, 'left')
 
         // Draw horizontal divider line
         const dividerY = nextY + 20
@@ -331,7 +331,7 @@ export function GraphicDesignPreview({
         // Subtitle (clean small font size, wraps correctly, no overlap)
         if (safeSubtitle) {
           const subtitleFont = '600 36px sans-serif'
-          drawTextWrapped(safeSubtitle.toUpperCase(), 80, dividerY + 70, 480, subtitleFont, 45)
+          drawTextWrapped(safeSubtitle.toUpperCase(), 80, dividerY + 70, 480, subtitleFont, 45, 'left')
         }
 
       } else if (templateId === 1) {
@@ -346,11 +346,11 @@ export function GraphicDesignPreview({
         const titleFont = `900 ${titleFontSize} sans-serif`;
 
         // Title at the top center
-        const nextY = drawTextWrapped(safeCopyText.toUpperCase(), canvas.width / 2, 140, 920, titleFont, titleLineH, true)
+        const nextY = drawTextWrapped(safeCopyText.toUpperCase(), canvas.width / 2, 140, 920, titleFont, titleLineH, 'center')
 
         if (safeSubtitle) {
           const subtitleFont = '600 36px sans-serif'
-          drawTextWrapped(safeSubtitle.toUpperCase(), canvas.width / 2, nextY + 20, 920, subtitleFont, 45, true)
+          drawTextWrapped(safeSubtitle.toUpperCase(), canvas.width / 2, nextY + 20, 920, subtitleFont, 45, 'center')
         }
 
       } else {
@@ -365,11 +365,11 @@ export function GraphicDesignPreview({
         const titleFont = `900 ${titleFontSize} sans-serif`;
 
         // Header bold title
-        const nextY = drawTextWrapped(safeCopyText.toUpperCase(), canvas.width / 2, 140, 920, titleFont, titleLineH, true)
+        const nextY = drawTextWrapped(safeCopyText.toUpperCase(), canvas.width / 2, 140, 920, titleFont, titleLineH, 'center')
 
         if (safeSubtitle) {
           const subtitleFont = '900 54px sans-serif'
-          drawTextWrapped(safeSubtitle.toUpperCase(), canvas.width / 2, footerY - 50, 920, subtitleFont, 65, true)
+          drawTextWrapped(safeSubtitle.toUpperCase(), canvas.width / 2, footerY - 50, 920, subtitleFont, 65, 'center')
         }
       }
 
