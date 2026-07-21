@@ -110,6 +110,23 @@ export async function deleteGlobalDocument(documentId: string) {
     }
 }
 
+export async function updateGlobalDocumentCategory(documentId: string, category: string) {
+    const session = await auth();
+    const user = session?.user?.email ? await prisma.user.findUnique({ where: { email: session.user.email } }) : null;
+    
+    if (user?.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
+
+    try {
+        await prisma.packDocument.update({
+            where: { id: documentId },
+            data: { category }
+        });
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
 // -------------------------------------------------------------
 // ADMIN: Gestión de Biblioteca de Agencia
 // -------------------------------------------------------------
@@ -198,6 +215,27 @@ export async function deleteAgencyDocument(documentId: string) {
             token: process.env.BLOB_BIBLIOTECA_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN 
         });
         await prisma.agencyDocument.delete({ where: { id: documentId } });
+        return { success: true };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+export async function updateAgencyDocumentCategory(documentId: string, category: string) {
+    const session = await auth();
+    const user = session?.user?.email ? await prisma.user.findUnique({ where: { email: session.user.email } }) : null;
+    
+    if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
+
+    try {
+        const doc = await prisma.agencyDocument.findUnique({ where: { id: documentId } });
+        if (!doc) return { success: false, message: "No existe" };
+        if (doc.agencyId !== user.agencyId && user.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
+
+        await prisma.agencyDocument.update({
+            where: { id: documentId },
+            data: { category }
+        });
         return { success: true };
     } catch (e: any) {
         return { success: false, message: e.message };

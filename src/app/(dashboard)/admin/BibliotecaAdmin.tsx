@@ -10,7 +10,9 @@ import {
     toggleAgencyPack,
     uploadAgencyDocument,
     deleteAgencyDocument,
-    saveAgencyDocumentRecord
+    saveAgencyDocumentRecord,
+    updateGlobalDocumentCategory,
+    updateAgencyDocumentCategory
 } from "../documentacion/actions"
 import { upload } from "@vercel/blob/client"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
@@ -208,14 +210,31 @@ export default function BibliotecaAdmin() {
                                                             <div className="space-y-1 pl-2 border-l-2 border-slate-100">
                                                                 {docsInCat.map((doc: any) => (
                                                                     <div key={doc.id} className="flex items-center justify-between bg-white border p-1.5 rounded text-xs">
-                                                                        <div className="flex items-center gap-2 truncate">
+                                                                        <div className="flex items-center gap-2 truncate flex-1">
                                                                             <FileText className="h-3 w-3 text-blue-500 flex-shrink-0" />
                                                                             <span className="truncate">{doc.name}</span>
                                                                             <span className="text-slate-400 text-[10px]">({formatBytes(doc.fileSize)})</span>
                                                                         </div>
-                                                                        <Button variant="ghost" size="sm" onClick={() => deleteGlobalDocument(doc.id).then(loadData)} className="text-red-500 h-6 w-6 p-0">
-                                                                            <Trash2 className="h-3 w-3" />
-                                                                        </Button>
+                                                                        <div className="flex items-center gap-1">
+                                                                            <Select 
+                                                                                value={doc.category || "Otros"} 
+                                                                                onValueChange={(val) => {
+                                                                                    updateGlobalDocumentCategory(doc.id, val).then(() => loadData())
+                                                                                }}
+                                                                            >
+                                                                                <SelectTrigger className="h-6 w-24 text-[10px] bg-slate-50 border-transparent hover:border-slate-200 focus:ring-0 shadow-none">
+                                                                                    <SelectValue placeholder="Mover..." />
+                                                                                </SelectTrigger>
+                                                                                <SelectContent>
+                                                                                    {CATEGORIES.map(c => (
+                                                                                        <SelectItem key={c} value={c} className="text-[10px]">{c}</SelectItem>
+                                                                                    ))}
+                                                                                </SelectContent>
+                                                                            </Select>
+                                                                            <Button variant="ghost" size="sm" onClick={() => deleteGlobalDocument(doc.id).then(loadData)} className="text-red-500 h-6 w-6 p-0 flex-shrink-0">
+                                                                                <Trash2 className="h-3 w-3" />
+                                                                            </Button>
+                                                                        </div>
                                                                     </div>
                                                                 ))}
                                                             </div>
@@ -405,7 +424,22 @@ export default function BibliotecaAdmin() {
                                                                         <p className="text-xs text-slate-500">{formatBytes(doc.fileSize)}</p>
                                                                     </div>
                                                                 </div>
-                                                                <div className="flex items-center gap-1">
+                                                                <div className="flex items-center gap-2">
+                                                                    <Select 
+                                                                        value={doc.category || "Otros"} 
+                                                                        onValueChange={(val) => {
+                                                                            updateAgencyDocumentCategory(doc.id, val).then(() => loadData())
+                                                                        }}
+                                                                    >
+                                                                        <SelectTrigger className="h-7 w-28 text-[10px] bg-slate-50 border-transparent hover:border-slate-200 focus:ring-0 shadow-none">
+                                                                            <SelectValue placeholder="Mover..." />
+                                                                        </SelectTrigger>
+                                                                        <SelectContent>
+                                                                            {CATEGORIES.map(c => (
+                                                                                <SelectItem key={c} value={c} className="text-[10px]">{c}</SelectItem>
+                                                                            ))}
+                                                                        </SelectContent>
+                                                                    </Select>
                                                                     <Button variant="outline" size="sm" asChild className="text-xs h-7">
                                                                         <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">Ver</a>
                                                                     </Button>
@@ -414,7 +448,7 @@ export default function BibliotecaAdmin() {
                                                                             if (res && !res.success) alert(res.message);
                                                                             loadData();
                                                                         })
-                                                                    }} className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0">
+                                                                    }} className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0 flex-shrink-0">
                                                                         <Trash2 className="h-4 w-4" />
                                                                     </Button>
                                                                 </div>
