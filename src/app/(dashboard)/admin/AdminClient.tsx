@@ -143,8 +143,15 @@ export default function AdminClient() {
   const [activityLogs, setActivityLogs] = useState<any[]>([])
   const [loadingActivityLogs, setLoadingActivityLogs] = useState<boolean>(false)
   const [reportAgentFilter, setReportAgentFilter] = useState<string>("ALL")
-  const [reportStartDate, setReportStartDate] = useState<string>("")
-  const [reportEndDate, setReportEndDate] = useState<string>("")
+  
+  // Default to current month (1st day to today) to optimize initial load
+  const [reportStartDate, setReportStartDate] = useState<string>(() => {
+    const d = new Date();
+    return new Date(d.getFullYear(), d.getMonth(), 1).toLocaleDateString('en-CA'); // YYYY-MM-DD
+  });
+  const [reportEndDate, setReportEndDate] = useState<string>(() => {
+    return new Date().toLocaleDateString('en-CA');
+  });
   const [expandedAgents, setExpandedAgents] = useState<Record<string, boolean>>({})
   const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({})
 
