@@ -18,7 +18,10 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { RefreshCw, Trash2, Upload, FileText, Plus, Folder, AlertCircle } from "lucide-react"
+
+const CATEGORIES = ["Comercial", "Marketing", "Formatos", "Condiciones generales", "Otros"]
 
 export default function BibliotecaAdmin() {
     const [loading, setLoading] = useState(true)
@@ -26,6 +29,10 @@ export default function BibliotecaAdmin() {
     const [uploadingPackId, setUploadingPackId] = useState<string | null>(null)
     const [uploadingAgency, setUploadingAgency] = useState(false)
     const [uploadProgress, setUploadProgress] = useState<number>(0)
+    
+    // Categorías de subida
+    const [packUploadCategory, setPackUploadCategory] = useState<{ [key: string]: string }>({})
+    const [agencyUploadCategory, setAgencyUploadCategory] = useState<string>("Otros")
     
     // Formularios
     const [newPackName, setNewPackName] = useState("")
@@ -67,7 +74,8 @@ export default function BibliotecaAdmin() {
             const formData = new FormData()
             formData.append("file", files[i])
             
-            const res = await uploadGlobalDocument(packId, formData)
+            const category = packUploadCategory[packId] || "Otros"
+            const res = await uploadGlobalDocument(packId, formData, category)
             if (res.success) {
                 successCount++;
             } else {
@@ -103,7 +111,8 @@ export default function BibliotecaAdmin() {
                 newBlob.pathname.split('/').pop() || file.name,
                 newBlob.url,
                 file.size,
-                file.type
+                file.type,
+                agencyUploadCategory
             );
 
             if (res.success) {
@@ -188,21 +197,46 @@ export default function BibliotecaAdmin() {
                                             {pack.documents?.length === 0 ? (
                                                 <p className="text-xs text-slate-400 italic">No hay documentos en este pack.</p>
                                             ) : (
-                                                pack.documents?.map((doc: any) => (
-                                                    <div key={doc.id} className="flex items-center justify-between bg-white border p-2 rounded text-xs">
-                                                        <div className="flex items-center gap-2 truncate">
-                                                            <FileText className="h-3 w-3 text-blue-500 flex-shrink-0" />
-                                                            <span className="truncate">{doc.name}</span>
-                                                            <span className="text-slate-400 text-[10px]">({formatBytes(doc.fileSize)})</span>
+                                                CATEGORIES.map(cat => {
+                                                    const docsInCat = pack.documents?.filter((d: any) => (d.category || "Otros") === cat) || [];
+                                                    if (docsInCat.length === 0) return null;
+                                                    return (
+                                                        <div key={cat} className="mb-2">
+                                                            <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 flex items-center gap-1">
+                                                                <Folder className="h-3 w-3" /> {cat}
+                                                            </div>
+                                                            <div className="space-y-1 pl-2 border-l-2 border-slate-100">
+                                                                {docsInCat.map((doc: any) => (
+                                                                    <div key={doc.id} className="flex items-center justify-between bg-white border p-1.5 rounded text-xs">
+                                                                        <div className="flex items-center gap-2 truncate">
+                                                                            <FileText className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                                                                            <span className="truncate">{doc.name}</span>
+                                                                            <span className="text-slate-400 text-[10px]">({formatBytes(doc.fileSize)})</span>
+                                                                        </div>
+                                                                        <Button variant="ghost" size="sm" onClick={() => deleteGlobalDocument(doc.id).then(loadData)} className="text-red-500 h-6 w-6 p-0">
+                                                                            <Trash2 className="h-3 w-3" />
+                                                                        </Button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
                                                         </div>
-                                                        <Button variant="ghost" size="sm" onClick={() => deleteGlobalDocument(doc.id).then(loadData)} className="text-red-500 h-6 w-6 p-0">
-                                                            <Trash2 className="h-3 w-3" />
-                                                        </Button>
-                                                    </div>
-                                                ))
+                                                    )
+                                                })
                                             )}
                                         </div>
                                         <div className="flex items-center gap-2 pt-2 border-t">
+                                            <div className="w-32 flex-shrink-0">
+                                                <Select value={packUploadCategory[pack.id] || "Otros"} onValueChange={(val) => setPackUploadCategory(prev => ({...prev, [pack.id]: val}))}>
+                                                    <SelectTrigger className="h-8 text-xs">
+                                                        <SelectValue placeholder="Categoría" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {CATEGORIES.map(cat => (
+                                                            <SelectItem key={cat} value={cat} className="text-xs">{cat}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
                                             <Input 
                                                 type="file" 
                                                 className="text-xs file:text-xs" 
@@ -293,18 +327,35 @@ export default function BibliotecaAdmin() {
                                     <p className="text-sm font-medium text-slate-700">Subir nuevo documento</p>
                                     <p className="text-xs text-slate-500 mt-1">PDF, Word o TXT</p>
                                 </div>
-                                
-                                <Input 
-                                    type="file" 
-                                    className="cursor-pointer"
-                                    accept=".pdf,.doc,.docx,.txt"
-                                    ref={agencyFileRef}
-                                    onChange={(e) => {
-                                        const file = e.target.files?.[0]
-                                        if (file) handleUploadAgencyDoc(file)
-                                    }}
-                                    disabled={uploadingAgency || storagePercent >= 100}
-                                />
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-slate-700">Categoría (Carpeta)</Label>
+                                        <Select value={agencyUploadCategory} onValueChange={setAgencyUploadCategory}>
+                                            <SelectTrigger>
+                                                <SelectValue placeholder="Selecciona una categoría" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {CATEGORIES.map(cat => (
+                                                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label className="text-xs font-bold text-slate-700">Subir Archivo</Label>
+                                        <Input 
+                                            type="file" 
+                                            className="text-sm bg-slate-50 border-slate-200"
+                                            accept=".pdf,.doc,.docx,.txt"
+                                            ref={agencyFileRef}
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0]
+                                                if (file) handleUploadAgencyDoc(file)
+                                            }}
+                                            disabled={uploadingAgency || storagePercent >= 100}
+                                        />
+                                    </div>
+                                </div>
                                 {uploadingAgency && (
                                     <div className="space-y-1">
                                         <p className="text-xs font-bold text-teal-600">Subiendo a la nube... {uploadProgress}%</p>
@@ -325,42 +376,55 @@ export default function BibliotecaAdmin() {
                         </div>
 
                         {/* Lista de Documentos */}
-                        <div className="md:w-2/3 border rounded-lg overflow-hidden">
+                        <div className="md:w-2/3 border rounded-lg overflow-hidden flex flex-col h-[500px]">
                             <div className="bg-slate-50 px-4 py-2 border-b text-xs font-bold text-slate-500">Archivos Subidos</div>
-                            <div className="divide-y max-h-[400px] overflow-y-auto">
+                            <div className="flex-1 overflow-y-auto">
                                 {data?.agencyDocs?.length === 0 ? (
                                     <div className="p-8 text-center text-slate-400 text-sm">
                                         No has subido ningún documento interno aún.
                                     </div>
                                 ) : (
-                                    data?.agencyDocs?.map((doc: any) => (
-                                        <div key={doc.id} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
-                                            <div className="flex items-center gap-3">
-                                                <FileText className="h-8 w-8 text-slate-300" />
-                                                <div>
-                                                    <p className="text-sm font-medium text-slate-800">{doc.name}</p>
-                                                    <div className="flex items-center gap-2 text-xs text-slate-500 mt-0.5">
-                                                        <span>{formatBytes(doc.fileSize)}</span>
-                                                        <span>&bull;</span>
-                                                        <span>{new Date(doc.createdAt).toLocaleDateString()}</span>
+                                    <div className="space-y-4 p-2">
+                                        {CATEGORIES.map(cat => {
+                                            const docsInCat = data?.agencyDocs?.filter((d: any) => (d.category || "Otros") === cat) || [];
+                                            if (docsInCat.length === 0) return null;
+                                            return (
+                                                <div key={cat} className="border rounded-md overflow-hidden">
+                                                    <div className="bg-slate-100 px-3 py-2 text-xs font-bold text-slate-700 flex items-center gap-2 border-b">
+                                                        <Folder className="h-4 w-4 text-slate-500" /> {cat}
+                                                    </div>
+                                                    <div className="divide-y">
+                                                        {docsInCat.map((doc: any) => (
+                                                            <div key={doc.id} className="flex items-center justify-between p-3 hover:bg-slate-50 transition-colors">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="w-8 h-8 rounded bg-teal-100 flex items-center justify-center flex-shrink-0">
+                                                                        <FileText className="h-4 w-4 text-teal-700" />
+                                                                    </div>
+                                                                    <div>
+                                                                        <p className="text-sm font-medium text-slate-700 line-clamp-1">{doc.name}</p>
+                                                                        <p className="text-xs text-slate-500">{formatBytes(doc.fileSize)}</p>
+                                                                    </div>
+                                                                </div>
+                                                                <div className="flex items-center gap-1">
+                                                                    <Button variant="outline" size="sm" asChild className="text-xs h-7">
+                                                                        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">Ver</a>
+                                                                    </Button>
+                                                                    <Button variant="ghost" size="sm" onClick={() => {
+                                                                        deleteAgencyDocument(doc.id).then((res) => {
+                                                                            if (res && !res.success) alert(res.message);
+                                                                            loadData();
+                                                                        })
+                                                                    }} className="text-red-500 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0">
+                                                                        <Trash2 className="h-4 w-4" />
+                                                                    </Button>
+                                                                </div>
+                                                            </div>
+                                                        ))}
                                                     </div>
                                                 </div>
-                                            </div>
-                                            <div className="flex items-center gap-2">
-                                                <Button variant="outline" size="sm" asChild className="text-xs">
-                                                    <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">Ver</a>
-                                                </Button>
-                                                <Button variant="ghost" size="sm" onClick={() => {
-                                                    deleteAgencyDocument(doc.id).then((res) => {
-                                                        if (res && !res.success) alert(res.message);
-                                                        loadData();
-                                                    })
-                                                }} className="text-red-500 hover:text-red-700 hover:bg-red-50">
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    ))
+                                            )
+                                        })}
+                                    </div>
                                 )}
                             </div>
                         </div>

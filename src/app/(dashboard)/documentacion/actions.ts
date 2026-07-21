@@ -56,7 +56,7 @@ export async function deleteDocumentPack(packId: string) {
     }
 }
 
-export async function uploadGlobalDocument(packId: string, formData: FormData) {
+export async function uploadGlobalDocument(packId: string, formData: FormData, category: string = "Otros") {
     const session = await auth();
     const user = session?.user?.email ? await prisma.user.findUnique({ where: { email: session.user.email } }) : null;
     if (user?.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
@@ -80,7 +80,8 @@ export async function uploadGlobalDocument(packId: string, formData: FormData) {
                 name: file.name,
                 fileUrl: blob.url,
                 fileSize: file.size,
-                fileType: file.type
+                fileType: file.type,
+                category
             }
         });
 
@@ -119,7 +120,7 @@ export async function getAgencyStorageUsage(agencyId: string) {
     return { usedBytes, maxBytes: MAX_AGENCY_STORAGE_BYTES };
 }
 
-export async function saveAgencyDocumentRecord(name: string, fileUrl: string, fileSize: number, fileType: string) {
+export async function saveAgencyDocumentRecord(name: string, fileUrl: string, fileSize: number, fileType: string, category: string = "Otros") {
     const session = await auth();
     const user = session?.user?.email ? await prisma.user.findUnique({ where: { email: session.user.email } }) : null;
     if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
@@ -132,7 +133,8 @@ export async function saveAgencyDocumentRecord(name: string, fileUrl: string, fi
                 name,
                 fileUrl,
                 fileSize,
-                fileType
+                fileType,
+                category
             }
         });
         return { success: true, document: doc };

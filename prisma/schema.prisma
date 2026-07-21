@@ -467,6 +467,7 @@ model PackDocument {
   fileUrl   String
   fileSize  Int          @default(0) // En bytes
   fileType  String?
+  category  String       @default("Otros")
   createdAt DateTime     @default(now())
 }
 
@@ -488,6 +489,7 @@ model AgencyDocument {
   fileUrl   String
   fileSize  Int      @default(0) // En bytes para calcular el limite de 80MB
   fileType  String?
+  category  String   @default("Otros")
   createdAt DateTime @default(now())
 }
 

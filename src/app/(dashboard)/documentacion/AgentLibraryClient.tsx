@@ -4,7 +4,9 @@ import { useState, useEffect } from "react"
 import { getLibraryData } from "./actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { FileText, Folder, Download, RefreshCw } from "lucide-react"
+import { FileText, Folder, Download, RefreshCw, FolderOpen } from "lucide-react"
+
+const CATEGORIES = ["Comercial", "Marketing", "Formatos", "Condiciones generales", "Otros"]
 
 export default function AgentLibraryClient({ agencyName }: { agencyName: string }) {
     const [loading, setLoading] = useState(true)
@@ -62,23 +64,37 @@ export default function AgentLibraryClient({ agencyName }: { agencyName: string 
                         <p className="text-sm text-slate-500 italic">No hay documentos internos disponibles en este momento.</p>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {agencyDocs.map((doc: any) => (
-                            <Card key={doc.id} className="border shadow-sm hover:shadow-md transition-shadow group">
-                                <CardContent className="p-5 flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-50 transition-colors">
-                                        <FileText className="h-6 w-6 text-slate-400 group-hover:text-teal-600 transition-colors" />
+                    <div className="space-y-6">
+                        {CATEGORIES.map(cat => {
+                            const docsInCat = agencyDocs.filter((d: any) => (d.category || "Otros") === cat)
+                            if (docsInCat.length === 0) return null;
+                            
+                            return (
+                                <div key={cat} className="space-y-3">
+                                    <h3 className="text-sm font-bold text-slate-700 flex items-center gap-2 border-b pb-2">
+                                        <FolderOpen className="h-4 w-4 text-slate-400" /> {cat}
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {docsInCat.map((doc: any) => (
+                                            <Card key={doc.id} className="border shadow-sm hover:shadow-md transition-shadow group">
+                                                <CardContent className="p-5 flex items-start gap-4">
+                                                    <div className="w-12 h-12 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0 group-hover:bg-teal-50 transition-colors">
+                                                        <FileText className="h-6 w-6 text-slate-400 group-hover:text-teal-600 transition-colors" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <h3 className="font-bold text-sm text-slate-800 line-clamp-2" title={doc.name}>{doc.name}</h3>
+                                                        <p className="text-xs text-slate-500 mt-1">{formatBytes(doc.fileSize)} &bull; {new Date(doc.createdAt).toLocaleDateString()}</p>
+                                                        <Button asChild variant="link" className="p-0 h-auto text-teal-600 mt-2 text-xs">
+                                                            <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">Ver documento</a>
+                                                        </Button>
+                                                    </div>
+                                                </CardContent>
+                                            </Card>
+                                        ))}
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <h3 className="font-bold text-sm text-slate-800 truncate" title={doc.name}>{doc.name}</h3>
-                                        <p className="text-xs text-slate-500 mt-1">{formatBytes(doc.fileSize)} &bull; {new Date(doc.createdAt).toLocaleDateString()}</p>
-                                        <Button asChild variant="link" className="p-0 h-auto text-teal-600 mt-2 text-xs">
-                                            <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">Ver documento</a>
-                                        </Button>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
+                                </div>
+                            )
+                        })}
                     </div>
                 )}
             </div>
@@ -110,22 +126,38 @@ export default function AgentLibraryClient({ agencyName }: { agencyName: string 
                                 <CardContent className="p-0">
                                     <div className="divide-y">
                                         {pack.documents?.length === 0 ? (
-                                            <div className="p-4 text-center text-sm text-slate-400">Carpeta vacía</div>
+                                            <div className="p-4 text-center text-sm text-slate-400">Pack vacío</div>
                                         ) : (
-                                            pack.documents?.map((doc: any) => (
-                                                <div key={doc.id} className="flex items-center justify-between p-4 hover:bg-slate-50 transition-colors">
-                                                    <div className="flex items-center gap-3">
-                                                        <FileText className="h-5 w-5 text-amber-500" />
-                                                        <span className="text-sm font-medium text-slate-700">{doc.name}</span>
-                                                    </div>
-                                                    <Button asChild variant="outline" size="sm" className="text-xs h-8">
-                                                        <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
-                                                            <Download className="h-3 w-3 mr-2" />
-                                                            Descargar
-                                                        </a>
-                                                    </Button>
-                                                </div>
-                                            ))
+                                            <div className="divide-y">
+                                                {CATEGORIES.map(cat => {
+                                                    const docsInCat = pack.documents?.filter((d: any) => (d.category || "Otros") === cat) || [];
+                                                    if (docsInCat.length === 0) return null;
+                                                    
+                                                    return (
+                                                        <div key={cat} className="pt-2 pb-1">
+                                                            <div className="px-4 py-2 text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                                                                <FolderOpen className="h-3 w-3" /> {cat}
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                {docsInCat.map((doc: any) => (
+                                                                    <div key={doc.id} className="flex items-center justify-between p-2 pl-8 hover:bg-slate-50 transition-colors">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <FileText className="h-4 w-4 text-amber-500" />
+                                                                            <span className="text-sm font-medium text-slate-700">{doc.name}</span>
+                                                                        </div>
+                                                                        <Button asChild variant="outline" size="sm" className="text-xs h-8">
+                                                                            <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">
+                                                                                <Download className="h-3 w-3 mr-2" />
+                                                                                Descargar
+                                                                            </a>
+                                                                        </Button>
+                                                                    </div>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                })}
+                                            </div>
                                         )}
                                     </div>
                                 </CardContent>
