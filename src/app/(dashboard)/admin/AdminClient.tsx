@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, deleteRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush } from "@/app/actions"
+import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, deleteRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush, getFeedbackSurveys } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import BibliotecaAdmin from "./BibliotecaAdmin"
@@ -35,7 +35,9 @@ import {
   MessageSquare,
   Upload,
   BellRing,
-  Book
+  Book,
+  Star,
+  StarHalf
 } from "lucide-react"
 import { resolveImageUrl } from "@/lib/utils"
 
@@ -78,7 +80,7 @@ export default function AdminClient() {
   const [adnYearFilter, setAdnYearFilter] = useState<string>(new Date().getFullYear().toString())
 
   // Admin Dashboard Tabs
-  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca" | "votaciones">("productividad")
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca" | "votaciones" | "encuestas">("productividad")
 
   // Chatbot Knowledge Base states
   const [knowledgeDocs, setKnowledgeDocs] = useState<any[]>([])
@@ -221,6 +223,25 @@ export default function AdminClient() {
   const [schedFreq, setSchedFreq] = useState("DAILY")
   const [schedHour, setSchedHour] = useState("9")
   const [schedDate, setSchedDate] = useState("")
+
+  // Encuestas States
+  const [feedbackSurveys, setFeedbackSurveys] = useState<any[]>([])
+  const [loadingSurveys, setLoadingSurveys] = useState<boolean>(false)
+
+  useEffect(() => {
+    if (activeTab === 'encuestas') {
+      fetchSurveys();
+    }
+  }, [activeTab]);
+
+  const fetchSurveys = async () => {
+    setLoadingSurveys(true);
+    const res = await getFeedbackSurveys();
+    if (res.success && res.data) {
+      setFeedbackSurveys(res.data);
+    }
+    setLoadingSurveys(false);
+  };
 
   const handleTogglePointsSetting = async () => {
     if (!pushPin.trim()) { setPushStatus("Ingresa el PIN en el cuadro de abajo primero."); return; }
@@ -1209,12 +1230,20 @@ export default function AdminClient() {
           <Book className="h-4.5 w-4.5" /> Biblioteca de Documentos
         </button>
                 {currentUserRole === 'SUPER_ADMIN' && (
-            <button
-              onClick={() => setActiveTab('votaciones')}
-              className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${activeTab === "votaciones" ? "border-amber-500 text-amber-500" : "border-transparent text-slate-500 hover:text-slate-800"}`}
-            >
-              <Sparkles className="h-4.5 w-4.5 text-amber-500" /> Control de Votaciones
-            </button>
+            <>
+              <button
+                onClick={() => setActiveTab('encuestas')}
+                className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${activeTab === "encuestas" ? "border-green-500 text-green-500" : "border-transparent text-slate-500 hover:text-slate-800"}`}
+              >
+                <Star className="h-4.5 w-4.5 text-green-500" /> Calidad (NPS)
+              </button>
+              <button
+                onClick={() => setActiveTab('votaciones')}
+                className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${activeTab === "votaciones" ? "border-amber-500 text-amber-500" : "border-transparent text-slate-500 hover:text-slate-800"}`}
+              >
+                <Sparkles className="h-4.5 w-4.5 text-amber-500" /> Control de Votaciones
+              </button>
+            </>
           )}
         </div>
 
@@ -4809,6 +4838,161 @@ export default function AdminClient() {
               </div>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* TAB CONTENT: ENCUESTAS NPS */}
+      {activeTab === "encuestas" && (
+        <div className="space-y-6 animate-in fade-in duration-300">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b pb-4 mb-6">
+            <div>
+              <h2 className="text-2xl font-black text-slate-800 dark:text-slate-100 uppercase tracking-tight flex items-center gap-2">
+                <Star className="w-6 h-6 text-green-500" />
+                Control de Calidad (NPS)
+              </h2>
+              <p className="text-slate-500 dark:text-slate-400 text-sm mt-1 font-medium">
+                Resumen de calificaciones y sugerencias capturadas en el sistema.
+              </p>
+            </div>
+            <Button onClick={fetchSurveys} variant="outline" size="sm" className="font-bold flex gap-2 shadow-sm" disabled={loadingSurveys}>
+              <RefreshCw className={`w-4 h-4 ${loadingSurveys ? 'animate-spin' : ''}`} /> Actualizar Datos
+            </Button>
+          </div>
+
+          {!loadingSurveys && feedbackSurveys.length > 0 ? (
+            <>
+              {/* KPIs */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <Card className="border shadow-sm bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-900/10">
+                  <CardHeader className="py-4">
+                    <CardTitle className="text-xs font-black text-green-700 dark:text-green-400 uppercase tracking-wider flex items-center gap-2">
+                      <Star className="w-4 h-4 fill-green-500" />
+                      Calificación Promedio
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-5xl font-black text-slate-800 dark:text-slate-100">
+                      {(feedbackSurveys.reduce((acc, curr) => acc + curr.rating, 0) / feedbackSurveys.length).toFixed(1)}
+                      <span className="text-xl text-slate-400 ml-1">/ 5.0</span>
+                    </div>
+                    <p className="text-xs font-bold text-slate-500 mt-2">Basado en {feedbackSurveys.length} encuestas recibidas.</p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border shadow-sm">
+                  <CardHeader className="py-4">
+                    <CardTitle className="text-xs font-black text-slate-500 uppercase tracking-wider">
+                      Distribución de Estrellas
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    {[5,4,3,2,1].map(stars => {
+                      const count = feedbackSurveys.filter(s => s.rating === stars).length;
+                      const percentage = Math.round((count / feedbackSurveys.length) * 100);
+                      return (
+                        <div key={stars} className="flex items-center gap-3">
+                          <div className="flex gap-0.5 w-16">
+                            <span className="text-xs font-bold w-3">{stars}</span>
+                            <Star className="w-3 h-3 text-yellow-400 fill-yellow-400" />
+                          </div>
+                          <div className="flex-1 h-2 bg-slate-100 dark:bg-zinc-800 rounded-full overflow-hidden">
+                            <div className="h-full bg-green-500 rounded-full" style={{ width: `${percentage}%` }}></div>
+                          </div>
+                          <span className="text-xs font-medium text-slate-500 w-8 text-right">{count}</span>
+                        </div>
+                      )
+                    })}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Encuestas Table */}
+              <div className="bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
+                <div className="px-6 py-4 border-b border-slate-100 dark:border-zinc-800 flex justify-between items-center bg-slate-50/50 dark:bg-zinc-900/20">
+                  <h3 className="font-bold text-slate-700 dark:text-slate-200">Últimos Comentarios Registrados</h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader className="bg-slate-50 dark:bg-zinc-900">
+                      <TableRow>
+                        <TableHead className="font-black text-slate-500 text-xs uppercase w-[250px]">Usuario</TableHead>
+                        <TableHead className="font-black text-slate-500 text-xs uppercase w-[120px]">Agencia</TableHead>
+                        <TableHead className="font-black text-slate-500 text-xs uppercase text-center w-[120px]">Rating</TableHead>
+                        <TableHead className="font-black text-slate-500 text-xs uppercase">Comentarios / Feedback</TableHead>
+                        <TableHead className="font-black text-slate-500 text-xs uppercase w-[120px]">Permiso de Contacto</TableHead>
+                        <TableHead className="font-black text-slate-500 text-xs uppercase w-[100px]">Fecha</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {feedbackSurveys.map((survey) => (
+                        <TableRow key={survey.id} className="hover:bg-slate-50/50 dark:hover:bg-zinc-900/50">
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <img src={resolveImageUrl(survey.user?.image)} alt="" className="w-8 h-8 rounded-full object-cover border border-slate-200 dark:border-zinc-700" />
+                              <div className="flex flex-col">
+                                <span className="font-bold text-sm text-slate-800 dark:text-slate-200">{survey.user?.name || "Usuario Desconocido"}</span>
+                                <span className="text-[10px] text-slate-500">{survey.user?.email}</span>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <span className="text-xs font-medium text-slate-600 bg-slate-100 dark:bg-zinc-800 dark:text-slate-300 px-2 py-1 rounded-md">
+                                {survey.user?.agency?.name || "N/A"}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex gap-0.5 justify-center">
+                              {[1,2,3,4,5].map(s => (
+                                <Star key={s} className={`w-4 h-4 ${s <= survey.rating ? "fill-yellow-400 text-yellow-400" : "text-slate-200 dark:text-zinc-800"}`} />
+                              ))}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {survey.comments ? (
+                              <p className="text-sm text-slate-600 dark:text-slate-300 font-medium italic">"{survey.comments}"</p>
+                            ) : (
+                              <span className="text-xs text-slate-400 italic">Sin comentarios</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {survey.canContact ? (
+                              <span className="inline-flex items-center gap-1 bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400 px-2.5 py-1 rounded-full text-[10px] font-black uppercase">
+                                <CheckCircle2 className="w-3 h-3" /> Permitido
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 bg-slate-100 text-slate-500 dark:bg-zinc-800 dark:text-slate-400 px-2.5 py-1 rounded-full text-[10px] font-black uppercase">
+                                <X className="w-3 h-3" /> No Contactar
+                              </span>
+                            )}
+                          </TableCell>
+                          <TableCell className="text-xs font-medium text-slate-500">
+                            {new Date(survey.createdAt).toLocaleDateString()}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              </div>
+            </>
+          ) : (
+            <div className="text-center p-12 bg-slate-50 dark:bg-zinc-900/20 rounded-2xl border border-dashed border-slate-200 dark:border-zinc-800">
+              {loadingSurveys ? (
+                <div className="flex flex-col items-center gap-4 text-slate-500">
+                  <RefreshCw className="w-8 h-8 animate-spin text-slate-400" />
+                  <p className="font-bold">Cargando encuestas...</p>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-4 text-slate-500">
+                  <div className="w-16 h-16 bg-slate-100 dark:bg-zinc-800 rounded-full flex items-center justify-center">
+                    <Star className="w-8 h-8 text-slate-300" />
+                  </div>
+                  <h3 className="text-lg font-black text-slate-700 dark:text-slate-300">Aún no hay respuestas</h3>
+                  <p className="text-sm max-w-md mx-auto">Cuando los usuarios comiencen a responder la encuesta de calidad (NPS), los resultados aparecerán aquí organizados en tiempo real.</p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 

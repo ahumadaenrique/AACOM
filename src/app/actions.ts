@@ -2718,3 +2718,39 @@ export async function submitFeedbackSurvey(data: { rating: number; comments?: st
         return { success: false, message: "Error interno del servidor" };
     }
 }
+
+export async function getFeedbackSurveys() {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, data: [] };
+        
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user || user.role !== 'SUPER_ADMIN') {
+            return { success: false, data: [] };
+        }
+
+        const surveys = await prisma.feedbackSurvey.findMany({
+            include: {
+                user: {
+                    select: {
+                        name: true,
+                        email: true,
+                        image: true,
+                        phone: true,
+                        agency: {
+                            select: {
+                                name: true
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        return { success: true, data: surveys };
+    } catch (error) {
+        console.error("Error fetching surveys:", error);
+        return { success: false, data: [] };
+    }
+}
