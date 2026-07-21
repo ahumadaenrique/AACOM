@@ -1844,6 +1844,9 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
     insurances?: string | null;
     favoriteBook?: string | null;
     hobby?: string | null;
+    promotoriaJoinDate?: string | null;
+    cedulaValidUntil?: string | null;
+    rcPolicyValidUntil?: string | null;
 }) {
     const session = await auth();
     if (!session?.user?.email) {
@@ -1873,6 +1876,9 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
         // ADMIN ONLY fields
         if (isAdmin) {
             if (data.email !== undefined) updateData.email = data.email;
+            if (data.promotoriaJoinDate !== undefined) {
+                updateData.promotoriaJoinDate = data.promotoriaJoinDate ? new Date(data.promotoriaJoinDate) : null;
+            }
         }
 
         // ADMIN or SELF fields
@@ -1893,6 +1899,12 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
         if (data.insurances !== undefined) updateData.insurances = data.insurances;
         if (data.favoriteBook !== undefined) updateData.favoriteBook = data.favoriteBook;
         if (data.hobby !== undefined) updateData.hobby = data.hobby;
+        if (data.cedulaValidUntil !== undefined) {
+            updateData.cedulaValidUntil = data.cedulaValidUntil ? new Date(data.cedulaValidUntil) : null;
+        }
+        if (data.rcPolicyValidUntil !== undefined) {
+            updateData.rcPolicyValidUntil = data.rcPolicyValidUntil ? new Date(data.rcPolicyValidUntil) : null;
+        }
 
         const updatedUser = await prisma.user.update({
             where: { id: targetUserId },
@@ -1911,7 +1923,10 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
                 twitter: true,
                 insurances: true,
                 favoriteBook: true,
-                hobby: true
+                hobby: true,
+                promotoriaJoinDate: true,
+                cedulaValidUntil: true,
+                rcPolicyValidUntil: true
             }
         });
 

@@ -123,6 +123,11 @@ model User {
   brandColor   String? // Color corporativo individual del Agente
   brandLogo    String? // Logo corporativo individual del Agente
 
+  // Credenciales y Registros
+  promotoriaJoinDate DateTime? // Fecha de Alta en promotoría (Admin only)
+  cedulaValidUntil   DateTime? // Vigencia de cédula hasta
+  rcPolicyValidUntil DateTime? // Vigencia poliza RC
+
   // Hierarchy
   reportsToId  String?
   reportsTo    User?   @relation("Hierarchy", fields: [reportsToId], references: [id])

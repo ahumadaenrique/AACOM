@@ -25,7 +25,8 @@ import {
     Cake,
     Trash2,
     QrCode,
-    Building2
+    Building2,
+    FileText
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
@@ -47,6 +48,9 @@ interface UserProfile {
     insurances: string | null;
     favoriteBook: string | null;
     hobby: string | null;
+    promotoriaJoinDate: Date | string | null;
+    cedulaValidUntil: Date | string | null;
+    rcPolicyValidUntil: Date | string | null;
 }
 
 export default function TeamDirectoryPage({ agencyName = "Tu Agencia" }: { agencyName?: string }) {
@@ -71,6 +75,9 @@ export default function TeamDirectoryPage({ agencyName = "Tu Agencia" }: { agenc
         insurances: string;
         favoriteBook: string;
         hobby: string;
+        promotoriaJoinDate: string;
+        cedulaValidUntil: string;
+        rcPolicyValidUntil: string;
     }>({
         name: "",
         email: "",
@@ -83,7 +90,10 @@ export default function TeamDirectoryPage({ agencyName = "Tu Agencia" }: { agenc
         twitter: "",
         insurances: "",
         favoriteBook: "",
-        hobby: ""
+        hobby: "",
+        promotoriaJoinDate: "",
+        cedulaValidUntil: "",
+        rcPolicyValidUntil: ""
     });
     
     const [updating, setUpdating] = useState(false);
@@ -127,20 +137,25 @@ export default function TeamDirectoryPage({ agencyName = "Tu Agencia" }: { agenc
             }
         }
 
-        setEditForm({
-            name: user.name || "",
-            email: user.email || "",
-            phone: user.phone || "",
-            birthDate: bDateStr,
-            image: user.image || "",
-            instagram: user.instagram || "",
-            facebook: user.facebook || "",
-            linkedin: user.linkedin || "",
-            twitter: user.twitter || "",
-            insurances: user.insurances || "",
-            favoriteBook: user.favoriteBook || "",
-            hobby: user.hobby || ""
-        });
+        if (user) {
+            setEditForm({
+                name: user.name || "",
+                email: user.email || "",
+                phone: user.phone || "",
+                birthDate: user.birthDate ? new Date(user.birthDate).toISOString().split('T')[0] : "",
+                image: user.image || "",
+                instagram: user.instagram || "",
+                facebook: user.facebook || "",
+                linkedin: user.linkedin || "",
+                twitter: user.twitter || "",
+                insurances: user.insurances || "",
+                favoriteBook: user.favoriteBook || "",
+                hobby: user.hobby || "",
+                promotoriaJoinDate: user.promotoriaJoinDate ? new Date(user.promotoriaJoinDate).toISOString().split('T')[0] : "",
+                cedulaValidUntil: user.cedulaValidUntil ? new Date(user.cedulaValidUntil).toISOString().split('T')[0] : "",
+                rcPolicyValidUntil: user.rcPolicyValidUntil ? new Date(user.rcPolicyValidUntil).toISOString().split('T')[0] : ""
+            });
+        }
     };
 
     const handleSaveProfile = async (e: React.FormEvent) => {
@@ -158,7 +173,10 @@ export default function TeamDirectoryPage({ agencyName = "Tu Agencia" }: { agenc
                 twitter: editForm.twitter,
                 insurances: editForm.insurances,
                 favoriteBook: editForm.favoriteBook,
-                hobby: editForm.hobby
+                hobby: editForm.hobby,
+                promotoriaJoinDate: editForm.promotoriaJoinDate || null,
+                cedulaValidUntil: editForm.cedulaValidUntil || null,
+                rcPolicyValidUntil: editForm.rcPolicyValidUntil || null
             };
 
             // Admin ONLY fields
@@ -293,9 +311,14 @@ export default function TeamDirectoryPage({ agencyName = "Tu Agencia" }: { agenc
         );
     }
 
-    const isAuthorizedToEdit = selectedUser && (
-        (currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN') || currentUser?.id === selectedUser.id
-    );
+    const isAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN';
+    const isAuthorizedToEdit = currentUser?.id === selectedUser?.id || isAdmin;
+
+    const formatDate = (dateString: string | Date | null | undefined) => {
+        if (!dateString) return null;
+        const date = new Date(dateString);
+        return new Intl.DateTimeFormat('es-MX', { year: 'numeric', month: 'long', day: 'numeric' }).format(date);
+    };
 
     return (
         <div className="flex flex-col gap-8 w-full max-w-lg mx-auto py-4 md:max-w-6xl md:px-0">
@@ -720,6 +743,76 @@ export default function TeamDirectoryPage({ agencyName = "Tu Agencia" }: { agenc
                                                     )
                                                 )}
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* CREDENCIALES Y REGISTROS */}
+                                <div className="space-y-4 pt-4 border-t border-slate-100 dark:border-zinc-800">
+                                    <h3 className="text-xs font-black text-slate-700 dark:text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+                                        <FileText className="h-3.5 w-3.5 text-indigo-500" /> Credenciales y Registros
+                                    </h3>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Fecha de Alta en Promotoría</label>
+                                            {isEditing ? (
+                                                <input 
+                                                    type="date" 
+                                                    value={editForm.promotoriaJoinDate} 
+                                                    onChange={(e) => setEditForm({ ...editForm, promotoriaJoinDate: e.target.value })}
+                                                    disabled={!isAdmin}
+                                                    className="bg-background border border-slate-300 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs font-semibold w-full focus:ring-1 focus:ring-indigo-500 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                                />
+                                            ) : (
+                                                selectedUser.promotoriaJoinDate ? (
+                                                    <span className="text-xs font-bold text-slate-700 dark:text-zinc-200 block mt-1">
+                                                        {formatDate(selectedUser.promotoriaJoinDate)}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-xs text-slate-400 dark:text-zinc-500 italic block mt-1">No registrado</span>
+                                                )
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Vigencia de cédula hasta</label>
+                                            {isEditing ? (
+                                                <input 
+                                                    type="date" 
+                                                    value={editForm.cedulaValidUntil} 
+                                                    onChange={(e) => setEditForm({ ...editForm, cedulaValidUntil: e.target.value })}
+                                                    className="bg-background border border-slate-300 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs font-semibold w-full focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                                                />
+                                            ) : (
+                                                selectedUser.cedulaValidUntil ? (
+                                                    <span className="text-xs font-bold text-slate-700 dark:text-zinc-200 block mt-1">
+                                                        {formatDate(selectedUser.cedulaValidUntil)}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-xs text-slate-400 dark:text-zinc-500 italic block mt-1">No registrado</span>
+                                                )
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[9px] font-bold text-slate-500 uppercase block mb-1">Vigencia Póliza RC</label>
+                                            {isEditing ? (
+                                                <input 
+                                                    type="date" 
+                                                    value={editForm.rcPolicyValidUntil} 
+                                                    onChange={(e) => setEditForm({ ...editForm, rcPolicyValidUntil: e.target.value })}
+                                                    className="bg-background border border-slate-300 dark:border-zinc-700 rounded-lg px-2.5 py-1.5 text-xs font-semibold w-full focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                                                />
+                                            ) : (
+                                                selectedUser.rcPolicyValidUntil ? (
+                                                    <span className="text-xs font-bold text-slate-700 dark:text-zinc-200 block mt-1">
+                                                        {formatDate(selectedUser.rcPolicyValidUntil)}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-xs text-slate-400 dark:text-zinc-500 italic block mt-1">No registrado</span>
+                                                )
+                                            )}
                                         </div>
                                     </div>
                                 </div>
