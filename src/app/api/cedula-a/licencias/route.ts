@@ -19,7 +19,8 @@ export async function GET(req: NextRequest) {
   try {
     if (isPromoter(currentUserEmail, session.user.role)) {
       // Get promoter balance
-      const email = currentUserEmail.toLowerCase();
+      // Usar el ID de la agencia para compartir saldo entre todos los admins de la agencia
+      const email = session.user.agencyId ? `agency_${session.user.agencyId}` : currentUserEmail.toLowerCase();
       let promoterBalance = 7; // Default initial tokens
       const saldo = await prisma.promotorSaldo.findUnique({
         where: { promotor_email: email }
@@ -85,11 +86,12 @@ export async function POST(req: NextRequest) {
   }
 
   const currentUserEmail = session.user.email
-  const email = currentUserEmail.toLowerCase()
-
+  
   if (!isPromoter(currentUserEmail, session.user.role)) {
-    return NextResponse.json({ error: "Only promoters can purchase or assign licenses" }, { status: 403 })
+    return NextResponse.json({ error: "No tienes permisos de promotor" }, { status: 403 })
   }
+
+  const email = session.user.agencyId ? `agency_${session.user.agencyId}` : currentUserEmail.toLowerCase()
 
   try {
     const { action, agentEmail, days } = await req.json()

@@ -51,7 +51,8 @@ export async function GET(req: NextRequest) {
 
     // 1. Get promoter balance
     let tokens = 7;
-    const promotorEmailLow = promoterEmail.toLowerCase();
+    const promotorEmailLow = session.user.agencyId ? `agency_${session.user.agencyId}` : promoterEmail.toLowerCase();
+    
     const saldo = await prisma.promotorSaldo.findUnique({
       where: { promotor_email: promotorEmailLow }
     });

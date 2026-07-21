@@ -288,23 +288,25 @@ export async function addAcademiaDaysToPromoter(agencyId: string, days: number) 
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
 
-  // Encontrar al admin de la agencia
+  // Encontrar al admin de la agencia para notificar o verificar, aunque el saldo es por agencia
   const agencyAdmin = await prisma.user.findFirst({
     where: { agencyId, role: "ADMIN" }
   });
 
-  if (!agencyAdmin || !agencyAdmin.email) {
+  if (!agencyAdmin) {
     throw new Error("La agencia no tiene un administrador principal válido.");
   }
 
+  const promoterId = `agency_${agencyId}`;
+
   const saldo = await prisma.promotorSaldo.upsert({
-    where: { promotor_email: agencyAdmin.email },
+    where: { promotor_email: promoterId },
     update: { dias_disponibles: { increment: days }, fecha_actualizacion: new Date() },
-    create: { promotor_email: agencyAdmin.email, dias_disponibles: days, fecha_actualizacion: new Date() }
+    create: { promotor_email: promoterId, dias_disponibles: days, fecha_actualizacion: new Date() }
   });
 
   revalidatePath("/agencias");
-  return { success: true, message: `Se añadieron ${days} días al saldo de ${agencyAdmin.email}.` };
+  return { success: true, message: `Se añadieron ${days} días al saldo de la Agencia.` };
 }
 
 export async function addAcademiaDaysToUser(agentEmail: string, agencyId: string, days: number) {
@@ -313,16 +315,13 @@ export async function addAcademiaDaysToUser(agentEmail: string, agencyId: string
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
 
-  // Encontrar al admin de la agencia (promotor)
-  const agencyAdmin = await prisma.user.findFirst({
-    where: { agencyId, role: "ADMIN" }
-  });
-  const promoterEmail = agencyAdmin?.email || "superadmin@aacom.com";
+  // Usar el ID de la agencia compartida
+  const promoterId = `agency_${agencyId}`;
 
   const currentLicense = await prisma.estudioLicencia.findUnique({
     where: {
       promotor_email_agente_email: {
-        promotor_email: promoterEmail,
+        promotor_email: promoterId,
         agente_email: agentEmail
       }
     }
@@ -337,7 +336,7 @@ export async function addAcademiaDaysToUser(agentEmail: string, agencyId: string
   await prisma.estudioLicencia.upsert({
     where: {
       promotor_email_agente_email: {
-        promotor_email: promoterEmail,
+        promotor_email: promoterId,
         agente_email: agentEmail
       }
     },
@@ -346,7 +345,7 @@ export async function addAcademiaDaysToUser(agentEmail: string, agencyId: string
       fecha_expiracion: newExpiration
     },
     create: {
-      promotor_email: promoterEmail,
+      promotor_email: promoterId,
       agente_email: agentEmail,
       dias_asignados: days,
       fecha_asignacion: new Date(),
