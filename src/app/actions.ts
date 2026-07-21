@@ -2655,4 +2655,66 @@ export async function deleteContact(id: string) {
     }
 }
 
+// ==========================================
+// FEEDBACK SURVEY ACTIONS
+// ==========================================
 
+export async function checkSurveyEligibility() {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { eligible: false };
+        
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: { id: true, createdAt: true }
+        });
+        
+        if (!user) return { eligible: false };
+
+        // Must be registered for at least 30 days
+        const oneMonthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+        if (user.createdAt > oneMonthAgo) {
+            return { eligible: false };
+        }
+
+        // Must not have taken the survey in the last 6 months
+        const sixMonthsAgo = new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000);
+        const lastSurvey = await prisma.feedbackSurvey.findFirst({
+            where: { userId: user.id },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        if (lastSurvey && lastSurvey.createdAt > sixMonthsAgo) {
+            return { eligible: false };
+        }
+
+        return { eligible: true };
+    } catch (error) {
+        console.error("Error checking survey eligibility:", error);
+        return { eligible: false };
+    }
+}
+
+export async function submitFeedbackSurvey(data: { rating: number; comments?: string; canContact: boolean }) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+        
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!user) return { success: false, message: "Usuario no encontrado" };
+
+        await prisma.feedbackSurvey.create({
+            data: {
+                userId: user.id,
+                rating: data.rating,
+                comments: data.comments,
+                canContact: data.canContact
+            }
+        });
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error submitting survey:", error);
+        return { success: false, message: "Error interno del servidor" };
+    }
+}

@@ -143,6 +143,7 @@ model User {
   InteractionLog     InteractionLog[]
   Meeting            Meeting[]
   Task               Task[]
+  FeedbackSurvey     FeedbackSurvey[]
 
   // For Double Promotoria or shared access (Simple implementation: Secondary access list)
   // This could be a many-to-many relation if needed
@@ -821,4 +822,14 @@ model AppErrorLog {
   userName  String?
   agencyId  String?
   createdAt DateTime @default(now())
+}
+
+model FeedbackSurvey {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  rating      Int
+  comments    String?  @db.Text
+  canContact  Boolean  @default(false)
+  createdAt   DateTime @default(now())
 }

@@ -9,6 +9,7 @@ import { PushNotificationManager } from "@/components/PushNotificationManager"
 import { ForcePasswordChange } from "@/components/ForcePasswordChange"
 import { SubscriptionBlocker } from "@/components/SubscriptionBlocker"
 import TermsModal from "@/components/TermsModal"
+import { QualitySurveyModal } from "@/components/QualitySurveyModal"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -660,6 +661,7 @@ export default async function DashboardLayout({
                 </SubscriptionBlocker>
                 <PwaInstaller agencyName={agencyName} />
                 <PushNotificationManager />
+                <QualitySurveyModal />
             </main>
         </div>
     )
