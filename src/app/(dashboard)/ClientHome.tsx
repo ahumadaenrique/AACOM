@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowUpRight, Sparkles, Megaphone, ZoomIn, X, Link as LinkIcon, User } from "lucide-react"
+import { ArrowUpRight, Sparkles, Megaphone, ZoomIn, X, Link as LinkIcon, User, Cake } from "lucide-react"
 import { resolveImageUrl } from "@/lib/utils"
 
 interface Announcement {
@@ -14,6 +14,15 @@ interface Announcement {
   createdAt: Date
 }
 
+interface BirthdayUser {
+  id: string
+  name: string
+  image: string | null
+  birthDate: string
+  daysUntil?: number
+  nextBirthday?: string
+}
+
 interface ClientHomeProps {
   announcements: Announcement[]
   isBirthday?: boolean
@@ -23,9 +32,19 @@ interface ClientHomeProps {
   } | null
   agencyName?: string
   isAdmin?: boolean
+  todayBirthdays?: BirthdayUser[]
+  upcomingBirthdays?: BirthdayUser[]
 }
 
-export default function ClientHome({ announcements, isBirthday = false, currentUser = null, agencyName = "Tu Agencia", isAdmin = false }: ClientHomeProps) {
+export default function ClientHome({ 
+  announcements, 
+  isBirthday = false, 
+  currentUser = null, 
+  agencyName = "Tu Agencia", 
+  isAdmin = false,
+  todayBirthdays = [],
+  upcomingBirthdays = []
+}: ClientHomeProps) {
   const [selectedAd, setSelectedAd] = useState<Announcement | null>(null)
   const [showBirthday, setShowBirthday] = useState(false)
 
@@ -83,6 +102,66 @@ export default function ClientHome({ announcements, isBirthday = false, currentU
                     <a href="/support" className="w-full md:w-auto text-center bg-white text-teal-900 hover:bg-teal-50 hover:text-teal-950 font-bold px-6 py-3 rounded-xl shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 border border-teal-100/50">
                         Cotizar Desarrollo
                     </a>
+                </div>
+            </div>
+        )}
+
+        {/* Today's Birthdays */}
+        {todayBirthdays.length > 0 && (
+            <div className="space-y-4 mb-6">
+                <div className="flex items-center gap-2 pb-2 border-b border-rose-100 dark:border-rose-900/30">
+                    <Cake className="h-5 w-5 text-rose-500" />
+                    <h2 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        ¡Cumpleañeros de Hoy!
+                    </h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {todayBirthdays.map(user => (
+                        <div key={user.id} className="bg-gradient-to-br from-rose-500 via-pink-500 to-purple-600 p-[2px] rounded-2xl shadow-xl overflow-hidden relative group">
+                            <div className="absolute inset-0 opacity-20 mix-blend-overlay pointer-events-none"></div>
+                            <div className="bg-white dark:bg-zinc-950 rounded-[14px] p-6 h-full flex flex-col items-center justify-center text-center relative z-10">
+                                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-rose-100/50 to-transparent dark:from-rose-900/20 rounded-t-[14px]"></div>
+                                <div className="relative mb-4">
+                                    <div className="w-24 h-24 rounded-full p-1 bg-gradient-to-tr from-yellow-400 via-rose-400 to-purple-500 shadow-lg">
+                                        <img src={resolveImageUrl(user.image)} alt={user.name} className="w-full h-full rounded-full object-cover border-4 border-white dark:border-zinc-950" />
+                                    </div>
+                                    <div className="absolute -bottom-2 -right-2 bg-yellow-400 text-yellow-900 p-1.5 rounded-full shadow-lg rotate-12">
+                                        <Cake className="w-5 h-5" />
+                                    </div>
+                                </div>
+                                <h3 className="text-xl font-black text-slate-800 dark:text-white mb-1">¡Feliz Cumpleaños!</h3>
+                                <p className="text-lg font-bold bg-clip-text text-transparent bg-gradient-to-r from-rose-500 to-purple-600">{user.name}</p>
+                                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2">Deseamos que tengas un excelente día lleno de éxito y alegría.</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        )}
+
+        {/* Upcoming Birthdays */}
+        {upcomingBirthdays.length > 0 && (
+            <div className="space-y-4 mb-6">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-100 dark:border-zinc-800">
+                    <Cake className="h-5 w-5 text-indigo-500" />
+                    <h2 className="text-base font-black text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                        Próximos Cumpleaños
+                    </h2>
+                </div>
+                <div className="flex overflow-x-auto pb-4 gap-4 snap-x hide-scrollbar" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                    <style dangerouslySetInnerHTML={{__html: `
+                        .hide-scrollbar::-webkit-scrollbar { display: none; }
+                    `}} />
+                    {upcomingBirthdays.map(user => (
+                        <div key={user.id} className="snap-start shrink-0 w-48 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-4 flex flex-col items-center text-center shadow-sm hover:shadow-md transition-shadow">
+                            <img src={resolveImageUrl(user.image)} alt={user.name} className="w-16 h-16 rounded-full object-cover mb-3 shadow-sm border border-slate-100 dark:border-zinc-800" />
+                            <p className="text-sm font-bold text-slate-800 dark:text-zinc-200 truncate w-full">{user.name}</p>
+                            <div className="mt-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-[10px] font-black uppercase px-2 py-1 rounded-full w-full">
+                                {new Date(user.nextBirthday!).toLocaleDateString('es-MX', { month: 'long', day: 'numeric', timeZone: 'UTC' })}
+                            </div>
+                            <p className="text-[10px] text-slate-400 mt-1 font-semibold">En {user.daysUntil} día{user.daysUntil !== 1 ? 's' : ''}</p>
+                        </div>
+                    ))}
                 </div>
             </div>
         )}

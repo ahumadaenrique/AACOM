@@ -69,6 +69,60 @@ export default async function HomePage() {
         }
     });
 
+    const activeUsers = await prisma.user.findMany({
+        where: {
+            active: true,
+            birthDate: { not: null },
+            OR: isDefaultAgency 
+                ? [ { agencyId: agency?.id || undefined }, { agencyId: null } ]
+                : [ { agencyId: agency?.id || undefined } ]
+        },
+        select: {
+            id: true,
+            name: true,
+            image: true,
+            birthDate: true
+        }
+    });
+
+    const cdmxTodayStrForBday = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+    const [todayYear, todayMonthRaw, todayDayRaw] = cdmxTodayStrForBday.split('-').map(Number);
+    const todayForBday = new Date(todayYear, todayMonthRaw - 1, todayDayRaw);
+    
+    const todayBirthdays: any[] = [];
+    const upcomingBirthdays: any[] = [];
+
+    activeUsers.forEach(u => {
+        if (!u.birthDate) return;
+        const bDate = new Date(u.birthDate);
+        const bMonth = bDate.getUTCMonth();
+        const bDay = bDate.getUTCDate();
+        
+        if (bMonth === todayMonthRaw - 1 && bDay === todayDayRaw) {
+            todayBirthdays.push({ id: u.id, name: u.name, image: u.image, birthDate: u.birthDate.toISOString() });
+        } else {
+            let nextBday = new Date(todayYear, bMonth, bDay);
+            if (nextBday < todayForBday) {
+                nextBday = new Date(todayYear + 1, bMonth, bDay);
+            }
+            const diffTime = nextBday.getTime() - todayForBday.getTime();
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            
+            if (diffDays > 0 && diffDays <= 30) {
+                upcomingBirthdays.push({
+                    id: u.id,
+                    name: u.name,
+                    image: u.image,
+                    birthDate: u.birthDate.toISOString(),
+                    daysUntil: diffDays,
+                    nextBirthday: nextBday.toISOString()
+                });
+            }
+        }
+    });
+
+    upcomingBirthdays.sort((a, b) => a.daysUntil - b.daysUntil);
+
     return (
         <div className="flex flex-col gap-8 w-full max-w-6xl mx-auto py-4 animate-in fade-in duration-300">
             <div className="flex flex-col gap-2">
@@ -85,6 +139,8 @@ export default async function HomePage() {
                 currentUser={currentUser ? { name: currentUser.name, image: currentUser.image } : null} 
                 agencyName={agencyName}
                 isAdmin={currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN'}
+                todayBirthdays={todayBirthdays}
+                upcomingBirthdays={upcomingBirthdays}
             />
         </div>
     )
