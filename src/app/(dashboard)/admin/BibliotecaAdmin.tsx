@@ -9,8 +9,10 @@ import {
     deleteGlobalDocument,
     toggleAgencyPack,
     uploadAgencyDocument,
-    deleteAgencyDocument
+    deleteAgencyDocument,
+    saveAgencyDocumentRecord
 } from "../documentacion/actions"
+import { upload } from "@vercel/blob/client"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -23,6 +25,7 @@ export default function BibliotecaAdmin() {
     const [data, setData] = useState<any>(null)
     const [uploadingPackId, setUploadingPackId] = useState<string | null>(null)
     const [uploadingAgency, setUploadingAgency] = useState(false)
+    const [uploadProgress, setUploadProgress] = useState<number>(0)
     
     // Formularios
     const [newPackName, setNewPackName] = useState("")
@@ -82,18 +85,40 @@ export default function BibliotecaAdmin() {
     }
 
     const handleUploadAgencyDoc = async (file: File) => {
+        if (!file) return;
         setUploadingAgency(true)
-        const formData = new FormData()
-        formData.append("file", file)
+        setUploadProgress(0)
         
-        const res = await uploadAgencyDocument(formData)
-        if (res.success) {
-            loadData()
-        } else {
-            alert(res.message)
+        try {
+            const newBlob = await upload(file.name, file, {
+                access: 'public',
+                handleUploadUrl: '/api/upload/agency-doc',
+                onUploadProgress: (progressEvent) => {
+                    const percentage = Math.round((progressEvent.loaded / progressEvent.total) * 100);
+                    setUploadProgress(percentage);
+                },
+            });
+
+            const res = await saveAgencyDocumentRecord(
+                newBlob.pathname.split('/').pop() || file.name,
+                newBlob.url,
+                file.size,
+                file.type
+            );
+
+            if (res.success) {
+                loadData()
+            } else {
+                alert("Archivo subido a la nube, pero hubo un error al guardar el registro: " + res.message)
+            }
+        } catch (error: any) {
+            console.error(error);
+            alert("Error al subir el archivo: " + error.message)
+        } finally {
+            setUploadingAgency(false)
+            setUploadProgress(0)
+            if (agencyFileRef.current) agencyFileRef.current.value = ""
         }
-        setUploadingAgency(false)
-        if (agencyFileRef.current) agencyFileRef.current.value = ""
     }
 
     const formatBytes = (bytes: number) => {
@@ -280,7 +305,17 @@ export default function BibliotecaAdmin() {
                                     }}
                                     disabled={uploadingAgency || storagePercent >= 100}
                                 />
-                                {uploadingAgency && <p className="text-xs text-teal-600 animate-pulse">Subiendo a la nube...</p>}
+                                {uploadingAgency && (
+                                    <div className="space-y-1">
+                                        <p className="text-xs font-bold text-teal-600">Subiendo a la nube... {uploadProgress}%</p>
+                                        <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                                            <div 
+                                                className="h-full bg-teal-500 transition-all duration-300"
+                                                style={{ width: `${uploadProgress}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             
                             <div className="bg-blue-50 text-blue-800 p-3 rounded-lg text-xs flex items-start gap-2">
@@ -315,7 +350,12 @@ export default function BibliotecaAdmin() {
                                                 <Button variant="outline" size="sm" asChild className="text-xs">
                                                     <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer">Ver</a>
                                                 </Button>
-                                                <Button variant="ghost" size="sm" onClick={() => deleteAgencyDocument(doc.id).then(loadData)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                                                <Button variant="ghost" size="sm" onClick={() => {
+                                                    deleteAgencyDocument(doc.id).then((res) => {
+                                                        if (res && !res.success) alert(res.message);
+                                                        loadData();
+                                                    })
+                                                }} className="text-red-500 hover:text-red-700 hover:bg-red-50">
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </div>

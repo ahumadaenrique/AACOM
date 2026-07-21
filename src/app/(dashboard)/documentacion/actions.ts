@@ -42,7 +42,11 @@ export async function deleteDocumentPack(packId: string) {
         // Obtenemos los documentos para borrarlos de Vercel Blob
         const docs = await prisma.packDocument.findMany({ where: { packId } });
         for (const doc of docs) {
-            try { await del(doc.fileUrl); } catch (e) { /* ignore if already deleted */ }
+            try { 
+                await del(doc.fileUrl, {
+                    token: process.env.BLOB_BIBLIOTECA_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN 
+                }); 
+            } catch (e) { /* ignore if already deleted */ }
         }
 
         await prisma.documentPack.delete({ where: { id: packId } });
@@ -95,7 +99,9 @@ export async function deleteGlobalDocument(documentId: string) {
         const doc = await prisma.packDocument.findUnique({ where: { id: documentId } });
         if (!doc) return { success: false, message: "No existe" };
 
-        await del(doc.fileUrl);
+        await del(doc.fileUrl, {
+            token: process.env.BLOB_BIBLIOTECA_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN 
+        });
         await prisma.packDocument.delete({ where: { id: documentId } });
         return { success: true };
     } catch (e: any) {
@@ -111,6 +117,28 @@ export async function getAgencyStorageUsage(agencyId: string) {
     const docs = await prisma.agencyDocument.findMany({ where: { agencyId } });
     const usedBytes = docs.reduce((acc, doc) => acc + doc.fileSize, 0);
     return { usedBytes, maxBytes: MAX_AGENCY_STORAGE_BYTES };
+}
+
+export async function saveAgencyDocumentRecord(name: string, fileUrl: string, fileSize: number, fileType: string) {
+    const session = await auth();
+    const user = session?.user?.email ? await prisma.user.findUnique({ where: { email: session.user.email } }) : null;
+    if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
+    if (!user.agencyId) return { success: false, message: "Sin agencia asignada" };
+
+    try {
+        const doc = await prisma.agencyDocument.create({
+            data: {
+                agencyId: user.agencyId,
+                name,
+                fileUrl,
+                fileSize,
+                fileType
+            }
+        });
+        return { success: true, document: doc };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
 }
 
 export async function uploadAgencyDocument(formData: FormData) {
@@ -164,7 +192,9 @@ export async function deleteAgencyDocument(documentId: string) {
         if (!doc) return { success: false, message: "No existe" };
         if (doc.agencyId !== user.agencyId && user.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
 
-        await del(doc.fileUrl);
+        await del(doc.fileUrl, {
+            token: process.env.BLOB_BIBLIOTECA_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN 
+        });
         await prisma.agencyDocument.delete({ where: { id: documentId } });
         return { success: true };
     } catch (e: any) {
