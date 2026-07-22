@@ -235,12 +235,17 @@ export default function AdminClient() {
   }, [activeTab]);
 
   const fetchSurveys = async () => {
-    setLoadingSurveys(true);
-    const res = await getFeedbackSurveys();
-    if (res.success && res.data) {
-      setFeedbackSurveys(res.data);
+    try {
+      setLoadingSurveys(true);
+      const res = await getFeedbackSurveys();
+      if (res && res.success && res.data) {
+        setFeedbackSurveys(res.data);
+      }
+    } catch (error) {
+      console.error("Error al cargar encuestas NPS:", error);
+    } finally {
+      setLoadingSurveys(false);
     }
-    setLoadingSurveys(false);
   };
 
   const handleTogglePointsSetting = async () => {
