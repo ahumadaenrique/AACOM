@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 
@@ -121,9 +122,10 @@ export async function switchAgency(agencyId: string) {
   const targetAgency = await prisma.agency.findUnique({ where: { id: agencyId } });
   if (!targetAgency) throw new Error("Agencia no encontrada");
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { agencyId: targetAgency.id }
+  // Set the cookie instead of updating the DB
+  cookies().set('impersonateAgencyId', targetAgency.id, {
+    path: '/',
+    maxAge: 60 * 60 * 24 // 1 day
   });
 
   revalidatePath("/");

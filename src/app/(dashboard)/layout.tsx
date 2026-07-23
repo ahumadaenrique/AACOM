@@ -51,10 +51,11 @@ export default async function DashboardLayout({
         ? await prisma.ticket.count({ where: { status: "OPEN" } }) 
         : 0;
 
-    // First, try to load the agency the authenticated user belongs to.
+    // First, try to load the agency the authenticated user belongs to (or impersonates).
     let agency = null;
-    if (dbUser?.agencyId) {
-        agency = await prisma.agency.findUnique({ where: { id: dbUser.agencyId } });
+    const resolvedAgencyId = session?.user?.agencyId || dbUser?.agencyId;
+    if (resolvedAgencyId) {
+        agency = await prisma.agency.findUnique({ where: { id: resolvedAgencyId } });
     }
 
     // If no user/agency, fall back to the slug from middleware
@@ -157,6 +158,11 @@ export default async function DashboardLayout({
 
     return (
         <div className="flex min-h-screen w-full flex-col">
+            {(session?.user as any)?.isImpersonating && (
+                <div className="bg-red-600 text-white text-center py-2 text-sm font-bold animate-pulse shadow-md z-50 relative flex items-center justify-center gap-2">
+                    Estás navegando en la agencia {agencyName} como Super Admin
+                </div>
+            )}
             <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur px-4 md:px-6 shadow-sm bg-gradient-to-l from-primary from-[15%] via-primary/40 to-transparent">
                 <div className="flex items-center gap-4">
                     {/* Desktop Navigation */}

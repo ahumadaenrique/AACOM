@@ -50,6 +50,15 @@ export const authConfig = {
                         session.user.email = 'demo@aacommx.com';
                     }
                 }
+                
+                // --- MODO IMPERSONAR (SaaS Admin) ---
+                const impersonateId = cookieStore.get('impersonateAgencyId')?.value;
+                if (impersonateId && session.user.role === 'SUPER_ADMIN') {
+                    // Override the agency ID in memory
+                    session.user.agencyId = impersonateId;
+                    // Add flag for UI to show red banner
+                    session.user.isImpersonating = true;
+                }
             }
             return session;
         },
