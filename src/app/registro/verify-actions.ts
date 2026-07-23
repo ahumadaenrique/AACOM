@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { twilioClient } from "@/lib/twilio";
 
-export async function sendVerificationSms(phone: string) {
+export async function sendVerificationSms(phone: string, channel: 'sms' | 'whatsapp' = 'sms') {
   if (!twilioClient) {
     return { success: false, message: "Twilio no está configurado en el servidor. Faltan las claves de entorno." };
   }
@@ -42,7 +42,7 @@ export async function sendVerificationSms(phone: string) {
   try {
     const verification = await twilioClient.verify.v2.services(serviceSid)
       .verifications
-      .create({ to: formattedPhone, channel: 'sms' });
+      .create({ to: formattedPhone, channel });
 
     return { success: true, status: verification.status };
   } catch (error: any) {

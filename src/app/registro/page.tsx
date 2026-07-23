@@ -114,6 +114,23 @@ export default function RegisterPage() {
     }
   };
 
+  const handleResendWhatsapp = async () => {
+    setError("");
+    setSendingSms(true);
+    try {
+      const res = await sendVerificationSms(phone, 'whatsapp');
+      if (res.success) {
+        alert("Te hemos enviado el código por WhatsApp. Revísalo e ingrésalo aquí.");
+      } else {
+        setError(res.message || "Error al enviar el código por WhatsApp.");
+      }
+    } catch (err: any) {
+      setError(err.message || "Error al enviar el SMS de verificación.");
+    } finally {
+      setSendingSms(false);
+    }
+  };
+
   const handleVerifySms = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -270,11 +287,23 @@ export default function RegisterPage() {
                 </div>
                 {error && <p className="text-sm text-red-500 font-medium text-center">{error}</p>}
               </CardContent>
-              <CardFooter className="flex gap-3">
-                <Button type="button" variant="outline" disabled={verifyingSms} onClick={() => setStep(1)}>Cambiar Número</Button>
-                <Button type="submit" disabled={verifyingSms || smsCode.length < 6} className="flex-1 bg-indigo-600 hover:bg-indigo-700">
-                  {verifyingSms ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Verificando...</> : 'Confirmar Código'}
-                </Button>
+              <CardFooter className="flex flex-col gap-3">
+                <div className="flex gap-3 w-full">
+                  <Button type="button" variant="outline" disabled={verifyingSms} onClick={() => setStep(1)}>Cambiar Número</Button>
+                  <Button type="submit" disabled={verifyingSms || smsCode.length < 6} className="flex-1 bg-indigo-600 hover:bg-indigo-700">
+                    {verifyingSms ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Verificando...</> : 'Confirmar Código'}
+                  </Button>
+                </div>
+                <div className="w-full text-center mt-2">
+                  <button 
+                    type="button" 
+                    onClick={handleResendWhatsapp}
+                    disabled={sendingSms}
+                    className="text-sm font-medium text-green-600 hover:text-green-700 underline"
+                  >
+                    ¿No te llega el SMS? Reenviar por WhatsApp
+                  </button>
+                </div>
               </CardFooter>
             </form>
           )}
