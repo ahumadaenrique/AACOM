@@ -93,12 +93,27 @@ export async function completeDay(answersJson?: string, score?: number) {
     // Enviar SMS a los administradores de la agencia
     try {
       let message = `Hola. Tu agente ${agentName} ha marcado el Dia ${dayData.dayNumber} como completado y requiere de tu aprobacion para avanzar en el Plan de Arranque.`;
+      let waTemplate: { contentSid: string, contentVariables: Record<string, string> } = {
+        contentSid: "HX68c333dac83353aec1b2f9db6b6eaa1e",
+        contentVariables: {
+          "1": agentName,
+          "2": dayData.dayNumber.toString()
+        }
+      };
       
       if (isQuestionnaire) {
         message = `Hola. Tu agente ${agentName} ha finalizado la evaluacion del Dia ${dayData.dayNumber} obteniendo un ${score}%. Por favor revisa sus resultados y aprueba su avance en el sistema.`;
+        waTemplate = {
+          contentSid: "HXaf01bf3afa60f9737fa7681cc080103a",
+          contentVariables: {
+            "1": agentName,
+            "2": dayData.dayNumber.toString(),
+            "3": score!.toString()
+          }
+        };
       }
 
-      await sendSmsToAdmins(session.user.agencyId!, message);
+      await sendSmsToAdmins(session.user.agencyId!, message, waTemplate);
     } catch (e) {
       console.error("Error sending Twilio SMS:", e);
     }
@@ -116,7 +131,7 @@ export async function completeDay(answersJson?: string, score?: number) {
 }
 
 // Función auxiliar para enviar SMS a todos los ADMIN y SUPER_ADMIN de la agencia que tengan teléfono
-async function sendSmsToAdmins(agencyId: string, message: string) {
+async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: { contentSid: string, contentVariables: Record<string, string> }) {
   const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, TWILIO_WHATSAPP_NUMBER } = process.env;
   
   if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
@@ -142,11 +157,19 @@ async function sendSmsToAdmins(agencyId: string, message: string) {
         
         try {
           // Intentar por WhatsApp primero (más barato)
-          await client.messages.create({
-            body: message,
+          let payload: any = {
             from: `whatsapp:${waFromNumber.startsWith('+') ? waFromNumber : '+' + waFromNumber}`,
             to: `whatsapp:${formattedPhone}`,
-          });
+          };
+
+          if (waTemplate) {
+            payload.contentSid = waTemplate.contentSid;
+            payload.contentVariables = JSON.stringify(waTemplate.contentVariables);
+          } else {
+            payload.body = message;
+          }
+
+          await client.messages.create(payload);
         } catch (waErr) {
           // Si falla (ej. no tiene WhatsApp), hacer fallback a SMS normal
           console.log(`Fallback a SMS para ${admin.phone} (WhatsApp falló)`, waErr);
