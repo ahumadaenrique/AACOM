@@ -162,7 +162,9 @@ async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: {
             to: `whatsapp:${formattedPhone}`,
           };
 
-          if (waTemplate) {
+          // El Sandbox de Twilio no soporta plantillas personalizadas (Content API).
+          // Solo usamos waTemplate si el remitente NO es el Sandbox.
+          if (waTemplate && waFromNumber !== '+14155238886') {
             payload.contentSid = waTemplate.contentSid;
             payload.contentVariables = JSON.stringify(waTemplate.contentVariables);
           } else {
