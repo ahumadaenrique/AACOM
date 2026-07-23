@@ -34,6 +34,7 @@ export async function GET(request: Request) {
                 const accountSid = process.env.TWILIO_ACCOUNT_SID;
                 const authToken = process.env.TWILIO_AUTH_TOKEN;
                 const fromNumber = process.env.TWILIO_PHONE_NUMBER;
+                const waFromNumber = process.env.TWILIO_WHATSAPP_NUMBER || fromNumber || '+14155238886';
 
                 if (accountSid && authToken && fromNumber && superAdmins.length > 0) {
                     const client = twilio(accountSid, authToken);
@@ -45,7 +46,7 @@ export async function GET(request: Request) {
                                 // Intentar por WhatsApp
                                 await client.messages.create({
                                     body: `URGENTE: La API de ${apiNames} esta fallando en AACOM. Revisa el centro de comando inmediatamente.`,
-                                    from: `whatsapp:${fromNumber.startsWith('+') ? fromNumber : '+' + fromNumber}`,
+                                    from: `whatsapp:${waFromNumber.startsWith('+') ? waFromNumber : '+' + waFromNumber}`,
                                     to: `whatsapp:${formattedPhone}`
                                 });
                             } catch (waErr) {

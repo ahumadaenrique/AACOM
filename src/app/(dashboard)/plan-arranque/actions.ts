@@ -132,7 +132,7 @@ export async function completeDay(answersJson?: string, score?: number) {
 
 // Función auxiliar para enviar SMS a todos los ADMIN y SUPER_ADMIN de la agencia que tengan teléfono
 async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: { contentSid: string, contentVariables: Record<string, string> }) {
-  const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER } = process.env;
+  const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, TWILIO_WHATSAPP_NUMBER } = process.env;
   
   if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
     console.warn("Faltan credenciales de Twilio en las variables de entorno.");
@@ -140,6 +140,7 @@ async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: {
   }
 
   const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
+  const waFromNumber = TWILIO_WHATSAPP_NUMBER || TWILIO_PHONE_NUMBER || '+14155238886';
 
   const admins = await prisma.user.findMany({
     where: {
@@ -157,7 +158,7 @@ async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: {
         try {
           // Intentar por WhatsApp primero (más barato)
           let payload: any = {
-            from: `whatsapp:${TWILIO_PHONE_NUMBER.startsWith('+') ? TWILIO_PHONE_NUMBER : '+' + TWILIO_PHONE_NUMBER}`,
+            from: `whatsapp:${waFromNumber.startsWith('+') ? waFromNumber : '+' + waFromNumber}`,
             to: `whatsapp:${formattedPhone}`,
           };
 
