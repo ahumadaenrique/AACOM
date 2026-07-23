@@ -93,7 +93,7 @@ export async function completeDay(answersJson?: string, score?: number) {
     // Enviar SMS a los administradores de la agencia
     try {
       let message = `Hola. Tu agente ${agentName} ha marcado el Dia ${dayData.dayNumber} como completado y requiere de tu aprobacion para avanzar en el Plan de Arranque.`;
-      let waTemplate = {
+      let waTemplate: { contentSid: string, contentVariables: Record<string, string> } = {
         contentSid: "HX68c333dac83353aec1b2f9db6b6eaa1e",
         contentVariables: {
           "1": agentName,
