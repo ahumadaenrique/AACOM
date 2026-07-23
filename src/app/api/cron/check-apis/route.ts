@@ -42,7 +42,7 @@ export async function GET(request: Request) {
                         if (admin.phone) {
                             try {
                                 await client.messages.create({
-                                    body: `URGENTE: La API de ${apiNames} está fallando en AACOM. Revisa el centro de comando inmediatamente.`,
+                                    body: `URGENTE: La API de ${apiNames} esta fallando en AACOM. Revisa el centro de comando inmediatamente.`,
                                     from: fromNumber,
                                     to: `+52${admin.phone}` // Asumiendo teléfonos de México
                                 });

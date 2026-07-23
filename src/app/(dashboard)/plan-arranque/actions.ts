@@ -92,10 +92,10 @@ export async function completeDay(answersJson?: string, score?: number) {
 
     // Enviar SMS a los administradores de la agencia
     try {
-      let message = `Hola. Tu agente ${agentName} ha marcado el Día ${dayData.dayNumber} como completado y requiere de tu aprobación para avanzar en el Plan de Arranque.`;
+      let message = `Hola. Tu agente ${agentName} ha marcado el Dia ${dayData.dayNumber} como completado y requiere de tu aprobacion para avanzar en el Plan de Arranque.`;
       
       if (isQuestionnaire) {
-        message = `Hola. Tu agente ${agentName} ha finalizado la evaluación del Día ${dayData.dayNumber} obteniendo un ${score}%. Por favor revisa sus resultados y aprueba su avance en el sistema.`;
+        message = `Hola. Tu agente ${agentName} ha finalizado la evaluacion del Dia ${dayData.dayNumber} obteniendo un ${score}%. Por favor revisa sus resultados y aprueba su avance en el sistema.`;
       }
 
       await sendSmsToAdmins(session.user.agencyId!, message);
