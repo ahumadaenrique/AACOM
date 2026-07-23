@@ -156,33 +156,50 @@ async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: {
         let formattedPhone = admin.phone.startsWith("+") ? admin.phone : `+52${admin.phone}`;
         
         try {
-          // Intentar por WhatsApp primero (más barato)
+          // Intentar por WhatsApp primero (con plantilla)
           let payload: any = {
             from: `whatsapp:${waFromNumber.startsWith('+') ? waFromNumber : '+' + waFromNumber}`,
             to: `whatsapp:${formattedPhone}`,
           };
 
-          // El Sandbox de Twilio no soporta plantillas personalizadas (Content API).
-          // Solo usamos waTemplate si el remitente NO es el Sandbox.
+          const waApprovalTemplate = process.env.TWILIO_WA_TEMPLATE_APPROVAL_SID || "HX68c333dac83353aec1b2f9db6b6eaa1e";
+          const waScoreTemplate = process.env.TWILIO_WA_TEMPLATE_SCORE_SID || "HXaf01bf3afa60f9737fa7681cc080103a";
+          
           if (waTemplate && waFromNumber !== '+14155238886') {
-            payload.contentSid = waTemplate.contentSid;
-            payload.contentVariables = JSON.stringify(waTemplate.contentVariables);
+             // Reemplazar los hardcoded si existen en ENV
+             if (waTemplate.contentSid === "HX68c333dac83353aec1b2f9db6b6eaa1e") payload.contentSid = waApprovalTemplate;
+             else if (waTemplate.contentSid === "HXaf01bf3afa60f9737fa7681cc080103a") payload.contentSid = waScoreTemplate;
+             else payload.contentSid = waTemplate.contentSid;
+             
+             payload.contentVariables = JSON.stringify(waTemplate.contentVariables);
           } else {
-            payload.body = message;
+             payload.body = message;
           }
 
           await client.messages.create(payload);
-        } catch (waErr) {
-          // Si falla (ej. no tiene WhatsApp), hacer fallback a SMS normal
-          console.log(`Fallback a SMS para ${admin.phone} (WhatsApp falló)`, waErr);
+        } catch (waErr: any) {
+          console.log(`Fallo WhatsApp Template para ${admin.phone}: ${waErr.message}. Intentando WhatsApp Raw...`);
           try {
-            await client.messages.create({
-              body: message,
-              from: TWILIO_PHONE_NUMBER,
-              to: formattedPhone,
-            });
-          } catch (smsErr) {
-            console.error(`Fallo al enviar SMS a ${admin.phone}`, smsErr);
+             // Fallback 1: Intentar WhatsApp sin plantilla (funcionará si hay ventana de 24 horas abierta)
+             await client.messages.create({
+                from: `whatsapp:${waFromNumber.startsWith('+') ? waFromNumber : '+' + waFromNumber}`,
+                to: `whatsapp:${formattedPhone}`,
+                body: message
+             });
+          } catch (rawWaErr: any) {
+             console.log(`Fallo WhatsApp Raw para ${admin.phone}: ${rawWaErr.message}. Fallback a SMS...`);
+             try {
+                // Fallback 2: SMS tradicional
+                if (TWILIO_PHONE_NUMBER) {
+                  await client.messages.create({
+                    body: message,
+                    from: TWILIO_PHONE_NUMBER,
+                    to: formattedPhone,
+                  });
+                }
+             } catch (smsErr: any) {
+                console.error(`Fallo total (Template, Raw, SMS) para ${admin.phone}:`, smsErr.message);
+             }
           }
         }
     }
