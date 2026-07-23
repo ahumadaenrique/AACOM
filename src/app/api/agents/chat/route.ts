@@ -1308,7 +1308,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
             prompt = prompt || "professional insurance agent smiling";
             copyText = copyText || "El mejor seguro para ti";
             subtitle = subtitle || "";
-            socialMediaCaption = socialMediaCaption || "¡Contáctanos hoy mismo para asegurar tu futuro! 🛡️💼 #Seguros";
+            socialMediaCaption = socialMediaCaption || `¡Contáctanos hoy mismo para asegurar tu futuro! 🛡️💼 #Seguros #${agencyName.replace(/\s+/g, '')}`;
             backgroundData = backgroundData || "100%";
 
             // 1. Validate Agent Generation Limits
@@ -1463,7 +1463,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
          - 'copyText': El título o gancho visual principal de la tarjeta. Debe ser un extracto llamativo y corto (máximo 8 palabras) de la noticia o el gancho principal (ej. "+20% Inflación Médica", "Seguro de Auto 2026", "Asegura Tu Retiro", "Gasto Médico Sube"). NUNCA uses "El mejor seguro para ti" a menos que sea genérico.
          - 'subtitle': Un subtítulo muy corto de soporte (máximo 12 palabras) que complemente al título (ej. "Los costos hospitalarios subirán este año en México" o "Protégete frente al incremento de precios").
          - 'backgroundData': La estadística clave, porcentaje o palabra de impacto corta que irá gigante y semitransparente en el fondo (ej. "20%", "2026", "ALERTA", "SALUD").
-         - 'socialMediaCaption': La redacción de la publicación completa para redes sociales (con emojis, hashtags, datos persuasivos y un fuerte llamado a la acción). Debe ser profesional y estar completamente adaptada a la nota o noticia. Escribe un texto completo y atractivo de al menos 2 párrafos cortos.
+         - 'socialMediaCaption': La redacción de la publicación completa para redes sociales (con emojis, hashtags, datos persuasivos y un fuerte llamado a la acción). Debe ser profesional y estar completamente adaptada a la nota o noticia. Escribe un texto completo y atractivo de al menos 2 párrafos cortos. DEBES incluir SIEMPRE el hashtag #${agencyName.replace(/\s+/g, '')} al final de la publicación.
       9. REGLA DE RESPUESTA CRÍTICA: En tu mensaje de texto final para el usuario, **NUNCA** imprimas, repitas o enlaces la URL de la imagen de salida (transparentUrl) ni el resultado crudo de la herramienta (como el JSON). El sistema renderiza la imagen automáticamente en un componente visual del chat, por lo que imprimir la URL en tu texto es confuso e incómodo. Concéntrate únicamente en entregar el texto de la publicación y tu análisis.`
     }
 
