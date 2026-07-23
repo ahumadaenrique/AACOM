@@ -631,7 +631,8 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
       }
 
       const res = await saveAdnDiagnostic(payload)
-      if (res.success) {
+      if (res.success && res.diagnostic) {
+        setCurrentDiagnosticId(res.diagnostic.id)
         if (!isAutoSave) {
           alert('¡Diagnóstico ADN guardado exitosamente!')
         }
