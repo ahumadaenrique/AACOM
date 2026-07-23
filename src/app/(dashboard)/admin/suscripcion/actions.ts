@@ -21,11 +21,11 @@ export async function createCheckoutSession(
       return { success: false, message: "Permisos insuficientes" };
     }
 
-    if (!user.agencyId) {
+    if (!user || !((session?.user?.agencyId || user.agencyId) as string)) {
       return { success: false, message: "No tienes una agencia asignada. Ve a la página anterior y recarga." };
     }
 
-    const agency = await prisma.agency.findUnique({ where: { id: user.agencyId } });
+    const agency = await prisma.agency.findUnique({ where: { id: (session?.user?.agencyId || user.agencyId) as string } });
     if (!agency) return { success: false, message: "Agencia no encontrada en la base de datos" };
 
     const hostList = headers();

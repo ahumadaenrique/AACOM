@@ -141,12 +141,12 @@ export async function saveAgencyDocumentRecord(name: string, fileUrl: string, fi
     const session = await auth();
     const user = session?.user?.email ? await prisma.user.findUnique({ where: { email: session.user.email } }) : null;
     if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
-    if (!user.agencyId) return { success: false, message: "Sin agencia asignada" };
+    if (!user || !((session?.user?.agencyId || user.agencyId) as string)) return { success: false, message: "Sin agencia asignada" };
 
     try {
         const doc = await prisma.agencyDocument.create({
             data: {
-                agencyId: user.agencyId,
+                agencyId: ((session?.user?.agencyId || user.agencyId) as string),
                 name,
                 fileUrl,
                 fileSize,
@@ -164,7 +164,7 @@ export async function uploadAgencyDocument(formData: FormData) {
     const session = await auth();
     const user = session?.user?.email ? await prisma.user.findUnique({ where: { email: session.user.email } }) : null;
     if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
-    if (!user.agencyId) return { success: false, message: "Sin agencia asignada" };
+    if (!user || !((session?.user?.agencyId || user.agencyId) as string)) return { success: false, message: "Sin agencia asignada" };
 
     const file = formData.get("file") as File;
     if (!file) return { success: false, message: "No se proporcionó archivo" };
@@ -174,20 +174,20 @@ export async function uploadAgencyDocument(formData: FormData) {
     }
 
     // Verificar limite
-    const { usedBytes, maxBytes } = await getAgencyStorageUsage(user.agencyId);
+    const { usedBytes, maxBytes } = await getAgencyStorageUsage(((session?.user?.agencyId || user.agencyId) as string));
     if (usedBytes + file.size > maxBytes) {
         return { success: false, message: "Límite de almacenamiento de la agencia superado (Max: 80MB)." };
     }
 
     try {
-        const blob = await put(`agency_${user.agencyId}/${Date.now()}_${file.name}`, file, { 
+        const blob = await put(`agency_${((session?.user?.agencyId || user.agencyId) as string)}/${Date.now()}_${file.name}`, file, { 
             access: 'public',
             token: process.env.BLOB_BIBLIOTECA_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN 
         });
         
         const doc = await prisma.agencyDocument.create({
             data: {
-                agencyId: user.agencyId,
+                agencyId: ((session?.user?.agencyId || user.agencyId) as string),
                 name: file.name,
                 fileUrl: blob.url,
                 fileSize: file.size,
@@ -209,7 +209,7 @@ export async function deleteAgencyDocument(documentId: string) {
     try {
         const doc = await prisma.agencyDocument.findUnique({ where: { id: documentId } });
         if (!doc) return { success: false, message: "No existe" };
-        if (doc.agencyId !== user.agencyId && user.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
+        if (doc.agencyId !== ((session?.user?.agencyId || user.agencyId) as string) && user.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
 
         await del(doc.fileUrl, {
             token: process.env.BLOB_BIBLIOTECA_READ_WRITE_TOKEN || process.env.BLOB_READ_WRITE_TOKEN 
@@ -230,7 +230,7 @@ export async function updateAgencyDocumentCategory(documentId: string, category:
     try {
         const doc = await prisma.agencyDocument.findUnique({ where: { id: documentId } });
         if (!doc) return { success: false, message: "No existe" };
-        if (doc.agencyId !== user.agencyId && user.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
+        if (doc.agencyId !== ((session?.user?.agencyId || user.agencyId) as string) && user.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
 
         await prisma.agencyDocument.update({
             where: { id: documentId },
@@ -246,18 +246,18 @@ export async function toggleAgencyPack(packId: string, enabled: boolean) {
     const session = await auth();
     const user = session?.user?.email ? await prisma.user.findUnique({ where: { email: session.user.email } }) : null;
     if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
-    if (!user.agencyId) return { success: false, message: "Sin agencia" };
+    if (!user || !((session?.user?.agencyId || user.agencyId) as string)) return { success: false, message: "Sin agencia" };
 
     try {
         if (enabled) {
             await prisma.agencyDocumentPack.upsert({
-                where: { agencyId_packId: { agencyId: user.agencyId, packId } },
-                create: { agencyId: user.agencyId, packId },
+                where: { agencyId_packId: { agencyId: ((session?.user?.agencyId || user.agencyId) as string), packId } },
+                create: { agencyId: ((session?.user?.agencyId || user.agencyId) as string), packId },
                 update: {}
             });
         } else {
             await prisma.agencyDocumentPack.delete({
-                where: { agencyId_packId: { agencyId: user.agencyId, packId } }
+                where: { agencyId_packId: { agencyId: ((session?.user?.agencyId || user.agencyId) as string), packId } }
             });
         }
         return { success: true };
@@ -273,7 +273,7 @@ export async function toggleAgencyPack(packId: string, enabled: boolean) {
 export async function getLibraryData() {
     const session = await auth();
     const user = session?.user?.email ? await prisma.user.findUnique({ where: { email: session.user.email } }) : null;
-    if (!user?.agencyId) return { success: false, message: "No autenticado", globalPacks: [], myPacks: [], agencyDocs: [], storage: null };
+    if (!user || !((session?.user?.agencyId || user?.agencyId) as string)) return { success: false, message: "No autenticado", globalPacks: [], myPacks: [], agencyDocs: [], storage: null };
 
     try {
         // SUPER ADMIN: Ve todos los packs
@@ -286,16 +286,16 @@ export async function getLibraryData() {
         });
 
         const enabledPacksMap = await prisma.agencyDocumentPack.findMany({
-            where: { agencyId: user.agencyId }
+            where: { agencyId: ((session?.user?.agencyId || user.agencyId) as string) }
         }).then(res => new Set(res.map(r => r.packId)));
 
         const agencyDocs = await prisma.agencyDocument.findMany({
-            where: { agencyId: user.agencyId },
+            where: { agencyId: ((session?.user?.agencyId || user.agencyId) as string) },
             orderBy: { createdAt: 'desc' }
         });
 
         // Calculo de almacenamiento
-        const { usedBytes, maxBytes } = await getAgencyStorageUsage(user.agencyId);
+        const { usedBytes, maxBytes } = await getAgencyStorageUsage(((session?.user?.agencyId || user.agencyId) as string));
 
         return {
             success: true,

@@ -179,7 +179,7 @@ export async function saveCotizacion(data: {
             return { success: false, message: "Usuario no encontrado" };
         }
 
-        if ((session?.user?.agencyId || user?.agencyId) === 'demo-agency-id') {
+        if (((session?.user?.agencyId || user?.agencyId) as string) === 'demo-agency-id') {
             const count = await prisma.cotizacion.count({ where: { agencyId: 'demo-agency-id' } });
             if (count >= 5) {
                 return { success: false, message: "Límite de demostración alcanzado (máx. 5 cotizaciones). Adquiere una suscripción para uso ilimitado." };
@@ -189,7 +189,7 @@ export async function saveCotizacion(data: {
         const newCotizacion = await prisma.cotizacion.create({
             data: {
                 userId: user.id,
-                agencyId: (session?.user?.agencyId || user?.agencyId),
+                agencyId: ((session?.user?.agencyId || user?.agencyId) as string),
                 cliente: data.cliente,
                 telefono: data.telefono,
                 agente: data.agente,
@@ -228,7 +228,7 @@ export async function getCotizaciones(options?: { month?: number, year?: number,
             return { success: false, message: "Usuario no encontrado", cotizaciones: [] };
         }
 
-        let whereClause: any = { agencyId: (session?.user?.agencyId || user?.agencyId) };
+        let whereClause: any = { agencyId: ((session?.user?.agencyId || user?.agencyId) as string) };
         if (user.role !== 'SUPER_ADMIN' && user.role !== 'ADMIN') {
             whereClause.userId = user.id;
         }
@@ -287,7 +287,7 @@ export async function getAdminDashboardStats() {
 
         // Obtener solo campos necesarios para TODO el historial
         const list = await prisma.cotizacion.findMany({
-            where: { agencyId: (session?.user?.agencyId || user?.agencyId) },
+            where: { agencyId: ((session?.user?.agencyId || user?.agencyId) as string) },
             select: { agente: true, createdAt: true, producto: true, primaAnual: true }
         });
 
@@ -443,7 +443,7 @@ export async function getAgents() {
         if (!user) throw new Error("Usuario no encontrado");
 
         const agents = await prisma.agent.findMany({
-            where: { agencyId: (session?.user?.agencyId || user?.agencyId) || null },
+            where: { agencyId: ((session?.user?.agencyId || user?.agencyId) as string) || null },
             orderBy: { name: 'asc' }
         });
         return { success: true, agents };
@@ -466,7 +466,7 @@ export async function createAgent(name: string) {
         }
         
         const existing = await prisma.agent.findUnique({
-            where: { name_agencyId: { name: trimmedName, agencyId: (session?.user?.agencyId || user?.agencyId) || '' } }
+            where: { name_agencyId: { name: trimmedName, agencyId: ((session?.user?.agencyId || user?.agencyId) as string) || '' } }
         });
         
         if (existing) {
@@ -474,7 +474,7 @@ export async function createAgent(name: string) {
         }
 
         const newAgent = await prisma.agent.create({
-            data: { name: trimmedName, agencyId: (session?.user?.agencyId || user?.agencyId) || null }
+            data: { name: trimmedName, agencyId: ((session?.user?.agencyId || user?.agencyId) as string) || null }
         });
         return { success: true, agent: newAgent };
     } catch (error: any) {
@@ -491,7 +491,7 @@ export async function deleteAgent(id: string) {
         if (!user) throw new Error("Usuario no encontrado");
 
         const existing = await prisma.agent.findUnique({ where: { id } });
-        if (!existing || existing.agencyId !== ((session?.user?.agencyId || user?.agencyId) || null)) {
+        if (!existing || existing.agencyId !== (((session?.user?.agencyId || user?.agencyId) as string) || null)) {
             return { success: false, message: "No autorizado" };
         }
 
@@ -576,7 +576,7 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
             return { success: false, message: "Usuario no encontrado en base de datos" };
         }
 
-        if ((session?.user?.agencyId || user?.agencyId) === 'demo-agency-id') {
+        if (((session?.user?.agencyId || user?.agencyId) as string) === 'demo-agency-id') {
             const count = await prisma.adnDiagnostic.count({ where: { agencyId: 'demo-agency-id' } });
             if (count >= 5) {
                 return { success: false, message: "Límite de demostración alcanzado (máx. 5 diagnósticos ADN). Adquiere una suscripción para uso ilimitado." };
@@ -586,7 +586,7 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
         const newDiagnostic = await prisma.adnDiagnostic.create({
             data: {
                 userId: user.id,
-                agencyId: (session?.user?.agencyId || user?.agencyId),
+                agencyId: ((session?.user?.agencyId || user?.agencyId) as string),
                 modalidad: data.modalidad,
                 clienteNombre: data.clienteNombre,
                 clienteEdad: data.clienteEdad,
@@ -648,7 +648,7 @@ export async function getAdnDiagnostics(options?: { month?: number, year?: numbe
 
         let whereClause: any = {};
         if ((user.role === 'ADMIN' || user.role === 'SUPER_ADMIN')) {
-            whereClause = { agencyId: (session?.user?.agencyId || user?.agencyId) };
+            whereClause = { agencyId: ((session?.user?.agencyId || user?.agencyId) as string) };
         } else {
             whereClause = { userId: user.id };
         }
@@ -738,10 +738,10 @@ export async function createAgentUser(data: { name: string; email: string; role:
         }
 
         // Restricción adicional: límite de máximo 2 ADMINS por Agencia/Promotoría
-        if (data.role === 'ADMIN' && (session?.user?.agencyId || currentUser?.agencyId)) {
+        if (data.role === 'ADMIN' && ((session?.user?.agencyId || currentUser?.agencyId) as string)) {
             const activeAdminsCount = await prisma.user.count({
                 where: {
-                    agencyId: (session?.user?.agencyId || currentUser?.agencyId),
+                    agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string),
                     role: 'ADMIN',
                     active: true
                 }
@@ -760,9 +760,9 @@ export async function createAgentUser(data: { name: string; email: string; role:
         }
 
         // Limit Check
-        if ((session?.user?.agencyId || currentUser?.agencyId)) {
+        if (((session?.user?.agencyId || currentUser?.agencyId) as string)) {
             const activeUsersCount = await prisma.user.count({
-                where: { agencyId: (session?.user?.agencyId || currentUser?.agencyId), active: true }
+                where: { agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string), active: true }
             });
             const limit = 10 + (currentUser.agency?.purchasedSeats || 0);
             if (activeUsersCount >= limit) {
@@ -781,7 +781,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
                 name: data.name,
                 email: data.email,
                 role: data.role,
-                agencyId: (session?.user?.agencyId || currentUser?.agencyId),
+                agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string),
                 phone: data.phone || null,
                 active: data.active !== undefined ? data.active : true,
                 password: hashedPassword,
@@ -793,11 +793,11 @@ export async function createAgentUser(data: { name: string; email: string; role:
         if (data.syncToAgent) {
             const trimmedName = data.name.trim();
             const existingAgent = await prisma.agent.findUnique({
-                where: { name_agencyId: { name: trimmedName, agencyId: (session?.user?.agencyId || currentUser?.agencyId) || '' } }
+                where: { name_agencyId: { name: trimmedName, agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) || '' } }
             });
             if (!existingAgent) {
                 await prisma.agent.create({
-                    data: { name: trimmedName, agencyId: (session?.user?.agencyId || currentUser?.agencyId) || null }
+                    data: { name: trimmedName, agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) || null }
                 });
             }
         }
@@ -827,7 +827,7 @@ export async function getUsers() {
 
         const users = await prisma.user.findMany({
             where: {
-                agencyId: (session?.user?.agencyId || currentUser?.agencyId)
+                agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string)
             },
             orderBy: {
                 createdAt: 'desc'
@@ -1067,7 +1067,7 @@ export async function createAnnouncement(base64Data: string, fileName: string, l
                 linkUrl: linkUrl || null,
                 active: true,
                 order: 0,
-                agencyId: (session?.user?.agencyId || currentUser?.agencyId) || null
+                agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) || null
             }
         });
 
@@ -1229,7 +1229,7 @@ export async function saveActivityLogEntry(activityId: string, prospectName?: st
         const log = await prisma.activityLog.create({
             data: {
                 userId: user.id,
-                agencyId: (session?.user?.agencyId || user?.agencyId),
+                agencyId: ((session?.user?.agencyId || user?.agencyId) as string),
                 activityId,
                 activityName: activity.name,
                 points: activity.value,
@@ -1422,7 +1422,7 @@ export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear
 
         const diagnostics = await prisma.adnDiagnostic.findMany({
             where: {
-                agencyId: (session?.user?.agencyId || user?.agencyId),
+                agencyId: ((session?.user?.agencyId || user?.agencyId) as string),
                 createdAt: {
                     gte: startOfMonth,
                     lte: endOfMonth
@@ -1443,7 +1443,7 @@ export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear
 
         // Fetch all active agents to initialize 0 points
         const allAgents = await prisma.user.findMany({
-            where: { agencyId: (session?.user?.agencyId || user?.agencyId), active: true, role: 'USER' },
+            where: { agencyId: ((session?.user?.agencyId || user?.agencyId) as string), active: true, role: 'USER' },
             select: {
                 id: true,
                 name: true,
@@ -1492,7 +1492,7 @@ export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear
             where: {
                 type: 'RANKING_AD',
                 active: true,
-                agencyId: (session?.user?.agencyId || user?.agencyId) || null
+                agencyId: ((session?.user?.agencyId || user?.agencyId) as string) || null
             },
             orderBy: {
                 createdAt: 'desc'
@@ -1539,7 +1539,7 @@ export async function createRankingAd(base64Data: string, fileName: string, link
         await prisma.content.updateMany({
             where: { 
                 type: 'RANKING_AD',
-                agencyId: (session?.user?.agencyId || currentUser?.agencyId) || null
+                agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) || null
             },
             data: { active: false }
         });
@@ -1551,7 +1551,7 @@ export async function createRankingAd(base64Data: string, fileName: string, link
                 linkUrl: linkUrl || null,
                 active: true,
                 order: 0,
-                agencyId: (session?.user?.agencyId || currentUser?.agencyId) || null
+                agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) || null
             }
         });
 
@@ -1615,7 +1615,7 @@ export async function getAdminActivityReport(userId?: string, startDate?: string
             return { success: false, message: "Permisos insuficientes", logs: [] };
         }
 
-        const whereClause: any = { agencyId: (session?.user?.agencyId || currentUser?.agencyId) };
+        const whereClause: any = { agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) };
         if (userId && userId !== 'ALL') {
             whereClause.userId = userId;
         }
@@ -1692,15 +1692,15 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
         if (data.name && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) {
             const trimmedName = data.name.trim();
             const existingAgent = await prisma.agent.findUnique({
-                where: { name_agencyId: { name: trimmedName, agencyId: (session?.user?.agencyId || currentUser?.agencyId) || '' } }
+                where: { name_agencyId: { name: trimmedName, agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) || '' } }
             });
             if (!existingAgent) {
                 // Find if there is an agent with old name and update or create
                 // Simply create if not found, as we don't have secondary relation
                 await prisma.agent.upsert({
-                    where: { name_agencyId: { name: trimmedName, agencyId: (session?.user?.agencyId || currentUser?.agencyId) || '' } },
+                    where: { name_agencyId: { name: trimmedName, agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) || '' } },
                     update: {},
-                    create: { name: trimmedName, agencyId: (session?.user?.agencyId || currentUser?.agencyId) || null }
+                    create: { name: trimmedName, agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) || null }
                 });
             }
         }
@@ -1797,7 +1797,7 @@ export async function getTeamDirectory() {
         const users = await prisma.user.findMany({
             where: {
                 active: true,
-                agencyId: currentUser?.agencyId,
+                agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string),
                 role: {
                     not: 'SELLER'
                 }
@@ -1954,19 +1954,19 @@ export async function getKnowledgeDocuments() {
 
     try {
         const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-        if (!user || !(session?.user?.agencyId || user?.agencyId)) return { success: false, message: "Sin agencia asignada" };
+        if (!user || !((session?.user?.agencyId || user?.agencyId) as string)) return { success: false, message: "Sin agencia asignada" };
 
         if (user.role === 'SUPER_ADMIN') {
             await prisma.knowledgeDocument.updateMany({
                 where: { agencyId: null },
-                data: { agencyId: (session?.user?.agencyId || user?.agencyId) }
+                data: { agencyId: ((session?.user?.agencyId || user?.agencyId) as string) }
             });
         }
 
         const docs = await prisma.knowledgeDocument.findMany({
             where: { 
                 OR: [
-                    { agencyId: (session?.user?.agencyId || user?.agencyId) },
+                    { agencyId: ((session?.user?.agencyId || user?.agencyId) as string) },
                     { isGlobalTemplate: true }
                 ]
             },
@@ -1997,7 +1997,7 @@ export async function saveKnowledgeDocument(id: string | null, title: string, co
         if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
         }
-        if (!(session?.user?.agencyId || user?.agencyId)) {
+        if (!user || !((session?.user?.agencyId || user?.agencyId) as string)) {
             return { success: false, message: "Sin agencia asignada" };
         }
 
@@ -2014,7 +2014,7 @@ export async function saveKnowledgeDocument(id: string | null, title: string, co
             return { success: true, doc: updated, message: "Documento actualizado" };
         } else {
             const created = await prisma.knowledgeDocument.create({
-                data: { title, content, agencyId: (session?.user?.agencyId || user?.agencyId), isGlobalTemplate: user.role === 'SUPER_ADMIN' ? isGlobalTemplate : false }
+                data: { title, content, agencyId: ((session?.user?.agencyId || user?.agencyId) as string), isGlobalTemplate: user.role === 'SUPER_ADMIN' ? isGlobalTemplate : false }
             });
             revalidatePath('/admin');
             return { success: true, doc: created, message: "Documento guardado con ÃƒÆ’Ã‚Â©xito" };
@@ -2190,7 +2190,7 @@ export async function sendAdminPushNotification(recipientId: string, message: st
         let subs = [];
         if (recipientId === 'ALL') {
             const agencyUsers = await prisma.user.findMany({
-                where: { agencyId: (session?.user?.agencyId || currentUser?.agencyId) },
+                where: { agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) },
                 select: { id: true }
             });
             const agencyUserIds = agencyUsers.map(u => u.id);
@@ -2282,7 +2282,7 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
-        const agencyId = (session?.user?.agencyId || currentUser?.agencyId);
+        const agencyId = ((session?.user?.agencyId || currentUser?.agencyId) as string);
         if (!agencyId) return { success: false, message: "El administrador no tiene una agencia vÃƒÆ’Ã‚Â¡lida asignada." };
 
         const agents = await prisma.user.findMany({
@@ -2479,7 +2479,7 @@ export async function voteOnPoll(pollId: string, optionId: string) {
         const session = await auth();
         if (!session?.user?.email) return { success: false, message: "No autenticado" };
         const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-        if (!user || !(session?.user?.agencyId || user?.agencyId)) return { success: false, message: "Usuario no vÃƒÂ¡lido" };
+        if (!user || !((session?.user?.agencyId || user?.agencyId) as string)) return { success: false, message: "Usuario no vÃƒÂ¡lido" };
 
         // Check if poll is active
         const poll = await prisma.poll.findUnique({ where: { id: pollId } });
@@ -2491,7 +2491,7 @@ export async function voteOnPoll(pollId: string, optionId: string) {
                 pollId,
                 optionId,
                 userId: user.id,
-                agencyId: (session?.user?.agencyId || user?.agencyId)
+                agencyId: ((session?.user?.agencyId || user?.agencyId) as string)
             }
         });
         return { success: true, vote };

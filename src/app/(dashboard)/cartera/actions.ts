@@ -44,7 +44,7 @@ export async function createClient(data: z.infer<typeof clientSchema>) {
 
   const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { agencyId: true } });
 
-  if (dbUser?.agencyId === 'demo-agency-id') {
+  if (((session?.user?.agencyId || dbUser?.agencyId) as string) === 'demo-agency-id') {
     const clientCount = await prisma.client.count({ where: { agencyId: 'demo-agency-id' } });
     if (clientCount >= 5) {
       throw new Error("Límite de demostración alcanzado (máx. 5 clientes). Adquiere una suscripción para uso ilimitado.");
@@ -53,7 +53,7 @@ export async function createClient(data: z.infer<typeof clientSchema>) {
 
   const client = await prisma.client.create({
     data: {
-      agencyId: dbUser?.agencyId,
+      agencyId: ((session?.user?.agencyId || dbUser?.agencyId) as string),
       name: parsed.name,
       email: parsed.email || null,
       phone: parsed.phone || null,
@@ -155,7 +155,7 @@ export async function createPolicy(data: z.infer<typeof policySchema>) {
 
   const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { agencyId: true } });
 
-  if (dbUser?.agencyId === 'demo-agency-id') {
+  if (((session?.user?.agencyId || dbUser?.agencyId) as string) === 'demo-agency-id') {
     const policyCount = await prisma.policy.count({ where: { agencyId: 'demo-agency-id' } });
     if (policyCount >= 5) {
       throw new Error("Límite de demostración alcanzado (máx. 5 pólizas). Adquiere una suscripción para uso ilimitado.");
@@ -164,7 +164,7 @@ export async function createPolicy(data: z.infer<typeof policySchema>) {
 
   const policy = await prisma.policy.create({
     data: {
-      agencyId: dbUser?.agencyId,
+      agencyId: ((session?.user?.agencyId || dbUser?.agencyId) as string),
       policyNumber: parsed.policyNumber,
       clientId: parsed.clientId || null,
       contractor: parsed.contractor || null,
@@ -377,7 +377,7 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
             if (!client) {
                 client = await prisma.client.create({
                     data: {
-                        agencyId: dbUser?.agencyId,
+                        agencyId: ((session?.user?.agencyId || dbUser?.agencyId) as string),
                         name: row.clientName,
                         email: row.email ? String(row.email) : null,
                         phone: row.phone ? String(row.phone) : null,
@@ -396,7 +396,7 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
                 if (!existingPolicy) {
                     await prisma.policy.create({
                         data: {
-                            agencyId: dbUser?.agencyId,
+                            agencyId: ((session?.user?.agencyId || dbUser?.agencyId) as string),
                             policyNumber: String(row.policyNumber),
                             clientId: client.id,
                             contractor: row.clientName,

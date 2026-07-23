@@ -187,7 +187,7 @@ No uses markdown (\`\`\`), devuelve únicamente el HTML exacto con las clases de
             const review = await prisma.performanceReview.create({
                 data: {
                     agentId: user.id,
-                    agencyId: user.agencyId,
+                    agencyId: ((session?.user?.agencyId || user.agencyId) as string),
                     ...updateData
                 }
             });
@@ -216,7 +216,7 @@ export async function getPerformanceReviews() {
         // Si es Admin, trae las de su agencia. Si es agente, trae solo las suyas.
         const whereClause: any = {};
         if (user.role === "ADMIN" || user.role === "SUPER_ADMIN") {
-            whereClause.agencyId = user.agencyId;
+            whereClause.agencyId = ((session?.user?.agencyId || user.agencyId) as string);
         } else {
             whereClause.agentId = user.id;
         }
@@ -308,7 +308,7 @@ export async function deleteReview(reviewId: string) {
         });
 
         if (!review) throw new Error("Reporte no encontrado.");
-        if (review.agencyId !== user.agencyId) throw new Error("No puedes eliminar reportes de otra agencia.");
+        if (review.agencyId !== ((session?.user?.agencyId || user.agencyId) as string)) throw new Error("No puedes eliminar reportes de otra agencia.");
 
         await prisma.performanceReview.delete({
             where: { id: reviewId }
