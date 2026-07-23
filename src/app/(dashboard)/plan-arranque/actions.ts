@@ -94,7 +94,7 @@ export async function completeDay(answersJson?: string, score?: number) {
     try {
       let message = `Hola. Tu agente ${agentName} ha marcado el Dia ${dayData.dayNumber} como completado y requiere de tu aprobacion para avanzar en el Plan de Arranque.`;
       let waTemplate: { contentSid: string, contentVariables: Record<string, string> } = {
-        contentSid: "HX68c333dac83353aec1b2f9db6b6eaa1e",
+        contentSid: "HX64c40e44fd66c6424a2663b03bc18cd2",
         contentVariables: {
           "1": agentName,
           "2": dayData.dayNumber.toString()
@@ -162,7 +162,7 @@ async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: {
             to: `whatsapp:${formattedPhone}`,
           };
 
-          const waApprovalTemplate = process.env.TWILIO_WA_TEMPLATE_APPROVAL_SID || "HX68c333dac83353aec1b2f9db6b6eaa1e";
+          const waApprovalTemplate = process.env.TWILIO_WA_TEMPLATE_APPROVAL_SID || "HX64c40e44fd66c6424a2663b03bc18cd2";
           const waScoreTemplate = process.env.TWILIO_WA_TEMPLATE_SCORE_SID || "HXaf01bf3afa60f9737fa7681cc080103a";
           
           if (waTemplate && waFromNumber !== '+14155238886') {
