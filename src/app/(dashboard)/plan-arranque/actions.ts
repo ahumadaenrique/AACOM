@@ -137,15 +137,28 @@ async function sendSmsToAdmins(agencyId: string, message: string) {
 
   for (const admin of admins) {
     if (admin.phone) {
-      try {
-        await client.messages.create({
-          body: message,
-          from: TWILIO_PHONE_NUMBER,
-          to: admin.phone.startsWith("+") ? admin.phone : `+52${admin.phone}`, // Asumiendo México por defecto si no trae código
-        });
-      } catch (err) {
-        console.error(`Fallo al enviar SMS a ${admin.phone}`, err);
-      }
+        let formattedPhone = admin.phone.startsWith("+") ? admin.phone : `+52${admin.phone}`;
+        
+        try {
+          // Intentar por WhatsApp primero (más barato)
+          await client.messages.create({
+            body: message,
+            from: `whatsapp:${TWILIO_PHONE_NUMBER.startsWith('+') ? TWILIO_PHONE_NUMBER : '+' + TWILIO_PHONE_NUMBER}`,
+            to: `whatsapp:${formattedPhone}`,
+          });
+        } catch (waErr) {
+          // Si falla (ej. no tiene WhatsApp), hacer fallback a SMS normal
+          console.log(`Fallback a SMS para ${admin.phone} (WhatsApp falló)`);
+          try {
+            await client.messages.create({
+              body: message,
+              from: TWILIO_PHONE_NUMBER,
+              to: formattedPhone,
+            });
+          } catch (smsErr) {
+            console.error(`Fallo al enviar SMS a ${admin.phone}`, smsErr);
+          }
+        }
     }
   }
 }

@@ -40,14 +40,25 @@ export async function GET(request: Request) {
                     
                     for (const admin of superAdmins) {
                         if (admin.phone) {
+                            let formattedPhone = `+52${admin.phone}`;
                             try {
+                                // Intentar por WhatsApp
                                 await client.messages.create({
                                     body: `URGENTE: La API de ${apiNames} esta fallando en AACOM. Revisa el centro de comando inmediatamente.`,
-                                    from: fromNumber,
-                                    to: `+52${admin.phone}` // Asumiendo teléfonos de México
+                                    from: `whatsapp:${fromNumber.startsWith('+') ? fromNumber : '+' + fromNumber}`,
+                                    to: `whatsapp:${formattedPhone}`
                                 });
-                            } catch (smsErr) {
-                                console.error(`Error enviando SMS a ${admin.phone}:`, smsErr);
+                            } catch (waErr) {
+                                // Fallback a SMS
+                                try {
+                                    await client.messages.create({
+                                        body: `URGENTE: La API de ${apiNames} esta fallando en AACOM. Revisa el centro de comando inmediatamente.`,
+                                        from: fromNumber,
+                                        to: formattedPhone
+                                    });
+                                } catch (smsErr) {
+                                    console.error(`Error enviando SMS a ${admin.phone}:`, smsErr);
+                                }
                             }
                         }
                     }
