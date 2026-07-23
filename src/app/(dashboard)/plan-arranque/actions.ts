@@ -94,7 +94,7 @@ export async function completeDay(answersJson?: string, score?: number) {
     try {
       let message = `Hola. Tu agente ${agentName} ha marcado el Dia ${dayData.dayNumber} como completado y requiere de tu aprobacion para avanzar en el Plan de Arranque.`;
       let waTemplate: { contentSid: string, contentVariables: Record<string, string> } = {
-        contentSid: "HX64c40e44fd66c6424a2663b03bc18cd2",
+        contentSid: "HX83cba053486337b24157b6487460dd77",
         contentVariables: {
           "1": agentName,
           "2": dayData.dayNumber.toString()
@@ -104,7 +104,7 @@ export async function completeDay(answersJson?: string, score?: number) {
       if (isQuestionnaire) {
         message = `Hola. Tu agente ${agentName} ha finalizado la evaluacion del Dia ${dayData.dayNumber} obteniendo un ${score}%. Por favor revisa sus resultados y aprueba su avance en el sistema.`;
         waTemplate = {
-          contentSid: "HXaf01bf3afa60f9737fa7681cc080103a",
+          contentSid: "HX64c40e44fd66c6424a2663b03bc18cd2",
           contentVariables: {
             "1": agentName,
             "2": dayData.dayNumber.toString(),
@@ -162,13 +162,13 @@ async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: {
             to: `whatsapp:${formattedPhone}`,
           };
 
-          const waApprovalTemplate = process.env.TWILIO_WA_TEMPLATE_APPROVAL_SID || "HX64c40e44fd66c6424a2663b03bc18cd2";
-          const waScoreTemplate = process.env.TWILIO_WA_TEMPLATE_SCORE_SID || "HXaf01bf3afa60f9737fa7681cc080103a";
+          const waApprovalTemplate = process.env.TWILIO_WA_TEMPLATE_APPROVAL_SID || "HX83cba053486337b24157b6487460dd77";
+          const waScoreTemplate = process.env.TWILIO_WA_TEMPLATE_SCORE_SID || "HX64c40e44fd66c6424a2663b03bc18cd2";
           
           if (waTemplate && waFromNumber !== '+14155238886') {
              // Reemplazar los hardcoded si existen en ENV
-             if (waTemplate.contentSid === "HX68c333dac83353aec1b2f9db6b6eaa1e") payload.contentSid = waApprovalTemplate;
-             else if (waTemplate.contentSid === "HXaf01bf3afa60f9737fa7681cc080103a") payload.contentSid = waScoreTemplate;
+             if (waTemplate.contentSid === "HX83cba053486337b24157b6487460dd77" || waTemplate.contentSid === "HX64c40e44fd66c6424a2663b03bc18cd2" && !isQuestionnaire) payload.contentSid = waApprovalTemplate;
+             else if (waTemplate.contentSid === "HX64c40e44fd66c6424a2663b03bc18cd2" || waTemplate.contentSid === "HXaf01bf3afa60f9737fa7681cc080103a") payload.contentSid = waScoreTemplate;
              else payload.contentSid = waTemplate.contentSid;
              
              payload.contentVariables = JSON.stringify(waTemplate.contentVariables);
