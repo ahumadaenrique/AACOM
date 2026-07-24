@@ -10,6 +10,7 @@ export const metadata = {
 
 export default async function SeguimientoPage() {
   let users: any[] = [];
+  let admins: any[] = [];
   let totalDaysCount = 0;
   let days: any[] = [];
   let errorMsg = null;
@@ -23,6 +24,7 @@ export default async function SeguimientoPage() {
 
     const res = await getAgentsProgress();
     users = res.users;
+    admins = res.admins;
     totalDaysCount = res.totalDaysCount;
     days = await getDays();
   } catch (err: any) {
@@ -36,5 +38,5 @@ export default async function SeguimientoPage() {
     return <div className="p-8 text-red-500 font-bold">Error interno: {errorMsg}</div>;
   }
 
-  return <SeguimientoClient initialAgents={users} totalDaysCount={totalDaysCount} days={days} />;
+  return <SeguimientoClient initialAgents={users} admins={admins} totalDaysCount={totalDaysCount} days={days} />;
 }

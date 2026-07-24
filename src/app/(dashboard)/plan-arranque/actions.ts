@@ -113,7 +113,7 @@ export async function completeDay(answersJson?: string, score?: number) {
         };
       }
 
-      await sendSmsToAdmins(session.user.agencyId!, message, waTemplate);
+      await sendSmsToAdmins(session.user.agencyId!, message, waTemplate, session.user.id);
     } catch (e) {
       console.error("Error sending Twilio SMS:", e);
     }
@@ -131,7 +131,7 @@ export async function completeDay(answersJson?: string, score?: number) {
 }
 
 // Función auxiliar para enviar SMS a todos los ADMIN y SUPER_ADMIN de la agencia que tengan teléfono
-async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: { contentSid: string, contentVariables: Record<string, string> }) {
+async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: { contentSid: string, contentVariables: Record<string, string> }, agentId?: string) {
   const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER, TWILIO_WHATSAPP_NUMBER } = process.env;
   
   if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
@@ -142,14 +142,28 @@ async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: {
   const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
   const waFromNumber = TWILIO_WHATSAPP_NUMBER || TWILIO_PHONE_NUMBER || '+14155238886';
 
-  const admins = await prisma.user.findMany({
-    where: {
-      agencyId,
-      role: { in: ["ADMIN", "SUPER_ADMIN"] },
-      phone: { not: null },
-    },
-    select: { phone: true },
-  });
+  let admins: { phone: string | null }[] = [];
+  
+  if (agentId) {
+    const agent = await prisma.user.findUnique({ where: { id: agentId }, select: { reportsToId: true } });
+    if (agent?.reportsToId) {
+      const assignedAdmin = await prisma.user.findUnique({ where: { id: agent.reportsToId }, select: { phone: true } });
+      if (assignedAdmin && assignedAdmin.phone) {
+        admins.push(assignedAdmin);
+      }
+    }
+  }
+
+  if (admins.length === 0) {
+    admins = await prisma.user.findMany({
+      where: {
+        agencyId,
+        role: { in: ["ADMIN", "SUPER_ADMIN"] },
+        phone: { not: null },
+      },
+      select: { phone: true },
+    });
+  }
 
   for (const admin of admins) {
     if (admin.phone) {

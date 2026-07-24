@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { approveAgentDay, updateAgentDay, rejectAgentProgress } from "./actions";
+import { approveAgentDay, updateAgentDay, rejectAgentProgress, assignAgentSupervisor } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function SeguimientoClient({ initialAgents, totalDaysCount, days }: { initialAgents: any[], totalDaysCount: number, days: any[] }) {
+export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days }: { initialAgents: any[], admins: any[], totalDaysCount: number, days: any[] }) {
   const { toast } = useToast();
   const [agents, setAgents] = useState(initialAgents);
   const [loadingId, setLoadingId] = useState<string | null>(null);
@@ -100,6 +100,24 @@ export function SeguimientoClient({ initialAgents, totalDaysCount, days }: { ini
     }
   };
 
+  const handleAssignAdmin = async (userId: string, adminId: string) => {
+    try {
+      const dbAdminId = adminId === "none" ? null : adminId;
+      await assignAgentSupervisor(userId, dbAdminId);
+      
+      setAgents(agents.map(a => {
+        if (a.id === userId) {
+          return { ...a, reportsToId: dbAdminId };
+        }
+        return a;
+      }));
+      
+      toast({ title: "Responsable asignado", description: "Se ha actualizado el responsable de este agente." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  };
+
   return (
     <div className="w-full max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -127,6 +145,7 @@ export function SeguimientoClient({ initialAgents, totalDaysCount, days }: { ini
             <TableHeader>
               <TableRow>
                 <TableHead>Agente</TableHead>
+                <TableHead>Responsable</TableHead>
                 <TableHead className="w-[30%]">Progreso del Plan</TableHead>
                 <TableHead>Estado Actual</TableHead>
                 <TableHead className="text-right">Acción</TableHead>
@@ -135,7 +154,7 @@ export function SeguimientoClient({ initialAgents, totalDaysCount, days }: { ini
             <TableBody>
               {agents.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-slate-500">
+                  <TableCell colSpan={5} className="text-center py-8 text-slate-500">
                     No hay agentes en la agencia.
                   </TableCell>
                 </TableRow>
@@ -163,6 +182,25 @@ export function SeguimientoClient({ initialAgents, totalDaysCount, days }: { ini
                             <span className="text-xs text-slate-500">{agent.email}</span>
                           </div>
                         </div>
+                      </TableCell>
+
+                      <TableCell>
+                        <Select 
+                          value={agent.reportsToId || "none"} 
+                          onValueChange={(val) => handleAssignAdmin(agent.id, val)}
+                        >
+                          <SelectTrigger className="w-[180px] h-8 text-xs">
+                            <SelectValue placeholder="Todos los Admins" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">Todos los Admins</SelectItem>
+                            {admins.map(admin => (
+                              <SelectItem key={admin.id} value={admin.id}>
+                                {admin.name || admin.email}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </TableCell>
                       
                       <TableCell>

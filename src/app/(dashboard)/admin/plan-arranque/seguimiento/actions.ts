@@ -6,8 +6,8 @@ import { revalidatePath } from "next/cache";
 
 export async function getAgentsProgress() {
   const session = await auth();
-  if (!session?.user?.id) return { users: [], totalDaysCount: 0 };
-  if (!session.user.agencyId) return { users: [], totalDaysCount: 0 };
+  if (!session?.user?.id) return { users: [], admins: [], totalDaysCount: 0 };
+  if (!session.user.agencyId) return { users: [], admins: [], totalDaysCount: 0 };
 
   // Obtener usuarios de la agencia (incluyendo al Super Admin Enrique)
   const users = await prisma.user.findMany({
@@ -23,7 +23,21 @@ export async function getAgentsProgress() {
       name: true,
       email: true,
       image: true,
+      reportsToId: true,
       developmentProgress: true,
+    },
+    orderBy: { name: "asc" },
+  });
+
+  const admins = await prisma.user.findMany({
+    where: {
+      agencyId: session.user.agencyId,
+      role: { in: ["ADMIN", "SUPER_ADMIN"] },
+    },
+    select: {
+      id: true,
+      name: true,
+      email: true,
     },
     orderBy: { name: "asc" },
   });
@@ -32,7 +46,27 @@ export async function getAgentsProgress() {
     where: { agencyId: session.user.agencyId },
   });
 
-  return { users, totalDaysCount };
+  return { users, admins, totalDaysCount };
+}
+
+export async function assignAgentSupervisor(agentId: string, adminId: string | null) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+
+  const adminUser = await prisma.user.findUnique({
+    where: { id: session.user.id }
+  });
+  if (adminUser?.role !== 'ADMIN' && adminUser?.role !== 'SUPER_ADMIN') {
+    throw new Error("No autorizado");
+  }
+
+  await prisma.user.update({
+    where: { id: agentId },
+    data: { reportsToId: adminId }
+  });
+
+  revalidatePath("/admin/plan-arranque/seguimiento");
+  return { success: true };
 }
 
 export async function approveAgentDay(userId: string) {
