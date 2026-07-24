@@ -102,6 +102,57 @@ export async function deleteDay(id: string) {
   return { success: true };
 }
 
+export async function reorderModule(id: string, direction: "up" | "down") {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  if (!session.user.agencyId) throw new Error("Sin agencia asignada");
+
+  const agencyId = session.user.agencyId;
+
+  // Get current module
+  const currentModule = await prisma.developmentPlanDay.findUnique({
+    where: { id },
+  });
+
+  if (!currentModule || currentModule.agencyId !== agencyId) {
+    throw new Error("Módulo no encontrado");
+  }
+
+  // Get the target module to swap with
+  const targetModule = await prisma.developmentPlanDay.findFirst({
+    where: {
+      agencyId,
+      dayNumber: direction === "up" 
+        ? { lt: currentModule.dayNumber }
+        : { gt: currentModule.dayNumber }
+    },
+    orderBy: {
+      dayNumber: direction === "up" ? "desc" : "asc"
+    }
+  });
+
+  if (!targetModule) {
+    // Already at the very top or bottom, nothing to do
+    return { success: false, message: "No se puede mover más" };
+  }
+
+  // Swap their dayNumbers in a transaction
+  await prisma.$transaction([
+    prisma.developmentPlanDay.update({
+      where: { id: currentModule.id },
+      data: { dayNumber: targetModule.dayNumber }
+    }),
+    prisma.developmentPlanDay.update({
+      where: { id: targetModule.id },
+      data: { dayNumber: currentModule.dayNumber }
+    })
+  ]);
+
+  revalidatePath("/admin/plan-arranque");
+  revalidatePath("/plan-arranque");
+  return { success: true };
+}
+
 export async function uploadPlanFile(formData: FormData) {
   try {
     const session = await auth();

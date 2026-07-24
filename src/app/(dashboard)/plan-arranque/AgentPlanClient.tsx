@@ -173,7 +173,7 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
                         isCurrent ? "text-teal-700 dark:text-teal-400" :
                         "text-slate-500"
                       )}>
-                        Día {day.dayNumber}
+                        Módulo {day.dayNumber}
                       </span>
                       {day.requiresAdminApproval && <Lock className="h-3 w-3 text-amber-500" />}
                     </div>
@@ -207,7 +207,7 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
                 Plan de Arranque
               </p>
               <h1 className="text-3xl font-black text-slate-900 dark:text-white">
-                {isPlanFinished ? "¡Plan Completado!" : <>Día {progress.currentDayNumber} <span className="text-slate-400 font-medium">de {totalDaysCount}</span></>}
+                {isPlanFinished ? "¡Plan Completado!" : <>Módulo {progress.currentDayNumber} <span className="text-slate-400 font-medium">de {totalDaysCount}</span></>}
               </h1>
             </div>
             <div className="text-right">
@@ -225,7 +225,7 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
             </div>
             <div className="space-y-2 max-w-lg">
               <h2 className="text-4xl font-black text-slate-900 dark:text-white">¡Felicidades, {userName}!</h2>
-              <p className="text-lg text-slate-600 dark:text-slate-400">Has completado exitosamente los {totalDaysCount} días de tu Plan de Arranque. Estás listo para llevar tu carrera al siguiente nivel.</p>
+              <p className="text-lg text-slate-600 dark:text-slate-400">Has completado exitosamente los {totalDaysCount} módulos de tu Plan de Arranque. Estás listo para llevar tu carrera al siguiente nivel.</p>
             </div>
           </div>
         ) : progress.status === "WAITING_APPROVAL" ? (
@@ -234,9 +234,9 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
               <div className="mx-auto h-24 w-24 rounded-full bg-amber-100 flex items-center justify-center dark:bg-amber-900/40 shadow-inner">
                 <Clock className="h-12 w-12 text-amber-600 dark:text-amber-500" />
               </div>
-              <CardTitle className="text-3xl font-bold text-slate-900 dark:text-white">Día Completado</CardTitle>
+              <CardTitle className="text-3xl font-bold text-slate-900 dark:text-white">Módulo Completado</CardTitle>
               <CardDescription className="text-lg max-w-md mx-auto">
-                Has logrado el objetivo del Día {progress.currentDayNumber}, pero requiere verificación para continuar.
+                Has logrado el objetivo del Módulo {progress.currentDayNumber}, pero requiere verificación para continuar.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-8 space-y-6">
@@ -268,7 +268,7 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
                 <div className="ml-3">
                   <AlertTitle className="font-bold text-lg mb-2">Esperando revisión de tu promotor</AlertTitle>
                   <AlertDescription className="text-base opacity-90 leading-relaxed">
-                    Hemos enviado una notificación por SMS a tu promotor para que revise tus resultados. Una vez que apruebe tu avance en el sistema, se desbloqueará automáticamente el siguiente día.
+                    Hemos enviado una notificación por SMS a tu promotor para que revise tus resultados. Una vez que apruebe tu avance en el sistema, se desbloqueará automáticamente el siguiente módulo.
                   </AlertDescription>
                 </div>
               </Alert>
@@ -277,8 +277,8 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
         ) : !dayData ? (
           <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 bg-white dark:bg-zinc-900 rounded-3xl border border-slate-100 dark:border-zinc-800">
             <AlertCircle className="h-16 w-16 text-amber-500" />
-            <h2 className="text-2xl font-bold text-slate-700 dark:text-slate-200">Día no disponible</h2>
-            <p className="text-slate-500">Parece que este día no ha sido configurado por tu administrador.</p>
+            <h2 className="text-2xl font-bold text-slate-700 dark:text-slate-200">Módulo no disponible</h2>
+            <p className="text-slate-500">Parece que este módulo no ha sido configurado por tu administrador.</p>
           </div>
         ) : (
           <Card className="border-0 shadow-xl shadow-slate-200/40 dark:shadow-none dark:bg-zinc-900/50 rounded-3xl overflow-hidden transition-all">
@@ -324,7 +324,7 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
                       <div className="space-y-4">
                         <h3 className="font-bold flex items-center gap-2 text-slate-800 dark:text-slate-200 text-lg">
                           <PlayCircle className="h-6 w-6 text-red-500" />
-                          Video{validVideos.length > 1 ? "s" : ""} del día
+                          Video{validVideos.length > 1 ? "s" : ""} del módulo
                         </h3>
                         <div className="grid gap-4">
                           {validVideos.map((vid, idx) => (
@@ -390,7 +390,7 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
                       <FileText className="h-6 w-6 text-indigo-600 dark:text-indigo-400" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-xl text-slate-800 dark:text-slate-200">Evaluación del Día</h3>
+                      <h3 className="font-bold text-xl text-slate-800 dark:text-slate-200">Evaluación del Módulo</h3>
                       <p className="text-sm text-slate-500">Responde correctamente para avanzar. (Mínimo {dayData.minPassingScore}%)</p>
                     </div>
                   </div>

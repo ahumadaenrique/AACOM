@@ -81,18 +81,29 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
             ...a,
             developmentProgress: {
               ...prevProgress,
-              currentDayNumber: dayNumber,
-              status: "IN_PROGRESS"
-            }
-          };
-        }
-        return a;
-      }));
+      const result = await updateAgentDay(userId, dayNumber);
       
-      toast({ 
-        title: "Día actualizado", 
-        description: `El agente ha sido movido al ${dayNumber > totalDaysCount ? 'Plan Completado' : `Día ${dayNumber}`} exitosamente.` 
-      });
+      if (result.success) {
+        setAgents(agents.map(a => {
+          if (a.id === userId) {
+            const prevProgress = a.developmentProgress || { currentDayNumber: 1, status: "IN_PROGRESS" };
+            return {
+              ...a,
+              developmentProgress: {
+                ...prevProgress,
+                currentDayNumber: dayNumber,
+                status: "IN_PROGRESS"
+              }
+            };
+          }
+          return a;
+        }));
+        
+        toast({ 
+          title: "Módulo actualizado", 
+          description: `El agente ha sido movido al ${dayNumber > totalDaysCount ? 'Plan Completado' : `Módulo ${dayNumber}`} exitosamente.` 
+        });
+      }
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
@@ -138,7 +149,7 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
       <Card className="border-0 shadow-lg shadow-slate-200/50 dark:shadow-none dark:border dark:border-zinc-800">
         <CardHeader className="bg-slate-50/50 dark:bg-zinc-900/50 border-b border-slate-100 dark:border-zinc-800">
           <CardTitle>Estado Actual</CardTitle>
-          <CardDescription>Lista de agentes y su día de entrenamiento actual.</CardDescription>
+          <CardDescription>Lista de agentes y su módulo de entrenamiento actual.</CardDescription>
         </CardHeader>
         <CardContent className="p-0">
           <Table>
@@ -207,7 +218,7 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
                         <div className="space-y-1.5 w-full pr-4">
                           <div className="flex justify-between text-xs font-medium">
                             <span className={cn(isFinished ? "text-teal-600 dark:text-teal-400 font-bold" : "text-slate-600 dark:text-slate-400")}>
-                              {isFinished ? "¡Completado!" : `Día ${dayNum}`}
+                              {isFinished ? "¡Completado!" : `Módulo ${dayNum}`}
                             </span>
                             <span className="text-slate-500">{progressPercentage}%</span>
                           </div>
@@ -268,12 +279,12 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
                               disabled={loadingId === agent.id}
                             >
                               <SelectTrigger className="h-9">
-                                <SelectValue placeholder="Día" />
+                                <SelectValue placeholder="Módulo" />
                               </SelectTrigger>
                               <SelectContent>
                                 {Array.from({ length: totalDaysCount }).map((_, i) => (
-                                  <SelectItem key={i + 1} value={String(i + 1)}>
-                                    Día {i + 1}
+                                  <SelectItem key={i + 1} value={(i + 1).toString()}>
+                                    Módulo {i + 1}
                                   </SelectItem>
                                 ))}
                                 <SelectItem value={String(totalDaysCount + 1)}>
@@ -304,8 +315,8 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
         return (
           <Dialog open={!!reviewingAgent} onOpenChange={(o) => !o && setReviewingAgent(null)}>
             <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Resultados de Evaluación - Día {dayNum}</DialogTitle>
+              <DialogHeader className="pb-4 border-b">
+                <DialogTitle>Resultados de Evaluación - Módulo {dayNum}</DialogTitle>
                 <DialogDescription>
                   Revisión del agente <span className="font-bold text-slate-800 dark:text-slate-200">{reviewingAgent.name}</span>. 
                   Intentos realizados: {progress.questionnaireAttempts}
@@ -377,11 +388,11 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
                   {loadingId === reviewingAgent.id ? "Procesando..." : "Rechazar y Forzar Repetición"}
                 </Button>
                 <Button 
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
                   onClick={() => handleApprove(reviewingAgent.id)}
                   disabled={loadingId === reviewingAgent.id}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
                 >
-                  {loadingId === reviewingAgent.id ? "Aprobando..." : "Aprobar Avance al Siguiente Día"}
+                  {loadingId === reviewingAgent.id ? "Aprobando..." : "Aprobar Avance al Siguiente Módulo"}
                 </Button>
               </DialogFooter>
             </DialogContent>

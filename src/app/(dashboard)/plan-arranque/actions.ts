@@ -70,7 +70,7 @@ export async function completeDay(answersJson?: string, score?: number) {
     },
   });
 
-  if (!dayData) throw new Error("Día no configurado por el administrador");
+  if (!dayData) throw new Error("Módulo no configurado por el administrador");
 
   const agentName = session.user.name || "Un agente";
 

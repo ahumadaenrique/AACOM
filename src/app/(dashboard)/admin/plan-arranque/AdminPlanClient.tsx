@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Edit, Trash2, Link as LinkIcon, FileText, Lock, Unlock, Users, PlusCircle, X } from "lucide-react";
+import { Plus, Edit, Trash2, Link as LinkIcon, FileText, Lock, Unlock, Users, PlusCircle, X, ArrowUp, ArrowDown } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { createDay, updateDay, deleteDay, uploadPlanFile } from "./actions";
+import { createDay, updateDay, deleteDay, uploadPlanFile, reorderModule } from "./actions";
 import { useToast } from "@/hooks/use-toast";
 
 export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
@@ -19,6 +19,7 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingDay, setEditingDay] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   
   const [formData, setFormData] = useState({
@@ -131,11 +132,11 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
       if (editingDay) {
         newDay = await updateDay(editingDay.id, dataToSave);
         setDays(days.map(d => d.id === editingDay.id ? newDay : d));
-        toast({ title: "Día actualizado correctamente" });
+        toast({ title: "Módulo actualizado correctamente" });
       } else {
         newDay = await createDay(dataToSave);
         setDays([...days, newDay].sort((a, b) => a.dayNumber - b.dayNumber));
-        toast({ title: "Día creado correctamente" });
+        toast({ title: "Módulo creado correctamente" });
       }
       setIsDialogOpen(false);
     } catch (error: any) {
@@ -147,17 +148,33 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
   };
 
   const handleDelete = async (id: string) => {
-    if (confirm("¿Estás seguro de eliminar este día?")) {
+    if (confirm("¿Estás seguro de eliminar este módulo?")) {
       try {
         setIsLoading(true);
         await deleteDay(id);
         setDays(days.filter(d => d.id !== id));
-        toast({ title: "Día eliminado" });
+        toast({ title: "Módulo eliminado" });
       } catch (error: any) {
         toast({ title: "Error", description: error.message, variant: "destructive" });
       } finally {
         setIsLoading(false);
       }
+    }
+  };
+
+  const handleReorder = async (id: string, direction: "up" | "down") => {
+    if (isReordering) return;
+    try {
+      setIsReordering(true);
+      const res = await reorderModule(id, direction);
+      if (res.success) {
+        // We will just reload the page to get the new order from the server properly
+        window.location.reload();
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    } finally {
+      setIsReordering(false);
     }
   };
 
@@ -177,7 +194,7 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
           </Button>
           <Button onClick={() => handleOpenDialog()} className="bg-teal-600 hover:bg-teal-700 shadow-md">
             <Plus className="h-4 w-4 mr-2" />
-            Añadir Día
+            Añadir Módulo
           </Button>
         </div>
       </div>
@@ -191,7 +208,7 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[80px]">Día</TableHead>
+                <TableHead className="w-[80px]">Módulo</TableHead>
                 <TableHead>Título</TableHead>
                 <TableHead>Recursos</TableHead>
                 <TableHead className="text-center">Candado</TableHead>
@@ -202,7 +219,7 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
               {days.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="text-center py-8 text-slate-500">
-                    No hay días configurados.
+                    No hay módulos configurados.
                   </TableCell>
                 </TableRow>
               ) : (
@@ -245,9 +262,16 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(day)}>
-                        <Edit className="h-4 w-4 text-slate-500 hover:text-teal-600" />
-                      </Button>
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon" disabled={isReordering} onClick={() => handleReorder(day.id, 'up')}>
+                          <ArrowUp className="h-4 w-4 text-slate-500 hover:text-teal-600" />
+                        </Button>
+                        <Button variant="ghost" size="icon" disabled={isReordering} onClick={() => handleReorder(day.id, 'down')}>
+                          <ArrowDown className="h-4 w-4 text-slate-500 hover:text-teal-600" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(day)}>
+                          <Edit className="h-4 w-4 text-slate-500 hover:text-teal-600" />
+                        </Button>
                       <Button variant="ghost" size="icon" onClick={() => handleDelete(day.id)}>
                         <Trash2 className="h-4 w-4 text-slate-500 hover:text-red-600" />
                       </Button>
@@ -263,11 +287,11 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{editingDay ? "Editar Día" : "Añadir Nuevo Día"}</DialogTitle>
+            <DialogTitle>{editingDay ? "Editar Módulo" : "Añadir Nuevo Módulo"}</DialogTitle>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="dayNumber" className="text-right font-bold">Día No.</Label>
+              <Label htmlFor="dayNumber" className="text-right font-bold">Módulo No.</Label>
               <Input
                 id="dayNumber"
                 type="number"
