@@ -167,8 +167,8 @@ async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: {
           
           if (waTemplate && waFromNumber !== '+14155238886') {
              // Reemplazar los hardcoded si existen en ENV
-             if (waTemplate.contentSid === "HX83cba053486337b24157b6487460dd77" || waTemplate.contentSid === "HX64c40e44fd66c6424a2663b03bc18cd2" && !isQuestionnaire) payload.contentSid = waApprovalTemplate;
-             else if (waTemplate.contentSid === "HX64c40e44fd66c6424a2663b03bc18cd2" || waTemplate.contentSid === "HXaf01bf3afa60f9737fa7681cc080103a") payload.contentSid = waScoreTemplate;
+             if (waTemplate.contentSid === "HX83cba053486337b24157b6487460dd77") payload.contentSid = waApprovalTemplate;
+             else if (waTemplate.contentSid === "HX64c40e44fd66c6424a2663b03bc18cd2") payload.contentSid = waScoreTemplate;
              else payload.contentSid = waTemplate.contentSid;
              
              payload.contentVariables = JSON.stringify(waTemplate.contentVariables);
