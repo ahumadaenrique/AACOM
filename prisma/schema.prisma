@@ -756,6 +756,7 @@ model DevelopmentPlanDay {
   videoUrl              String? // Enlace a YouTube u otro video
   fileUrl               String? // URL del PDF/PPT subido (Vercel Blob)
   fileName              String? // Nombre original del archivo
+  additionalMediaJson   String? // Archivos y videos adicionales
   requiresAdminApproval Boolean @default(false) // El candado
 
   hasQuestionnaire      Boolean @default(false)

@@ -25,29 +25,37 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
     dayNumber: "",
     title: "",
     instructions: "",
-    videoUrl: "",
+    videoUrls: [""],
     requiresAdminApproval: false,
-    fileUrl: "",
-    fileName: "",
+    existingFiles: [] as {url: string, name: string}[],
     hasQuestionnaire: false,
     minPassingScore: "80",
   });
 
   const [questions, setQuestions] = useState<any[]>([]);
 
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   const handleOpenDialog = (day?: any) => {
     if (day) {
       setEditingDay(day);
+      let parsedMedia = { videos: [], files: [] };
+      if (day.additionalMediaJson) {
+        try { parsedMedia = JSON.parse(day.additionalMediaJson); } catch (e) {}
+      }
+      
+      const vids = [day.videoUrl, ...(parsedMedia.videos || [])].filter(Boolean);
+      const fils = [];
+      if (day.fileUrl) fils.push({ url: day.fileUrl, name: day.fileName || "Archivo" });
+      fils.push(...(parsedMedia.files || []));
+
       setFormData({
         dayNumber: day.dayNumber.toString(),
         title: day.title,
         instructions: day.instructions || "",
-        videoUrl: day.videoUrl || "",
+        videoUrls: vids.length > 0 ? vids : [""],
         requiresAdminApproval: day.requiresAdminApproval,
-        fileUrl: day.fileUrl || "",
-        fileName: day.fileName || "",
+        existingFiles: fils,
         hasQuestionnaire: day.hasQuestionnaire || false,
         minPassingScore: (day.minPassingScore || 80).toString(),
       });
@@ -62,16 +70,15 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
         dayNumber: (days.length + 1).toString(),
         title: "",
         instructions: "",
-        videoUrl: "",
+        videoUrls: [""],
         requiresAdminApproval: false,
-        fileUrl: "",
-        fileName: "",
+        existingFiles: [],
         hasQuestionnaire: false,
         minPassingScore: "80",
       });
       setQuestions([]);
     }
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setUploadProgress(0);
     setIsDialogOpen(true);
   };
@@ -79,50 +86,43 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
   const handleSave = async () => {
     try {
       setIsLoading(true);
-      let uploadedFileUrl = formData.fileUrl;
-      let uploadedFileName = formData.fileName;
+      let allFiles = [...formData.existingFiles];
 
-      if (selectedFile) {
-        try {
-          // 1. Obtener el client token del servidor
-          const tokenRes = await fetch(`/api/upload?filename=${encodeURIComponent(selectedFile.name)}`, {
-            method: "POST",
-          });
-          
-          if (!tokenRes.ok) {
-            const errData = await tokenRes.json().catch(() => ({}));
-            throw new Error(errData.error || `Error HTTP: ${tokenRes.status}`);
-          }
-          
-          const { clientToken, pathname } = await tokenRes.json();
-          if (!clientToken || !pathname) throw new Error("No se pudo obtener el token de subida o el pathname");
-
-          // 2. Subir directamente a Vercel usando el client token
-          const { put } = await import('@vercel/blob/client');
-          const newBlob = await put(pathname, selectedFile, {
-            access: 'public',
-            token: clientToken,
-            onUploadProgress: (progressEvent) => {
-              if (progressEvent.percentage) {
-                setUploadProgress(progressEvent.percentage);
+      if (selectedFiles.length > 0) {
+        for (let i = 0; i < selectedFiles.length; i++) {
+          const file = selectedFiles[i];
+          try {
+            const tokenRes = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, { method: "POST" });
+            if (!tokenRes.ok) throw new Error(`Error HTTP: ${tokenRes.status}`);
+            const { clientToken, pathname } = await tokenRes.json();
+            
+            const { put } = await import('@vercel/blob/client');
+            const newBlob = await put(pathname, file, {
+              access: 'public', token: clientToken,
+              onUploadProgress: (progressEvent) => {
+                if (progressEvent.percentage) setUploadProgress(progressEvent.percentage);
               }
-            }
-          });
-          
-          uploadedFileUrl = newBlob.url;
-          uploadedFileName = selectedFile.name;
-        } catch (error: any) {
-          toast({ title: "Error", description: error.message || "Error al subir el archivo", variant: "destructive" });
-          setIsLoading(false);
-          setUploadProgress(0);
-          return;
+            });
+            allFiles.push({ url: newBlob.url, name: file.name });
+          } catch (error: any) {
+            toast({ title: "Error", description: `Error al subir ${file.name}`, variant: "destructive" });
+          }
         }
       }
 
+      const cleanVideos = formData.videoUrls.filter(v => v.trim() !== "");
+      const firstVideo = cleanVideos.length > 0 ? cleanVideos[0] : null;
+      const restVideos = cleanVideos.length > 1 ? cleanVideos.slice(1) : [];
+
+      const firstFile = allFiles.length > 0 ? allFiles[0] : null;
+      const restFiles = allFiles.length > 1 ? allFiles.slice(1) : [];
+
       const dataToSave = {
         ...formData,
-        fileUrl: uploadedFileUrl,
-        fileName: uploadedFileName,
+        videoUrl: firstVideo,
+        fileUrl: firstFile ? firstFile.url : null,
+        fileName: firstFile ? firstFile.name : null,
+        additionalMediaJson: JSON.stringify({ videos: restVideos, files: restFiles }),
         minPassingScore: parseInt(formData.minPassingScore),
         questionnaireJson: formData.hasQuestionnaire ? JSON.stringify(questions) : null,
       };
@@ -142,6 +142,7 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } finally {
       setIsLoading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -211,8 +212,23 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
                     <TableCell className="font-semibold">{day.title}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        {day.videoUrl && <span title="Video vinculado"><LinkIcon className="h-4 w-4 text-blue-500" /></span>}
-                        {day.fileUrl && <span title={day.fileName || "Archivo adjunto"}><FileText className="h-4 w-4 text-orange-500" /></span>}
+                        {(() => {
+                           let vCount = day.videoUrl ? 1 : 0;
+                           let fCount = day.fileUrl ? 1 : 0;
+                           if (day.additionalMediaJson) {
+                             try {
+                               const p = JSON.parse(day.additionalMediaJson);
+                               if (p.videos) vCount += p.videos.length;
+                               if (p.files) fCount += p.files.length;
+                             } catch(e) {}
+                           }
+                           return (
+                             <>
+                               {vCount > 0 && <span title={`${vCount} Video(s) vinculados`} className="flex items-center text-xs"><LinkIcon className="h-4 w-4 text-blue-500 mr-1" /> {vCount > 1 ? vCount : ''}</span>}
+                               {fCount > 0 && <span title={`${fCount} Archivo(s) adjuntos`} className="flex items-center text-xs"><FileText className="h-4 w-4 text-orange-500 mr-1" /> {fCount > 1 ? fCount : ''}</span>}
+                             </>
+                           )
+                        })()}
                       </div>
                     </TableCell>
                     <TableCell className="text-center">
@@ -280,38 +296,77 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
                 placeholder="Metas del día, qué estudiar, llamadas a realizar, etc..."
               />
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="videoUrl" className="text-right font-bold">YouTube URL</Label>
-              <Input
-                id="videoUrl"
-                value={formData.videoUrl}
-                onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
-                className="col-span-3"
-                placeholder="https://youtube.com/watch?v=..."
-              />
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label className="text-right font-bold mt-2">YouTube URLs</Label>
+              <div className="col-span-3 space-y-2">
+                {formData.videoUrls.map((url, i) => (
+                  <div key={i} className="flex gap-2">
+                    <Input
+                      value={url}
+                      onChange={(e) => {
+                        const newUrls = [...formData.videoUrls];
+                        newUrls[i] = e.target.value;
+                        setFormData({ ...formData, videoUrls: newUrls });
+                      }}
+                      placeholder="https://youtube.com/watch?v=..."
+                    />
+                    <Button variant="outline" size="icon" onClick={() => {
+                      const newUrls = formData.videoUrls.filter((_, idx) => idx !== i);
+                      if (newUrls.length === 0) newUrls.push("");
+                      setFormData({ ...formData, videoUrls: newUrls });
+                    }}>
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </div>
+                ))}
+                <Button type="button" variant="ghost" size="sm" onClick={() => setFormData({ ...formData, videoUrls: [...formData.videoUrls, ""] })}>
+                  <PlusCircle className="h-4 w-4 mr-2" /> Añadir otro video
+                </Button>
+              </div>
             </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label className="text-right font-bold">Archivo (PDF/PPT)</Label>
+            <div className="grid grid-cols-4 items-start gap-4">
+              <Label className="text-right font-bold mt-2">Archivos (PDF/Office)</Label>
               <div className="col-span-3 space-y-2">
                 <Input
                   type="file"
-                  accept=".pdf,.ppt,.pptx"
+                  multiple
+                  accept=".pdf,.ppt,.pptx,.doc,.docx,.xls,.xlsx"
                   onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      if (file.size > 10 * 1024 * 1024) {
-                        toast({ title: "Error", description: "El archivo no puede exceder 10MB", variant: "destructive" });
-                        e.target.value = "";
+                    if (e.target.files) {
+                      const newFiles = Array.from(e.target.files);
+                      const validFiles = newFiles.filter(f => f.size <= 10 * 1024 * 1024);
+                      if (validFiles.length < newFiles.length) {
+                        toast({ title: "Advertencia", description: "Algunos archivos exceden los 10MB y fueron omitidos.", variant: "destructive" });
+                      }
+                      if (formData.existingFiles.length + selectedFiles.length + validFiles.length > 5) {
+                        toast({ title: "Error", description: "Máximo 5 archivos permitidos en total.", variant: "destructive" });
                         return;
                       }
-                      setSelectedFile(file);
+                      setSelectedFiles([...selectedFiles, ...validFiles]);
                     }
                   }}
                 />
-                {formData.fileName && !selectedFile && (
-                  <p className="text-xs text-muted-foreground">Actual: {formData.fileName}</p>
-                )}
-                <p className="text-[10px] text-muted-foreground">Tamaño máximo: 10MB</p>
+                <p className="text-[10px] text-muted-foreground">Tamaño máximo: 10MB c/u. (Máximo 5)</p>
+                <div className="space-y-1 mt-2">
+                  {formData.existingFiles.map((f, i) => (
+                     <div key={`exist-${i}`} className="flex items-center justify-between text-sm p-2 border rounded bg-slate-50 dark:bg-zinc-800">
+                        <span className="truncate max-w-[200px]">{f.name}</span>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-red-500" onClick={() => {
+                          const newEx = formData.existingFiles.filter((_, idx) => idx !== i);
+                          setFormData({ ...formData, existingFiles: newEx });
+                        }}><X className="h-4 w-4" /></Button>
+                     </div>
+                  ))}
+                  {selectedFiles.map((f, i) => (
+                     <div key={`new-${i}`} className="flex items-center justify-between text-sm p-2 border rounded bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300">
+                        <span className="truncate max-w-[200px]">{f.name} (Nuevo)</span>
+                        <Button variant="ghost" size="sm" className="h-6 w-6 p-0 text-red-500" onClick={() => {
+                          const newSel = selectedFiles.filter((_, idx) => idx !== i);
+                          setSelectedFiles(newSel);
+                        }}><X className="h-4 w-4" /></Button>
+                     </div>
+                  ))}
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-4 items-center gap-4 mt-2">

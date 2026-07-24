@@ -300,58 +300,87 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
               )}
 
               {/* Recursos Multimedia */}
-              <div className="grid md:grid-cols-2 gap-8">
-                {/* Video */}
-                {dayData.videoUrl && (
-                  <div className="space-y-4">
-                    <h3 className="font-bold flex items-center gap-2 text-slate-800 dark:text-slate-200 text-lg">
-                      <PlayCircle className="h-6 w-6 text-red-500" />
-                      Video del día
-                    </h3>
-                    <div className="rounded-3xl overflow-hidden aspect-video bg-black shadow-lg border border-slate-200 dark:border-zinc-800 ring-4 ring-slate-50 dark:ring-zinc-900/50 transition-all hover:scale-[1.02]">
-                      {getYouTubeId(dayData.videoUrl) ? (
-                        <iframe
-                          width="100%"
-                          height="100%"
-                          src={`https://www.youtube.com/embed/${getYouTubeId(dayData.videoUrl)}`}
-                          title="YouTube video player"
-                          frameBorder="0"
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          allowFullScreen
-                        ></iframe>
-                      ) : (
-                        <div className="flex items-center justify-center h-full text-slate-400 p-4 text-center text-sm">
-                          No se pudo cargar el video. Revisa que el enlace sea válido.
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+              {(() => {
+                const videos = [dayData.videoUrl];
+                const files = dayData.fileUrl ? [{ url: dayData.fileUrl, name: dayData.fileName }] : [];
+                
+                if (dayData.additionalMediaJson) {
+                  try {
+                    const p = JSON.parse(dayData.additionalMediaJson);
+                    if (p.videos) videos.push(...p.videos);
+                    if (p.files) files.push(...p.files);
+                  } catch(e) {}
+                }
+                
+                const validVideos = videos.filter(Boolean);
+                const validFiles = files.filter(Boolean);
+                
+                if (validVideos.length === 0 && validFiles.length === 0) return null;
 
-                {/* Archivo Adjunto */}
-                {dayData.fileUrl && (
-                  <div className="space-y-4">
-                    <h3 className="font-bold flex items-center gap-2 text-slate-800 dark:text-slate-200 text-lg">
-                      <DownloadCloud className="h-6 w-6 text-blue-500" />
-                      Material Adjunto
-                    </h3>
-                    <a 
-                      href={dayData.fileUrl} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="group flex flex-col items-center justify-center h-[calc(100%-2.5rem)] min-h-[200px] rounded-3xl border-2 border-dashed border-slate-300 dark:border-zinc-700 hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all hover:scale-[1.02] shadow-sm hover:shadow-md"
-                    >
-                      <div className="h-16 w-16 bg-slate-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/50 transition-colors">
-                        <FileText className="h-8 w-8 text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors" />
+                return (
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {/* Videos */}
+                    {validVideos.length > 0 && (
+                      <div className="space-y-4">
+                        <h3 className="font-bold flex items-center gap-2 text-slate-800 dark:text-slate-200 text-lg">
+                          <PlayCircle className="h-6 w-6 text-red-500" />
+                          Video{validVideos.length > 1 ? "s" : ""} del día
+                        </h3>
+                        <div className="grid gap-4">
+                          {validVideos.map((vid, idx) => (
+                            <div key={idx} className="rounded-3xl overflow-hidden aspect-video bg-black shadow-lg border border-slate-200 dark:border-zinc-800 ring-4 ring-slate-50 dark:ring-zinc-900/50 transition-all hover:scale-[1.02]">
+                              {getYouTubeId(vid) ? (
+                                <iframe
+                                  width="100%"
+                                  height="100%"
+                                  src={`https://www.youtube.com/embed/${getYouTubeId(vid)}`}
+                                  title={`YouTube video player ${idx + 1}`}
+                                  frameBorder="0"
+                                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                  allowFullScreen
+                                ></iframe>
+                              ) : (
+                                <div className="flex items-center justify-center h-full text-slate-400 p-4 text-center text-sm">
+                                  No se pudo cargar el video. Revisa que el enlace sea válido.
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                      <span className="font-semibold text-slate-700 dark:text-slate-300 px-6 text-center text-lg">
-                        {dayData.fileName || "Descargar material del día"}
-                      </span>
-                      <span className="text-sm text-slate-500 mt-3 font-medium bg-slate-100 dark:bg-zinc-800 px-3 py-1.5 rounded-lg group-hover:bg-white dark:group-hover:bg-zinc-900 transition-colors">Abrir en nueva pestaña</span>
-                    </a>
+                    )}
+
+                    {/* Archivos Adjuntos */}
+                    {validFiles.length > 0 && (
+                      <div className="space-y-4">
+                        <h3 className="font-bold flex items-center gap-2 text-slate-800 dark:text-slate-200 text-lg">
+                          <DownloadCloud className="h-6 w-6 text-blue-500" />
+                          Material{validFiles.length > 1 ? "es" : ""} Adjunto{validFiles.length > 1 ? "s" : ""}
+                        </h3>
+                        <div className="grid gap-4">
+                          {validFiles.map((file, idx) => (
+                            <a 
+                              key={idx}
+                              href={file.url} 
+                              target="_blank" 
+                              rel="noopener noreferrer"
+                              className="group flex flex-col items-center justify-center min-h-[200px] rounded-3xl border-2 border-dashed border-slate-300 dark:border-zinc-700 hover:border-teal-500 hover:bg-teal-50 dark:hover:bg-teal-900/20 transition-all hover:scale-[1.02] shadow-sm hover:shadow-md"
+                            >
+                              <div className="h-16 w-16 bg-slate-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center mb-4 group-hover:bg-teal-100 dark:group-hover:bg-teal-900/50 transition-colors">
+                                <FileText className="h-8 w-8 text-slate-400 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors" />
+                              </div>
+                              <span className="font-semibold text-slate-700 dark:text-slate-300 px-6 text-center text-lg break-all">
+                                {file.name || `Descargar material ${idx + 1}`}
+                              </span>
+                              <span className="text-sm text-slate-500 mt-3 font-medium bg-slate-100 dark:bg-zinc-800 px-3 py-1.5 rounded-lg group-hover:bg-white dark:group-hover:bg-zinc-900 transition-colors">Abrir en nueva pestaña</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
+                );
+              })()}
 
               {/* Cuestionario */}
               {dayData.hasQuestionnaire && questions.length > 0 && (
