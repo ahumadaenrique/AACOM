@@ -72,15 +72,6 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
   const handleDayChange = async (userId: string, dayNumber: number) => {
     try {
       setLoadingId(userId);
-      await updateAgentDay(userId, dayNumber);
-      
-      setAgents(agents.map(a => {
-        if (a.id === userId) {
-          const prevProgress = a.developmentProgress || { currentDayNumber: 1, status: "IN_PROGRESS" };
-          return {
-            ...a,
-            developmentProgress: {
-              ...prevProgress,
       const result = await updateAgentDay(userId, dayNumber);
       
       if (result.success) {

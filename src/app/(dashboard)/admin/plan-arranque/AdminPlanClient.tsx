@@ -272,9 +272,10 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
                         <Button variant="ghost" size="icon" onClick={() => handleOpenDialog(day)}>
                           <Edit className="h-4 w-4 text-slate-500 hover:text-teal-600" />
                         </Button>
-                      <Button variant="ghost" size="icon" onClick={() => handleDelete(day.id)}>
-                        <Trash2 className="h-4 w-4 text-slate-500 hover:text-red-600" />
-                      </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(day.id)}>
+                          <Trash2 className="h-4 w-4 text-slate-500 hover:text-red-600" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))
