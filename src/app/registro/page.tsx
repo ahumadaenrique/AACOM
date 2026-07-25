@@ -101,7 +101,7 @@ export default function RegisterPage() {
 
     setSendingSms(true);
     try {
-      const res = await sendVerificationSms(phone);
+      const res = await sendVerificationSms(phone, 'whatsapp');
       if (res.success) {
         setStep(1.5);
       } else {
@@ -114,15 +114,15 @@ export default function RegisterPage() {
     }
   };
 
-  const handleResendWhatsapp = async () => {
+  const handleResendSms = async () => {
     setError("");
     setSendingSms(true);
     try {
-      const res = await sendVerificationSms(phone, 'whatsapp');
+      const res = await sendVerificationSms(phone, 'sms');
       if (res.success) {
-        alert("Te hemos enviado el código por WhatsApp. Revísalo e ingrésalo aquí.");
+        alert("Te hemos enviado el código por SMS. Revísalo e ingrésalo aquí.");
       } else {
-        setError(res.message || "Error al enviar el código por WhatsApp.");
+        setError(res.message || "Error al enviar el código por SMS.");
       }
     } catch (err: any) {
       setError(err.message || "Error al enviar el SMS de verificación.");
@@ -262,7 +262,7 @@ export default function RegisterPage() {
               </CardContent>
               <CardFooter>
                 <Button type="submit" disabled={sendingSms} className="w-full bg-indigo-600 hover:bg-indigo-700">
-                  {sendingSms ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Enviando SMS...</> : <><Smartphone className="w-4 h-4 mr-2" /> Validar Teléfono <ChevronRight className="w-4 h-4 ml-1" /></>}
+                  {sendingSms ? <><Loader2 className="w-4 h-4 mr-2 animate-spin"/> Enviando WhatsApp...</> : <><Smartphone className="w-4 h-4 mr-2" /> Validar Teléfono <ChevronRight className="w-4 h-4 ml-1" /></>}
                 </Button>
               </CardFooter>
             </form>
@@ -272,7 +272,7 @@ export default function RegisterPage() {
             <form onSubmit={handleVerifySms}>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2"><Smartphone className="w-5 h-5 text-indigo-600" /> Verifica tu Celular</CardTitle>
-                <CardDescription>Te hemos enviado un código de seguridad por SMS al número <strong>{phone}</strong>.</CardDescription>
+                <CardDescription>Te hemos enviado un código de seguridad por WhatsApp al número <strong>{phone}</strong>.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
@@ -297,11 +297,11 @@ export default function RegisterPage() {
                 <div className="w-full text-center mt-2">
                   <button 
                     type="button" 
-                    onClick={handleResendWhatsapp}
+                    onClick={handleResendSms}
                     disabled={sendingSms}
                     className="text-sm font-medium text-green-600 hover:text-green-700 underline"
                   >
-                    ¿No te llega el SMS? Reenviar por WhatsApp
+                    ¿No te llega el WhatsApp? Reenviar por SMS
                   </button>
                 </div>
               </CardFooter>
