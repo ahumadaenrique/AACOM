@@ -77,7 +77,7 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{agency ? "Editar Agencia" : "Nueva Agencia SaaS"}</DialogTitle>
