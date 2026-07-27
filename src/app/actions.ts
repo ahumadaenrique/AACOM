@@ -764,7 +764,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
             const activeUsersCount = await prisma.user.count({
                 where: { agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string), active: true }
             });
-            const limit = currentUser.agency?.slug === 'aacom' ? Infinity : 10 + (currentUser.agency?.purchasedSeats || 0);
+            const limit = ['aacom', 'aacomsoft'].includes(currentUser.agency?.slug || '') ? Infinity : 10 + (currentUser.agency?.purchasedSeats || 0);
             if (activeUsersCount >= limit) {
                 return { 
                     success: false, 
@@ -1723,7 +1723,7 @@ export async function getCurrentUser() {
     try {
         const user = await prisma.user.findUnique({
             where: { email: session.user.email },
-            select: { id: true, name: true, email: true, role: true, agencyId: true, agency: { select: { purchasedSeats: true } } }
+            select: { id: true, name: true, email: true, role: true, agencyId: true, agency: { select: { slug: true, purchasedSeats: true } } }
         });
         if (!user) {
             return { success: false, message: "Usuario no encontrado" };

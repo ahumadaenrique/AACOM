@@ -1823,10 +1823,10 @@ export default function AdminClient() {
                     <div className="flex flex-col items-start md:items-end gap-1.5 bg-white p-3 rounded-xl border border-slate-200 shadow-sm w-full md:w-auto">
                       <div className="flex items-center gap-2 text-xs font-black text-slate-700">
                         <Users className="h-4 w-4 text-indigo-500" />
-                        Capacidad: {usersList.length} / {currentUserData.agency.slug === 'aacom' ? 'Ilimitada' : (10 + (currentUserData.agency.purchasedSeats || 0))}
+                        Capacidad: {usersList.length} / {['aacom', 'aacomsoft'].includes(currentUserData.agency.slug) ? 'Ilimitada' : (10 + (currentUserData.agency.purchasedSeats || 0))}
                       </div>
                       <p className="text-[10px] text-muted-foreground font-semibold">
-                        {currentUserData.agency.slug === 'aacom' ? '(Beneficio de cuenta fundadora)' : `(10 lugares base + ${currentUserData.agency.purchasedSeats || 0} extra)`}
+                        {['aacom', 'aacomsoft'].includes(currentUserData.agency.slug) ? '(Beneficio de cuenta fundadora)' : `(10 lugares base + ${currentUserData.agency.purchasedSeats || 0} extra)`}
                       </p>
                       <Button 
                         size="sm" 
