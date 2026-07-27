@@ -7,7 +7,7 @@ import {
   Calendar, Plus, Trash2, Download, RefreshCw, AlertTriangle, 
   CheckCircle, HelpCircle, FileText, ArrowRight, ArrowLeft, 
   Heart, GraduationCap, Percent, ShoppingBag, Landmark, Coffee, Smile,
-  Search, Eye, X, ShieldCheck, Camera, Upload, CreditCard
+  Search, Eye, X, ShieldCheck, Camera, Upload, CreditCard, ChevronDown, ChevronRight
 } from 'lucide-react'
 import {
   PieChart, Pie, Cell, ResponsiveContainer, BarChart, 
@@ -112,7 +112,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
   const fetchSavedAdns = async () => {
     setLoadingSaved(true)
     try {
-      const res = await getAdnDiagnostics()
+      const res = await getAdnDiagnostics({ limitTo30Days: false })
       if (res.success && res.diagnostics) {
         setSavedAdns(res.diagnostics)
       }
@@ -147,6 +147,101 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
       fetchSavedAdns()
     }
   }, [viewMode])
+
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({})
+
+  const { recentAdns, groupedOlderAdns } = useMemo(() => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const filteredAdns = savedAdns.filter(adn => adn.clienteNombre.toLowerCase().includes(searchAdnQuery.toLowerCase()));
+
+    const recent = filteredAdns.filter(a => new Date(a.createdAt) >= thirtyDaysAgo);
+    const older = filteredAdns.filter(a => new Date(a.createdAt) < thirtyDaysAgo);
+    
+    const grouped = older.reduce((acc, adn) => {
+      const d = new Date(adn.createdAt);
+      const month = d.toLocaleString('es-MX', { month: 'long', timeZone: 'America/Mexico_City' });
+      const year = d.getFullYear();
+      const key = `${month.charAt(0).toUpperCase() + month.slice(1)} ${year}`;
+      
+      if (!acc[key]) {
+        acc[key] = { label: key, adns: [], timestamp: new Date(year, d.getMonth(), 1).getTime() };
+      }
+      acc[key].adns.push(adn);
+      return acc;
+    }, {} as Record<string, { label: string, adns: any[], timestamp: number }>);
+    
+    const sortedGroups = Object.values(grouped).sort((a, b) => b.timestamp - a.timestamp);
+    
+    return { recentAdns: recent, groupedOlderAdns: sortedGroups };
+  }, [savedAdns, searchAdnQuery])
+
+  // Helper to render the table for a given list of ADNs
+  const renderAdnTable = (adns: any[]) => (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left text-xs border-collapse">
+        <thead>
+          <tr className="bg-slate-50 dark:bg-zinc-800 text-slate-700 dark:text-slate-200 uppercase tracking-wider font-bold border-b text-[10px]">
+            <th className="py-3 px-4">Fecha</th>
+            <th className="py-3 px-4">Nombre del Cliente</th>
+            <th className="py-3 px-4 text-center">Edad</th>
+            <th className="py-3 px-4 text-center">Modalidad</th>
+            <th className="py-3 px-4 text-right">Ingresos Netos</th>
+            <th className="py-3 px-4 text-right">Egresos Totales</th>
+            <th className="py-3 px-4 text-center">¿Cerrada y Pagada?</th>
+            <th className="py-3 px-4 text-center">Acciones</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
+          {adns.map(adn => (
+            <tr key={adn.id} className="hover:bg-slate-50/50">
+              <td className="py-3.5 px-4 text-slate-500">
+                {new Date(adn.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}
+              </td>
+              <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-200">
+                {adn.clienteNombre}
+              </td>
+              <td className="py-3.5 px-4 text-center">{adn.clienteEdad} años</td>
+              <td className="py-3.5 px-4 text-center">
+                <span className="inline-block px-2.5 py-0.5 rounded-full font-bold text-[9px] bg-teal-50 dark:bg-zinc-800 text-teal-800 dark:text-teal-300 border border-teal-200/50 uppercase">
+                  {adn.modalidad}
+                </span>
+              </td>
+              <td className="py-3.5 px-4 text-right font-semibold">
+                ${adn.ingresosNetos.toLocaleString('es-MX')}
+              </td>
+              <td className="py-3.5 px-4 text-right font-semibold text-teal-700">
+                ${adn.totalGastos.toLocaleString('es-MX')}
+              </td>
+              <td className="py-3.5 px-4 text-center">
+                <div className="flex items-center justify-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`cerrada-${adn.id}`}
+                    checked={adn.cerradaPagada || false}
+                    onChange={() => handleToggleAdnClosed(adn.id)}
+                    className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
+                  />
+                  <span className={`text-[10px] font-bold select-none ${adn.cerradaPagada ? "text-emerald-600" : "text-slate-400"}`}>
+                    {adn.cerradaPagada ? "Emitida y Pagada" : "Pendiente"}
+                  </span>
+                </div>
+              </td>
+              <td className="py-3.5 px-4 text-center">
+                <button 
+                  onClick={() => setSelectedSavedAdn(adn)}
+                  className="text-teal-600 hover:text-teal-700 font-bold hover:underline flex items-center justify-center gap-1 mx-auto bg-teal-50 hover:bg-teal-100 p-1.5 px3 rounded-lg border border-teal-200"
+                >
+                  <Eye className="h-3.5 w-3.5" /> Consultar
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
   
   // Step 1: Perfil
   const [clienteNombre, setClienteNombre] = useState(printData?.clienteNombre || '')
@@ -855,82 +950,62 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
           </div>
 
           {/* Table list */}
-          <div className="bg-white dark:bg-zinc-900 border rounded-2xl shadow-sm overflow-hidden">
+          <div className="space-y-6">
             {loadingSaved ? (
-              <div className="p-12 text-center text-slate-500 text-xs flex flex-col items-center justify-center gap-2">
+              <div className="bg-white dark:bg-zinc-900 border rounded-2xl shadow-sm p-12 text-center text-slate-500 text-xs flex flex-col items-center justify-center gap-2">
                 <RefreshCw className="h-8 w-8 animate-spin text-teal-600" />
                 <span>Cargando tu base de clientes...</span>
               </div>
             ) : savedAdns.filter(adn => adn.clienteNombre.toLowerCase().includes(searchAdnQuery.toLowerCase())).length === 0 ? (
-              <div className="p-12 text-center text-slate-500 text-xs flex flex-col items-center justify-center gap-2">
+              <div className="bg-white dark:bg-zinc-900 border rounded-2xl shadow-sm p-12 text-center text-slate-500 text-xs flex flex-col items-center justify-center gap-2">
                 <Users className="h-8 w-8 text-slate-300" />
                 <span>No se encontraron diagnósticos guardados.</span>
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 dark:bg-zinc-800 text-slate-700 dark:text-slate-200 uppercase tracking-wider font-bold border-b text-[10px]">
-                      <th className="py-3 px-4">Fecha</th>
-                      <th className="py-3 px-4">Nombre del Cliente</th>
-                      <th className="py-3 px-4 text-center">Edad</th>
-                      <th className="py-3 px-4 text-center">Modalidad</th>
-                      <th className="py-3 px-4 text-right">Ingresos Netos</th>
-                      <th className="py-3 px-4 text-right">Egresos Totales</th>
-                      <th className="py-3 px-4 text-center">¿Cerrada y Pagada?</th>
-                      <th className="py-3 px-4 text-center">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
-                    {savedAdns
-                      .filter(adn => adn.clienteNombre.toLowerCase().includes(searchAdnQuery.toLowerCase()))
-                      .map(adn => (
-                        <tr key={adn.id} className="hover:bg-slate-50/50">
-                          <td className="py-3.5 px-4 text-slate-500">
-                            {new Date(adn.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}
-                          </td>
-                          <td className="py-3.5 px-4 font-bold text-slate-800 dark:text-slate-200">
-                            {adn.clienteNombre}
-                          </td>
-                          <td className="py-3.5 px-4 text-center">{adn.clienteEdad} años</td>
-                          <td className="py-3.5 px-4 text-center">
-                            <span className="inline-block px-2.5 py-0.5 rounded-full font-bold text-[9px] bg-teal-50 dark:bg-zinc-800 text-teal-800 dark:text-teal-300 border border-teal-200/50 uppercase">
-                              {adn.modalidad}
+              <>
+                {recentAdns.length > 0 && (
+                  <div className="bg-white dark:bg-zinc-900 border rounded-2xl shadow-sm overflow-hidden">
+                    <div className="bg-slate-50 dark:bg-zinc-800/50 px-4 py-3 border-b border-slate-100 dark:border-zinc-800">
+                      <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Recientes (Últimos 30 días)</h3>
+                    </div>
+                    {renderAdnTable(recentAdns)}
+                  </div>
+                )}
+
+                {groupedOlderAdns.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-bold text-slate-600 dark:text-slate-400 px-2 mt-8">
+                      Histórico Anterior
+                    </h3>
+                    {groupedOlderAdns.map(group => {
+                      const isExpanded = expandedGroups[group.label];
+                      return (
+                        <div key={group.label} className="bg-white dark:bg-zinc-900 border rounded-2xl shadow-sm overflow-hidden">
+                          <button 
+                            onClick={() => setExpandedGroups(prev => ({ ...prev, [group.label]: !prev[group.label] }))}
+                            className="w-full bg-slate-50 hover:bg-slate-100 dark:bg-zinc-800/50 dark:hover:bg-zinc-800 transition-colors px-4 py-3 flex items-center justify-between group focus:outline-none"
+                          >
+                            <span className="text-sm font-bold text-slate-700 dark:text-slate-300 group-hover:text-teal-600 transition-colors">
+                              {group.label} <span className="text-xs font-normal text-slate-400 ml-2">({group.adns.length} registros)</span>
                             </span>
-                          </td>
-                          <td className="py-3.5 px-4 text-right font-semibold">
-                            ${adn.ingresosNetos.toLocaleString('es-MX')}
-                          </td>
-                          <td className="py-3.5 px-4 text-right font-semibold text-teal-700">
-                            ${adn.totalGastos.toLocaleString('es-MX')}
-                          </td>
-                          <td className="py-3.5 px-4 text-center">
-                            <div className="flex items-center justify-center gap-2">
-                              <input
-                                type="checkbox"
-                                id={`cerrada-${adn.id}`}
-                                checked={adn.cerradaPagada || false}
-                                onChange={() => handleToggleAdnClosed(adn.id)}
-                                className="h-4 w-4 rounded border-gray-300 text-teal-600 focus:ring-teal-500 cursor-pointer"
-                              />
-                              <span className={`text-[10px] font-bold select-none ${adn.cerradaPagada ? "text-emerald-600" : "text-slate-400"}`}>
-                                {adn.cerradaPagada ? "Emitida y Pagada" : "Pendiente"}
-                              </span>
+                            {isExpanded ? (
+                              <ChevronDown className="h-5 w-5 text-slate-400 group-hover:text-teal-600 transition-colors" />
+                            ) : (
+                              <ChevronRight className="h-5 w-5 text-slate-400 group-hover:text-teal-600 transition-colors" />
+                            )}
+                          </button>
+                          
+                          {isExpanded && (
+                            <div className="border-t border-slate-100 dark:border-zinc-800 animate-fade-in">
+                              {renderAdnTable(group.adns)}
                             </div>
-                          </td>
-                          <td className="py-3.5 px-4 text-center">
-                            <button 
-                              onClick={() => setSelectedSavedAdn(adn)}
-                              className="text-teal-600 hover:text-teal-700 font-bold hover:underline flex items-center justify-center gap-1 mx-auto bg-teal-50 hover:bg-teal-100 p-1.5 px3 rounded-lg border border-teal-200"
-                            >
-                              <Eye className="h-3.5 w-3.5" /> Consultar
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                  </tbody>
-                </table>
-              </div>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+              </>
             )}
           </div>
         </div>
