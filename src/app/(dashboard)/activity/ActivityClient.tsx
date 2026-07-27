@@ -751,15 +751,24 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
                                                     <p className="text-[10px] text-muted-foreground">+{act.value} pts c/u</p>
                                                 </div>
                                             </div>
-                                            
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2">
                                                 <button
                                                     onClick={() => updatePlannerState(act.id, -1)}
                                                     className="h-8 w-8 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 flex items-center justify-center text-slate-500 hover:text-rose-500 hover:border-rose-200 transition-colors"
                                                 >
                                                     <span className="text-lg font-black leading-none -translate-y-[1px]">−</span>
                                                 </button>
-                                                <span className="text-sm font-black w-6 text-center">{count}</span>
+                                                <input
+                                                    type="number"
+                                                    min="0"
+                                                    value={count}
+                                                    onChange={(e) => {
+                                                        const val = parseInt(e.target.value) || 0;
+                                                        setPlannerState(prev => ({ ...prev, [act.id]: Math.max(0, val) }));
+                                                    }}
+                                                    onFocus={(e) => e.target.select()}
+                                                    className="w-12 text-center text-sm font-black bg-transparent border-none focus:ring-0 m-0 p-0 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none text-slate-800 dark:text-zinc-200"
+                                                />
                                                 <button
                                                     onClick={() => updatePlannerState(act.id, 1)}
                                                     className="h-8 w-8 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 flex items-center justify-center text-slate-500 hover:text-teal-500 hover:border-teal-200 transition-colors"
