@@ -2,6 +2,7 @@ import { headers } from 'next/headers'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import CotizadorClient from './CotizadorClient'
+import PremiumGuard from '@/components/PremiumGuard'
 
 export default async function CotizadorPage() {
   const session = await auth();
@@ -25,6 +26,7 @@ export default async function CotizadorPage() {
 
   let currentUserName = "";
   let agencyUsers: string[] = [];
+  let userRole: string | null = null;
 
   if (session?.user?.email) {
     const dbUser = await prisma.user.findUnique({
@@ -32,6 +34,7 @@ export default async function CotizadorPage() {
     });
     if (dbUser) {
       currentUserName = dbUser.name || "";
+      userRole = dbUser.role || null;
       
       const users = await prisma.user.findMany({
         where: { agencyId: dbUser.agencyId },
@@ -42,5 +45,9 @@ export default async function CotizadorPage() {
     }
   }
   
-  return <CotizadorClient agencyName={agencyName} agencyLogo={agencyLogo} currentUserName={currentUserName} agencyUsers={agencyUsers} />;
+  return (
+    <PremiumGuard userRole={userRole} moduleName="Cotizador 3.0">
+      <CotizadorClient agencyName={agencyName} agencyLogo={agencyLogo} currentUserName={currentUserName} agencyUsers={agencyUsers} />
+    </PremiumGuard>
+  );
 }

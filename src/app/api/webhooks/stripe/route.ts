@@ -242,7 +242,21 @@ export async function POST(req: Request) {
             });
         }
       }
-      } else if (isAgencySeat) {
+    } else if (session.metadata?.action === 'upgrade_agent') {
+      const userId = session.metadata?.userId;
+      if (userId) {
+        await prisma.user.update({
+          where: { id: userId },
+          data: {
+            role: 'AGENTE',
+            isSelfPaid: true,
+            stripeCustomerId: session.customer as string,
+            stripeSubscriptionId: session.subscription as string,
+            active: true
+          }
+        });
+      }
+    } else if (isAgencySeat) {
         const agencyId = session.metadata?.agencyId;
         const seatQuantityStr = session.metadata?.seatQuantity || "1";
         const seatQuantity = parseInt(seatQuantityStr, 10);
@@ -416,7 +430,10 @@ export async function POST(req: Request) {
     } else {
         await prisma.user.updateMany({
             where: { stripeSubscriptionId: subscription.id },
-            data: { active: false }
+            data: { 
+                role: 'AGENTE_LITE',
+                isSelfPaid: false 
+            }
         });
     }
   }

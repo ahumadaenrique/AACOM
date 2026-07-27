@@ -58,6 +58,7 @@ model Agency {
   autocompleteAgents Agent[]
 
   purchasedSeats Int @default(0)
+  allowLiteAgents Boolean @default(false)
 
   // Affiliate System
   referredById   String?

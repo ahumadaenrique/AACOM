@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import PeaPrpClient from "./PeaPrpClient";
+import PremiumGuard from "@/components/PremiumGuard";
 import { redirect } from "next/navigation";
 
 export const metadata = {
@@ -22,5 +23,9 @@ export default async function PeaPrpPage() {
     redirect("/auth/signin");
   }
 
-  return <PeaPrpClient userRole={user.role} />;
+  return (
+    <PremiumGuard userRole={user.role} moduleName="Gestión de Desempeño PEA/PRP">
+      <PeaPrpClient userRole={user.role} />
+    </PremiumGuard>
+  );
 }

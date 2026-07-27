@@ -26,6 +26,7 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
       primaryColor: formData.get("primaryColor") as string,
       logoUrl: formData.get("logoUrl") as string,
       active: formData.get("active") === "on",
+      allowLiteAgents: formData.get("allowLiteAgents") === "on",
       adminName: formData.get("adminName") as string || undefined,
       adminEmail: formData.get("adminEmail") as string || undefined,
       adminPassword: formData.get("adminPassword") as string || undefined,
@@ -134,6 +135,14 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
                 <p className="text-xs text-muted-foreground">Si se desactiva, los agentes no podrán iniciar sesión.</p>
               </div>
               <Switch id="active" name="active" defaultChecked={agency ? agency.active : true} />
+            </div>
+
+            <div className="flex items-center justify-between p-3 border border-indigo-200 rounded-lg bg-indigo-50/30">
+              <div className="space-y-0.5">
+                <Label htmlFor="allowLiteAgents" className="text-base font-semibold text-indigo-900">Permitir Agentes LITE</Label>
+                <p className="text-xs text-indigo-700">Si se activa, el promotor podrá asignar el rol Agente Limitado a su equipo.</p>
+              </div>
+              <Switch id="allowLiteAgents" name="allowLiteAgents" defaultChecked={agency ? agency.allowLiteAgents : false} />
             </div>
           </div>
           <DialogFooter>

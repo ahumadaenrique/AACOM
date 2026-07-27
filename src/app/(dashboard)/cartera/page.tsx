@@ -8,6 +8,7 @@ import { Building2, Users, Wallet, Clock, FileText, Upload, Plus } from "lucide-
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import CarteraTableClient from "./CarteraTableClient";
+import PremiumGuard from "@/components/PremiumGuard";
 
 export const dynamic = "force-dynamic";
 
@@ -82,10 +83,13 @@ export default async function CarteraDashboard({
       isBefore(new Date(p.dateToCheck), futureDate)
   ).sort((a, b) => (a.dateToCheck as Date).getTime() - (b.dateToCheck as Date).getTime());
 
+  const userRole = dbUser?.role ?? null;
+
   return (
-    <div className="flex flex-col gap-6 p-4 md:p-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
+    <PremiumGuard userRole={userRole} moduleName="Gestion de Cartera y Renovaciones">
+      <div className="flex flex-col gap-6 p-4 md:p-8">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
           <h1 className="text-3xl font-bold tracking-tight">Mi Cartera</h1>
           <p className="text-muted-foreground">
             Resumen de tu cartera de seguros y próximas renovaciones.
@@ -218,6 +222,7 @@ export default async function CarteraDashboard({
         <CarteraTableClient policies={policies} isAdmin={dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN'} />
       </div>
     </div>
+    </PremiumGuard>
   );
 }
 

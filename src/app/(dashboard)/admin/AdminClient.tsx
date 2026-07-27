@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, deleteRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush, getFeedbackSurveys } from "@/app/actions"
+import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, deleteRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush, getFeedbackSurveys, requestAgentExpulsion } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import BibliotecaAdmin from "./BibliotecaAdmin"
@@ -163,6 +163,7 @@ export default function AdminClient() {
   const [editPhone, setEditPhone] = useState<string>("")
   const [editBirthDate, setEditBirthDate] = useState<string>("")
   const [editImage, setEditImage] = useState<string>("")
+  const [editRole, setEditRole] = useState<string>("")
   const [savingProfile, setSavingProfile] = useState<boolean>(false)
   const [announcementMsg, setAnnouncementMsg] = useState<string>("")
   const [savingAnnouncement, setSavingAnnouncement] = useState<boolean>(false)
@@ -382,6 +383,23 @@ export default function AdminClient() {
     } catch (err) {
       console.error(err)
       alert("Error de red al actualizar contraseña")
+    }
+  }
+
+  // Request Expulsion
+  const handleRequestExpulsion = async (id: string) => {
+    const reason = prompt("Describe el motivo de la expulsión. Un administrador evaluará el caso antes de suspender la cuenta y cancelar la suscripción:");
+    if (!reason || reason.trim() === "") return;
+    try {
+      const res = await requestAgentExpulsion(id, reason.trim());
+      if (res.success) {
+        alert(res.message);
+      } else {
+        alert(res.message || "Error al solicitar la expulsión.");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error de red al solicitar expulsión.");
     }
   }
 
@@ -864,6 +882,7 @@ export default function AdminClient() {
     setEditName(user.name || "")
     setEditPhone(user.phone || "")
     setEditImage(user.image || "")
+    setEditRole(user.role || "")
     if (user.birthDate) {
       const d = new Date(user.birthDate)
       const year = d.getUTCFullYear()
@@ -884,7 +903,8 @@ export default function AdminClient() {
         name: editName.trim(),
         phone: editPhone.trim(),
         birthDate: editBirthDate || undefined,
-        image: editImage || undefined
+        image: editImage || undefined,
+        role: editRole || undefined
       })
       if (res.success) {
         alert("Perfil de agente actualizado correctamente.")
@@ -1778,6 +1798,7 @@ export default function AdminClient() {
                         className="border p-2 rounded-lg w-full text-xs bg-white focus:outline-teal-500 h-9"
                       >
                         <option value="AGENTE">Agente de Seguros</option>
+                        <option value="AGENTE_LITE">Agente Limitado</option>
                         <option value="ADMIN">Administrador General</option>
                       </select>
                     </div>
@@ -1977,9 +1998,11 @@ export default function AdminClient() {
                                 <span className={`inline-block px-2 py-0.5 rounded font-black text-[9px] uppercase border ${
                                   user.role === 'ADMIN' 
                                     ? "bg-purple-50 text-purple-700 border-purple-200" 
+                                    : user.role === 'AGENTE_LITE'
+                                    ? "bg-amber-50 text-amber-700 border-amber-200"
                                     : "bg-blue-50 text-blue-700 border-blue-200"
                                 }`}>
-                                  {user.role}
+                                  {user.role === 'AGENTE_LITE' ? "Agente Limitado" : user.role}
                                 </span>
                               </TableCell>
                               
@@ -2039,22 +2062,35 @@ export default function AdminClient() {
                                     >
                                       Cambiar Pass
                                     </Button>
-                                    <Button
-                                      onClick={() => handleToggleUserActive(user.id)}
-                                      variant="outline"
-                                      size="sm"
-                                      className={`${user.active ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50" : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"} font-bold text-[10px] h-7 px-2.5`}
-                                    >
-                                      {user.active ? "Suspender" : "Activar"}
-                                    </Button>
-                                    <Button
-                                      onClick={() => handleDeleteUser(user.id)}
-                                      variant="ghost"
-                                      size="sm"
-                                      className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-[10px] h-7 px-2.5"
-                                    >
-                                      Eliminar
-                                    </Button>
+                                    {user.isSelfPaid ? (
+                                      <Button
+                                        onClick={() => handleRequestExpulsion(user.id)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-amber-600 hover:text-amber-700 hover:bg-amber-50 font-bold text-[10px] h-7 px-2.5 border-amber-200"
+                                      >
+                                        Solicitar Expulsión
+                                      </Button>
+                                    ) : (
+                                      <>
+                                        <Button
+                                          onClick={() => handleToggleUserActive(user.id)}
+                                          variant="outline"
+                                          size="sm"
+                                          className={`${user.active ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50" : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"} font-bold text-[10px] h-7 px-2.5`}
+                                        >
+                                          {user.active ? "Suspender" : "Activar"}
+                                        </Button>
+                                        <Button
+                                          onClick={() => handleDeleteUser(user.id)}
+                                          variant="ghost"
+                                          size="sm"
+                                          className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-[10px] h-7 px-2.5"
+                                        >
+                                          Eliminar
+                                        </Button>
+                                      </>
+                                    )}
                                   </div>
                                 )}
                               </TableCell>
@@ -4772,6 +4808,20 @@ export default function AdminClient() {
                   onChange={(e) => setEditBirthDate(e.target.value)}
                   className="text-xs h-9"
                 />
+              </div>
+
+              {/* Role */}
+              <div className="space-y-1.5">
+                <label className="text-[10px] font-bold text-slate-600 dark:text-zinc-400 uppercase">Rol de Acceso</label>
+                <select 
+                  value={editRole}
+                  onChange={e => setEditRole(e.target.value)}
+                  className="border border-input p-2 rounded-lg w-full text-xs bg-transparent focus:outline-teal-500 h-9"
+                >
+                  <option value="AGENTE">Agente de Seguros (Premium)</option>
+                  <option value="AGENTE_LITE">Agente Limitado (Lite)</option>
+                  <option value="ADMIN">Administrador General</option>
+                </select>
               </div>
 
               {/* Photo Option: URL or File */}

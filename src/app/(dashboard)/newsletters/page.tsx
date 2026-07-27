@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma"
 import { getCurrentUser } from "@/app/actions"
 import NewslettersClient from "./NewslettersClient"
+import PremiumGuard from "@/components/PremiumGuard"
 
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
@@ -43,11 +44,13 @@ export default async function NewslettersPage() {
   }
 
   return (
-    <NewslettersClient 
-      initialArticles={articles} 
-      isSuperAdmin={isSuperAdmin} 
-      indicators={indicators} 
-      agencyName={agencyName}
-    />
+    <PremiumGuard userRole={userRes.user?.role} moduleName="Newsletters Automatizados">
+      <NewslettersClient 
+        initialArticles={articles} 
+        isSuperAdmin={isSuperAdmin} 
+        indicators={indicators} 
+        agencyName={agencyName}
+      />
+    </PremiumGuard>
   )
 }

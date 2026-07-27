@@ -13,6 +13,7 @@ const agencySchema = z.object({
   primaryColor: z.string().optional(),
   logoUrl: z.string().optional(),
   active: z.boolean().optional(),
+  allowLiteAgents: z.boolean().optional(),
   // Opcional para crear el primer admin
   adminName: z.string().optional(),
   adminEmail: z.string().email().optional().or(z.literal("")),
@@ -69,6 +70,7 @@ export async function createAgency(data: z.infer<typeof agencySchema>) {
       primaryColor: parsed.primaryColor || "#0f172a", // Default color
       logoUrl: parsed.logoUrl,
       active: parsed.active ?? true,
+      allowLiteAgents: parsed.allowLiteAgents ?? false,
     },
   });
 

@@ -51,3 +51,44 @@ export async function getOrCreateTieredSeatPrice(): Promise<string> {
 
   return price.id;
 }
+
+/**
+ * Busca o crea el precio para agentes individuales (Premium/AGENTE).
+ */
+export async function getOrCreateIndividualPremiumPrice(): Promise<string> {
+  const prices = await stripe.prices.list({
+    active: true,
+    limit: 100,
+  });
+
+  const existingPrice = prices.data.find(
+    (p) => p.metadata?.isIndividualPremiumPrice === "true"
+  );
+
+  if (existingPrice) {
+    return existingPrice.id;
+  }
+
+  console.log("Creando producto y precio individual premium en Stripe por primera vez...");
+  const product = await stripe.products.create({
+    name: 'Suscripción Agente Premium',
+    description: 'Acceso completo a Cotizador 3.0, Cartera, Newsletters y más',
+    metadata: {
+      isIndividualPremiumProduct: "true"
+    }
+  });
+
+  const price = await stripe.prices.create({
+    product: product.id,
+    currency: 'mxn',
+    recurring: {
+      interval: 'month',
+    },
+    unit_amount: 39900, // $399 MXN
+    metadata: {
+      isIndividualPremiumPrice: "true"
+    }
+  });
+
+  return price.id;
+}
