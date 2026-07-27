@@ -59,6 +59,11 @@ model Agency {
 
   purchasedSeats Int @default(0)
   allowLiteAgents Boolean @default(false)
+  
+  // WhatsApp Planner Feature Config
+  enableWhatsAppPlanner Boolean @default(false)
+  whatsAppPlannerPhones String? // Almacenará hasta 2 números, separados por comas
+  whatsAppPlannerAgents String? // IDs de agentes permitidos, separados por comas
 
   // Affiliate System
   referredById   String?

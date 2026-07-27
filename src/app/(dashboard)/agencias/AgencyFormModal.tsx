@@ -1,18 +1,43 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { createAgency, updateAgency } from "./actions";
-import { Loader2, ShieldCheck } from "lucide-react";
+import { createAgency, updateAgency, getAgencyAgents } from "./actions";
+import { Loader2, ShieldCheck, CheckSquare, Square } from "lucide-react";
 
 export function AgencyFormModal({ children, agency }: { children: React.ReactNode, agency?: any }) {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  
+  const [agents, setAgents] = useState<any[]>([]);
+  const [loadingAgents, setLoadingAgents] = useState(false);
+  const [selectedAgents, setSelectedAgents] = useState<string[]>([]);
+  const [enableWhatsApp, setEnableWhatsApp] = useState(false);
+
+  useEffect(() => {
+    if (open && agency) {
+      setEnableWhatsApp(agency.enableWhatsAppPlanner || false);
+      setSelectedAgents(agency.whatsAppPlannerAgents ? agency.whatsAppPlannerAgents.split(",") : []);
+      
+      setLoadingAgents(true);
+      getAgencyAgents(agency.id).then(res => {
+        setAgents(res);
+      }).catch(err => {
+        console.error("Failed to load agents", err);
+      }).finally(() => {
+        setLoadingAgents(false);
+      });
+    } else if (open && !agency) {
+      setEnableWhatsApp(false);
+      setSelectedAgents([]);
+      setAgents([]);
+    }
+  }, [open, agency]);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -27,6 +52,9 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
       logoUrl: formData.get("logoUrl") as string,
       active: formData.get("active") === "on",
       allowLiteAgents: formData.get("allowLiteAgents") === "on",
+      enableWhatsAppPlanner: formData.get("enableWhatsAppPlanner") === "on",
+      whatsAppPlannerPhones: formData.get("whatsAppPlannerPhones") as string || undefined,
+      whatsAppPlannerAgents: selectedAgents.length > 0 ? selectedAgents.join(",") : undefined,
       adminName: formData.get("adminName") as string || undefined,
       adminEmail: formData.get("adminEmail") as string || undefined,
       adminPassword: formData.get("adminPassword") as string || undefined,
@@ -143,6 +171,71 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
                 <p className="text-xs text-indigo-700">Si se activa, el promotor podrá asignar el rol Agente Limitado a su equipo.</p>
               </div>
               <Switch id="allowLiteAgents" name="allowLiteAgents" defaultChecked={agency ? agency.allowLiteAgents : false} />
+            </div>
+
+            <div className="flex flex-col p-3 border border-green-200 rounded-lg bg-green-50/30 gap-3">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="enableWhatsAppPlanner" className="text-base font-semibold text-green-900">Reporte Planeación WhatsApp</Label>
+                  <p className="text-xs text-green-700">Envía un mensaje diario a las 10am con los 25pts planeados.</p>
+                </div>
+                <Switch 
+                    id="enableWhatsAppPlanner" 
+                    name="enableWhatsAppPlanner" 
+                    checked={enableWhatsApp}
+                    onCheckedChange={setEnableWhatsApp} 
+                />
+              </div>
+
+              {enableWhatsApp && (
+                  <div className="flex flex-col gap-3 pt-2 border-t border-green-200/50">
+                    <div className="space-y-1">
+                        <Label htmlFor="whatsAppPlannerPhones" className="text-xs text-green-900 font-bold">Teléfonos Destino (Max 2)</Label>
+                        <Input 
+                            id="whatsAppPlannerPhones" 
+                            name="whatsAppPlannerPhones" 
+                            defaultValue={agency?.whatsAppPlannerPhones} 
+                            placeholder="+521234567890, +529876543210" 
+                            className="h-8 text-xs"
+                        />
+                        <p className="text-[10px] text-green-700">Separados por comas. Deben incluir código de país (ej. +52).</p>
+                    </div>
+
+                    <div className="space-y-1">
+                        <Label className="text-xs text-green-900 font-bold">Agentes Incluidos en el Reporte</Label>
+                        <div className="flex flex-col gap-1 max-h-32 overflow-y-auto border border-green-200 rounded-md p-2 bg-white/50">
+                            {loadingAgents ? (
+                                <p className="text-xs text-muted-foreground p-2 text-center">Cargando agentes...</p>
+                            ) : agents.length === 0 ? (
+                                <p className="text-xs text-muted-foreground p-2 text-center">No hay agentes en esta agencia.</p>
+                            ) : (
+                                agents.map(agent => (
+                                    <label key={agent.id} className="flex items-center gap-2 cursor-pointer p-1 hover:bg-green-100/50 rounded">
+                                        <input 
+                                            type="checkbox" 
+                                            className="hidden"
+                                            checked={selectedAgents.includes(agent.id)}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedAgents([...selectedAgents, agent.id]);
+                                                } else {
+                                                    setSelectedAgents(selectedAgents.filter(id => id !== agent.id));
+                                                }
+                                            }}
+                                        />
+                                        {selectedAgents.includes(agent.id) ? (
+                                            <CheckSquare className="h-4 w-4 text-green-600" />
+                                        ) : (
+                                            <Square className="h-4 w-4 text-slate-300" />
+                                        )}
+                                        <span className="text-xs text-slate-700 font-medium">{agent.name}</span>
+                                    </label>
+                                ))
+                            )}
+                        </div>
+                    </div>
+                  </div>
+              )}
             </div>
           </div>
           <DialogFooter>

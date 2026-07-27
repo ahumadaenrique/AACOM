@@ -14,11 +14,28 @@ const agencySchema = z.object({
   logoUrl: z.string().optional(),
   active: z.boolean().optional(),
   allowLiteAgents: z.boolean().optional(),
+  // WhatsApp Planner Config
+  enableWhatsAppPlanner: z.boolean().optional(),
+  whatsAppPlannerPhones: z.string().optional(),
+  whatsAppPlannerAgents: z.string().optional(),
   // Opcional para crear el primer admin
   adminName: z.string().optional(),
   adminEmail: z.string().email().optional().or(z.literal("")),
   adminPassword: z.string().optional(),
 });
+
+export async function getAgencyAgents(agencyId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN" && user?.role !== "ADMIN") throw new Error("Permisos insuficientes");
+
+  return await prisma.user.findMany({
+    where: { agencyId, role: { in: ["AGENT", "LITE_AGENT"] } },
+    select: { id: true, name: true, email: true }
+  });
+}
 
 export async function getAgencies() {
   const session = await auth();
@@ -71,6 +88,9 @@ export async function createAgency(data: z.infer<typeof agencySchema>) {
       logoUrl: parsed.logoUrl,
       active: parsed.active ?? true,
       allowLiteAgents: parsed.allowLiteAgents ?? false,
+      enableWhatsAppPlanner: parsed.enableWhatsAppPlanner ?? false,
+      whatsAppPlannerPhones: parsed.whatsAppPlannerPhones,
+      whatsAppPlannerAgents: parsed.whatsAppPlannerAgents,
     },
   });
 
@@ -105,9 +125,12 @@ export async function updateAgency(id: string, data: Partial<z.infer<typeof agen
     if (existingSlug && existingSlug.id !== id) throw new Error("El subdominio (slug) ya está en uso");
   }
 
+  // Remove admin fields so Prisma doesn't crash
+  const { adminName, adminEmail, adminPassword, ...updateData } = data;
+
   const agency = await prisma.agency.update({
     where: { id },
-    data,
+    data: updateData,
   });
 
   revalidatePath("/agencias");
