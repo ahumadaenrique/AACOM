@@ -9,7 +9,7 @@ export const revalidate = 0
 export default async function NewslettersPage() {
   const articles = await prisma.newsArticle.findMany({
     orderBy: { publishedAt: 'desc' },
-    take: 200 // Keep the feed to a fast, readable size
+    take: 30 // Keep the feed to a fast, readable size (Requested 30)
   })
 
   const userRes = await getCurrentUser()
@@ -44,13 +44,11 @@ export default async function NewslettersPage() {
   }
 
   return (
-    <PremiumGuard userRole={userRes.user?.role} moduleName="Newsletters Automatizados">
-      <NewslettersClient 
-        initialArticles={articles} 
-        isSuperAdmin={isSuperAdmin} 
-        indicators={indicators} 
-        agencyName={agencyName}
-      />
-    </PremiumGuard>
+    <NewslettersClient 
+      initialArticles={articles} 
+      isSuperAdmin={isSuperAdmin} 
+      indicators={indicators} 
+      agencyName={agencyName}
+    />
   )
 }
