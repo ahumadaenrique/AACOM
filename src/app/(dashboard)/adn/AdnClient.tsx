@@ -977,7 +977,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                     <h3 className="text-sm font-bold text-slate-600 dark:text-slate-400 px-2 mt-8">
                       Histórico Anterior
                     </h3>
-                    {groupedOlderAdns.map(group => {
+                    {groupedOlderAdns.map((group: any) => {
                       const isExpanded = expandedGroups[group.label];
                       return (
                         <div key={group.label} className="bg-white dark:bg-zinc-900 border rounded-2xl shadow-sm overflow-hidden">
