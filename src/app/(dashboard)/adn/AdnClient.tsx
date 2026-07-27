@@ -172,7 +172,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
       return acc;
     }, {} as Record<string, { label: string, adns: any[], timestamp: number }>);
     
-    const sortedGroups = Object.values(grouped).sort((a, b) => b.timestamp - a.timestamp);
+    const sortedGroups = Object.values(grouped).sort((a: any, b: any) => b.timestamp - a.timestamp);
     
     return { recentAdns: recent, groupedOlderAdns: sortedGroups };
   }, [savedAdns, searchAdnQuery])
