@@ -764,7 +764,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
             const activeUsersCount = await prisma.user.count({
                 where: { agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string), active: true }
             });
-            const limit = 10 + (currentUser.agency?.purchasedSeats || 0);
+            const limit = currentUser.agency?.slug === 'aacom' ? Infinity : 10 + (currentUser.agency?.purchasedSeats || 0);
             if (activeUsersCount >= limit) {
                 return { 
                     success: false, 
