@@ -129,6 +129,7 @@ export default async function DashboardLayout({
     const isSubscriptionActive = (agency?.subscriptionStatus === "active" || agency?.subscriptionStatus === "trialing") && (!endDate || endDate >= now);
     
     const isSeller = dbUser?.role === 'SELLER';
+    const isLiteAgent = dbUser?.role === 'LITE_AGENT';
     if (isSeller && pathname !== '/vendedor') {
         const { redirect } = await import("next/navigation");
         redirect("/vendedor");
@@ -194,14 +195,16 @@ export default async function DashboardLayout({
                                     Newsletters
                                     {pathname.startsWith('/newsletters') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                 </Link>
-                                <Link
-                                    href="/activity"
-                                    className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/activity') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                >
-                                    <ClipboardCheck className={`h-4 w-4 ${pathname.startsWith('/activity') ? 'text-primary' : 'text-teal-600 dark:text-teal-400'}`} />
-                                    25 puntos
-                                    {pathname.startsWith('/activity') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                </Link>
+                                {!isLiteAgent && (
+                                    <Link
+                                        href="/activity"
+                                        className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/activity') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        <ClipboardCheck className={`h-4 w-4 ${pathname.startsWith('/activity') ? 'text-primary' : 'text-teal-600 dark:text-teal-400'}`} />
+                                        25 puntos
+                                        {pathname.startsWith('/activity') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                    </Link>
+                                )}
                                 <Link
                                     href="/pea-prp"
                                     className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/pea-prp') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
@@ -294,12 +297,14 @@ export default async function DashboardLayout({
                                                 Asistente {shortAgencyName}
                                             </Link>
                                         </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <a href="/agents" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                <Bot className="h-4 w-4 text-indigo-600" />
-                                                Agentes IA
-                                            </a>
-                                        </DropdownMenuItem>
+                                        {!isLiteAgent && (
+                                            <DropdownMenuItem asChild>
+                                                <a href="/agents" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <Bot className="h-4 w-4 text-indigo-600" />
+                                                    Agentes IA
+                                                </a>
+                                            </DropdownMenuItem>
+                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
 
@@ -419,13 +424,15 @@ export default async function DashboardLayout({
                                              <Newspaper className="h-5 w-5 text-zinc-500" />
                                              Newsletters
                                          </Link>
-                                         <Link
-                                             href="/activity"
-                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                         >
-                                             <ClipboardCheck className="h-5 w-5 text-teal-600" />
-                                             25 puntos
-                                         </Link>
+                                         {!isLiteAgent && (
+                                             <Link
+                                                 href="/activity"
+                                                 className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                             >
+                                                 <ClipboardCheck className="h-5 w-5 text-teal-600" />
+                                                 25 puntos
+                                             </Link>
+                                         )}
                                          <Link
                                              href="/pea-prp"
                                              className="text-muted-foreground hover:text-foreground flex items-center gap-2"
@@ -483,19 +490,21 @@ export default async function DashboardLayout({
                                          </div>
 
                                          {/* IA Avanzada Section */}
-                                         <div className="space-y-2.5">
-                                             <div className="text-[10px] font-mono tracking-wider text-zinc-400 uppercase pt-2">IA Avanzada</div>
-                                             <div className="pl-3 space-y-2.5 border-l border-zinc-200 dark:border-zinc-800">
-                                                 <Link href="/assistant" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
-                                                     <MessageSquare className="h-4.5 w-4.5 text-pink-500" />
-                                                     Asistente {shortAgencyName}
-                                                 </Link>
-                                                 <Link href="/agents" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
-                                                     <Bot className="h-4.5 w-4.5 text-indigo-600" />
-                                                     Agentes IA
-                                                 </Link>
+                                         {!isLiteAgent && (
+                                             <div className="space-y-2.5">
+                                                 <div className="text-[10px] font-mono tracking-wider text-zinc-400 uppercase pt-2">IA Avanzada</div>
+                                                 <div className="pl-3 space-y-2.5 border-l border-zinc-200 dark:border-zinc-800">
+                                                     <Link href="/assistant" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <MessageSquare className="h-4.5 w-4.5 text-pink-500" />
+                                                         Asistente {shortAgencyName}
+                                                     </Link>
+                                                     <Link href="/agents" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Bot className="h-4.5 w-4.5 text-indigo-600" />
+                                                         Agentes IA
+                                                     </Link>
+                                                 </div>
                                              </div>
-                                         </div>
+                                         )}
 
                                          {/* Admin Section */}
                                          {isAdmin && (
