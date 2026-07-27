@@ -62,9 +62,7 @@ export async function GET(request: Request) {
                 }
             });
 
-            // 3. Build the report string
-            let reportText = `*Reporte de Planeación - ${dateStr}*\n\n`;
-
+            // 3. Build the report and send per user
             for (const user of users) {
                 const record = user.dailyRecords[0];
                 const plannedObj = record?.planned ? (typeof record.planned === "string" ? JSON.parse(record.planned) : record.planned) : {};
@@ -82,37 +80,41 @@ export async function GET(request: Request) {
 
                 const userName = user.name || "Agente";
                 const firstName = userName.split(" ")[0];
+                const detailsStr = details.length > 0 ? `(${details.join(", ")})` : "";
+                let msgText = "";
 
                 if (totalPts === 0) {
-                    reportText += `🔸 *${userName}* hoy no planeó nada, seguro está de vacaciones o se quedó dormid@. ¿Nos confirmas ${firstName}?\n\n`;
+                    msgText = `🔸 Hoy no planeó nada, seguro está de vacaciones o se quedó dormid@. ¿Nos confirmas ${firstName}?`;
                 } else if (totalPts >= 25) {
-                    reportText += `✅ *${userName}* planeó ${totalPts} puntos (${details.join(", ")}). Muy bien, avísanos cómo te ayudamos para que SI los cumplas.\n\n`;
+                    msgText = `✅ Planeó los puntos correctos ${detailsStr}. Muy bien, avísanos cómo te ayudamos para que SI los cumplas.`;
                 } else {
                     const missing = 25 - totalPts;
-                    reportText += `⚠️ *${userName}* ha planeado ${totalPts} puntos (${details.join(", ")}). Venga, te faltan ${missing} puntos para una planeación ideal, ¿Cuéntanos qué vas a hacer adicional?\n\n`;
+                    msgText = `⚠️ Faltan ${missing} puntos para la meta ${detailsStr}. ¿Qué vas a hacer adicional?`;
                 }
-            }
 
-            // 4. Send to all target phones
-            if (twilioClient) {
-                for (const phone of targetPhones) {
-                    try {
-                        const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
-                        await twilioClient.messages.create({
-                            from: `whatsapp:${waFromNumber}`,
-                            to: `whatsapp:${formattedPhone}`,
-                            contentSid: templateSid,
-                            contentVariables: JSON.stringify({
-                                "1": reportText.substring(0, 32000) 
-                            })
-                        });
-                        sentCount++;
-                    } catch (e) {
-                        console.error(`Error sending WhatsApp plan report to ${phone}:`, e);
+                if (twilioClient) {
+                    for (const phone of targetPhones) {
+                        try {
+                            const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
+                            await twilioClient.messages.create({
+                                from: `whatsapp:${waFromNumber}`,
+                                to: `whatsapp:${formattedPhone}`,
+                                contentSid: templateSid,
+                                contentVariables: JSON.stringify({
+                                    "1": dateStr,
+                                    "2": userName,
+                                    "3": totalPts.toString(),
+                                    "4": msgText
+                                })
+                            });
+                            sentCount++;
+                        } catch (e) {
+                            console.error(`Error sending WhatsApp plan report to ${phone} for agent ${userName}:`, e);
+                        }
                     }
+                } else {
+                    console.warn("Twilio client is not configured, skipped sending messages.");
                 }
-            } else {
-                console.warn("Twilio client is not configured, skipped sending messages.");
             }
         }
 
