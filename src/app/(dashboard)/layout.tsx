@@ -129,7 +129,7 @@ export default async function DashboardLayout({
     const isSubscriptionActive = (agency?.subscriptionStatus === "active" || agency?.subscriptionStatus === "trialing") && (!endDate || endDate >= now);
     
     const isSeller = dbUser?.role === 'SELLER';
-    const isLiteAgent = dbUser?.role === 'LITE_AGENT';
+    const isLiteAgent = dbUser?.role === 'AGENTE_LITE';
     if (isSeller && pathname !== '/vendedor') {
         const { redirect } = await import("next/navigation");
         redirect("/vendedor");
