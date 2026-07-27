@@ -829,6 +829,18 @@ export async function getUsers() {
             where: {
                 agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string)
             },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                active: true,
+                phone: true,
+                createdAt: true,
+                agencyId: true,
+                mustChangePassword: true,
+                phoneVerified: true
+            },
             orderBy: {
                 createdAt: 'desc'
             }
