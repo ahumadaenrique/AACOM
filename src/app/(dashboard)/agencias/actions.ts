@@ -32,7 +32,7 @@ export async function getAgencyAgents(agencyId: string) {
   if (user?.role !== "SUPER_ADMIN" && user?.role !== "ADMIN") throw new Error("Permisos insuficientes");
 
   return await prisma.user.findMany({
-    where: { agencyId, role: { in: ["AGENT", "LITE_AGENT"] } },
+    where: { agencyId, role: { in: ["AGENTE", "LITE_AGENTE"] } },
     select: { id: true, name: true, email: true }
   });
 }
