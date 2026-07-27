@@ -1339,18 +1339,116 @@ export async function getDailyActivitySummary() {
             }
         });
 
+        // Recuperar también el plan (DailyRecords con planned > 0 para hoy)
+        const startOfDay = new Date();
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const dailyRecords = await prisma.dailyRecord.findMany({
+            where: {
+                userId: user.id,
+                date: {
+                    gte: startOfDay
+                }
+            }
+        });
+
+        const plannedGoals = dailyRecords.reduce((acc, record) => {
+            if (record.planned > 0) {
+                acc[record.activityId] = record.planned;
+            }
+            return acc;
+        }, {} as Record<string, number>);
+
         const totalPoints = logs.reduce((acc, log) => acc + log.points, 0);
         const remainingPoints = Math.max(0, 25 - totalPoints);
 
         return {
             success: true,
             logs,
+            plannedGoals,
             totalPoints,
             remainingPoints,
         };
     } catch (error: any) {
         console.error("Error fetching daily summary:", error);
-        return { success: false, message: error.message, logs: [], totalPoints: 0, remainingPoints: 25 };
+        return { success: false, message: error.message, logs: [], plannedGoals: {}, totalPoints: 0, remainingPoints: 25 };
+    }
+}
+
+export async function saveDailyPlan(plan: Record<string, number>) {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!user) {
+            return { success: false, message: "Usuario no encontrado" };
+        }
+
+        const date = new Date();
+        date.setHours(0, 0, 0, 0);
+
+        // Nombres y puntos de actividades por defecto
+        const activityDefinitions: Record<string, {name: string, value: number}> = {
+            "1": { name: "Llamada de contacto", value: 1 },
+            "2": { name: "Cita agendada", value: 3 },
+            "3": { name: "Cita Efectiva (ANF)", value: 5 },
+            "4": { name: "Cierre", value: 10 },
+            "5": { name: "Recluta", value: 10 },
+            "6": { name: "Póliza Emitida", value: 10 },
+            "7": { name: "Referidos (3)", value: 1 },
+        };
+
+        // Guardar cada plan
+        for (const [activityId, plannedCount] of Object.entries(plan)) {
+            // Asegurar que la Actividad exista en la BD (para satisfacer llave foránea)
+            const def = activityDefinitions[activityId];
+            if (!def) continue;
+
+            await prisma.activity.upsert({
+                where: { id: activityId },
+                update: {},
+                create: {
+                    id: activityId,
+                    name: def.name,
+                    value: def.value
+                }
+            });
+
+            // Hacer upsert del DailyRecord
+            const uniqueQuery = {
+                userId_activityId_date: {
+                    userId: user.id,
+                    activityId,
+                    date
+                }
+            };
+
+            await prisma.dailyRecord.upsert({
+                where: uniqueQuery,
+                update: {
+                    planned: plannedCount
+                },
+                create: {
+                    userId: user.id,
+                    agencyId: user.agencyId,
+                    activityId,
+                    date,
+                    planned: plannedCount,
+                    real: 0
+                }
+            });
+        }
+
+        return { success: true, message: "Planeación guardada exitosamente" };
+    } catch (error: any) {
+        console.error("Error saving daily plan:", error);
+        return { success: false, message: error.message };
     }
 }
 

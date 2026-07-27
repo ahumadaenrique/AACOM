@@ -6,7 +6,8 @@ import {
     deleteActivityLogEntry, 
     getDailyActivitySummary, 
     getActivityHistory,
-    removeLastActivityLogEntry
+    removeLastActivityLogEntry,
+    saveDailyPlan
 } from "@/app/actions";
 import { SALES_ACTIVITIES, TRAFFIC_LIGHT_THRESHOLDS } from "@/lib/constants";
 import { 
@@ -25,7 +26,8 @@ import {
     CheckCircle2, 
     AlertCircle, 
     X,
-    CalendarDays
+    CalendarDays,
+    Target
 } from "lucide-react";
 
 interface LogEntry {
@@ -47,11 +49,18 @@ interface HistoryGroup {
 export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName?: string }) {
     // State
     const [todayLogs, setTodayLogs] = useState<LogEntry[]>([]);
+    const [plannedGoals, setPlannedGoals] = useState<Record<string, number>>({});
     const [totalPoints, setTotalPoints] = useState(0);
     const [history, setHistory] = useState<HistoryGroup[]>([]);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
     
+    // Day Planner Modal State
+    const [isPlannerModalOpen, setIsPlannerModalOpen] = useState(false);
+    const [plannerState, setPlannerState] = useState<Record<string, number>>({});
+    const [savingPlanner, setSavingPlanner] = useState(false);
+    const [plannerError, setPlannerError] = useState("");
+
     // Modal state for prospect name
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedActivity, setSelectedActivity] = useState<typeof SALES_ACTIVITIES[0] | null>(null);
@@ -85,6 +94,7 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
             const daily = await getDailyActivitySummary();
             if (daily.success) {
                 setTodayLogs(daily.logs as any);
+                setPlannedGoals(daily.plannedGoals || {});
                 setTotalPoints(daily.totalPoints);
             }
             
@@ -214,6 +224,57 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
         }
     };
 
+    // Planner Modal functions
+    const openPlannerModal = () => {
+        // Initialize planner state with current planned goals or 0
+        const initialPlannerState: Record<string, number> = {};
+        SALES_ACTIVITIES.forEach(act => {
+            initialPlannerState[act.id] = plannedGoals[act.id] || 0;
+        });
+        setPlannerState(initialPlannerState);
+        setPlannerError("");
+        setIsPlannerModalOpen(true);
+    };
+
+    const updatePlannerState = (activityId: string, delta: number) => {
+        setPlannerState(prev => {
+            const current = prev[activityId] || 0;
+            const next = Math.max(0, current + delta);
+            return { ...prev, [activityId]: next };
+        });
+        setPlannerError("");
+    };
+
+    const handlePlannerSubmit = async () => {
+        // Calcular puntos totales de la planeación
+        let totalSimulatedPoints = 0;
+        for (const act of SALES_ACTIVITIES) {
+            const count = plannerState[act.id] || 0;
+            totalSimulatedPoints += (count * act.value);
+        }
+
+        if (totalSimulatedPoints < 15) {
+            setPlannerError(`Debes planear un mínimo de 15 puntos. Actualmente tienes: ${totalSimulatedPoints} puntos.`);
+            return;
+        }
+
+        try {
+            setSavingPlanner(true);
+            const res = await saveDailyPlan(plannerState);
+            if (res.success) {
+                await loadData();
+                setIsPlannerModalOpen(false);
+            } else {
+                setPlannerError(res.message);
+            }
+        } catch (err) {
+            console.error("Failed to save plan:", err);
+            setPlannerError("Ocurrió un error al guardar tu planeación.");
+        } finally {
+            setSavingPlanner(false);
+        }
+    };
+
     // Delete log entry wrapper
     const handleDeleteEntry = async (logId: string) => {
         if (!confirm("¿Estás seguro de que deseas eliminar este registro de actividad? Los puntos se restarán.")) {
@@ -273,18 +334,28 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
     return (
         <div className="flex flex-col gap-6 w-full max-w-lg mx-auto py-2 md:max-w-4xl md:px-0">
             {/* TOP HEADER & TITLE */}
-            <div className="flex flex-col gap-1.5 px-4 md:px-0">
-                <div className="flex items-center gap-2">
-                    <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-zinc-100">
-                        {agencyName} 25
-                    </h1>
-                    <span className="bg-teal-100 text-teal-800 text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider dark:bg-teal-900/40 dark:text-teal-400">
-                        Puntaje Diario
-                    </span>
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between px-4 md:px-0">
+                <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-zinc-100">
+                            {agencyName} 25
+                        </h1>
+                        <div className="bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <Target className="h-3 w-3" />
+                            Módulo
+                        </div>
+                    </div>
+                    <p className="text-sm text-slate-500 dark:text-zinc-400 max-w-md leading-relaxed font-medium">
+                        Recuerda actualizar tu actividad del día de forma constante. Meta diaria: 25 puntos.
+                    </p>
                 </div>
-                <p className="text-xs text-muted-foreground font-medium">
-                    Recuerda actualizar tu actividad del día de forma constante. Meta diaria: 25 puntos.
-                </p>
+                
+                <button
+                    onClick={openPlannerModal}
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:scale-95 text-white text-sm font-bold rounded-xl shadow-sm transition-all"
+                >
+                    🗓️ Planear mi día
+                </button>
             </div>
 
             {/* DYNAMIC PROGRESS CARD (SEMÁFORO) */}
@@ -344,10 +415,14 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
                     </h2>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        {SALES_ACTIVITIES.map((act) => (
+                        {SALES_ACTIVITIES.map((act) => {
+                            const achievedCount = todayLogs.filter(log => log.activityId === act.id).length;
+                            const plannedCount = plannedGoals[act.id];
+                            
+                            return (
                             <div
                                 key={act.id}
-                                className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-900/30 shadow-sm transition-all"
+                                className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-900/30 shadow-sm transition-all relative overflow-hidden"
                             >
                                 {/* Left Side: Clickable area to add points */}
                                 <button
@@ -363,9 +438,21 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
                                         <p className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
                                             {act.name}
                                         </p>
-                                        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">
-                                            +{act.value} {act.value === 1 ? 'punto' : 'puntos'}
-                                        </p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-[10px] text-muted-foreground font-black uppercase tracking-wider">
+                                                +{act.value} {act.value === 1 ? 'punto' : 'puntos'}
+                                            </p>
+                                            
+                                            {plannedCount !== undefined && (
+                                                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider ${
+                                                    achievedCount >= plannedCount 
+                                                        ? 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400' 
+                                                        : 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-400'
+                                                }`}>
+                                                    Meta: {achievedCount} / {plannedCount}
+                                                </span>
+                                            )}
+                                        </div>
                                     </div>
                                 </button>
 
@@ -392,7 +479,8 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
                                     </button>
                                 </div>
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
             </div>
@@ -624,6 +712,110 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {/* DAY PLANNER MODAL */}
+            {isPlannerModalOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 dark:bg-zinc-950/80 backdrop-blur-sm animate-in fade-in duration-200">
+                    <div className="bg-white dark:bg-zinc-950 rounded-3xl p-6 w-full max-w-md shadow-2xl border border-slate-100 dark:border-zinc-800 flex flex-col max-h-[90vh]">
+                        <div className="flex items-start justify-between mb-2 shrink-0">
+                            <div>
+                                <h3 className="text-lg font-black tracking-tight text-slate-800 dark:text-zinc-100 flex items-center gap-2">
+                                    🗓️ Planear mi día
+                                </h3>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    Simula cuántas actividades lograrás hoy. Mínimo 15 puntos.
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setIsPlannerModalOpen(false)}
+                                className="h-8 w-8 rounded-full bg-slate-100 dark:bg-zinc-900 hover:bg-slate-200 dark:hover:bg-zinc-800 flex items-center justify-center text-slate-500 dark:text-zinc-400 transition-colors"
+                            >
+                                <X className="h-4 w-4" />
+                            </button>
+                        </div>
+                        
+                        <div className="flex-1 overflow-y-auto min-h-0 py-4 pr-1">
+                            <div className="flex flex-col gap-3">
+                                {SALES_ACTIVITIES.map(act => {
+                                    const count = plannerState[act.id] || 0;
+                                    return (
+                                        <div key={act.id} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 dark:border-zinc-800 bg-slate-50/40 dark:bg-zinc-900/30">
+                                            <div className="flex items-center gap-3">
+                                                <div className="h-8 w-8 shrink-0 bg-white dark:bg-zinc-950 rounded-lg flex items-center justify-center shadow-sm border border-slate-100/80 dark:border-zinc-800">
+                                                    {getActivityIcon(act.id, "h-4 w-4")}
+                                                </div>
+                                                <div>
+                                                    <p className="text-xs font-bold text-slate-800 dark:text-zinc-200">{act.name}</p>
+                                                    <p className="text-[10px] text-muted-foreground">+{act.value} pts c/u</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="flex items-center gap-3">
+                                                <button
+                                                    onClick={() => updatePlannerState(act.id, -1)}
+                                                    className="h-8 w-8 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 flex items-center justify-center text-slate-500 hover:text-rose-500 hover:border-rose-200 transition-colors"
+                                                >
+                                                    <span className="text-lg font-black leading-none -translate-y-[1px]">−</span>
+                                                </button>
+                                                <span className="text-sm font-black w-6 text-center">{count}</span>
+                                                <button
+                                                    onClick={() => updatePlannerState(act.id, 1)}
+                                                    className="h-8 w-8 rounded-full bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-700 flex items-center justify-center text-slate-500 hover:text-teal-500 hover:border-teal-200 transition-colors"
+                                                >
+                                                    <Plus className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {plannerError && (
+                            <div className="p-3 mb-4 rounded-xl bg-rose-50 dark:bg-rose-950/30 border border-rose-200 dark:border-rose-900/50 flex items-start gap-2 shrink-0">
+                                <AlertCircle className="h-4 w-4 text-rose-500 mt-0.5 shrink-0" />
+                                <p className="text-xs text-rose-700 dark:text-rose-300 font-medium">{plannerError}</p>
+                            </div>
+                        )}
+
+                        <div className="pt-4 border-t border-slate-100 dark:border-zinc-800 shrink-0">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className="text-sm font-bold text-slate-600 dark:text-zinc-400">Total Simulado:</span>
+                                <span className={`text-lg font-black ${
+                                    Object.entries(plannerState).reduce((acc, [id, count]) => acc + (count * (SALES_ACTIVITIES.find(a => a.id === id)?.value || 0)), 0) >= 15
+                                    ? 'text-teal-600 dark:text-teal-400'
+                                    : 'text-rose-500 dark:text-rose-400'
+                                }`}>
+                                    {Object.entries(plannerState).reduce((acc, [id, count]) => acc + (count * (SALES_ACTIVITIES.find(a => a.id === id)?.value || 0)), 0)} pts
+                                </span>
+                            </div>
+                            
+                            <div className="flex gap-3 justify-end">
+                                <button
+                                    type="button"
+                                    disabled={savingPlanner}
+                                    onClick={() => setIsPlannerModalOpen(false)}
+                                    className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-zinc-300 hover:bg-slate-50 dark:hover:bg-zinc-900/50 transition-colors"
+                                >
+                                    Cancelar
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={handlePlannerSubmit}
+                                    disabled={savingPlanner}
+                                    className="px-4 py-2 text-xs font-bold rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white shadow-md hover:shadow-indigo-500/20 transition-all flex items-center gap-1.5"
+                                >
+                                    {savingPlanner ? (
+                                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                    ) : (
+                                        <CalendarDays className="h-3.5 w-3.5" />
+                                    )}
+                                    Guardar Planeación
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
