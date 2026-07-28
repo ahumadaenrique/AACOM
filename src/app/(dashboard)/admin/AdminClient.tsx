@@ -218,7 +218,7 @@ export default function AdminClient() {
   };
 
   // Push Notifications Admin States
-  const [pushRecipient, setPushRecipient] = useState<string>("ALL")
+  const [pushRecipients, setPushRecipients] = useState<string[]>(["ALL"])
   const [pushMessage, setPushMessage] = useState<string>("")
   const [pushPin, setPushPin] = useState<string>("")
   const [pushStatus, setPushStatus] = useState<string>("")
@@ -289,7 +289,7 @@ export default function AdminClient() {
       message: pushMessage,
       frequency: schedFreq,
       timeHour: parseInt(schedHour),
-      recipientId: pushRecipient,
+      recipientId: pushRecipients.join(','),
       runDate: schedFreq === "ONCE" ? schedDate : undefined
     }, pushPin);
     
@@ -323,7 +323,7 @@ export default function AdminClient() {
     setPushLoading(true)
     setPushStatus("Enviando notificación...")
     try {
-      const res = await sendAdminPushNotification(pushRecipient, pushMessage.trim(), pushPin.trim())
+      const res = await sendAdminPushNotification(pushRecipients, pushMessage.trim(), pushPin.trim())
       if (res.success) {
         setPushStatus(`¡Éxito! ${res.message}`)
         setPushMessage("")
@@ -4621,17 +4621,38 @@ export default function AdminClient() {
               <CardContent className="pt-6">
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Destinatario</label>
-                    <select
-                      className="flex h-10 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-teal-600 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-950 dark:ring-offset-zinc-950 dark:placeholder:text-zinc-400"
-                      value={pushRecipient}
-                      onChange={(e) => setPushRecipient(e.target.value)}
-                    >
-                      <option value="ALL">Todos los agentes</option>
+                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300">Destinatarios</label>
+                    <div className="max-h-48 overflow-y-auto border border-slate-200 dark:border-zinc-800 rounded-xl bg-white dark:bg-zinc-950 p-2 space-y-1">
+                      <label className="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-zinc-900 rounded-lg cursor-pointer">
+                        <input 
+                          type="checkbox" 
+                          className="rounded border-slate-300 text-teal-600 focus:ring-teal-600"
+                          checked={pushRecipients.includes("ALL")}
+                          onChange={(e) => {
+                            if (e.target.checked) setPushRecipients(["ALL"]);
+                            else setPushRecipients([]);
+                          }}
+                        />
+                        <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Todos los agentes</span>
+                      </label>
                       {usersList.filter(u => u.role === 'AGENTE' && u.active).map(u => (
-                        <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
+                        <label key={u.id} className="flex items-center gap-2 p-2 hover:bg-slate-50 dark:hover:bg-zinc-900 rounded-lg cursor-pointer">
+                          <input 
+                            type="checkbox" 
+                            className="rounded border-slate-300 text-teal-600 focus:ring-teal-600"
+                            checked={pushRecipients.includes(u.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setPushRecipients(prev => prev.filter(p => p !== "ALL").concat(u.id));
+                              } else {
+                                setPushRecipients(prev => prev.filter(p => p !== u.id));
+                              }
+                            }}
+                          />
+                          <span className="text-sm text-slate-600 dark:text-slate-400">{u.name} ({u.email})</span>
+                        </label>
                       ))}
-                    </select>
+                    </div>
                   </div>
                   
                   <div className="space-y-2">

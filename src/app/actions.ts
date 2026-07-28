@@ -2303,7 +2303,7 @@ export async function sendTestPushNotification(userId: string) {
     }
 }
 
-export async function sendAdminPushNotification(recipientId: string, message: string, pin: string) {
+export async function sendAdminPushNotification(recipientIds: string[], message: string, pin: string) {
     try {
         const session = await auth();
         if (!session?.user?.email) return { success: false, message: "No autenticado." };
@@ -2318,7 +2318,7 @@ export async function sendAdminPushNotification(recipientId: string, message: st
         }
 
         let subs = [];
-        if (recipientId === 'ALL') {
+        if (recipientIds.includes('ALL')) {
             const agencyUsers = await prisma.user.findMany({
                 where: { agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) },
                 select: { id: true }
@@ -2326,7 +2326,7 @@ export async function sendAdminPushNotification(recipientId: string, message: st
             const agencyUserIds = agencyUsers.map(u => u.id);
             subs = await prisma.pushSubscription.findMany({ where: { userId: { in: agencyUserIds } } });
         } else {
-            subs = await prisma.pushSubscription.findMany({ where: { userId: recipientId } });
+            subs = await prisma.pushSubscription.findMany({ where: { userId: { in: recipientIds } } });
         }
 
         if (!subs || subs.length === 0) return { success: false, message: "No hay dispositivos suscritos para este destinatario." };

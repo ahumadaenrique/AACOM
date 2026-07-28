@@ -45,9 +45,13 @@ export async function GET(request: Request) {
                 url: "/"
             });
 
-            const usersFilter: any = sp.recipientId === "ALL" 
-                ? { role: "AGENTE", active: true } 
-                : { id: sp.recipientId, active: true };
+            let usersFilter: any;
+            if (sp.recipientId === "ALL" || sp.recipientId.includes("ALL")) {
+                usersFilter = { role: "AGENTE", active: true };
+            } else {
+                const ids = sp.recipientId.split(',');
+                usersFilter = { id: { in: ids }, active: true };
+            }
 
             const agents = await prisma.user.findMany({
                 where: usersFilter,
