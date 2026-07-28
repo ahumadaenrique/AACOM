@@ -2313,8 +2313,9 @@ export async function sendAdminPushNotification(recipientIds: string[], message:
             return { success: false, message: "Permisos insuficientes." };
         }
         
-        if (currentUser.password !== pin) {
-            return { success: false, message: "ContraseÃƒÆ’Ã‚Â±a incorrecta." };
+        const isValid = await bcrypt.compare(pin, currentUser.password);
+        if (!isValid) {
+            return { success: false, message: "Contraseña incorrecta." };
         }
 
         let subs = [];
@@ -2496,7 +2497,8 @@ export async function createScheduledPush(data: { message: string, frequency: st
     const user = await prisma.user.findUnique({ where: { email: session.user.email } });
     if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) return { success: false, message: "No autorizado." };
     
-    if (user.password !== pin) return { success: false, message: "ContraseÃƒÆ’Ã‚Â±a incorrecta." };
+    const isValid = await bcrypt.compare(pin, user.password);
+    if (!isValid) return { success: false, message: "Contraseña incorrecta." };
 
     try {
         await prisma.scheduledPush.create({ data });
@@ -2512,7 +2514,8 @@ export async function deleteScheduledPush(id: string, pin: string) {
     const user = await prisma.user.findUnique({ where: { email: session.user.email } });
     if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) return { success: false, message: "No autorizado." };
     
-    if (user.password !== pin) return { success: false, message: "ContraseÃƒÆ’Ã‚Â±a incorrecta." };
+    const isValid = await bcrypt.compare(pin, user.password);
+    if (!isValid) return { success: false, message: "Contraseña incorrecta." };
 
     try {
         await prisma.scheduledPush.delete({ where: { id } });
