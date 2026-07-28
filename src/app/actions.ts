@@ -1742,8 +1742,7 @@ export async function getAdminActivityReport(userId?: string, startDate?: string
                 user: {
                     select: {
                         name: true,
-                        email: true,
-                        image: true
+                        email: true
                     }
                 }
             },

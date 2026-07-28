@@ -149,10 +149,16 @@ export default function AdminClient() {
   // Default to current month (1st day to today) to optimize initial load
   const [reportStartDate, setReportStartDate] = useState<string>(() => {
     const d = new Date();
-    return new Date(d.getFullYear(), d.getMonth(), 1).toLocaleDateString('en-CA'); // YYYY-MM-DD
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    return `${y}-${m}-01`;
   });
   const [reportEndDate, setReportEndDate] = useState<string>(() => {
-    return new Date().toLocaleDateString('en-CA');
+    const d = new Date();
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    return `${y}-${m}-${day}`;
   });
   const [expandedAgents, setExpandedAgents] = useState<Record<string, boolean>>({})
   const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({})
@@ -869,9 +875,13 @@ export default function AdminClient() {
       )
       if (res.success && res.logs) {
         setActivityLogs(res.logs)
+      } else {
+        setActivityLogs([])
+        alert("Error al cargar reporte: " + (res.message || "Desconocido"))
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
+      alert("Error de conexión: " + err.message)
     } finally {
       setLoadingActivityLogs(false)
     }
