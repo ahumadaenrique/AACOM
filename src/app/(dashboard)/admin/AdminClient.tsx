@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import BibliotecaAdmin from "./BibliotecaAdmin"
 import { AdminPollManager } from "./AdminPollManager"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Button } from "@/components/ui/button"
 import { 
   FileSpreadsheet, Award,
@@ -1658,7 +1659,7 @@ export default function AdminClient() {
                 Lista completa de cotizaciones con capacidad de rescatado visual e impresión inmediata.
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-0">
+            <CardContent className="p-0 bg-slate-50/30 dark:bg-zinc-900/10">
               {loading ? (
                 <div className="p-12 text-center text-muted-foreground flex flex-col items-center justify-center gap-2">
                   <RefreshCw className="h-8 w-8 animate-spin text-teal-600" />
@@ -1670,64 +1671,104 @@ export default function AdminClient() {
                   <span>No se encontraron cotizaciones.</span>
                 </div>
               ) : (
-                <div className="overflow-x-auto">
-                  <Table className="text-xs">
-                    <TableHeader className="bg-slate-50 dark:bg-zinc-800">
-                      <TableRow>
-                        <TableHead className="font-bold py-3 pl-4">Cliente</TableHead>
-                        <TableHead className="font-bold py-3">Teléfono</TableHead>
-                        <TableHead className="font-bold py-3 text-center">Producto</TableHead>
-                        <TableHead className="font-bold py-3 text-right">Prima Anual</TableHead>
-                        <TableHead className="font-bold py-3 text-right">Prima Total</TableHead>
-                        <TableHead className="font-bold py-3 text-right">Ahorro Proyectado (65)</TableHead>
-                        <TableHead className="font-bold py-3 text-center">Rendimiento (65)</TableHead>
-                        <TableHead className="font-bold py-3">Agente</TableHead>
-                        <TableHead className="font-bold py-3 text-center">Fecha</TableHead>
-                        <TableHead className="font-bold py-3 text-center pr-4">Rescatar</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {filteredCotizaciones.map((item) => (
-                        <TableRow key={item.id} className="hover:bg-slate-50/50">
-                          <TableCell className="font-bold text-slate-700 dark:text-slate-300 py-3.5 pl-4">{item.cliente}</TableCell>
-                          <TableCell className="text-slate-600 dark:text-slate-400 py-3.5">{item.telefono}</TableCell>
-                          <TableCell className="text-center py-3.5">
-                            <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 dark:bg-zinc-800 text-teal-800 dark:text-teal-200 border">
-                              {item.producto}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right font-medium py-3.5">
-                            ${item.primaAnual.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                          </TableCell>
-                          <TableCell className="text-right text-slate-600 dark:text-slate-400 py-3.5">
-                            ${item.totalPrima.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                          </TableCell>
-                          <TableCell className="text-right font-bold text-emerald-600 py-3.5">
-                            ${item.ahorro.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                          </TableCell>
-                          <TableCell className="text-center font-bold text-teal-600 py-3.5">
-                            {item.rendimiento.toFixed(1)}%
-                          </TableCell>
-                          <TableCell className="text-slate-700 dark:text-slate-300 font-medium py-3.5">{item.agente}</TableCell>
-                          <TableCell className="text-center text-slate-500 py-3.5">
-                            <span className="flex items-center justify-center gap-1">
-                              <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                              {new Date(item.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-center py-3.5 pr-4">
-                            <Button
-                              onClick={() => setSelectedQuote(item)}
-                              size="sm"
-                              className="bg-teal-600 hover:bg-teal-700 text-white font-bold h-7 px-2.5 flex items-center gap-1 mx-auto text-[10px]"
-                            >
-                              <Eye className="h-3.5 w-3.5" /> Ver Propuesta
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                <div className="p-4">
+                  {(() => {
+                     // Group by YYYY-MM
+                     const grouped = filteredCotizaciones.reduce((acc, item) => {
+                       const d = new Date(item.createdAt);
+                       const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                       if (!acc[key]) acc[key] = [];
+                       acc[key].push(item);
+                       return acc;
+                     }, {} as Record<string, typeof filteredCotizaciones>);
+
+                     const sortedMonths = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
+                     return (
+                       <Accordion type="multiple" defaultValue={sortedMonths} className="w-full space-y-4">
+                         {sortedMonths.map(monthKey => {
+                            const [year, month] = monthKey.split("-");
+                            const monthName = new Date(parseInt(year), parseInt(month) - 1, 1)
+                              .toLocaleDateString("es-MX", { month: "long", year: "numeric" })
+                              .replace(/^\w/, c => c.toUpperCase());
+                            
+                            return (
+                              <AccordionItem key={monthKey} value={monthKey} className="border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-xl px-4 shadow-sm overflow-hidden">
+                                <AccordionTrigger className="hover:no-underline font-bold text-slate-800 dark:text-slate-200 py-4">
+                                  <div className="flex items-center gap-2">
+                                    {monthName} 
+                                    <span className="bg-slate-100 dark:bg-zinc-800 text-slate-500 text-xs py-0.5 px-2.5 rounded-full border border-slate-200 dark:border-zinc-700">
+                                      {grouped[monthKey].length} cotizaciones
+                                    </span>
+                                  </div>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                  <div className="overflow-x-auto w-full pt-2 pb-4">
+                                    <Table className="text-xs">
+                                      <TableHeader className="bg-slate-50 dark:bg-zinc-800">
+                                        <TableRow>
+                                          <TableHead className="font-bold py-3 pl-4">Cliente</TableHead>
+                                          <TableHead className="font-bold py-3">Teléfono</TableHead>
+                                          <TableHead className="font-bold py-3 text-center">Producto</TableHead>
+                                          <TableHead className="font-bold py-3 text-right">Prima Anual</TableHead>
+                                          <TableHead className="font-bold py-3 text-right">Prima Total</TableHead>
+                                          <TableHead className="font-bold py-3 text-right">Ahorro Proyectado (65)</TableHead>
+                                          <TableHead className="font-bold py-3 text-center">Rendimiento (65)</TableHead>
+                                          <TableHead className="font-bold py-3">Agente</TableHead>
+                                          <TableHead className="font-bold py-3 text-center">Fecha</TableHead>
+                                          <TableHead className="font-bold py-3 text-center pr-4">Rescatar</TableHead>
+                                        </TableRow>
+                                      </TableHeader>
+                                      <TableBody>
+                                        {grouped[monthKey].map((item: any) => (
+                                          <TableRow key={item.id} className="hover:bg-slate-50/50">
+                                            <TableCell className="font-bold text-slate-700 dark:text-slate-300 py-3.5 pl-4">{item.cliente}</TableCell>
+                                            <TableCell className="text-slate-600 dark:text-slate-400 py-3.5">{item.telefono}</TableCell>
+                                            <TableCell className="text-center py-3.5">
+                                              <span className="inline-block px-2 py-0.5 rounded-full text-[10px] font-bold bg-teal-50 dark:bg-zinc-800 text-teal-800 dark:text-teal-200 border">
+                                                {item.producto}
+                                              </span>
+                                            </TableCell>
+                                            <TableCell className="text-right font-medium py-3.5">
+                                              ${item.primaAnual.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                            </TableCell>
+                                            <TableCell className="text-right text-slate-600 dark:text-slate-400 py-3.5">
+                                              ${item.totalPrima.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                            </TableCell>
+                                            <TableCell className="text-right font-bold text-emerald-600 py-3.5">
+                                              ${item.ahorro.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                            </TableCell>
+                                            <TableCell className="text-center font-bold text-teal-600 py-3.5">
+                                              {item.rendimiento.toFixed(1)}%
+                                            </TableCell>
+                                            <TableCell className="text-slate-700 dark:text-slate-300 font-medium py-3.5">{item.agente}</TableCell>
+                                            <TableCell className="text-center text-slate-500 py-3.5">
+                                              <span className="flex items-center justify-center gap-1">
+                                                <Calendar className="h-3.5 w-3.5 text-slate-400" />
+                                                {new Date(item.createdAt).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}
+                                              </span>
+                                            </TableCell>
+                                            <TableCell className="text-center py-3.5 pr-4">
+                                              <Button
+                                                onClick={() => setSelectedQuote(item)}
+                                                size="sm"
+                                                className="bg-teal-600 hover:bg-teal-700 text-white font-bold h-7 px-2.5 flex items-center gap-1 mx-auto text-[10px]"
+                                              >
+                                                <Eye className="h-3.5 w-3.5" /> Ver Propuesta
+                                              </Button>
+                                            </TableCell>
+                                          </TableRow>
+                                        ))}
+                                      </TableBody>
+                                    </Table>
+                                  </div>
+                                </AccordionContent>
+                              </AccordionItem>
+                            );
+                         })}
+                       </Accordion>
+                     );
+                  })()}
                 </div>
               )}
             </CardContent>

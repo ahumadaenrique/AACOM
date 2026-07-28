@@ -27,6 +27,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 
 // Recharts imports inside client component
 import {
@@ -97,7 +98,7 @@ export default function CotizadorPage({
 
   // Month filter for history
   const generateLast6Months = () => {
-    const months = [];
+    const months = [{ value: 'all', label: 'Todo el Histórico' }];
     const now = new Date();
     for (let i = 0; i < 6; i++) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
@@ -837,73 +838,101 @@ export default function CotizadorPage({
             </div>
           </div>
 
-          <Card className="shadow-lg border-0 ring-1 ring-slate-200 dark:ring-zinc-800">
-            <div className="overflow-x-auto w-full">
-              <Table>
-                <TableHeader className="bg-slate-50 dark:bg-zinc-800/50">
-                  <TableRow>
-                    <TableHead>Fecha</TableHead>
-                    <TableHead>Cliente</TableHead>
-                    <TableHead>Producto</TableHead>
-                    <TableHead className="text-right">Prima Anual</TableHead>
-                    <TableHead className="text-right">Ahorro 65 (Pesos)</TableHead>
-                    <TableHead className="text-center">Acción</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {loadingHistory ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-slate-500">Cargando historial...</TableCell>
-                    </TableRow>
-                  ) : historyList.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={6} className="text-center py-8 text-slate-500">No tienes cotizaciones guardadas aún.</TableCell>
-                    </TableRow>
-                  ) : (
-                    (() => {
-                      const filteredHistory = historyList.filter(cot => {
-                        const cotDate = new Date(cot.createdAt);
-                        const cotYear = cotDate.getFullYear();
-                        const cotMonth = String(cotDate.getMonth() + 1).padStart(2, '0');
-                        const cotYearMonth = `${cotYear}-${cotMonth}`;
-                        return cotYearMonth === selectedMonth;
-                      });
+          <Card className="shadow-lg border-0 ring-1 ring-slate-200 dark:ring-zinc-800 p-4">
+            {loadingHistory ? (
+              <div className="text-center py-12 text-slate-500 font-medium flex flex-col items-center justify-center gap-2">
+                <RefreshCw className="h-6 w-6 animate-spin text-teal-600" />
+                Cargando historial...
+              </div>
+            ) : historyList.length === 0 ? (
+              <div className="text-center py-12 text-slate-500">No tienes cotizaciones guardadas aún.</div>
+            ) : (
+              (() => {
+                const filteredHistory = historyList.filter(cot => {
+                  if (selectedMonth === 'all') return true;
+                  const cotDate = new Date(cot.createdAt);
+                  const cotYearMonth = `${cotDate.getFullYear()}-${String(cotDate.getMonth() + 1).padStart(2, '0')}`;
+                  return cotYearMonth === selectedMonth;
+                });
 
-                      if (filteredHistory.length === 0) {
-                        return (
-                          <TableRow>
-                            <TableCell colSpan={6} className="text-center py-8 text-slate-500">
-                              No tienes cotizaciones guardadas para este mes.
-                            </TableCell>
-                          </TableRow>
-                        );
-                      }
+                if (filteredHistory.length === 0) {
+                  return <div className="text-center py-12 text-slate-500">No tienes cotizaciones guardadas para este mes.</div>;
+                }
 
-                      return filteredHistory.map((cot, idx) => (
-                        <TableRow key={idx} className="hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors">
-                          <TableCell className="font-medium">{new Date(cot.createdAt).toLocaleDateString()}</TableCell>
-                          <TableCell>{cot.cliente}</TableCell>
-                          <TableCell>
-                            <span className="bg-teal-100 text-teal-800 px-2 py-1 rounded text-xs font-bold">{cot.producto}</span>
-                          </TableCell>
-                          <TableCell className="text-right font-semibold">
-                            ${(cot.primaAnual || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </TableCell>
-                          <TableCell className="text-right text-indigo-600 dark:text-indigo-400 font-bold">
-                            ${(cot.ahorro || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <Button variant="default" size="sm" onClick={() => loadHistoryRecord(cot)} className="bg-indigo-600 hover:bg-indigo-700">
-                              Ver Reporte
-                            </Button>
-                          </TableCell>
-                        </TableRow>
-                      ));
-                    })()
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                // Group by YYYY-MM
+                const grouped = filteredHistory.reduce((acc, cot) => {
+                  const d = new Date(cot.createdAt);
+                  const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                  if (!acc[key]) acc[key] = [];
+                  acc[key].push(cot);
+                  return acc;
+                }, {} as Record<string, typeof historyList>);
+
+                const sortedMonths = Object.keys(grouped).sort((a, b) => b.localeCompare(a));
+
+                return (
+                  <Accordion type="multiple" defaultValue={sortedMonths} className="w-full space-y-4">
+                    {sortedMonths.map(monthKey => {
+                       const [year, month] = monthKey.split("-");
+                       const monthName = new Date(parseInt(year), parseInt(month) - 1, 1)
+                         .toLocaleDateString("es-MX", { month: "long", year: "numeric" })
+                         .replace(/^\w/, c => c.toUpperCase());
+                       
+                       return (
+                         <AccordionItem key={monthKey} value={monthKey} className="border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 rounded-xl px-4 shadow-sm overflow-hidden">
+                           <AccordionTrigger className="hover:no-underline font-bold text-slate-800 dark:text-slate-200 py-4">
+                             <div className="flex items-center gap-2">
+                               {monthName} 
+                               <span className="bg-slate-100 dark:bg-zinc-800 text-slate-500 text-xs py-0.5 px-2.5 rounded-full border border-slate-200 dark:border-zinc-700">
+                                 {grouped[monthKey].length} cotizaciones
+                               </span>
+                             </div>
+                           </AccordionTrigger>
+                           <AccordionContent>
+                             <div className="overflow-x-auto w-full pt-2 pb-4">
+                               <Table>
+                                 <TableHeader className="bg-slate-50 dark:bg-zinc-800/50">
+                                   <TableRow>
+                                     <TableHead>Fecha</TableHead>
+                                     <TableHead>Cliente</TableHead>
+                                     <TableHead>Producto</TableHead>
+                                     <TableHead className="text-right">Prima Anual</TableHead>
+                                     <TableHead className="text-right">Ahorro 65 (Pesos)</TableHead>
+                                     <TableHead className="text-center">Acción</TableHead>
+                                   </TableRow>
+                                 </TableHeader>
+                                 <TableBody>
+                                   {grouped[monthKey].map((cot: any, idx: number) => (
+                                     <TableRow key={idx} className="hover:bg-slate-50 dark:hover:bg-zinc-800/50 transition-colors">
+                                       <TableCell className="font-medium">{new Date(cot.createdAt).toLocaleDateString('es-MX')}</TableCell>
+                                       <TableCell>{cot.cliente}</TableCell>
+                                       <TableCell>
+                                         <span className="bg-teal-100 dark:bg-teal-900/30 text-teal-800 dark:text-teal-300 px-2 py-1 rounded text-xs font-bold border border-teal-200 dark:border-teal-800">{cot.producto}</span>
+                                       </TableCell>
+                                       <TableCell className="text-right font-semibold">
+                                         ${(cot.primaAnual || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                       </TableCell>
+                                       <TableCell className="text-right text-indigo-600 dark:text-indigo-400 font-bold">
+                                         ${(cot.ahorro || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                       </TableCell>
+                                       <TableCell className="text-center">
+                                         <Button variant="default" size="sm" onClick={() => loadHistoryRecord(cot)} className="bg-indigo-600 hover:bg-indigo-700 font-bold">
+                                           Ver Reporte
+                                         </Button>
+                                       </TableCell>
+                                     </TableRow>
+                                   ))}
+                                 </TableBody>
+                               </Table>
+                             </div>
+                           </AccordionContent>
+                         </AccordionItem>
+                       );
+                    })}
+                  </Accordion>
+                );
+              })()
+            )}
           </Card>
         </div>
       )}
