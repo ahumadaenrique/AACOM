@@ -146,6 +146,11 @@ model User {
   reportsTo    User?   @relation("Hierarchy", fields: [reportsToId], references: [id])
   subordinates User[]  @relation("Hierarchy")
 
+  // Referidores
+  linkedAgentId String?
+  linkedAgent   User?   @relation("AgentReferidores", fields: [linkedAgentId], references: [id])
+  referidores   User[]  @relation("AgentReferidores")
+
   // Integraciones IA (Agentes)
   googleAccessToken  String?
   googleRefreshToken String?

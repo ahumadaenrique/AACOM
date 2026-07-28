@@ -130,6 +130,8 @@ export default async function DashboardLayout({
     
     const isSeller = dbUser?.role === 'SELLER';
     const isLiteAgent = dbUser?.role === 'AGENTE_LITE';
+    const isReferidor = dbUser?.role === 'REFERIDOR';
+
     if (isSeller && pathname !== '/vendedor') {
         const { redirect } = await import("next/navigation");
         redirect("/vendedor");
@@ -201,85 +203,101 @@ export default async function DashboardLayout({
                                         className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/activity') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                                     >
                                         <ClipboardCheck className={`h-4 w-4 ${pathname.startsWith('/activity') ? 'text-primary' : 'text-teal-600 dark:text-teal-400'}`} />
-                                        25 puntos
+                                        {isReferidor ? "Mi Actividad" : "25 puntos"}
                                         {pathname.startsWith('/activity') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                     </Link>
                                 )}
-                                <Link
-                                    href="/pea-prp"
-                                    className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/pea-prp') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                >
-                                    <Target className={`h-4 w-4 ${pathname.startsWith('/pea-prp') ? 'text-primary' : 'text-indigo-600'}`} />
-                                    PEA/PRP
-                                    {pathname.startsWith('/pea-prp') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                </Link>
-                                <Link
-                                    href="/cartera"
-                                    className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/cartera') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                >
-                                    <Wallet className={`h-4 w-4 ${pathname.startsWith('/cartera') ? 'text-primary' : 'text-green-600'}`} />
-                                    Mi Cartera
-                                    {pathname.startsWith('/cartera') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                </Link>
-                                <Link
-                                    href="/team"
-                                    className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/team') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                >
-                                    <Users className={`h-4 w-4 ${pathname.startsWith('/team') ? 'text-primary' : 'text-indigo-500'}`} />
-                                    Equipo
-                                    {pathname.startsWith('/team') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                </Link>
-                                <Link
-                                    href="/ranking"
-                                    className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/ranking') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                >
-                                    <Award className={`h-4 w-4 ${pathname.startsWith('/ranking') ? 'text-primary' : 'text-amber-500'}`} />
-                                    Ranking
-                                    {pathname.startsWith('/ranking') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                </Link>
+                                {!isReferidor && (
+                                    <>
+                                        <Link
+                                            href="/pea-prp"
+                                            className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/pea-prp') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                        >
+                                            <Target className={`h-4 w-4 ${pathname.startsWith('/pea-prp') ? 'text-primary' : 'text-indigo-600'}`} />
+                                            PEA/PRP
+                                            {pathname.startsWith('/pea-prp') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                        </Link>
+                                        <Link
+                                            href="/cartera"
+                                            className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/cartera') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                        >
+                                            <Wallet className={`h-4 w-4 ${pathname.startsWith('/cartera') ? 'text-primary' : 'text-green-600'}`} />
+                                            Mi Cartera
+                                            {pathname.startsWith('/cartera') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                        </Link>
+                                        <Link
+                                            href="/team"
+                                            className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/team') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                        >
+                                            <Users className={`h-4 w-4 ${pathname.startsWith('/team') ? 'text-primary' : 'text-indigo-500'}`} />
+                                            Equipo
+                                            {pathname.startsWith('/team') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                        </Link>
+                                        <Link
+                                            href="/ranking"
+                                            className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/ranking') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                        >
+                                            <Award className={`h-4 w-4 ${pathname.startsWith('/ranking') ? 'text-primary' : 'text-amber-500'}`} />
+                                            Ranking
+                                            {pathname.startsWith('/ranking') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                        </Link>
+                                        {!isLiteAgent && (
+                                            <Link
+                                                href="/referidores"
+                                                className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/referidores') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                            >
+                                                <Network className={`h-4 w-4 ${pathname.startsWith('/referidores') ? 'text-primary' : 'text-emerald-500'}`} />
+                                                Mis Referidores
+                                                {pathname.startsWith('/referidores') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                            </Link>
+                                        )}
+                                    </>
+                                )}
 
                                 {/* Dropdown Herramientas */}
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                                            <Sparkles className={`h-4 w-4 ${['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-pink-500'}`} />
-                                            Herramientas
-                                            {['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                        </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start" className="w-48">
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/documentacion" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                <Book className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                                                Mi Biblioteca
-                                            </Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/cotizador" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                <Calculator className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                                                Cotizador
-                                            </Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/adn" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                <HeartPulse className="h-4 w-4 text-red-500" />
-                                                ADN
-                                            </Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/plan-arranque" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                <Rocket className="h-4 w-4 text-orange-500" />
-                                                Plan de Arranque
-                                            </Link>
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/academia" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                <GraduationCap className="h-4 w-4 text-purple-500" />
-                                                Academia
-                                            </Link>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                {!isReferidor && (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                                                <Sparkles className={`h-4 w-4 ${['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-pink-500'}`} />
+                                                Herramientas
+                                                {['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="start" className="w-48">
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/documentacion" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <Book className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                                                    Mi Biblioteca
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/cotizador" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <Calculator className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                                                    Cotizador
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/adn" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <HeartPulse className="h-4 w-4 text-red-500" />
+                                                    ADN
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/plan-arranque" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <Rocket className="h-4 w-4 text-orange-500" />
+                                                    Plan de Arranque
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/academia" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <GraduationCap className="h-4 w-4 text-purple-500" />
+                                                    Academia
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                )}
 
                                 {/* Dropdown Inteligencia Artificial Avanzada */}
                                 <DropdownMenu>
@@ -319,6 +337,12 @@ export default async function DashboardLayout({
                                             </button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="w-48">
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin/referidores" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <Users className="h-4 w-4 text-teal-600" />
+                                                    Referidores
+                                                </Link>
+                                            </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
                                                 <Link href="/votaciones" className="flex items-center gap-2 cursor-pointer font-medium">
                                                     <Sparkles className="h-4 w-4 text-amber-500" />
@@ -430,40 +454,54 @@ export default async function DashboardLayout({
                                                  className="text-muted-foreground hover:text-foreground flex items-center gap-2"
                                              >
                                                  <ClipboardCheck className="h-5 w-5 text-teal-600" />
-                                                 25 puntos
+                                                 {isReferidor ? "Mi Actividad" : "25 puntos"}
                                              </Link>
                                          )}
-                                         <Link
-                                             href="/pea-prp"
-                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                         >
-                                             <Target className="h-5 w-5 text-indigo-600" />
-                                             PEA/PRP
-                                         </Link>
-                                         <Link
-                                             href="/cartera"
-                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                         >
-                                             <Wallet className="h-5 w-5 text-green-600" />
-                                             Mi Cartera
-                                         </Link>
-                                         <Link
-                                             href="/team"
-                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                         >
-                                             <Users className="h-5 w-5 text-indigo-500" />
-                                             Equipo
-                                         </Link>
-                                         <Link
-                                             href="/ranking"
-                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                         >
-                                             <Award className="h-5 w-5 text-amber-500" />
-                                             Ranking
-                                         </Link>
+                                         {!isReferidor && (
+                                             <>
+                                                 <Link
+                                                     href="/pea-prp"
+                                                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                                 >
+                                                     <Target className="h-5 w-5 text-indigo-600" />
+                                                     PEA/PRP
+                                                 </Link>
+                                                 <Link
+                                                     href="/cartera"
+                                                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                                 >
+                                                     <Wallet className="h-5 w-5 text-green-600" />
+                                                     Mi Cartera
+                                                 </Link>
+                                                 <Link
+                                                     href="/team"
+                                                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                                 >
+                                                     <Users className="h-5 w-5 text-indigo-500" />
+                                                     Equipo
+                                                 </Link>
+                                                 <Link
+                                                     href="/ranking"
+                                                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                                 >
+                                                     <Award className="h-5 w-5 text-amber-500" />
+                                                     Ranking
+                                                 </Link>
+                                                 {!isLiteAgent && (
+                                                     <Link
+                                                         href="/referidores"
+                                                         className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                                     >
+                                                         <Network className="h-5 w-5 text-emerald-500" />
+                                                         Mis Referidores
+                                                     </Link>
+                                                 )}
+                                             </>
+                                         )}
 
                                          {/* Herramientas Section */}
-                                         <div className="space-y-2.5">
+                                         {!isReferidor && (
+                                             <div className="space-y-2.5">
                                              <div className="text-[10px] font-mono tracking-wider text-zinc-400 uppercase pt-2">Herramientas</div>
                                              <div className="pl-3 space-y-2.5 border-l border-zinc-200 dark:border-zinc-800">
                                                  <Link href="/documentacion" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
@@ -488,6 +526,7 @@ export default async function DashboardLayout({
                                                  </Link>
                                              </div>
                                          </div>
+                                         )}
 
                                          {/* IA Avanzada Section */}
                                          {!isLiteAgent && (

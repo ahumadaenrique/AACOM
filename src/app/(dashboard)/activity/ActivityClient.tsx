@@ -46,7 +46,8 @@ interface HistoryGroup {
     logs: LogEntry[];
 }
 
-export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName?: string }) {
+export default function ActivityPage({ agencyName = "Tu Agencia", isReferidor = false }: { agencyName?: string, isReferidor?: boolean }) {
+    const TARGET = isReferidor ? 15 : 25;
     // State
     const [todayLogs, setTodayLogs] = useState<LogEntry[]>([]);
     const [plannedGoals, setPlannedGoals] = useState<Record<string, number>>({});
@@ -115,7 +116,7 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
 
     // Get color theme based on score (Semáforo)
     const getSemaforoDetails = (points: number) => {
-        if (points >= 25) {
+        if (points >= TARGET) {
             return {
                 color: "teal",
                 strokeClass: "stroke-teal-500 dark:stroke-teal-400",
@@ -306,7 +307,7 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
     // SVG Circular Ring details
     const radius = 52;
     const circumference = 2 * Math.PI * radius;
-    const progressPercent = Math.min(100, (totalPoints / 25) * 100);
+    const progressPercent = Math.min(100, (totalPoints / TARGET) * 100);
     const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
 
     // Helper to format Date nicely
@@ -326,7 +327,7 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
         return (
             <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
                 <Loader2 className="h-12 w-12 text-teal-600 animate-spin" />
-                <p className="text-sm text-muted-foreground font-semibold">Cargando módulo {agencyName} 25...</p>
+                <p className="text-sm text-muted-foreground font-semibold">Cargando módulo {isReferidor ? "Mi Actividad" : `${agencyName} 25`}...</p>
             </div>
         );
     }
@@ -338,7 +339,7 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
                 <div className="flex flex-col gap-1.5">
                     <div className="flex items-center gap-2">
                         <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-zinc-100">
-                            {agencyName} 25
+                            {isReferidor ? "Mi Actividad" : `${agencyName} 25`}
                         </h1>
                         <div className="bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-400 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                             <Target className="h-3 w-3" />
@@ -346,7 +347,7 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
                         </div>
                     </div>
                     <p className="text-sm text-slate-500 dark:text-zinc-400 max-w-md leading-relaxed font-medium">
-                        Recuerda actualizar tu actividad del día de forma constante. Meta diaria: 25 puntos.
+                        Recuerda actualizar tu actividad del día de forma constante. Meta diaria: {TARGET} puntos.
                     </p>
                 </div>
                 
@@ -390,7 +391,7 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
                         {/* Centered Score */}
                         <div className="absolute flex flex-col items-center justify-center">
                             <span className="text-3xl font-black tracking-tight">{totalPoints}</span>
-                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">de 25</span>
+                            <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">de {TARGET}</span>
                         </div>
                     </div>
 
@@ -400,10 +401,9 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
                             {semaforo.badge}
                         </span>
                         <p className="text-xs text-muted-foreground max-w-[200px] leading-relaxed">
-                            {totalPoints >= 25 
-                                ? "¡Espectacular! Has completado el objetivo del día."
-                                : `Te faltan ${Math.max(0, 25 - totalPoints)} puntos para alcanzar la meta diaria.`
-                            }
+                            {totalPoints >= TARGET 
+                                ? "¡Felicidades! Has cumplido la meta del día." 
+                                : `Te faltan ${Math.max(0, TARGET - totalPoints)} puntos para alcanzar la meta diaria.`}
                         </p>
                     </div>
                 </div>
@@ -579,7 +579,7 @@ export default function ActivityPage({ agencyName = "Tu Agencia" }: { agencyName
                                         <div className="flex items-center gap-3">
                                             {/* Colored Semáforo Dot */}
                                             <span className={`h-3 w-3 rounded-full border border-white/20 animate-pulse ${
-                                                group.totalPoints >= 25 ? 'bg-teal-500' : group.totalPoints >= 16 ? 'bg-amber-500' : 'bg-rose-500'
+                                                group.totalPoints >= TARGET ? 'bg-teal-500' : group.totalPoints >= (TARGET * 0.6) ? 'bg-amber-500' : 'bg-rose-500'
                                             }`} />
                                             <div>
                                                 <p className="text-xs font-black text-slate-800 dark:text-zinc-200 capitalize">
