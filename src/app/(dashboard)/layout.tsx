@@ -315,7 +315,7 @@ export default async function DashboardLayout({
                                                 Asistente {shortAgencyName}
                                             </Link>
                                         </DropdownMenuItem>
-                                        {!isLiteAgent && (
+                                        {!isLiteAgent && !isReferidor && (
                                             <DropdownMenuItem asChild>
                                                 <a href="/agents" className="flex items-center gap-2 cursor-pointer font-medium">
                                                     <Bot className="h-4 w-4 text-indigo-600" />
@@ -537,10 +537,12 @@ export default async function DashboardLayout({
                                                          <MessageSquare className="h-4.5 w-4.5 text-pink-500" />
                                                          Asistente {shortAgencyName}
                                                      </Link>
-                                                     <Link href="/agents" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
-                                                         <Bot className="h-4.5 w-4.5 text-indigo-600" />
-                                                         Agentes IA
-                                                     </Link>
+                                                    {!isReferidor && (
+                                                        <Link href="/agents" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                            <Bot className="h-4.5 w-4.5 text-indigo-600" />
+                                                            Agentes IA
+                                                        </Link>
+                                                    )}
                                                  </div>
                                              </div>
                                          )}
