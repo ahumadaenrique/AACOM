@@ -23,9 +23,12 @@ model CommissionLedger {
   commissionEarned   Float
   status             String   @default("PENDING") // PENDING, PAID
   level              Int      @default(1) // 1 = Venta Directa, 2 = 2da gen (20%), 3 = 3ra gen (10%)
-  sourceAgencyId     String?  // Opcional, para saber de dónde se originó el pago (útil en niveles 2 y 3)
+  sourceAgencyId     String? // Opcional, para saber de dónde se originó el pago (útil en niveles 2 y 3)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+
+  @@index([sellerId])
+  @@index([agencyId])
 }
 
 model Agency {
@@ -57,9 +60,9 @@ model Agency {
   contents           Content[]
   autocompleteAgents Agent[]
 
-  purchasedSeats Int @default(0)
+  purchasedSeats  Int     @default(0)
   allowLiteAgents Boolean @default(false)
-  
+
   // WhatsApp Planner Feature Config
   enableWhatsAppPlanner Boolean @default(false)
   whatsAppPlannerPhones String? // Almacenará hasta 2 números, separados por comas
@@ -73,6 +76,8 @@ model Agency {
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
   DevelopmentPlanDay DevelopmentPlanDay[]
+
+  @@index([referredById])
 }
 
 model DiscountCode {
@@ -89,6 +94,8 @@ model DiscountCode {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([sellerId])
 }
 
 model User {
@@ -143,13 +150,13 @@ model User {
   googleAccessToken  String?
   googleRefreshToken String?
   googleTokenExpiry  DateTime?
-  
+
   // ElevenLabs Voice Integration
-  voiceSecondsBalance Int @default(300) // 5 minutos de capa gratuita inicial
-  InteractionLog     InteractionLog[]
-  Meeting            Meeting[]
-  Task               Task[]
-  FeedbackSurvey     FeedbackSurvey[]
+  voiceSecondsBalance Int              @default(300) // 5 minutos de capa gratuita inicial
+  InteractionLog      InteractionLog[]
+  Meeting             Meeting[]
+  Task                Task[]
+  FeedbackSurvey      FeedbackSurvey[]
 
   // For Double Promotoria or shared access (Simple implementation: Secondary access list)
   // This could be a many-to-many relation if needed
@@ -179,8 +186,8 @@ model User {
   resetToken       String?   @unique
   resetTokenExpiry DateTime?
 
-  createdAt                DateTime                  @default(now())
-  updatedAt                DateTime                  @updatedAt
+  createdAt           DateTime                  @default(now())
+  updatedAt           DateTime                  @updatedAt
   developmentProgress AgentDevelopmentProgress?
 
   // ElevenLabs Voice Details
@@ -188,14 +195,17 @@ model User {
   lastFreeMinutesReset DateTime               @default(now())
   voicePurchases       VoiceMinutesPurchase[]
   CompanyProfile       CompanyProfile?
+
+  @@index([agencyId])
+  @@index([reportsToId])
 }
 
 model VoiceMinutesPurchase {
   id               String   @id @default(cuid())
   userId           String
   user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  seconds          Int      // Segundos comprados originalmente
-  secondsRemaining Int      // Segundos que le quedan
+  seconds          Int // Segundos comprados originalmente
+  secondsRemaining Int // Segundos que le quedan
   purchasedAt      DateTime @default(now())
   expiresAt        DateTime // purchasedAt + 90 días
 }
@@ -243,6 +253,9 @@ model Client {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([agencyId])
+  @@index([userId])
 }
 
 model Policy {
@@ -280,6 +293,10 @@ model Policy {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([agencyId])
+  @@index([clientId])
+  @@index([userId])
 }
 
 model Content {
@@ -325,6 +342,9 @@ model Cotizacion {
   coberturas     String? // JSON string
   projectionData String? // JSON string
   createdAt      DateTime @default(now())
+
+  @@index([agencyId])
+  @@index([userId])
 }
 
 model Setting {
@@ -420,6 +440,10 @@ model ActivityLog {
   prospectName String? // Nombre del prospecto (obligatorio para citas)
   dateStr      String // Fecha en formato 'YYYY-MM-DD' en hora de CDMX
   createdAt    DateTime @default(now())
+
+  @@index([agencyId])
+  @@index([userId])
+  @@index([dateStr])
 }
 
 model KnowledgeDocument {
@@ -432,6 +456,8 @@ model KnowledgeDocument {
   isGlobalTemplate Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  @@index([agencyId])
 }
 
 model PushSubscription {
@@ -443,6 +469,8 @@ model PushSubscription {
   auth      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model ScheduledPush {
@@ -481,6 +509,8 @@ model PackDocument {
   fileType  String?
   category  String       @default("Otros")
   createdAt DateTime     @default(now())
+
+  @@index([packId])
 }
 
 model AgencyDocumentPack {
@@ -503,6 +533,8 @@ model AgencyDocument {
   fileType  String?
   category  String   @default("Otros")
   createdAt DateTime @default(now())
+
+  @@index([agencyId])
 }
 
 // ----------------------------------------------------------------------------
@@ -534,6 +566,10 @@ model PerformanceReview {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([agencyId])
+  @@index([agentId])
+  @@index([evaluatorId])
 }
 
 model Ticket {
@@ -549,6 +585,9 @@ model Ticket {
   imageUrl     String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([agencyId])
 }
 
 model Poll {
@@ -567,6 +606,8 @@ model PollOption {
   poll   Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
   text   String
   votes  PollVote[]
+
+  @@index([pollId])
 }
 
 model PollVote {
@@ -581,6 +622,8 @@ model PollVote {
   agency   Agency?    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
 
   @@unique([pollId, userId])
+  @@index([optionId])
+  @@index([agencyId])
 }
 
 // Modelo temporal para corregir error de Prisma Drift en Vercel
@@ -597,14 +640,16 @@ model AIAgent {
   guidelines        String?
   userId            String
   User              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt             DateTime         @default(now())
-  updatedAt             DateTime         @default(now()) @updatedAt
-  DraftPost             DraftPost[]
-  InteractionLog        InteractionLog[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @default(now()) @updatedAt
+  DraftPost         DraftPost[]
+  InteractionLog    InteractionLog[]
 
   // Límites mensuales
-  imageGenerationsCount Int              @default(0)
-  imageGenerationsReset DateTime         @default(now())
+  imageGenerationsCount Int      @default(0)
+  imageGenerationsReset DateTime @default(now())
+
+  @@index([userId])
 }
 
 model DraftPost {
@@ -618,6 +663,8 @@ model DraftPost {
   scheduledAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([aiAgentId])
 }
 
 model InteractionLog {
@@ -630,6 +677,9 @@ model InteractionLog {
   content         String   @db.Text
   toolInvocations Json?
   createdAt       DateTime @default(now())
+
+  @@index([aiAgentId])
+  @@index([userId])
 }
 
 model CompanyProfile {
@@ -647,6 +697,8 @@ model CompanyProfile {
   quotaResetDate  DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+
+  @@index([userId])
 }
 
 model KnowledgeAsset {
@@ -658,6 +710,8 @@ model KnowledgeAsset {
   agentId   String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([agentId])
 }
 
 model Meeting {
@@ -674,6 +728,8 @@ model Meeting {
   googleMeetLink  String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+
+  @@index([userId])
 }
 
 model Task {
@@ -687,6 +743,8 @@ model Task {
   User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@index([userId])
 }
 
 // ----------------------------------------------------------------------------
@@ -727,6 +785,7 @@ model ExamenIntento {
   detalles_modulos     Json?
   fecha                DateTime? @default(now())
 
+  @@index([email])
   @@map("examen_intentos")
 }
 
@@ -765,9 +824,9 @@ model DevelopmentPlanDay {
   additionalMediaJson   String? // Archivos y videos adicionales
   requiresAdminApproval Boolean @default(false) // El candado
 
-  hasQuestionnaire      Boolean @default(false)
-  questionnaireJson     String? // [{ question, options, correctOptionIndex }]
-  minPassingScore       Int     @default(80)
+  hasQuestionnaire  Boolean @default(false)
+  questionnaireJson String? // [{ question, options, correctOptionIndex }]
+  minPassingScore   Int     @default(80)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -813,7 +872,7 @@ model NewsArticle {
   url         String
   imageUrl    String?
   sourceName  String?
-  category    String   // "Mexico" o "Global"
+  category    String // "Mexico" o "Global"
   tags        String[] // ["Seguros", "CNSF", "Banxico", etc.]
   publishedAt DateTime
   createdAt   DateTime @default(now())
@@ -829,14 +888,19 @@ model AppErrorLog {
   userName  String?
   agencyId  String?
   createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([agencyId])
 }
 
 model FeedbackSurvey {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  rating      Int
-  comments    String?  @db.Text
-  canContact  Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  rating     Int
+  comments   String?  @db.Text
+  canContact Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
 }
