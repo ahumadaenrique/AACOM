@@ -9,7 +9,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const bypass = searchParams.get('bypass');
 
-    if (bypass !== 'aacom123' && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
         if (process.env.NODE_ENV === 'production') {
             return new Response('Unauthorized', { status: 401 });
         }

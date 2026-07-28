@@ -64,17 +64,17 @@ export async function GET(request: Request) {
 
             // 3. Build the report and send per user
             for (const user of users) {
-                const record = user.dailyRecords[0];
-                const plannedObj = record?.planned ? (typeof record.planned === "string" ? JSON.parse(record.planned) : record.planned) : {};
-                
                 let totalPts = 0;
                 let details = [];
 
-                for (const act of SALES_ACTIVITIES) {
-                    const pts = plannedObj[act.id] || 0;
+                for (const record of user.dailyRecords) {
+                    const pts = record.planned || 0;
                     if (pts > 0) {
-                        totalPts += pts * act.value;
-                        details.push(`${pts} ${act.name.toLowerCase()}`);
+                        const act = SALES_ACTIVITIES.find(a => a.id === record.activityId);
+                        if (act) {
+                            totalPts += pts * act.value;
+                            details.push(`${pts} ${act.name.toLowerCase()}`);
+                        }
                     }
                 }
 

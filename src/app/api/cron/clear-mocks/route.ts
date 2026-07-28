@@ -6,11 +6,12 @@ export const revalidate = 0;
 
 export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const bypass = searchParams.get("bypass");
+    const authHeader = req.headers.get('authorization');
 
-    if (bypass !== "aacom123") {
-      return new NextResponse("Unauthorized", { status: 401 });
+    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+      if (process.env.NODE_ENV === 'production') {
+        return new Response('Unauthorized', { status: 401 });
+      }
     }
 
     const mockTitles = [

@@ -7,7 +7,7 @@ export async function GET(request: Request) {
   const bypass = searchParams.get('bypass')
 
   const authHeader = request.headers.get('authorization')
-  if (bypass !== 'aacom123' && process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     if (process.env.NODE_ENV === 'production') {
       return new NextResponse('Unauthorized', { status: 401 })
     }

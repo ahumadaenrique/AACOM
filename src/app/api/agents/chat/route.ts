@@ -236,7 +236,7 @@ export async function POST(req: Request) {
     })
 
     // 3. Fetch Knowledge
-    const knowledgeAssets = await prisma.knowledgeAsset.findMany()
+    const knowledgeAssets = await prisma.knowledgeAsset.findMany({ where: { agentId: agent.id } })
 
     // Get Agency Name
     let agencyName = "AACOM"
