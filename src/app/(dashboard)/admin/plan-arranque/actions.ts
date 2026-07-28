@@ -136,15 +136,22 @@ export async function reorderModule(id: string, direction: "up" | "down") {
     return { success: false, message: "No se puede mover más" };
   }
 
-  // Swap their dayNumbers in a transaction
+  // Swap their dayNumbers safely avoiding unique constraint collision
   await prisma.$transaction([
+    // 1. Temporarily move current out of the way
     prisma.developmentPlanDay.update({
       where: { id: currentModule.id },
-      data: { dayNumber: targetModule.dayNumber }
+      data: { dayNumber: -1 }
     }),
+    // 2. Move target to current's old position
     prisma.developmentPlanDay.update({
       where: { id: targetModule.id },
       data: { dayNumber: currentModule.dayNumber }
+    }),
+    // 3. Move current to target's old position
+    prisma.developmentPlanDay.update({
+      where: { id: currentModule.id },
+      data: { dayNumber: targetModule.dayNumber }
     })
   ]);
 
