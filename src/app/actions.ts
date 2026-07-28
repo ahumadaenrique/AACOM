@@ -1521,17 +1521,6 @@ export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear
         });
         if (!user) return { success: false, rankings: [], rankingAd: null, message: "Usuario no encontrado" };
 
-        // --- MIGRACIÓN DE RESCATE (ADNs y Cotizaciones huérfanas) ---
-        await prisma.adnDiagnostic.updateMany({
-            where: { agencyId: null },
-            data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }
-        });
-        await prisma.cotizacion.updateMany({
-            where: { agencyId: null },
-            data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }
-        });
-        // -------------------------------------------------------------
-
         const now = new Date();
         const year = selectedYear !== undefined ? selectedYear : now.getFullYear();
         const month = selectedMonth !== undefined ? selectedMonth : now.getMonth(); // 0-indexed

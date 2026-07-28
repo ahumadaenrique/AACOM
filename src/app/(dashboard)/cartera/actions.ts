@@ -366,56 +366,83 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
         };
     
         const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { agencyId: true } });
+        const agencyId = (session?.user?.agencyId || dbUser?.agencyId) as string;
 
-        for (const row of parsedData) {
-            if (!row.clientName) continue;
-    
-            let client = await prisma.client.findFirst({
-                where: { name: row.clientName, userId: session.user.id },
-            });
-    
-            if (!client) {
-                client = await prisma.client.create({
-                    data: {
-                        agencyId: ((session?.user?.agencyId || dbUser?.agencyId) as string),
-                        name: row.clientName,
-                        email: row.email ? String(row.email) : null,
-                        phone: row.phone ? String(row.phone) : null,
-                        birthDate: safeDate(row.birthDate),
-                        userId: session.user.id,
-                    },
+        // 1. Obtener todos los clientes existentes del usuario
+        const uniqueClientNames = Array.from(new Set(parsedData.map(r => r.clientName).filter(Boolean)));
+        const existingClients = await prisma.client.findMany({
+            where: { userId: session.user.id, name: { in: uniqueClientNames } }
+        });
+        const clientMap = new Map(existingClients.map(c => [c.name, c]));
+
+        // 2. Crear clientes faltantes
+        const newClientsData = [];
+        for (const name of uniqueClientNames) {
+            if (!clientMap.has(name)) {
+                const row = parsedData.find(r => r.clientName === name);
+                newClientsData.push({
+                    agencyId,
+                    name: row.clientName,
+                    email: row.email ? String(row.email) : null,
+                    phone: row.phone ? String(row.phone) : null,
+                    birthDate: safeDate(row.birthDate),
+                    userId: session.user.id,
                 });
-                createdClients++;
             }
-    
-            if (row.policyNumber) {
-                const existingPolicy = await prisma.policy.findFirst({
-                    where: { policyNumber: String(row.policyNumber) },
-                });
-    
-                if (!existingPolicy) {
-                    await prisma.policy.create({
-                        data: {
-                            agencyId: ((session?.user?.agencyId || dbUser?.agencyId) as string),
-                            policyNumber: String(row.policyNumber),
-                            clientId: client.id,
-                            contractor: row.clientName,
-                            insured: row.clientName,
-                            product: row.product ? String(row.product) : null,
-                            insuranceCompany: row.insuranceCompany ? String(row.insuranceCompany) : null,
-                            effectiveDate: safeDate(row.effectiveDate),
-                            renewalDate: safeDate(row.renewalDate),
-                            annualPremium: row.annualPremium ? parseFloat(String(row.annualPremium).replace(/[^0-9.-]+/g, "")) || 0 : 0,
-                            paymentMethod: row.paymentMethod ? String(row.paymentMethod) : null,
-                            approximateCommission: row.approximateCommission ? parseFloat(String(row.approximateCommission).replace(/[^0-9.-]+/g, "")) || 0 : 0,
-                            approximateBonus: row.approximateBonus ? parseFloat(String(row.approximateBonus).replace(/[^0-9.-]+/g, "")) || 0 : 0,
-                            observations: row.observations ? String(row.observations) : null,
-                            userId: session.user.id,
-                        },
+        }
+
+        if (newClientsData.length > 0) {
+            await prisma.client.createMany({ data: newClientsData, skipDuplicates: true });
+            createdClients += newClientsData.length;
+            
+            // Refetch to get generated IDs for the new clients
+            const updatedClients = await prisma.client.findMany({
+                where: { userId: session.user.id, name: { in: uniqueClientNames } }
+            });
+            updatedClients.forEach(c => clientMap.set(c.name, c));
+        }
+
+        // 3. Obtener todas las pólizas existentes (por número de póliza)
+        const policyNumbers = Array.from(new Set(parsedData.map(r => r.policyNumber ? String(r.policyNumber) : null).filter(Boolean)));
+        const existingPolicies = await prisma.policy.findMany({
+            where: { policyNumber: { in: policyNumbers as string[] } }
+        });
+        const policyMap = new Set(existingPolicies.map(p => p.policyNumber));
+
+        // 4. Crear pólizas faltantes
+        const newPoliciesData = [];
+        for (const row of parsedData) {
+            if (!row.clientName || !row.policyNumber) continue;
+            const pNum = String(row.policyNumber);
+            
+            if (!policyMap.has(pNum)) {
+                const client = clientMap.get(row.clientName);
+                if (client) {
+                    newPoliciesData.push({
+                        agencyId,
+                        policyNumber: pNum,
+                        clientId: client.id,
+                        contractor: row.clientName,
+                        insured: row.clientName,
+                        product: row.product ? String(row.product) : null,
+                        insuranceCompany: row.insuranceCompany ? String(row.insuranceCompany) : null,
+                        effectiveDate: safeDate(row.effectiveDate),
+                        renewalDate: safeDate(row.renewalDate),
+                        annualPremium: row.annualPremium ? parseFloat(String(row.annualPremium).replace(/[^0-9.-]+/g, "")) || 0 : 0,
+                        paymentMethod: row.paymentMethod ? String(row.paymentMethod) : null,
+                        approximateCommission: row.approximateCommission ? parseFloat(String(row.approximateCommission).replace(/[^0-9.-]+/g, "")) || 0 : 0,
+                        approximateBonus: row.approximateBonus ? parseFloat(String(row.approximateBonus).replace(/[^0-9.-]+/g, "")) || 0 : 0,
+                        observations: row.observations ? String(row.observations) : null,
+                        userId: session.user.id,
                     });
-                    createdPolicies++;
+                    policyMap.add(pNum); // Prevent duplicates in the same batch
                 }
             }
+        }
+
+        if (newPoliciesData.length > 0) {
+            await prisma.policy.createMany({ data: newPoliciesData, skipDuplicates: true });
+            createdPolicies += newPoliciesData.length;
         }
     
         revalidatePath("/cartera");
