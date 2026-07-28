@@ -8,6 +8,8 @@ export async function getMisReferidores() {
         const session = await auth();
         if (!session?.user?.id) throw new Error("No autorizado");
 
+        const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+
         // Fetch referidores assigned to this agent
         const referidores = await prisma.user.findMany({
             where: {
@@ -16,14 +18,8 @@ export async function getMisReferidores() {
                 active: true
             },
             include: {
-                dailyRecords: {
-                    // Fetch today's records
-                    where: {
-                        date: {
-                            gte: new Date(new Date().setHours(0, 0, 0, 0)),
-                            lt: new Date(new Date().setHours(23, 59, 59, 999))
-                        }
-                    }
+                activityLogs: {
+                    where: { dateStr }
                 }
             },
             orderBy: { name: 'asc' }
@@ -31,7 +27,7 @@ export async function getMisReferidores() {
 
         // Map data to calculate points
         const mapped = referidores.map(ref => {
-            const todayPoints = ref.dailyRecords.reduce((acc, r) => acc + r.real, 0);
+            const todayPoints = ref.activityLogs.reduce((acc, log) => acc + log.points, 0);
             return {
                 id: ref.id,
                 name: ref.name,
@@ -51,6 +47,8 @@ export async function getReferidorDetails(referidorId: string) {
         const session = await auth();
         if (!session?.user?.id) throw new Error("No autorizado");
 
+        const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+
         // Verify referidor belongs to agent
         const referidor = await prisma.user.findFirst({
             where: {
@@ -59,14 +57,6 @@ export async function getReferidorDetails(referidorId: string) {
                 linkedAgentId: session.user.id
             },
             include: {
-                dailyRecords: {
-                    where: {
-                        date: {
-                            gte: new Date(new Date().setHours(0, 0, 0, 0)),
-                            lt: new Date(new Date().setHours(23, 59, 59, 999))
-                        }
-                    }
-                },
                 activityLogs: {
                     orderBy: { createdAt: 'desc' },
                     take: 50
@@ -76,7 +66,9 @@ export async function getReferidorDetails(referidorId: string) {
 
         if (!referidor) throw new Error("Referidor no encontrado o no tienes permiso para verlo");
 
-        const todayPoints = referidor.dailyRecords.reduce((acc, r) => acc + r.real, 0);
+        // Calculate today points from activity logs
+        const todayLogs = referidor.activityLogs.filter((log: any) => log.dateStr === dateStr);
+        const todayPoints = todayLogs.reduce((acc: number, log: any) => acc + log.points, 0);
 
         return {
             success: true,
