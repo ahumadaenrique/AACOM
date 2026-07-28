@@ -2929,6 +2929,10 @@ export default function AdminClient() {
                     </Card>
                   ) : (
                     (() => {
+                      // Date helpers for monthly stats
+                      const now = new Date()
+                      const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+
                       // Helper to group logs inside render
                       const groups: Record<string, {
                         agentName: string;
@@ -2936,6 +2940,8 @@ export default function AdminClient() {
                         agentId: string;
                         dates: Record<string, any[]>;
                         totalPoints: number;
+                        monthCitasEfectivasCount: number;
+                        monthCitasAgendadasCount: number;
                       }> = {};
 
                       activityLogs.forEach(log => {
@@ -2950,7 +2956,9 @@ export default function AdminClient() {
                             agentEmail: email,
                             agentId: userId,
                             dates: {},
-                            totalPoints: 0
+                            totalPoints: 0,
+                            monthCitasEfectivasCount: 0,
+                            monthCitasAgendadasCount: 0,
                           };
                         }
 
@@ -2960,6 +2968,12 @@ export default function AdminClient() {
 
                         groups[userId].dates[date].push(log);
                         groups[userId].totalPoints += log.points;
+
+                        // Increment monthly counts safely within the same loop to avoid O(N^2) react re-rendering
+                        if (date.startsWith(currentMonthStr)) {
+                          if (log.activityId === "3") groups[userId].monthCitasEfectivasCount++;
+                          if (log.activityId === "2") groups[userId].monthCitasAgendadasCount++;
+                        }
                       });
 
                       const groupedData = Object.values(groups).map(g => ({
@@ -2971,19 +2985,14 @@ export default function AdminClient() {
                         })).sort((a, b) => b.dateStr.localeCompare(a.dateStr))
                       })).sort((a, b) => b.totalPoints - a.totalPoints);
 
-                      // Date helpers for monthly stats
-                      const now = new Date()
-                      const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
-
                       return (
                         <div className="space-y-3">
                           {groupedData.map((agentGroup) => {
                             const isAgentExpanded = expandedAgents[agentGroup.agentId];
                             
-                            // Calculate monthly stats for the badge
-                            const agentMonthLogs = activityLogs.filter(l => l.userId === agentGroup.agentId && l.dateStr.startsWith(currentMonthStr));
-                            const monthCitasEfectivasCount = agentMonthLogs.filter(l => l.activityId === "3").length;
-                            const monthCitasAgendadasCount = agentMonthLogs.filter(l => l.activityId === "2").length;
+                            // Use the pre-calculated O(1) stats from grouping phase
+                            const monthCitasEfectivasCount = agentGroup.monthCitasEfectivasCount;
+                            const monthCitasAgendadasCount = agentGroup.monthCitasAgendadasCount;
 
                             return (
                               <Card key={agentGroup.agentId} className="shadow-sm border border-slate-200 dark:border-zinc-800 overflow-hidden hover:shadow-md transition-shadow">
