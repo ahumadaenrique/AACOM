@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { getMisReferidores } from "./actions";
 import { Loader2, User, Trophy, CalendarDays, Activity } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function ReferidoresClient() {
     const [referidores, setReferidores] = useState<any[]>([]);
