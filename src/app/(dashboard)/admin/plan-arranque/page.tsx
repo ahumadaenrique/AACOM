@@ -2,6 +2,7 @@ import { getDays } from "./actions";
 import { AdminPlanClient } from "./AdminPlanClient";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { prisma } from "@/lib/prisma";
 
 export const metadata = {
   title: "Admin Plan de Arranque",
@@ -14,7 +15,16 @@ export default async function AdminPlanPage() {
 
   try {
     session = await auth();
-    if (session?.user?.role !== "SUPER_ADMIN" && session?.user?.role !== "ADMIN") {
+    let userRole = session?.user?.role;
+    
+    if (session?.user?.email) {
+        const dbUser = await prisma.user.findUnique({
+            where: { email: session.user.email.toLowerCase() }
+        });
+        if (dbUser) userRole = dbUser.role;
+    }
+
+    if (userRole !== "SUPER_ADMIN" && userRole !== "ADMIN") {
       redirect("/");
     }
     days = await getDays();
