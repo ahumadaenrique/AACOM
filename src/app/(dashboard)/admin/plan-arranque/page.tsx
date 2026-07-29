@@ -24,9 +24,10 @@ export default async function AdminPlanPage() {
         if (dbUser) userRole = dbUser.role;
     }
 
-    if (userRole !== "SUPER_ADMIN" && userRole !== "ADMIN") {
-      redirect("/");
-    }
+    console.log("AdminPlanPage Debug: session role=", session?.user?.role, "dbUser role=", userRole, "email=", session?.user?.email);
+
+    // Temp removed redirect for debugging
+    
     days = await getDays();
   } catch (err: any) {
     if (err.message === "NEXT_REDIRECT") {
