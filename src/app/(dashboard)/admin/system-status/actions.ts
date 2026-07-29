@@ -233,3 +233,29 @@ export async function checkAllSystemsStatus() {
         return { success: false, message: e.message };
     }
 }
+
+export async function triggerDailyPlanReport() {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) throw new Error("No autenticado");
+        
+        const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+        if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+        const { GET: dailyPlanCronGet } = await import("@/app/api/cron/daily-plan-report/route");
+        const req = new Request("http://localhost/api/cron/daily-plan-report", {
+            headers: {
+                "Authorization": `Bearer ${process.env.CRON_SECRET || ''}`
+            }
+        });
+        
+        const res = await dailyPlanCronGet(req);
+        if (!res.ok) {
+            throw new Error("Fallo al ejecutar el cron HTTP " + res.status);
+        }
+        const data = await res.json();
+        return { success: true, sentCount: data.sentCount };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}

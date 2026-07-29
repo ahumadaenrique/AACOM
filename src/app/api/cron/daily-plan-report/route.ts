@@ -31,7 +31,7 @@ export async function GET(request: Request) {
         const waFromNumber = process.env.TWILIO_WHATSAPP_NUMBER || process.env.TWILIO_PHONE_NUMBER || '+14155238886';
         
         // Plantilla
-        const templateSid = process.env.TWILIO_WA_TEMPLATE_PLANNER_SID || "HX_TBD";
+        const templateSid = process.env.TWILIO_WA_TEMPLATE_PLANNER_SID || "HX7f9aa2c868c568450acc5e5e9e3a3fab";
 
         let sentCount = 0;
 

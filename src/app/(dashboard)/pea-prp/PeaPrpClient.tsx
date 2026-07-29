@@ -52,6 +52,10 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
     const [rejectingId, setRejectingId] = useState<string | null>(null);
     const [rejectFeedback, setRejectFeedback] = useState("");
 
+    // Aprobación State
+    const [approvingId, setApprovingId] = useState<string | null>(null);
+    const [approveFeedback, setApproveFeedback] = useState("");
+
     // Modal de Lectura de Dictamen IA para la Tabla
     const [readingReview, setReadingReview] = useState<any>(null);
 
@@ -136,11 +140,13 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
         setFormLoading(false);
     };
 
-    const handleAuthorize = async (id: string) => {
-        if (!confirm("¿Deseas autorizar formalmente esta evaluación semanal?")) return;
-        const res = await authorizeReview(id);
+    const submitApprove = async () => {
+        if (!approvingId) return;
+        const res = await authorizeReview(approvingId, approveFeedback);
         if (res.success) {
             toast({ title: "Evaluación Autorizada", description: "El registro ha sido validado exitosamente." });
+            setApprovingId(null);
+            setApproveFeedback("");
             loadReviews();
         } else {
             toast({ title: "Error", description: res.message, variant: "destructive" });
@@ -244,7 +250,7 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                         <div className="flex flex-col gap-2 mt-6">
                             {rev.status === 'PENDING' && (
                                 <>
-                                    <Button onClick={() => handleAuthorize(rev.id)} className="w-full bg-teal-600 hover:bg-teal-700">
+                                    <Button onClick={() => setApprovingId(rev.id)} className="w-full bg-teal-600 hover:bg-teal-700">
                                         <CheckCircle2 className="w-4 h-4 mr-2" /> Autorizar
                                     </Button>
                                     <Button onClick={() => setRejectingId(rev.id)} variant="outline" className="w-full text-red-600 hover:bg-red-50 border-red-200">
@@ -522,6 +528,14 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                     </DialogHeader>
                     {readingReview && (
                         <div className="py-4">
+                            {readingReview.feedback && (
+                                <div className="mb-4 p-4 bg-teal-50 dark:bg-teal-950/30 rounded-lg border border-teal-200 dark:border-teal-900">
+                                    <h3 className="text-teal-800 dark:text-teal-400 font-bold flex items-center gap-2 mb-1">
+                                        <Activity className="w-4 h-4" /> Comentarios del Administrador
+                                    </h3>
+                                    <p className="text-sm text-teal-700 dark:text-teal-300">{readingReview.feedback}</p>
+                                </div>
+                            )}
                             <div 
                                 className="text-sm prose prose-slate dark:prose-invert max-w-none"
                                 dangerouslySetInnerHTML={{ __html: readingReview.aiAnalysisResult || "<p>Sin análisis disponible.</p>" }} 
@@ -536,6 +550,26 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                     )}
                     <DialogFooter>
                         <Button variant="outline" onClick={() => setReadingReview(null)}>Cerrar</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* Modal de Aprobación para Admin */}
+            <Dialog open={!!approvingId} onOpenChange={(open) => !open && setApprovingId(null)}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Autorizar Evaluación</DialogTitle>
+                        <DialogDescription>¿Deseas agregar algún comentario de retroalimentación? (Opcional)</DialogDescription>
+                    </DialogHeader>
+                    <textarea 
+                        className="w-full h-24 p-3 border rounded-md text-sm mt-2" 
+                        placeholder="Ej. Excelente trabajo esta semana..."
+                        value={approveFeedback}
+                        onChange={(e) => setApproveFeedback(e.target.value)}
+                    />
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setApprovingId(null)}>Cancelar</Button>
+                        <Button className="bg-teal-600 hover:bg-teal-700" onClick={submitApprove}>Autorizar y Guardar</Button>
                     </DialogFooter>
                 </DialogContent>
             </Dialog>

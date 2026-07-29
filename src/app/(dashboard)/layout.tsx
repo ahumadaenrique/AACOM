@@ -131,6 +131,7 @@ export default async function DashboardLayout({
     const isSeller = dbUser?.role === 'SELLER';
     const isLiteAgent = dbUser?.role === 'AGENTE_LITE';
     const isReferidor = dbUser?.role === 'REFERIDOR';
+    const allowReferidores = agency?.allowReferidores ?? false;
 
     if (isSeller && pathname !== '/vendedor') {
         const { redirect } = await import("next/navigation");
@@ -241,7 +242,7 @@ export default async function DashboardLayout({
                                             Ranking
                                             {pathname.startsWith('/ranking') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                         </Link>
-                                        {!isLiteAgent && (
+                                        {!isLiteAgent && allowReferidores && (
                                             <Link
                                                 href="/referidores"
                                                 className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/referidores') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
@@ -487,7 +488,7 @@ export default async function DashboardLayout({
                                                      <Award className="h-5 w-5 text-amber-500" />
                                                      Ranking
                                                  </Link>
-                                                 {!isLiteAgent && (
+                                                 {!isLiteAgent && allowReferidores && (
                                                      <Link
                                                          href="/referidores"
                                                          className="text-muted-foreground hover:text-foreground flex items-center gap-2"

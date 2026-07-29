@@ -5,12 +5,13 @@ import { Activity, Server, Database, Globe, Mail, MessageSquare, CreditCard, Ref
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { checkAllSystemsStatus } from "./actions";
+import { checkAllSystemsStatus, triggerDailyPlanReport } from "./actions";
 
 export default function SystemStatusClient() {
     const { toast } = useToast();
     const [systems, setSystems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const [triggeringCron, setTriggeringCron] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
     useEffect(() => {
@@ -27,6 +28,18 @@ export default function SystemStatusClient() {
             toast({ title: "Error al cargar sistemas", description: res.message, variant: "destructive" });
         }
         setLoading(false);
+    };
+
+    const runWACron = async () => {
+        if (!confirm("¿Estás seguro de enviar los reportes diarios de WhatsApp ahora?")) return;
+        setTriggeringCron(true);
+        const res = await triggerDailyPlanReport();
+        if (res.success) {
+            toast({ title: "WhatsApp Enviados", description: `Se procesaron y enviaron ${res.sentCount} mensajes a agentes.` });
+        } else {
+            toast({ title: "Error", description: res.message, variant: "destructive" });
+        }
+        setTriggeringCron(false);
     };
 
     const getIcon = (id: string) => {
@@ -57,10 +70,16 @@ export default function SystemStatusClient() {
                     </p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                    <Button onClick={loadStatus} disabled={loading} className="flex items-center gap-2">
-                        <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                        Forzar Revisión Ahora
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button onClick={runWACron} disabled={triggeringCron} variant="secondary" className="flex items-center gap-2 bg-green-100 text-green-700 hover:bg-green-200 border border-green-300">
+                            <MessageSquare className={`h-4 w-4 ${triggeringCron ? 'animate-pulse' : ''}`} />
+                            Probar Reporte WA
+                        </Button>
+                        <Button onClick={loadStatus} disabled={loading} className="flex items-center gap-2">
+                            <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                            Forzar Revisión Ahora
+                        </Button>
+                    </div>
                     {lastUpdated && (
                         <p className="text-xs text-muted-foreground">
                             Última revisión: {lastUpdated.toLocaleTimeString()}

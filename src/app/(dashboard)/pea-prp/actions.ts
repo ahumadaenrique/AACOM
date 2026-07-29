@@ -234,7 +234,7 @@ export async function getPerformanceReviews() {
 }
 
 // 4. Autorizar Revisión (Admin)
-export async function authorizeReview(reviewId: string) {
+export async function authorizeReview(reviewId: string, feedback?: string) {
     try {
         const session = await auth();
         if (!session?.user?.id) throw new Error("No autenticado");
@@ -250,7 +250,11 @@ export async function authorizeReview(reviewId: string) {
 
         await prisma.performanceReview.update({
             where: { id: reviewId },
-            data: { status: "REVIEWED", evaluatorId: user.id, feedback: null }
+            data: {
+                status: 'REVIEWED',
+                evaluatorId: user.id,
+                ...(feedback && { feedback })
+            }
         });
 
         revalidatePath('/pea-prp');

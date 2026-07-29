@@ -52,6 +52,7 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
       logoUrl: formData.get("logoUrl") as string,
       active: formData.get("active") === "on",
       allowLiteAgents: formData.get("allowLiteAgents") === "on",
+      allowReferidores: formData.get("allowReferidores") === "on",
       enableWhatsAppPlanner: formData.get("enableWhatsAppPlanner") === "on",
       whatsAppPlannerPhones: formData.get("whatsAppPlannerPhones") as string || undefined,
       whatsAppPlannerAgents: selectedAgents.length > 0 ? selectedAgents.join(",") : undefined,
@@ -171,6 +172,14 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
                 <p className="text-xs text-indigo-700">Si se activa, el promotor podrá asignar el rol Agente Limitado a su equipo.</p>
               </div>
               <Switch id="allowLiteAgents" name="allowLiteAgents" defaultChecked={agency ? agency.allowLiteAgents : false} />
+            </div>
+
+            <div className="flex items-center justify-between p-3 border border-emerald-200 rounded-lg bg-emerald-50/30">
+              <div className="space-y-0.5">
+                <Label htmlFor="allowReferidores" className="text-base font-semibold text-emerald-900">Permitir Módulo de Referidores</Label>
+                <p className="text-xs text-emerald-700">Si se activa, la agencia tendrá acceso a crear y gestionar Referidores.</p>
+              </div>
+              <Switch id="allowReferidores" name="allowReferidores" defaultChecked={agency ? agency.allowReferidores : false} />
             </div>
 
             <div className="flex flex-col p-3 border border-green-200 rounded-lg bg-green-50/30 gap-3">

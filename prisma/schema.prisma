@@ -62,6 +62,7 @@ model Agency {
 
   purchasedSeats  Int     @default(0)
   allowLiteAgents Boolean @default(false)
+  allowReferidores Boolean @default(false)
 
   // WhatsApp Planner Feature Config
   enableWhatsAppPlanner Boolean @default(false)

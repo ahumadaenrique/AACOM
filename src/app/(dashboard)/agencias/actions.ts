@@ -14,6 +14,7 @@ const agencySchema = z.object({
   logoUrl: z.string().optional(),
   active: z.boolean().optional(),
   allowLiteAgents: z.boolean().optional(),
+  allowReferidores: z.boolean().optional(),
   // WhatsApp Planner Config
   enableWhatsAppPlanner: z.boolean().optional(),
   whatsAppPlannerPhones: z.string().optional(),
@@ -88,6 +89,7 @@ export async function createAgency(data: z.infer<typeof agencySchema>) {
       logoUrl: parsed.logoUrl,
       active: parsed.active ?? true,
       allowLiteAgents: parsed.allowLiteAgents ?? false,
+      allowReferidores: parsed.allowReferidores ?? false,
       enableWhatsAppPlanner: parsed.enableWhatsAppPlanner ?? false,
       whatsAppPlannerPhones: parsed.whatsAppPlannerPhones,
       whatsAppPlannerAgents: parsed.whatsAppPlannerAgents,
