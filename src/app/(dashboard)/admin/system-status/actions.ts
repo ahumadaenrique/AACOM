@@ -251,7 +251,8 @@ export async function triggerDailyPlanReport() {
         
         const res = await dailyPlanCronGet(req);
         if (!res.ok) {
-            throw new Error("Fallo al ejecutar el cron HTTP " + res.status);
+            const errText = await res.text();
+            throw new Error(`Fallo al ejecutar el cron (HTTP ${res.status}): ${errText}`);
         }
         const data = await res.json();
         return { success: true, sentCount: data.sentCount };
