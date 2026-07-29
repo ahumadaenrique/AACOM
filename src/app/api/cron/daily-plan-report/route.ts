@@ -48,6 +48,8 @@ export async function GET(request: Request) {
             const targetPhones = targetPhonesStr.split(",").map(p => p.trim()).filter(p => p !== "");
             if (targetPhones.length === 0) continue;
 
+            const isoDateStr = `${dateStr}T00:00:00.000Z`;
+
             // 2. Fetch users and their daily records
             const users = await prisma.user.findMany({
                 where: {
@@ -57,7 +59,7 @@ export async function GET(request: Request) {
                 },
                 include: {
                     dailyRecords: {
-                        where: { date: dateStr }
+                        where: { date: isoDateStr }
                     }
                 }
             });
