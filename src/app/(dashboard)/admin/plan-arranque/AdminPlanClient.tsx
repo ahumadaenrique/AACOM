@@ -101,17 +101,19 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
         for (let i = 0; i < selectedFiles.length; i++) {
           const file = selectedFiles[i];
           try {
-            const tokenRes = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, { method: "POST" });
-            if (!tokenRes.ok) throw new Error(`Error HTTP: ${tokenRes.status}`);
-            const { clientToken, pathname } = await tokenRes.json();
+            const { upload } = await import('@vercel/blob/client');
             
-            const { put } = await import('@vercel/blob/client');
-            const newBlob = await put(pathname, file, {
-              access: 'public', token: clientToken,
+            // Subir usando el flujo recomendado de Vercel para cliente
+            const newBlob = await upload(`plan-arranque/module-${formData.dayNumber}-${Date.now()}-${file.name}`, file, {
+              access: 'public',
+              handleUploadUrl: '/api/upload',
               onUploadProgress: (progressEvent) => {
-                if (progressEvent.percentage) setUploadProgress(progressEvent.percentage);
+                // progressEvent has 'percentage' in latest vercel/blob
+                const p = progressEvent.percentage || (progressEvent.loaded ? Math.round((progressEvent.loaded / progressEvent.total) * 100) : 0);
+                if (p) setUploadProgress(p);
               }
             });
+            
             allFiles.push({ url: newBlob.url, name: file.name });
           } catch (error: any) {
             toast({ title: "Error", description: `Error al subir ${file.name}`, variant: "destructive" });
