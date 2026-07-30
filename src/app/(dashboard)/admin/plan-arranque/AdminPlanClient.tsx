@@ -61,7 +61,15 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
         minPassingScore: (day.minPassingScore || 80).toString(),
       });
       try {
-        setQuestions(day.questionnaireJson ? JSON.parse(day.questionnaireJson) : []);
+        const parsed = day.questionnaireJson ? JSON.parse(day.questionnaireJson) : [];
+        const fixed = parsed.map((q: any) => {
+           // Auto-detect old workaround for open questions
+           if (q.options.length === 0 || (q.options.length === 1 && q.options[0] === "")) {
+               return { ...q, isOpenEnded: true, options: [] };
+           }
+           return q;
+        });
+        setQuestions(fixed);
       } catch (e) {
         setQuestions([]);
       }
@@ -456,60 +464,83 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
                         placeholder="Escribe la pregunta..."
                       />
                       
-                      <Label className="font-bold text-sm text-slate-500">Opciones (Selecciona la correcta)</Label>
-                      <div className="space-y-2 mt-2">
-                        {q.options.map((opt: string, optIndex: number) => (
-                          <div key={optIndex} className="flex items-center gap-2">
-                            <input
-                              type="radio"
-                              name={`correct-${qIndex}`}
-                              checked={q.correctOptionIndex === optIndex}
-                              onChange={() => {
-                                const newQ = [...questions];
-                                newQ[qIndex].correctOptionIndex = optIndex;
-                                setQuestions(newQ);
-                              }}
-                              className="w-4 h-4 text-indigo-600"
-                            />
-                            <Input
-                              value={opt}
-                              onChange={(e) => {
-                                const newQ = [...questions];
-                                newQ[qIndex].options[optIndex] = e.target.value;
-                                setQuestions(newQ);
-                              }}
-                              placeholder={`Opción ${optIndex + 1}`}
-                            />
+                      <div className="flex items-center space-x-2 mt-2 mb-4">
+                        <Switch
+                          checked={q.isOpenEnded || false}
+                          onCheckedChange={(c) => {
+                            const newQ = [...questions];
+                            newQ[qIndex].isOpenEnded = c;
+                            if (c) newQ[qIndex].options = [];
+                            else newQ[qIndex].options = ["", "", "", ""];
+                            setQuestions(newQ);
+                          }}
+                        />
+                        <Label className="cursor-pointer font-semibold text-slate-600">Es una pregunta abierta (texto libre)</Label>
+                      </div>
+
+                      {!q.isOpenEnded ? (
+                        <>
+                          <Label className="font-bold text-sm text-slate-500">Opciones (Selecciona la correcta)</Label>
+                          <div className="space-y-2 mt-2">
+                            {q.options.map((opt: string, optIndex: number) => (
+                              <div key={optIndex} className="flex items-center gap-2">
+                                <input
+                                  type="radio"
+                                  name={`correct-${qIndex}`}
+                                  checked={q.correctOptionIndex === optIndex}
+                                  onChange={() => {
+                                    const newQ = [...questions];
+                                    newQ[qIndex].correctOptionIndex = optIndex;
+                                    setQuestions(newQ);
+                                  }}
+                                  className="w-4 h-4 text-indigo-600"
+                                />
+                                <Input
+                                  value={opt}
+                                  onChange={(e) => {
+                                    const newQ = [...questions];
+                                    newQ[qIndex].options[optIndex] = e.target.value;
+                                    setQuestions(newQ);
+                                  }}
+                                  placeholder={`Opción ${optIndex + 1}`}
+                                />
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-red-400"
+                                  onClick={() => {
+                                    const newQ = [...questions];
+                                    newQ[qIndex].options.splice(optIndex, 1);
+                                    if (newQ[qIndex].correctOptionIndex >= newQ[qIndex].options.length) {
+                                      newQ[qIndex].correctOptionIndex = 0;
+                                    }
+                                    setQuestions(newQ);
+                                  }}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            ))}
                             <Button
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
-                              className="text-red-400"
+                              className="mt-2 text-xs"
                               onClick={() => {
                                 const newQ = [...questions];
-                                newQ[qIndex].options.splice(optIndex, 1);
-                                if (newQ[qIndex].correctOptionIndex >= newQ[qIndex].options.length) {
-                                  newQ[qIndex].correctOptionIndex = 0;
-                                }
+                                newQ[qIndex].options.push("");
                                 setQuestions(newQ);
                               }}
                             >
-                              <X className="h-4 w-4" />
+                              <PlusCircle className="h-3 w-3 mr-1" /> Añadir Opción
                             </Button>
                           </div>
-                        ))}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="mt-2 text-xs"
-                          onClick={() => {
-                            const newQ = [...questions];
-                            newQ[qIndex].options.push("");
-                            setQuestions(newQ);
-                          }}
-                        >
-                          <PlusCircle className="h-3 w-3 mr-1" /> Añadir Opción
-                        </Button>
-                      </div>
+                        </>
+                      ) : (
+                        <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-md text-sm text-indigo-700 dark:text-indigo-300 border border-indigo-100 dark:border-indigo-800">
+                          <p>El agente responderá con texto libre en esta pregunta.</p>
+                          <p className="mt-1 font-semibold">Nota: Esta pregunta no se califica automáticamente. Tendrás que evaluarla manualmente al revisar el avance.</p>
+                        </div>
+                      )}
                     </Card>
                   ))}
 

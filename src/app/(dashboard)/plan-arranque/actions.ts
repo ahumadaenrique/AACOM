@@ -51,7 +51,7 @@ export async function getAgentCurrentDay() {
   };
 }
 
-export async function completeDay(answersJson?: string, score?: number) {
+export async function completeDay(answersJson?: string, score?: number | null) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("No autorizado");
   if (!session.user.agencyId) throw new Error("No tienes agencia asignada");
@@ -102,15 +102,20 @@ export async function completeDay(answersJson?: string, score?: number) {
       };
       
       if (isQuestionnaire) {
-        message = `Hola. Tu agente ${agentName} ha finalizado la evaluacion del Dia ${dayData.dayNumber} obteniendo un ${score}%. Por favor revisa sus resultados y aprueba su avance en el sistema.`;
-        waTemplate = {
-          contentSid: "HX64c40e44fd66c6424a2663b03bc18cd2",
-          contentVariables: {
-            "1": agentName,
-            "2": dayData.dayNumber.toString(),
-            "3": score!.toString()
-          }
-        };
+        if (score === null) {
+          message = `Hola. Tu agente ${agentName} ha finalizado la evaluación abierta del Dia ${dayData.dayNumber}. Por favor revisa sus resultados manuales y aprueba su avance en el sistema.`;
+          // keeps the default waTemplate (approval) since we don't have a score to send
+        } else {
+          message = `Hola. Tu agente ${agentName} ha finalizado la evaluacion del Dia ${dayData.dayNumber} obteniendo un ${score}%. Por favor revisa sus resultados y aprueba su avance en el sistema.`;
+          waTemplate = {
+            contentSid: "HX64c40e44fd66c6424a2663b03bc18cd2",
+            contentVariables: {
+              "1": agentName,
+              "2": dayData.dayNumber.toString(),
+              "3": score.toString()
+            }
+          };
+        }
       }
 
       await sendSmsToAdmins(session.user.agencyId!, message, waTemplate, session.user.id);
@@ -140,7 +145,10 @@ async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: {
   }
 
   const client = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN);
-  const waFromNumber = TWILIO_WHATSAPP_NUMBER || TWILIO_PHONE_NUMBER || '+14155238886';
+  // Robust parsing of WhatsApp Sender Number
+  let rawWaFrom = TWILIO_WHATSAPP_NUMBER || TWILIO_PHONE_NUMBER || '+14155238886';
+  const cleanWaFrom = rawWaFrom.replace('whatsapp:', '').replace(/\s+/g, '').replace(/^\+/, '');
+  const waFromNumber = `+${cleanWaFrom}`;
 
   let admins: { phone: string | null }[] = [];
   
@@ -172,7 +180,7 @@ async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: {
         try {
           // Intentar por WhatsApp primero (con plantilla)
           let payload: any = {
-            from: `whatsapp:${waFromNumber.startsWith('+') ? waFromNumber : '+' + waFromNumber}`,
+            from: `whatsapp:${waFromNumber}`,
             to: `whatsapp:${formattedPhone}`,
           };
 
@@ -196,7 +204,7 @@ async function sendSmsToAdmins(agencyId: string, message: string, waTemplate?: {
           try {
              // Fallback 1: Intentar WhatsApp sin plantilla (funcionará si hay ventana de 24 horas abierta)
              await client.messages.create({
-                from: `whatsapp:${waFromNumber.startsWith('+') ? waFromNumber : '+' + waFromNumber}`,
+                from: `whatsapp:${waFromNumber}`,
                 to: `whatsapp:${formattedPhone}`,
                 body: message
              });

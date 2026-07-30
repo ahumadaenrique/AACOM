@@ -28,7 +28,10 @@ export async function GET(request: Request) {
         const day = today.getDate().toString().padStart(2, "0");
         const dateStr = `${year}-${month}-${day}`;
 
-        const waFromNumber = process.env.TWILIO_WHATSAPP_NUMBER || process.env.TWILIO_PHONE_NUMBER || '+14155238886';
+        // Robust parsing of WhatsApp Sender Number to prevent Twilio API rejections
+        let rawWaFrom = process.env.TWILIO_WHATSAPP_NUMBER || process.env.TWILIO_PHONE_NUMBER || '+14155238886';
+        const cleanWaFrom = rawWaFrom.replace('whatsapp:', '').replace(/\s+/g, '').replace(/^\+/, '');
+        const waFromNumber = `+${cleanWaFrom}`;
         
         // Plantilla
         const templateSid = process.env.TWILIO_WA_TEMPLATE_PLANNER_SID || "HX7f9aa2c868c568450acc5e5e9e3a3fab";

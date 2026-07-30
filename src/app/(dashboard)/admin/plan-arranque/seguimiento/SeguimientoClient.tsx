@@ -320,9 +320,10 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
                     <p className="text-sm text-slate-500">Calificación obtenida</p>
                     <p className={cn(
                       "text-3xl font-black",
+                      progress.latestScore === null ? "text-indigo-600 dark:text-indigo-400" : 
                       isPassed ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"
                     )}>
-                      {progress.latestScore}%
+                      {progress.latestScore !== null ? `${progress.latestScore}%` : 'Pendiente'}
                     </p>
                   </div>
                   <div className="text-right">
@@ -334,7 +335,22 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
                 <div className="space-y-4">
                   <h3 className="font-bold text-lg border-b pb-2">Desglose de Respuestas</h3>
                   {questions.map((q: any, qIndex: number) => {
-                    const agentAnswerIdx = answers[qIndex];
+                    const agentAnswer = answers[qIndex];
+                    
+                    if (q.isOpenEnded) {
+                       return (
+                         <div key={qIndex} className="p-4 rounded-xl border bg-slate-50 dark:bg-zinc-950/50">
+                           <p className="font-semibold text-slate-800 dark:text-slate-200 mb-2">
+                             {qIndex + 1}. {q.question}
+                           </p>
+                           <div className="mt-3 p-4 bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-lg whitespace-pre-wrap text-slate-700 dark:text-slate-300">
+                             {agentAnswer || <span className="text-slate-400 italic">No respondió</span>}
+                           </div>
+                         </div>
+                       );
+                    }
+
+                    const agentAnswerIdx = typeof agentAnswer === 'number' ? agentAnswer : -1;
                     const isCorrect = agentAnswerIdx === q.correctOptionIndex;
 
                     return (

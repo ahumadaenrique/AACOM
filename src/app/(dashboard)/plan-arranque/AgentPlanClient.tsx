@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, userName }: { progress: any, dayData: any, totalDaysCount: number, allDays: any[], userName: string }) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [answers, setAnswers] = useState<number[]>([]);
+  const [answers, setAnswers] = useState<any[]>([]);
   const [questionnaireScore, setQuestionnaireScore] = useState<number | null>(null);
 
   const questions = dayData?.questionnaireJson ? (() => {
@@ -60,23 +60,33 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
       setIsLoading(true);
 
       if (dayData.hasQuestionnaire) {
-        if (answers.length < questions.length || answers.some(a => a === undefined)) {
+        if (answers.length < questions.length || answers.some(a => a === undefined || (typeof a === 'string' && a.trim() === ''))) {
           toast({ title: "Examen Incompleto", description: "Por favor responde todas las preguntas.", variant: "destructive" });
           setIsLoading(false);
           return;
         }
 
         let correctCount = 0;
+        let choiceQuestionsCount = 0;
+        let hasOpenEnded = false;
+
         questions.forEach((q: any, idx: number) => {
-          if (answers[idx] === q.correctOptionIndex) correctCount++;
+          if (!q.isOpenEnded) {
+            choiceQuestionsCount++;
+            if (answers[idx] === q.correctOptionIndex) correctCount++;
+          } else {
+            hasOpenEnded = true;
+          }
         });
 
-        const finalScore = Math.round((correctCount / questions.length) * 100);
-        setQuestionnaireScore(finalScore);
+        const finalScore = choiceQuestionsCount > 0 ? Math.round((correctCount / choiceQuestionsCount) * 100) : 0;
+        setQuestionnaireScore(hasOpenEnded ? null : finalScore);
 
-        await completeDay(JSON.stringify(answers), finalScore);
+        await completeDay(JSON.stringify(answers), hasOpenEnded ? null : finalScore);
 
-        if (finalScore >= (dayData.minPassingScore || 80)) {
+        if (hasOpenEnded) {
+          toast({ title: "Evaluación enviada", description: "Tu promotor ha sido notificado para revisar tus respuestas manualmente." });
+        } else if (finalScore >= (dayData.minPassingScore || 80)) {
           confetti({
             particleCount: 150,
             spread: 80,
@@ -240,8 +250,24 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
               </CardDescription>
             </CardHeader>
             <CardContent className="p-8 space-y-6">
-              {dayData?.hasQuestionnaire && (progress.latestScore !== null || questionnaireScore !== null) && (() => {
+              {dayData?.hasQuestionnaire && (progress.latestScore !== null || questionnaireScore !== null || progress.status === "WAITING_APPROVAL") && (() => {
                 const displayScore = progress.latestScore !== null ? progress.latestScore : questionnaireScore;
+                const hasOpenEnded = questions.some((q: any) => q.isOpenEnded);
+                
+                if (displayScore === null && hasOpenEnded) {
+                   return (
+                     <Alert className="rounded-2xl p-6 border-2 bg-indigo-50 border-indigo-200 text-indigo-900 dark:bg-indigo-900/20 dark:border-indigo-900/50 dark:text-indigo-300">
+                       <FileText className="h-6 w-6 mt-1" />
+                       <div className="ml-3">
+                         <AlertTitle className="font-bold text-lg mb-1">Evaluación en Revisión Manual</AlertTitle>
+                         <AlertDescription className="text-base font-medium">
+                           Tus respuestas de texto libre han sido enviadas. Tu promotor debe leerlas y validarlas manualmente.
+                         </AlertDescription>
+                       </div>
+                     </Alert>
+                   );
+                }
+
                 return (
                   <Alert className={cn(
                     "rounded-2xl p-6 border-2",
@@ -401,41 +427,54 @@ export function AgentPlanClient({ progress, dayData, totalDaysCount, allDays, us
                         <p className="font-semibold text-lg text-slate-800 dark:text-slate-200 mb-4">
                           {qIndex + 1}. {q.question}
                         </p>
-                        <div className="space-y-3">
-                          {q.options.map((opt: string, optIndex: number) => (
-                            <label
-                              key={optIndex}
-                              onClick={() => {
+                        {q.isOpenEnded ? (
+                          <textarea
+                            value={answers[qIndex] || ""}
+                            onChange={(e) => {
                                 const newAnswers = [...answers];
-                                newAnswers[qIndex] = optIndex;
+                                newAnswers[qIndex] = e.target.value;
                                 setAnswers(newAnswers);
-                              }}
-                              className={cn(
-                                "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
-                                answers[qIndex] === optIndex
-                                  ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-500"
-                                  : "border-slate-100 hover:border-slate-300 dark:border-zinc-800 dark:hover:border-zinc-700 bg-slate-50 dark:bg-zinc-900/50"
-                              )}
-                            >
-                              <div className={cn(
-                                "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
-                                answers[qIndex] === optIndex
-                                  ? "border-indigo-600 dark:border-indigo-400"
-                                  : "border-slate-300 dark:border-zinc-600"
-                              )}>
-                                {answers[qIndex] === optIndex && (
-                                  <div className="w-2.5 h-2.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
+                            }}
+                            className="w-full min-h-[120px] mt-2 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/50 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all resize-none text-slate-800 dark:text-slate-200 placeholder:text-slate-400"
+                            placeholder="Escribe tu respuesta aquí..."
+                          />
+                        ) : (
+                          <div className="space-y-3">
+                            {q.options.map((opt: string, optIndex: number) => (
+                              <label
+                                key={optIndex}
+                                onClick={() => {
+                                  const newAnswers = [...answers];
+                                  newAnswers[qIndex] = optIndex;
+                                  setAnswers(newAnswers);
+                                }}
+                                className={cn(
+                                  "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all",
+                                  answers[qIndex] === optIndex
+                                    ? "border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-500"
+                                    : "border-slate-100 hover:border-slate-300 dark:border-zinc-800 dark:hover:border-zinc-700 bg-slate-50 dark:bg-zinc-900/50"
                                 )}
-                              </div>
-                              <span className={cn(
-                                "font-medium",
-                                answers[qIndex] === optIndex ? "text-indigo-900 dark:text-indigo-200" : "text-slate-600 dark:text-slate-400"
-                              )}>
-                                {opt}
-                              </span>
-                            </label>
-                          ))}
-                        </div>
+                              >
+                                <div className={cn(
+                                  "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors",
+                                  answers[qIndex] === optIndex
+                                    ? "border-indigo-600 dark:border-indigo-400"
+                                    : "border-slate-300 dark:border-zinc-600"
+                                )}>
+                                  {answers[qIndex] === optIndex && (
+                                    <div className="w-2.5 h-2.5 bg-indigo-600 dark:bg-indigo-400 rounded-full" />
+                                  )}
+                                </div>
+                                <span className={cn(
+                                  "font-medium",
+                                  answers[qIndex] === optIndex ? "text-indigo-900 dark:text-indigo-200" : "text-slate-600 dark:text-slate-400"
+                                )}>
+                                  {opt}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
