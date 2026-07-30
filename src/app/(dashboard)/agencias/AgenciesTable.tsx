@@ -2,7 +2,7 @@
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { differenceInDays, format } from "date-fns";
+import { differenceInCalendarDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ShieldAlert, CheckCircle2, XCircle, Trash2, Gift } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -74,7 +74,7 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
               
               const endDate = agency.subscriptionEndDate ? new Date(agency.subscriptionEndDate) : null;
               const now = new Date();
-              const daysLeft = endDate ? differenceInDays(endDate, now) : 0;
+              const daysLeft = endDate ? differenceInCalendarDays(endDate, now) : 0;
               
               const isActive = agency.subscriptionStatus === "active" && (!endDate || daysLeft >= 0);
               const isWarning = isActive && endDate && daysLeft <= 7 && daysLeft > 0;
