@@ -56,35 +56,36 @@ export default async function HomePage() {
     const defaultAgencySlug = process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';
     const isDefaultAgency = agency?.slug === defaultAgencySlug;
 
-    const announcements = await prisma.content.findMany({
-        where: {
-            type: 'HOME_AD',
-            active: true,
-            OR: isDefaultAgency 
-                ? [ { agencyId: agency?.id || undefined }, { agencyId: null } ]
-                : [ { agencyId: agency?.id || undefined } ]
-        },
-        orderBy: [
-            { order: 'asc' },
-            { createdAt: 'desc' }
-        ]
-    });
-
-    const activeUsers = await prisma.user.findMany({
-        where: {
-            active: true,
-            birthDate: { not: null },
-            OR: isDefaultAgency 
-                ? [ { agencyId: agency?.id || undefined }, { agencyId: null } ]
-                : [ { agencyId: agency?.id || undefined } ]
-        },
-        select: {
-            id: true,
-            name: true,
-            image: true,
-            birthDate: true
-        }
-    });
+    const [announcements, activeUsers] = await Promise.all([
+        prisma.content.findMany({
+            where: {
+                type: 'HOME_AD',
+                active: true,
+                OR: isDefaultAgency 
+                    ? [ { agencyId: agency?.id || undefined }, { agencyId: null } ]
+                    : [ { agencyId: agency?.id || undefined } ]
+            },
+            orderBy: [
+                { order: 'asc' },
+                { createdAt: 'desc' }
+            ]
+        }),
+        prisma.user.findMany({
+            where: {
+                active: true,
+                birthDate: { not: null },
+                OR: isDefaultAgency 
+                    ? [ { agencyId: agency?.id || undefined }, { agencyId: null } ]
+                    : [ { agencyId: agency?.id || undefined } ]
+            },
+            select: {
+                id: true,
+                name: true,
+                image: true,
+                birthDate: true
+            }
+        })
+    ]);
 
     const cdmxTodayStrForBday = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
     const [todayYear, todayMonthRaw, todayDayRaw] = cdmxTodayStrForBday.split('-').map(Number);

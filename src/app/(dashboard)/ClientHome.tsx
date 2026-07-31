@@ -200,9 +200,8 @@ export default function ClientHome({
                         alt="Fondo borroso"
                         fill
                         className="object-cover blur-xl"
-                        sizes="(max-width: 768px) 50vw, 20vw"
-                        quality={40}
-                        priority={idx <= 3}
+                        sizes="10vw"
+                        quality={10}
                       />
                     </div>
                     
