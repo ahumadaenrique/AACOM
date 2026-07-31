@@ -160,7 +160,7 @@ export async function saveAgencyDocumentRecord(name: string, fileUrl: string, fi
     }
 }
 
-export async function uploadAgencyDocument(formData: FormData) {
+export async function uploadAgencyDocument(formData: FormData, category: string = "Otros") {
     const session = await auth();
     const user = session?.user?.email ? await prisma.user.findUnique({ where: { email: session.user.email } }) : null;
     if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
@@ -191,7 +191,8 @@ export async function uploadAgencyDocument(formData: FormData) {
                 name: file.name,
                 fileUrl: blob.url,
                 fileSize: file.size,
-                fileType: file.type
+                fileType: file.type,
+                category
             }
         });
 

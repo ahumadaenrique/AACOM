@@ -14,7 +14,6 @@ import {
     updateGlobalDocumentCategory,
     updateAgencyDocumentCategory
 } from "../documentacion/actions"
-import { upload } from "@vercel/blob/client"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -100,27 +99,26 @@ export default function BibliotecaAdmin() {
         setUploadProgress(0)
         
         try {
-            const newBlob = await upload(file.name, file, {
-                access: 'public',
-                handleUploadUrl: '/api/upload/agency-doc',
-                onUploadProgress: (progressEvent) => {
-                    const percentage = Math.round((progressEvent.loaded / progressEvent.total) * 100);
-                    setUploadProgress(percentage);
-                },
-            });
+            const formData = new FormData();
+            formData.append("file", file);
+            
+            // Simulamos progreso de subida visualmente (Next.js server actions no soportan onUploadProgress)
+            const progressInterval = setInterval(() => {
+                setUploadProgress(prev => {
+                    if (prev >= 90) return prev;
+                    return prev + 10;
+                });
+            }, 300);
 
-            const res = await saveAgencyDocumentRecord(
-                newBlob.pathname.split('/').pop() || file.name,
-                newBlob.url,
-                file.size,
-                file.type,
-                agencyUploadCategory
-            );
+            const res = await uploadAgencyDocument(formData, agencyUploadCategory);
+            
+            clearInterval(progressInterval);
+            setUploadProgress(100);
 
             if (res.success) {
                 loadData()
             } else {
-                alert("Archivo subido a la nube, pero hubo un error al guardar el registro: " + res.message)
+                alert("Error al subir el archivo: " + res.message)
             }
         } catch (error: any) {
             console.error(error);
