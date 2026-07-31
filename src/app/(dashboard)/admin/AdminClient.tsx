@@ -2694,7 +2694,14 @@ export default function AdminClient() {
                         }`}>
                           
                           {/* Image Preview Container */}
-                          <div className="relative aspect-video w-full overflow-hidden bg-slate-200 flex items-center justify-center border-b">
+                          <div className="relative aspect-video w-full overflow-hidden bg-slate-200 flex items-center justify-center border-b group">
+                            
+                            {/* Order Ribbon */}
+                            <div className="absolute top-0 left-4 bg-teal-600 text-white px-3 py-1.5 rounded-b-lg shadow-md z-10 flex flex-col items-center">
+                               <span className="text-[9px] font-bold uppercase tracking-wider opacity-90 leading-tight">Posición</span>
+                               <span className="text-xl font-black leading-none">#{idx + 1}</span>
+                            </div>
+
                             <Image 
                               src={ad.imageUrl} 
                               alt="Anuncio de Inicio" 

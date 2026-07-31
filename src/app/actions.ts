@@ -1128,8 +1128,24 @@ export async function reorderAnnouncement(id: string, direction: 'up' | 'down', 
         const currentAd = await prisma.content.findUnique({ where: { id } });
         if (!currentAd) return { success: false, message: "Banner no encontrado" };
 
+        let userAgencyId = currentUser?.agencyId || null;
+        const defaultAgencySlug = process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';
+        let isDefaultAgency = false;
+        
+        if (userAgencyId) {
+            const ag = await prisma.agency.findUnique({ where: { id: userAgencyId } });
+            isDefaultAgency = ag?.slug === defaultAgencySlug;
+        } else {
+            isDefaultAgency = true;
+        }
+
         const allAds = await prisma.content.findMany({
-            where: { type, agencyId: currentAd.agencyId },
+            where: { 
+                type,
+                OR: isDefaultAgency
+                    ? [ { agencyId: userAgencyId }, { agencyId: null } ]
+                    : [ { agencyId: userAgencyId } ]
+            },
             orderBy: [{ order: 'asc' }, { createdAt: 'desc' }]
         });
 
