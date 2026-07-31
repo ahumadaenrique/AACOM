@@ -95,9 +95,11 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
   const handleSave = async () => {
     try {
       setIsLoading(true);
+      toast({ title: "Iniciando guardado", description: "Preparando..." });
       let allFiles = [...formData.existingFiles];
 
       if (selectedFiles.length > 0) {
+        toast({ title: "Subiendo archivo", description: "Iniciando upload de Vercel Blob..." });
         for (let i = 0; i < selectedFiles.length; i++) {
           const file = selectedFiles[i];
           try {
@@ -108,13 +110,13 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
               access: 'public',
               handleUploadUrl: '/api/upload',
               onUploadProgress: (progressEvent) => {
-                // progressEvent has 'percentage' in latest vercel/blob
                 const p = progressEvent.percentage || (progressEvent.loaded ? Math.round((progressEvent.loaded / progressEvent.total) * 100) : 0);
                 if (p) setUploadProgress(p);
               }
             });
             
             allFiles.push({ url: newBlob.url, name: file.name });
+            toast({ title: "Archivo subido", description: `Éxito: ${file.name}` });
           } catch (error: any) {
             toast({ title: "Error en la subida", description: error.message || `Error al subir ${file.name}`, variant: "destructive" });
             throw error; // Halt execution so it goes to the outer catch block and restores the button state
@@ -122,6 +124,7 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
         }
       }
 
+      toast({ title: "Procesando formulario", description: "Guardando en base de datos..." });
       const cleanVideos = formData.videoUrls.filter(v => v.trim() !== "");
       const firstVideo = cleanVideos.length > 0 ? cleanVideos[0] : null;
       const restVideos = cleanVideos.length > 1 ? cleanVideos.slice(1) : [];
