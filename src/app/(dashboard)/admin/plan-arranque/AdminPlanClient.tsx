@@ -116,7 +116,8 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
             
             allFiles.push({ url: newBlob.url, name: file.name });
           } catch (error: any) {
-            toast({ title: "Error", description: `Error al subir ${file.name}`, variant: "destructive" });
+            toast({ title: "Error en la subida", description: error.message || `Error al subir ${file.name}`, variant: "destructive" });
+            throw error; // Halt execution so it goes to the outer catch block and restores the button state
           }
         }
       }

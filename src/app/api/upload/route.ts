@@ -44,7 +44,8 @@ export async function POST(request: Request) {
     console.error("Upload API Error:", error);
     return NextResponse.json(
       { error: error.message || "Error al generar token de Vercel Blob" },
-      { status: 500 }
+      { status: 400 } // <-- Return 400 so Vercel Blob client throws immediately instead of retrying 10 times.
     );
   }
 }
+
