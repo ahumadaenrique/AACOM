@@ -99,24 +99,22 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
       let allFiles = [...formData.existingFiles];
 
       if (selectedFiles.length > 0) {
-        toast({ title: "Subiendo archivo", description: "Iniciando upload de Vercel Blob..." });
+        toast({ title: "Subiendo archivo", description: "Iniciando upload seguro por servidor..." });
         for (let i = 0; i < selectedFiles.length; i++) {
           const file = selectedFiles[i];
           try {
-            const { upload } = await import('@vercel/blob/client');
+            const fileFormData = new FormData();
+            fileFormData.append("file", file);
             
-            // Subir usando el flujo recomendado de Vercel para cliente
-            const newBlob = await upload(`plan-arranque/module-${formData.dayNumber}-${Date.now()}-${file.name}`, file, {
-              access: 'public',
-              handleUploadUrl: '/api/upload',
-              onUploadProgress: (progressEvent) => {
-                const p = progressEvent.percentage || (progressEvent.loaded ? Math.round((progressEvent.loaded / progressEvent.total) * 100) : 0);
-                if (p) setUploadProgress(p);
-              }
-            });
+            // Subir usando la acción de servidor, bypass total a @vercel/blob/client
+            const uploadRes = await uploadPlanFile(fileFormData);
             
-            allFiles.push({ url: newBlob.url, name: file.name });
-            toast({ title: "Archivo subido", description: `Éxito: ${file.name}` });
+            if (uploadRes.success && uploadRes.url) {
+              allFiles.push({ url: uploadRes.url, name: file.name });
+              toast({ title: "Archivo subido", description: `Éxito: ${file.name}` });
+            } else {
+              throw new Error(uploadRes.error || "Error al subir archivo");
+            }
           } catch (error: any) {
             toast({ title: "Error en la subida", description: error.message || `Error al subir ${file.name}`, variant: "destructive" });
             throw error; // Halt execution so it goes to the outer catch block and restores the button state
