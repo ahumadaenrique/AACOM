@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react"
 import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowUpRight, Sparkles, Megaphone, ZoomIn, X, Link as LinkIcon, User, Cake } from "lucide-react"
+import { ArrowUpRight, Sparkles, Megaphone, ZoomIn, X, Link as LinkIcon, User, Cake, Download } from "lucide-react"
 import { resolveImageUrl } from "@/lib/utils"
 
 interface Announcement {
@@ -306,8 +306,17 @@ export default function ClientHome({
               </p>
             </div>
             
-            <div className="flex gap-3 w-full sm:w-auto shrink-0">
-              {selectedAd.linkUrl && (
+            <div className="flex gap-3 w-full sm:w-auto shrink-0 flex-wrap justify-center">
+                <a
+                  href={selectedAd.imageUrl}
+                  target="_blank"
+                  download
+                  rel="noopener noreferrer"
+                  className="flex-1 sm:flex-none bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-zinc-200 hover:text-white font-bold text-xs px-4 py-2.5 rounded-xl flex items-center justify-center gap-1.5 transition-colors duration-200"
+                >
+                  <Download className="h-4 w-4" /> Descargar
+                </a>
+                {selectedAd.linkUrl && (
                 <a 
                   href={selectedAd.linkUrl}
                   target="_blank"
