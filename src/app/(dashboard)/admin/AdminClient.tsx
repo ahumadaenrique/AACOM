@@ -2688,7 +2688,7 @@ export default function AdminClient() {
                     </div>
                   ) : (
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                      {announcements.map((ad) => (
+                      {announcements.map((ad, idx) => (
                         <div key={ad.id} className={`border rounded-xl overflow-hidden bg-slate-50 dark:bg-zinc-800 shadow-sm transition-all flex flex-col justify-between ${
                           !ad.active ? "opacity-60 border-dashed" : "border-slate-200"
                         }`}>
@@ -2700,6 +2700,8 @@ export default function AdminClient() {
                               alt="Anuncio de Inicio" 
                               fill
                               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              quality={60}
+                              priority={idx <= 3}
                               className="object-cover" 
                             />
                             {!ad.active && (

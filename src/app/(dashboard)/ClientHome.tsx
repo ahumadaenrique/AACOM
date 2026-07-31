@@ -201,6 +201,8 @@ export default function ClientHome({
                         fill
                         className="object-cover blur-xl"
                         sizes="(max-width: 768px) 50vw, 20vw"
+                        quality={40}
+                        priority={idx <= 3}
                       />
                     </div>
                     
@@ -210,6 +212,8 @@ export default function ClientHome({
                       alt={`Comunicado ${agencyName}`} 
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      quality={75}
+                      priority={idx <= 3}
                       className="relative z-10 object-contain transition-all duration-500 group-hover:scale-[1.02]" 
                     />
 
