@@ -1137,20 +1137,24 @@ export async function reorderAnnouncement(id: string, direction: 'up' | 'down', 
         if (currentIndex === -1) return { success: false, message: "No encontrado en lista" };
 
         if (direction === 'up' && currentIndex > 0) {
-            // Swap with previous
-            const prevAd = allAds[currentIndex - 1];
-            await prisma.$transaction([
-                prisma.content.update({ where: { id: currentAd.id }, data: { order: prevAd.order } }),
-                prisma.content.update({ where: { id: prevAd.id }, data: { order: currentAd.order } })
-            ]);
+            const temp = allAds[currentIndex - 1];
+            allAds[currentIndex - 1] = allAds[currentIndex];
+            allAds[currentIndex] = temp;
         } else if (direction === 'down' && currentIndex < allAds.length - 1) {
-            // Swap with next
-            const nextAd = allAds[currentIndex + 1];
-            await prisma.$transaction([
-                prisma.content.update({ where: { id: currentAd.id }, data: { order: nextAd.order } }),
-                prisma.content.update({ where: { id: nextAd.id }, data: { order: currentAd.order } })
-            ]);
+            const temp = allAds[currentIndex + 1];
+            allAds[currentIndex + 1] = allAds[currentIndex];
+            allAds[currentIndex] = temp;
+        } else {
+            return { success: true }; // Nada que mover
         }
+
+        // Actualizar todos los órdenes para garantizar secuencia única (0, 1, 2, 3...)
+        await prisma.$transaction(
+            allAds.map((ad, index) => prisma.content.update({
+                where: { id: ad.id },
+                data: { order: index }
+            }))
+        );
 
         revalidatePath('/');
         revalidatePath('/admin');
