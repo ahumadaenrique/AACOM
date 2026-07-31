@@ -6,16 +6,17 @@ export async function POST(request: Request) {
   const body = await request.json();
 
   try {
+    const token = process.env.BLOB_READ_WRITE_TOKEN || "vercel_blob_rw_lXYhGKKGWTXJIQp0_j4iwqKaJJEy88BVAadlj42H1HNYn92";
+
     const jsonResponse = await handleUpload({
       body,
       request,
+      token, // <-- pass token here!
       onBeforeGenerateToken: async (pathname) => {
         const session = await auth();
         if (!session?.user?.id || !session.user.agencyId) {
           throw new Error("No autorizado");
         }
-
-        const token = process.env.BLOB_READ_WRITE_TOKEN || "vercel_blob_rw_lXYhGKKGWTXJIQp0_j4iwqKaJJEy88BVAadlj42H1HNYn92";
 
         return {
           allowedContentTypes: [
@@ -31,7 +32,6 @@ export async function POST(request: Request) {
             agencyId: session.user.agencyId,
           }),
           maximumSizeInBytes: 50 * 1024 * 1024,
-          token,
         };
       },
       onUploadCompleted: async ({ blob, tokenPayload }) => {
