@@ -64,9 +64,10 @@ export default async function HomePage() {
                 ? [ { agencyId: agency?.id || undefined }, { agencyId: null } ]
                 : [ { agencyId: agency?.id || undefined } ]
         },
-        orderBy: {
-            createdAt: 'desc'
-        }
+        orderBy: [
+            { order: 'asc' },
+            { createdAt: 'desc' }
+        ]
     });
 
     const activeUsers = await prisma.user.findMany({

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
+import Image from "next/image"
 import { Card, CardContent } from "@/components/ui/card"
 import { ArrowUpRight, Sparkles, Megaphone, ZoomIn, X, Link as LinkIcon, User, Cake } from "lucide-react"
 import { resolveImageUrl } from "@/lib/utils"
@@ -199,10 +200,12 @@ export default function ClientHome({
                     />
                     
                     {/* The actual sharp image */}
-                    <img 
+                    <Image 
                       src={ad.imageUrl} 
                       alt={`Comunicado ${agencyName}`} 
-                      className="relative z-10 max-w-full max-h-full object-contain transition-all duration-500 group-hover:scale-[1.02]" 
+                      fill
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                      className="relative z-10 object-contain transition-all duration-500 group-hover:scale-[1.02]" 
                     />
 
                     {/* Premium Dark Overlay on Hover to invite Zooming */}
@@ -270,12 +273,14 @@ export default function ClientHome({
           {/* Immersive centered image container */}
           <div 
             onClick={(e) => e.stopPropagation()} // Prevent closing when clicking the flyer itself
-            className="relative max-w-full max-h-[78vh] flex items-center justify-center z-50 rounded-lg overflow-hidden border border-white/10 shadow-2xl bg-zinc-900/50"
+            className="relative max-w-full w-[95vw] h-[76vh] md:h-[78vh] flex items-center justify-center z-50 rounded-lg overflow-hidden border border-white/10 shadow-2xl bg-zinc-900/50"
           >
-            <img 
+            <Image 
               src={selectedAd.imageUrl} 
               alt="Comunicado ampliado" 
-              className="max-w-[95vw] max-h-[76vh] md:max-h-[78vh] object-contain select-none"
+              fill
+              sizes="95vw"
+              className="object-contain select-none"
             />
           </div>
 

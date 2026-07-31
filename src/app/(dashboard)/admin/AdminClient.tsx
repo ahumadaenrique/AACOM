@@ -1,7 +1,8 @@
 "use client"
 
 import React, { useState, useEffect } from "react"
-import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, deleteRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush, getFeedbackSurveys, requestAgentExpulsion } from "@/app/actions"
+import Image from "next/image"
+import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, reorderAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, deleteRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush, getFeedbackSurveys, requestAgentExpulsion } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import BibliotecaAdmin from "./BibliotecaAdmin"
@@ -38,7 +39,9 @@ import {
   BellRing,
   Book,
   Star,
-  StarHalf
+  StarHalf,
+  ArrowUp,
+  ArrowDown
 } from "lucide-react"
 import { resolveImageUrl } from "@/lib/utils"
 
@@ -485,6 +488,21 @@ export default function AdminClient() {
       fetchAnnouncementsList()
     }
   }
+
+  // Reorder announcement banner
+  const handleReorderAnnouncement = async (id: string, direction: 'up' | 'down') => {
+    try {
+      const res = await reorderAnnouncement(id, direction);
+      if (res.success) {
+        fetchAnnouncementsList();
+      } else {
+        alert(res.message || "Error al reordenar");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error de red");
+    }
+  };
 
   // Delete announcement banner
   const handleDeleteAnnouncement = async (id: string) => {
@@ -2677,10 +2695,12 @@ export default function AdminClient() {
                           
                           {/* Image Preview Container */}
                           <div className="relative aspect-video w-full overflow-hidden bg-slate-200 flex items-center justify-center border-b">
-                            <img 
+                            <Image 
                               src={ad.imageUrl} 
                               alt="Anuncio de Inicio" 
-                              className="w-full h-full object-cover" 
+                              fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              className="object-cover" 
                             />
                             {!ad.active && (
                               <div className="absolute inset-0 bg-black/40 backdrop-blur-xs flex items-center justify-center">
@@ -2708,25 +2728,47 @@ export default function AdminClient() {
                               </p>
                             )}
 
-                            <div className="flex gap-2 pt-1 border-t">
-                              <Button
-                                onClick={() => handleToggleAnnouncementActive(ad.id)}
-                                variant="outline"
-                                size="sm"
-                                className={`flex-1 font-bold text-[10px] h-7 px-2.5 ${
-                                  ad.active ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50" : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
-                                }`}
-                              >
-                                {ad.active ? "Pausar" : "Mostrar"}
-                              </Button>
-                              <Button
-                                onClick={() => handleDeleteAnnouncement(ad.id)}
-                                variant="ghost"
-                                size="sm"
-                                className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-[10px] h-7 px-2.5"
-                              >
-                                Eliminar
-                              </Button>
+                            <div className="flex items-center justify-between pt-1 border-t">
+                              <div className="flex gap-1">
+                                <Button
+                                  onClick={() => handleReorderAnnouncement(ad.id, 'up')}
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-7 w-7 text-slate-500 hover:text-slate-700"
+                                  title="Subir"
+                                >
+                                  <ArrowUp className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  onClick={() => handleReorderAnnouncement(ad.id, 'down')}
+                                  variant="outline"
+                                  size="icon"
+                                  className="h-7 w-7 text-slate-500 hover:text-slate-700"
+                                  title="Bajar"
+                                >
+                                  <ArrowDown className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  onClick={() => handleToggleAnnouncementActive(ad.id)}
+                                  variant="outline"
+                                  size="sm"
+                                  className={`flex-1 font-bold text-[10px] h-7 px-2.5 ${
+                                    ad.active ? "text-amber-600 hover:text-amber-700 hover:bg-amber-50" : "text-emerald-600 hover:text-emerald-700 hover:bg-emerald-50"
+                                  }`}
+                                >
+                                  {ad.active ? "Pausar" : "Mostrar"}
+                                </Button>
+                                <Button
+                                  onClick={() => handleDeleteAnnouncement(ad.id)}
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-red-500 hover:text-red-600 hover:bg-red-50 font-bold text-[10px] h-7 px-2.5"
+                                >
+                                  Eliminar
+                                </Button>
+                              </div>
                             </div>
                           </div>
 

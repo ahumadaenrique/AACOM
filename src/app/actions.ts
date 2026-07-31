@@ -1038,7 +1038,10 @@ export async function getAnnouncements(type: string = 'HOME_AD') {
                     ? [ { agencyId: userAgencyId }, { agencyId: null } ]
                     : [ { agencyId: userAgencyId } ]
             },
-            orderBy: { createdAt: 'desc' }
+            orderBy: [
+                { order: 'asc' },
+                { createdAt: 'desc' }
+            ]
         });
         return { success: true, announcements: list };
     } catch (error: any) {
@@ -1079,8 +1082,15 @@ export async function createAnnouncement(base64Data: string, fileName: string, l
             return { success: false, message: "El tamaÃƒÆ’Ã‚Â±o del archivo supera los 5 MB permitidos." };
         }
 
+        // Find current max order to append at the end
+        const maxOrder = await prisma.content.findFirst({
+            where: { type },
+            orderBy: { order: 'desc' },
+            select: { order: true }
+        });
+        const newOrder = (maxOrder?.order ?? -1) + 1;
+
         // Save image as base64 data URI directly in database
-        // This is 100% serverless-friendly (e.g. Vercel) as it avoids read-only filesystem writes
         const imageUrl = base64Data;
 
         const newAd = await prisma.content.create({
@@ -1089,7 +1099,7 @@ export async function createAnnouncement(base64Data: string, fileName: string, l
                 imageUrl,
                 linkUrl: linkUrl || null,
                 active: true,
-                order: 0,
+                order: newOrder,
                 agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) || null
             }
         });
@@ -1100,6 +1110,54 @@ export async function createAnnouncement(base64Data: string, fileName: string, l
     } catch (error: any) {
         console.error("Error creating announcement:", error);
         return { success: false, message: error.message || "Error al subir comunicado" };
+    }
+}
+
+export async function reorderAnnouncement(id: string, direction: 'up' | 'down', type: string = 'HOME_AD') {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+        if (!['SUPER_ADMIN', 'ADMIN'].includes(currentUser?.role || '')) {
+            return { success: false, message: "No autorizado" };
+        }
+
+        const currentAd = await prisma.content.findUnique({ where: { id } });
+        if (!currentAd) return { success: false, message: "Banner no encontrado" };
+
+        const allAds = await prisma.content.findMany({
+            where: { type, agencyId: currentAd.agencyId },
+            orderBy: [{ order: 'asc' }, { createdAt: 'desc' }]
+        });
+
+        const currentIndex = allAds.findIndex(ad => ad.id === id);
+        if (currentIndex === -1) return { success: false, message: "No encontrado en lista" };
+
+        if (direction === 'up' && currentIndex > 0) {
+            // Swap with previous
+            const prevAd = allAds[currentIndex - 1];
+            await prisma.$transaction([
+                prisma.content.update({ where: { id: currentAd.id }, data: { order: prevAd.order } }),
+                prisma.content.update({ where: { id: prevAd.id }, data: { order: currentAd.order } })
+            ]);
+        } else if (direction === 'down' && currentIndex < allAds.length - 1) {
+            // Swap with next
+            const nextAd = allAds[currentIndex + 1];
+            await prisma.$transaction([
+                prisma.content.update({ where: { id: currentAd.id }, data: { order: nextAd.order } }),
+                prisma.content.update({ where: { id: nextAd.id }, data: { order: currentAd.order } })
+            ]);
+        }
+
+        revalidatePath('/');
+        revalidatePath('/admin');
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error reordering announcement:", error);
+        return { success: false, message: error.message || "Error al reordenar" };
     }
 }
 
