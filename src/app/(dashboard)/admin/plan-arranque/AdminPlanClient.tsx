@@ -103,18 +103,12 @@ export function AdminPlanClient({ initialDays }: { initialDays: any[] }) {
         for (let i = 0; i < selectedFiles.length; i++) {
           const file = selectedFiles[i];
           try {
-            // 1. Fetch token manualmente
-            const tokenRes = await fetch(`/api/upload?filename=${encodeURIComponent(file.name)}`, { method: "POST" });
-            if (!tokenRes.ok) throw new Error(`Error HTTP: ${tokenRes.status}`);
-            const { clientToken, pathname } = await tokenRes.json();
-            
-            // 2. Importar Vercel Blob
             const { upload } = await import('@vercel/blob/client');
             
-            // 3. Subir archivo inyectando el token directamente (sin handleUploadUrl)
-            const newBlob = await upload(pathname, file, {
+            // Subir usando el flujo recomendado de Vercel para cliente
+            const newBlob = await upload(`plan-arranque/module-${formData.dayNumber}-${Date.now()}-${file.name}`, file, {
               access: 'public',
-              token: clientToken,
+              handleUploadUrl: '/api/upload',
               onUploadProgress: (progressEvent) => {
                 const p = progressEvent.percentage || (progressEvent.loaded ? Math.round((progressEvent.loaded / progressEvent.total) * 100) : 0);
                 if (p) setUploadProgress(p);
