@@ -194,10 +194,15 @@ export default function ClientHome({
                 >
                   <div className="relative w-full h-full bg-slate-50 dark:bg-zinc-950 flex items-center justify-center">
                     {/* Blurred background of the image to handle different ratios gracefully */}
-                    <div 
-                      className="absolute inset-0 bg-cover bg-center blur-md scale-105 opacity-30 select-none pointer-events-none" 
-                      style={{ backgroundImage: `url(${ad.imageUrl})` }}
-                    />
+                    <div className="absolute inset-0 scale-105 opacity-30 select-none pointer-events-none overflow-hidden">
+                      <Image 
+                        src={ad.imageUrl} 
+                        alt="Fondo borroso"
+                        fill
+                        className="object-cover blur-xl"
+                        sizes="(max-width: 768px) 50vw, 20vw"
+                      />
+                    </div>
                     
                     {/* The actual sharp image */}
                     <Image 
