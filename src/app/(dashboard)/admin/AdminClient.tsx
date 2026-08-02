@@ -3684,12 +3684,12 @@ export default function AdminClient() {
                   if (selectedAdn.modalidad === 'DETALLADO') {
                     const g = parsedGastos
                     // AJUSTE 2 & 4: Mensualizar anuales (Predial, Tenencia, Verificacion, Mantenimiento, Seguro)
-                    catVivienda = (g.renta || 0) + (g.hipoteca || 0) + (g.mantenimiento || 0) + (g.luz || 0) + (g.gas || 0) + (g.agua || 0) + (g.telefono || 0) + (g.internet || 0) + (g.streamings || 0) + (g.celular || 0) + (g.otrosServicios || 0) + ((g.predial || 0) / 12)
-                    catTransporte = (g.mensualidadAuto || 0) + ((g.tenencia || 0) / 12) + ((g.verificacion || 0) / 12) + ((g.mantenimientoAuto || 0) / 12) + ((g.seguroAuto || 0) / 12) + (g.gasolina || 0) + (g.transportePublico || 0) + (g.uber || 0) + (g.estacionamientos || 0)
+                    catVivienda = (g.renta || 0) + (g.hipoteca || 0) + (g.mantenimiento || 0) + (g.luz || 0) + (g.gas || 0) + (g.agua || 0) + (g.telefono || 0) + (g.internet || 0) + (g.streamings || 0) + (g.celular || 0) + (g.otrosServicios || 0) + ((g.predial || 0) / 12) + ((g.seguroCasa || 0) / 12)
+                    catTransporte = (g.mensualidadAuto || 0) + ((g.tenencia || 0) / 12) + ((g.verificacion || 0) / 12) + ((g.mantenimientoAuto || 0) / 12) + ((g.seguroAuto || 0) / 12) + (g.gasolina || 0) + (g.transportePublico || 0) + (g.uber || 0) + (g.estacionamientos || 0) + (g.peajes || 0)
                     catEducacion = (g.escuelaHijos || 0) + (g.escuelaPropia || 0) + (g.utiles || 0) + (g.materiales || 0) + (g.libros || 0)
                     catDeudas = (g.prestamos || 0) + (g.creditos || 0)
                     catAlimentacion = (g.supermercado || 0) + (g.mercado || 0) + (g.accesoriosCasa || 0)
-                    catCuidadoPersonal = (g.estetica || 0) + (g.accesoriosBelleza || 0) + (g.medicamentos || 0) + (g.checkups || 0)
+                    catCuidadoPersonal = (g.estetica || 0) + (g.accesoriosBelleza || 0) + (g.medicamentos || 0) + (g.checkups || 0) + (g.ropaZapatos || 0) + (g.gimnasio || 0) + ((g.seguroVida || 0) / 12) + ((g.seguroGmm || 0) / 12)
                     catMascotas = (g.comidaMascota || 0) + (g.saludMascota || 0) + (g.vacunasMascota || 0) + (g.esteticaMascota || 0) + (g.accesoriosMascota || 0)
                     catEntretenimiento = (g.hobbies || 0) + (g.finDeSemana || 0) + (g.vacaciones || 0) + (g.cineTeatro || 0) + (g.comidasEsparcimiento || 0) + (g.baresRecreacion || 0) + (g.cafecitos || 0) + (g.clubSocial || 0) + (g.amazonCompras || 0)
                     catAhorro += (g.inversiones || 0)

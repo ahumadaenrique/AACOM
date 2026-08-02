@@ -49,6 +49,10 @@ interface GastosDetallados {
   // Mascotas
   comidaMascota: number; saludMascota: number; vacunasMascota: number;
   esteticaMascota: number; accesoriosMascota: number;
+  peajes: number;
+  seguroVida: number;
+  seguroCasa: number;
+  seguroGmm: number;
 }
 
 interface GastosResumidos {
@@ -74,7 +78,11 @@ const initialGastosDetallados: GastosDetallados = {
   supermercado: 0, mercado: 0, accesoriosCasa: 0,
   estetica: 0, accesoriosBelleza: 0, medicamentos: 0, checkups: 0, ropaZapatos: 0, gimnasio: 0,
   inversiones: 0,
-  comidaMascota: 0, saludMascota: 0, vacunasMascota: 0, esteticaMascota: 0, accesoriosMascota: 0
+  comidaMascota: 0, saludMascota: 0, vacunasMascota: 0, esteticaMascota: 0, accesoriosMascota: 0,
+  peajes: 0,
+  seguroVida: 0,
+  seguroCasa: 0,
+  seguroGmm: 0
 }
 
 const initialGastosResumidos: GastosResumidos = {
@@ -389,15 +397,15 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
       const g = gastosDet
       
       // AJUSTE 2 & 3: Mensualización (/12) de gastos anuales (Predial, Tenencia, Verificación, Mantenimiento Auto, Seguro Auto)
-      vivienda = g.renta + g.hipoteca + g.mantenimiento + g.luz + g.gas + g.agua + g.telefono + g.internet + g.streamings + g.celular + g.otrosServicios + (g.predial / 12)
+      vivienda = g.renta + g.hipoteca + g.mantenimiento + g.luz + g.gas + g.agua + g.telefono + g.internet + g.streamings + g.celular + g.otrosServicios + (g.predial / 12) + (g.seguroCasa / 12)
       
-      transporte = g.mensualidadAuto + (g.tenencia / 12) + (g.verificacion / 12) + (g.mantenimientoAuto / 12) + (g.seguroAuto / 12) + g.gasolina + g.transportePublico + g.uber + g.estacionamientos
+      transporte = g.mensualidadAuto + (g.tenencia / 12) + (g.verificacion / 12) + (g.mantenimientoAuto / 12) + (g.seguroAuto / 12) + g.gasolina + g.transportePublico + g.uber + g.estacionamientos + g.peajes
       
       educacion = g.escuelaHijos + g.escuelaPropia + g.utiles + g.materiales + g.libros
       deudas = g.prestamos + g.creditos
       entretenimiento = g.hobbies + g.finDeSemana + g.vacaciones + g.cineTeatro + g.comidasEsparcimiento + g.baresRecreacion + g.cafecitos + g.clubSocial + g.amazonCompras
       alimentacion = g.supermercado + g.mercado + g.accesoriosCasa
-      cuidadoPersonal = g.estetica + g.accesoriosBelleza + g.medicamentos + g.checkups + g.ropaZapatos + g.gimnasio
+      cuidadoPersonal = g.estetica + g.accesoriosBelleza + g.medicamentos + g.checkups + g.ropaZapatos + g.gimnasio + (g.seguroVida / 12) + (g.seguroGmm / 12)
       ahorro += g.inversiones // fondoEmergencia eliminado de la lista detallada
       mascotas = g.comidaMascota + g.saludMascota + g.vacunasMascota + g.esteticaMascota + g.accesoriosMascota
 
@@ -1748,6 +1756,43 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                       </div>
                     </div>
 
+                    {/* Seguros Adicionales */}
+                    <div className="space-y-3 border-t pt-4 border-slate-100">
+                      <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><Heart className="h-4 w-4 text-teal-600" /> Seguros Adicionales</span>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <div className="space-y-1 border border-teal-200/60 p-1.5 rounded-xl bg-teal-50/10">
+                          <label className="text-[9px] font-extrabold text-teal-700 uppercase">Seguro de Vida * (anual)</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.seguroVida || ''}
+                            onChange={e => setGastosDet({...gastosDet, seguroVida: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500 font-bold bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1 border border-teal-200/60 p-1.5 rounded-xl bg-teal-50/10">
+                          <label className="text-[9px] font-extrabold text-teal-700 uppercase">Seguro de GMM * (anual)</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.seguroGmm || ''}
+                            onChange={e => setGastosDet({...gastosDet, seguroGmm: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500 font-bold bg-white"
+                          />
+                        </div>
+                        <div className="space-y-1 border border-teal-200/60 p-1.5 rounded-xl bg-teal-50/10">
+                          <label className="text-[9px] font-extrabold text-teal-700 uppercase">Seguro de Casa * (anual)</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.seguroCasa || ''}
+                            onChange={e => setGastosDet({...gastosDet, seguroCasa: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500 font-bold bg-white"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Ahorro manual (AJUSTE 4: fondoEmergencia eliminado por duplicidad) */}
                     <div className="space-y-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><Wallet className="h-4 w-4 text-teal-600" /> Ahorros manuales e Inversiones</span>
@@ -2783,12 +2828,12 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
 
                   if (selectedSavedAdn.modalidad === 'DETALLADO') {
                     const g = parsedGastos
-                    catVivienda = (g.renta || 0) + (g.hipoteca || 0) + (g.mantenimiento || 0) + (g.luz || 0) + (g.gas || 0) + (g.agua || 0) + (g.telefono || 0) + (g.internet || 0) + (g.streamings || 0) + (g.celular || 0) + (g.otrosServicios || 0) + ((g.predial || 0) / 12)
-                    catTransporte = (g.mensualidadAuto || 0) + ((g.tenencia || 0) / 12) + ((g.verificacion || 0) / 12) + ((g.mantenimientoAuto || 0) / 12) + ((g.seguroAuto || 0) / 12) + (g.gasolina || 0) + (g.transportePublico || 0) + (g.uber || 0) + (g.estacionamientos || 0)
+                    catVivienda = (g.renta || 0) + (g.hipoteca || 0) + (g.mantenimiento || 0) + (g.luz || 0) + (g.gas || 0) + (g.agua || 0) + (g.telefono || 0) + (g.internet || 0) + (g.streamings || 0) + (g.celular || 0) + (g.otrosServicios || 0) + ((g.predial || 0) / 12) + ((g.seguroCasa || 0) / 12)
+                    catTransporte = (g.mensualidadAuto || 0) + ((g.tenencia || 0) / 12) + ((g.verificacion || 0) / 12) + ((g.mantenimientoAuto || 0) / 12) + ((g.seguroAuto || 0) / 12) + (g.gasolina || 0) + (g.transportePublico || 0) + (g.uber || 0) + (g.estacionamientos || 0) + (g.peajes || 0)
                     catEducacion = (g.escuelaHijos || 0) + (g.escuelaPropia || 0) + (g.utiles || 0) + (g.materiales || 0) + (g.libros || 0)
                     catDeudas = (g.prestamos || 0) + (g.creditos || 0)
                     catAlimentacion = (g.supermercado || 0) + (g.mercado || 0) + (g.accesoriosCasa || 0)
-                    catCuidadoPersonal = (g.estetica || 0) + (g.accesoriosBelleza || 0) + (g.medicamentos || 0) + (g.checkups || 0) + (g.ropaZapatos || 0) + (g.gimnasio || 0) + (g.ropaZapatos || 0) + (g.gimnasio || 0)
+                    catCuidadoPersonal = (g.estetica || 0) + (g.accesoriosBelleza || 0) + (g.medicamentos || 0) + (g.checkups || 0) + (g.ropaZapatos || 0) + (g.gimnasio || 0) + ((g.seguroVida || 0) / 12) + ((g.seguroGmm || 0) / 12)
                     catMascotas = (g.comidaMascota || 0) + (g.saludMascota || 0) + (g.vacunasMascota || 0) + (g.esteticaMascota || 0) + (g.accesoriosMascota || 0)
                     catEntretenimiento = (g.hobbies || 0) + (g.finDeSemana || 0) + (g.vacaciones || 0) + (g.cineTeatro || 0) + (g.comidasEsparcimiento || 0) + (g.baresRecreacion || 0) + (g.cafecitos || 0) + (g.clubSocial || 0) + (g.amazonCompras || 0)
                     catAhorro += (g.inversiones || 0)
@@ -3226,12 +3271,12 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
 
           if (selectedSavedAdn ? (selectedSavedAdn.modalidad === 'DETALLADO') : (modalidad === 'DETALLADO')) {
             const g = parsedGastos
-            catVivienda = (g.renta || 0) + (g.hipoteca || 0) + (g.mantenimiento || 0) + (g.luz || 0) + (g.gas || 0) + (g.agua || 0) + (g.telefono || 0) + (g.internet || 0) + (g.streamings || 0) + (g.celular || 0) + (g.otrosServicios || 0) + ((g.predial || 0) / 12)
-            catTransporte = (g.mensualidadAuto || 0) + ((g.tenencia || 0) / 12) + ((g.verificacion || 0) / 12) + ((g.mantenimientoAuto || 0) / 12) + ((g.seguroAuto || 0) / 12) + (g.gasolina || 0) + (g.transportePublico || 0) + (g.uber || 0) + (g.estacionamientos || 0)
+            catVivienda = (g.renta || 0) + (g.hipoteca || 0) + (g.mantenimiento || 0) + (g.luz || 0) + (g.gas || 0) + (g.agua || 0) + (g.telefono || 0) + (g.internet || 0) + (g.streamings || 0) + (g.celular || 0) + (g.otrosServicios || 0) + ((g.predial || 0) / 12) + ((g.seguroCasa || 0) / 12)
+            catTransporte = (g.mensualidadAuto || 0) + ((g.tenencia || 0) / 12) + ((g.verificacion || 0) / 12) + ((g.mantenimientoAuto || 0) / 12) + ((g.seguroAuto || 0) / 12) + (g.gasolina || 0) + (g.transportePublico || 0) + (g.uber || 0) + (g.estacionamientos || 0) + (g.peajes || 0)
             catEducacion = (g.escuelaHijos || 0) + (g.escuelaPropia || 0) + (g.utiles || 0) + (g.materiales || 0) + (g.libros || 0)
             catDeudas = (g.prestamos || 0) + (g.creditos || 0)
             catAlimentacion = (g.supermercado || 0) + (g.mercado || 0) + (g.accesoriosCasa || 0)
-            catCuidadoPersonal = (g.estetica || 0) + (g.accesoriosBelleza || 0) + (g.medicamentos || 0) + (g.checkups || 0) + (g.ropaZapatos || 0) + (g.gimnasio || 0)
+            catCuidadoPersonal = (g.estetica || 0) + (g.accesoriosBelleza || 0) + (g.medicamentos || 0) + (g.checkups || 0) + (g.ropaZapatos || 0) + (g.gimnasio || 0) + ((g.seguroVida || 0) / 12) + ((g.seguroGmm || 0) / 12)
             catMascotas = (g.comidaMascota || 0) + (g.saludMascota || 0) + (g.vacunasMascota || 0) + (g.esteticaMascota || 0) + (g.accesoriosMascota || 0)
             catEntretenimiento = (g.hobbies || 0) + (g.finDeSemana || 0) + (g.vacaciones || 0) + (g.cineTeatro || 0) + (g.comidasEsparcimiento || 0) + (g.baresRecreacion || 0) + (g.cafecitos || 0) + (g.clubSocial || 0) + (g.amazonCompras || 0)
             catAhorro += (g.inversiones || 0)
