@@ -1639,6 +1639,16 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                             className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500"
                           />
                         </div>
+                        <div className="space-y-1">
+                          <label className="text-[9px] font-bold text-slate-500 uppercase">Peajes / Casetas</label>
+                          <input 
+                            type="number" 
+                            placeholder="0" 
+                            value={gastosDet.peajes || ''}
+                            onChange={e => setGastosDet({...gastosDet, peajes: Number(e.target.value)})}
+                            className="border p-2 rounded-xl w-full text-xs focus:outline-teal-500"
+                          />
+                        </div>
                       </div>
                     </div>
 
