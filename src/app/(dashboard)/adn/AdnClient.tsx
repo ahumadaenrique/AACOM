@@ -292,6 +292,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
 
   const [isSaving, setIsSaving] = useState(false)
   const [validationError, setValidationError] = useState('')
+  const [showGeoHelpModal, setShowGeoHelpModal] = useState(false)
 
   // --- Handlers para hijos ---
   const addHijo = () => {
@@ -740,7 +741,8 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
       }
     } catch (err: any) {
       if (err.code === 1) { // PERMISSION_DENIED
-        setValidationError("🛑 Es obligatorio compartir tu ubicación GPS para registrar diagnósticos. Ve a la configuración de tu navegador para otorgar los permisos e inténtalo de nuevo.")
+        setValidationError("🛑 Ubicación GPS denegada. Es obligatoria para guardar diagnósticos.")
+        setShowGeoHelpModal(true)
       } else if (err.code === 2) { // POSITION_UNAVAILABLE
         setValidationError("No se pudo obtener tu ubicación actual. Asegúrate de tener encendido el GPS.")
       } else if (err.code === 3) { // TIMEOUT
@@ -3542,6 +3544,51 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
           </div>
         </div>
         </div>
+        {/* Geo Help Modal */}
+        {showGeoHelpModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">
+            <div className="bg-white dark:bg-zinc-900 w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-zinc-800 text-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-2 bg-red-500"></div>
+              <button 
+                onClick={() => setShowGeoHelpModal(false)}
+                className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 p-2 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              
+              <div className="bg-red-50 dark:bg-red-900/20 text-red-600 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <AlertTriangle className="w-8 h-8" />
+              </div>
+              
+              <h3 className="text-xl font-bold text-slate-800 dark:text-zinc-100 mb-2">Permiso de Ubicación Bloqueado</h3>
+              <p className="text-sm text-slate-600 dark:text-zinc-400 mb-6">
+                Tu navegador bloqueó el acceso a la ubicación. Sin esto, el ADN no se puede registrar. Para desbloquearlo fácilmente:
+              </p>
+              
+              <div className="bg-slate-50 dark:bg-zinc-800 rounded-xl p-4 text-left space-y-3 mb-6 border border-slate-100 dark:border-zinc-700">
+                <div className="flex items-start gap-3">
+                  <div className="bg-slate-200 dark:bg-zinc-700 w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">1</div>
+                  <p className="text-sm text-slate-700 dark:text-zinc-300">Toca el ícono del <strong>candado 🔒</strong> o el de <strong>ajustes</strong> que está en la barra de direcciones de arriba, junto al nombre de la página.</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="bg-slate-200 dark:bg-zinc-700 w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">2</div>
+                  <p className="text-sm text-slate-700 dark:text-zinc-300">Busca la opción <strong>Ubicación</strong> y cámbiala a <strong>Permitir</strong>.</p>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="bg-slate-200 dark:bg-zinc-700 w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">3</div>
+                  <p className="text-sm text-slate-700 dark:text-zinc-300"><strong>Recarga esta página</strong> y vuelve a intentar guardar.</p>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => setShowGeoHelpModal(false)}
+                className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-md"
+              >
+                ¡Entendido!
+              </button>
+            </div>
+          </div>
+        )}
       </div>
   )
 }
