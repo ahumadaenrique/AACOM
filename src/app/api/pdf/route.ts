@@ -32,7 +32,22 @@ export async function GET(request: Request) {
 
     if (!response || !response.ok) {
       console.error(`PDF Proxy failed for URL: ${url}. Status: ${response?.status}. Error: ${errorText}`);
-      return new NextResponse(`Error al obtener PDF del servidor: HTTP ${response?.status} - ${errorText}`, { status: response?.status || 500 });
+      
+      const htmlError = `
+        <div style="font-family: sans-serif; padding: 2rem; text-align: center; color: #333;">
+          <h2 style="color: #e11d48;">Error al cargar el documento</h2>
+          <p>No pudimos cargar el PDF desde el servidor.</p>
+          <div style="background: #f1f5f9; padding: 1rem; border-radius: 0.5rem; text-align: left; font-family: monospace; font-size: 12px; overflow-wrap: break-word;">
+            <strong>URL intentada:</strong> ${url}<br/>
+            <strong>Status:</strong> ${response?.status || 'Desconocido'}<br/>
+            <strong>Detalle:</strong> ${errorText || 'Sin detalles adicionales'}
+          </div>
+        </div>
+      `;
+      return new NextResponse(htmlError, { 
+        status: response?.status || 500,
+        headers: { "Content-Type": "text/html" }
+      });
     }
 
     return new NextResponse(response.body, {
@@ -41,8 +56,20 @@ export async function GET(request: Request) {
         "Content-Disposition": "inline",
       }
     });
-  } catch (err) {
+  } catch (err: any) {
     console.error("PDF Proxy Error:", err);
-    return new NextResponse("Error interno al obtener el PDF", { status: 500 });
+    const htmlError = `
+      <div style="font-family: sans-serif; padding: 2rem; text-align: center; color: #333;">
+        <h2 style="color: #e11d48;">Error Interno</h2>
+        <p>Hubo un fallo en el servidor al intentar procesar la URL del PDF.</p>
+        <div style="background: #f1f5f9; padding: 1rem; border-radius: 0.5rem; text-align: left; font-family: monospace; font-size: 12px; overflow-wrap: break-word;">
+          <strong>Error:</strong> ${err?.message || 'Error desconocido'}
+        </div>
+      </div>
+    `;
+    return new NextResponse(htmlError, { 
+      status: 500,
+      headers: { "Content-Type": "text/html" }
+    });
   }
 }
