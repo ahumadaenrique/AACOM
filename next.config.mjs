@@ -41,7 +41,7 @@ const nextConfig = {
                     },
                     {
                         key: 'Content-Security-Policy',
-                        value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://storage.googleapis.com https://*.aacomsoft.com https://aacomsoft.com https://*.public.blob.vercel-storage.com; font-src 'self' data:; connect-src 'self' https://vitals.vercel-insights.com; frame-src 'self' https://www.youtube.com; frame-ancestors 'none';",
+                        value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https://storage.googleapis.com https://*.aacomsoft.com https://aacomsoft.com https://*.public.blob.vercel-storage.com; font-src 'self' data:; connect-src 'self' https://vitals.vercel-insights.com; frame-src 'self' https://www.youtube.com; frame-ancestors 'self';",
                     }
                 ],
             },
