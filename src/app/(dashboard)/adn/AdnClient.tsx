@@ -268,34 +268,42 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
   const [padecimientos, setPadecimientos] = useState(printData?.padecimientos || '')
 
   // Step 2: Seguros Existentes
-  const [hasSeguroAhorro, setHasSeguroAhorro] = useState(false)
-  const [ahorroAporte, setAhorroAporte] = useState<number | ''>('')
-  const [ahorroFrecuencia, setAhorroFrecuencia] = useState<'MENSUAL' | 'ANUAL'>('MENSUAL')
+  const [hasSeguroAhorro, setHasSeguroAhorro] = useState(printData?.hasSeguroAhorro || false)
+  const [ahorroAporte, setAhorroAporte] = useState<number | ''>(printData?.ahorroAporte || '')
+  const [ahorroFrecuencia, setAhorroFrecuencia] = useState<'MENSUAL' | 'ANUAL'>(printData?.ahorroFrecuencia || 'MENSUAL')
 
-  const [hasPpr, setHasPpr] = useState(false)
-  const [pprAporte, setPprAporte] = useState<number | ''>('')
-  const [pprFrecuencia, setPprFrecuencia] = useState<'MENSUAL' | 'ANUAL'>('MENSUAL')
-  const [pprAniosPlazo, setPprAniosPlazo] = useState<string>('10') // AJUSTE 5: Años contratados
+  const [hasPpr, setHasPpr] = useState(printData?.hasPpr || false)
+  const [pprAporte, setPprAporte] = useState<number | ''>(printData?.pprAporte || '')
+  const [pprFrecuencia, setPprFrecuencia] = useState<'MENSUAL' | 'ANUAL'>(printData?.pprFrecuencia || 'MENSUAL')
+  const [pprAniosPlazo, setPprAniosPlazo] = useState<string>(printData?.pprAniosPlazo || '10') // AJUSTE 5: Años contratados
 
-  const [hasGmm, setHasGmm] = useState(false)
-  
-  const [hasSeguroVida, setHasSeguroVida] = useState(false)
-  const [vidaSumaAsegurada, setVidaSumaAsegurada] = useState<number | ''>('') // AJUSTE 1: Suma asegurada
+  const [hasSeguroVida, setHasSeguroVida] = useState(printData?.hasSeguroVida || false)
+  const [vidaSumaAsegurada, setVidaSumaAsegurada] = useState<number | ''>(printData?.vidaSumaAsegurada || '') // AJUSTE 1: Suma asegurada
 
-  // Step 3: Finanzas (Ingresos y Ahorros)
-  const [ingresosTotales, setIngresosTotales] = useState<number | ''>('')
-  const [ingresosNetos, setIngresosNetos] = useState<number | ''>('')
-  const [ahorroActual, setAhorroActual] = useState<number | ''>('')
+  const [hasGmm, setHasGmm] = useState(printData?.hasGmm || false)
+
+  // Step 3: Presupuesto
+  const [ingresosTotales, setIngresosTotales] = useState<number | ''>(printData?.ingresosTotales || '')
+  const [ingresosNetos, setIngresosNetos] = useState<number | ''>(printData?.ingresosNetos || '')
+  const [ahorroActual, setAhorroActual] = useState<number | ''>(printData?.ahorroActual || '')
 
   // Tarjetas de Crédito
-  const [hasTarjetasCredito, setHasTarjetasCredito] = useState(false)
-  const [tarjetasCuales, setTarjetasCuales] = useState('')
-  const [tarjetasLimite, setTarjetasLimite] = useState('')
+  const [hasTarjetasCredito, setHasTarjetasCredito] = useState(printData?.hasTarjetasCredito || false)
+  const [tarjetasCuales, setTarjetasCuales] = useState(printData?.tarjetasCuales || '')
+  const [tarjetasLimite, setTarjetasLimite] = useState(printData?.tarjetasLimite || '')
 
   // Egresos por modalidad
-  const [gastosDet, setGastosDet] = useState<GastosDetallados>(initialGastosDetallados)
-  const [gastosRes, setGastosRes] = useState<GastosResumidos>(initialGastosResumidos)
-  const [gastosBasicosTotales, setGastosBasicosTotales] = useState<number | ''>('')
+  const [gastosDet, setGastosDet] = useState<GastosDetallados>(
+    printData?.gastosData && printData.modalidad === 'DETALLADO' ? 
+    (typeof printData.gastosData === 'string' ? JSON.parse(printData.gastosData) : printData.gastosData) : initialGastosDetallados
+  )
+  const [gastosRes, setGastosRes] = useState<GastosResumidos>(
+    printData?.gastosData && printData.modalidad === 'RESUMIDO' ? 
+    (typeof printData.gastosData === 'string' ? JSON.parse(printData.gastosData) : printData.gastosData) : initialGastosResumidos
+  )
+  const [gastosBasicosTotales, setGastosBasicosTotales] = useState<number | ''>(
+    printData?.totalGastos && printData.modalidad === 'BASICO' ? printData.totalGastos : ''
+  )
   const [evidenciaBase64, setEvidenciaBase64] = useState<string | null>(null)
 
   const [isSaving, setIsSaving] = useState(false)
