@@ -1759,7 +1759,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                     <div className="space-y-3">
                       <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1"><Smile className="h-4 w-4 text-teal-600" /> Mascotas</span>
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                        {Object.keys(initialGastosDetallados).slice(47).map((key) => (
+                        {Object.keys(initialGastosDetallados).slice(47, 52).map((key) => (
                           <div key={key} className="space-y-1">
                             <label className="text-[9px] font-bold text-slate-500 uppercase">{key.replace(/([A-Z])/g, ' $1')}</label>
                             <input 
