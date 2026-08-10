@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { CheckCircle, Clock, CheckCircle2, UserCircle2, Settings, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -26,63 +26,21 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
   const [agents, setAgents] = useState(initialAgents);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [reviewingAgent, setReviewingAgent] = useState<any | null>(null);
+  const [isPending, startTransition] = useTransition();
 
-  const handleApprove = async (userId: string) => {
-    try {
-      setLoadingId(userId);
-      await approveAgentDay(userId);
-      
-      setAgents(agents.map(a => {
-        if (a.id === userId && a.developmentProgress) {
-          return {
-            ...a,
-            developmentProgress: {
-              ...a.developmentProgress,
-              currentDayNumber: a.developmentProgress.currentDayNumber + 1,
-              status: "IN_PROGRESS"
-            }
-          };
-        }
-        return a;
-      }));
-      
-      setReviewingAgent(null);
-      toast({ title: "Agente aprobado", description: "Ha avanzado al siguiente día exitosamente." });
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } finally {
-      setLoadingId(null);
-    }
-  };
-
-  const handleReject = async (agentId: string) => {
-    try {
-      setLoadingId(agentId);
-      await rejectAgentProgress(agentId);
-      setAgents(agents.map(a => a.id === agentId ? { ...a, developmentProgress: { ...a.developmentProgress, status: "IN_PROGRESS" } } : a));
-      toast({ title: "Agente rechazado", description: "Se le ha pedido al agente que repita el módulo." });
-      setReviewingAgent(null);
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } finally {
-      setLoadingId(null);
-    }
-  };
-
-  const handleDayChange = async (userId: string, dayNumber: number) => {
-    try {
-      setLoadingId(userId);
-      const result = await updateAgentDay(userId, dayNumber);
-      
-      if (result.success) {
+  const handleApprove = (userId: string) => {
+    startTransition(async () => {
+      try {
+        setLoadingId(userId);
+        await approveAgentDay(userId);
+        
         setAgents(agents.map(a => {
-          if (a.id === userId) {
-            const prevProgress = a.developmentProgress || { currentDayNumber: 1, status: "IN_PROGRESS" };
+          if (a.id === userId && a.developmentProgress) {
             return {
               ...a,
               developmentProgress: {
-                ...prevProgress,
-                currentDayNumber: dayNumber,
+                ...a.developmentProgress,
+                currentDayNumber: a.developmentProgress.currentDayNumber + 1,
                 status: "IN_PROGRESS"
               }
             };
@@ -90,34 +48,88 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
           return a;
         }));
         
-        toast({ 
-          title: "Módulo actualizado", 
-          description: `El agente ha sido movido al ${dayNumber > totalDaysCount ? 'Plan Completado' : `Módulo ${dayNumber}`} exitosamente.` 
-        });
+        setReviewingAgent(null);
+        toast({ title: "Agente aprobado", description: "Ha avanzado al siguiente día exitosamente." });
+      } catch (error: any) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } finally {
+        setLoadingId(null);
       }
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } finally {
-      setLoadingId(null);
-    }
+    });
   };
 
-  const handleAssignAdmin = async (userId: string, adminId: string) => {
-    try {
-      const dbAdminId = adminId === "none" ? null : adminId;
-      await assignAgentSupervisor(userId, dbAdminId);
-      
-      setAgents(agents.map(a => {
-        if (a.id === userId) {
-          return { ...a, reportsToId: dbAdminId };
+  const handleReject = (agentId: string) => {
+    startTransition(async () => {
+      try {
+        setLoadingId(agentId);
+        await rejectAgentProgress(agentId);
+        setAgents(agents.map(a => a.id === agentId ? { ...a, developmentProgress: { ...a.developmentProgress, status: "IN_PROGRESS" } } : a));
+        toast({ title: "Agente rechazado", description: "Se le ha pedido al agente que repita el módulo." });
+        setReviewingAgent(null);
+      } catch (error: any) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } finally {
+        setLoadingId(null);
+      }
+    });
+  };
+
+  const handleDayChange = (userId: string, dayNumber: number) => {
+    startTransition(async () => {
+      try {
+        setLoadingId(userId);
+        const result = await updateAgentDay(userId, dayNumber);
+        
+        if (result.success) {
+          setAgents(agents.map(a => {
+            if (a.id === userId) {
+              const prevProgress = a.developmentProgress || { currentDayNumber: 1, status: "IN_PROGRESS" };
+              return {
+                ...a,
+                developmentProgress: {
+                  ...prevProgress,
+                  currentDayNumber: dayNumber,
+                  status: "IN_PROGRESS"
+                }
+              };
+            }
+            return a;
+          }));
+          
+          toast({ 
+            title: "Módulo actualizado", 
+            description: `El agente ha sido movido al ${dayNumber > totalDaysCount ? 'Plan Completado' : `Módulo ${dayNumber}`} exitosamente.` 
+          });
         }
-        return a;
-      }));
-      
-      toast({ title: "Responsable asignado", description: "Se ha actualizado el responsable de este agente." });
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    }
+      } catch (error: any) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } finally {
+        setLoadingId(null);
+      }
+    });
+  };
+
+  const handleAssignAdmin = (userId: string, adminId: string) => {
+    startTransition(async () => {
+      try {
+        setLoadingId(userId);
+        const dbAdminId = adminId === "none" ? null : adminId;
+        await assignAgentSupervisor(userId, dbAdminId);
+        
+        setAgents(agents.map(a => {
+          if (a.id === userId) {
+            return { ...a, reportsToId: dbAdminId };
+          }
+          return a;
+        }));
+        
+        toast({ title: "Responsable asignado", description: "Se ha actualizado el responsable de este agente." });
+      } catch (error: any) {
+        toast({ title: "Error", description: error.message, variant: "destructive" });
+      } finally {
+        setLoadingId(null);
+      }
+    });
   };
 
   return (
@@ -233,7 +245,7 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
                             Plan Terminado
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-500 dark:border-blue-800/50 gap-1.5 py-1">
+                          <Badge variant="outline" className="bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-500 dark:border-blue-500/50 gap-1.5 py-1">
                             <CheckCircle className="h-3.5 w-3.5" />
                             En Curso
                           </Badge>
@@ -243,6 +255,7 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
                         <div className="flex items-center justify-end gap-2">
                           {status === "WAITING_APPROVAL" && (
                             <Button 
+                              type="button"
                               onClick={() => {
                                 const currentDayData = days.find(d => d.dayNumber === dayNum);
                                 if (currentDayData?.hasQuestionnaire) {
@@ -387,6 +400,7 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
 
               <DialogFooter className="gap-2 sm:justify-between">
                 <Button 
+                  type="button"
                   variant="outline" 
                   onClick={() => handleReject(reviewingAgent.id)}
                   disabled={loadingId === reviewingAgent.id}
@@ -395,6 +409,7 @@ export function SeguimientoClient({ initialAgents, admins, totalDaysCount, days 
                   {loadingId === reviewingAgent.id ? "Procesando..." : "Rechazar y Forzar Repetición"}
                 </Button>
                 <Button 
+                  type="button"
                   className="bg-emerald-600 hover:bg-emerald-700 text-white"
                   onClick={() => handleApprove(reviewingAgent.id)}
                   disabled={loadingId === reviewingAgent.id}
