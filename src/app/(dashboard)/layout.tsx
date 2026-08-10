@@ -215,7 +215,7 @@ export default async function DashboardLayout({
                                             className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/pea-prp') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                                         >
                                             <Target className={`h-4 w-4 ${pathname.startsWith('/pea-prp') ? 'text-primary' : 'text-indigo-600'}`} />
-                                            PEA/PRP
+                                            PEA/PRP/JEP
                                             {pathname.startsWith('/pea-prp') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                         </Link>
                                         <Link
@@ -465,7 +465,7 @@ export default async function DashboardLayout({
                                                      className="text-muted-foreground hover:text-foreground flex items-center gap-2"
                                                  >
                                                      <Target className="h-5 w-5 text-indigo-600" />
-                                                     PEA/PRP
+                                                     PEA/PRP/JEP
                                                  </Link>
                                                  <Link
                                                      href="/cartera"

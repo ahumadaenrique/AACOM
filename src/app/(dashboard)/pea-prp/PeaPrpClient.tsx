@@ -307,7 +307,7 @@ export default function PeaPrpClient({ userRole }: { userRole: string }) {
                         Desempeño Operativo
                     </h1>
                     <p className="text-muted-foreground mt-1">
-                        Motor de Inteligencia Artificial para la gestión del ciclo de vida (PEA/PRP)
+                        Motor de Inteligencia Artificial para la gestión del ciclo de vida (PEA/PRP/JEP)
                     </p>
                 </div>
                 

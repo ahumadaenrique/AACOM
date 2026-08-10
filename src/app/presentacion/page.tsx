@@ -81,7 +81,7 @@ export default function PresentacionPage() {
     {
       id: "desempeno",
       title: "Tableros PEA / PRP y 25 Puntos",
-      description: "Monitorea la prospección diaria de tus agentes con la bitácora de 25 puntos y evaluaciones PEA/PRP.",
+      description: "Monitorea la prospección diaria de tus agentes con la bitácora de 25 puntos y evaluaciones PEA/PRP/JEP.",
       details: [
         "Seguimiento visual del avance de metas diarias por puntos de prospección.",
         "Compromisos semanales documentados y firmados digitalmente.",
@@ -502,7 +502,7 @@ export default function PresentacionPage() {
                     <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
                   </tr>
                   <tr>
-                    <td className="p-4 sm:p-5 font-bold text-white">Evaluaciones de Desempeño PEA/PRP</td>
+                    <td className="p-4 sm:p-5 font-bold text-white">Evaluaciones de Desempeño PEA/PRP/JEP</td>
                     <td className="p-4 sm:p-5 text-center bg-teal-500/5"><Check className="mx-auto w-5 h-5 text-teal-400" /></td>
                     <td className="p-4 sm:p-5 text-center"><X className="mx-auto w-4 h-4 text-slate-600" /></td>
                     <td className="p-4 sm:p-5 text-center text-slate-400 font-medium">Parcial (Manual)</td>

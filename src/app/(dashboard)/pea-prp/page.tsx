@@ -5,7 +5,7 @@ import PremiumGuard from "@/components/PremiumGuard";
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Gestión de Desempeño PEA/PRP",
+  title: "Gestión de Desempeño PEA/PRP/JEP",
 };
 
 export default async function PeaPrpPage() {
@@ -24,7 +24,7 @@ export default async function PeaPrpPage() {
   }
 
   return (
-    <PremiumGuard userRole={user.role} moduleName="Gestión de Desempeño PEA/PRP">
+    <PremiumGuard userRole={user.role} moduleName="Gestión de Desempeño PEA/PRP/JEP">
       <PeaPrpClient userRole={user.role} />
     </PremiumGuard>
   );
