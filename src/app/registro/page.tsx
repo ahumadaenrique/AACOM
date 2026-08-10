@@ -101,7 +101,7 @@ export default function RegisterPage() {
 
     setSendingSms(true);
     try {
-      const res = await sendVerificationSms(phone, 'sms');
+      const res = await sendVerificationSms(phone, 'whatsapp');
       if (res.success) {
         setStep(1.5);
       } else {
