@@ -1235,7 +1235,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
       })
 
         // --- CARTERA TOOLS ---
-        const isAdmin = dbUser.role === 'ADMIN' || dbUser.role === 'SUPERADMIN';
+        const isAdmin = dbUser.role === 'ADMIN' || dbUser.role === 'SUPERADMIN' || dbUser.role === 'SUPER_ADMIN';
         const carteraWhereClause = isAdmin && dbUser.agencyId ? { agencyId: dbUser.agencyId } : { userId: agent.userId };
 
         tools.searchClients = (tool as any)({

@@ -39,7 +39,7 @@ export async function POST(req: Request) {
         });
 
         // 2. Fetch agent's portfolio (Cartera)
-        const isAdmin = user.role === 'ADMIN' || user.role === 'SUPERADMIN';
+        const isAdmin = user.role === 'ADMIN' || user.role === 'SUPERADMIN' || user.role === 'SUPER_ADMIN';
         const policyWhereClause = isAdmin && user.agencyId ? { agencyId: user.agencyId } : { userId: user.id };
 
         const agentPolicies = await prisma.policy.findMany({
