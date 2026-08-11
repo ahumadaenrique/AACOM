@@ -38,7 +38,26 @@ export async function POST(req: Request) {
             select: { title: true, content: true, isGlobalTemplate: true }
         });
 
-        // 2. Format knowledge context
+        // 2. Fetch agent's portfolio (Cartera)
+        const agentPolicies = await prisma.policy.findMany({
+            where: { userId: user.id },
+            include: { client: true }
+        });
+
+        let portfolioContext = "";
+        if (agentPolicies.length > 0) {
+            portfolioContext = "\nBASE DE DATOS DE CARTERA DEL AGENTE (SOLO LECTURA):\n";
+            portfolioContext += "Esta es la información real y confidencial de la cartera de clientes y pólizas de este agente. Úsala para responder preguntas sobre sus renovaciones, primas o clientes.\n\n";
+            
+            agentPolicies.forEach(p => {
+                const clientName = p.client?.name || p.contractor || "Sin Nombre";
+                const renDate = p.renewalDate ? new Date(p.renewalDate).toLocaleDateString('es-MX') : "N/A";
+                const prima = p.annualPremium ? `$${p.annualPremium.toLocaleString('es-MX')} MXN` : "No especificada";
+                portfolioContext += `- Cliente: ${clientName} | Póliza: ${p.policyNumber || 'S/N'} | Compañía: ${p.insuranceCompany || 'N/A'} | Producto: ${p.product || 'N/A'} | Renovación: ${renDate} | Prima: ${prima}\n`;
+            });
+        }
+
+        // 3. Format knowledge context
         let knowledgeContext = "BASE DE CONOCIMIENTOS OFICIAL:\n";
         if (activeDocs.length > 0) {
             activeDocs.forEach((doc, idx) => {
@@ -48,20 +67,22 @@ export async function POST(req: Request) {
             knowledgeContext += "(No hay documentos cargados. Responde con conocimientos generales sobre seguros pero aclara que no hay directivas internas activas.)\n";
         }
 
-        // 3. Define rigid system instruction
+        // 4. Define rigid system instruction
         const systemInstruction = `Eres "Asistente ${agencyName}", el copiloto inteligente de la promotoría de seguros de vida, gastos médicos y ahorro.
-Tu objetivo es dar soporte rápido, amigable y muy profesional a los agentes de seguros sobre lineamientos comerciales, cuadernos de bonos, adendums y condiciones generales de productos (como el Vitalicio o el Universal).
+Tu objetivo es dar soporte rápido, amigable y muy profesional a los agentes de seguros sobre lineamientos comerciales, cuadernos de bonos, adendums, condiciones generales de productos (como el Vitalicio o el Universal) Y brindar información de su Cartera de clientes.
 
 REGLAS ABSOLUTAS:
-1. Basar tus respuestas de la manera más directa y estricta posible en la "BASE DE CONOCIMIENTOS OFICIAL" que se te provee más abajo.
+1. Basar tus respuestas de la manera más directa y estricta posible en la "BASE DE CONOCIMIENTOS OFICIAL" y en la "BASE DE DATOS DE CARTERA DEL AGENTE" que se te proveen más abajo.
 2. REGLA DE ORO DE JERARQUÍA: Verás que algunos documentos están marcados como '(REGLA LOCAL DE AGENCIA)' y otros como '(PLANTILLA GLOBAL)'. Si hay CUALQUIER contradicción entre una regla local y una global, SIEMPRE dale prioridad y aplica la '(REGLA LOCAL DE AGENCIA)'. La regla local tiene autoridad absoluta.
-3. Si la respuesta a la pregunta del agente no está contenida en la Base de Conocimientos oficial provista, responde textualmente:
-"Lo lamento, no cuento con esa información en mis lineamientos comerciales oficiales en este momento. Por favor, consulta directamente con la dirección o el equipo administrativo."
+3. Si te preguntan sobre su cartera, clientes, pólizas o renovaciones, busca exhaustivamente en la sección "BASE DE DATOS DE CARTERA DEL AGENTE" y dales la información precisa.
+4. Si la respuesta a la pregunta del agente no está contenida en la Base de Conocimientos ni en su Cartera de Clientes, responde textualmente:
+"Lo lamento, no cuento con esa información en mis registros ni lineamientos comerciales en este momento. Por favor, consulta directamente con la dirección o el equipo administrativo."
 Bajo ninguna circunstancia debes inventar porcentajes de comisiones, montos de bonos, plazos de productos o políticas comerciales.
-4. Sé conciso y estructurado. Si respondes tablas o cifras, usa formato Markdown para que la lectura móvil sea impecable.
-5. Responde en español de México.
+5. Sé conciso y estructurado. Si respondes tablas o cifras, usa formato Markdown para que la lectura móvil sea impecable.
+6. Responde en español de México.
 
-${knowledgeContext}`;
+${knowledgeContext}
+${portfolioContext}`;
 
         // 4. Form contents array
         const contents = [
