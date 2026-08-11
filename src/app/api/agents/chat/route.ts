@@ -355,7 +355,12 @@ REGLAS DE AGENDAMIENTO CRÍTICAS:
      * 'completeTask': Marca un pendiente como completado buscando por su título o ID.
      * 'deleteTask': Elimina un pendiente de la lista.
    - REGLA DE USO PROACTIVO: Si el usuario te menciona algún pendiente o tarea a realizar, o te pide acordarte de algo, debes ofrecerte a anotarlo o hacerlo directamente llamando a 'createTask'.
-   - Igualmente, cuando te pregunte por sus tareas, utiliza 'listTasks' para obtener la lista real en lugar de inventarlas.\n\n`
+   - Igualmente, cuando te pregunte por sus tareas, utiliza 'listTasks' para obtener la lista real en lugar de inventarlas.
+  8. MÓDULO DE CARTERA (CLIENTES Y PÓLIZAS):
+     - Tienes acceso directo a la cartera de seguros del agente a través de herramientas especializadas.
+     - Si te preguntan sobre un cliente (ej. "Cuándo renueva Miguel?", "¿Cuánto paga Luis?"), usa 'searchClients' para encontrar su ID, y luego INMEDIATAMENTE usa 'getClientPolicies' con ese ID para leer sus pólizas y darle la respuesta exacta al usuario.
+     - Si te preguntan "¿Qué pólizas se vencen este mes?" o similar, usa 'getUpcomingRenewals'.
+     - Si te preguntan "¿Cuánto tengo en primas?" o "¿Cuántos clientes tengo?", usa 'getPortfolioStats'.\n\n`
     }
 
     if (agent.type === 'SOCIAL_MEDIA_MANAGER') {
@@ -1228,6 +1233,101 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
           }
         }
       })
+
+        // --- CARTERA TOOLS ---
+        tools.searchClients = (tool as any)({
+          description: 'Busca un cliente por nombre o apellido en la cartera de seguros del usuario.',
+          parameters: z.object({
+            name: z.string().describe('Nombre o apellido del cliente a buscar'),
+          }),
+          execute: async ({ name }: { name: string }) => {
+            const clients = await prisma.client.findMany({
+              where: { 
+                userId: agent.userId,
+                name: { contains: name, mode: 'insensitive' }
+              },
+              take: 5,
+              select: { id: true, name: true, email: true, phone: true }
+            })
+            return clients.length ? clients : 'No se encontraron clientes con ese nombre.'
+          }
+        })
+
+        tools.getClientPolicies = (tool as any)({
+          description: 'Obtiene las pólizas de seguros (activas o inactivas) de un cliente específico mediante su ID.',
+          parameters: z.object({
+            clientId: z.string().describe('El ID del cliente'),
+          }),
+          execute: async ({ clientId }: { clientId: string }) => {
+            const policies = await prisma.policy.findMany({
+              where: { 
+                userId: agent.userId,
+                clientId: clientId
+              },
+              select: {
+                policyNumber: true,
+                insuranceCompany: true,
+                product: true,
+                effectiveDate: true,
+                renewalDate: true,
+                annualPremium: true,
+                paymentMethod: true,
+                contractor: true,
+                insured: true
+              }
+            })
+            return policies.length ? policies : 'El cliente no tiene pólizas registradas.'
+          }
+        })
+
+        tools.getUpcomingRenewals = (tool as any)({
+          description: 'Obtiene una lista de las pólizas que están por renovarse (vencer) en los próximos X días.',
+          parameters: z.object({
+            days: z.number().describe('Cantidad de días hacia adelante para buscar renovaciones (ej. 30, 60, 90)'),
+          }),
+          execute: async ({ days }: { days: number }) => {
+            const startDate = new Date()
+            const endDate = new Date()
+            endDate.setDate(endDate.getDate() + days)
+            
+            const policies = await prisma.policy.findMany({
+              where: {
+                userId: agent.userId,
+                renewalDate: {
+                  gte: startDate,
+                  lte: endDate
+                }
+              },
+              orderBy: { renewalDate: 'asc' },
+              select: {
+                policyNumber: true,
+                insuranceCompany: true,
+                product: true,
+                renewalDate: true,
+                annualPremium: true,
+                client: { select: { name: true } }
+              },
+              take: 15
+            })
+            return policies.length ? policies : `No hay pólizas por renovarse en los próximos ${days} días.`
+          }
+        })
+
+        tools.getPortfolioStats = (tool as any)({
+          description: 'Obtiene las estadísticas generales de la cartera del usuario, como el total de primas y el número de pólizas activas.',
+          parameters: z.object({}),
+          execute: async () => {
+            const result = await prisma.policy.aggregate({
+              where: { userId: agent.userId },
+              _sum: { annualPremium: true },
+              _count: { id: true }
+            })
+            return {
+              totalPolicies: result._count.id,
+              totalAnnualPremium: result._sum.annualPremium || 0
+            }
+          }
+        })
     } else if (agent.type === 'SOCIAL_MEDIA_MANAGER') {
       tools.postToSocial = (tool as any)({
         description: 'Publica un mensaje en redes sociales',
