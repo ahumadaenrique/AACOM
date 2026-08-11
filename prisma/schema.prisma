@@ -7,13 +7,9 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// SQLite does not support Enums, so we use String validation in app logic
-// enum Role { ... } replaced by Strings
-
 model CommissionLedger {
   id                 String   @id @default(cuid())
   sellerId           String
-  seller             User     @relation("SellerCommissions", fields: [sellerId], references: [id])
   agencyId           String?
   stripeChargeId     String?
   description        String
@@ -21,62 +17,56 @@ model CommissionLedger {
   amountPaid         Float
   discountPercentage Float
   commissionEarned   Float
-  status             String   @default("PENDING") // PENDING, PAID
-  level              Int      @default(1) // 1 = Venta Directa, 2 = 2da gen (20%), 3 = 3ra gen (10%)
-  sourceAgencyId     String? // Opcional, para saber de dónde se originó el pago (útil en niveles 2 y 3)
+  status             String   @default("PENDING")
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
+  level              Int      @default(1)
+  sourceAgencyId     String?
+  seller             User     @relation("SellerCommissions", fields: [sellerId], references: [id])
 
   @@index([sellerId])
   @@index([agencyId])
 }
 
 model Agency {
-  id                  String    @id @default(cuid())
-  name                String
-  slug                String    @unique
-  logoUrl             String?
-  primaryColor        String?   @default("#4f46e5")
-  secondaryColor      String?
-  stripeCustomerId    String?
-  subscriptionStatus  String?   @default("active")
-  subscriptionEndDate DateTime?
-  referredByAgencyId  String?
-  active              Boolean   @default(true)
-
-  users              User[]
-  clients            Client[]
-  policies           Policy[]
-  adnDiagnostics     AdnDiagnostic[]
-  activityLogs       ActivityLog[]
-  documentPacks      AgencyDocumentPack[]
-  agencyDocuments    AgencyDocument[]
-  dailyRecords       DailyRecord[]
-  cotizaciones       Cotizacion[]
-  performanceReviews PerformanceReview[]
-  knowledgeDocuments KnowledgeDocument[]
-  tickets            Ticket[]
-  pollVotes          PollVote[]
-  contents           Content[]
-  autocompleteAgents Agent[]
-
-  purchasedSeats  Int     @default(0)
-  allowLiteAgents Boolean @default(false)
-  allowReferidores Boolean @default(false)
-
-  // WhatsApp Planner Feature Config
-  enableWhatsAppPlanner Boolean @default(false)
-  whatsAppPlannerPhones String? // Almacenará hasta 2 números, separados por comas
-  whatsAppPlannerAgents String? // IDs de agentes permitidos, separados por comas
-
-  // Affiliate System
-  referredById   String?
-  referrer       User?    @relation("AgencyReferrer", fields: [referredById], references: [id])
-  discountLocked Boolean? @default(false)
-
-  createdAt          DateTime             @default(now())
-  updatedAt          DateTime             @updatedAt
-  DevelopmentPlanDay DevelopmentPlanDay[]
+  id                    String               @id @default(cuid())
+  name                  String
+  slug                  String               @unique
+  logoUrl               String?
+  primaryColor          String?              @default("#4f46e5")
+  secondaryColor        String?
+  stripeCustomerId      String?
+  subscriptionStatus    String?              @default("active")
+  subscriptionEndDate   DateTime?
+  referredByAgencyId    String?
+  active                Boolean              @default(true)
+  createdAt             DateTime             @default(now())
+  updatedAt             DateTime             @updatedAt
+  discountLocked        Boolean?             @default(false)
+  purchasedSeats        Int                  @default(0)
+  referredById          String?
+  allowLiteAgents       Boolean              @default(false)
+  enableWhatsAppPlanner Boolean              @default(false)
+  whatsAppPlannerAgents String?
+  whatsAppPlannerPhones String?
+  allowReferidores      Boolean              @default(false)
+  activityLogs          ActivityLog[]
+  adnDiagnostics        AdnDiagnostic[]
+  referrer              User?                @relation("AgencyReferrer", fields: [referredById], references: [id])
+  agencyDocuments       AgencyDocument[]
+  documentPacks         AgencyDocumentPack[]
+  autocompleteAgents    Agent[]
+  clients               Client[]
+  contents              Content[]
+  cotizaciones          Cotizacion[]
+  dailyRecords          DailyRecord[]
+  DevelopmentPlanDay    DevelopmentPlanDay[]
+  knowledgeDocuments    KnowledgeDocument[]
+  performanceReviews    PerformanceReview[]
+  policies              Policy[]
+  pollVotes             PollVote[]
+  tickets               Ticket[]
+  users                 User[]
 
   @@index([referredById])
 }
@@ -87,120 +77,87 @@ model DiscountCode {
   discountPercentage Float
   maxUses            Int?
   uses               Int       @default(0)
-  expiresAt          DateTime? // Nueva propiedad para límite de tiempo
+  expiresAt          DateTime?
   active             Boolean   @default(true)
-
-  sellerId String?
-  seller   User?   @relation("SellerDiscountCodes", fields: [sellerId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  sellerId           String?
+  seller             User?     @relation("SellerDiscountCodes", fields: [sellerId], references: [id])
 
   @@index([sellerId])
 }
 
 model User {
-  id                 String    @id @default(cuid())
-  agencyId           String?
-  agency             Agency?   @relation(fields: [agencyId], references: [id])
-  name               String?
-  email              String    @unique
-  password           String?
-  image              String?
-  role               String    @default("AGENTE") // Changed from Enum Role to String
-  phone              String? // Teléfono del usuario/agente
-  phoneVerified      Boolean   @default(false) // Candado de verificación SMS
-  active             Boolean   @default(true) // Estatus activo/inactivo para restringir acceso
-  birthDate          DateTime? // Fecha de nacimiento del agente para overlay de cumpleaños
-  mustChangePassword Boolean   @default(false) // Flag de seguridad para forzar cambio de contraseña temporal
-
-  // Términos y Condiciones
-  termsAccepted   Boolean   @default(false) // Candado legal de primer acceso
-  termsAcceptedAt DateTime? // Evidencia de firma
-
-  // Affiliate System
-  sellerCommissionRate Float?             @default(40)
-  referredAgencies     Agency[]           @relation("AgencyReferrer")
-  discountCodes        DiscountCode[]     @relation("SellerDiscountCodes")
-  commissions          CommissionLedger[] @relation("SellerCommissions")
-
-  // Redes Sociales (Opcional)
-  instagram String?
-  facebook  String?
-  linkedin  String?
-  twitter   String?
-
-  // Datos Adicionales (Opcional)
-  insurances   String? // Aseguradoras con las que trabaja
-  favoriteBook String? // Libro favorito
-  hobby        String? // Pasatiempo
-  brandColor   String? // Color corporativo individual del Agente
-  brandLogo    String? // Logo corporativo individual del Agente
-
-  // Credenciales y Registros
-  promotoriaJoinDate DateTime? // Fecha de Alta en promotoría (Admin only)
-  cedulaValidUntil   DateTime? // Vigencia de cédula hasta
-  rcPolicyValidUntil DateTime? // Vigencia poliza RC
-
-  // Hierarchy
-  reportsToId  String?
-  reportsTo    User?   @relation("Hierarchy", fields: [reportsToId], references: [id])
-  subordinates User[]  @relation("Hierarchy")
-
-  // Referidores
-  linkedAgentId String?
-  linkedAgent   User?   @relation("AgentReferidores", fields: [linkedAgentId], references: [id])
-  referidores   User[]  @relation("AgentReferidores")
-
-  // Integraciones IA (Agentes)
-  googleAccessToken  String?
-  googleRefreshToken String?
-  googleTokenExpiry  DateTime?
-
-  // ElevenLabs Voice Integration
-  voiceSecondsBalance Int              @default(300) // 5 minutos de capa gratuita inicial
-  InteractionLog      InteractionLog[]
-  Meeting             Meeting[]
-  Task                Task[]
-  FeedbackSurvey      FeedbackSurvey[]
-
-  // For Double Promotoria or shared access (Simple implementation: Secondary access list)
-  // This could be a many-to-many relation if needed
-
-  // Data
-  dailyRecords      DailyRecord[]
-  activityLogs      ActivityLog[]
-  policies          Policy[]
-  clients           Client[]
-  adnDiagnostics    AdnDiagnostic[]
-  cotizaciones      Cotizacion[]
-  pushSubscriptions PushSubscription[]
-  agentReviews      PerformanceReview[] @relation("AgentReviews")
-  evaluatedReviews  PerformanceReview[] @relation("EvaluatedReviews")
-  tickets           Ticket[]
-
-  // Billing
-  isSelfPaid           Boolean @default(false)
+  id                   String                    @id @default(cuid())
+  name                 String?
+  email                String                    @unique
+  password             String?
+  image                String?
+  role                 String                    @default("AGENTE")
+  reportsToId          String?
+  createdAt            DateTime                  @default(now())
+  updatedAt            DateTime                  @updatedAt
+  active               Boolean                   @default(true)
+  phone                String?
+  birthDate            DateTime?
+  facebook             String?
+  favoriteBook         String?
+  hobby                String?
+  instagram            String?
+  insurances           String?
+  linkedin             String?
+  twitter              String?
+  mustChangePassword   Boolean                   @default(false)
+  agencyId             String?
+  googleAccessToken    String?
+  googleRefreshToken   String?
+  googleTokenExpiry    DateTime?
+  isSelfPaid           Boolean                   @default(false)
+  phoneVerified        Boolean                   @default(false)
+  resetToken           String?                   @unique
+  resetTokenExpiry     DateTime?
+  sellerCommissionRate Float?                    @default(40)
   stripeCustomerId     String?
   stripeSubscriptionId String?
-
-  aiAgents        AIAgent[]
-  FrequentContact FrequentContact[]
-
-  pollVotes PollVote[]
-
-  resetToken       String?   @unique
-  resetTokenExpiry DateTime?
-
-  createdAt           DateTime                  @default(now())
-  updatedAt           DateTime                  @updatedAt
-  developmentProgress AgentDevelopmentProgress?
-
-  // ElevenLabs Voice Details
-  freeSecondsBalance   Int                    @default(300)
-  lastFreeMinutesReset DateTime               @default(now())
-  voicePurchases       VoiceMinutesPurchase[]
+  termsAccepted        Boolean                   @default(false)
+  termsAcceptedAt      DateTime?
+  brandColor           String?
+  brandLogo            String?
+  voiceSecondsBalance  Int                       @default(300)
+  freeSecondsBalance   Int                       @default(300)
+  lastFreeMinutesReset DateTime                  @default(now())
+  cedulaValidUntil     DateTime?
+  promotoriaJoinDate   DateTime?
+  rcPolicyValidUntil   DateTime?
+  linkedAgentId        String?
+  aiAgents             AIAgent[]
+  activityLogs         ActivityLog[]
+  adnDiagnostics       AdnDiagnostic[]
+  referredAgencies     Agency[]                  @relation("AgencyReferrer")
+  developmentProgress  AgentDevelopmentProgress?
+  clients              Client[]
+  commissions          CommissionLedger[]        @relation("SellerCommissions")
   CompanyProfile       CompanyProfile?
+  cotizaciones         Cotizacion[]
+  dailyRecords         DailyRecord[]
+  discountCodes        DiscountCode[]            @relation("SellerDiscountCodes")
+  FeedbackSurvey       FeedbackSurvey[]
+  FrequentContact      FrequentContact[]
+  InteractionLog       InteractionLog[]
+  Meeting              Meeting[]
+  agentReviews         PerformanceReview[]       @relation("AgentReviews")
+  evaluatedReviews     PerformanceReview[]       @relation("EvaluatedReviews")
+  policies             Policy[]
+  pollVotes            PollVote[]
+  pushSubscriptions    PushSubscription[]
+  Task                 Task[]
+  tickets              Ticket[]
+  agency               Agency?                   @relation(fields: [agencyId], references: [id])
+  linkedAgent          User?                     @relation("AgentReferidores", fields: [linkedAgentId], references: [id])
+  referidores          User[]                    @relation("AgentReferidores")
+  reportsTo            User?                     @relation("Hierarchy", fields: [reportsToId], references: [id])
+  subordinates         User[]                    @relation("Hierarchy")
+  voicePurchases       VoiceMinutesPurchase[]
 
   @@index([agencyId])
   @@index([reportsToId])
@@ -209,96 +166,80 @@ model User {
 model VoiceMinutesPurchase {
   id               String   @id @default(cuid())
   userId           String
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  seconds          Int // Segundos comprados originalmente
-  secondsRemaining Int // Segundos que le quedan
+  seconds          Int
+  secondsRemaining Int
   purchasedAt      DateTime @default(now())
-  expiresAt        DateTime // purchasedAt + 90 días
+  expiresAt        DateTime
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Activity {
   id           String        @id @default(cuid())
   name         String
-  value        Int // Points value
+  value        Int
   dailyRecords DailyRecord[]
 }
 
 model DailyRecord {
-  id       String  @id @default(cuid())
-  agencyId String?
-  agency   Agency? @relation(fields: [agencyId], references: [id])
-  userId   String
-  user     User    @relation(fields: [userId], references: [id])
-
+  id         String   @id @default(cuid())
+  userId     String
   activityId String
+  date       DateTime
+  planned    Int      @default(0)
+  real       Int      @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  agencyId   String?
   activity   Activity @relation(fields: [activityId], references: [id])
+  agency     Agency?  @relation(fields: [agencyId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 
-  date    DateTime // Use Date part only in logic
-  planned Int      @default(0)
-  real    Int      @default(0)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([userId, activityId, date]) // One record per activity per user per day
+  @@unique([userId, activityId, date])
 }
 
 model Client {
   id        String    @id @default(cuid())
-  agencyId  String?
-  agency    Agency?   @relation(fields: [agencyId], references: [id])
   name      String
   email     String?
   phone     String?
   birthDate DateTime?
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  policies Policy[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  userId    String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  agencyId  String?
+  agency    Agency?   @relation(fields: [agencyId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
+  policies  Policy[]
 
   @@index([agencyId])
   @@index([userId])
 }
 
 model Policy {
-  id       String  @id @default(cuid())
-  agencyId String?
-  agency   Agency? @relation(fields: [agencyId], references: [id])
-
-  policyNumber String  @unique
-  contractor   String? // Contratante
-  insured      String? // Asegurado
-
-  product          String?
-  insuranceCompany String?
-
-  effectiveDate    DateTime?
-  renewalDate      DateTime?
-  anniversaryDay   Int?
-  anniversaryMonth Int?
-
-  annualPremium Float?  @default(0)
-  paymentMethod String?
-
-  approximateCommission Float? @default(0)
-  approximateBonus      Float? @default(0)
-
-  observations String?
-
-  pdfUrl String? // Vercel Blob URL
-
-  clientId String?
-  client   Client? @relation(fields: [clientId], references: [id], onDelete: Cascade)
-
-  userId String
-  user   User   @relation(fields: [userId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    String    @id @default(cuid())
+  policyNumber          String    @unique
+  contractor            String?
+  insured               String?
+  paymentMethod         String?
+  renewalDate           DateTime?
+  pdfUrl                String?
+  userId                String
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  anniversaryDay        Int?
+  anniversaryMonth      Int?
+  annualPremium         Float?    @default(0)
+  approximateBonus      Float?    @default(0)
+  approximateCommission Float?    @default(0)
+  clientId              String?
+  effectiveDate         DateTime?
+  insuranceCompany      String?
+  observations          String?
+  product               String?
+  agencyId              String?
+  agency                Agency?   @relation(fields: [agencyId], references: [id])
+  client                Client?   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  user                  User      @relation(fields: [userId], references: [id])
 
   @@index([agencyId])
   @@index([clientId])
@@ -306,33 +247,26 @@ model Policy {
 }
 
 model Content {
-  id       String  @id @default(cuid())
-  agencyId String?
-  agency   Agency? @relation(fields: [agencyId], references: [id], onDelete: Cascade)
-  type     String // 'HOME_AD', 'LINK_BANNER'
-
-  imageUrl String
-  linkUrl  String? // For banners
-
-  active Boolean @default(true)
-  order  Int     @default(0)
-
+  id        String   @id @default(cuid())
+  type      String
+  imageUrl  String
+  linkUrl   String?
+  active    Boolean  @default(true)
+  order     Int      @default(0)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  agencyId  String?
+  agency    Agency?  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
 }
 
 model CompanyRules {
   id        String   @id @default(cuid())
-  content   String // SQLite treats String as TEXT by default. invoke @db.Text is not needed/supported
+  content   String
   updatedAt DateTime @updatedAt
 }
 
 model Cotizacion {
   id             String   @id @default(cuid())
-  agencyId       String?
-  agency         Agency?  @relation(fields: [agencyId], references: [id])
-  userId         String?
-  user           User?    @relation(fields: [userId], references: [id])
   cliente        String
   telefono       String
   agente         String
@@ -345,9 +279,13 @@ model Cotizacion {
   inflacionUdi   Float?
   duracion       String?
   isr            Float?
-  coberturas     String? // JSON string
-  projectionData String? // JSON string
+  coberturas     String?
+  projectionData String?
   createdAt      DateTime @default(now())
+  userId         String?
+  agencyId       String?
+  agency         Agency?  @relation(fields: [agencyId], references: [id])
+  user           User?    @relation(fields: [userId], references: [id])
 
   @@index([agencyId])
   @@index([userId])
@@ -360,92 +298,69 @@ model Setting {
 
 model Agent {
   id        String   @id @default(cuid())
-  agencyId  String?
-  agency    Agency?  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
   name      String
   createdAt DateTime @default(now())
+  agencyId  String?
+  agency    Agency?  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
 
   @@unique([name, agencyId])
 }
 
 model AdnDiagnostic {
-  id       String  @id @default(cuid())
-  agencyId String?
-  agency   Agency? @relation(fields: [agencyId], references: [id])
-  userId   String
-  user     User    @relation(fields: [userId], references: [id])
-
-  // Paso 0
-  modalidad     String // 'DETALLADO' | 'RESUMIDO' | 'BASICO'
-  cerradaPagada Boolean @default(false) // Nuevo: Propuesta cerrada/emitida y pagada
-
-  // Paso 1: Perfil
-  clienteNombre    String
-  clienteEdad      Int
-  conyugeNombre    String?
-  conyugeEdad      Int?
-  situacionLaboral String
-  hijosData        String? // JSON string: [{nombre: string, edad: number}]
-
-  // Salud y Hbitos
-  estatura      String?
-  peso          String?
-  fumador       Boolean @default(false)
-  padecimientos String?
-
-  // Paso 2: Seguros Existentes
-  hasSeguroAhorro  Boolean @default(false)
-  ahorroAporte     Float?
-  ahorroFrecuencia String? // 'MENSUAL' | 'ANUAL'
-
-  hasPpr        Boolean @default(false)
-  pprAporte     Float?
-  pprFrecuencia String? // 'MENSUAL' | 'ANUAL'
-  pprAniosPlazo String? // '10' | '15' | '20' | '65'
-
-  hasGmm            Boolean @default(false)
-  hasSeguroVida     Boolean @default(false)
-  vidaSumaAsegurada Float?
-
-  // Paso 3: Diagnóstico Financiero
-  ingresosTotales Float
-  ingresosNetos   Float
-  ahorroActual    Float // Para cálculo de brecha de fondo de emergencia
-
-  // Tarjetas de Crédito
-  hasTarjetasCredito Boolean @default(false)
+  id                 String   @id @default(cuid())
+  userId             String
+  modalidad          String
+  clienteNombre      String
+  clienteEdad        Int
+  conyugeNombre      String?
+  conyugeEdad        Int?
+  situacionLaboral   String
+  hijosData          String?
+  hasSeguroAhorro    Boolean  @default(false)
+  ahorroAporte       Float?
+  ahorroFrecuencia   String?
+  hasPpr             Boolean  @default(false)
+  pprAporte          Float?
+  pprFrecuencia      String?
+  hasGmm             Boolean  @default(false)
+  hasSeguroVida      Boolean  @default(false)
+  ingresosTotales    Float
+  ingresosNetos      Float
+  ahorroActual       Float
+  gastosData         String
+  totalGastos        Float
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  pprAniosPlazo      String?
+  vidaSumaAsegurada  Float?
+  cerradaPagada      Boolean  @default(false)
+  evidenciaBase64    String?
+  latitude           Float?
+  longitude          Float?
+  estatura           String?
+  fumador            Boolean  @default(false)
+  hasTarjetasCredito Boolean  @default(false)
+  padecimientos      String?
+  peso               String?
   tarjetasCuales     String?
   tarjetasLimite     String?
-
-  // Gastos desglosados (Guardado en JSON por flexibilidad de modalidades)
-  gastosData String // JSON string conteniendo rubros detallados o resumidos
-
-  // Totales calculados
-  totalGastos Float
-
-  // Evidencia para modalidad BÁSICA
-  evidenciaBase64 String?
-
-  // GPS tracking
-  latitude  Float?
-  longitude Float?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  agencyId           String?
+  agency             Agency?  @relation(fields: [agencyId], references: [id])
+  user               User     @relation(fields: [userId], references: [id])
 }
 
 model ActivityLog {
   id           String   @id @default(cuid())
+  userId       String
+  activityId   String
+  activityName String
+  points       Int
+  prospectName String?
+  dateStr      String
+  createdAt    DateTime @default(now())
   agencyId     String?
   agency       Agency?  @relation(fields: [agencyId], references: [id])
-  userId       String
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  activityId   String // ID de la actividad del catálogo ('1' a '7')
-  activityName String // Nombre descriptivo (ej: 'Cita agendada')
-  points       Int // Puntos otorgados por la actividad
-  prospectName String? // Nombre del prospecto (obligatorio para citas)
-  dateStr      String // Fecha en formato 'YYYY-MM-DD' en hora de CDMX
-  createdAt    DateTime @default(now())
 
   @@index([agencyId])
   @@index([userId])
@@ -454,14 +369,14 @@ model ActivityLog {
 
 model KnowledgeDocument {
   id               String   @id @default(cuid())
-  agencyId         String?
-  agency           Agency?  @relation(fields: [agencyId], references: [id])
   title            String
-  content          String // Contenido de texto
+  content          String
   active           Boolean  @default(true)
-  isGlobalTemplate Boolean  @default(false)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  agencyId         String?
+  isGlobalTemplate Boolean  @default(false)
+  agency           Agency?  @relation(fields: [agencyId], references: [id])
 
   @@index([agencyId])
 }
@@ -469,12 +384,12 @@ model KnowledgeDocument {
 model PushSubscription {
   id        String   @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   endpoint  String   @unique
   p256dh    String
   auth      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -489,42 +404,37 @@ model ScheduledPush {
   createdAt   DateTime @default(now())
 }
 
-// ----------------------------------------------------------------------------
-// Módulo de Biblioteca y Documentación
-// ----------------------------------------------------------------------------
-
 model DocumentPack {
-  id          String   @id @default(cuid())
+  id          String               @id @default(cuid())
   name        String
   description String?
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  documents PackDocument[]
-  agencies  AgencyDocumentPack[]
+  active      Boolean              @default(true)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  agencies    AgencyDocumentPack[]
+  documents   PackDocument[]
 }
 
 model PackDocument {
   id        String       @id @default(cuid())
   packId    String
-  pack      DocumentPack @relation(fields: [packId], references: [id], onDelete: Cascade)
   name      String
   fileUrl   String
-  fileSize  Int          @default(0) // En bytes
+  fileSize  Int          @default(0)
   fileType  String?
-  category  String       @default("Otros")
   createdAt DateTime     @default(now())
+  category  String       @default("Otros")
+  pack      DocumentPack @relation(fields: [packId], references: [id], onDelete: Cascade)
 
   @@index([packId])
 }
 
 model AgencyDocumentPack {
   agencyId  String
-  agency    Agency       @relation(fields: [agencyId], references: [id], onDelete: Cascade)
   packId    String
-  pack      DocumentPack @relation(fields: [packId], references: [id], onDelete: Cascade)
   enabledAt DateTime     @default(now())
+  agency    Agency       @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  pack      DocumentPack @relation(fields: [packId], references: [id], onDelete: Cascade)
 
   @@id([agencyId, packId])
 }
@@ -532,46 +442,37 @@ model AgencyDocumentPack {
 model AgencyDocument {
   id        String   @id @default(cuid())
   agencyId  String
-  agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
   name      String
   fileUrl   String
-  fileSize  Int      @default(0) // En bytes para calcular el limite de 80MB
+  fileSize  Int      @default(0)
   fileType  String?
-  category  String   @default("Otros")
   createdAt DateTime @default(now())
+  category  String   @default("Otros")
+  agency    Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
 
   @@index([agencyId])
 }
 
-// ----------------------------------------------------------------------------
-// Módulo de Gestión de Desempeño (PEA/PRP)
-// ----------------------------------------------------------------------------
-
 model PerformanceReview {
-  id          String  @id @default(cuid())
-  agencyId    String?
-  agency      Agency? @relation(fields: [agencyId], references: [id])
-  agentId     String
-  agent       User    @relation("AgentReviews", fields: [agentId], references: [id], onDelete: Cascade)
-  evaluatorId String?
-  evaluator   User?   @relation("EvaluatedReviews", fields: [evaluatorId], references: [id], onDelete: SetNull)
-
-  status   String  @default("PENDING") // PENDING, REVIEWED, REJECTED
-  feedback String? // Comentarios del Admin en caso de rechazo
-
-  evalMonth String?
-  evalWeek  String?
-
+  id                 String   @id @default(cuid())
+  agencyId           String?
+  agentId            String
+  evaluatorId        String?
+  status             String   @default("PENDING")
+  feedback           String?
+  evalMonth          String?
+  evalWeek           String?
   metaPrimasMensual  Float
   avancePrimasActual Float
   puntosActividad    Int
   adnsRealizados     Int
   compromisos        String?
-
-  aiAnalysisResult String? // Diagnóstico generado por el Motor de IA
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  aiAnalysisResult   String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  agency             Agency?  @relation(fields: [agencyId], references: [id])
+  agent              User     @relation("AgentReviews", fields: [agentId], references: [id], onDelete: Cascade)
+  evaluator          User?    @relation("EvaluatedReviews", fields: [evaluatorId], references: [id])
 
   @@index([agencyId])
   @@index([agentId])
@@ -581,16 +482,16 @@ model PerformanceReview {
 model Ticket {
   id           String   @id @default(cuid())
   userId       String
-  user         User     @relation(fields: [userId], references: [id])
   agencyId     String?
-  agency       Agency?  @relation(fields: [agencyId], references: [id])
   subject      String
   description  String
   contactPhone String?
-  status       String   @default("OPEN") // OPEN, IN_PROGRESS, RESOLVED
+  status       String   @default("OPEN")
   imageUrl     String?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  agency       Agency?  @relation(fields: [agencyId], references: [id])
+  user         User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
   @@index([agencyId])
@@ -609,8 +510,8 @@ model Poll {
 model PollOption {
   id     String     @id @default(cuid())
   pollId String
-  poll   Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
   text   String
+  poll   Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
   votes  PollVote[]
 
   @@index([pollId])
@@ -619,41 +520,38 @@ model PollOption {
 model PollVote {
   id       String     @id @default(cuid())
   pollId   String
-  poll     Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
   optionId String
-  option   PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
   userId   String
-  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   agencyId String?
   agency   Agency?    @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  option   PollOption @relation(fields: [optionId], references: [id], onDelete: Cascade)
+  poll     Poll       @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([pollId, userId])
   @@index([optionId])
   @@index([agencyId])
 }
 
-// Modelo temporal para corregir error de Prisma Drift en Vercel
 model AIAgent {
-  designStyle       String?          @default("Realista")
-  id                String           @id @default(cuid())
-  name              String           @default("Agente")
-  type              String           @default("SOCIAL_MEDIA_MANAGER")
-  systemPrompt      String?
-  isActive          Boolean          @default(true)
-  socialAccounts    String?
-  toneUrl           String?
-  useImprovedEngine Boolean          @default(false)
-  guidelines        String?
-  userId            String
-  User              User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @default(now()) @updatedAt
-  DraftPost         DraftPost[]
-  InteractionLog    InteractionLog[]
-
-  // Límites mensuales
-  imageGenerationsCount Int      @default(0)
-  imageGenerationsReset DateTime @default(now())
+  designStyle           String?          @default("Realista")
+  id                    String           @id @default(cuid())
+  name                  String           @default("Agente")
+  type                  String           @default("SOCIAL_MEDIA_MANAGER")
+  systemPrompt          String?
+  isActive              Boolean          @default(true)
+  socialAccounts        String?
+  toneUrl               String?
+  useImprovedEngine     Boolean          @default(false)
+  guidelines            String?
+  userId                String
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @default(now()) @updatedAt
+  imageGenerationsCount Int              @default(0)
+  imageGenerationsReset DateTime         @default(now())
+  User                  User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  DraftPost             DraftPost[]
+  InteractionLog        InteractionLog[]
 
   @@index([userId])
 }
@@ -661,14 +559,14 @@ model AIAgent {
 model DraftPost {
   id          String    @id @default(cuid())
   aiAgentId   String
-  AIAgent     AIAgent   @relation(fields: [aiAgentId], references: [id], onDelete: Cascade)
   content     String
   imageUrl    String?
   status      String    @default("DRAFT")
   platform    String
-  scheduledAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  scheduledAt DateTime?
+  AIAgent     AIAgent   @relation(fields: [aiAgentId], references: [id], onDelete: Cascade)
 
   @@index([aiAgentId])
 }
@@ -676,13 +574,13 @@ model DraftPost {
 model InteractionLog {
   id              String   @id @default(cuid())
   aiAgentId       String
-  AIAgent         AIAgent  @relation(fields: [aiAgentId], references: [id], onDelete: Cascade)
   userId          String
-  User            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   role            String
-  content         String   @db.Text
+  content         String
   toolInvocations Json?
   createdAt       DateTime @default(now())
+  AIAgent         AIAgent  @relation(fields: [aiAgentId], references: [id], onDelete: Cascade)
+  User            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([aiAgentId])
   @@index([userId])
@@ -690,11 +588,6 @@ model InteractionLog {
 
 model CompanyProfile {
   id              String    @id @default(cuid())
-  userId          String?   @unique
-  User            User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  primaryColor    String?   @default("#4f46e5")
-  secondaryColor  String?   @default("#10b981")
-  logoUrl         String?
   industry        String?
   targetAudience  String?
   websiteUrl      String?
@@ -703,6 +596,11 @@ model CompanyProfile {
   quotaResetDate  DateTime?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  logoUrl         String?
+  primaryColor    String?   @default("#4f46e5")
+  secondaryColor  String?   @default("#10b981")
+  userId          String?   @unique
+  User            User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -723,17 +621,17 @@ model KnowledgeAsset {
 model Meeting {
   id              String   @id @default(cuid())
   title           String
-  date            String // YYYY-MM-DD
-  time            String // HH:MM
-  duration        Int // in minutes
+  date            String
+  time            String
+  duration        Int
   description     String?
   userId          String
-  User            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   googleEventId   String?
   googleEventLink String?
   googleMeetLink  String?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+  User            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
@@ -743,19 +641,15 @@ model Task {
   title       String
   description String?
   completed   Boolean  @default(false)
-  dueDate     String? // YYYY-MM-DD
-  priority    String   @default("MEDIUM") // LOW, MEDIUM, HIGH
+  dueDate     String?
+  priority    String   @default("MEDIUM")
   userId      String
-  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
 }
-
-// ----------------------------------------------------------------------------
-// Módulo de Academia (Cédula A)
-// ----------------------------------------------------------------------------
 
 model Pregunta {
   id        Int     @id @default(autoincrement())
@@ -815,57 +709,48 @@ model PromotorSaldo {
   @@map("promotor_saldos")
 }
 
-// Configuración de los días del plan de arranque para la agencia
 model DevelopmentPlanDay {
-  id       String @id @default(cuid())
-  agencyId String
-  agency   Agency @relation(fields: [agencyId], references: [id])
-
-  dayNumber             Int // Día 1, 2, 3...
-  title                 String // Ej: "Curso Onboarding"
-  instructions          String? // Instrucciones o metas del día
-  videoUrl              String? // Enlace a YouTube u otro video
-  fileUrl               String? // URL del PDF/PPT subido (Vercel Blob)
-  fileName              String? // Nombre original del archivo
-  additionalMediaJson   String? // Archivos y videos adicionales
-  requiresAdminApproval Boolean @default(false) // El candado
-
-  hasQuestionnaire  Boolean @default(false)
-  questionnaireJson String? // [{ question, options, correctOptionIndex }]
-  minPassingScore   Int     @default(80)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                    String   @id @default(cuid())
+  agencyId              String
+  dayNumber             Int
+  title                 String
+  instructions          String?
+  videoUrl              String?
+  fileUrl               String?
+  fileName              String?
+  requiresAdminApproval Boolean  @default(false)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  hasQuestionnaire      Boolean  @default(false)
+  minPassingScore       Int      @default(80)
+  questionnaireJson     String?
+  additionalMediaJson   String?
+  agency                Agency   @relation(fields: [agencyId], references: [id])
 
   @@unique([agencyId, dayNumber])
 }
 
-// Progreso individual de cada agente
 model AgentDevelopmentProgress {
-  id     String @id @default(cuid())
-  userId String @unique
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  currentDayNumber Int    @default(1)
-  status           String @default("IN_PROGRESS") // 'IN_PROGRESS', 'WAITING_APPROVAL', 'COMPLETED'
-
+  id                    String   @id @default(cuid())
+  userId                String   @unique
+  currentDayNumber      Int      @default(1)
+  status                String   @default("IN_PROGRESS")
+  startedAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  latestAnswersJson     String?
   latestScore           Int?
-  latestAnswersJson     String? // Respuestas que eligió el agente
-  questionnaireAttempts Int     @default(0)
-
-  startedAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  questionnaireAttempts Int      @default(0)
+  user                  User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
-// Contactos frecuentes de la asistente
 model FrequentContact {
   id        String   @id @default(cuid())
   name      String
   email     String
   userId    String
-  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  User      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, email])
 }
@@ -878,8 +763,8 @@ model NewsArticle {
   url         String
   imageUrl    String?
   sourceName  String?
-  category    String // "Mexico" o "Global"
-  tags        String[] // ["Seguros", "CNSF", "Banxico", etc.]
+  category    String
+  tags        String[]
   publishedAt DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -888,7 +773,7 @@ model NewsArticle {
 model AppErrorLog {
   id        String   @id @default(cuid())
   message   String
-  stack     String?  @db.Text
+  stack     String?
   path      String?
   userId    String?
   userName  String?
@@ -902,11 +787,11 @@ model AppErrorLog {
 model FeedbackSurvey {
   id         String   @id @default(cuid())
   userId     String
-  user       User     @relation(fields: [userId], references: [id])
   rating     Int
-  comments   String?  @db.Text
+  comments   String?
   canContact Boolean  @default(false)
   createdAt  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id])
 
   @@index([userId])
 }

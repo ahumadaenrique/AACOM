@@ -39,21 +39,26 @@ export async function POST(req: Request) {
         });
 
         // 2. Fetch agent's portfolio (Cartera)
+        const isAdmin = user.role === 'ADMIN' || user.role === 'SUPERADMIN';
+        const policyWhereClause = isAdmin && user.agencyId ? { agencyId: user.agencyId } : { userId: user.id };
+
         const agentPolicies = await prisma.policy.findMany({
-            where: { userId: user.id },
-            include: { client: true }
+            where: policyWhereClause,
+            include: { client: true, user: true },
+            take: 2000 // safeguard against huge payloads
         });
 
         let portfolioContext = "";
         if (agentPolicies.length > 0) {
             portfolioContext = "\nBASE DE DATOS DE CARTERA DEL AGENTE (SOLO LECTURA):\n";
-            portfolioContext += "Esta es la información real y confidencial de la cartera de clientes y pólizas de este agente. Úsala para responder preguntas sobre sus renovaciones, primas o clientes.\n\n";
+            portfolioContext += "Esta es la información real y confidencial de la cartera de clientes y pólizas. Úsala para responder preguntas sobre sus renovaciones, primas o clientes.\n\n";
             
             agentPolicies.forEach(p => {
                 const clientName = p.client?.name || p.contractor || "Sin Nombre";
+                const agentName = p.user?.name ? ` (Agente: ${p.user.name})` : "";
                 const renDate = p.renewalDate ? new Date(p.renewalDate).toLocaleDateString('es-MX') : "N/A";
                 const prima = p.annualPremium ? `$${p.annualPremium.toLocaleString('es-MX')} MXN` : "No especificada";
-                portfolioContext += `- Cliente: ${clientName} | Póliza: ${p.policyNumber || 'S/N'} | Compañía: ${p.insuranceCompany || 'N/A'} | Producto: ${p.product || 'N/A'} | Renovación: ${renDate} | Prima: ${prima}\n`;
+                portfolioContext += `- Cliente: ${clientName}${agentName} | Póliza: ${p.policyNumber || 'S/N'} | Compañía: ${p.insuranceCompany || 'N/A'} | Producto: ${p.product || 'N/A'} | Renovación: ${renDate} | Prima: ${prima}\n`;
             });
         }
 

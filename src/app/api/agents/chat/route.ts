@@ -1235,6 +1235,9 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
       })
 
         // --- CARTERA TOOLS ---
+        const isAdmin = dbUser.role === 'ADMIN' || dbUser.role === 'SUPERADMIN';
+        const carteraWhereClause = isAdmin && dbUser.agencyId ? { agencyId: dbUser.agencyId } : { userId: agent.userId };
+
         tools.searchClients = (tool as any)({
           description: 'Busca un cliente por nombre o apellido en la cartera de seguros del usuario.',
           parameters: z.object({
@@ -1243,7 +1246,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
           execute: async ({ name }: { name: string }) => {
             const clients = await prisma.client.findMany({
               where: { 
-                userId: agent.userId,
+                ...carteraWhereClause,
                 name: { contains: name, mode: 'insensitive' }
               },
               take: 5,
@@ -1261,7 +1264,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
           execute: async ({ clientId }: { clientId: string }) => {
             const policies = await prisma.policy.findMany({
               where: { 
-                userId: agent.userId,
+                ...carteraWhereClause,
                 clientId: clientId
               },
               select: {
@@ -1292,7 +1295,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
             
             const policies = await prisma.policy.findMany({
               where: {
-                userId: agent.userId,
+                ...carteraWhereClause,
                 renewalDate: {
                   gte: startDate,
                   lte: endDate
@@ -1318,7 +1321,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
           parameters: z.object({}),
           execute: async () => {
             const result = await prisma.policy.aggregate({
-              where: { userId: agent.userId },
+              where: { ...carteraWhereClause },
               _sum: { annualPremium: true },
               _count: { id: true }
             })
