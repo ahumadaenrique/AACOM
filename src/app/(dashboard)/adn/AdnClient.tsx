@@ -561,9 +561,9 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
     if (modalidad === 'DETALLADO') {
       const g = gastosDet
       const hormigaSum = g.cafecitos + g.amazonCompras + g.baresRecreacion + g.comidasEsparcimiento
-      hasGastosHormigaHigh = hormigaSum > (income * 0.08)
+      hasGastosHormigaHigh = hormigaSum > (income * 0.07) || hormigaSum > 12000
     } else if (modalidad === 'RESUMIDO') {
-      hasGastosHormigaHigh = totalsByRamo.deseos > (income * 0.25)
+      hasGastosHormigaHigh = totalsByRamo.deseos > (income * 0.25) || totalsByRamo.deseos > 25000
     }
 
     return {
