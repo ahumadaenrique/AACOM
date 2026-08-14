@@ -1582,7 +1582,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
       loopCount++
       
       const response = await generateText({
-        model: google('gemini-2.5-flash'),
+        model: google('gemini-3.7-flash'),
         system: systemPrompt,
         messages: currentMessages,
         tools: tools as any,
@@ -1639,7 +1639,7 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
     }
 
     const result = await streamText({
-      model: google('gemini-2.5-flash'),
+      model: google('gemini-3.7-flash'),
       system: systemPrompt,
       messages: currentMessages,
       tools: tools as any,

@@ -99,7 +99,7 @@ ${portfolioContext}`;
         ];
 
         // 5. Call Gemini API endpoint with STREAMING
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
         
         const googleRes = await fetch(url, {
             method: "POST",

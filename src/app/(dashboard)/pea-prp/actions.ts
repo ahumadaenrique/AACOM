@@ -138,7 +138,7 @@ No uses markdown (\`\`\`), devuelve únicamente el HTML exacto con las clases de
         let aiResultHTML = "";
 
         if (apiKey) {
-            const apiRes = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + apiKey, {
+            const apiRes = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.7-flash:generateContent?key=" + apiKey, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

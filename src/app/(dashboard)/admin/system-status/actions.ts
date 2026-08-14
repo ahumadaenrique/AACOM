@@ -150,7 +150,7 @@ export async function checkAllSystemsStatus() {
                 const { createGoogleGenerativeAI } = await import('@ai-sdk/google');
                 const google = createGoogleGenerativeAI({ apiKey });
                 const res = await generateText({
-                    model: google('gemini-2.5-flash'),
+                    model: google('gemini-3.7-flash'),
                     prompt: 'a'
                 });
                 
