@@ -78,6 +78,36 @@ export default function ClientHome({
 
   return (
       <div className="space-y-6 pb-20">
+        {/* Gemini 3.7 Update Banner */}
+        <div className="bg-gradient-to-r from-indigo-950 via-purple-900 to-slate-950 text-white p-6 md:p-8 rounded-2xl shadow-2xl border border-indigo-500/30 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 mb-2 group">
+          <div className="absolute top-0 right-0 w-72 h-72 bg-blue-500 rounded-full mix-blend-overlay filter blur-[90px] opacity-40 group-hover:opacity-70 transition-opacity duration-1000 -translate-y-1/2 translate-x-1/3"></div>
+          <div className="absolute bottom-0 left-0 w-72 h-72 bg-fuchsia-600 rounded-full mix-blend-overlay filter blur-[90px] opacity-30 group-hover:opacity-60 transition-opacity duration-1000 translate-y-1/3 -translate-x-1/4"></div>
+          
+          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-5 relative z-10 w-full text-center sm:text-left">
+            <div className="bg-gradient-to-br from-blue-400 to-fuchsia-500 p-1 rounded-2xl shadow-[0_0_20px_rgba(139,92,246,0.3)] shrink-0 group-hover:scale-105 transition-transform duration-500">
+              <div className="bg-slate-950 p-3 rounded-xl">
+                <Sparkles className="w-8 h-8 text-blue-300 animate-pulse" />
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center justify-center sm:justify-start gap-2 mb-2">
+                <span className="bg-blue-500/20 text-blue-200 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-widest border border-blue-500/30 shadow-sm">
+                  Actualización Mayor
+                </span>
+                <span className="bg-fuchsia-500/20 text-fuchsia-200 text-[10px] font-black uppercase px-2.5 py-0.5 rounded-full tracking-widest border border-fuchsia-500/30 shadow-sm">
+                  IA Avanzada
+                </span>
+              </div>
+              <h3 className="font-black text-2xl md:text-3xl lg:text-4xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-200 via-white to-fuchsia-200 drop-shadow-sm mb-2">
+                Nos actualizamos, y ahora usamos Google Gemini 3.7
+              </h3>
+              <p className="text-indigo-100/90 text-sm md:text-base max-w-3xl leading-relaxed font-medium">
+                El motor más rápido y reciente del mercado. Disfruta de respuestas ultra veloces, razonamiento superior y la tecnología más vanguardista del mundo impulsando a todos nuestros agentes.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* Admin Upsell Banner */}
         {isAdmin && (
             <div className="bg-gradient-to-r from-teal-900 via-teal-700 to-emerald-800 text-white p-4 md:p-6 rounded-2xl shadow-lg border border-teal-600/50 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-4 mb-2">
