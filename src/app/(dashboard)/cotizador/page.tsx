@@ -47,7 +47,13 @@ export default async function CotizadorPage() {
   
   return (
     <PremiumGuard userRole={userRole} moduleName="Cotizador 3.0">
-      <CotizadorClient agencyName={agencyName} agencyLogo={agencyLogo} currentUserName={currentUserName} agencyUsers={agencyUsers} />
+      <CotizadorClient 
+        agencyName={agencyName} 
+        agencyLogo={agencyLogo} 
+        currentUserName={currentUserName} 
+        agencyUsers={agencyUsers} 
+        quoterSettings={agency}
+      />
     </PremiumGuard>
   );
 }

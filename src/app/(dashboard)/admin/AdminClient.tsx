@@ -61,6 +61,8 @@ import {
   ReferenceLine
 } from "recharts"
 
+import AdminCotizadorSettings from './AdminCotizadorSettings'
+
 export default function AdminClient() {
 
   // Admin Data states
@@ -84,7 +86,7 @@ export default function AdminClient() {
   const [adnYearFilter, setAdnYearFilter] = useState<string>(new Date().getFullYear().toString())
 
   // Admin Dashboard Tabs
-  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca" | "votaciones" | "encuestas">("productividad")
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca" | "votaciones" | "encuestas" | "cotizador">("productividad")
 
   // Chatbot Knowledge Base states
   const [knowledgeDocs, setKnowledgeDocs] = useState<any[]>([])
@@ -1292,10 +1294,20 @@ export default function AdminClient() {
                 <Star className="h-4.5 w-4.5 text-green-500" /> Calidad (NPS)
               </button>
               <button
-                onClick={() => setActiveTab('votaciones')}
+                onClick={() => setActiveTab("votaciones")}
                 className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${activeTab === "votaciones" ? "border-amber-500 text-amber-500" : "border-transparent text-slate-500 hover:text-slate-800"}`}
               >
                 <Sparkles className="h-4.5 w-4.5 text-amber-500" /> Control de Votaciones
+              </button>
+              <button
+                onClick={() => setActiveTab('cotizador')}
+                className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+                  activeTab === 'cotizador'
+                    ? 'border-teal-600 text-teal-600 dark:text-teal-400'
+                    : 'border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200'
+                }`}
+              >
+                <Settings className="h-4.5 w-4.5" /> Cotizador
               </button>
             </>
           )}
@@ -5180,6 +5192,15 @@ export default function AdminClient() {
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === "cotizador" && (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <AdminCotizadorSettings 
+            agencyId={currentUserData?.agencyId || ''} 
+            initialSettings={currentUserData?.agency || {}} 
+          />
         </div>
       )}
 

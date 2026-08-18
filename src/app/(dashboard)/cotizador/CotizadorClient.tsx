@@ -82,7 +82,8 @@ export default function CotizadorPage({
   currentUserName = "",
   agencyUsers = [],
   printMode = false,
-  printData = null
+  printData = null,
+  quoterSettings = null
 }: { 
   agencyName?: string
   agencyLogo?: string
@@ -90,6 +91,7 @@ export default function CotizadorPage({
   agencyUsers?: string[]
   printMode?: boolean
   printData?: any
+  quoterSettings?: any
 }) {
   // Navigation Mode
   const [viewMode, setViewMode] = useState<'MENU' | 'HISTORY' | 'EDITOR'>(printMode ? 'EDITOR' : 'MENU')
@@ -1069,9 +1071,15 @@ export default function CotizadorPage({
                   onChange={handleInputChange}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
-                  <option value="VPL">VPL (Vida Pagos Limitados)</option>
-                  <option value="VPL PPR">VPL PPR (Plan Personal de Retiro)</option>
-                  <option value="Insignia Life Universal">Insignia Life Universal</option>
+                  {quoterSettings?.quoterEnableVPL !== false && (
+                    <option value="VPL">VPL (Vida Pagos Limitados)</option>
+                  )}
+                  {quoterSettings?.quoterEnableVPLPPR !== false && (
+                    <option value="VPL PPR">VPL PPR (Plan Personal de Retiro)</option>
+                  )}
+                  {quoterSettings?.quoterEnableUniversal !== false && (
+                    <option value="Insignia Life Universal">Insignia Life Universal</option>
+                  )}
                 </select>
               </div>
 
@@ -1836,6 +1844,9 @@ export default function CotizadorPage({
                           <TableHead className="font-black text-white text-center py-2.5">Valor UDI</TableHead>
                           <TableHead className="font-black text-white text-center py-2.5">Prima en UDIS</TableHead>
                           <TableHead className="font-black text-white text-center py-2.5">Prima en Pesos</TableHead>
+                          {quoterSettings?.quoterShowAccumulatedPremium && (
+                            <TableHead className="font-black text-white text-center py-2.5">Prima Acumulada</TableHead>
+                          )}
                           <TableHead className="font-black text-white text-center py-2.5">SA en UDIS</TableHead>
                           <TableHead className="font-black text-white text-center py-2.5">SA en Pesos</TableHead>
                           <TableHead className="font-black text-white text-center py-2.5">Ahorro UDIS</TableHead>
@@ -1918,6 +1929,11 @@ export default function CotizadorPage({
                               <TableCell className={cellClass("text-center py-2 font-medium", "text-slate-800")}>
                                 ${row.primaPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
                               </TableCell>
+                              {quoterSettings?.quoterShowAccumulatedPremium && (
+                                <TableCell className={cellClass("text-center py-2 font-bold", "text-emerald-700 dark:text-emerald-400 print:text-black")}>
+                                  ${row.accumulatedPremiumPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                </TableCell>
+                              )}
                               <TableCell className={cellClass("text-center py-2", "text-slate-800")}>
                                 {row.saUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
                               </TableCell>

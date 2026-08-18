@@ -50,6 +50,14 @@ model Agency {
   whatsAppPlannerAgents String?
   whatsAppPlannerPhones String?
   allowReferidores      Boolean              @default(false)
+
+  // Configuraciones del Cotizador Modular
+  quoterLifeCompany            String?              @default("Insignia Life")
+  quoterEnableVPL              Boolean              @default(true)
+  quoterEnableVPLPPR           Boolean              @default(true)
+  quoterEnableUniversal        Boolean              @default(true)
+  quoterShowAccumulatedPremium Boolean              @default(false)
+
   activityLogs          ActivityLog[]
   adnDiagnostics        AdnDiagnostic[]
   referrer              User?                @relation("AgencyReferrer", fields: [referredById], references: [id])
