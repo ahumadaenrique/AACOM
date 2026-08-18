@@ -120,10 +120,92 @@ async function uploadFile(accessToken) {
     });
 }
 
+async function deleteOldBackups(accessToken) {
+    console.log("Checking for backups older than 120 days...");
+    const MAX_DAYS = 120;
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - MAX_DAYS);
+
+    return new Promise((resolve, reject) => {
+        const query = encodeURIComponent(`'${FOLDER_ID}' in parents and trashed=false`);
+        const options = {
+            hostname: 'www.googleapis.com',
+            path: `/drive/v3/files?q=${query}&fields=files(id,name,createdTime)`,
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        };
+
+        const req = https.request(options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => data += chunk);
+            res.on('end', async () => {
+                if (res.statusCode !== 200) {
+                    console.error("Failed to list files:", data);
+                    return resolve(); // Don't crash the whole script if cleanup fails
+                }
+
+                try {
+                    const files = JSON.parse(data).files || [];
+                    const filesToDelete = files.filter(file => {
+                        const fileDate = new Date(file.createdTime);
+                        return fileDate < cutoffDate && file.name.startsWith('AACOMSOFT_Backup_');
+                    });
+
+                    if (filesToDelete.length === 0) {
+                        console.log("No old backups found to delete.");
+                        return resolve();
+                    }
+
+                    console.log(`Found ${filesToDelete.length} old backup(s) to delete.`);
+                    
+                    for (const file of filesToDelete) {
+                        await deleteFile(accessToken, file.id, file.name);
+                    }
+                    resolve();
+                } catch (e) {
+                    console.error("Error parsing files list:", e);
+                    resolve();
+                }
+            });
+        });
+        req.on('error', (e) => {
+            console.error("Network error listing files:", e);
+            resolve();
+        });
+        req.end();
+    });
+}
+
+async function deleteFile(accessToken, fileId, fileName) {
+    return new Promise((resolve) => {
+        const options = {
+            hostname: 'www.googleapis.com',
+            path: `/drive/v3/files/${fileId}`,
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`
+            }
+        };
+        const req = https.request(options, (res) => {
+            if (res.statusCode === 204) {
+                console.log(`Successfully deleted old backup: ${fileName}`);
+            } else {
+                console.error(`Failed to delete ${fileName} (Status: ${res.statusCode})`);
+            }
+            resolve();
+        });
+        req.on('error', () => resolve());
+        req.end();
+    });
+}
+
 async function run() {
     try {
         const token = await getAccessToken();
         await uploadFile(token);
+        await deleteOldBackups(token);
     } catch (err) {
         console.error("Backup script failed:");
         console.error(err);
