@@ -41,7 +41,8 @@ import {
   Star,
   StarHalf,
   ArrowUp,
-  ArrowDown
+  ArrowDown,
+  Settings
 } from "lucide-react"
 import { resolveImageUrl } from "@/lib/utils"
 
