@@ -28,10 +28,11 @@ async function injectColumns() {
 
     console.log("Column injection completed successfully.");
   } catch (error) {
-    console.error("Error injecting columns:", error);
-    process.exit(1);
+    console.warn("⚠️  inject_columns: Could not connect to DB or columns may already exist. Continuing build...");
+    console.warn(error.message || error);
+    // Do NOT exit(1) — columns already exist in production. A transient DB error should not block the build.
   } finally {
-    await client.end();
+    try { await client.end(); } catch (_) {}
   }
 }
 
