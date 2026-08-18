@@ -3,6 +3,7 @@ import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
 import CotizadorClient from './CotizadorClient'
 import PremiumGuard from '@/components/PremiumGuard'
+import { resolveImageUrl } from '@/lib/utils'
 
 export default async function CotizadorPage() {
   const session = await auth();
@@ -22,7 +23,7 @@ export default async function CotizadorPage() {
   }
   
   const agencyName = agency?.name || 'SYSGPYA';
-  const agencyLogo = agency?.logoUrl || '/logo.png';
+  const agencyLogo = agency?.logoUrl ? resolveImageUrl(agency.logoUrl) : '/logo.png';
 
   let currentUserName = "";
   let agencyUsers: string[] = [];

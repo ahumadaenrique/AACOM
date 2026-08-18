@@ -41,7 +41,7 @@ const nextConfig = {
                     },
                     {
                         key: 'Content-Security-Policy',
-                        value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data: https://storage.googleapis.com https://*.aacomsoft.com https://aacomsoft.com https://*.public.blob.vercel-storage.com https://images.unsplash.com https://grainy-gradients.vercel.app https://placehold.co; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://vitals.vercel-insights.com wss://api.elevenlabs.io https://api.elevenlabs.io; frame-src 'self' https://www.youtube.com; frame-ancestors 'self';",
+                        value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://vitals.vercel-insights.com wss://api.elevenlabs.io https://api.elevenlabs.io; frame-src 'self' https://www.youtube.com; frame-ancestors 'self';",
                     }
                 ],
             },

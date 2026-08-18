@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { getAgencies, getDiscountCodes } from "./actions";
 import { AgencyFormModal } from "./AgencyFormModal";
 import { SwitchAgencyButton } from "./SwitchAgencyButton";
+import { resolveImageUrl } from "@/lib/utils";
 import { AgenciesTable } from "./AgenciesTable";
 import { DiscountCodesTable } from "./DiscountCodesTable";
 import { DiscountCodeFormModal } from "./DiscountCodeFormModal";
@@ -84,7 +85,7 @@ export default async function AgenciasPage() {
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-inner border border-slate-100 overflow-hidden bg-white shrink-0">
                       {agency.logoUrl ? (
-                        <img src={agency.logoUrl} alt={agency.name} className="w-full h-full object-contain p-2" />
+                        <img src={resolveImageUrl(agency.logoUrl)} alt={agency.name} className="w-full h-full object-contain p-2" />
                       ) : (
                         <Building2 className="w-6 h-6 text-slate-400" />
                       )}
