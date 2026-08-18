@@ -1844,7 +1844,7 @@ export default function CotizadorPage({
                           <TableHead className="font-black text-white text-center py-2.5">Valor UDI</TableHead>
                           <TableHead className="font-black text-white text-center py-2.5">Prima en UDIS</TableHead>
                           <TableHead className="font-black text-white text-center py-2.5">Prima en Pesos</TableHead>
-                          {quoterSettings?.quoterShowAccumulatedPremium && (
+                          {quoterSettings?.quoterShowAccumulatedPremium === true && (
                             <TableHead className="font-black text-white text-center py-2.5">Prima Acumulada</TableHead>
                           )}
                           <TableHead className="font-black text-white text-center py-2.5">SA en UDIS</TableHead>
@@ -1929,7 +1929,7 @@ export default function CotizadorPage({
                               <TableCell className={cellClass("text-center py-2 font-medium", "text-slate-800")}>
                                 ${row.primaPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
                               </TableCell>
-                              {quoterSettings?.quoterShowAccumulatedPremium && (
+                              {quoterSettings?.quoterShowAccumulatedPremium === true && (
                                 <TableCell className={cellClass("text-center py-2 font-bold", "text-emerald-700 dark:text-emerald-400 print:text-black")}>
                                   ${row.accumulatedPremiumPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
                                 </TableCell>

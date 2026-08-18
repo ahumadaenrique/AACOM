@@ -1931,7 +1931,7 @@ export async function getCurrentUser() {
     try {
         const user = await prisma.user.findUnique({
             where: { email: session.user.email },
-            select: { id: true, name: true, email: true, role: true, agencyId: true, agency: { select: { slug: true, purchasedSeats: true } } }
+            select: { id: true, name: true, email: true, role: true, agencyId: true, agency: { select: { id: true, slug: true, purchasedSeats: true, quoterLifeCompany: true, quoterEnableVPL: true, quoterEnableVPLPPR: true, quoterEnableUniversal: true, quoterShowAccumulatedPremium: true } } }
         });
         if (!user) {
             return { success: false, message: "Usuario no encontrado" };
