@@ -32,7 +32,7 @@ jobs:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
         run: |
           echo "Dumping database..."
-          pg_dump "$DATABASE_URL" > database_backup.sql
+          /usr/lib/postgresql/17/bin/pg_dump "$DATABASE_URL" > database_backup.sql
           echo "Database dump completed. Size:"
           ls -lh database_backup.sql
           
