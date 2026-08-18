@@ -1,0 +1,54 @@
+name: Daily Backup to Google Drive
+
+on:
+  schedule:
+    # Corre todos los días a las 09:00 UTC (3:00 AM hora central de México)
+    - cron: '0 9 * * *'
+  workflow_dispatch: # Permite detonarlo manualmente desde el botón en la interfaz de GitHub
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+        
+      - name: Dump Neon Database
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          echo "Dumping database..."
+          pg_dump "$DATABASE_URL" > database_backup.sql
+          echo "Database dump completed. Size:"
+          ls -lh database_backup.sql
+          
+      - name: Create ZIP archive
+        run: |
+          DATE=$(date +'%Y-%m-%d')
+          ZIP_NAME="AACOMSOFT_Backup_${DATE}.zip"
+          echo "ZIPPING_FILE=$ZIP_NAME" >> $GITHUB_ENV
+          
+          echo "Zipping codebase and database..."
+          zip -r $ZIP_NAME . -x "node_modules/*" -x ".git/*" -x ".next/*"
+          echo "Zip completed. Size:"
+          ls -lh $ZIP_NAME
+          
+      - name: Upload to Google Drive
+        env:
+          GDRIVE_CLIENT_ID: ${{ secrets.GDRIVE_CLIENT_ID }}
+          GDRIVE_CLIENT_SECRET: ${{ secrets.GDRIVE_CLIENT_SECRET }}
+          GDRIVE_REFRESH_TOKEN: ${{ secrets.GDRIVE_REFRESH_TOKEN }}
+          GDRIVE_FOLDER_ID: ${{ secrets.GDRIVE_FOLDER_ID }}
+        run: |
+          # ZIP_FILE_PATH es usado por el script de Node.js
+          export ZIP_FILE_PATH="${{ env.ZIPPING_FILE }}"
+          node .github/scripts/upload_to_drive.js
