@@ -10,7 +10,7 @@ import webpush from "web-push";
 
 function enforceDemoSafety(session: any) {
     if (session?.user?.id === 'demo-user-id') {
-        throw new Error("Estás en Modo Demo (Solo Lectura). Esta acción ha sido bloqueada para proteger la base de datos.");
+        throw new Error("EstÃ¡s en Modo Demo (Solo Lectura). Esta acciÃ³n ha sido bloqueada para proteger la base de datos.");
     }
 }
 
@@ -87,9 +87,9 @@ export async function saveActivity(records: ActivityInput[]) {
     // ... This is tricky without exact ID mapping.
 
     // STRICT MAPPING ATTEMPT based on screenshot vs constants:
-    // "Llamadas de ProspecciÃƒÆ’Ã‚Â³n" (1) -> LLAMADAS (E)
+    // "Llamadas de ProspecciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n" (1) -> LLAMADAS (E)
     // "Citas Iniciales" (2) -> CITAS AGENDADAS (F, G)
-    // "AnÃƒÆ’Ã‚Â¡lisis de Necesidades" (3) -> CITAS EFECTIVAS (H, I) ?? (Analysis often implies an effective meeting)
+    // "AnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lisis de Necesidades" (3) -> CITAS EFECTIVAS (H, I) ?? (Analysis often implies an effective meeting)
     // "Cierre de Ventas" (5) -> CIERRE DE POLIZA (J, K)
 
     // Let's try to follow the ID order from constants constants.ts:
@@ -182,7 +182,7 @@ export async function saveCotizacion(data: {
         if (((session?.user?.agencyId || user?.agencyId) as string) === 'demo-agency-id') {
             const count = await prisma.cotizacion.count({ where: { agencyId: 'demo-agency-id' } });
             if (count >= 5) {
-                return { success: false, message: "Límite de demostración alcanzado (máx. 5 cotizaciones). Adquiere una suscripción para uso ilimitado." };
+                return { success: false, message: "LÃ­mite de demostraciÃ³n alcanzado (mÃ¡x. 5 cotizaciones). Adquiere una suscripciÃ³n para uso ilimitado." };
             }
         }
 
@@ -209,7 +209,7 @@ export async function saveCotizacion(data: {
         return { success: true, cotizacion: newCotizacion };
     } catch (error: any) {
         console.error("Error saving cotizacion:", error);
-        return { success: false, message: error.message || "Error al guardar cotizaciÃƒÆ’Ã‚Â³n" };
+        return { success: false, message: error.message || "Error al guardar cotizaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n" };
     }
 }
 
@@ -379,7 +379,7 @@ export async function getAdminDashboardStats() {
         };
     } catch (error: any) {
         console.error("Error computing dashboard stats:", error);
-        return { success: false, message: error.message || "Error al calcular estadísticas" };
+        return { success: false, message: error.message || "Error al calcular estadÃ­sticas" };
     }
 }
 
@@ -462,7 +462,7 @@ export async function createAgent(name: string) {
 
         const trimmedName = name.trim();
         if (!trimmedName) {
-            return { success: false, message: "El nombre del agente no puede estar vacío" };
+            return { success: false, message: "El nombre del agente no puede estar vacÃ­o" };
         }
         
         const existing = await prisma.agent.findUnique({
@@ -506,24 +506,8 @@ export async function deleteAgent(id: string) {
 }
 
 export async function deleteUserAccount(userId: string) {
-    try {
-        const session = await auth();
-        if (!session?.user?.id) throw new Error("No autenticado");
-        const currentUser = await prisma.user.findUnique({ where: { id: session.user.id } });
-        if (currentUser?.role !== "SUPER_ADMIN") throw new Error("Solo el SUPER_ADMIN puede borrar usuarios");
-
-        // Primero borrar dependencias si no hay CASCADE
-        await prisma.adnDiagnostic.deleteMany({ where: { userId } }).catch(() => {});
-        await prisma.cotizacion.deleteMany({ where: { userId } }).catch(() => {});
-        await prisma.activityLog.deleteMany({ where: { userId } }).catch(() => {});
-        await prisma.client.deleteMany({ where: { userId } }).catch(() => {});
-        
-        await prisma.user.delete({ where: { id: userId } });
-        return { success: true };
-    } catch (err: any) {
-        console.error("Error al borrar usuario", err);
-        return { success: false, message: err.message || "Error al borrar usuario" };
-    }
+    const res = await deleteUser(userId);
+    return { success: res.success, message: res.message };
 }
 
 export interface AdnDiagnosticInput {
@@ -579,7 +563,7 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
         if (((session?.user?.agencyId || user?.agencyId) as string) === 'demo-agency-id') {
             const count = await prisma.adnDiagnostic.count({ where: { agencyId: 'demo-agency-id' } });
             if (count >= 5) {
-                return { success: false, message: "Límite de demostración alcanzado (máx. 5 diagnósticos ADN). Adquiere una suscripción para uso ilimitado." };
+                return { success: false, message: "LÃ­mite de demostraciÃ³n alcanzado (mÃ¡x. 5 diagnÃ³sticos ADN). Adquiere una suscripciÃ³n para uso ilimitado." };
             }
         }
 
@@ -627,7 +611,7 @@ export async function saveAdnDiagnostic(data: AdnDiagnosticInput) {
         return { success: true, diagnostic: newDiagnostic };
     } catch (error: any) {
         console.error("Error saving ADN diagnostic:", error);
-        return { success: false, message: error.message || "Error al guardar el diagnÃƒÆ’Ã‚Â³stico de ADN" };
+        return { success: false, message: error.message || "Error al guardar el diagnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³stico de ADN" };
     }
 }
 
@@ -712,7 +696,7 @@ export async function getAdnDiagnostics(options?: { month?: number, year?: numbe
         return { success: true, diagnostics };
     } catch (error: any) {
         console.error("Error fetching ADN diagnostics:", error);
-        return { success: false, message: error.message || "Error al obtener diagnÃƒÆ’Ã‚Â³sticos de ADN" };
+        return { success: false, message: error.message || "Error al obtener diagnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³sticos de ADN" };
     }
 }
 
@@ -732,17 +716,17 @@ export async function createAgentUser(data: { name: string; email: string; role:
             return { success: false, message: "Permisos insuficientes" };
         }
 
-        // Restricción: Validar que si es AGENTE_LITE la agencia lo permita
+        // RestricciÃ³n: Validar que si es AGENTE_LITE la agencia lo permita
         if (data.role === 'AGENTE_LITE' && currentUser.agency && !currentUser.agency.allowLiteAgents) {
-            return { success: false, message: "Tu agencia no tiene habilitada la función de Agentes Limitados." };
+            return { success: false, message: "Tu agencia no tiene habilitada la funciÃ³n de Agentes Limitados." };
         }
 
-        // Restricción: solo el propietario (enrique.ahumada@aacommx.com) puede dar de alta a otros administradores
+        // RestricciÃ³n: solo el propietario (enrique.ahumada@aacommx.com) puede dar de alta a otros administradores
         if (data.role === 'ADMIN' && !(process.env.SUPER_ADMIN_EMAILS || "enrique.ahumada@aacommx.com").includes(currentUser.email)) {
-            return { success: false, message: "Solo el administrador principal (Enrique Ahumada) está facultado para dar de alta cuentas administrativas." };
+            return { success: false, message: "Solo el administrador principal (Enrique Ahumada) estÃ¡ facultado para dar de alta cuentas administrativas." };
         }
 
-        // Restricción adicional: límite de máximo 2 ADMINS por Agencia/Promotoría
+        // RestricciÃ³n adicional: lÃ­mite de mÃ¡ximo 2 ADMINS por Agencia/PromotorÃ­a
         if (data.role === 'ADMIN' && ((session?.user?.agencyId || currentUser?.agencyId) as string)) {
             const activeAdminsCount = await prisma.user.count({
                 where: {
@@ -752,7 +736,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
                 }
             });
             if (activeAdminsCount >= 2) {
-                return { success: false, message: "Límite alcanzado: solo se permiten un máximo de 2 administradores activos por Agencia/Promotoría." };
+                return { success: false, message: "LÃ­mite alcanzado: solo se permiten un mÃ¡ximo de 2 administradores activos por Agencia/PromotorÃ­a." };
             }
         }
 
@@ -778,7 +762,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
             if (activeUsersCount >= limit) {
                 return { 
                     success: false, 
-                    message: `Límite alcanzado (${limit} asientos ocupados. Tienes ${premiumUsersCount} premium y ${liteUsersCount} limitados). Adquiere más licencias en tu Portal de Pagos o envíale a este agente una invitación para que pague su propia cuenta.` 
+                    message: `LÃ­mite alcanzado (${limit} asientos ocupados. Tienes ${premiumUsersCount} premium y ${liteUsersCount} limitados). Adquiere mÃ¡s licencias en tu Portal de Pagos o envÃ­ale a este agente una invitaciÃ³n para que pague su propia cuenta.` 
                 };
             }
         }
@@ -795,11 +779,11 @@ export async function createAgentUser(data: { name: string; email: string; role:
                 phone: data.phone || null,
                 active: data.active !== undefined ? data.active : true,
                 password: hashedPassword,
-                mustChangePassword: true // Bloqueo temporal para obligar a que cambie su contraseÃƒÆ’Ã‚Â±a
+                mustChangePassword: true // Bloqueo temporal para obligar a que cambie su contraseÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±a
             }
         });
 
-        // Sincronización con el modelo Agent para el Cotizador
+        // SincronizaciÃ³n con el modelo Agent para el Cotizador
         if (data.syncToAgent) {
             const trimmedName = data.name.trim();
             const existingAgent = await prisma.agent.findUnique({
@@ -893,7 +877,7 @@ export async function updateUserPassword(id: string, newPassword: string) {
         return { success: true, user: updatedUser };
     } catch (error: any) {
         console.error("Error updating user password:", error);
-        return { success: false, message: error.message || "Error al actualizar contraseÃƒÆ’Ã‚Â±a" };
+        return { success: false, message: error.message || "Error al actualizar contraseÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±a" };
     }
 }
 
@@ -948,7 +932,7 @@ export async function deleteUser(id: string) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
-        // Evitar que el administrador se elimine a sÃƒÆ’Ã‚Â­ mismo
+        // Evitar que el administrador se elimine a sÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â­ mismo
         if (currentUser.id === id) {
             return { success: false, message: "No puedes eliminar tu propia cuenta de administrador" };
         }
@@ -961,22 +945,48 @@ export async function deleteUser(id: string) {
             return { success: false, message: "Usuario no encontrado" };
         }
 
-        // RestricciÃƒÆ’Ã‚Â³n: impedir la eliminaciÃƒÆ’Ã‚Â³n del propietario Enrique Ahumada
+        // Regla de Agencia: Los ADMIN solo pueden borrar usuarios de su propia agencia.
+        if (currentUser.role !== 'SUPER_ADMIN') {
+            if (targetUser.agencyId !== currentUser.agencyId) {
+                return { success: false, message: "Permisos insuficientes: El usuario no pertenece a tu agencia." };
+            }
+        }
+
+        // RestricciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n: impedir la eliminaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n del propietario Enrique Ahumada
         if ((process.env.SUPER_ADMIN_EMAILS || "enrique.ahumada@aacommx.com").includes(targetUser.email)) {
-            return { success: false, message: "No estÃƒÆ’Ã‚Â¡ permitido eliminar la cuenta principal del propietario (Enrique Ahumada)." };
+            return { success: false, message: "No estÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡ permitido eliminar la cuenta principal del propietario (Enrique Ahumada)." };
         }
 
         // Primero borrar dependencias si no hay CASCADE
+        await prisma.policy.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.client.deleteMany({ where: { userId: id } }).catch(() => {});
         await prisma.adnDiagnostic.deleteMany({ where: { userId: id } }).catch(() => {});
         await prisma.cotizacion.deleteMany({ where: { userId: id } }).catch(() => {});
         await prisma.activityLog.deleteMany({ where: { userId: id } }).catch(() => {});
-        await prisma.client.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.dailyRecord.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.task.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.meeting.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.interactionLog.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.frequentContact.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.feedbackSurvey.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.agentDevelopmentProgress.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.aIAgent.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.commissionLedger.deleteMany({ where: { sellerId: id } }).catch(() => {});
+        await prisma.companyProfile.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.discountCode.deleteMany({ where: { sellerId: id } }).catch(() => {});
+        await prisma.pollVote.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.pushSubscription.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.ticket.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.voiceMinutesPurchase.deleteMany({ where: { userId: id } }).catch(() => {});
+        await prisma.performanceReview.deleteMany({ where: { agentId: id } }).catch(() => {});
+        await prisma.performanceReview.deleteMany({ where: { evaluatorId: id } }).catch(() => {});
 
         const deleted = await prisma.user.delete({
             where: { id }
         });
 
         revalidatePath('/admin');
+        revalidatePath('/team');
         return { success: true, user: deleted };
     } catch (error: any) {
         console.error("Error deleting user:", error);
@@ -996,7 +1006,7 @@ export async function toggleAdnDiagnosticClosedStatus(id: string) {
         });
 
         if (!adn) {
-            return { success: false, message: "DiagnÃƒÆ’Ã‚Â³stico no encontrado" };
+            return { success: false, message: "DiagnÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³stico no encontrado" };
         }
 
         const updated = await prisma.adnDiagnostic.update({
@@ -1079,7 +1089,7 @@ export async function createAnnouncement(base64Data: string, fileName: string, l
         
         // Double-check file size is under 5MB (5 * 1024 * 1024 bytes)
         if (buffer.length > 5 * 1024 * 1024) {
-            return { success: false, message: "El tamaÃƒÆ’Ã‚Â±o del archivo supera los 5 MB permitidos." };
+            return { success: false, message: "El tamaÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±o del archivo supera los 5 MB permitidos." };
         }
 
         // Find current max order to append at the end
@@ -1164,7 +1174,7 @@ export async function reorderAnnouncement(id: string, direction: 'up' | 'down', 
             return { success: true }; // Nada que mover
         }
 
-        // Actualizar todos los órdenes para garantizar secuencia única (0, 1, 2, 3...)
+        // Actualizar todos los Ã³rdenes para garantizar secuencia Ãºnica (0, 1, 2, 3...)
         await prisma.$transaction(
             allAds.map((ad, index) => prisma.content.update({
                 where: { id: ad.id },
@@ -1269,7 +1279,7 @@ export async function deleteAnnouncement(id: string) {
 }
 
 // ==========================================
-// MÃƒÆ’Ã¢â‚¬Å“DULO AACOM 25 & ACTIVIDAD DIARIA ACTIONS
+// MÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œDULO AACOM 25 & ACTIVIDAD DIARIA ACTIONS
 // ==========================================
 
 export async function isAgentVerified(email: string) {
@@ -1292,7 +1302,7 @@ export async function acceptTermsAndConditions(email: string) {
         return { success: true };
     } catch (error) {
         console.error("Error accepting terms:", error);
-        return { success: false, error: "No se pudieron aceptar los términos." };
+        return { success: false, error: "No se pudieron aceptar los tÃ©rminos." };
     }
 }
 
@@ -1315,7 +1325,7 @@ export async function saveActivityLogEntry(activityId: string, prospectName?: st
 
     const activity = SALES_ACTIVITIES.find(a => a.id === activityId);
     if (!activity) {
-        return { success: false, message: "Actividad no válida" };
+        return { success: false, message: "Actividad no vÃ¡lida" };
     }
 
     // Validation: prospectName is mandatory for 'Cita agendada' (ID '2') or 'Cita Efectiva' (ID '3')
@@ -1417,7 +1427,7 @@ export async function getDailyActivitySummary() {
             }
         });
 
-        // Recuperar también el plan (DailyRecords con planned > 0 para hoy)
+        // Recuperar tambiÃ©n el plan (DailyRecords con planned > 0 para hoy)
         const startOfDay = new Date();
         startOfDay.setHours(0, 0, 0, 0);
 
@@ -1478,13 +1488,13 @@ export async function saveDailyPlan(plan: Record<string, number>) {
             "3": { name: "Cita Efectiva (ANF)", value: 5 },
             "4": { name: "Cierre", value: 10 },
             "5": { name: "Recluta", value: 10 },
-            "6": { name: "Póliza Emitida", value: 10 },
+            "6": { name: "PÃ³liza Emitida", value: 10 },
             "7": { name: "Referidos (3)", value: 1 },
         };
 
         // Guardar cada plan
         for (const [activityId, plannedCount] of Object.entries(plan)) {
-            // Asegurar que la Actividad exista en la BD (para satisfacer llave foránea)
+            // Asegurar que la Actividad exista en la BD (para satisfacer llave forÃ¡nea)
             const def = activityDefinitions[activityId];
             if (!def) continue;
 
@@ -1523,7 +1533,7 @@ export async function saveDailyPlan(plan: Record<string, number>) {
             });
         }
 
-        return { success: true, message: "Planeación guardada exitosamente" };
+        return { success: true, message: "PlaneaciÃ³n guardada exitosamente" };
     } catch (error: any) {
         console.error("Error saving daily plan:", error);
         return { success: false, message: error.message };
@@ -1748,7 +1758,7 @@ export async function createRankingAd(base64Data: string, fileName: string, link
         return { success: true, rankingAd: newAd };
     } catch (error: any) {
         console.error("Error creating ranking ad:", error);
-        return { success: false, message: error.message || "Error al subir campaña de incentivo" };
+        return { success: false, message: error.message || "Error al subir campaÃ±a de incentivo" };
     }
 }
 
@@ -1780,7 +1790,7 @@ export async function deleteRankingAd() {
         return { success: true };
     } catch (error: any) {
         console.error("Error deleting ranking ad:", error);
-        return { success: false, message: error.message || "Error al eliminar la campaña" };
+        return { success: false, message: error.message || "Error al eliminar la campaÃ±a" };
     }
 }
 
@@ -1866,10 +1876,10 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
         if (currentUser.id !== userId && targetUser.isSelfPaid) {
             // Un administrador no puede modificar el rol o suspender a un usuario que paga su propia cuenta
             if (data.role !== undefined && data.role !== targetUser.role) {
-                return { success: false, message: "No puedes modificar el rol de un agente que paga su propia suscripción." };
+                return { success: false, message: "No puedes modificar el rol de un agente que paga su propia suscripciÃ³n." };
             }
             if (data.active !== undefined && data.active !== targetUser.active) {
-                return { success: false, message: "No puedes suspender a un agente que paga su propia suscripción. Utiliza la opción Solicitar Expulsión." };
+                return { success: false, message: "No puedes suspender a un agente que paga su propia suscripciÃ³n. Utiliza la opciÃ³n Solicitar ExpulsiÃ³n." };
             }
         }
 
@@ -1882,7 +1892,7 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
         
         if (data.role !== undefined && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) {
             if (data.role === 'AGENTE_LITE' && currentUser.agency && !currentUser.agency.allowLiteAgents) {
-                return { success: false, message: "Tu agencia no tiene habilitada la función de Agentes Limitados." };
+                return { success: false, message: "Tu agencia no tiene habilitada la funciÃ³n de Agentes Limitados." };
             }
             updateData.role = data.role;
         }
@@ -2069,7 +2079,7 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
         });
 
         if (!currentUser) {
-            return { success: false, message: "Usuario en sesión no encontrado" };
+            return { success: false, message: "Usuario en sesiÃ³n no encontrado" };
         }
 
         const isAdmin = (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN');
@@ -2143,7 +2153,7 @@ export async function updateUserProfileDetails(targetUserId: string, data: {
         revalidatePath('/admin');
         revalidatePath('/');
 
-        return { success: true, user: updatedUser, message: "Perfil actualizado con éxito" };
+        return { success: true, user: updatedUser, message: "Perfil actualizado con Ã©xito" };
     } catch (error: any) {
         console.error("Error updating user profile details:", error);
         return { success: false, message: error.message || "Error al actualizar perfil" };
@@ -2225,7 +2235,7 @@ export async function saveKnowledgeDocument(id: string | null, title: string, co
                 data: { title, content, agencyId: ((session?.user?.agencyId || user?.agencyId) as string), isGlobalTemplate: user.role === 'SUPER_ADMIN' ? isGlobalTemplate : false }
             });
             revalidatePath('/admin');
-            return { success: true, doc: created, message: "Documento guardado con ÃƒÆ’Ã‚Â©xito" };
+            return { success: true, doc: created, message: "Documento guardado con ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©xito" };
         }
     } catch (error: any) {
         console.error("Error saving knowledge document:", error);
@@ -2306,7 +2316,7 @@ export async function toggleKnowledgeDocumentActiveStatus(id: string) {
 }
 
 // ==========================================
-// MÃƒÆ’Ã¢â‚¬Å“DULO PUSH NOTIFICATIONS
+// MÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œDULO PUSH NOTIFICATIONS
 // ==========================================
 
 export async function savePushSubscription(subscription: any) {
@@ -2318,7 +2328,7 @@ export async function savePushSubscription(subscription: any) {
         if (!user) return { success: false, message: "Usuario no encontrado" };
 
         const { endpoint, keys } = subscription;
-        if (!endpoint || !keys?.p256dh || !keys?.auth) return { success: false, message: "SuscripciÃƒÆ’Ã‚Â³n invÃƒÆ’Ã‚Â¡lida" };
+        if (!endpoint || !keys?.p256dh || !keys?.auth) return { success: false, message: "SuscripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n invÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lida" };
 
         await prisma.pushSubscription.upsert({
             where: { endpoint },
@@ -2335,7 +2345,7 @@ export async function savePushSubscription(subscription: any) {
             }
         });
 
-        return { success: true, message: "SuscripciÃƒÆ’Ã‚Â³n guardada" };
+        return { success: true, message: "SuscripciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n guardada" };
     } catch (err: any) {
         console.error("Error saving push subscription:", err);
         return { success: false, message: err.message };
@@ -2361,7 +2371,7 @@ export async function sendTestPushNotification(userId: string) {
 
         const payload = JSON.stringify({
             title: "Prueba AACOM",
-            body: "Esta es una notificaciÃƒÆ’Ã‚Â³n de prueba desde el sistema.",
+            body: "Esta es una notificaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n de prueba desde el sistema.",
             url: "/"
         });
 
@@ -2374,7 +2384,7 @@ export async function sendTestPushNotification(userId: string) {
 
         await Promise.all(promises);
 
-        return { success: true, message: "NotificaciÃƒÆ’Ã‚Â³n enviada" };
+        return { success: true, message: "NotificaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n enviada" };
     } catch (err: any) {
         console.error("Error sending push notification:", err);
         return { success: false, message: err.message };
@@ -2392,11 +2402,11 @@ export async function sendAdminPushNotification(recipientIds: string[], message:
         }
         
         if (!currentUser.password) {
-            return { success: false, message: "Este usuario no tiene contraseña configurada." };
+            return { success: false, message: "Este usuario no tiene contraseÃ±a configurada." };
         }
         const isValid = await bcrypt.compare(pin, currentUser.password);
         if (!isValid) {
-            return { success: false, message: "Contraseña incorrecta." };
+            return { success: false, message: "ContraseÃ±a incorrecta." };
         }
 
         let subs = [];
@@ -2420,7 +2430,7 @@ export async function sendAdminPushNotification(recipientIds: string[], message:
         );
 
         const payload = JSON.stringify({
-            title: "AACOM NotificaciÃƒÆ’Ã‚Â³n",
+            title: "AACOM NotificaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n",
             body: message,
             url: "/"
         });
@@ -2436,7 +2446,7 @@ export async function sendAdminPushNotification(recipientIds: string[], message:
 
         await Promise.all(promises);
 
-        return { success: true, message: `NotificaciÃƒÆ’Ã‚Â³n enviada a ${subs.length} dispositivo(s).` };
+        return { success: true, message: `NotificaciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n enviada a ${subs.length} dispositivo(s).` };
     } catch (err: any) {
         console.error("Error sending admin push notification:", err);
         return { success: false, message: err.message };
@@ -2453,7 +2463,7 @@ export async function forceUpdatePassword(userId: string, newPassword: string) {
         });
 
         if (!currentUser || currentUser.id !== userId) {
-            return { success: false, message: "No tienes permiso para actualizar esta contraseÃƒÆ’Ã‚Â±a" };
+            return { success: false, message: "No tienes permiso para actualizar esta contraseÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±a" };
         }
 
         await prisma.user.update({
@@ -2464,10 +2474,10 @@ export async function forceUpdatePassword(userId: string, newPassword: string) {
             }
         });
 
-        return { success: true, message: "ContraseÃƒÆ’Ã‚Â±a actualizada correctamente" };
+        return { success: true, message: "ContraseÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±a actualizada correctamente" };
     } catch (error: any) {
-        console.error("Error al actualizar la contraseÃƒÆ’Ã‚Â±a:", error);
-        return { success: false, message: error.message || "Error al actualizar contraseÃƒÆ’Ã‚Â±a" };
+        console.error("Error al actualizar la contraseÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±a:", error);
+        return { success: false, message: error.message || "Error al actualizar contraseÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±a" };
     }
 }
 
@@ -2476,9 +2486,9 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
     if (!session?.user?.email) return { success: false, message: "No autenticado" };
 
     try {
-        // --- MIGRACIÃƒÆ’Ã¢â‚¬Å“N MASIVA DE RESCATE ---
-        // Vercel estaba apuntando a una DB que nunca recibiÃƒÆ’Ã‚Â³ la migraciÃƒÆ’Ã‚Â³n local.
-        // Forzamos a que todos los usuarios y actividades huÃƒÆ’Ã‚Â©rfanas se asignen a 'aacom'.
+        // --- MIGRACIÃƒÆ’Ã†â€™ÃƒÂ¢Ã¢â€šÂ¬Ã…â€œN MASIVA DE RESCATE ---
+        // Vercel estaba apuntando a una DB que nunca recibiÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³ la migraciÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â³n local.
+        // Forzamos a que todos los usuarios y actividades huÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â©rfanas se asignen a 'aacom'.
         await prisma.user.updateMany({
             where: { agencyId: null },
             data: { agencyId: process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom' }
@@ -2495,7 +2505,7 @@ export async function getWeeklyReportData(startDate: string, endDate: string) {
         }
 
         const agencyId = ((session?.user?.agencyId || currentUser?.agencyId) as string);
-        if (!agencyId) return { success: false, message: "El administrador no tiene una agencia vÃƒÆ’Ã‚Â¡lida asignada." };
+        if (!agencyId) return { success: false, message: "El administrador no tiene una agencia vÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¡lida asignada." };
 
         const agents = await prisma.user.findMany({
             where: { active: true, agencyId },
@@ -2578,9 +2588,9 @@ export async function createScheduledPush(data: { message: string, frequency: st
     const user = await prisma.user.findUnique({ where: { email: session.user.email } });
     if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) return { success: false, message: "No autorizado." };
     
-    if (!user.password) return { success: false, message: "Este usuario no tiene contraseña configurada." };
+    if (!user.password) return { success: false, message: "Este usuario no tiene contraseÃ±a configurada." };
     const isValid = await bcrypt.compare(pin, user.password);
-    if (!isValid) return { success: false, message: "Contraseña incorrecta." };
+    if (!isValid) return { success: false, message: "ContraseÃ±a incorrecta." };
 
     try {
         await prisma.scheduledPush.create({ data });
@@ -2596,9 +2606,9 @@ export async function deleteScheduledPush(id: string, pin: string) {
     const user = await prisma.user.findUnique({ where: { email: session.user.email } });
     if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) return { success: false, message: "No autorizado." };
     
-    if (!user.password) return { success: false, message: "Este usuario no tiene contraseña configurada." };
+    if (!user.password) return { success: false, message: "Este usuario no tiene contraseÃ±a configurada." };
     const isValid = await bcrypt.compare(pin, user.password);
-    if (!isValid) return { success: false, message: "Contraseña incorrecta." };
+    if (!isValid) return { success: false, message: "ContraseÃ±a incorrecta." };
 
     try {
         await prisma.scheduledPush.delete({ where: { id } });
@@ -2630,7 +2640,7 @@ export async function resolveTicket(ticketId: string) {
 
 
 // ----------------------------------------------------------------------------
-// MÃƒÂ³dulo de Votaciones (Polls)
+// MÃƒÆ’Ã‚Â³dulo de Votaciones (Polls)
 // ----------------------------------------------------------------------------
 
 export async function createPoll(title: string, question: string, optionsText: string[]) {
@@ -2677,7 +2687,7 @@ export async function getActivePolls() {
                 },
                 _count: { select: { votes: true } },
                 votes: {
-                    where: { userId: user.id } // Traemos solo los votos de este usuario para ver si ya votÃƒÂ³
+                    where: { userId: user.id } // Traemos solo los votos de este usuario para ver si ya votÃƒÆ’Ã‚Â³
                 }
             },
             orderBy: { createdAt: 'desc' }
@@ -2695,11 +2705,11 @@ export async function voteOnPoll(pollId: string, optionId: string) {
         const session = await auth();
         if (!session?.user?.email) return { success: false, message: "No autenticado" };
         const user = await prisma.user.findUnique({ where: { email: session.user.email } });
-        if (!user || !((session?.user?.agencyId || user?.agencyId) as string)) return { success: false, message: "Usuario no vÃƒÂ¡lido" };
+        if (!user || !((session?.user?.agencyId || user?.agencyId) as string)) return { success: false, message: "Usuario no vÃƒÆ’Ã‚Â¡lido" };
 
         // Check if poll is active
         const poll = await prisma.poll.findUnique({ where: { id: pollId } });
-        if (!poll || !poll.active) return { success: false, message: "La encuesta ya no estÃƒÂ¡ activa" };
+        if (!poll || !poll.active) return { success: false, message: "La encuesta ya no estÃƒÆ’Ã‚Â¡ activa" };
 
         // Upsert para garantizar un solo voto (create or fail by unique constraint)
         const vote = await prisma.pollVote.create({
@@ -2818,7 +2828,7 @@ export async function createContact(name: string, email: string) {
         // Basic email format check
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(cleanEmail)) {
-            return { success: false, message: "Formato de correo inválido" };
+            return { success: false, message: "Formato de correo invÃ¡lido" };
         }
 
         // Check if contact already exists
@@ -2860,7 +2870,7 @@ export async function deleteContact(id: string) {
         // Verify contact ownership
         const contact = await prisma.frequentContact.findUnique({ where: { id } });
         if (!contact || contact.userId !== user.id) {
-            return { success: false, message: "Contacto no encontrado o sin autorización" };
+            return { success: false, message: "Contacto no encontrado o sin autorizaciÃ³n" };
         }
 
         await prisma.frequentContact.delete({ where: { id } });
@@ -2993,18 +3003,64 @@ export async function requestAgentExpulsion(userId: string, reason: string) {
         // We can create a notification or an announcement for the Super Admin
         // Since we don't have a 'Ticket' model, we could just send a push notification to SUPER_ADMIN
         // and/or store it in a general 'AdminNotification' (not existing). Let's use the DB if we can, or send an email.
-        // The instructions say: "Crear el endpoint para la creación de Tickets de Expulsión."
+        // The instructions say: "Crear el endpoint para la creaciÃ³n de Tickets de ExpulsiÃ³n."
         // We will create a Ticket model if needed, but wait, the prompt doesn't ask to create a Prisma model for Tickets, just an endpoint.
         // Let's create an entry using a hypothetical approach or log it for now.
         // Actually, we can just send an email or a push notification. Let's send an email (if we had the email service).
-        console.log(`[TICKET DE EXPULSIÓN] Solicitado por ${currentUser.email} para el agente ${targetUser.email}. Razón: ${reason}`);
+        console.log(`[TICKET DE EXPULSIÃ“N] Solicitado por ${currentUser.email} para el agente ${targetUser.email}. RazÃ³n: ${reason}`);
 
         // For now, let's just mark the user's `isSelfPaid` with some metadata or just return success
         // In a real scenario we might have a SupportTicket model.
-        return { success: true, message: "Ticket de expulsión generado exitosamente. El equipo de soporte evaluará el caso y procederá con la cancelación en Stripe si es necesario." };
+        return { success: true, message: "Ticket de expulsiÃ³n generado exitosamente. El equipo de soporte evaluarÃ¡ el caso y procederÃ¡ con la cancelaciÃ³n en Stripe si es necesario." };
 
     } catch (error: any) {
         console.error("Error generating expulsion ticket:", error);
-        return { success: false, message: error.message || "Error al solicitar expulsión" };
+        return { success: false, message: error.message || "Error al solicitar expulsiÃ³n" };
+    }
+}
+
+export async function purgeAgentPortfolio(agentId: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || currentUser.role !== 'SUPER_ADMIN') {
+            return { success: false, message: "Solo el SUPER_ADMIN puede purgar carteras de agentes." };
+        }
+
+        const targetUser = await prisma.user.findUnique({
+            where: { id: agentId }
+        });
+
+        if (!targetUser) {
+            return { success: false, message: "Agente no encontrado" };
+        }
+
+        // Borrar todas las pólizas del agente (Nodos hoja)
+        const policiesDeleted = await prisma.policy.deleteMany({
+            where: { userId: agentId }
+        });
+
+        // Borrar todos los clientes del agente
+        const clientsDeleted = await prisma.client.deleteMany({
+            where: { userId: agentId }
+        });
+
+        revalidatePath('/admin');
+        revalidatePath('/cartera');
+        
+        return { 
+            success: true, 
+            message: `Cartera purgada con éxito. Se eliminaron ${policiesDeleted.count} pólizas y ${clientsDeleted.count} clientes.` 
+        };
+    } catch (error: any) {
+        console.error("Error purging agent portfolio:", error);
+        return { success: false, message: error.message || "Error interno al purgar cartera" };
     }
 }
