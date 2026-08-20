@@ -25,13 +25,14 @@ export default async function CarteraDashboard({
   const futureDate = addDays(today, daysFilter);
 
   const dbUser = await prisma.user.findUnique({where: {id: session.user.id}, select: {role: true, agencyId: true}});
+  const currentAgencyId = session.user.agencyId || dbUser?.agencyId;
 
   let policiesWhereClause: any = { userId: session.user.id };
   let clientsWhereClause: any = { userId: session.user.id };
 
-  if ((dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN') && dbUser?.agencyId) {
-     policiesWhereClause = { agencyId: dbUser.agencyId };
-     clientsWhereClause = { agencyId: dbUser.agencyId };
+  if ((dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN') && currentAgencyId) {
+     policiesWhereClause = { agencyId: currentAgencyId };
+     clientsWhereClause = { agencyId: currentAgencyId };
   }
 
   // --- MIGRACIÓN MASIVA DE RESCATE (Pólizas, Clientes y Registros huérfanos) ---

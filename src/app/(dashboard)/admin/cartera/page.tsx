@@ -19,12 +19,14 @@ export default async function AdminCartera() {
     select: { role: true, agencyId: true },
   });
 
-  if (userRole?.role !== "ADMIN") {
+  const currentAgencyId = session?.user?.agencyId || userRole?.agencyId;
+
+  if (userRole?.role !== "ADMIN" && userRole?.role !== "SUPER_ADMIN") {
     return <div>Acceso denegado</div>;
   }
 
   const allClients = await prisma.client.findMany({
-    where: { agencyId: userRole.agencyId },
+    where: { agencyId: currentAgencyId },
     include: {
       policies: true,
       user: { select: { name: true, email: true } },
