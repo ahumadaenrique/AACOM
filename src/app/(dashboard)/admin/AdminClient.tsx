@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import Image from "next/image"
-import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, reorderAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, deleteRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush, getFeedbackSurveys, requestAgentExpulsion } from "@/app/actions"
+import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, reorderAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, deleteRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush, getFeedbackSurveys, requestAgentExpulsion, purgeAgentPortfolio } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import BibliotecaAdmin from "./BibliotecaAdmin"
@@ -429,6 +429,22 @@ export default function AdminClient() {
     } catch (err) {
       console.error(err)
       alert("Error de red al eliminar usuario")
+    }
+  }
+
+  const handlePurgePortfolio = async (id: string, name: string) => {
+    const confirmName = prompt(`⚠️ PELIGRO: Vas a purgar TODA LA CARTERA (clientes y pólizas) del agente ${name}.\n\nSi estás seguro, escribe el nombre del agente para confirmar:`);
+    if (confirmName !== name) {
+      alert("Nombre incorrecto. Acción cancelada.");
+      return;
+    }
+    
+    try {
+      const res = await purgeAgentPortfolio(id);
+      alert(res.message || (res.success ? "Cartera purgada con éxito" : "Error al purgar cartera"));
+    } catch (err) {
+      console.error(err);
+      alert("Error de red al purgar cartera");
     }
   }
 
@@ -2171,6 +2187,16 @@ export default function AdminClient() {
                                         >
                                           Eliminar
                                         </Button>
+                                        {currentUserRole === 'SUPER_ADMIN' && (
+                                          <Button
+                                            onClick={() => handlePurgePortfolio(user.id, user.name || user.email)}
+                                            variant="outline"
+                                            size="sm"
+                                            className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 font-bold text-[10px] h-7 px-2.5 border-purple-200 ml-1"
+                                          >
+                                            Purgar Cartera
+                                          </Button>
+                                        )}
                                       </>
                                     )}
                                   </div>
