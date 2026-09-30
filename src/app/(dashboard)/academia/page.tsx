@@ -1,6 +1,7 @@
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { GraduationCap, Award, BookOpen, ArrowRight, ShieldAlert, Sparkles, CheckCircle2 } from "lucide-react"
+import Link from "next/link"
 
 export default async function AcademiaPage() {
   const session = await auth()
@@ -120,33 +121,50 @@ export default async function AcademiaPage() {
           </button>
         </div>
 
-        {/* Card 3: Formación de Ventas (Próximamente) */}
-        <div className="flex flex-col justify-between p-8 rounded-3xl bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 shadow-sm relative overflow-hidden opacity-75 hover:opacity-90 transition-opacity">
+        {/* Card 3: Simulador de Prospección IA */}
+        <div className="flex flex-col justify-between p-8 rounded-3xl bg-gradient-to-br from-indigo-950/20 to-slate-900/40 border border-indigo-500/20 backdrop-blur-md shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all duration-500"></div>
+
           <div className="space-y-4">
-            <div className="h-16 w-16 bg-slate-100 dark:bg-zinc-800 rounded-2xl flex items-center justify-center text-slate-500">
-              <BookOpen className="h-8 w-8" />
+            <div className="h-16 w-16 bg-purple-50 dark:bg-purple-950/40 rounded-2xl flex items-center justify-center text-purple-600 dark:text-purple-400 transition-colors group-hover:bg-purple-600 group-hover:text-white">
+              <Sparkles className="h-8 w-8" />
             </div>
             
-            <div>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 dark:bg-zinc-850 dark:text-zinc-400">
-                Próximamente
+            <div className="space-y-2">
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-950/30 dark:text-purple-400 border border-purple-200/50">
+                ✨ Inteligencia Artificial • Voz en Vivo
               </span>
-              <h2 className="text-xl font-bold text-slate-800 dark:text-zinc-200 mt-2">
-                Academia de Ventas
+              <h2 className="text-2xl font-black text-slate-800 dark:text-slate-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                Simulador de Prospección
               </h2>
             </div>
 
             <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Cursos avanzados de prospección en frío, negociación y técnicas de cierre consultivo. Domina el arte de vender seguros de vida y ahorro.
+              Entrena tus llamadas telefónicas con prospectos interactivos simulados por IA. Supera objeciones, aplica la regla de diagnóstico antes de recetar y concreta citas de 30-40 minutos.
             </p>
+
+            <div className="flex flex-col gap-2 pt-2 text-xs text-slate-500">
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                <span>300+ escenarios procedurales adaptativos</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                <span>Evaluación pedagógica con Coach Tip por llamada</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                <span>Gamificación con niveles, rachas y auditoría de grabaciones</span>
+              </div>
+            </div>
           </div>
 
-          <button 
-            disabled 
-            className="mt-8 flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-slate-100 dark:bg-zinc-850 text-slate-400 dark:text-zinc-600 font-bold text-sm cursor-not-allowed"
+          <Link 
+            href="/academia/simulador" 
+            className="mt-8 flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm transition-all duration-200 shadow-md shadow-purple-900/20"
           >
-            Bloqueado
-          </button>
+            Entrenar Prospección IA <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
 
       </div>

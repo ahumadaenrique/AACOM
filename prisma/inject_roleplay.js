@@ -1,9 +1,10 @@
 const { Client } = require('@neondatabase/serverless');
+require('dotenv').config();
 
-async function injectColumns() {
+async function initRoleplayTables() {
   const dbUrl = process.env.DATABASE_URL;
   if (!dbUrl) {
-    console.log("No DATABASE_URL found. Skipping injection.");
+    console.log("No DATABASE_URL found. Skipping roleplay setup.");
     return;
   }
 
@@ -11,15 +12,10 @@ async function injectColumns() {
   
   try {
     await client.connect();
-    console.log("Connected to database. Injecting columns if they don't exist...");
+    console.log("Connected to Neon. Ensuring Roleplay tables exist...");
 
-    const queries = [
-      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "quoterLifeCompany" TEXT DEFAULT 'Insignia Life';`,
-      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "quoterEnableVPL" BOOLEAN DEFAULT true;`,
-      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "quoterEnableVPLPPR" BOOLEAN DEFAULT true;`,
-      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "quoterEnableUniversal" BOOLEAN DEFAULT true;`,
-      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "quoterShowAccumulatedPremium" BOOLEAN DEFAULT false;`,
-      `CREATE TABLE IF NOT EXISTS "RoleplayCall" (
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "RoleplayCall" (
         "id" TEXT PRIMARY KEY,
         "userId" TEXT NOT NULL,
         "scenarioId" TEXT,
@@ -40,10 +36,14 @@ async function injectColumns() {
         "appointmentClosed" BOOLEAN NOT NULL DEFAULT false,
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT "RoleplayCall_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE
-      );`,
-      `CREATE INDEX IF NOT EXISTS "RoleplayCall_userId_idx" ON "RoleplayCall"("userId");`,
-      `CREATE INDEX IF NOT EXISTS "RoleplayCall_createdAt_idx" ON "RoleplayCall"("createdAt");`,
-      `CREATE TABLE IF NOT EXISTS "RoleplayStats" (
+      );
+    `);
+
+    await client.query(`CREATE INDEX IF NOT EXISTS "RoleplayCall_userId_idx" ON "RoleplayCall"("userId");`);
+    await client.query(`CREATE INDEX IF NOT EXISTS "RoleplayCall_createdAt_idx" ON "RoleplayCall"("createdAt");`);
+
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "RoleplayStats" (
         "id" TEXT PRIMARY KEY,
         "userId" TEXT UNIQUE NOT NULL,
         "xp" INTEGER NOT NULL DEFAULT 0,
@@ -60,23 +60,17 @@ async function injectColumns() {
         "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
         CONSTRAINT "RoleplayStats_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE
-      );`,
-      `CREATE INDEX IF NOT EXISTS "RoleplayStats_userId_idx" ON "RoleplayStats"("userId");`
-    ];
+      );
+    `);
 
-    for (const q of queries) {
-      await client.query(q);
-      console.log(`Executed: ${q}`);
-    }
+    await client.query(`CREATE INDEX IF NOT EXISTS "RoleplayStats_userId_idx" ON "RoleplayStats"("userId");`);
 
-    console.log("Column injection completed successfully.");
+    console.log("✅ Roleplay tables verified and ready in Neon DB!");
   } catch (error) {
-    console.warn("⚠️  inject_columns: Could not connect to DB or columns may already exist. Continuing build...");
-    console.warn(error.message || error);
-    // Do NOT exit(1) — columns already exist in production. A transient DB error should not block the build.
+    console.error("⚠️ Error creating roleplay tables:", error);
   } finally {
     try { await client.end(); } catch (_) {}
   }
 }
 
-injectColumns();
+initRoleplayTables();
