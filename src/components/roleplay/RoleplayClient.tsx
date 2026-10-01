@@ -191,6 +191,10 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
 
       const conv = await Conversation.startSession({
         signedUrl,
+        workletPaths: {
+          rawAudioProcessor: '/worklets/rawAudioProcessor.js',
+          audioConcatProcessor: '/worklets/audioConcatProcessor.js'
+        },
         onConnect: ({ conversationId }) => {
           stopRing();
           playChime('pickup');
