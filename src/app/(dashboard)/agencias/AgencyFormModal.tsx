@@ -53,6 +53,7 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
       active: formData.get("active") === "on",
       allowLiteAgents: formData.get("allowLiteAgents") === "on",
       allowReferidores: formData.get("allowReferidores") === "on",
+      allowRoleplaySimulator: formData.get("allowRoleplaySimulator") === "on",
       enableWhatsAppPlanner: formData.get("enableWhatsAppPlanner") === "on",
       whatsAppPlannerPhones: formData.get("whatsAppPlannerPhones") as string || undefined,
       whatsAppPlannerAgents: selectedAgents.length > 0 ? selectedAgents.join(",") : undefined,
@@ -180,6 +181,14 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
                 <p className="text-xs text-emerald-700">Si se activa, la agencia tendrá acceso a crear y gestionar Referidores.</p>
               </div>
               <Switch id="allowReferidores" name="allowReferidores" defaultChecked={agency ? agency.allowReferidores : false} />
+            </div>
+
+            <div className="flex items-center justify-between p-3 border border-purple-200 rounded-lg bg-purple-50/30">
+              <div className="space-y-0.5">
+                <Label htmlFor="allowRoleplaySimulator" className="text-base font-semibold text-purple-900">Simulador de Prospección IA</Label>
+                <p className="text-xs text-purple-700">Activa o bloquea el acceso a las llamadas telefónicas con IA y gamificación para los agentes de esta agencia.</p>
+              </div>
+              <Switch id="allowRoleplaySimulator" name="allowRoleplaySimulator" defaultChecked={agency ? (agency.allowRoleplaySimulator ?? true) : true} />
             </div>
 
             <div className="flex flex-col p-3 border border-green-200 rounded-lg bg-green-50/30 gap-3">

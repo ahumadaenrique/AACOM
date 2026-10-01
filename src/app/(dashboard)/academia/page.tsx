@@ -15,7 +15,8 @@ export default async function AcademiaPage() {
   }
 
   const isTrial = dbUser?.agency?.subscriptionStatus === "trialing"
-  const isPromoter = session?.user?.email?.toLowerCase().includes("promotor") || dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN'
+  const isPromoter = dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN'
+  const isSimulatorAllowed = dbUser?.role === 'SUPER_ADMIN' || (dbUser?.agency ? (dbUser.agency.allowRoleplaySimulator ?? true) : true)
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16 px-4 md:px-6">
@@ -159,12 +160,26 @@ export default async function AcademiaPage() {
             </div>
           </div>
 
-          <Link 
-            href="/academia/simulador" 
-            className="mt-8 flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm transition-all duration-200 shadow-md shadow-purple-900/20"
-          >
-            Entrenar Prospección IA <ArrowRight className="h-4 w-4" />
-          </Link>
+          {!isSimulatorAllowed ? (
+            <div className="mt-8 flex flex-col gap-2">
+              <button 
+                disabled 
+                className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-slate-800/80 text-slate-500 font-bold text-sm cursor-not-allowed border border-slate-700/50"
+              >
+                Módulo Desactivado por Administración
+              </button>
+              <p className="text-[10px] text-amber-500 font-semibold text-center mt-1">
+                🔒 Tu agencia no tiene habilitado el simulador de llamadas telefónicas.
+              </p>
+            </div>
+          ) : (
+            <Link 
+              href="/academia/simulador" 
+              className="mt-8 flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm transition-all duration-200 shadow-md shadow-purple-900/20"
+            >
+              Entrenar Prospección IA <ArrowRight className="h-4 w-4" />
+            </Link>
+          )}
         </div>
 
       </div>

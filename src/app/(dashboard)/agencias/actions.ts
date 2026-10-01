@@ -15,6 +15,7 @@ const agencySchema = z.object({
   active: z.boolean().optional(),
   allowLiteAgents: z.boolean().optional(),
   allowReferidores: z.boolean().optional(),
+  allowRoleplaySimulator: z.boolean().optional(),
   // WhatsApp Planner Config
   enableWhatsAppPlanner: z.boolean().optional(),
   whatsAppPlannerPhones: z.string().optional(),
@@ -90,6 +91,7 @@ export async function createAgency(data: z.infer<typeof agencySchema>) {
       active: parsed.active ?? true,
       allowLiteAgents: parsed.allowLiteAgents ?? false,
       allowReferidores: parsed.allowReferidores ?? false,
+      allowRoleplaySimulator: parsed.allowRoleplaySimulator ?? true,
       enableWhatsAppPlanner: parsed.enableWhatsAppPlanner ?? false,
       whatsAppPlannerPhones: parsed.whatsAppPlannerPhones,
       whatsAppPlannerAgents: parsed.whatsAppPlannerAgents,
@@ -398,4 +400,20 @@ export async function getAgencyUsers(agencyId: string) {
   });
 
   return users;
+}
+
+export async function toggleAgencyRoleplay(agencyId: string, allow: boolean) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+  const updated = await prisma.agency.update({
+    where: { id: agencyId },
+    data: { allowRoleplaySimulator: allow }
+  });
+
+  revalidatePath("/agencias");
+  revalidatePath("/academia");
+  return { success: true, allowRoleplaySimulator: updated.allowRoleplaySimulator };
 }

@@ -22,12 +22,44 @@ export default async function SimuladorPage() {
       name: true,
       email: true,
       role: true,
-      image: true
+      image: true,
+      agency: {
+        select: {
+          id: true,
+          name: true,
+          allowRoleplaySimulator: true
+        }
+      }
     }
   });
 
   if (!dbUser) {
     redirect("/login");
+  }
+
+  // Block access if the agency does not have the simulator enabled (SUPER_ADMIN always has access)
+  if (dbUser.role !== 'SUPER_ADMIN' && dbUser.agency && dbUser.agency.allowRoleplaySimulator === false) {
+    return (
+      <div className="max-w-xl mx-auto my-16 p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-5 shadow-2xl">
+        <div className="h-16 w-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
+          📵
+        </div>
+        <div className="space-y-2">
+          <h2 className="text-xl font-bold text-white">Módulo Desactivado para tu Agencia</h2>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            El acceso al <strong>Simulador de Prospección Telefónica con IA</strong> ha sido desactivado para tu agencia ({dbUser.agency.name}) por la administración central de AACOM.
+          </p>
+        </div>
+        <div className="pt-2">
+          <a
+            href="/academia"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors"
+          >
+            ← Volver a Academia
+          </a>
+        </div>
+      </div>
+    );
   }
 
   const isAdmin =

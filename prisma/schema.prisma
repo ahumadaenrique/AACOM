@@ -50,6 +50,7 @@ model Agency {
   whatsAppPlannerAgents String?
   whatsAppPlannerPhones String?
   allowReferidores      Boolean              @default(false)
+  allowRoleplaySimulator Boolean?            @default(true)
 
   // Configuraciones del Cotizador Modular
   quoterLifeCompany            String?              @default("Insignia Life")

@@ -29,6 +29,15 @@ export async function POST() {
       return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
+    const userWithAgency = await prisma.user.findUnique({
+      where: { id: userId },
+      include: { agency: true }
+    });
+
+    if (userWithAgency?.role !== 'SUPER_ADMIN' && userWithAgency?.agency && userWithAgency.agency.allowRoleplaySimulator === false) {
+      return NextResponse.json({ error: 'El simulador de prospección telefónica no está habilitado para tu agencia.' }, { status: 403 });
+    }
+
     const todayStr = new Date().toISOString().split('T')[0];
 
     // Load or create RoleplayStats
