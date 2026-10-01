@@ -31,10 +31,10 @@ interface RoleplayClientProps {
     email?: string | null;
     role?: string;
   };
-  isPromoter: boolean;
+  isAdmin: boolean;
 }
 
-export function RoleplayClient({ user, isPromoter }: RoleplayClientProps) {
+export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
   // Tabs: 'simulador' | 'historial' | 'admin'
   const [activeTab, setActiveTab] = useState<'simulador' | 'historial' | 'admin'>('simulador');
   const [isTacticsOpen, setIsTacticsOpen] = useState(false);
@@ -412,13 +412,13 @@ export function RoleplayClient({ user, isPromoter }: RoleplayClientProps) {
           <span>Mi Historial de Llamadas</span>
         </button>
 
-        {isPromoter && (
+        {isAdmin && (
           <button
             onClick={() => setActiveTab('admin')}
             className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-t-xl transition-colors border-t border-x ${activeTab === 'admin' ? 'bg-slate-900 border-slate-800 text-indigo-400' : 'text-slate-400 hover:text-slate-200 border-transparent'}`}
           >
             <ShieldCheck className="h-4 w-4" />
-            <span>Supervisión & Grabaciones</span>
+            <span>Supervisión & Grabaciones (Admin)</span>
           </button>
         )}
       </div>
@@ -695,7 +695,7 @@ export function RoleplayClient({ user, isPromoter }: RoleplayClientProps) {
       )}
 
       {/* TAB 3: ADMIN / SUPERVISION */}
-      {activeTab === 'admin' && isPromoter && (
+      {activeTab === 'admin' && isAdmin && (
         <SupervisionPanel />
       )}
 

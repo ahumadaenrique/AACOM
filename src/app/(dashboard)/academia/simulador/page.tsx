@@ -30,10 +30,9 @@ export default async function SimuladorPage() {
     redirect("/login");
   }
 
-  const isPromoter =
+  const isAdmin =
     dbUser.role === 'ADMIN' ||
-    dbUser.role === 'SUPER_ADMIN' ||
-    dbUser.email.toLowerCase().includes('promotor');
+    dbUser.role === 'SUPER_ADMIN';
 
   return (
     <div className="py-2">
@@ -44,7 +43,7 @@ export default async function SimuladorPage() {
           email: dbUser.email,
           role: dbUser.role
         }}
-        isPromoter={isPromoter}
+        isAdmin={isAdmin}
       />
     </div>
   );

@@ -16,15 +16,20 @@ export async function GET() {
 
     const isAuthorized =
       dbUser?.role === 'ADMIN' ||
-      dbUser?.role === 'SUPER_ADMIN' ||
-      session.user.email.toLowerCase().includes('promotor');
+      dbUser?.role === 'SUPER_ADMIN';
 
     if (!isAuthorized) {
-      return NextResponse.json({ error: 'Acceso restringido a administradores y promotores' }, { status: 403 });
+      return NextResponse.json({ error: 'Acceso restringido: Se requieren permisos de ADMIN o SUPER_ADMIN' }, { status: 403 });
     }
 
-    // Load recent calls across all agents with user info
+    // Agency isolation: SUPER_ADMIN sees all, ADMIN only sees agents from their own agency
+    const agencyFilter = dbUser.role === 'SUPER_ADMIN'
+      ? {}
+      : { user: { agencyId: dbUser.agencyId || undefined } };
+
+    // Load recent calls across authorized agents with user info
     const calls = await prisma.roleplayCall.findMany({
+      where: agencyFilter,
       take: 50,
       orderBy: { createdAt: 'desc' },
       include: {
@@ -39,8 +44,9 @@ export async function GET() {
       }
     });
 
-    // Load ranking of agents with stats
+    // Load ranking of authorized agents with stats
     const agentStats = await prisma.roleplayStats.findMany({
+      where: agencyFilter,
       take: 50,
       orderBy: { xp: 'desc' },
       include: {
