@@ -65,6 +65,11 @@ interface GastosResumidos {
   cuidadoPersonal: number;
   ahorro: number;
   mascotas: number;
+  // Seguros Vigentes / Gastos de Protección (anuales)
+  seguroVida: number;
+  seguroAuto: number;
+  seguroGmm: number;
+  otrosSeguros: number;
 }
 
 // Initial states
@@ -94,7 +99,99 @@ const initialGastosResumidos: GastosResumidos = {
   alimentacion: 0,
   cuidadoPersonal: 0,
   ahorro: 0,
-  mascotas: 0
+  mascotas: 0,
+  seguroVida: 0,
+  seguroAuto: 0,
+  seguroGmm: 0,
+  otrosSeguros: 0
+}
+
+export interface Pilar5Result {
+  isAlert: boolean;
+  badge: string;
+  title: string;
+  message: string;
+}
+
+export function evaluatePilar5Hormiga({
+  modalidad,
+  income,
+  totalGastos,
+  remanente,
+  parsedGastos
+}: {
+  modalidad?: string | null;
+  income: number;
+  totalGastos: number;
+  remanente: number;
+  parsedGastos: any;
+}): Pilar5Result {
+  const netIncome = Number(income) || 0;
+  const gastos = Number(totalGastos) || 0;
+  const rem = Math.max(0, netIncome - gastos);
+  const isCeroOrDeficit = netIncome > 0 ? (rem <= 0 || rem < netIncome * 0.05) : false;
+
+  // 1. Escenario de Ceros o Déficit (Presupuesto al límite / sin capacidad de ahorro)
+  if (isCeroOrDeficit) {
+    return {
+      isAlert: true,
+      badge: 'PRESUPUESTO AL LÍMITE',
+      title: 'Capacidad de Ahorro Agotada',
+      message: `⚠️ ALERTA: Tus gastos mensuales absorben prácticamente la totalidad de tus ingresos (Remanente libre: $${rem.toLocaleString('es-MX', { maximumFractionDigits: 0 })} pesos). Es indispensable auditar consumos cotidianos y gastos superfluos para liberar el flujo necesario que permita proteger a tu familia y construir tu fondo de emergencia y retiro.`
+    };
+  }
+
+  // 2. Evaluación por Modalidad de gastos no esenciales
+  if (modalidad === 'DETALLADO') {
+    const g = parsedGastos || {};
+    const hormigaPura = (Number(g.cafecitos) || 0) + (Number(g.amazonCompras) || 0) + (Number(g.streamings) || 0);
+    const ocioTotal = hormigaPura + (Number(g.baresRecreacion) || 0) + (Number(g.comidasEsparcimiento) || 0) + (Number(g.finDeSemana) || 0) + (Number(g.hobbies) || 0) + (Number(g.clubSocial) || 0) + (Number(g.cineTeatro) || 0) + ((Number(g.vacaciones) || 0) / 12);
+    
+    const pctOcio = netIncome > 0 ? (ocioTotal / netIncome) : 0;
+    const isExcessive = pctOcio > 0.20 || ocioTotal > 12000 || hormigaPura > 4000;
+
+    if (isExcessive) {
+      return {
+        isAlert: true,
+        badge: 'FUGA DE CAPITAL DETECTADA',
+        title: 'Optimización de Gastos Hormiga y Estilo de Vida',
+        message: `⚠️ ATENCIÓN: Detectamos consumos elevados en esparcimiento, comidas fuera, compras online o cafecitos ($${Math.round(ocioTotal).toLocaleString('es-MX')} pesos mensuales, representando el ${Math.round(pctOcio * 100)}% de tus ingresos). Reestructurar estos gastos te inyectará de inmediato el capital libre para fondear tus metas patrimoniales.`
+      };
+    }
+  } else if (modalidad === 'RESUMIDO') {
+    const r = parsedGastos || {};
+    const deseos = Number(r.entretenimiento) || 0;
+    const pctDeseos = netIncome > 0 ? (deseos / netIncome) : 0;
+    const isExcessive = pctDeseos > 0.20 || deseos > 12000;
+
+    if (isExcessive) {
+      return {
+        isAlert: true,
+        badge: 'GASTOS SUPERFLUOS ELEVADOS',
+        title: 'Optimización de Gastos de Entretenimiento',
+        message: `⚠️ RECOMENDACIÓN: Tu rubro de entretenimiento y compras cotidianas ($${Math.round(deseos).toLocaleString('es-MX')} pesos al mes) representa el ${Math.round(pctDeseos * 100)}% de tus ingresos, superando la recomendación óptima. Ajustar consumos menores te dará el capital libre para tus prioridades patrimoniales.`
+      };
+    }
+  } else {
+    // BASICO
+    const pctGastos = netIncome > 0 ? (gastos / netIncome) : 1;
+    if (pctGastos > 0.80) {
+      return {
+        isAlert: true,
+        badge: 'MARGEN DE AHORRO COMPROMETIDO',
+        title: 'Optimización de Finanzas Básicas',
+        message: `⚠️ ATENCIÓN: Tus gastos reportados representan el ${Math.round(pctGastos * 100)}% de tus ingresos netos, dejando un margen menor al 20% para ahorro e imprevistos. Una revisión a tus consumos cotidianos te permitirá generar liquidez para tus metas patrimoniales.`
+      };
+    }
+  }
+
+  // 3. Si todo está en orden
+  return {
+    isAlert: false,
+    badge: 'CONTROLADO',
+    title: 'Optimización de Finanzas Básicas',
+    message: '✅ CONTROLADO: Mantienes una disciplina adecuada en tus consumos cotidianos y de entretenimiento, conservando un margen favorable para tu ahorro y blindaje patrimonial.'
+  };
 }
 
 interface AdnDiagnosticProps {
@@ -419,15 +516,15 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
 
     } else if (modalidad === 'RESUMIDO') {
       const r = gastosRes
-      vivienda = r.vivienda
-      transporte = r.transporte
-      educacion = r.educacion
-      deudas = r.deudas
-      entretenimiento = r.entretenimiento
-      alimentacion = r.alimentacion
-      cuidadoPersonal = r.cuidadoPersonal
-      ahorro += r.ahorro
-      mascotas = r.mascotas
+      vivienda = r.vivienda || 0
+      transporte = (r.transporte || 0) + ((r.seguroAuto || 0) / 12)
+      educacion = r.educacion || 0
+      deudas = r.deudas || 0
+      entretenimiento = r.entretenimiento || 0
+      alimentacion = r.alimentacion || 0
+      cuidadoPersonal = (r.cuidadoPersonal || 0) + ((r.seguroVida || 0) / 12) + ((r.seguroGmm || 0) / 12) + ((r.otrosSeguros || 0) / 12)
+      ahorro += r.ahorro || 0
+      mascotas = r.mascotas || 0
     } else {
       // BASICO
       const gTot = Number(gastosBasicosTotales) || 0
@@ -556,15 +653,14 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
     const tieneHijosChicos = hijos.some(h => h.edad >= 0 && h.edad <= 9)
     const p4_educacion = tieneHijosChicos && !hasSeguroAhorro
 
-    // Prioridad 5: Gastos Hormiga
-    let hasGastosHormigaHigh = false
-    if (modalidad === 'DETALLADO') {
-      const g = gastosDet
-      const hormigaSum = g.cafecitos + g.amazonCompras + g.baresRecreacion + g.comidasEsparcimiento
-      hasGastosHormigaHigh = hormigaSum > (income * 0.07) || hormigaSum > 12000
-    } else if (modalidad === 'RESUMIDO') {
-      hasGastosHormigaHigh = totalsByRamo.deseos > (income * 0.25) || totalsByRamo.deseos > 25000
-    }
+    // Prioridad 5: Gastos Hormiga y Optimización de Finanzas Básicas
+    const p5Result = evaluatePilar5Hormiga({
+      modalidad,
+      income,
+      totalGastos: totalsByRamo.totalGastos,
+      remanente: totalsByRamo.remanente,
+      parsedGastos: modalidad === 'DETALLADO' ? gastosDet : (modalidad === 'RESUMIDO' ? gastosRes : {})
+    })
 
     return {
       p1_retiro,
@@ -576,10 +672,11 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
         isOk: hasEmergencyFundOk
       },
       p4_educacion,
-      p5_hormiga: hasGastosHormigaHigh,
+      p5_hormiga: p5Result.isAlert,
+      p5: p5Result,
       tieneHijosChicos
     }
-  }, [hasPpr, hasGmm, ingresosNetos, ahorroActual, hijos, hasSeguroAhorro, modalidad, gastosDet, totalsByRamo])
+  }, [hasPpr, hasGmm, ingresosNetos, ahorroActual, hijos, hasSeguroAhorro, modalidad, gastosDet, gastosRes, totalsByRamo])
 
   // --- Recharts data ---
   const pieData = [
@@ -1829,21 +1926,104 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                 )}
 
                 {modalidad === 'RESUMIDO' && (
-                  <div className="space-y-4">
-                    <h4 className="text-xs font-black text-teal-800 uppercase tracking-widest border-b pb-2">Gastos Totales Acumulados por Rubro</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {Object.keys(initialGastosResumidos).map((key) => (
-                        <div key={key} className="space-y-1 bg-slate-50 dark:bg-zinc-800/40 p-3 rounded-2xl border">
-                          <label className="text-[10px] font-bold text-slate-600 uppercase block">{key.replace(/([A-Z])/g, ' $1')}</label>
+                  <div className="space-y-6">
+                    <div className="space-y-3">
+                      <h4 className="text-xs font-black text-teal-800 uppercase tracking-widest border-b pb-2 flex items-center gap-2">
+                        <Wallet className="h-4 w-4" /> Gastos Mensuales por Rubro
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                        {[
+                          { key: 'vivienda', label: 'Vivienda y Servicios', placeholder: 'Renta, hipoteca, luz, agua, internet' },
+                          { key: 'transporte', label: 'Transporte y Movilidad', placeholder: 'Gasolina, mensualidad auto, pasajes' },
+                          { key: 'alimentacion', label: 'Alimentación y Despensa', placeholder: 'Supermercado, comida diaria' },
+                          { key: 'educacion', label: 'Educación', placeholder: 'Colegiaturas, útiles, materiales' },
+                          { key: 'cuidadoPersonal', label: 'Cuidado Personal y Salud', placeholder: 'Medicamentos, estética, gimnasio' },
+                          { key: 'deudas', label: 'Deudas y Créditos', placeholder: 'Tarjetas de crédito, préstamos' },
+                          { key: 'entretenimiento', label: 'Entretenimiento y Deseos', placeholder: 'Salidas, compras online, viajes' },
+                          { key: 'mascotas', label: 'Mascotas', placeholder: 'Alimento, veterinario, estética' },
+                          { key: 'ahorro', label: 'Ahorro / Inversiones adicionales', placeholder: 'Ahorro mensual libre' },
+                        ].map((item) => (
+                          <div key={item.key} className="space-y-1 bg-slate-50 dark:bg-zinc-800/40 p-3 rounded-2xl border">
+                            <label className="text-[10px] font-bold text-slate-600 uppercase block">{item.label}</label>
+                            <input 
+                              type="number" 
+                              placeholder={item.placeholder} 
+                              value={gastosRes[item.key as keyof GastosResumidos] || ''}
+                              onChange={e => setGastosRes({...gastosRes, [item.key]: Number(e.target.value)})}
+                              className="border p-2.5 rounded-xl w-full text-xs focus:outline-teal-500 bg-white dark:bg-zinc-900"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Sección Dedicada: Gastos en Seguros */}
+                    <div className="space-y-3 border-t pt-5 border-slate-100">
+                      <div>
+                        <span className="text-xs font-extrabold text-slate-800 flex items-center gap-1.5">
+                          <ShieldCheck className="h-4 w-4 text-teal-600" /> Gastos en Seguros y Pólizas Vigentes
+                        </span>
+                        <p className="text-[10px] text-slate-500 mt-0.5">
+                          Ingresa el costo o prima anual aproximada de tus pólizas vigentes (el sistema calculará su impacto mensual automáticamente).
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div className="space-y-1 bg-teal-50/30 p-3 rounded-2xl border border-teal-200/60">
+                          <label className="text-[10px] font-black text-teal-800 uppercase block">Seguro de Vida (anual)</label>
                           <input 
                             type="number" 
-                            placeholder="0" 
-                            value={gastosRes[key as keyof GastosResumidos] || ''}
-                            onChange={e => setGastosRes({...gastosRes, [key]: Number(e.target.value)})}
-                            className="border p-2.5 rounded-xl w-full text-xs focus:outline-teal-500"
+                            placeholder="$0 al año" 
+                            value={gastosRes.seguroVida || ''}
+                            onChange={e => setGastosRes({...gastosRes, seguroVida: Number(e.target.value)})}
+                            className="border p-2.5 rounded-xl w-full text-xs focus:outline-teal-500 bg-white font-semibold"
                           />
+                          <span className="text-[9px] text-slate-400 block font-medium">
+                            Impacto mensual: ${Math.round((gastosRes.seguroVida || 0) / 12).toLocaleString('es-MX')}
+                          </span>
                         </div>
-                      ))}
+
+                        <div className="space-y-1 bg-teal-50/30 p-3 rounded-2xl border border-teal-200/60">
+                          <label className="text-[10px] font-black text-teal-800 uppercase block">Seguro de Auto (anual)</label>
+                          <input 
+                            type="number" 
+                            placeholder="$0 al año" 
+                            value={gastosRes.seguroAuto || ''}
+                            onChange={e => setGastosRes({...gastosRes, seguroAuto: Number(e.target.value)})}
+                            className="border p-2.5 rounded-xl w-full text-xs focus:outline-teal-500 bg-white font-semibold"
+                          />
+                          <span className="text-[9px] text-slate-400 block font-medium">
+                            Impacto mensual: ${Math.round((gastosRes.seguroAuto || 0) / 12).toLocaleString('es-MX')}
+                          </span>
+                        </div>
+
+                        <div className="space-y-1 bg-teal-50/30 p-3 rounded-2xl border border-teal-200/60">
+                          <label className="text-[10px] font-black text-teal-800 uppercase block">Seguro de GMM (anual)</label>
+                          <input 
+                            type="number" 
+                            placeholder="$0 al año" 
+                            value={gastosRes.seguroGmm || ''}
+                            onChange={e => setGastosRes({...gastosRes, seguroGmm: Number(e.target.value)})}
+                            className="border p-2.5 rounded-xl w-full text-xs focus:outline-teal-500 bg-white font-semibold"
+                          />
+                          <span className="text-[9px] text-slate-400 block font-medium">
+                            Impacto mensual: ${Math.round((gastosRes.seguroGmm || 0) / 12).toLocaleString('es-MX')}
+                          </span>
+                        </div>
+
+                        <div className="space-y-1 bg-teal-50/30 p-3 rounded-2xl border border-teal-200/60">
+                          <label className="text-[10px] font-black text-teal-800 uppercase block">Otros Seguros (anual)</label>
+                          <input 
+                            type="number" 
+                            placeholder="$0 al año (hogar, etc.)" 
+                            value={gastosRes.otrosSeguros || ''}
+                            onChange={e => setGastosRes({...gastosRes, otrosSeguros: Number(e.target.value)})}
+                            className="border p-2.5 rounded-xl w-full text-xs focus:outline-teal-500 bg-white font-semibold"
+                          />
+                          <span className="text-[9px] text-slate-400 block font-medium">
+                            Impacto mensual: ${Math.round((gastosRes.otrosSeguros || 0) / 12).toLocaleString('es-MX')}
+                          </span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -2303,19 +2483,22 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
               )}
 
               {/* Prioridad 5: Gastos Hormiga */}
-              <div className={`p-5 rounded-2xl border flex items-start gap-4 transition-all ${prioridades.p5_hormiga ? 'bg-amber-50/50 border-amber-200' : 'bg-emerald-50/40 border-emerald-200'}`}>
-                {prioridades.p5_hormiga ? (
+              <div className={`p-5 rounded-2xl border flex items-start gap-4 transition-all ${prioridades.p5.isAlert ? 'bg-amber-50/50 border-amber-200' : 'bg-emerald-50/40 border-emerald-200'}`}>
+                {prioridades.p5.isAlert ? (
                   <AlertTriangle className="h-6 w-6 text-amber-600 shrink-0" />
                 ) : (
                   <CheckCircle className="h-6 w-6 text-emerald-600 shrink-0" />
                 )}
                 <div className="space-y-1">
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest block text-slate-400">Prioridad 5</span>
-                  <h4 className="font-extrabold text-sm text-slate-800">Optimización de Gastos Hormiga</h4>
-                  <p className="text-xs text-slate-600">
-                    {prioridades.p5_hormiga 
-                      ? '⚠️ ADVERTENCIA: Detectamos consumos elevados en salidas de fin de semana, cafecitos o compras innecesarias online. Reestructurar estos gastos te dará el capital libre para tu retiro o emergencias.'
-                      : '✅ Excelente: Mantienes una disciplina excepcional de gastos cotidianos y entretenimiento dentro de límites óptimos.'}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] font-extrabold uppercase tracking-widest block text-slate-400">Prioridad 5</span>
+                    <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-full ${prioridades.p5.isAlert ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                      {prioridades.p5.badge}
+                    </span>
+                  </div>
+                  <h4 className="font-extrabold text-sm text-slate-800">{prioridades.p5.title}</h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    {prioridades.p5.message}
                   </p>
                 </div>
               </div>
@@ -2630,13 +2813,14 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                 {/* Pilar 5: Gastos Hormiga */}
                 <div className="border p-4 rounded-xl space-y-2">
                   <div className="flex items-center gap-2">
-                    <span className={`h-2.5 w-2.5 rounded-full ${prioridades.p5_hormiga ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                    <span className="text-xs font-black text-slate-800">PILAR 5: OPTIMIZACIÓN DE FINANZAS BÁSICAS</span>
+                    <span className={`h-2.5 w-2.5 rounded-full ${prioridades.p5.isAlert ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                    <span className="text-xs font-black text-slate-800">PILAR 5: {prioridades.p5.title.toUpperCase()}</span>
+                    <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${prioridades.p5.isAlert ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                      {prioridades.p5.badge}
+                    </span>
                   </div>
                   <p className="text-xs text-slate-600 leading-relaxed pl-4">
-                    {prioridades.p5_hormiga 
-                      ? '⚠️ RECOMENDACIÓN: Tu rubro de entretenimiento y compras cotidianas supera la regla recomendada. Reestructurar gastos menores superfluos (cafecitos, comidas fuera de casa recurrentes, suscripciones no usadas) te inyectará de inmediato el capital libre para fonear tus prioridades patrimoniales.'
-                      : '✅ CONTROLADO: Mantienes una disciplina intachable en tus gastos superfluos y de diversión cotidiana.'}
+                    {prioridades.p5.message}
                   </p>
                 </div>
               </div>
@@ -2861,11 +3045,11 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                   } else if (selectedSavedAdn.modalidad === 'RESUMIDO') {
                     const r = parsedGastos
                     catVivienda = r.vivienda || 0
-                    catTransporte = r.transporte || 0
+                    catTransporte = (r.transporte || 0) + ((r.seguroAuto || 0) / 12)
                     catEducacion = r.educacion || 0
                     catDeudas = r.deudas || 0
                     catAlimentacion = r.alimentacion || 0
-                    catCuidadoPersonal = r.cuidadoPersonal || 0
+                    catCuidadoPersonal = (r.cuidadoPersonal || 0) + ((r.seguroVida || 0) / 12) + ((r.seguroGmm || 0) / 12) + ((r.otrosSeguros || 0) / 12)
                     catMascotas = r.mascotas || 0
                     catEntretenimiento = r.entretenimiento || 0
                     catAhorro += r.ahorro || 0
@@ -2898,6 +3082,14 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
 
                   const tieneHijosChicos = selectedSavedAdn.hijosData && JSON.parse(selectedSavedAdn.hijosData).some((h: any) => h.edad >= 0 && h.edad <= 9)
                   const p4_educacion = tieneHijosChicos && !selectedSavedAdn.hasSeguroAhorro
+
+                  const p5ResultModal = evaluatePilar5Hormiga({
+                    modalidad: selectedSavedAdn.modalidad,
+                    income,
+                    totalGastos: totalEgresos,
+                    remanente: Math.max(0, income - totalEgresos),
+                    parsedGastos
+                  })
 
                   // PPR Plazo and Suficiencia Math Logic
                   const retirementGoal = income * 12 * 20
@@ -3156,6 +3348,22 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                               </div>
                             </div>
                           )}
+
+                          {/* Pilar 5: Gastos Hormiga y Finanzas Básicas */}
+                          <div className="border p-3 rounded-lg flex items-start gap-3 bg-white">
+                            <span className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${p5ResultModal.isAlert ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                            <div className="text-xs">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-extrabold text-[9px] tracking-wider text-slate-400 block uppercase">Pilar 5: {p5ResultModal.title}</span>
+                                <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${p5ResultModal.isAlert ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                                  {p5ResultModal.badge}
+                                </span>
+                              </div>
+                              <p className="text-slate-600 mt-0.5">
+                                {p5ResultModal.message}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </>
@@ -3304,11 +3512,11 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
           } else if (selectedSavedAdn ? (selectedSavedAdn.modalidad === 'RESUMIDO') : (modalidad === 'RESUMIDO')) {
             const r = parsedGastos
             catVivienda = r.vivienda || 0
-            catTransporte = r.transporte || 0
+            catTransporte = (r.transporte || 0) + ((r.seguroAuto || 0) / 12)
             catEducacion = r.educacion || 0
             catDeudas = r.deudas || 0
             catAlimentacion = r.alimentacion || 0
-            catCuidadoPersonal = r.cuidadoPersonal || 0
+            catCuidadoPersonal = (r.cuidadoPersonal || 0) + ((r.seguroVida || 0) / 12) + ((r.seguroGmm || 0) / 12) + ((r.otrosSeguros || 0) / 12)
             catMascotas = r.mascotas || 0
             catEntretenimiento = r.entretenimiento || 0
             catAhorro += r.ahorro || 0
@@ -3341,6 +3549,14 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
 
           const tieneHijosChicos = currentAdn.hijosData && JSON.parse(currentAdn.hijosData).some((h: any) => h.edad >= 0 && h.edad <= 9)
           const p4_educacion = tieneHijosChicos && !currentAdn.hasSeguroAhorro
+
+          const p5ResultPrint = evaluatePilar5Hormiga({
+            modalidad: currentAdn.modalidad,
+            income,
+            totalGastos: totalEgresos,
+            remanente: Math.max(0, income - totalEgresos),
+            parsedGastos
+          })
 
           // PPR Plazo and Suficiencia Math
           const retirementGoal = income * 12 * 20
@@ -3585,11 +3801,14 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                   {/* Pilar 5: Gastos Hormiga */}
                   <div className="border p-4 rounded-xl space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                      <span className="text-xs font-black text-slate-800">PILAR 5: OPTIMIZACIÓN DE FINANZAS BÁSICAS</span>
+                      <span className={`h-2.5 w-2.5 rounded-full ${p5ResultPrint.isAlert ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                      <span className="text-xs font-black text-slate-800">PILAR 5: {p5ResultPrint.title.toUpperCase()}</span>
+                      <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${p5ResultPrint.isAlert ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                        {p5ResultPrint.badge}
+                      </span>
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed pl-4">
-                      ✅ CONTROLADO: Mantienes una disciplina intachable en tus gastos superfluos y de diversión cotidiana.
+                      {p5ResultPrint.message}
                     </p>
                   </div>
                 </div>
