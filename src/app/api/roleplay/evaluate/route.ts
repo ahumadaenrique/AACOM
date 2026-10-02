@@ -90,34 +90,43 @@ export async function POST(req: Request) {
     const aciertos: string[] = [];
     const errores: string[] = [];
 
-    // Criterio 0: Mención de referidor si aplicaba (+15)
+    // Criterio 0: Presentación con Nombre y Firma (+15)
+    const introWords = ['habla', 'mi nombre es', 'soy', 'te habla', 'le habla', 'servidor', 'servidora', 'aacom'];
+    const sePresento = introWords.some(w => agentMessages.includes(w));
+    if (sePresento) {
+      score += 15;
+      aciertos.push('Te presentaste formalmente al iniciar la llamada.');
+    } else {
+      errores.push('Faltó presentación: No mencionaste tu nombre ni a AACOM Seguros con claridad al inicio.');
+    }
+
+    // Criterio 1: Mención de referidor si aplicaba (+15)
     if (scenario?.origen?.tipo === 'referido_avisado' && scenario?.referidor) {
       const refWords = scenario.referidor.toLowerCase().split(' ');
       if (refWords.some((w: string) => w.length > 3 && agentMessages.includes(w))) {
         score += 15;
         aciertos.push(`Mencionaste a ${scenario.referidor} oportunamente para romper la barrera del prospecto.`);
       } else {
-        errores.push(`El prospecto ya sabía de la llamada de parte de ${scenario.referidor}, pero no lo mencionaste al inicio.`);
+        errores.push(`El prospecto fue referido por ${scenario.referidor}, pero no lo mencionaste al inicio para generar confianza.`);
       }
     }
 
-    // Criterio 1: Posicionamiento como Asesoría Financiera Personalizada (+25)
-    const asesoriaWords = ['asesoría', 'asesoria', 'financiera', 'patrimonial', 'asesor', 'personalizada', 'análisis'];
+    // Criterio 2: Posicionamiento como Asesoría Financiera Personalizada (+20)
+    const asesoriaWords = ['asesoría', 'asesoria', 'financiera', 'patrimonial', 'asesor', 'personalizada', 'análisis', 'diagnóstico', 'diagnostico'];
     if (asesoriaWords.some(w => agentMessages.includes(w))) {
-      score += 25;
-      aciertos.push('Presentaste la llamada como una asesoría financiera personalizada y no como venta fría de un producto.');
+      score += 20;
+      aciertos.push('Posicionaste la llamada como una asesoría personalizada y no como venta telefónica.');
     } else {
       errores.push('Faltó enfatizar que en AACOM brindamos una asesoría financiera personalizada.');
     }
 
-    // Criterio 2: Diagnóstico antes de Recetar / Amplitud de soluciones (+25)
+    // Criterio 3: Diagnóstico antes de Recetar / Amplitud de soluciones (+25)
     const palabrasVariedad = [
-      'tantos productos', 'tantas soluciones', 'tantas opciones', 'tanta variedad', 'tantos',
+      'tantos productos', 'tantas soluciones', 'tantas opciones', 'tanta variedad',
       'muchos productos', 'muchas soluciones', 'muchas opciones', 'amplia gama', 'amplio portafolio',
       'variedad de soluciones', 'diferentes opciones', 'diversas opciones', 'diferentes soluciones',
       'diversas soluciones', 'diferentes productos', 'diversos productos', 'múltiples soluciones',
-      'multiples soluciones', 'portafolio', 'abanico', 'varias soluciones', 'varios productos',
-      'soluciones', 'productos', 'opciones'
+      'multiples soluciones', 'portafolio', 'abanico', 'varias soluciones', 'varios productos'
     ];
     const palabrasDiagnostico = [
       'sin conocer', 'sin conocerlo', 'sin conocerla', 'sin saber', 'más acertado', 'mas acertado',
@@ -125,56 +134,83 @@ export async function POST(req: Request) {
       'diagnóstico', 'diagnostico', 'conocer su situación', 'conocer sus metas', 'conocer sus necesidades',
       'conocer sus prioridades', 'revisar primero', 'analizar primero', 'platicar primero', 'platicar con usted',
       'conocerle', 'conocerlo primero', 'evaluar su caso', 'ver qué necesita', 'ver que necesita',
-      'sería irresponsable', 'seria irresponsable', 'imposible saber', 'imposible darle', 'no podemos saber'
+      'sería irresponsable', 'seria irresponsable', 'imposible saber', 'imposible darle', 'a ciegas'
     ];
 
     const tieneVariedad = palabrasVariedad.some(w => agentMessages.includes(w));
     const tieneDiagnostico = palabrasDiagnostico.some(w => agentMessages.includes(w));
-    const mencionDirecta = agentMessages.includes('tantos') ||
-                           agentMessages.includes('imposible') ||
-                           agentMessages.includes('sin conocer') ||
-                           agentMessages.includes('más acertado') ||
-                           agentMessages.includes('le acomoda');
 
-    if ((tieneVariedad && tieneDiagnostico) || mencionDirecta) {
+    if (tieneVariedad && tieneDiagnostico) {
       score += 25;
-      aciertos.push('Excelente argumento: Explicaste que tienen tantas soluciones que sería irresponsable recomendar una sin conocer su situación primero.');
+      aciertos.push('Excelente argumento: Explicaste que manejan tantas opciones que sería irresponsable recomendar una sin conocer su situación primero.');
     } else {
       errores.push('Faltó el principio de diagnóstico antes de recetar: explica que manejamos tantas soluciones que no puedes recomendar nada sin conocerlo.');
     }
 
-    // Criterio 3: Disciplina telefónica / Evitar fuga de datos técnicos (+20)
-    const penalizadas = ['suma asegurada', 'cobertura de', 'prima de', 'deducible', 'cuesta pesos', 'pesos mensuales', 'udi', 'udis'];
-    const infracciones = penalizadas.filter(w => agentMessages.includes(w));
-    if (infracciones.length > 0) {
-      errores.push(`Fuga de información técnica: soltaste términos que no corresponden a prospección telefónica (${infracciones.join(', ')}).`);
-    } else {
-      score += 20;
-      aciertos.push('Mantuviste el control sin soltar cotizaciones ni cifras que ahuyentan al prospecto por teléfono.');
-    }
-
     // Criterio 4: Cierre con Doble Alternativa y tiempo de 30-40 min (+15)
-    const alternativas = ['martes', 'miércoles', 'miercoles', 'jueves', 'viernes', 'lunes', 'sábado', 'sabado', 'mañana', 'tarde', 'en la mañana', 'en la tarde', '10', '11', '4', '5'];
+    const alternativas = ['martes', 'miércoles', 'miercoles', 'jueves', 'viernes', 'lunes', 'sábado', 'sabado', 'mañana', 'tarde', 'en la mañana', 'en la tarde'];
     const tiempos = ['30', '40', 'treinta', 'cuarenta', 'media hora'];
     const ofreceAlternativa = alternativas.filter(a => agentMessages.includes(a)).length >= 2;
     const estipulaTiempo = tiempos.some(t => agentMessages.includes(t));
 
-    if (ofreceAlternativa || estipulaTiempo) {
+    if (ofreceAlternativa && estipulaTiempo) {
       score += 15;
-      aciertos.push('Propusiste reunión con rango de tiempo adecuado (30-40 min) y opciones de horario.');
+      aciertos.push('Cierre impecable: Propusiste una reunión de 30-40 min dando dos opciones de horario (doble alternativa).');
+    } else if (ofreceAlternativa || estipulaTiempo) {
+      score += 8;
+      if (!ofreceAlternativa) errores.push('Ofrece siempre dos alternativas concretas de horario (ej: "¿martes por la mañana o jueves por la tarde?").');
+      if (!estipulaTiempo) errores.push('Aclara siempre que la reunión solo tomará 30 a 40 minutos.');
     } else {
-      errores.push('Recuerda pedir únicamente 30 a 40 minutos y dar doble alternativa de horario.');
+      errores.push('Faltó proponer rango de tiempo de 30-40 minutos y dar doble alternativa de horario.');
     }
 
-    // Criterio 5: Cita Conseguida en el diálogo (+20)
+    // --- PENALIZACIONES SEVERAS ---
+
+    // Penalización 1: Venta Prematura de Producto (-30 pts)
+    const palabrasProducto = ['ppr', 'seguro de vida', 'te ofrezco un seguro', 'te vendo', 'venderte', 'te cotizo', 'cotización', 'cotizacion', 'gastos médicos', 'gastos medicos', 'póliza', 'poliza'];
+    const productosMencionados = palabrasProducto.filter(w => agentMessages.includes(w));
+    if (productosMencionados.length > 0) {
+      score = Math.max(0, score - 30);
+      errores.push(`Venta prematura de producto: Preguntaste directamente por "${productosMencionados.join(', ')}". En prospección nunca se ofrece un producto ni se pregunta "¿ya tienes PPR?"; el objetivo es vender la reunión de diagnóstico.`);
+    }
+
+    // Penalización 2: Pérdida de Postura Ejecutiva / Ruego (-25 pts)
+    const palabrasRuego = ['no me cuelgues', 'no me cuelgue', 'por favor escúchame', 'por favor escuchame', 'dame 30 minutos', 'dame 40 minutos', 'dame chance', 'no seas malo', 'no seas mala'];
+    const ruegosDetectados = palabrasRuego.filter(w => agentMessages.includes(w));
+    if (ruegosDetectados.length > 0) {
+      score = Math.max(0, score - 25);
+      errores.push(`Pérdida de postura ejecutiva: Usaste frases de ruego o insistencia desesperada ("${ruegosDetectados.join(', ')}"). Mantén siempre postura profesional y de valor.`);
+    }
+
+    // Penalización 3: Fuga de datos técnicos / cifras (-20 pts)
+    const penalizadas = ['suma asegurada', 'cobertura de', 'prima de', 'deducible', 'cuesta pesos', 'pesos mensuales', 'udi', 'udis'];
+    const infracciones = penalizadas.filter(w => agentMessages.includes(w));
+    if (infracciones.length > 0) {
+      score = Math.max(0, score - 20);
+      errores.push(`Fuga de datos técnicos: soltaste términos que no corresponden a una llamada telefónica (${infracciones.join(', ')}).`);
+    }
+
+    // Criterio 5: Cita Conseguida en el diálogo (+10)
     const cierreFrases = [
       'me parece bien', 'anótelo', 'anotelo', 'el jueves a las', 'el martes a las',
-      'déjeme anotarlo', 'dejeme anotarlo', 'agendado', 'le espero', 'con gusto lo recibo'
+      'déjeme anotarlo', 'dejeme anotarlo', 'agendado', 'le espero', 'con gusto lo recibo',
+      'anótalo', 'anotalo', 'nos vemos entonces'
     ];
-    const appointmentClosed = cierreFrases.some(f => prospectMessages.includes(f));
+    const rechazoFrases = [
+      'no me interesa', 'no insista', 'no me haga perder', 'no puedo atenderlo', 'tengo que colgar', 'hasta luego', 'no gracias'
+    ];
+
+    const tieneFraseCierre = cierreFrases.some(f => prospectMessages.includes(f));
+    const tieneRechazoFinal = rechazoFrases.some(f => prospectMessages.includes(f));
+
+    // Solo se valida cita si NO hubo errores fatales (venta prematura o ruego) y hubo frase de cierre sin rechazo final
+    const appointmentClosed = tieneFraseCierre && !tieneRechazoFinal && productosMencionados.length === 0 && ruegosDetectados.length === 0;
+
     if (appointmentClosed) {
-      score += 20;
-      aciertos.push('¡Cita Concretada con Éxito! El prospecto agendó la sesión en su agenda.');
+      score += 10;
+      aciertos.push('¡Cita Concretada con Éxito! El prospecto reservó la fecha en su agenda sin objeciones pendientes.');
+    } else if (tieneRechazoFinal) {
+      errores.push('Llamada cerrada sin cita: El prospecto rechazó la propuesta o dio por terminada la llamada.');
     }
 
     // Score final normalizado 0 - 100
