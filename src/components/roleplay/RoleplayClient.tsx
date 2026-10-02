@@ -18,11 +18,15 @@ import {
   Sparkles,
   Info,
   CheckCircle2,
-  Clock
+  Clock,
+  Mic,
+  Headphones,
+  Settings
 } from 'lucide-react';
 import { MasterTacticsModal } from './MasterTacticsModal';
 import { EvaluationModal } from './EvaluationModal';
 import { SupervisionPanel } from './SupervisionPanel';
+import { AudioSettingsModal } from './AudioSettingsModal';
 
 interface RoleplayClientProps {
   user: {
@@ -42,6 +46,16 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
 
   // Sound Mute
   const [isMuted, setIsMuted] = useState(false);
+
+  // Audio Devices (Zoom / Teams / Meet style)
+  const [isAudioSettingsOpen, setIsAudioSettingsOpen] = useState(false);
+  const [selectedInputId, setSelectedInputId] = useState<string>('');
+  const [selectedOutputId, setSelectedOutputId] = useState<string>('');
+  const [inputDeviceLabel, setInputDeviceLabel] = useState<string>('Micrófono');
+  const [outputDeviceLabel, setOutputDeviceLabel] = useState<string>('Altavoz');
+  const [userMicVolume, setUserMicVolume] = useState<number>(0);
+  const [userSpeaking, setUserSpeaking] = useState<boolean>(false);
+  const micIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Scenario & Session
   const [scenario, setScenario] = useState<any>(null);
@@ -166,14 +180,78 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
 
   useEffect(() => {
     initSession();
+
+    // Load saved devices from localStorage
+    if (typeof window !== 'undefined') {
+      const savedInput = localStorage.getItem('roleplay_input_device_id') || '';
+      const savedOutput = localStorage.getItem('roleplay_output_device_id') || '';
+      if (savedInput) setSelectedInputId(savedInput);
+      if (savedOutput) setSelectedOutputId(savedOutput);
+
+      if (navigator.mediaDevices?.enumerateDevices) {
+        navigator.mediaDevices.enumerateDevices().then(devices => {
+          if (savedInput) {
+            const matchIn = devices.find(d => d.deviceId === savedInput);
+            if (matchIn && matchIn.label) setInputDeviceLabel(matchIn.label);
+          } else {
+            const defIn = devices.find(d => d.kind === 'audioinput' && d.label);
+            if (defIn) setInputDeviceLabel(defIn.label);
+          }
+
+          if (savedOutput) {
+            const matchOut = devices.find(d => d.deviceId === savedOutput);
+            if (matchOut && matchOut.label) setOutputDeviceLabel(matchOut.label);
+          } else {
+            const defOut = devices.find(d => d.kind === 'audiooutput' && d.label);
+            if (defOut) setOutputDeviceLabel(defOut.label);
+          }
+        }).catch(() => {});
+      }
+    }
+
     return () => {
       stopRing();
       if (timerRef.current) clearInterval(timerRef.current);
+      if (micIntervalRef.current) clearInterval(micIntervalRef.current);
       if (conversationRef.current) {
         try { conversationRef.current.endSession(); } catch (_) {}
       }
     };
   }, []);
+
+  // Save selected audio devices
+  const handleSaveAudioDevices = async (inputId: string, outputId: string) => {
+    setSelectedInputId(inputId);
+    setSelectedOutputId(outputId);
+    if (typeof window !== 'undefined') {
+      if (inputId) localStorage.setItem('roleplay_input_device_id', inputId);
+      if (outputId) localStorage.setItem('roleplay_output_device_id', outputId);
+
+      if (navigator.mediaDevices?.enumerateDevices) {
+        try {
+          const devices = await navigator.mediaDevices.enumerateDevices();
+          const matchIn = devices.find(d => d.deviceId === inputId);
+          if (matchIn && matchIn.label) setInputDeviceLabel(matchIn.label);
+          const matchOut = devices.find(d => d.deviceId === outputId);
+          if (matchOut && matchOut.label) setOutputDeviceLabel(matchOut.label);
+        } catch (_) {}
+      }
+    }
+
+    // If call is actively running, change devices live!
+    if (conversationRef.current) {
+      try {
+        if (inputId && typeof conversationRef.current.changeInputDevice === 'function') {
+          await conversationRef.current.changeInputDevice({ inputDeviceId: inputId });
+        }
+        if (outputId && typeof conversationRef.current.changeOutputDevice === 'function') {
+          await conversationRef.current.changeOutputDevice({ outputDeviceId: outputId });
+        }
+      } catch (err) {
+        console.error('Error switching devices live:', err);
+      }
+    }
+  };
 
   // 3. Start call
   const startCall = async () => {
@@ -186,11 +264,10 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
       setCallStatusText(`Marcando a ${scenario.prospecto.nombre}...`);
       playRing();
 
-      // Request microphone
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-
       const conv = await Conversation.startSession({
         signedUrl,
+        inputDeviceId: selectedInputId || undefined,
+        outputDeviceId: selectedOutputId || undefined,
         workletPaths: {
           rawAudioProcessor: '/worklets/rawAudioProcessor.js',
           audioConcatProcessor: '/worklets/audioConcatProcessor.js'
@@ -213,10 +290,26 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
               hangupCall();
             }
           }, 1000);
+
+          // Monitor User Mic in real-time
+          if (micIntervalRef.current) clearInterval(micIntervalRef.current);
+          micIntervalRef.current = setInterval(() => {
+            if (conversationRef.current && typeof conversationRef.current.getInputVolume === 'function') {
+              const vol = conversationRef.current.getInputVolume();
+              setUserMicVolume(vol);
+              setUserSpeaking(vol > 0.04);
+            }
+          }, 120);
         },
         onDisconnect: () => {
           stopRing();
           playChime('hangup');
+          if (micIntervalRef.current) {
+            clearInterval(micIntervalRef.current);
+            micIntervalRef.current = null;
+          }
+          setUserSpeaking(false);
+          setUserMicVolume(0);
           handleCallEnded();
         },
         onError: (err) => {
@@ -244,6 +337,11 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
       stopRing();
       setIsConnecting(false);
       setIsCalling(false);
+      if (micIntervalRef.current) {
+        clearInterval(micIntervalRef.current);
+        micIntervalRef.current = null;
+      }
+      setUserSpeaking(false);
       alert('No se pudo conectar la llamada: ' + (err.message || 'Verifica permisos de micrófono'));
       setCallStatusText('Error al conectar. Revisa tu micrófono.');
     }
@@ -257,6 +355,12 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
+    if (micIntervalRef.current) {
+      clearInterval(micIntervalRef.current);
+      micIntervalRef.current = null;
+    }
+    setUserSpeaking(false);
+    setUserMicVolume(0);
 
     if (conversationRef.current) {
       try {
@@ -385,6 +489,17 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
             {isMuted ? <VolumeX className="h-4 w-4 text-rose-400" /> : <Volume2 className="h-4 w-4 text-emerald-400" />}
           </button>
 
+          {/* Configuración de Audio (Zoom / Teams / Meet style) */}
+          <button
+            onClick={() => setIsAudioSettingsOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/30 text-indigo-300 font-bold transition-colors"
+            title="Seleccionar micrófono y altavoces (Zoom / Teams / Meet)"
+          >
+            <Headphones className="h-4 w-4 text-indigo-400" />
+            <span className="hidden sm:inline">Vía de Audio</span>
+            <span className="sm:hidden">Audio</span>
+          </button>
+
           {/* Manual Táctico */}
           <button
             onClick={() => setIsTacticsOpen(true)}
@@ -500,6 +615,36 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
 
               {/* Call Controls & Live Status */}
               <div className="p-6 md:p-8 space-y-6">
+
+                {/* Audio Route Quick Selector Strip (Zoom / Meet / Teams style) */}
+                <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-slate-950/70 border border-slate-800 text-xs">
+                  <div className="flex items-center gap-3 overflow-hidden text-slate-300">
+                    <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5 flex-shrink-0">
+                      <Mic className="h-3.5 w-3.5 text-emerald-400" /> Mic:
+                    </span>
+                    <span className="font-medium text-white truncate max-w-[140px] sm:max-w-[220px]" title={inputDeviceLabel}>
+                      {inputDeviceLabel || 'Predeterminado'}
+                    </span>
+
+                    <span className="text-slate-600 hidden sm:inline">•</span>
+
+                    <span className="text-[11px] font-semibold text-slate-400 hidden sm:flex items-center gap-1.5 flex-shrink-0">
+                      <Volume2 className="h-3.5 w-3.5 text-cyan-400" /> Salida:
+                    </span>
+                    <span className="font-medium text-white truncate max-w-[140px] hidden sm:inline" title={outputDeviceLabel}>
+                      {outputDeviceLabel || 'Predeterminado'}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsAudioSettingsOpen(true)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-semibold transition-colors flex-shrink-0 border border-slate-700/60"
+                  >
+                    <Settings className="h-3.5 w-3.5 text-indigo-400" />
+                    <span>Configurar Vía de Audio</span>
+                  </button>
+                </div>
                 
                 {/* Timer & Status text */}
                 <div className="flex flex-col items-center justify-center text-center space-y-2">
@@ -510,6 +655,24 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
                     <span className={`w-2 h-2 rounded-full ${isCalling ? 'bg-emerald-500 animate-pulse' : 'bg-slate-600'}`} />
                     <span>{callStatusText}</span>
                   </div>
+
+                  {/* Real-time Voice Activity Indicator (Confirming mic is picking up user voice) */}
+                  {isCalling && (
+                    <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-950/90 border border-slate-800 text-[11px] mt-1 shadow-inner animate-in fade-in">
+                      <span className={`w-2 h-2 rounded-full ${userSpeaking ? 'bg-emerald-400 animate-ping' : 'bg-slate-600'}`} />
+                      <Mic className={`h-3 w-3 ${userSpeaking ? 'text-emerald-400' : 'text-slate-400'}`} />
+                      <span className={userSpeaking ? 'text-emerald-300 font-bold' : 'text-slate-400'}>
+                        {userSpeaking ? 'Tu voz: Transmitiendo en vivo' : 'Micrófono activo (listo)'}
+                      </span>
+                      {userSpeaking && (
+                        <div className="flex items-center gap-0.5 ml-1">
+                          <span className="w-1 h-2.5 bg-emerald-400 rounded-full animate-bounce" />
+                          <span className="w-1 h-3.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:0.15s]" />
+                          <span className="w-1 h-2 bg-emerald-400 rounded-full animate-bounce [animation-delay:0.3s]" />
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Big Action Buttons */}
@@ -704,6 +867,15 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
       )}
 
       {/* Modals */}
+      <AudioSettingsModal
+        isOpen={isAudioSettingsOpen}
+        onClose={() => setIsAudioSettingsOpen(false)}
+        selectedInputId={selectedInputId}
+        selectedOutputId={selectedOutputId}
+        onSaveDevices={handleSaveAudioDevices}
+        isInCall={isCalling}
+      />
+
       <MasterTacticsModal
         isOpen={isTacticsOpen}
         onClose={() => setIsTacticsOpen(false)}
