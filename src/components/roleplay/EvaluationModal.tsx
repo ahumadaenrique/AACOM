@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Award, CheckCircle2, XCircle, Lightbulb, Zap, ArrowRight, Flame, Volume2 } from 'lucide-react';
+import { Award, CheckCircle2, XCircle, Lightbulb, Zap, ArrowRight, Flame, Volume2, AlertCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 interface EvaluationModalProps {
@@ -66,10 +66,22 @@ export function EvaluationModal({ isOpen, evaluation, stats, onNextCall }: Evalu
 
           {/* XP & Streak Bar */}
           <div className="mt-4 flex flex-wrap items-center gap-3 pt-3 border-t border-slate-800/80 text-xs">
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold">
-              <Zap className="h-4 w-4" />
-              <span>+{evaluation.xpEarned} XP Ganados</span>
-            </div>
+            {evaluation.xpEarned < 0 ? (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-400 font-bold animate-pulse">
+                <AlertCircle className="h-4 w-4 text-rose-400" />
+                <span>{evaluation.xpEarned} XP (Penalización por técnica incorrecta)</span>
+              </div>
+            ) : evaluation.xpEarned === 0 ? (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-800 border border-slate-700 text-slate-400 font-bold">
+                <Zap className="h-4 w-4" />
+                <span>0 XP</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 font-bold">
+                <Zap className="h-4 w-4" />
+                <span>+{evaluation.xpEarned} XP Ganados</span>
+              </div>
+            )}
 
             {stats && (
               <>

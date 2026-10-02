@@ -163,6 +163,13 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
   const initSession = async () => {
     try {
       setLoadingScenario(true);
+      // Limpiar inmediatamente el caso anterior para que no quede en pantalla
+      setCallDuration(0);
+      setTranscript([]);
+      setProspectSpeaking(false);
+      setUserSpeaking(false);
+      setUserMicVolume(0);
+
       const res = await fetch('/api/roleplay/session', { method: 'POST' });
       if (!res.ok) throw new Error('Error al cargar sesión');
       const data = await res.json();
@@ -645,6 +652,12 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
                     <span>Configurar Vía de Audio</span>
                   </button>
                 </div>
+
+                {/* Headphone / No Echo Tip */}
+                <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-indigo-950/20 border border-indigo-500/20 text-[11px] text-slate-400">
+                  <Headphones className="h-3.5 w-3.5 text-indigo-400 flex-shrink-0" />
+                  <span>Tip de audio: Te recomendamos usar audífonos para evitar que tu micrófono capte el sonido del altavoz (eco acústico).</span>
+                </div>
                 
                 {/* Timer & Status text */}
                 <div className="flex flex-col items-center justify-center text-center space-y-2">
@@ -887,6 +900,8 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
         stats={stats}
         onNextCall={() => {
           setIsEvalOpen(false);
+          setTranscript([]);
+          setCallDuration(0);
           initSession();
         }}
       />

@@ -125,7 +125,12 @@ export async function POST() {
                 language: 'es'
               },
               tts: {
-                voice_id: scenario.prospecto.voiceId || 'TNuNcwk4LzbPpi1XEANc'
+                voice_id: scenario.prospecto.voiceId || 'TNuNcwk4LzbPpi1XEANc',
+                model_id: 'eleven_turbo_v2_5',
+                stability: 0.75,
+                similarity_boost: 0.85,
+                speed: 1.0,
+                optimize_streaming_latency: 2
               }
             }
           })

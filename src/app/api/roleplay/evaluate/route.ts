@@ -217,16 +217,25 @@ export async function POST(req: Request) {
     const finalScore = Math.min(100, Math.max(0, score));
 
     // Cálculo calibrado de XP:
-    // Cita cerrada: 85 - 110 XP
-    // Buen intento sin cierre: 35 - 55 XP
-    // Mínimo intento: 15 - 25 XP
+    // Cita cerrada con excelencia: 95 XP
+    // Buen intento profesional sin cierre (score >= 60): 45 XP
+    // Intento regular (score 40-59): 15 XP
+    // PENALIZACIONES DE XP:
+    // - Errores fatales (Venta prematura de producto / Ruego): -50 XP
+    // - Reprobado por baja técnica (score < 40): -25 XP
     let xpEarned = 0;
-    if (finalScore >= 80) {
+    const cometioErrorFatal = productosMencionados.length > 0 || ruegosDetectados.length > 0;
+
+    if (cometioErrorFatal) {
+      xpEarned = -50; // Penalización por técnica destructiva
+    } else if (finalScore >= 80) {
       xpEarned = appointmentClosed ? 95 : 65;
-    } else if (finalScore >= 50) {
-      xpEarned = appointmentClosed ? 75 : 45;
+    } else if (finalScore >= 60) {
+      xpEarned = appointmentClosed ? 80 : 45;
+    } else if (finalScore >= 40) {
+      xpEarned = appointmentClosed ? 60 : 15;
     } else {
-      xpEarned = 20;
+      xpEarned = -25; // Penalización por reprobar llamada
     }
 
     // Actualización de Estadísticas en Base de Datos
@@ -253,11 +262,16 @@ export async function POST(req: Request) {
     let todayXp = stats.todayDate === todayStr ? stats.todayXp : 0;
     let todayCallsCount = stats.todayDate === todayStr ? stats.todayCallsCount + 1 : 1;
 
-    const availableXpToday = Math.max(0, DAILY_XP_CAP - todayXp);
-    const effectiveXpEarned = Math.min(xpEarned, availableXpToday);
+    let effectiveXpEarned = xpEarned;
+    if (xpEarned > 0) {
+      const availableXpToday = Math.max(0, DAILY_XP_CAP - todayXp);
+      effectiveXpEarned = Math.min(xpEarned, availableXpToday);
+      todayXp += effectiveXpEarned;
+    }
 
-    const newTotalXp = stats.xp + effectiveXpEarned;
+    const newTotalXp = Math.max(0, stats.xp + effectiveXpEarned);
     const newLevel = calculateLevelFromXp(newTotalXp);
+    const newBenefits = DEFAULT_BENEFITS[newLevel] || [];
 
     // Calcular racha de días (si hoy cumple la meta de 3 llamadas)
     let newStreak = stats.streak;
@@ -305,7 +319,7 @@ export async function POST(req: Request) {
         level: newLevel,
         streak: newStreak,
         lastActiveDate: todayStr,
-        todayXp: todayXp + effectiveXpEarned,
+        todayXp: Math.max(0, todayXp),
         todayDate: todayStr,
         todayCallsCount,
         totalCalls: stats.totalCalls + 1,
