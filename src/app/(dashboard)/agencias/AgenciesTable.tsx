@@ -4,11 +4,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { differenceInCalendarDays, format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ShieldAlert, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff } from "lucide-react";
+import { ShieldAlert, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteAgency, getAgencyUsers, toggleAgencyRoleplay } from "./actions";
 import { useState } from "react";
 import { GiftModal } from "./GiftModal";
+import { AgencyAiSettingsModal } from "./AgencyAiSettingsModal";
 
 export function AgenciesTable({ agencies }: { agencies: any[] }) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -19,6 +20,11 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
   const [giftAgencyUsers, setGiftAgencyUsers] = useState<any[]>([]);
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(false);
+
+  // AI Modal States
+  const [aiAgencyId, setAiAgencyId] = useState<string>("");
+  const [aiAgencyName, setAiAgencyName] = useState<string>("");
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   const handleDelete = async (agencyId: string, agencyName: string) => {
     if (!confirm(`¿ESTÁS ABSOLUTAMENTE SEGURO de querer borrar a la agencia "${agencyName}"? Esta acción borrará la agencia por completo y no se puede deshacer.`)) {
@@ -184,6 +190,15 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                         <Gift className="h-3.5 w-3.5" />
                       </Button>
                       <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => { setAiAgencyId(agency.id); setAiAgencyName(agency.name); setIsAiModalOpen(true); }}
+                        className="text-xs h-7 px-2 border-emerald-200 text-emerald-600 hover:bg-emerald-50"
+                        title="Configuración IA (ElevenLabs BYOK)"
+                      >
+                        <Bot className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button 
                         variant="destructive" 
                         size="sm" 
                         onClick={() => handleDelete(agency.id, agency.name)}
@@ -215,6 +230,13 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
         onClose={() => setIsGiftModalOpen(false)}
         agency={giftAgency}
         agencyUsers={giftAgencyUsers}
+      />
+
+      <AgencyAiSettingsModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        agencyId={aiAgencyId}
+        agencyName={aiAgencyName}
       />
     </div>
   );

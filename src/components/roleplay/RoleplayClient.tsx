@@ -36,9 +36,10 @@ interface RoleplayClientProps {
     role?: string;
   };
   isAdmin: boolean;
+  moduleId?: 'prospeccion' | 'adn' | 'objeciones';
 }
 
-export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
+export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: RoleplayClientProps) {
   // Tabs: 'simulador' | 'historial' | 'admin'
   const [activeTab, setActiveTab] = useState<'simulador' | 'historial' | 'admin'>('simulador');
   const [isTacticsOpen, setIsTacticsOpen] = useState(false);
@@ -170,7 +171,11 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
       setUserSpeaking(false);
       setUserMicVolume(0);
 
-      const res = await fetch('/api/roleplay/session', { method: 'POST' });
+      const res = await fetch('/api/roleplay/session', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ moduleId })
+      });
       if (!res.ok) throw new Error('Error al cargar sesión');
       const data = await res.json();
       setScenario(data.scenario);
@@ -400,7 +405,8 @@ export function RoleplayClient({ user, isAdmin }: RoleplayClientProps) {
           transcript,
           durationSeconds: elapsed,
           scenario,
-          conversationId: conversationIdRef.current
+          conversationId: conversationIdRef.current,
+          moduleId
         })
       });
 
