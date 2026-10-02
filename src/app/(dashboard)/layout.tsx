@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity, Newspaper } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity, Newspaper, SmilePlus } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { resolveImageUrl } from "@/lib/utils"
@@ -260,13 +260,19 @@ export default async function DashboardLayout({
                                 {!isReferidor && (
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                                                <Sparkles className={`h-4 w-4 ${['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-pink-500'}`} />
+                                            <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque', '/encuesta-satisfaccion'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                                                <Sparkles className={`h-4 w-4 ${['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque', '/encuesta-satisfaccion'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-pink-500'}`} />
                                                 Herramientas
-                                                {['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                                {['/documentacion', '/cotizador', '/adn', '/academia', '/plan-arranque', '/encuesta-satisfaccion'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                             </button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="start" className="w-48">
+                                        <DropdownMenuContent align="start" className="w-56">
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/encuesta-satisfaccion" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <SmilePlus className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                                                    Encuesta de satisfacción
+                                                </Link>
+                                            </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
                                                 <Link href="/documentacion" className="flex items-center gap-2 cursor-pointer font-medium">
                                                     <Book className="h-4 w-4 text-teal-600 dark:text-teal-400" />
@@ -506,6 +512,10 @@ export default async function DashboardLayout({
                                              <div className="space-y-2.5">
                                              <div className="text-[10px] font-mono tracking-wider text-zinc-400 uppercase pt-2">Herramientas</div>
                                              <div className="pl-3 space-y-2.5 border-l border-zinc-200 dark:border-zinc-800">
+                                                 <Link href="/encuesta-satisfaccion" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                     <SmilePlus className="h-4.5 w-4.5 text-emerald-500" />
+                                                     Encuesta de satisfacción
+                                                 </Link>
                                                  <Link href="/documentacion" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
                                                      <Book className="h-4.5 w-4.5 text-teal-600" />
                                                      Mi Biblioteca

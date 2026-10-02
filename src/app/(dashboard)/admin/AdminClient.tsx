@@ -6,6 +6,7 @@ import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting,
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import BibliotecaAdmin from "./BibliotecaAdmin"
+import AdminSatisfactionSurveys from "./AdminSatisfactionSurveys"
 import { AdminPollManager } from "./AdminPollManager"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -88,7 +89,7 @@ export default function AdminClient() {
   const [adnYearFilter, setAdnYearFilter] = useState<string>(new Date().getFullYear().toString())
 
   // Admin Dashboard Tabs
-  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca" | "votaciones" | "encuestas" | "cotizador">("productividad")
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca" | "votaciones" | "encuestas" | "cotizador" | "satisfaccion">("productividad")
 
   // Chatbot Knowledge Base states
   const [knowledgeDocs, setKnowledgeDocs] = useState<any[]>([])
@@ -1302,6 +1303,16 @@ export default function AdminClient() {
           }`}
         >
           <Book className="h-4.5 w-4.5" /> Biblioteca de Documentos
+        </button>
+        <button
+          onClick={() => setActiveTab("satisfaccion")}
+          className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === "satisfaccion"
+              ? "border-emerald-600 text-emerald-600 dark:text-emerald-400"
+              : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
+        >
+          <Sparkles className="h-4.5 w-4.5 text-emerald-600" /> Encuestas & Referidos
         </button>
                 {currentUserRole === 'SUPER_ADMIN' && (
             <>
@@ -5253,6 +5264,12 @@ export default function AdminClient() {
             agencyId={currentUserData?.agencyId || ''} 
             initialSettings={currentUserData?.agency || {}} 
           />
+        </div>
+      )}
+
+      {activeTab === "satisfaccion" && (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <AdminSatisfactionSurveys />
         </div>
       )}
 

@@ -78,6 +78,8 @@ model Agency {
   pollVotes             PollVote[]
   tickets               Ticket[]
   users                 User[]
+  satisfactionSurveys   SatisfactionSurvey[]
+  surveyReferrals       SurveyReferral[]
 
   @@index([referredById])
 }
@@ -171,6 +173,8 @@ model User {
   voicePurchases       VoiceMinutesPurchase[]
   roleplayCalls        RoleplayCall[]
   roleplayStats        RoleplayStats?
+  satisfactionSurveys  SatisfactionSurvey[]
+  surveyReferrals      SurveyReferral[]
 
   @@index([agencyId])
   @@index([reportsToId])
@@ -854,5 +858,51 @@ model RoleplayStats {
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+}
+
+model SatisfactionSurvey {
+  id               String           @id @default(cuid())
+  userId           String
+  agencyId         String?
+  intervieweeName  String
+  q1Useful         Boolean          @default(true)
+  q2Attractive     Boolean          @default(true)
+  q3Professional   Boolean          @default(true)
+  q4Clear          Boolean          @default(true)
+  q5WouldRecommend Boolean          @default(true)
+  notes            String?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  user             User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency           Agency?          @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  referrals        SurveyReferral[]
+
+  @@index([userId])
+  @@index([agencyId])
+  @@index([createdAt])
+}
+
+model SurveyReferral {
+  id        String             @id @default(cuid())
+  surveyId  String
+  userId    String
+  agencyId  String?
+  fullName  String
+  phone     String
+  notes     String?
+  status    String             @default("NO_CONTACTADO")
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  survey    SatisfactionSurvey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency    Agency?            @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+
+  @@index([surveyId])
+  @@index([userId])
+  @@index([agencyId])
+  @@index([status])
+  @@index([createdAt])
 }
 
