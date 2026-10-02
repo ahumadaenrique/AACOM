@@ -166,12 +166,12 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        onClick={() => handleToggleRoleplay(agency.id, agency.allowRoleplaySimulator ?? true)}
+                        onClick={() => handleToggleRoleplay(agency.id, agency.allowRoleplaySimulator ?? false)}
                         disabled={togglingRoleId === agency.id}
-                        className={`text-xs h-7 px-2 border ${(agency.allowRoleplaySimulator ?? true) ? 'border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100' : 'border-slate-200 text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
-                        title={(agency.allowRoleplaySimulator ?? true) ? "Simulador de Llamadas HABILITADO (Click para Bloquear)" : "Simulador de Llamadas BLOQUEADO (Click para Habilitar)"}
+                        className={`text-xs h-7 px-2 border ${(agency.allowRoleplaySimulator ?? false) ? 'border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100' : 'border-slate-200 text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
+                        title={(agency.allowRoleplaySimulator ?? false) ? "Simulador de Llamadas HABILITADO (Click para Bloquear)" : "Simulador de Llamadas BLOQUEADO (Click para Habilitar)"}
                       >
-                        {(agency.allowRoleplaySimulator ?? true) ? <PhoneCall className="h-3.5 w-3.5 text-purple-600" /> : <PhoneOff className="h-3.5 w-3.5 text-slate-400" />}
+                        {(agency.allowRoleplaySimulator ?? false) ? <PhoneCall className="h-3.5 w-3.5 text-purple-600" /> : <PhoneOff className="h-3.5 w-3.5 text-slate-400" />}
                       </Button>
                       <Button 
                         variant="outline" 

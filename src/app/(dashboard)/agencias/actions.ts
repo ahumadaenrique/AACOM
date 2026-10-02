@@ -91,7 +91,7 @@ export async function createAgency(data: z.infer<typeof agencySchema>) {
       active: parsed.active ?? true,
       allowLiteAgents: parsed.allowLiteAgents ?? false,
       allowReferidores: parsed.allowReferidores ?? false,
-      allowRoleplaySimulator: parsed.allowRoleplaySimulator ?? true,
+      allowRoleplaySimulator: parsed.allowRoleplaySimulator ?? false,
       enableWhatsAppPlanner: parsed.enableWhatsAppPlanner ?? false,
       whatsAppPlannerPhones: parsed.whatsAppPlannerPhones,
       whatsAppPlannerAgents: parsed.whatsAppPlannerAgents,

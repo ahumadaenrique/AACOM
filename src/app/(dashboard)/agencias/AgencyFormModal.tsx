@@ -188,7 +188,7 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
                 <Label htmlFor="allowRoleplaySimulator" className="text-base font-semibold text-purple-900">Simulador de Prospección IA</Label>
                 <p className="text-xs text-purple-700">Activa o bloquea el acceso a las llamadas telefónicas con IA y gamificación para los agentes de esta agencia.</p>
               </div>
-              <Switch id="allowRoleplaySimulator" name="allowRoleplaySimulator" defaultChecked={agency ? (agency.allowRoleplaySimulator ?? true) : true} />
+              <Switch id="allowRoleplaySimulator" name="allowRoleplaySimulator" defaultChecked={agency ? (agency.allowRoleplaySimulator ?? false) : false} />
             </div>
 
             <div className="flex flex-col p-3 border border-green-200 rounded-lg bg-green-50/30 gap-3">
