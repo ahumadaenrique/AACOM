@@ -7,16 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Upload, Image as ImageIcon } from "lucide-react";
+import { Loader2, Upload, Image as ImageIcon, Bot } from "lucide-react";
+import { AgencyAiSettingsModal } from "@/app/(dashboard)/agencias/AgencyAiSettingsModal";
 
 interface Props {
+  id: string;
   slug: string;
   initialName: string;
   initialColor: string;
   initialLogo: string | null;
 }
 
-export default function AgencySettingsForm({ slug, initialName, initialColor, initialLogo }: Props) {
+export default function AgencySettingsForm({ id, slug, initialName, initialColor, initialLogo }: Props) {
   const { toast } = useToast();
   
   const [name, setName] = useState(initialName);
@@ -25,6 +27,7 @@ export default function AgencySettingsForm({ slug, initialName, initialColor, in
   
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   const handleSaveSettings = async () => {
     try {
@@ -161,6 +164,31 @@ export default function AgencySettingsForm({ slug, initialName, initialColor, in
 
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Bot className="w-5 h-5 text-indigo-600" />
+            Inteligencia Artificial (BYOK)
+          </CardTitle>
+          <CardDescription>
+            Conecta tu propia API Key de ElevenLabs para habilitar los simuladores de ventas gamificados para tus agentes.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button onClick={() => setIsAiModalOpen(true)} variant="outline" className="text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+            <Bot className="w-4 h-4 mr-2" />
+            Configurar API Key de ElevenLabs
+          </Button>
+        </CardContent>
+      </Card>
+
+      <AgencyAiSettingsModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        agencyId={id}
+        agencyName={name}
+      />
     </div>
   );
 }

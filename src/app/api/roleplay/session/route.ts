@@ -11,8 +11,12 @@ import {
   DEFAULT_BENEFITS
 } from '@/lib/roleplay/gamification';
 
-export async function POST() {
+export async function POST(req: Request) {
   try {
+    let body = {};
+    try { body = await req.json(); } catch(e) {}
+    const moduleId = (body as any).moduleId || 'prospeccion';
+
     const session = await auth();
     if (!session?.user?.id && !session?.user?.email) {
       return NextResponse.json({ error: 'No autorizado. Inicia sesión en AACOM.' }, { status: 401 });
@@ -98,12 +102,26 @@ export async function POST() {
       });
     }
 
-    // Generate scenario tailored to current level
-    const scenario = generarEscenarioAleatorio(stats.level);
+    // Generate scenario tailored to current level and selected module
+    const scenario = generarEscenarioAleatorio(stats.level, moduleId);
 
-    // Get signed WebSocket URL from ElevenLabs
-    const apiKey = process.env.ELEVENLABS_API_KEY;
+    // Get signed WebSocket URL from ElevenLabs using the Agency's BYOK
     const agentId = process.env.ELEVENLABS_AGENT_ID;
+    let apiKey = process.env.ELEVENLABS_API_KEY; // Fallback for SUPER_ADMIN or global testing
+    
+    // Check for Agency BYOK
+    if (userWithAgency?.agency?.elevenLabsApiKey) {
+      try {
+        const { decrypt } = await import('@/lib/encryption');
+        apiKey = decrypt(userWithAgency.agency.elevenLabsApiKey);
+      } catch (e) {
+        console.error("Error decrypting agency BYOK:", e);
+      }
+    }
+
+    if (!apiKey) {
+      return NextResponse.json({ error: 'Configuración de IA incompleta. Pide a tu promotor que configure su API Key en el panel de Agencias.' }, { status: 403 });
+    }
 
     let signedUrl = null;
     if (apiKey && agentId) {
@@ -125,7 +143,7 @@ export async function POST() {
                 language: 'es'
               },
               tts: {
-                voice_id: scenario.prospecto.voiceId || 'TNuNcwk4LzbPpi1XEANc',
+                voice_id: userWithAgency?.agency?.elevenLabsVoiceId || scenario.prospecto.voiceId || 'TNuNcwk4LzbPpi1XEANc',
                 model_id: 'eleven_turbo_v2_5',
                 stability: 0.75,
                 similarity_boost: 0.85,

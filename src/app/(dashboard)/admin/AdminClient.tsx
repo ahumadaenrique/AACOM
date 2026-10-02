@@ -45,6 +45,7 @@ import {
   Settings
 } from "lucide-react"
 import { resolveImageUrl } from "@/lib/utils"
+import { evaluatePilar5Hormiga } from "@/app/(dashboard)/adn/AdnClient"
 
 // Recharts for Agent Weekly performance chart & Quote Rescue Area chart
 import {
@@ -3738,11 +3739,11 @@ export default function AdminClient() {
                   } else if (selectedAdn.modalidad === 'RESUMIDO') {
                     const r = parsedGastos
                     catVivienda = r.vivienda || 0
-                    catTransporte = r.transporte || 0
+                    catTransporte = (r.transporte || 0) + ((r.seguroAuto || 0) / 12)
                     catEducacion = r.educacion || 0
                     catDeudas = r.deudas || 0
                     catAlimentacion = r.alimentacion || 0
-                    catCuidadoPersonal = r.cuidadoPersonal || 0
+                    catCuidadoPersonal = (r.cuidadoPersonal || 0) + ((r.seguroVida || 0) / 12) + ((r.seguroGmm || 0) / 12) + ((r.otrosSeguros || 0) / 12)
                     catMascotas = r.mascotas || 0
                     catEntretenimiento = r.entretenimiento || 0
                     catAhorro += r.ahorro || 0
@@ -3775,6 +3776,14 @@ export default function AdminClient() {
 
                   const tieneHijosChicos = selectedAdn.hijosData && JSON.parse(selectedAdn.hijosData).some((h: any) => h.edad >= 0 && h.edad <= 9)
                   const p4_educacion = tieneHijosChicos && !selectedAdn.hasSeguroAhorro
+
+                  const p5ResultAdmin = evaluatePilar5Hormiga({
+                    modalidad: selectedAdn.modalidad,
+                    income,
+                    totalGastos: totalEgresos,
+                    remanente: Math.max(0, income - totalEgresos),
+                    parsedGastos
+                  })
 
                   // PPR Plazo and Suficiencia Math Logic (AJUSTE 5)
                   const retirementGoal = income * 12 * 20
@@ -4061,6 +4070,22 @@ export default function AdminClient() {
                               </div>
                             </div>
                           )}
+
+                          {/* Pilar 5: Gastos Hormiga y Finanzas Básicas */}
+                          <div className="border p-3 rounded-lg flex items-start gap-3 bg-white">
+                            <span className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${p5ResultAdmin.isAlert ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                            <div className="text-xs">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-extrabold text-[9px] tracking-wider text-slate-400 block uppercase">Pilar 5: {p5ResultAdmin.title}</span>
+                                <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${p5ResultAdmin.isAlert ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                                  {p5ResultAdmin.badge}
+                                </span>
+                              </div>
+                              <p className="text-slate-600 mt-0.5">
+                                {p5ResultAdmin.message}
+                              </p>
+                            </div>
+                          </div>
                         </div>
                       </div>
 

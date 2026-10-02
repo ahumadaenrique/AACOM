@@ -9,12 +9,11 @@ export interface LevelInfo {
 }
 
 export const LEVELS_CONFIG: Record<number, LevelInfo> = {
-  1: { level: 1, title: 'Novato Telefónico', icon: '🥉', minXp: 0, maxXp: 499 },
-  2: { level: 2, title: 'Prospectador Activo', icon: '🎖️', minXp: 500, maxXp: 1499 },
-  3: { level: 3, title: 'Negociador Tenaz', icon: '🥈', minXp: 1500, maxXp: 2799 },
-  4: { level: 4, title: 'Cazador de Citas', icon: '🥇', minXp: 2800, maxXp: 4499 },
-  5: { level: 5, title: 'Maestro del Cierre', icon: '💎', minXp: 4500, maxXp: 6499 },
-  6: { level: 6, title: 'Lobo de AACOM Seguros', icon: '👑', minXp: 6500, maxXp: 999999 }
+  1: { level: 1, title: 'Novato', icon: '🥉', minXp: 0, maxXp: 1499 },
+  2: { level: 2, title: 'Intermedio', icon: '🎖️', minXp: 1500, maxXp: 3999 },
+  3: { level: 3, title: 'Avanzado', icon: '🥈', minXp: 4000, maxXp: 7499 },
+  4: { level: 4, title: 'Experto', icon: '🥇', minXp: 7500, maxXp: 11999 },
+  5: { level: 5, title: 'Maestro', icon: '💎', minXp: 12000, maxXp: 999999 }
 };
 
 export const BADGES_CATALOG = [
@@ -23,20 +22,15 @@ export const BADGES_CATALOG = [
   { id: 'maestro_objecion', name: 'Escudo Blindado', desc: 'Superó objeciones complejas con maestría', icon: '🛡️' },
   { id: 'experto_frio', name: 'Cazador Glacial', desc: 'Cerró cita en llamada en frío total', icon: '❄️' },
   { id: 'dia_perfecto', name: 'Racha Imparable', desc: 'Alcanzó el tope diario de 500 XP', icon: '⚡' },
-  { id: 'lobo_aacom', name: 'Lobo de AACOM', desc: 'Alcanzó el Nivel 6 de élite', icon: '👑' }
+  { id: 'lobo_aacom', name: 'Lobo de AACOM', desc: 'Alcanzó el Nivel 5 de élite', icon: '👑' }
 ];
 
 export const DEFAULT_BENEFITS: Record<number, string[]> = {
-  1: ["Acceso al simulador y retroalimentación táctica por llamada"],
-  2: ["Visualización de histórico de llamadas y audios de práctica"],
-  3: ["Acceso a biblioteca de objeciones avanzadas y cierres maestros"],
-  4: ["Prioridad en asignación de prospectos calificados en tu promotoría"],
-  5: ["1 perdón de multas/retardos al mes en juntas de promotoría"],
-  6: [
-    "Poder tomar 1 junta semanal de manera virtual",
-    "2 perdones de multas al mes",
-    "Insignia dorada en el directorio general de agentes AACOM"
-  ]
+  1: ["Acceso al Módulo de Prospección Telefónica"],
+  2: ["Desbloquea el Módulo de Análisis de Necesidades (ADN)"],
+  3: ["Desbloquea el Módulo de Objeciones y Cierre"],
+  4: ["Desbloquea Voces Premium y Casos Complejos"],
+  5: ["1 perdón de multas/retardos al mes", "Insignia Master en el directorio de la Agencia"]
 };
 
 export const DAILY_XP_CAP = 500;
@@ -45,11 +39,10 @@ export const DAILY_GOAL_CALLS = 3;
 
 export function calculateLevelFromXp(xp: number): number {
   const safeXp = Math.max(0, xp);
-  if (safeXp >= 6500) return 6;
-  if (safeXp >= 4500) return 5;
-  if (safeXp >= 2800) return 4;
-  if (safeXp >= 1500) return 3;
-  if (safeXp >= 500) return 2;
+  if (safeXp >= 12000) return 5;
+  if (safeXp >= 7500) return 4;
+  if (safeXp >= 4000) return 3;
+  if (safeXp >= 1500) return 2;
   return 1;
 }
 

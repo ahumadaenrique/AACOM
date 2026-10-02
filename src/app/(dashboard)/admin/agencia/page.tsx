@@ -50,6 +50,7 @@ export default async function AgencySettingsPage() {
             </div>
             
             <AgencySettingsForm 
+                id={agency.id}
                 slug={agency.slug} 
                 initialName={agency.name} 
                 initialColor={agency.primaryColor || "#4f46e5"} 

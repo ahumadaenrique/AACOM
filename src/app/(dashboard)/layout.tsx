@@ -23,6 +23,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import DigitalCardModalButton from "@/components/DigitalCardModalButton"
 import { MobileNavigation } from "@/components/MobileNavigation"
+import { GamificationProgressWidget } from "@/components/roleplay/GamificationProgressWidget"
 
 export const dynamic = 'force-dynamic';
 
@@ -609,6 +610,7 @@ export default async function DashboardLayout({
 
                 {/* Header User Menu */}
                 <div className="flex items-center gap-4">
+                    {dbUser && agency?.allowRoleplaySimulator && <GamificationProgressWidget userId={dbUser.id} />}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="secondary" size="icon" className="rounded-full overflow-hidden border border-slate-200 dark:border-zinc-800 shadow-sm relative shrink-0">
