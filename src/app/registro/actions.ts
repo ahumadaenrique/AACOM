@@ -99,6 +99,7 @@ export async function processRegistration(data: any) {
         subscriptionStatus: "trialing",
         subscriptionEndDate: trialEndDate,
         active: true,
+        allowRoleplaySimulator: false,
         referredByAgencyId,
       }
     });

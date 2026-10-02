@@ -37,11 +37,11 @@ const nextConfig = {
                     },
                     {
                         key: 'Permissions-Policy',
-                        value: 'camera=(), browsing-topics=()',
+                        value: 'camera=(), microphone=(self), browsing-topics=()',
                     },
                     {
                         key: 'Content-Security-Policy',
-                        value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://va.vercel-scripts.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://vitals.vercel-insights.com wss://api.elevenlabs.io https://api.elevenlabs.io; frame-src 'self' https://www.youtube.com; frame-ancestors 'self';",
+                        value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: data: https://va.vercel-scripts.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; worker-src 'self' blob: data:; media-src 'self' blob: data: https:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' blob: data: https:; font-src 'self' data: https://fonts.gstatic.com; connect-src 'self' https://vitals.vercel-insights.com wss://api.elevenlabs.io https://api.elevenlabs.io; frame-src 'self' https://www.youtube.com; frame-ancestors 'self';",
                     }
                 ],
             },

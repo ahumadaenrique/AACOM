@@ -4,14 +4,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { differenceInCalendarDays, format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ShieldAlert, CheckCircle2, XCircle, Trash2, Gift } from "lucide-react";
+import { ShieldAlert, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { deleteAgency, getAgencyUsers } from "./actions";
+import { deleteAgency, getAgencyUsers, toggleAgencyRoleplay } from "./actions";
 import { useState } from "react";
 import { GiftModal } from "./GiftModal";
 
 export function AgenciesTable({ agencies }: { agencies: any[] }) {
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [togglingRoleId, setTogglingRoleId] = useState<string | null>(null);
   
   // Gift Modal States
   const [giftAgency, setGiftAgency] = useState<any | null>(null);
@@ -46,6 +47,17 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
       alert("Error al obtener usuarios de la agencia.");
     } finally {
       setLoadingUsers(false);
+    }
+  };
+
+  const handleToggleRoleplay = async (agencyId: string, currentVal: boolean) => {
+    try {
+      setTogglingRoleId(agencyId);
+      await toggleAgencyRoleplay(agencyId, !currentVal);
+    } catch (err: any) {
+      alert("Error cambiando acceso al simulador: " + err.message);
+    } finally {
+      setTogglingRoleId(null);
     }
   };
 
@@ -151,6 +163,16 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
 
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleToggleRoleplay(agency.id, agency.allowRoleplaySimulator ?? false)}
+                        disabled={togglingRoleId === agency.id}
+                        className={`text-xs h-7 px-2 border ${(agency.allowRoleplaySimulator ?? false) ? 'border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100' : 'border-slate-200 text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
+                        title={(agency.allowRoleplaySimulator ?? false) ? "Simulador de Llamadas HABILITADO (Click para Bloquear)" : "Simulador de Llamadas BLOQUEADO (Click para Habilitar)"}
+                      >
+                        {(agency.allowRoleplaySimulator ?? false) ? <PhoneCall className="h-3.5 w-3.5 text-purple-600" /> : <PhoneOff className="h-3.5 w-3.5 text-slate-400" />}
+                      </Button>
                       <Button 
                         variant="outline" 
                         size="sm" 
