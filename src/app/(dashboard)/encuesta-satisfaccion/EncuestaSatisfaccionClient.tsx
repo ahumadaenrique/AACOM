@@ -24,9 +24,11 @@ import {
   updateReferralStatus,
   deleteSurveyReferral,
   deleteSatisfactionSurvey,
+} from "@/app/actions/satisfactionSurveys";
+import {
   REFERRAL_STATUSES,
   type SurveyReferralInput,
-} from "@/app/actions/satisfactionSurveys";
+} from "@/lib/satisfactionConstants";
 import {
   CheckCircle2,
   XCircle,

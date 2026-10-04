@@ -29,8 +29,8 @@ import {
   syncBudgetsFromPea,
   saveInsuranceCompany,
   deleteInsuranceCompany,
-  RAMOS_CATALOGO,
 } from "@/app/actions/productionActions";
+import { RAMOS_CATALOGO } from "@/lib/productionConstants";
 import {
   Shield,
   Award,

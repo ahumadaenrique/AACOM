@@ -14,8 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import {
   getAdminSatisfactionData,
   updateReferralStatus,
-  REFERRAL_STATUSES,
 } from "@/app/actions/satisfactionSurveys";
+import { REFERRAL_STATUSES } from "@/lib/satisfactionConstants";
 import {
   Sparkles,
   Users,
