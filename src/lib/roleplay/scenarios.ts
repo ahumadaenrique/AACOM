@@ -82,27 +82,27 @@ const PROSPECTOS_PERSONAS: { nombre: string; genero: 'M' | 'F' }[] = [
 
 const PERSONALIDADES = [
     {
-      tipo: 'El Escéptico Anti-Trampas (Extremo)',
-      comportamiento: 'Desconfía profundamente de cualquier promesa exagerada o rendimiento irreal. Si el asesor promete demasiado o miente, cuelga o rechaza tajantemente.',
-      objecionFrecuente: 'He visto de todo en la industria, así que ahórrate los cuentos. ¿Exactamente qué ofreces?',
+      tipo: 'El EscÃ©ptico Anti-Trampas (Extremo)',
+      comportamiento: 'DesconfÃ­a profundamente de cualquier promesa exagerada o rendimiento irreal. Si el asesor promete demasiado o miente, cuelga o rechaza tajantemente.',
+      objecionFrecuente: 'He visto de todo en la industria, asÃ­ que ahÃ³rrate los cuentos. Â¿Exactamente quÃ© ofreces?',
       dificultad: 'alta'
     },
     {
       tipo: 'El Enemigo de los Robots (Extremo)',
       comportamiento: 'Odia a la gente que lee guiones. Si siente que el asesor repite frases de memoria o no lo escucha, lo corta de inmediato.',
-      objecionFrecuente: '¿Estás leyendo un guion? Háblame como persona normal, no tengo tiempo para grabadoras.',
+      objecionFrecuente: 'Â¿EstÃ¡s leyendo un guion? HÃ¡blame como persona normal, no tengo tiempo para grabadoras.',
       dificultad: 'alta'
     },
     {
       tipo: 'El Muralla Inhackeable (Extremo)',
-      comportamiento: 'Inmune a técnicas baratas, ruego o lástima. Mantiene una frialdad absoluta en la negociación.',
-      objecionFrecuente: 'Mejor ve directo al grano, mis decisiones se basan 100% en números, no en sentimientos.',
+      comportamiento: 'Inmune a tÃ©cnicas baratas, ruego o lÃ¡stima. Mantiene una frialdad absoluta en la negociaciÃ³n.',
+      objecionFrecuente: 'Mejor ve directo al grano, mis decisiones se basan 100% en nÃºmeros, no en sentimientos.',
       dificultad: 'alta'
     },
     {
       tipo: 'El Ejecutivo Ofendido (Extremo)',
-      comportamiento: 'Tiene muy poca tolerancia. Si el asesor es grosero, asume cosas de su dinero o le dice qué hacer, estalla de ira y cuelga.',
-      objecionFrecuente: '¿De qué te ríes o por qué asumes cosas? Vamos aclarando el tono si quieres que te dedique un minuto.',
+      comportamiento: 'Tiene muy poca tolerancia. Si el asesor es grosero, asume cosas de su dinero o le dice quÃ© hacer, estalla de ira y cuelga.',
+      objecionFrecuente: 'Â¿De quÃ© te rÃ­es o por quÃ© asumes cosas? Vamos aclarando el tono si quieres que te dedique un minuto.',
       dificultad: 'alta'
     },
   {
