@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Input } from "@/components/ui/input"
 import BibliotecaAdmin from "./BibliotecaAdmin"
 import AdminSatisfactionSurveys from "./AdminSatisfactionSurveys"
+import AdminProduccion from "./AdminProduccion"
 import { AdminPollManager } from "./AdminPollManager"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
@@ -89,7 +90,7 @@ export default function AdminClient() {
   const [adnYearFilter, setAdnYearFilter] = useState<string>(new Date().getFullYear().toString())
 
   // Admin Dashboard Tabs
-  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca" | "votaciones" | "encuestas" | "cotizador" | "satisfaccion">("productividad")
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca" | "votaciones" | "encuestas" | "cotizador" | "satisfaccion" | "produccion">("productividad")
 
   // Chatbot Knowledge Base states
   const [knowledgeDocs, setKnowledgeDocs] = useState<any[]>([])
@@ -1313,6 +1314,16 @@ export default function AdminClient() {
           }`}
         >
           <Sparkles className="h-4.5 w-4.5 text-emerald-600" /> Encuestas & Referidos
+        </button>
+        <button
+          onClick={() => setActiveTab("produccion")}
+          className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${
+            activeTab === "produccion"
+              ? "border-teal-700 text-teal-700 dark:text-teal-400"
+              : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
+          }`}
+        >
+          <Award className="h-4.5 w-4.5 text-teal-700 dark:text-teal-400" /> Producción & Primas
         </button>
                 {currentUserRole === 'SUPER_ADMIN' && (
             <>
@@ -5270,6 +5281,12 @@ export default function AdminClient() {
       {activeTab === "satisfaccion" && (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <AdminSatisfactionSurveys />
+        </div>
+      )}
+
+      {activeTab === "produccion" && (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <AdminProduccion />
         </div>
       )}
 

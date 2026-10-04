@@ -80,6 +80,9 @@ model Agency {
   users                 User[]
   satisfactionSurveys   SatisfactionSurvey[]
   surveyReferrals       SurveyReferral[]
+  insuranceCompanies    InsuranceCompany[]
+  agentEmissions        AgentEmission[]
+  agentMonthlyBudgets   AgentMonthlyBudget[]
 
   @@index([referredById])
 }
@@ -175,6 +178,8 @@ model User {
   roleplayStats        RoleplayStats?
   satisfactionSurveys  SatisfactionSurvey[]
   surveyReferrals      SurveyReferral[]
+  agentEmissions       AgentEmission[]
+  agentMonthlyBudgets  AgentMonthlyBudget[]
 
   @@index([agencyId])
   @@index([reportsToId])
@@ -904,5 +909,75 @@ model SurveyReferral {
   @@index([agencyId])
   @@index([status])
   @@index([createdAt])
+}
+
+model InsuranceCompany {
+  id        String          @id @default(cuid())
+  agencyId  String?
+  name      String
+  logoUrl   String?
+  color     String?         @default("#0284c7")
+  order     Int             @default(0)
+  active    Boolean         @default(true)
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  agency    Agency?         @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  emissions AgentEmission[]
+
+  @@index([agencyId])
+  @@index([order])
+}
+
+model AgentEmission {
+  id           String            @id @default(cuid())
+  agencyId     String?
+  agentId      String
+  companyId    String?
+  companyName  String
+  policyNumber String?
+  clientName   String?
+  ramo         String?           @default("Protección")
+  issueDate    DateTime          @default(now())
+  year         Int
+  month        Int
+  primaEmitida Float             @default(0)
+  primaPagada  Float             @default(0)
+  status       String            @default("EMITIDA")
+  notes        String?
+  createdById  String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  agency       Agency?           @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  agent        User              @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  company      InsuranceCompany? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@index([agencyId])
+  @@index([agentId])
+  @@index([companyId])
+  @@index([year, month])
+  @@index([issueDate])
+}
+
+model AgentMonthlyBudget {
+  id             String   @id @default(cuid())
+  agencyId       String?
+  agentId        String
+  year           Int
+  month          Int
+  budgetPE       Float    @default(0)
+  source         String   @default("PEA_AUTO")
+  sourceReviewId String?
+  notes          String?
+  updatedById    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  agent          User     @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  agency         Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+
+  @@unique([agentId, year, month])
+  @@index([agencyId])
 }
 
