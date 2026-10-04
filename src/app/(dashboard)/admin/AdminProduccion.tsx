@@ -87,7 +87,7 @@ export default function AdminProduccion() {
   // Filters
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth);
-  const [selectedAgency, setSelectedAgency] = useState<string>("ALL");
+  const [selectedAgency, setSelectedAgency] = useState<string>("aacom");
   const [filterAgentId, setFilterAgentId] = useState<string>("ALL");
   const [filterCompanyId, setFilterCompanyId] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -307,7 +307,7 @@ export default function AdminProduccion() {
   // 6. Sync PEA Budgets
   const handleSyncPea = async () => {
     startTransition(async () => {
-      const res = await syncBudgetsFromPea(selectedYear, selectedMonth);
+      const res = await syncBudgetsFromPea(selectedYear, selectedMonth, selectedAgency);
       if (res.success) {
         setFeedback({
           type: "success",
@@ -567,7 +567,6 @@ export default function AdminProduccion() {
                   onChange={(e) => setSelectedAgency(e.target.value)}
                   className="text-xs font-bold py-1.5 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm cursor-pointer"
                 >
-                  <option value="ALL">Todas las Agencias</option>
                   {agencies.map((ag: any) => (
                     <option key={ag.id} value={ag.id}>
                       {ag.name}

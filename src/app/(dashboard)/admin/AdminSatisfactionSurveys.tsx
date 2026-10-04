@@ -36,7 +36,7 @@ import {
 export default function AdminSatisfactionSurveys() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
-  const [selectedAgency, setSelectedAgency] = useState<string>("ALL");
+  const [selectedAgency, setSelectedAgency] = useState<string>("aacom");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [selectedAgentId, setSelectedAgentId] = useState<string>("ALL");
@@ -138,7 +138,6 @@ export default function AdminSatisfactionSurveys() {
                 onChange={(e) => setSelectedAgency(e.target.value)}
                 className="text-xs font-bold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
               >
-                <option value="ALL">Todas las Promotorías</option>
                 {agencies.map((ag: any) => (
                   <option key={ag.id} value={ag.id}>
                     {ag.name}

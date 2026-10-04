@@ -315,14 +315,18 @@ export async function updateAgentBudget(data: {
 }
 
 // 8. Sincronizar Presupuestos desde PEA Autorizados
-export async function syncBudgetsFromPea(year: number, month: number) {
+export async function syncBudgetsFromPea(year: number, month: number, agencyId?: string) {
   try {
-    await verifyAdminUser();
+    const user = await verifyAdminUser();
+    const effectiveAgencyId = (user.role === "SUPER_ADMIN" && agencyId && agencyId !== "ALL" && agencyId !== "DEFAULT")
+      ? agencyId
+      : (user.agencyId || "aacom");
     const monthName = MONTH_NAMES_ES[month - 1]; // e.g. "Septiembre"
 
-    // Search reviewed PEAs for this month name or created in this month/year
+    // Search reviewed PEAs strictly for this agency
     const reviews = await prisma.performanceReview.findMany({
       where: {
+        agencyId: effectiveAgencyId,
         status: "REVIEWED",
         OR: [
           { evalMonth: { contains: monthName, mode: "insensitive" } },
@@ -387,18 +391,21 @@ export async function getProductionDashboardData(options: {
     const user = await verifyAdminUser();
     const { year, month } = options;
 
-    const effectiveAgencyId = user.role === "SUPER_ADMIN" ? (options.agencyId || undefined) : (user.agencyId || undefined);
+    // SaaS Multi-tenancy Isolation:
+    // Regular admins can NEVER access data outside their agency.
+    // Super admins default to user.agencyId ("aacom") unless explicitly selecting another specific agency.
+    const effectiveAgencyId = (user.role === "SUPER_ADMIN" && options.agencyId && options.agencyId !== "ALL" && options.agencyId !== "DEFAULT")
+      ? options.agencyId
+      : (user.agencyId || "aacom");
 
-    const whereAgencyScope = effectiveAgencyId && effectiveAgencyId !== "ALL" ? { agencyId: effectiveAgencyId } : {};
-
-    // 1. Fetch companies
-    const companiesWhere: any = { active: true };
-    if (effectiveAgencyId && effectiveAgencyId !== "ALL") {
-      companiesWhere.OR = [
+    // 1. Fetch companies (Agency-specific plus global catalog companies)
+    const companiesWhere: any = {
+      active: true,
+      OR: [
         { agencyId: effectiveAgencyId },
         { agencyId: null },
-      ];
-    }
+      ],
+    };
 
     let companies = await prisma.insuranceCompany.findMany({
       where: companiesWhere,
@@ -425,10 +432,10 @@ export async function getProductionDashboardData(options: {
       });
     }
 
-    // 2. Fetch all agents in agency
+    // 2. Fetch all agents strictly belonging to this agency
     const agents = await prisma.user.findMany({
       where: {
-        ...whereAgencyScope,
+        agencyId: effectiveAgencyId,
         active: true,
         role: { in: ["AGENTE", "AGENTE_LITE", "ADMIN", "SUPER_ADMIN"] },
       },
@@ -443,11 +450,11 @@ export async function getProductionDashboardData(options: {
       orderBy: { name: "asc" },
     });
 
-    // 3. Fetch emissions for the month & year
+    // 3. Fetch emissions strictly for this agency
     const emissionsWhere: any = {
       year,
       month,
-      ...(effectiveAgencyId && effectiveAgencyId !== "ALL" ? { agencyId: effectiveAgencyId } : {}),
+      agencyId: effectiveAgencyId,
       ...(options.agentId && options.agentId !== "ALL" ? { agentId: options.agentId } : {}),
       ...(options.companyId && options.companyId !== "ALL" ? { companyId: options.companyId } : {}),
     };
@@ -461,12 +468,12 @@ export async function getProductionDashboardData(options: {
       },
     });
 
-    // 4. Fetch budgets for the month & year
+    // 4. Fetch budgets strictly for this agency
     const budgets = await prisma.agentMonthlyBudget.findMany({
       where: {
         year,
         month,
-        ...(effectiveAgencyId && effectiveAgencyId !== "ALL" ? { agencyId: effectiveAgencyId } : {}),
+        agencyId: effectiveAgencyId,
       },
     });
     const budgetMap = new Map<string, any>();
@@ -630,6 +637,7 @@ export async function getProductionDashboardData(options: {
       success: true,
       currentUserRole: user.role,
       userAgencyId: user.agencyId,
+      selectedAgencyId: effectiveAgencyId,
       agencies,
       companies: displayCompanies,
       agents,

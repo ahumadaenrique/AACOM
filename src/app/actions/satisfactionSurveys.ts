@@ -321,13 +321,12 @@ export async function getAdminSatisfactionData(filterAgencyId?: string) {
       return { success: false, message: "Acceso no autorizado para administradores." };
     }
 
-    // Agency scoping
-    const effectiveAgencyId = user.role === "SUPER_ADMIN" ? (filterAgencyId || undefined) : (user.agencyId || undefined);
+    // Agency scoping (SaaS Multi-tenancy Isolation)
+    const effectiveAgencyId = (user.role === "SUPER_ADMIN" && filterAgencyId && filterAgencyId !== "ALL" && filterAgencyId !== "DEFAULT")
+      ? filterAgencyId
+      : (user.agencyId || "aacom");
 
-    const whereScope: any = {};
-    if (effectiveAgencyId && effectiveAgencyId !== "ALL") {
-      whereScope.agencyId = effectiveAgencyId;
-    }
+    const whereScope = { agencyId: effectiveAgencyId };
 
     // Parallel queries
     const [surveys, referrals, agencies, usersInScope] = await Promise.all([
@@ -358,7 +357,7 @@ export async function getAdminSatisfactionData(filterAgencyId?: string) {
         : Promise.resolve([]),
       prisma.user.findMany({
         where: {
-          ...(effectiveAgencyId && effectiveAgencyId !== "ALL" ? { agencyId: effectiveAgencyId } : {}),
+          agencyId: effectiveAgencyId,
           active: true,
         },
         select: {
