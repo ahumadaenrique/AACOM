@@ -334,10 +334,15 @@ export default function AdminProduccion() {
         color: companyColorInput,
         logoUrl: companyLogoUrlInput,
         order: companyOrderInput,
+        agencyId: selectedAgency,
       });
 
       if (res.success) {
         setCompanyModalOpen(false);
+        setEditingCompany(null);
+        setCompanyNameInput("");
+        setCompanyColorInput("#0284c7");
+        setCompanyLogoUrlInput("");
         setFeedback({ type: "success", text: "Aseguradora guardada exitosamente." });
         fetchData();
       } else {
@@ -346,20 +351,48 @@ export default function AdminProduccion() {
     });
   };
 
-  // 8. Handle Logo Image Upload (Base64)
+  // 8. Handle Logo Image Upload with Client-Side Compression
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 2 * 1024 * 1024) {
-      alert("El logo no debe exceder 2MB.");
+    if (file.size > 5 * 1024 * 1024) {
+      alert("El logo no debe exceder 5MB.");
       return;
     }
 
     const reader = new FileReader();
     reader.onload = (event) => {
-      const result = event.target?.result as string;
-      setCompanyLogoUrlInput(result);
+      const rawUrl = event.target?.result as string;
+      if (typeof window === "undefined") {
+        setCompanyLogoUrlInput(rawUrl);
+        return;
+      }
+
+      const img = new window.Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          const MAX_WIDTH = 400;
+          const scale = Math.min(1, MAX_WIDTH / img.width);
+          canvas.width = Math.max(1, Math.round(img.width * scale));
+          canvas.height = Math.max(1, Math.round(img.height * scale));
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+            const compressed = canvas.toDataURL("image/webp", 0.9);
+            setCompanyLogoUrlInput(compressed);
+          } else {
+            setCompanyLogoUrlInput(rawUrl);
+          }
+        } catch {
+          setCompanyLogoUrlInput(rawUrl);
+        }
+      };
+      img.onerror = () => {
+        setCompanyLogoUrlInput(rawUrl);
+      };
+      img.src = rawUrl;
     };
     reader.readAsDataURL(file);
   };

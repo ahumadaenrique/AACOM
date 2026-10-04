@@ -27,24 +27,28 @@ async function verifyAdminUser() {
 export async function getInsuranceCompanies(agencyId?: string) {
   try {
     const user = await verifyAdminUser();
-    const effectiveAgencyId = user.role === "SUPER_ADMIN" ? (agencyId || user.agencyId) : user.agencyId;
+    const effectiveAgencyId = user.role === "SUPER_ADMIN" ? (agencyId || undefined) : (user.agencyId || undefined);
+
+    const companiesWhere: any = { active: true };
+    if (effectiveAgencyId && effectiveAgencyId !== "ALL") {
+      companiesWhere.OR = [
+        { agencyId: effectiveAgencyId },
+        { agencyId: null },
+      ];
+    }
 
     let companies = await prisma.insuranceCompany.findMany({
-      where: {
-        OR: [
-          { agencyId: effectiveAgencyId },
-          { agencyId: null },
-        ],
-      },
+      where: companiesWhere,
       orderBy: [{ order: "asc" }, { name: "asc" }],
     });
 
-    // Seed default companies if table is completely empty
-    if (companies.length === 0) {
+    // Seed default companies if table is completely empty globally
+    const totalCount = await prisma.insuranceCompany.count();
+    if (totalCount === 0) {
       for (const comp of DEFAULT_COMPANIES) {
         await prisma.insuranceCompany.create({
           data: {
-            agencyId: effectiveAgencyId,
+            agencyId: null,
             name: comp.name,
             color: comp.color,
             order: comp.order,
@@ -53,12 +57,7 @@ export async function getInsuranceCompanies(agencyId?: string) {
         });
       }
       companies = await prisma.insuranceCompany.findMany({
-        where: {
-          OR: [
-            { agencyId: effectiveAgencyId },
-            { agencyId: null },
-          ],
-        },
+        where: companiesWhere,
         orderBy: [{ order: "asc" }, { name: "asc" }],
       });
     }
@@ -78,11 +77,19 @@ export async function saveInsuranceCompany(data: {
   color?: string;
   order?: number;
   active?: boolean;
+  agencyId?: string | null;
 }) {
   try {
     const user = await verifyAdminUser();
     const nameTrimmed = data.name.trim();
     if (!nameTrimmed) throw new Error("El nombre de la compañía es obligatorio.");
+
+    let targetAgencyId: string | null = null;
+    if (user.role === "SUPER_ADMIN") {
+      targetAgencyId = (data.agencyId && data.agencyId !== "ALL") ? data.agencyId : null;
+    } else {
+      targetAgencyId = user.agencyId || null;
+    }
 
     if (data.id) {
       const updated = await prisma.insuranceCompany.update({
@@ -93,6 +100,7 @@ export async function saveInsuranceCompany(data: {
           ...(data.color !== undefined && { color: data.color }),
           ...(data.order !== undefined && { order: data.order }),
           ...(data.active !== undefined && { active: data.active }),
+          ...(data.agencyId !== undefined && { agencyId: targetAgencyId }),
         },
       });
       revalidatePath("/admin");
@@ -100,7 +108,7 @@ export async function saveInsuranceCompany(data: {
     } else {
       const created = await prisma.insuranceCompany.create({
         data: {
-          agencyId: user.agencyId,
+          agencyId: targetAgencyId,
           name: nameTrimmed,
           logoUrl: data.logoUrl || null,
           color: data.color || "#0284c7",
@@ -384,23 +392,26 @@ export async function getProductionDashboardData(options: {
     const whereAgencyScope = effectiveAgencyId && effectiveAgencyId !== "ALL" ? { agencyId: effectiveAgencyId } : {};
 
     // 1. Fetch companies
+    const companiesWhere: any = { active: true };
+    if (effectiveAgencyId && effectiveAgencyId !== "ALL") {
+      companiesWhere.OR = [
+        { agencyId: effectiveAgencyId },
+        { agencyId: null },
+      ];
+    }
+
     let companies = await prisma.insuranceCompany.findMany({
-      where: {
-        active: true,
-        OR: [
-          ...(effectiveAgencyId && effectiveAgencyId !== "ALL" ? [{ agencyId: effectiveAgencyId }] : []),
-          { agencyId: null },
-        ],
-      },
+      where: companiesWhere,
       orderBy: [{ order: "asc" }, { name: "asc" }],
     });
 
-    if (companies.length === 0) {
-      // Seed defaults
+    const totalCompanyCount = await prisma.insuranceCompany.count();
+    if (totalCompanyCount === 0) {
+      // Seed defaults globally
       for (const comp of DEFAULT_COMPANIES) {
         await prisma.insuranceCompany.create({
           data: {
-            agencyId: effectiveAgencyId !== "ALL" ? effectiveAgencyId : null,
+            agencyId: null,
             name: comp.name,
             color: comp.color,
             order: comp.order,
@@ -409,7 +420,7 @@ export async function getProductionDashboardData(options: {
         });
       }
       companies = await prisma.insuranceCompany.findMany({
-        where: { active: true },
+        where: companiesWhere,
         orderBy: [{ order: "asc" }, { name: "asc" }],
       });
     }
