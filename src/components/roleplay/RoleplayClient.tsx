@@ -39,6 +39,42 @@ interface RoleplayClientProps {
   moduleId?: 'prospeccion' | 'adn' | 'objeciones';
 }
 
+// Safari / iOS WebKit AudioWorklet Patch & Resilience
+if (typeof window !== 'undefined' && typeof (window as any).AudioWorklet !== 'undefined') {
+  const origAddModule = (window as any).AudioWorklet.prototype.addModule;
+  if (!origAddModule.__patched) {
+    const patchedAddModule = async function (this: any, moduleUrl: string | URL, options?: any) {
+      let urlStr = typeof moduleUrl === 'string' ? moduleUrl : moduleUrl?.toString?.() || '';
+
+      // 1. Interceptar libsamplerate (prevenir fallos por CDN cross-origin en Safari / iOS)
+      if (urlStr.includes('libsamplerate')) {
+        const localLibUrl = `${window.location.origin}/worklets/libsamplerate.worklet.js?v=2`;
+        try {
+          return await origAddModule.call(this, localLibUrl, options);
+        } catch (libErr) {
+          console.warn('[AudioWorklet] Advertencia: libsamplerate no pudo cargarse en Safari, continuando llamada sin remuestreador:', libErr);
+          return;
+        }
+      }
+
+      // 2. Resolver rutas relativas a absolutas y cache-busting v=2 para Safari
+      if (urlStr.startsWith('/')) {
+        const sep = urlStr.includes('?') ? '&' : '?';
+        urlStr = `${window.location.origin}${urlStr}${urlStr.includes('v=') ? '' : sep + 'v=2'}`;
+      }
+
+      try {
+        return await origAddModule.call(this, urlStr, options);
+      } catch (err: any) {
+        console.error(`[AudioWorklet.addModule] Error cargando ${urlStr}:`, err);
+        throw new Error(`[Worklet: ${urlStr.split('/').pop()?.split('?')[0]}] ${err?.message || err}`);
+      }
+    };
+    patchedAddModule.__patched = true;
+    (window as any).AudioWorklet.prototype.addModule = patchedAddModule;
+  }
+}
+
 export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: RoleplayClientProps) {
   // Tabs: 'simulador' | 'historial' | 'admin'
   const [activeTab, setActiveTab] = useState<'simulador' | 'historial' | 'admin'>('simulador');
@@ -281,10 +317,10 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
         inputDeviceId: selectedInputId || undefined,
         outputDeviceId: selectedOutputId || undefined,
         workletPaths: {
-          rawAudioProcessor: '/worklets/rawAudioProcessor.js',
-          audioConcatProcessor: '/worklets/audioConcatProcessor.js'
+          rawAudioProcessor: '/worklets/rawAudioProcessor.js?v=2',
+          audioConcatProcessor: '/worklets/audioConcatProcessor.js?v=2'
         },
-        libsampleratePath: '/worklets/libsamplerate.worklet.js',
+        libsampleratePath: '/worklets/libsamplerate.worklet.js?v=2',
         overrides: {
           agent: {
             prompt: {

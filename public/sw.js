@@ -1,4 +1,4 @@
-// Minimal Service Worker for AACOM PWA installability
+// Minimal Service Worker for AACOM PWA installability - v1.0.2
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
@@ -8,8 +8,17 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Minimal fetch listener to satisfy PWA criteria.
-  // Performs a standard network fetch without custom caching to ensure dynamic content freshness.
+  // Bypass service worker for AudioWorklet, audio streams, and worklet assets
+  // to prevent WebKit / Safari fetch cancellation bugs
+  if (
+    event.request.destination === 'audioworklet' ||
+    event.request.destination === 'audio' ||
+    event.request.url.includes('/worklets/') ||
+    event.request.url.includes('libsamplerate') ||
+    event.request.url.includes('/api/')
+  ) {
+    return;
+  }
   event.respondWith(fetch(event.request));
 });
 
