@@ -1876,31 +1876,31 @@ export default function AdminProduccion() {
 
       {/* MODAL 3: DETALLE DE PÓLIZAS POR ASESOR */}
       <Dialog open={detailModalOpen} onOpenChange={setDetailModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+        <DialogContent className="w-[96vw] max-w-5xl h-[92vh] max-h-[92vh] flex flex-col p-0 overflow-hidden rounded-2xl">
           {/* Header */}
-          <div className="p-5 border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/80">
+          <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/80 shrink-0">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
-                <DialogTitle className="text-base font-black flex items-center gap-2 text-slate-900 dark:text-zinc-100">
-                  <FileSpreadsheet className="h-5 w-5 text-teal-700 dark:text-teal-400" />
-                  Detalle de Pólizas — {detailAgent?.agentName}
+                <DialogTitle className="text-base sm:text-lg font-black flex items-center gap-2 text-slate-900 dark:text-zinc-100">
+                  <FileSpreadsheet className="h-5 w-5 text-teal-700 dark:text-teal-400 shrink-0" />
+                  <span className="truncate">Detalle de Pólizas — {detailAgent?.agentName}</span>
                 </DialogTitle>
-                <DialogDescription className="text-xs text-slate-500 mt-1">
-                  Pólizas emitidas en {monthName} {selectedYear} • Asesor: {detailAgent?.agentEmail || detailAgent?.agentName}
+                <DialogDescription className="text-xs text-slate-500 mt-0.5">
+                  Pólizas emitidas en {monthName} {selectedYear} • {detailAgent?.agentEmail || detailAgent?.agentName}
                 </DialogDescription>
               </div>
 
               {/* Total KPI Badges for this Agent */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 self-start sm:self-auto">
                 <div className="px-3 py-1.5 rounded-lg bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800/60 text-right">
                   <span className="block text-[10px] font-black uppercase text-teal-600 dark:text-teal-400">Total Emitido</span>
-                  <span className="text-xs font-black font-mono text-teal-950 dark:text-teal-100">
+                  <span className="text-xs sm:text-sm font-black font-mono text-teal-950 dark:text-teal-100">
                     {formatMoney(detailAgent?.totalPE || 0)}
                   </span>
                 </div>
                 <div className="px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-right">
                   <span className="block text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400">Total Pagado</span>
-                  <span className="text-xs font-black font-mono text-emerald-950 dark:text-emerald-100">
+                  <span className="text-xs sm:text-sm font-black font-mono text-emerald-950 dark:text-emerald-100">
                     {formatMoney(detailAgent?.totalPPC || 0)}
                   </span>
                 </div>
@@ -1908,13 +1908,13 @@ export default function AdminProduccion() {
             </div>
 
             {/* Filter Bar inside Modal */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-200/80 dark:border-zinc-800">
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 mt-3 pt-3 border-t border-slate-200/80 dark:border-zinc-800">
+              <div className="flex items-center gap-2">
                 <span className="text-xs font-bold text-slate-500 whitespace-nowrap">Aseguradora:</span>
                 <select
                   value={detailCompanyFilter}
                   onChange={(e) => setDetailCompanyFilter(e.target.value)}
-                  className="text-xs font-semibold py-1 px-2.5 rounded-md border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
+                  className="flex-1 sm:flex-initial text-xs font-semibold py-1.5 px-2.5 rounded-md border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
                 >
                   <option value="ALL">Todas las Aseguradoras</option>
                   {companies.map((c: any) => (
@@ -1925,9 +1925,9 @@ export default function AdminProduccion() {
                 </select>
               </div>
 
-              <div className="flex items-center gap-2 w-full sm:w-auto">
+              <div className="flex items-center gap-2">
                 <div className="relative flex-1 sm:w-56">
-                  <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
+                  <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-slate-400" />
                   <Input
                     type="text"
                     placeholder="Buscar cliente o folio..."
@@ -1950,7 +1950,7 @@ export default function AdminProduccion() {
           </div>
 
           {/* Body: Policies List */}
-          <div className="p-5 overflow-y-auto flex-1 space-y-3">
+          <div className="p-3 sm:p-5 overflow-y-auto flex-1 space-y-3">
             {(() => {
               const agentPolicies = (data?.emissions || []).filter((em: any) => {
                 if (em.agentId !== detailAgent?.agentId) return false;
@@ -1986,152 +1986,272 @@ export default function AdminProduccion() {
               }
 
               return (
-                <div className="border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
-                  <table className="w-full text-left text-xs">
-                    <thead className="bg-slate-100 dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 text-[11px] font-black uppercase text-slate-600 dark:text-zinc-400">
-                      <tr>
-                        <th className="py-2.5 px-3">Folio / Póliza</th>
-                        <th className="py-2.5 px-3">Cliente Asegurado</th>
-                        <th className="py-2.5 px-3">Aseguradora</th>
-                        <th className="py-2.5 px-3">Ramo</th>
-                        <th className="py-2.5 px-3">Fecha</th>
-                        <th className="py-2.5 px-3 text-right">Prima Emitida (PE)</th>
-                        <th className="py-2.5 px-3 text-right">Prima Pagada (PPC)</th>
-                        <th className="py-2.5 px-3 text-center">Estatus</th>
-                        <th className="py-2.5 px-3 text-center">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/80 bg-white dark:bg-zinc-950">
-                      {agentPolicies.map((em: any) => {
-                        const ramoItem = RAMOS_CATALOGO.find((r) => r.id === em.ramo) || {
-                          color: "text-blue-600 bg-blue-50 border-blue-200",
-                          name: em.ramo || "Protección",
-                        };
+                <div className="space-y-3">
+                  {/* MOBILE VIEW: Tarjetas interactivas ultra legibles */}
+                  <div className="block md:hidden space-y-3">
+                    {agentPolicies.map((em: any) => {
+                      const ramoItem = RAMOS_CATALOGO.find((r) => r.id === em.ramo) || {
+                        color: "text-blue-600 bg-blue-50 border-blue-200",
+                        name: em.ramo || "Protección",
+                      };
 
-                        return (
-                          <tr key={em.id} className="hover:bg-slate-50 dark:hover:bg-zinc-900/50 transition-colors">
-                            {/* Folio */}
-                            <td className="py-3 px-3 font-mono font-bold text-slate-800 dark:text-zinc-200">
-                              {em.policyNumber ? (
-                                <Badge variant="outline" className="font-mono text-[10px] bg-slate-50 dark:bg-zinc-900">
-                                  {em.policyNumber}
-                                </Badge>
-                              ) : (
-                                <span className="text-slate-400 italic text-[11px]">Sin folio</span>
-                              )}
-                            </td>
-
-                            {/* Cliente & Notas */}
-                            <td className="py-3 px-3">
-                              <span className="font-bold text-slate-900 dark:text-zinc-100 block">
+                      return (
+                        <div
+                          key={em.id}
+                          className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-3.5 shadow-sm space-y-3"
+                        >
+                          {/* Fila 1: Cliente & Estatus */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <h4 className="font-bold text-sm text-slate-900 dark:text-zinc-100 truncate">
                                 {em.clientName || "Sin nombre de cliente"}
-                              </span>
-                              {em.notes && (
-                                <span className="text-[11px] text-slate-500 dark:text-zinc-400 block truncate max-w-[220px]" title={em.notes}>
-                                  Nota: {em.notes}
-                                </span>
-                              )}
-                            </td>
-
-                            {/* Aseguradora */}
-                            <td className="py-3 px-3">
-                              <div className="flex items-center gap-1.5">
-                                <div
-                                  className="h-2.5 w-2.5 rounded-full shrink-0"
-                                  style={{ backgroundColor: em.company?.color || "#0284c7" }}
-                                />
-                                <span className="font-bold text-slate-800 dark:text-zinc-200 truncate max-w-[130px]">
-                                  {em.companyName}
+                              </h4>
+                              <div className="flex items-center gap-2 mt-1">
+                                {em.policyNumber ? (
+                                  <Badge variant="outline" className="font-mono text-[10px] bg-slate-50 dark:bg-zinc-800">
+                                    Folio: {em.policyNumber}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-[10px] text-slate-400 italic">Sin folio</span>
+                                )}
+                                <span className="text-[10px] font-mono text-slate-500">
+                                  {new Date(em.issueDate).toLocaleDateString("es-MX", {
+                                    day: "2-digit",
+                                    month: "2-digit",
+                                    year: "numeric",
+                                  })}
                                 </span>
                               </div>
-                            </td>
+                            </div>
 
-                            {/* Ramo */}
-                            <td className="py-3 px-3">
-                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${ramoItem.color}`}>
-                                {getRamoIcon(em.ramo)}
-                                {em.ramo || "Protección"}
+                            <Badge
+                              variant="outline"
+                              className={`text-[10px] font-black shrink-0 ${
+                                em.status === "PAGADA"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                                  : em.status === "CANCELADA"
+                                  ? "bg-red-50 text-red-700 border-red-300"
+                                  : "bg-blue-50 text-blue-700 border-blue-300"
+                              }`}
+                            >
+                              {em.status || "EMITIDA"}
+                            </Badge>
+                          </div>
+
+                          {/* Fila 2: Aseguradora & Ramo */}
+                          <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-zinc-800/80">
+                            <div className="flex items-center gap-1.5 truncate">
+                              <div
+                                className="h-2.5 w-2.5 rounded-full shrink-0"
+                                style={{ backgroundColor: em.company?.color || "#0284c7" }}
+                              />
+                              <span className="font-bold text-slate-700 dark:text-zinc-300 truncate">
+                                {em.companyName}
                               </span>
-                            </td>
+                            </div>
 
-                            {/* Fecha */}
-                            <td className="py-3 px-3 text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
-                              {new Date(em.issueDate).toLocaleDateString("es-MX", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              })}
-                            </td>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${ramoItem.color}`}>
+                              {getRamoIcon(em.ramo)}
+                              {em.ramo || "Protección"}
+                            </span>
+                          </div>
 
-                            {/* PE */}
-                            <td className="py-3 px-3 text-right font-mono font-black text-slate-900 dark:text-zinc-100">
-                              {formatMoney(em.primaEmitida)}
-                            </td>
+                          {/* Fila 3: Primas PE y PPC */}
+                          <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-zinc-800/50 p-2.5 rounded-lg border border-slate-100 dark:border-zinc-800">
+                            <div>
+                              <span className="block text-[9px] uppercase font-bold text-slate-500">Prima Emitida (PE)</span>
+                              <span className="text-xs font-mono font-black text-slate-900 dark:text-zinc-100">
+                                {formatMoney(em.primaEmitida)}
+                              </span>
+                            </div>
+                            <div className="text-right">
+                              <span className="block text-[9px] uppercase font-bold text-emerald-600 dark:text-emerald-400">Prima Pagada (PPC)</span>
+                              <span className="text-xs font-mono font-black text-emerald-700 dark:text-emerald-400">
+                                {formatMoney(em.primaPagada)}
+                              </span>
+                            </div>
+                          </div>
 
-                            {/* PPC */}
-                            <td className="py-3 px-3 text-right font-mono font-black text-emerald-700 dark:text-emerald-400">
-                              {formatMoney(em.primaPagada)}
-                            </td>
+                          {/* Notas si existen */}
+                          {em.notes && (
+                            <p className="text-[11px] text-slate-500 dark:text-zinc-400 bg-slate-50 dark:bg-zinc-900 px-2.5 py-1.5 rounded border border-dashed border-slate-200 dark:border-zinc-800">
+                              <span className="font-bold">Nota:</span> {em.notes}
+                            </p>
+                          )}
 
-                            {/* Estatus */}
-                            <td className="py-3 px-3 text-center">
-                              <Badge
-                                variant="outline"
-                                className={`text-[10px] font-black ${
-                                  em.status === "PAGADA"
-                                    ? "bg-emerald-50 text-emerald-700 border-emerald-300"
-                                    : em.status === "CANCELADA"
-                                    ? "bg-red-50 text-red-700 border-red-300"
-                                    : "bg-blue-50 text-blue-700 border-blue-300"
-                                }`}
-                              >
-                                {em.status || "EMITIDA"}
-                              </Badge>
-                            </td>
+                          {/* Botones de Acción Móvil */}
+                          <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100 dark:border-zinc-800">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleOpenEditPolicyModal(em)}
+                              className="h-8 px-3 text-xs font-bold text-blue-600 border-blue-200 hover:bg-blue-50 dark:border-blue-900 flex-1 justify-center"
+                            >
+                              <Edit className="h-3.5 w-3.5 mr-1.5" /> Editar Póliza
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeletePolicyFromDetail(em.id)}
+                              className="h-8 px-2.5 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
+                              title="Eliminar póliza"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
 
-                            {/* Botones de Acción: Editar y Eliminar */}
-                            <td className="py-3 px-3 text-center">
-                              <div className="flex items-center justify-center gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleOpenEditPolicyModal(em)}
-                                  className="h-7 px-2 text-xs font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/50"
-                                  title="Modificar valores de la póliza"
+                  {/* DESKTOP VIEW: Tabla completa con scroll horizontal responsivo */}
+                  <div className="hidden md:block border border-slate-200 dark:border-zinc-800 rounded-xl overflow-x-auto shadow-sm">
+                    <table className="w-full text-left text-xs min-w-[760px]">
+                      <thead className="bg-slate-100 dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 text-[11px] font-black uppercase text-slate-600 dark:text-zinc-400">
+                        <tr>
+                          <th className="py-2.5 px-3">Folio / Póliza</th>
+                          <th className="py-2.5 px-3">Cliente Asegurado</th>
+                          <th className="py-2.5 px-3">Aseguradora</th>
+                          <th className="py-2.5 px-3">Ramo</th>
+                          <th className="py-2.5 px-3">Fecha</th>
+                          <th className="py-2.5 px-3 text-right">Prima Emitida (PE)</th>
+                          <th className="py-2.5 px-3 text-right">Prima Pagada (PPC)</th>
+                          <th className="py-2.5 px-3 text-center">Estatus</th>
+                          <th className="py-2.5 px-3 text-center">Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/80 bg-white dark:bg-zinc-950">
+                        {agentPolicies.map((em: any) => {
+                          const ramoItem = RAMOS_CATALOGO.find((r) => r.id === em.ramo) || {
+                            color: "text-blue-600 bg-blue-50 border-blue-200",
+                            name: em.ramo || "Protección",
+                          };
+
+                          return (
+                            <tr key={em.id} className="hover:bg-slate-50 dark:hover:bg-zinc-900/50 transition-colors">
+                              {/* Folio */}
+                              <td className="py-3 px-3 font-mono font-bold text-slate-800 dark:text-zinc-200 whitespace-nowrap">
+                                {em.policyNumber ? (
+                                  <Badge variant="outline" className="font-mono text-[10px] bg-slate-50 dark:bg-zinc-900">
+                                    {em.policyNumber}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-slate-400 italic text-[11px]">Sin folio</span>
+                                )}
+                              </td>
+
+                              {/* Cliente & Notas */}
+                              <td className="py-3 px-3">
+                                <span className="font-bold text-slate-900 dark:text-zinc-100 block">
+                                  {em.clientName || "Sin nombre de cliente"}
+                                </span>
+                                {em.notes && (
+                                  <span className="text-[11px] text-slate-500 dark:text-zinc-400 block truncate max-w-[220px]" title={em.notes}>
+                                    Nota: {em.notes}
+                                  </span>
+                                )}
+                              </td>
+
+                              {/* Aseguradora */}
+                              <td className="py-3 px-3 whitespace-nowrap">
+                                <div className="flex items-center gap-1.5">
+                                  <div
+                                    className="h-2.5 w-2.5 rounded-full shrink-0"
+                                    style={{ backgroundColor: em.company?.color || "#0284c7" }}
+                                  />
+                                  <span className="font-bold text-slate-800 dark:text-zinc-200 truncate max-w-[130px]">
+                                    {em.companyName}
+                                  </span>
+                                </div>
+                              </td>
+
+                              {/* Ramo */}
+                              <td className="py-3 px-3 whitespace-nowrap">
+                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${ramoItem.color}`}>
+                                  {getRamoIcon(em.ramo)}
+                                  {em.ramo || "Protección"}
+                                </span>
+                              </td>
+
+                              {/* Fecha */}
+                              <td className="py-3 px-3 text-slate-600 dark:text-zinc-400 font-mono text-[11px] whitespace-nowrap">
+                                {new Date(em.issueDate).toLocaleDateString("es-MX", {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                })}
+                              </td>
+
+                              {/* PE */}
+                              <td className="py-3 px-3 text-right font-mono font-black text-slate-900 dark:text-zinc-100 whitespace-nowrap">
+                                {formatMoney(em.primaEmitida)}
+                              </td>
+
+                              {/* PPC */}
+                              <td className="py-3 px-3 text-right font-mono font-black text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
+                                {formatMoney(em.primaPagada)}
+                              </td>
+
+                              {/* Estatus */}
+                              <td className="py-3 px-3 text-center whitespace-nowrap">
+                                <Badge
+                                  variant="outline"
+                                  className={`text-[10px] font-black ${
+                                    em.status === "PAGADA"
+                                      ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                                      : em.status === "CANCELADA"
+                                      ? "bg-red-50 text-red-700 border-red-300"
+                                      : "bg-blue-50 text-blue-700 border-blue-300"
+                                  }`}
                                 >
-                                  <Edit className="h-3.5 w-3.5 mr-1" /> Editar
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handleDeletePolicyFromDetail(em.id)}
-                                  className="h-7 px-1.5 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
-                                  title="Eliminar póliza"
-                                >
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
+                                  {em.status || "EMITIDA"}
+                                </Badge>
+                              </td>
+
+                              {/* Botones de Acción: Editar y Eliminar */}
+                              <td className="py-3 px-3 text-center whitespace-nowrap">
+                                <div className="flex items-center justify-center gap-1">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleOpenEditPolicyModal(em)}
+                                    className="h-7 px-2 text-xs font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/50"
+                                    title="Modificar valores de la póliza"
+                                  >
+                                    <Edit className="h-3.5 w-3.5 mr-1" /> Editar
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handleDeletePolicyFromDetail(em.id)}
+                                    className="h-7 px-1.5 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
+                                    title="Eliminar póliza"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               );
             })()}
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
-            <span className="text-xs text-slate-500 font-medium">
-              Los cambios en pólizas recalculan en tiempo real las metas y avances del mes.
+          <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0">
+            <span className="text-[11px] sm:text-xs text-slate-500 font-medium truncate mr-2">
+              Los cambios recalculan las metas en tiempo real.
             </span>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setDetailModalOpen(false)}
-              className="font-bold text-xs"
+              className="font-bold text-xs shrink-0"
             >
               Cerrar Detalle
             </Button>
@@ -2141,18 +2261,18 @@ export default function AdminProduccion() {
 
       {/* MODAL 4: MODIFICACIÓN MANUAL DE PÓLIZA */}
       <Dialog open={editPolicyModalOpen} onOpenChange={setEditPolicyModalOpen}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
+        <DialogContent className="w-[95vw] max-w-lg max-h-[92vh] flex flex-col p-0 overflow-hidden rounded-2xl">
+          <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-zinc-800 shrink-0">
             <DialogTitle className="text-base font-black flex items-center gap-2 text-slate-900 dark:text-zinc-100">
               <Edit className="h-5 w-5 text-blue-600" />
               Modificar Póliza Ingresada
             </DialogTitle>
-            <DialogDescription className="text-xs">
+            <DialogDescription className="text-xs text-slate-500 mt-1">
               Corrige los valores de primas, folio, fechas o datos generales de esta póliza emitida.
             </DialogDescription>
-          </DialogHeader>
+          </div>
 
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 p-4 sm:p-6 overflow-y-auto flex-1">
             {/* Asesor */}
             <div>
               <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
@@ -2318,11 +2438,12 @@ export default function AdminProduccion() {
             </div>
           </div>
 
-          <DialogFooter>
+          <DialogFooter className="p-4 sm:p-5 border-t border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 flex flex-row items-center justify-end gap-2 shrink-0">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setEditPolicyModalOpen(false)}
+              className="flex-1 sm:flex-initial"
             >
               Cancelar
             </Button>
@@ -2330,7 +2451,7 @@ export default function AdminProduccion() {
               size="sm"
               onClick={handleSaveEditedPolicy}
               disabled={isPending}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold flex-1 sm:flex-initial"
             >
               {isPending ? "Guardando Cambios..." : "Guardar Cambios"}
             </Button>
