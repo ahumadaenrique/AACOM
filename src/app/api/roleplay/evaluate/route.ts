@@ -209,14 +209,14 @@ export async function POST(req: Request) {
 
       // Criterio 0: Presentación con Nombre y Firma (+15)
       const introPatterns = [
-        /\b(mi nombre es|soy|le habla|te habla)\b/i
+        /\b(mi nombre es|soy|le habla|te habla|habla|servidor|un gusto|mucho gusto)\b/i
       ];
       const sePresento = introPatterns.some(p => p.test(agentMessages));
       if (sePresento) {
         score += 15;
         aciertos.push('Te presentaste formalmente al iniciar la llamada.');
       } else {
-        errores.push('Faltó presentación: No mencionaste explícitamente "soy [tu nombre]" o "mi nombre es".');
+        errores.push('Faltó presentación: No mencionaste explícitamente "soy [tu nombre]" o "habla [tu nombre]".');
       }
 
       // Criterio 1: Mención de referidor si aplicaba (+15)
@@ -262,7 +262,7 @@ export async function POST(req: Request) {
 
       // DETECCIÓN INTELIGENTE DE CITA AGENDADA POR EL PROSPECTO
       const acuerdoCierrePatterns = [
-        /\b(me queda bien|me parece bien|de acuerdo|perfecto|trato hecho|quedamos as[ií]|te espero|lo espero|le espero|agendado|an[oó]talo|an[oó]telo|nos vemos entonces|ah[ií] nos vemos|m[aá]ndame la invitaci[oó]n|m[aá]ndame el link|m[aá]ndame el meeting|m[aá]ndame el zoom)\b/i,
+        /\b(me queda bien|me parece bien|de acuerdo|perfecto|trato hecho|quedamos as[ií]|te espero|lo espero|le espero|agendado|an[oó]talo|an[oó]telo|nos vemos entonces|ah[ií] nos vemos|m[aá]ndame la invitaci[oó]n|m[aá]ndame el link|m[aá]ndame el meeting|m[aá]ndame el zoom|m[aá]ndame la confirmaci[oó]n|ah[ií] te veo|ah[ií] nos vemos|hasta el (lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo))\b/i,
         /\b(el\s+)?(lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)\s+(a\s+las\s+)?(\d+|tres|cuatro|cinco|diez|once|doce|una|dos)/i
       ];
       const brushOffPattern = /\b(m[aá]ndame info|m[aá]ndamelo|m[aá]ndame un correo|m[aá]ndame la info|env[ií]amelo|luego lo checo|no tengo tiempo|estoy ocupad[oa]|reviso el fin de semana|d[eé]jame revisarlo|d[eé]jame verlo|d[eé]jame checarlo)\b/i;
@@ -312,8 +312,14 @@ export async function POST(req: Request) {
         errores.push(`Fuga de datos técnicos: soltaste términos que no corresponden a una llamada telefónica (${tecnicosMatch[0]}).`);
       }
 
+      // El rechazo real solo debe tomarse en cuenta si la llamada TERMINÓ con el prospecto rechazando.
+      // Si el prospecto puso una objeción al inicio ("no me interesa") pero luego aceptó la cita ("nos vemos el jueves"), fue una objeción superada con éxito.
       const regexRechazoReal = /\b(no me interesa|no insista|no me vuelva a llamar|no me llame m[aá]s|no quiero nada|b[oó]rreme de su lista|pierde su tiempo)\b/i;
-      const tieneRechazoReal = regexRechazoReal.test(prospectMessages);
+      const lastProspectTurn = prospectTurns[prospectTurns.length - 1]?.message?.toLowerCase() || '';
+      const secondLastProspectTurn = prospectTurns[prospectTurns.length - 2]?.message?.toLowerCase() || '';
+      const ultimosMensajesProspecto = `${secondLastProspectTurn} ${lastProspectTurn}`;
+      const rechazoAlFinal = regexRechazoReal.test(ultimosMensajesProspecto);
+      const tieneRechazoReal = rechazoAlFinal && !hayAcuerdoExplicito;
 
       appointmentClosed = prospectAceptoCita && !tieneRechazoReal && !regexProducto.test(agentMessages) && !regexRuego.test(agentMessages);
 
