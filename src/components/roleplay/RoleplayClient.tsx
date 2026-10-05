@@ -284,6 +284,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           rawAudioProcessor: '/worklets/rawAudioProcessor.js',
           audioConcatProcessor: '/worklets/audioConcatProcessor.js'
         },
+        libsampleratePath: '/worklets/libsamplerate.worklet.js',
         overrides: {
           agent: {
             prompt: {

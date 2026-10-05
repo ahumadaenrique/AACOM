@@ -33,6 +33,7 @@ export default auth((req) => {
     const isLoggedIn = !!req.auth;
     const isPublicRoute = 
         req.nextUrl.pathname === '/' ||
+        req.nextUrl.pathname.startsWith('/worklets') ||
         req.nextUrl.pathname.startsWith('/inicio') || 
         req.nextUrl.pathname.startsWith('/privacidad') || 
         req.nextUrl.pathname.startsWith('/terminos') || 
@@ -65,5 +66,5 @@ export default auth((req) => {
 });
 
 export const config = {
-    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|.*\\.png$).*)'],
+    matcher: ['/((?!api|_next/static|_next/image|favicon.ico|worklets/|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|js|css|mp3|wav|woff2?)$).*)'],
 };
