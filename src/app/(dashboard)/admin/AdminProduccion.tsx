@@ -60,6 +60,8 @@ import {
   Target,
   Sparkles,
   Layers,
+  Eye,
+  X,
 } from "lucide-react";
 
 const MONTHS = [
@@ -121,6 +123,26 @@ export default function AdminProduccion() {
   const [formPrimaPagada, setFormPrimaPagada] = useState<string>("");
   const [formNotes, setFormNotes] = useState("");
   const [editingEmissionId, setEditingEmissionId] = useState<string | null>(null);
+
+  // Modal: Detalle de Pólizas por Asesor
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
+  const [detailAgent, setDetailAgent] = useState<any>(null);
+  const [detailCompanyFilter, setDetailCompanyFilter] = useState<string>("ALL");
+  const [detailSearchQuery, setDetailSearchQuery] = useState<string>("");
+
+  // Modal: Modificación Directa de Póliza
+  const [editPolicyModalOpen, setEditPolicyModalOpen] = useState(false);
+  const [editPolicyData, setEditPolicyData] = useState<any>(null);
+  const [editAgentId, setEditAgentId] = useState("");
+  const [editCompanyId, setEditCompanyId] = useState("");
+  const [editPolicyNumber, setEditPolicyNumber] = useState("");
+  const [editClientName, setEditClientName] = useState("");
+  const [editRamo, setEditRamo] = useState("Protección");
+  const [editIssueDate, setEditIssueDate] = useState("");
+  const [editPrimaEmitida, setEditPrimaEmitida] = useState("");
+  const [editPrimaPagada, setEditPrimaPagada] = useState("");
+  const [editStatus, setEditStatus] = useState("EMITIDA");
+  const [editNotes, setEditNotes] = useState("");
 
   // Feedback banner
   const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -268,6 +290,100 @@ export default function AdminProduccion() {
     } else {
       alert("Error: " + res.message);
     }
+  };
+
+  // 3.1 Abrir Detalle de Pólizas por Asesor
+  const handleOpenDetailModal = (agent: any, companyId: string = "ALL") => {
+    setDetailAgent(agent);
+    setDetailCompanyFilter(companyId);
+    setDetailSearchQuery("");
+    setDetailModalOpen(true);
+  };
+
+  // 3.2 Abrir Modal de Edición Directa de Póliza
+  const handleOpenEditPolicyModal = (em: any) => {
+    setEditPolicyData(em);
+    setEditAgentId(em.agentId);
+    setEditCompanyId(em.companyId || "");
+    setEditPolicyNumber(em.policyNumber || "");
+    setEditClientName(em.clientName || "");
+    setEditRamo(em.ramo || "Protección");
+    setEditIssueDate(new Date(em.issueDate).toISOString().split("T")[0]);
+    setEditPrimaEmitida(em.primaEmitida?.toString() || "0");
+    setEditPrimaPagada(em.primaPagada?.toString() || "0");
+    setEditStatus(em.status || "EMITIDA");
+    setEditNotes(em.notes || "");
+    setEditPolicyModalOpen(true);
+  };
+
+  // 3.3 Guardar Cambios de Póliza Modificada (Ajuste Manual)
+  const handleSaveEditedPolicy = async () => {
+    if (!editPolicyData?.id) return;
+    if (!editAgentId) {
+      alert("Selecciona un asesor.");
+      return;
+    }
+    const selectedComp = companies.find((c: any) => c.id === editCompanyId);
+    const companyName = selectedComp?.name || editPolicyData.companyName || "Aseguradora";
+
+    startTransition(async () => {
+      const res = await updateEmission(editPolicyData.id, {
+        agentId: editAgentId,
+        companyId: editCompanyId,
+        companyName,
+        policyNumber: editPolicyNumber,
+        clientName: editClientName,
+        ramo: editRamo,
+        issueDate: editIssueDate,
+        primaEmitida: parseFloat(editPrimaEmitida) || 0,
+        primaPagada: parseFloat(editPrimaPagada) || 0,
+        status: editStatus,
+        notes: editNotes,
+      });
+
+      if (res.success) {
+        setEditPolicyModalOpen(false);
+        setEditPolicyData(null);
+        setFeedback({
+          type: "success",
+          text: "¡Póliza actualizada exitosamente! Las primas y avances han sido recalculados.",
+        });
+        await fetchData();
+      } else {
+        alert("Error al actualizar la póliza: " + res.message);
+      }
+    });
+  };
+
+  // 3.4 Eliminar Póliza desde Modal de Detalle
+  const handleDeletePolicyFromDetail = async (emissionId: string) => {
+    if (!confirm("¿Seguro que deseas eliminar esta póliza? Esta acción restará sus primas de los resultados.")) return;
+    startTransition(async () => {
+      const res = await deleteEmission(emissionId);
+      if (res.success) {
+        setFeedback({ type: "success", text: "Póliza eliminada con éxito." });
+        await fetchData();
+      } else {
+        alert("Error al eliminar póliza: " + res.message);
+      }
+    });
+  };
+
+  // 3.5 Registrar Rápido para este Asesor
+  const handleQuickAddForAgent = (agentId: string, companyId?: string) => {
+    setDetailModalOpen(false);
+    setFormAgentId(agentId);
+    if (companyId && companyId !== "ALL") {
+      setFormCompanyId(companyId);
+    }
+    setEditingEmissionId(null);
+    setFormPolicyNumber("");
+    setFormClientName("");
+    setFormPrimaEmitida("");
+    setFormPrimaPagada("");
+    setFormNotes("");
+    setActiveSubTab("ingreso");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // 4. Open Budget Edit Modal
@@ -882,14 +998,23 @@ export default function AdminProduccion() {
                                 : "opacity-60 hover:opacity-100 bg-white dark:bg-zinc-950"
                             }`}
                           >
-                            {/* Agent Column */}
-                            <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-zinc-100 sticky left-0 bg-inherit z-10 border-r border-slate-200 dark:border-zinc-800">
-                              <div className="flex items-center gap-2">
-                                <div className="h-6 w-6 rounded-full bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-300 flex items-center justify-center font-black text-[10px] shrink-0">
-                                  {row.agentName.charAt(0).toUpperCase()}
+                            {/* Agent Column (Clickable to open Detail Modal) */}
+                            <td
+                              onClick={() => handleOpenDetailModal(row, "ALL")}
+                              className="py-2.5 px-3 font-bold text-slate-900 dark:text-zinc-100 sticky left-0 bg-inherit z-10 border-r border-slate-200 dark:border-zinc-800 cursor-pointer group hover:bg-teal-50/70 dark:hover:bg-teal-950/30 transition-colors"
+                              title="Haz clic para ver el detalle de pólizas de este asesor"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <div className="h-6 w-6 rounded-full bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-300 flex items-center justify-center font-black text-[10px] shrink-0">
+                                    {row.agentName.charAt(0).toUpperCase()}
+                                  </div>
+                                  <span className="truncate max-w-[130px] text-xs group-hover:text-teal-700 dark:group-hover:text-teal-300 group-hover:underline" title={row.agentName}>
+                                    {row.agentName}
+                                  </span>
                                 </div>
-                                <span className="truncate max-w-[140px] text-xs" title={row.agentName}>
-                                  {row.agentName}
+                                <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-teal-100 text-teal-800 dark:bg-teal-900/80 dark:text-teal-200 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5 shrink-0">
+                                  <Eye className="h-2.5 w-2.5" /> Pólizas
                                 </span>
                               </div>
                             </td>
@@ -900,27 +1025,79 @@ export default function AdminProduccion() {
                               const hasValues = cData.policies > 0 || cData.pe > 0;
                               return (
                                 <React.Fragment key={comp.id}>
-                                  <td className={`py-2.5 px-2 text-center border-r border-slate-100 dark:border-zinc-800 font-mono ${hasValues ? "font-bold text-slate-800 dark:text-zinc-200" : "text-slate-300 dark:text-zinc-700"}`}>
-                                    {cData.policies > 0 ? cData.policies : "-"}
+                                  <td
+                                    onClick={() => cData.policies > 0 && handleOpenDetailModal(row, comp.id)}
+                                    className={`py-2.5 px-2 text-center border-r border-slate-100 dark:border-zinc-800 font-mono ${
+                                      cData.policies > 0
+                                        ? "font-black text-teal-700 dark:text-teal-400 cursor-pointer hover:bg-teal-100/60 dark:hover:bg-teal-900/40"
+                                        : "text-slate-300 dark:text-zinc-700"
+                                    }`}
+                                    title={cData.policies > 0 ? `Ver ${cData.policies} póliza(s) de ${comp.name}` : undefined}
+                                  >
+                                    {cData.policies > 0 ? (
+                                      <span className="inline-block px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-950/60 border border-teal-200/60 text-teal-800 dark:text-teal-300 font-black hover:scale-105 transition-transform">
+                                        {cData.policies}
+                                      </span>
+                                    ) : "-"}
                                   </td>
-                                  <td className={`py-2.5 px-2 text-right border-r border-slate-100 dark:border-zinc-800 font-mono ${hasValues ? "font-bold text-slate-900 dark:text-zinc-100" : "text-slate-300 dark:text-zinc-700"}`}>
+                                  <td
+                                    onClick={() => cData.pe > 0 && handleOpenDetailModal(row, comp.id)}
+                                    className={`py-2.5 px-2 text-right border-r border-slate-100 dark:border-zinc-800 font-mono ${
+                                      cData.pe > 0
+                                        ? "font-bold text-slate-900 dark:text-zinc-100 cursor-pointer hover:bg-teal-50/60 dark:hover:bg-teal-950/30"
+                                        : "text-slate-300 dark:text-zinc-700"
+                                    }`}
+                                    title={cData.pe > 0 ? `Ver detalle de primas en ${comp.name}` : undefined}
+                                  >
                                     {cData.pe > 0 ? formatMoney(cData.pe).replace("$", "") : "-"}
                                   </td>
-                                  <td className={`py-2.5 px-2 text-right border-r border-slate-100 dark:border-zinc-800 font-mono ${hasValues ? "font-semibold text-emerald-700 dark:text-emerald-400" : "text-slate-300 dark:text-zinc-700"}`}>
+                                  <td
+                                    onClick={() => cData.ppc > 0 && handleOpenDetailModal(row, comp.id)}
+                                    className={`py-2.5 px-2 text-right border-r border-slate-100 dark:border-zinc-800 font-mono ${
+                                      cData.ppc > 0
+                                        ? "font-semibold text-emerald-700 dark:text-emerald-400 cursor-pointer hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30"
+                                        : "text-slate-300 dark:text-zinc-700"
+                                    }`}
+                                    title={cData.ppc > 0 ? `Ver detalle de primas pagadas en ${comp.name}` : undefined}
+                                  >
                                     {cData.ppc > 0 ? formatMoney(cData.ppc).replace("$", "") : "-"}
                                   </td>
                                 </React.Fragment>
                               );
                             })}
 
-                            {/* Summary Columns for Agent */}
-                            <td className="py-2.5 px-2 text-center font-mono font-black text-slate-900 dark:text-zinc-100 bg-slate-50 dark:bg-zinc-900/40 border-r border-slate-200 dark:border-zinc-800">
-                              {row.totalPolicies > 0 ? row.totalPolicies : "-"}
+                            {/* Summary Columns for Agent (Clickable to open Detail) */}
+                            <td
+                              onClick={() => row.totalPolicies > 0 && handleOpenDetailModal(row, "ALL")}
+                              className={`py-2.5 px-2 text-center font-mono font-black border-r border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/40 ${
+                                row.totalPolicies > 0
+                                  ? "text-teal-700 dark:text-teal-400 cursor-pointer hover:bg-teal-100/60 dark:hover:bg-teal-900/50"
+                                  : "text-slate-900 dark:text-zinc-100"
+                              }`}
+                              title={row.totalPolicies > 0 ? `Ver todas las ${row.totalPolicies} pólizas de ${row.agentName}` : undefined}
+                            >
+                              {row.totalPolicies > 0 ? (
+                                <span className="inline-block px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-900/80 font-black text-teal-900 dark:text-teal-200 hover:scale-105 transition-transform">
+                                  {row.totalPolicies}
+                                </span>
+                              ) : "-"}
                             </td>
-                            <td className="py-2.5 px-2 text-right font-mono font-black text-slate-900 dark:text-zinc-100 bg-slate-50 dark:bg-zinc-900/40 border-r border-slate-200 dark:border-zinc-800">
+                            <td
+                              onClick={() => row.totalPE > 0 && handleOpenDetailModal(row, "ALL")}
+                              className={`py-2.5 px-2 text-right font-mono font-black text-slate-900 dark:text-zinc-100 bg-slate-50 dark:bg-zinc-900/40 border-r border-slate-200 dark:border-zinc-800 ${
+                                row.totalPE > 0 ? "cursor-pointer hover:bg-teal-50 dark:hover:bg-teal-950/30" : ""
+                              }`}
+                              title={row.totalPE > 0 ? "Ver detalle de primas emitidas" : undefined}
+                            >
                               {row.totalPE > 0 ? formatMoney(row.totalPE).replace("$", "") : "-"}
                             </td>
-                            <td className="py-2.5 px-2 text-right font-mono font-black text-emerald-700 dark:text-emerald-400 bg-slate-50 dark:bg-zinc-900/40 border-r border-slate-200 dark:border-zinc-800">
+                            <td
+                              onClick={() => row.totalPPC > 0 && handleOpenDetailModal(row, "ALL")}
+                              className={`py-2.5 px-2 text-right font-mono font-black text-emerald-700 dark:text-emerald-400 bg-slate-50 dark:bg-zinc-900/40 border-r border-slate-200 dark:border-zinc-800 ${
+                                row.totalPPC > 0 ? "cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-950/30" : ""
+                              }`}
+                              title={row.totalPPC > 0 ? "Ver detalle de primas pagadas" : undefined}
+                            >
                               {row.totalPPC > 0 ? formatMoney(row.totalPPC).replace("$", "") : "-"}
                             </td>
 
@@ -1692,6 +1869,470 @@ export default function AdminProduccion() {
               className="bg-teal-700 hover:bg-teal-800 text-white font-bold"
             >
               {isPending ? "Guardando..." : "Guardar Aseguradora"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL 3: DETALLE DE PÓLIZAS POR ASESOR */}
+      <Dialog open={detailModalOpen} onOpenChange={setDetailModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
+          {/* Header */}
+          <div className="p-5 border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/80">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <DialogTitle className="text-base font-black flex items-center gap-2 text-slate-900 dark:text-zinc-100">
+                  <FileSpreadsheet className="h-5 w-5 text-teal-700 dark:text-teal-400" />
+                  Detalle de Pólizas — {detailAgent?.agentName}
+                </DialogTitle>
+                <DialogDescription className="text-xs text-slate-500 mt-1">
+                  Pólizas emitidas en {monthName} {selectedYear} • Asesor: {detailAgent?.agentEmail || detailAgent?.agentName}
+                </DialogDescription>
+              </div>
+
+              {/* Total KPI Badges for this Agent */}
+              <div className="flex items-center gap-2">
+                <div className="px-3 py-1.5 rounded-lg bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800/60 text-right">
+                  <span className="block text-[10px] font-black uppercase text-teal-600 dark:text-teal-400">Total Emitido</span>
+                  <span className="text-xs font-black font-mono text-teal-950 dark:text-teal-100">
+                    {formatMoney(detailAgent?.totalPE || 0)}
+                  </span>
+                </div>
+                <div className="px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-right">
+                  <span className="block text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400">Total Pagado</span>
+                  <span className="text-xs font-black font-mono text-emerald-950 dark:text-emerald-100">
+                    {formatMoney(detailAgent?.totalPPC || 0)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Filter Bar inside Modal */}
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-2 mt-4 pt-3 border-t border-slate-200/80 dark:border-zinc-800">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <span className="text-xs font-bold text-slate-500 whitespace-nowrap">Aseguradora:</span>
+                <select
+                  value={detailCompanyFilter}
+                  onChange={(e) => setDetailCompanyFilter(e.target.value)}
+                  className="text-xs font-semibold py-1 px-2.5 rounded-md border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
+                >
+                  <option value="ALL">Todas las Aseguradoras</option>
+                  {companies.map((c: any) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <div className="relative flex-1 sm:w-56">
+                  <Search className="absolute left-2.5 top-2 h-3.5 w-3.5 text-slate-400" />
+                  <Input
+                    type="text"
+                    placeholder="Buscar cliente o folio..."
+                    value={detailSearchQuery}
+                    onChange={(e) => setDetailSearchQuery(e.target.value)}
+                    className="pl-8 h-8 text-xs"
+                  />
+                </div>
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleQuickAddForAgent(detailAgent?.agentId, detailCompanyFilter)}
+                  className="h-8 text-xs font-bold text-teal-700 hover:text-teal-800 border-teal-300 dark:border-teal-700 shrink-0"
+                >
+                  <Plus className="h-3.5 w-3.5 mr-1" /> Nueva Póliza
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Body: Policies List */}
+          <div className="p-5 overflow-y-auto flex-1 space-y-3">
+            {(() => {
+              const agentPolicies = (data?.emissions || []).filter((em: any) => {
+                if (em.agentId !== detailAgent?.agentId) return false;
+                if (detailCompanyFilter !== "ALL" && em.companyId !== detailCompanyFilter) return false;
+                if (detailSearchQuery.trim()) {
+                  const q = detailSearchQuery.toLowerCase();
+                  const matchClient = (em.clientName || "").toLowerCase().includes(q);
+                  const matchPolicy = (em.policyNumber || "").toLowerCase().includes(q);
+                  const matchCompany = (em.companyName || "").toLowerCase().includes(q);
+                  if (!matchClient && !matchPolicy && !matchCompany) return false;
+                }
+                return true;
+              });
+
+              if (agentPolicies.length === 0) {
+                return (
+                  <div className="py-12 text-center space-y-3">
+                    <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-slate-400">
+                      <FileSpreadsheet className="h-6 w-6" />
+                    </div>
+                    <p className="text-sm font-semibold text-slate-600 dark:text-zinc-400">
+                      No se encontraron pólizas registradas para este filtro en {monthName} {selectedYear}.
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={() => handleQuickAddForAgent(detailAgent?.agentId, detailCompanyFilter)}
+                      className="bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs"
+                    >
+                      <Plus className="h-4 w-4 mr-1.5" /> Registrar Primera Póliza
+                    </Button>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="border border-slate-200 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-100 dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 text-[11px] font-black uppercase text-slate-600 dark:text-zinc-400">
+                      <tr>
+                        <th className="py-2.5 px-3">Folio / Póliza</th>
+                        <th className="py-2.5 px-3">Cliente Asegurado</th>
+                        <th className="py-2.5 px-3">Aseguradora</th>
+                        <th className="py-2.5 px-3">Ramo</th>
+                        <th className="py-2.5 px-3">Fecha</th>
+                        <th className="py-2.5 px-3 text-right">Prima Emitida (PE)</th>
+                        <th className="py-2.5 px-3 text-right">Prima Pagada (PPC)</th>
+                        <th className="py-2.5 px-3 text-center">Estatus</th>
+                        <th className="py-2.5 px-3 text-center">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/80 bg-white dark:bg-zinc-950">
+                      {agentPolicies.map((em: any) => {
+                        const ramoItem = RAMOS_CATALOGO.find((r) => r.id === em.ramo) || {
+                          color: "text-blue-600 bg-blue-50 border-blue-200",
+                          name: em.ramo || "Protección",
+                        };
+
+                        return (
+                          <tr key={em.id} className="hover:bg-slate-50 dark:hover:bg-zinc-900/50 transition-colors">
+                            {/* Folio */}
+                            <td className="py-3 px-3 font-mono font-bold text-slate-800 dark:text-zinc-200">
+                              {em.policyNumber ? (
+                                <Badge variant="outline" className="font-mono text-[10px] bg-slate-50 dark:bg-zinc-900">
+                                  {em.policyNumber}
+                                </Badge>
+                              ) : (
+                                <span className="text-slate-400 italic text-[11px]">Sin folio</span>
+                              )}
+                            </td>
+
+                            {/* Cliente & Notas */}
+                            <td className="py-3 px-3">
+                              <span className="font-bold text-slate-900 dark:text-zinc-100 block">
+                                {em.clientName || "Sin nombre de cliente"}
+                              </span>
+                              {em.notes && (
+                                <span className="text-[11px] text-slate-500 dark:text-zinc-400 block truncate max-w-[220px]" title={em.notes}>
+                                  Nota: {em.notes}
+                                </span>
+                              )}
+                            </td>
+
+                            {/* Aseguradora */}
+                            <td className="py-3 px-3">
+                              <div className="flex items-center gap-1.5">
+                                <div
+                                  className="h-2.5 w-2.5 rounded-full shrink-0"
+                                  style={{ backgroundColor: em.company?.color || "#0284c7" }}
+                                />
+                                <span className="font-bold text-slate-800 dark:text-zinc-200 truncate max-w-[130px]">
+                                  {em.companyName}
+                                </span>
+                              </div>
+                            </td>
+
+                            {/* Ramo */}
+                            <td className="py-3 px-3">
+                              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${ramoItem.color}`}>
+                                {getRamoIcon(em.ramo)}
+                                {em.ramo || "Protección"}
+                              </span>
+                            </td>
+
+                            {/* Fecha */}
+                            <td className="py-3 px-3 text-slate-600 dark:text-zinc-400 font-mono text-[11px]">
+                              {new Date(em.issueDate).toLocaleDateString("es-MX", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              })}
+                            </td>
+
+                            {/* PE */}
+                            <td className="py-3 px-3 text-right font-mono font-black text-slate-900 dark:text-zinc-100">
+                              {formatMoney(em.primaEmitida)}
+                            </td>
+
+                            {/* PPC */}
+                            <td className="py-3 px-3 text-right font-mono font-black text-emerald-700 dark:text-emerald-400">
+                              {formatMoney(em.primaPagada)}
+                            </td>
+
+                            {/* Estatus */}
+                            <td className="py-3 px-3 text-center">
+                              <Badge
+                                variant="outline"
+                                className={`text-[10px] font-black ${
+                                  em.status === "PAGADA"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-300"
+                                    : em.status === "CANCELADA"
+                                    ? "bg-red-50 text-red-700 border-red-300"
+                                    : "bg-blue-50 text-blue-700 border-blue-300"
+                                }`}
+                              >
+                                {em.status || "EMITIDA"}
+                              </Badge>
+                            </td>
+
+                            {/* Botones de Acción: Editar y Eliminar */}
+                            <td className="py-3 px-3 text-center">
+                              <div className="flex items-center justify-center gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleOpenEditPolicyModal(em)}
+                                  className="h-7 px-2 text-xs font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/50"
+                                  title="Modificar valores de la póliza"
+                                >
+                                  <Edit className="h-3.5 w-3.5 mr-1" /> Editar
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeletePolicyFromDetail(em.id)}
+                                  className="h-7 px-1.5 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
+                                  title="Eliminar póliza"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })()}
+          </div>
+
+          {/* Footer */}
+          <div className="p-4 border-t border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 flex items-center justify-between">
+            <span className="text-xs text-slate-500 font-medium">
+              Los cambios en pólizas recalculan en tiempo real las metas y avances del mes.
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setDetailModalOpen(false)}
+              className="font-bold text-xs"
+            >
+              Cerrar Detalle
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* MODAL 4: MODIFICACIÓN MANUAL DE PÓLIZA */}
+      <Dialog open={editPolicyModalOpen} onOpenChange={setEditPolicyModalOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="text-base font-black flex items-center gap-2 text-slate-900 dark:text-zinc-100">
+              <Edit className="h-5 w-5 text-blue-600" />
+              Modificar Póliza Ingresada
+            </DialogTitle>
+            <DialogDescription className="text-xs">
+              Corrige los valores de primas, folio, fechas o datos generales de esta póliza emitida.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {/* Asesor */}
+            <div>
+              <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
+                Asesor / Agente *
+              </label>
+              <select
+                value={editAgentId}
+                onChange={(e) => setEditAgentId(e.target.value)}
+                className="w-full text-xs font-semibold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
+              >
+                {data?.agents?.map((ag: any) => (
+                  <option key={ag.id} value={ag.id}>
+                    {ag.name} ({ag.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Aseguradora y Ramo */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
+                  Compañía Aseguradora *
+                </label>
+                <select
+                  value={editCompanyId}
+                  onChange={(e) => setEditCompanyId(e.target.value)}
+                  className="w-full text-xs font-semibold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
+                >
+                  {companies.map((c: any) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
+                  Ramo de Seguro *
+                </label>
+                <select
+                  value={editRamo}
+                  onChange={(e) => setEditRamo(e.target.value)}
+                  className="w-full text-xs font-semibold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
+                >
+                  {RAMOS_CATALOGO.map((r) => (
+                    <option key={r.id} value={r.id}>
+                      {r.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Folio y Cliente */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
+                  Folio / Número de Póliza
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Ej. POL-12345"
+                  value={editPolicyNumber}
+                  onChange={(e) => setEditPolicyNumber(e.target.value)}
+                  className="text-xs font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
+                  Cliente Asegurado
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Ej. Juan Pérez"
+                  value={editClientName}
+                  onChange={(e) => setEditClientName(e.target.value)}
+                  className="text-xs font-semibold"
+                />
+              </div>
+            </div>
+
+            {/* Fecha de Emisión y Estatus */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
+                  Fecha de Emisión *
+                </label>
+                <Input
+                  type="date"
+                  value={editIssueDate}
+                  onChange={(e) => setEditIssueDate(e.target.value)}
+                  className="text-xs font-mono"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
+                  Estatus de la Póliza
+                </label>
+                <select
+                  value={editStatus}
+                  onChange={(e) => setEditStatus(e.target.value)}
+                  className="w-full text-xs font-semibold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
+                >
+                  <option value="EMITIDA">EMITIDA</option>
+                  <option value="PAGADA">PAGADA</option>
+                  <option value="PENDIENTE">PENDIENTE</option>
+                  <option value="CANCELADA">CANCELADA</option>
+                </select>
+              </div>
+            </div>
+
+            {/* PRIMAS: PE y PPC (Destacadas) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800">
+              <div>
+                <label className="block text-xs font-black uppercase text-slate-800 dark:text-zinc-200 mb-1">
+                  Prima Emitida (PE) en MXN *
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-sm font-bold text-slate-400">$</span>
+                  <Input
+                    type="number"
+                    step="any"
+                    value={editPrimaEmitida}
+                    onChange={(e) => setEditPrimaEmitida(e.target.value)}
+                    className="pl-7 text-sm font-mono font-black"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black uppercase text-emerald-800 dark:text-emerald-300 mb-1">
+                  Prima Pagada (PPC) en MXN *
+                </label>
+                <div className="relative">
+                  <span className="absolute left-3 top-2 text-sm font-bold text-emerald-500">$</span>
+                  <Input
+                    type="number"
+                    step="any"
+                    value={editPrimaPagada}
+                    onChange={(e) => setEditPrimaPagada(e.target.value)}
+                    className="pl-7 text-sm font-mono font-black text-emerald-700 dark:text-emerald-400"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Notas */}
+            <div>
+              <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
+                Notas / Observaciones
+              </label>
+              <Input
+                type="text"
+                placeholder="Observaciones de cobranza, póliza anual, etc."
+                value={editNotes}
+                onChange={(e) => setEditNotes(e.target.value)}
+                className="text-xs"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEditPolicyModalOpen(false)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSaveEditedPolicy}
+              disabled={isPending}
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold"
+            >
+              {isPending ? "Guardando Cambios..." : "Guardar Cambios"}
             </Button>
           </DialogFooter>
         </DialogContent>
