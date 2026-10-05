@@ -344,7 +344,13 @@ export default async function DashboardLayout({
                                                 {isAdminPath && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                             </button>
                                         </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="start" className="w-48">
+                                        <DropdownMenuContent align="start" className="w-52">
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin/produccion" className="flex items-center gap-2 cursor-pointer font-bold text-teal-700 dark:text-teal-400">
+                                                    <Award className="h-4 w-4 text-teal-700 dark:text-teal-400" />
+                                                    Producción & Primas
+                                                </Link>
+                                            </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
                                                 <Link href="/admin/referidores" className="flex items-center gap-2 cursor-pointer font-medium">
                                                     <Users className="h-4 w-4 text-teal-600" />
@@ -564,6 +570,10 @@ export default async function DashboardLayout({
                                              <div className="space-y-2.5">
                                                  <div className="text-[10px] font-mono tracking-wider text-zinc-400 uppercase pt-2">Administración</div>
                                                  <div className="pl-3 space-y-2.5 border-l border-zinc-200 dark:border-zinc-800">
+                                                     <Link href="/admin/produccion" className="text-teal-700 dark:text-teal-400 font-bold hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Award className="h-4.5 w-4.5 text-teal-700 dark:text-teal-400" />
+                                                         Producción & Primas
+                                                     </Link>
                                                      <Link href="/votaciones" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
                                                          <Sparkles className="h-4.5 w-4.5 text-amber-500" />
                                                          Votaciones
