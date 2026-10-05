@@ -284,6 +284,21 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           rawAudioProcessor: '/worklets/rawAudioProcessor.js',
           audioConcatProcessor: '/worklets/audioConcatProcessor.js'
         },
+        overrides: {
+          agent: {
+            prompt: {
+              prompt: scenario.systemPrompt
+            },
+            firstMessage: scenario.firstMessage,
+            language: 'es'
+          },
+          tts: {
+            voiceId: scenario.prospecto.voiceId,
+            stability: 0.75,
+            similarityBoost: 0.85,
+            speed: 1.0
+          }
+        },
         onConnect: ({ conversationId }) => {
           stopRing();
           playChime('pickup');

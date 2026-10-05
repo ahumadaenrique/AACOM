@@ -34,82 +34,188 @@ export interface Scenario {
 }
 
 const PROFESIONES = [
-  { puestoM: 'Dueño de Empresa de Logística', puestoF: 'Dueña de Empresa de Logística', contexto: 'maneja una flotilla de 20 camiones y vive saturado de llamadas de clientes' },
-  { puestoM: 'Médico Cirujano Pediatra', puestoF: 'Médico Cirujana Pediatra', contexto: 'trabaja entre dos hospitales privados y casi no tiene tiempo para llamadas' },
-  { puestoM: 'Director de Agencia de Marketing', puestoF: 'Directora de Agencia de Marketing', contexto: 'siempre anda coordinando campañas y es muy directa al grano' },
+  { puestoM: 'Dueño de Empresa de Logística', puestoF: 'Dueña de Empresa de Logística', contexto: 'maneja una flotilla de 25 camiones y vive saturado de llamadas de clientes' },
+  { puestoM: 'Médico Cirujano Pediatra', puestoF: 'Médica Cirujana Pediatra', contexto: 'trabaja entre dos hospitales privados y casi no tiene tiempo para llamadas' },
+  { puestoM: 'Director de Agencia de Marketing Digital', puestoF: 'Directora de Agencia de Marketing Digital', contexto: 'siempre anda coordinando campañas y es muy directa al grano' },
   { puestoM: 'Dueño de Cadena de Restaurantes', puestoF: 'Dueña de Cadena de Restaurantes', contexto: 'preocupado por flujo de efectivo e impuestos, cuida mucho su dinero' },
-  { puestoM: 'Notario Público', puestoF: 'Notaria Pública', contexto: 'muy analítico, formal, educado y fijado en los detalles legales' },
-  { puestoM: 'Arquitecto Independiente', puestoF: 'Arquitecta Independiente', contexto: 'hace proyectos residenciales, ingresos variables mes a mes' },
-  { puestoM: 'Director de Planta Industrial', puestoF: 'Directora de Planta Industrial', contexto: 'enfocado en procesos, productividad y números concretos' },
+  { puestoM: 'Notario Público Titular', puestoF: 'Notaria Pública Titular', contexto: 'muy analítico, formal, educado y fijado en los detalles legales' },
+  { puestoM: 'Arquitecto Independiente', puestoF: 'Arquitecta Independiente', contexto: 'hace proyectos residenciales de lujo, ingresos variables mes a mes' },
+  { puestoM: 'Director de Planta Industrial', puestoF: 'Directora de Planta Industrial', contexto: 'enfocado en procesos, productividad de 120 obreros y números concretos' },
   { puestoM: 'Contador y Asesor Fiscal', puestoF: 'Contadora y Asesora Fiscal', contexto: 'conoce muy bien las deducciones de impuestos pero es escéptico de seguros' },
-  { puestoM: 'Dueño de Laboratorio Clínico', puestoF: 'Dueña de Laboratorio Clínico', contexto: 'busca estabilidad financiera y protección para su familia' },
-  { puestoM: 'Empresario del Ramo Metalmecánico', puestoF: 'Empresaria del Ramo Metalmecánico', contexto: 'empresa familiar con 30 empleados, busca proteger el patrimonio' },
+  { puestoM: 'Dueño de Laboratorio Clínico', puestoF: 'Dueña de Laboratorio Clínico', contexto: 'busca estabilidad financiera y protección patrimonial para su familia' },
+  { puestoM: 'Empresario del Ramo Metalmecánico', puestoF: 'Empresaria del Ramo Metalmecánico', contexto: 'empresa familiar con 40 empleados, busca proteger el patrimonio de sucesión' },
   { puestoM: 'Dentista con Clínica Propia', puestoF: 'Dentista con Clínica Propia', contexto: 'atiende pacientes todo el día, solo contesta entre citas' },
   { puestoM: 'Broker Inmobiliario', puestoF: 'Broker Inmobiliaria', contexto: 'acostumbrado a negociar comisiones y ventas, detecta de inmediato guiones de venta' },
-  { puestoM: 'Director de TI / Software', puestoF: 'Directora de TI / Software', contexto: 'mente lógica, analítica, quiere saber el por qué de todo' },
+  { puestoM: 'Director de TI / Ciberseguridad', puestoF: 'Directora de TI / Ciberseguridad', contexto: 'mente lógica, analítica, quiere saber el por qué y el retorno de inversión' },
   { puestoM: 'Distribuidor Mayorista de Abarrotes', puestoF: 'Distribuidora Mayorista de Abarrotes', contexto: 'persona práctica, de trato directo, no le gustan los rodeos' },
-  { puestoM: 'Veterinario y Dueño de Hospital Animal', puestoF: 'Veterinaria y Dueña de Hospital Animal', contexto: 'enfocado en bienestar y familia pero muy ocupado' }
+  { puestoM: 'Veterinario y Dueño de Hospital Animal', puestoF: 'Veterinaria y Dueña de Hospital Animal', contexto: 'enfocado en bienestar y familia pero muy ocupado con cirugías' },
+  { puestoM: 'Director Financiero (CFO) Corporativo', puestoF: 'Directora Financiera (CFO) Corporativa', contexto: 'acostumbrado a evaluar balances, tasas y rendimiento financiero' },
+  { puestoM: 'Dueño de Comercializadora de Acero', puestoF: 'Dueña de Comercializadora de Acero', contexto: 'negocio de alto volumen, muy sensible a la volatilidad económica' },
+  { puestoM: 'Abogado Corporativo y Litigante', puestoF: 'Abogada Corporativa y Litigante', contexto: 'muy observador del lenguaje, objeta cualquier suposición sin evidencia' },
+  { puestoM: 'Dermatólogo con Consultorio Privado', puestoF: 'Dermatóloga con Consultorio Privado', contexto: 'agenda llena de pacientes, muy cotizado y cuida su tiempo' },
+  { puestoM: 'Director Comercial de Grupo Automotriz', puestoF: 'Directora Comercial de Grupo Automotriz', contexto: 'experto en técnicas comerciales, exigente con la postura profesional' },
+  { puestoM: 'Constructor de Naves Industriales', puestoF: 'Constructora de Naves Industriales', contexto: 'maneja contratos de alto calibre y tiempos de entrega estrictos' },
+  { puestoM: 'Productor Agropecuario y Ganadero', puestoF: 'Productora Agropecuaria y Ganadera', contexto: 'hombre de campo con gran patrimonio en tierras y ganado, desconfía de bancos' },
+  { puestoM: 'Dueño de Empresa de Empaques y Cartón', puestoF: 'Dueña de Empresa de Empaques y Cartón', contexto: 'proveedor de la industria maquiladora, vive al día con órdenes de compra' },
+  { puestoM: 'Oftalmólogo y Cirujano Ocular', puestoF: 'Oftalmóloga y Cirujana Ocular', contexto: 'agenda saturada de procedimientos, prefiere llamadas de menos de un minuto' },
+  { puestoM: 'Dueño de Consultoría de Recursos Humanos', puestoF: 'Dueña de Consultoría de Recursos Humanos', contexto: 'sabe leer intenciones de personas de inmediato, odia discursos ensayados' },
+  { puestoM: 'Diseñador de Interiores de Alto Nivel', puestoF: 'Diseñadora de Interiores de Alto Nivel', contexto: 'trabaja con clientes VIP, busca soluciones exclusivas y a la medida' },
+  { puestoM: 'Director de Cadena de Farmacias', puestoF: 'Directora de Cadena de Farmacias', contexto: 'gestiona 15 sucursales, enfocado en rentabilidad y optimización fiscal' },
+  { puestoM: 'Especialista en Energía Solar y Renovables', puestoF: 'Especialista en Energía Solar y Renovables', contexto: 'ingeniero con visión de futuro, interesado en planes a largo plazo' },
+  { puestoM: 'Dueño de Empresa de Banquetes y Eventos', puestoF: 'Dueña de Empresa de Banquetes y Eventos', contexto: 'fines de semana saturados, entre semana atiende citas de proveedores' },
+  { puestoM: 'Fabricante de Muebles de Exportación', puestoF: 'Fabricante de Muebles de Exportación', contexto: 'exporta a EE.UU., enfocado en cobertura cambiaria y protección de socios' }
 ];
 
 const VOCES_HOMBRES = [
-  'TNuNcwk4LzbPpi1XEANc', // Adriel
-  'htFfPSZGJwjBv1CL0aMD', // Antonio
-  '6DsgX00trsI64jl83WWS'  // Alex
+  'TNuNcwk4LzbPpi1XEANc', // Adriel (Mexicano profesional equilibrado)
+  'htFfPSZGJwjBv1CL0aMD', // Antonio (Mexicano corporativo maduro)
+  '6DsgX00trsI64jl83WWS', // Alex (Mexicano dinámico y asertivo)
+  'onwK4e9ZLuTAKqWW03F9', // Daniel (Mexicano conversacional formal)
+  'cjVigY5qzO86Huf0OWal'  // Eric (Latino directo y ejecutivo)
 ];
 
 const VOCES_MUJERES = [
-  'cAvMBIZ0VNTU8XdsUpEq', // Susana Elizabeth
-  'ewn5JTa3lNPY8QVuZJi6', // Ana Sofía
-  'EsHsbdAoFNIyDFJ5UnZx', // Cristina
-  'FIhWHKTvfI9sX1beLEJ8', // Diana Sanchez
-  '9Godp7dNohUvXk6qp0gS'  // Regina
+  'cAvMBIZ0VNTU8XdsUpEq', // Susana Elizabeth (Mexicana ejecutiva clara)
+  'ewn5JTa3lNPY8QVuZJi6', // Ana Sofía (Mexicana joven profesional)
+  'EsHsbdAoFNIyDFJ5UnZx', // Cristina (Mexicana cordial y firme)
+  'FIhWHKTvfI9sX1beLEJ8', // Diana Sanchez (Mexicana formal y segura)
+  '9Godp7dNohUvXk6qp0gS', // Regina (Mexicana profesionista analítica)
+  'EXAVITQu4vr4xnSDxMaL', // Bella (Conversacional natural y expresiva)
+  'FGY2WhTYpPnrIDTdsKH5'  // Laura (Ejecutiva de negocios directa)
 ];
 
 const PROSPECTOS_PERSONAS: { nombre: string; genero: 'M' | 'F' }[] = [
-  { nombre: 'Roberto Méndez', genero: 'M' },
-  { nombre: 'Claudia Ramos', genero: 'F' },
-  { nombre: 'Fernando Garza', genero: 'M' },
-  { nombre: 'Sofía Morales', genero: 'F' },
-  { nombre: 'Carlos Eduardo Sada', genero: 'M' },
-  { nombre: 'Mariana Elizondo', genero: 'F' },
-  { nombre: 'Alejandro Treviño', genero: 'M' },
-  { nombre: 'Patricia Villarreal', genero: 'F' },
+  // Hombres (30 Perfiles)
   { nombre: 'Mauricio Cantú', genero: 'M' },
-  { nombre: 'Gabriela Lozano', genero: 'F' },
+  { nombre: 'Roberto Méndez', genero: 'M' },
+  { nombre: 'Fernando Garza', genero: 'M' },
+  { nombre: 'Carlos Eduardo Sada', genero: 'M' },
+  { nombre: 'Alejandro Treviño', genero: 'M' },
   { nombre: 'Héctor De la Garza', genero: 'M' },
-  { nombre: 'Lorena Salinas', genero: 'F' }
+  { nombre: 'Marcelo Elizondo', genero: 'M' },
+  { nombre: 'Diego Andrés Zambrano', genero: 'M' },
+  { nombre: 'Lic. Rodrigo Benavides', genero: 'M' },
+  { nombre: 'Gabriel Villarreal', genero: 'M' },
+  { nombre: 'Ing. Javier Canales', genero: 'M' },
+  { nombre: 'Andrés Morales', genero: 'M' },
+  { nombre: 'Bernardo Coindreau', genero: 'M' },
+  { nombre: 'Dr. Gerardo Clariond', genero: 'M' },
+  { nombre: 'Daniel Chapa', genero: 'M' },
+  { nombre: 'Patricio Kalifa', genero: 'M' },
+  { nombre: 'Luis Felipe Garza', genero: 'M' },
+  { nombre: 'Jorge González', genero: 'M' },
+  { nombre: 'Adrián Sepúlveda', genero: 'M' },
+  { nombre: 'Tomás Barragán', genero: 'M' },
+  { nombre: 'Mateo Garza', genero: 'M' },
+  { nombre: 'Emiliano Santos', genero: 'M' },
+  { nombre: 'Guillermo Lozano', genero: 'M' },
+  { nombre: 'Arturo Salinas', genero: 'M' },
+  { nombre: 'David Maldonado', genero: 'M' },
+  { nombre: 'Juan Pablo Farías', genero: 'M' },
+  { nombre: 'Ricardo Odriozola', genero: 'M' },
+  { nombre: 'Esteban Martínez', genero: 'M' },
+  { nombre: 'Alfonso Junco', genero: 'M' },
+  { nombre: 'Rodrigo Montemayor', genero: 'M' },
+
+  // Mujeres (30 Perfiles)
+  { nombre: 'Claudia Ramos', genero: 'F' },
+  { nombre: 'Sofía Morales', genero: 'F' },
+  { nombre: 'Mariana Elizondo', genero: 'F' },
+  { nombre: 'Patricia Villarreal', genero: 'F' },
+  { nombre: 'Gabriela Lozano', genero: 'F' },
+  { nombre: 'Lorena Salinas', genero: 'F' },
+  { nombre: 'Paulina Santos', genero: 'F' },
+  { nombre: 'Andrea Garza', genero: 'F' },
+  { nombre: 'Valeria Sada', genero: 'F' },
+  { nombre: 'Natalia Benavides', genero: 'F' },
+  { nombre: 'Dra. Camila Montemayor', genero: 'F' },
+  { nombre: 'Lic. Daniela Chapa', genero: 'F' },
+  { nombre: 'Cecilia Zambrano', genero: 'F' },
+  { nombre: 'Eugenia Coindreau', genero: 'F' },
+  { nombre: 'Bárbara Clariond', genero: 'F' },
+  { nombre: 'Lucía Canales', genero: 'F' },
+  { nombre: 'Jimena Kalifa', genero: 'F' },
+  { nombre: 'Renata Villarreal', genero: 'F' },
+  { nombre: 'Cristina Odriozola', genero: 'F' },
+  { nombre: 'Ana Sofía Farías', genero: 'F' },
+  { nombre: 'Karla Elizondo', genero: 'F' },
+  { nombre: 'Rebeca Treviño', genero: 'F' },
+  { nombre: 'Mónica De la Garza', genero: 'F' },
+  { nombre: 'Mariana Junco', genero: 'F' },
+  { nombre: 'Estefanía Barragán', genero: 'F' },
+  { nombre: 'Elisa Maldonado', genero: 'F' },
+  { nombre: 'Adriana Lozano', genero: 'F' },
+  { nombre: 'Paola Martínez', genero: 'F' },
+  { nombre: 'Carolina Sepúlveda', genero: 'F' },
+  { nombre: 'Fernanda Salinas', genero: 'F' }
 ];
 
 const PERSONALIDADES = [
-    {
-      tipo: 'El Escéptico Anti-Trampas (Extremo)',
-      comportamiento: 'Desconfía profundamente de cualquier promesa exagerada o rendimiento irreal. Si el asesor promete demasiado o miente, cuelga o rechaza tajantemente.',
-      objecionFrecuente: 'He visto de todo en la industria, así que ahórrate los cuentos. ¿Exactamente qué ofreces?',
-      dificultad: 'alta'
-    },
-    {
-      tipo: 'El Enemigo de los Robots (Extremo)',
-      comportamiento: 'Odia a la gente que lee guiones. Si siente que el asesor repite frases de memoria o no lo escucha, lo corta de inmediato.',
-      objecionFrecuente: '¿Estás leyendo un guion? Háblame como persona normal, no tengo tiempo para grabadoras.',
-      dificultad: 'alta'
-    },
-    {
-      tipo: 'El Muralla Inhackeable (Extremo)',
-      comportamiento: 'Inmune a técnicas baratas, ruego o lástima. Mantiene una frialdad absoluta en la negociación.',
-      objecionFrecuente: 'Mejor ve directo al grano, mis decisiones se basan 100% en números, no en sentimientos.',
-      dificultad: 'alta'
-    },
-    {
-      tipo: 'El Ejecutivo Ofendido (Extremo)',
-      comportamiento: 'Tiene muy poca tolerancia. Si el asesor es grosero, asume cosas de su dinero o le dice qué hacer, estalla de ira y cuelga.',
-      objecionFrecuente: '¿De qué te ríes o por qué asumes cosas? Vamos aclarando el tono si quieres que te dedique un minuto.',
-      dificultad: 'alta'
-    },
   {
     tipo: 'Acelerado y con prisa',
     comportamiento: 'Habla rápido, dice que tiene 30 segundos porque entra a una llamada o reunión.',
     objecionFrecuente: 'Platíqueme rápido por favor que voy entrando a una junta.',
     dificultad: 'baja'
+  },
+  {
+    tipo: 'Amable pero evasivo de WhatsApp',
+    comportamiento: 'Muy cordial, educado, pero su estrategia es mandar todo por WhatsApp para no comprometerse.',
+    objecionFrecuente: 'Suena muy bien, mándamelo por WhatsApp con calma y yo lo reviso el fin de semana.',
+    dificultad: 'baja'
+  },
+  {
+    tipo: 'El Ocupado que pide que le marquen después',
+    comportamiento: 'Dice que lo agarraron en momento inoportuno y pide que le marquen en unos días.',
+    objecionFrecuente: 'Me agarras en pésimo momento, márcame el viernes de la próxima semana a ver si tengo tiempo.',
+    dificultad: 'baja'
+  },
+  {
+    tipo: 'El Pragmático Ocupado',
+    comportamiento: 'Valora la honestidad y el respeto a su tiempo por encima de todo. Si percibe profesionalismo accede rápido, si percibe rollo cuelga.',
+    objecionFrecuente: 'Tengo 20 segundos antes de subirme al coche, dígame qué necesita.',
+    dificultad: 'baja'
+  },
+  {
+    tipo: 'Analítico numérico',
+    comportamiento: 'Quiere saber números, costos y porcentajes antes de aceptar cualquier cita.',
+    objecionFrecuente: 'Pero dígame los números primero, ¿de cuánto estamos hablando al mes y qué tasa da?',
+    dificultad: 'media'
+  },
+  {
+    tipo: 'Satisfecho (Ya tiene seguros)',
+    comportamiento: 'Afirma que ya está cubierto por su banco o por la empresa y no necesita nada más.',
+    objecionFrecuente: 'Gracias, pero ya tengo seguro con otra compañía y con mi banco, estoy cubierto.',
+    dificultad: 'media'
+  },
+  {
+    tipo: 'Mala experiencia previa',
+    comportamiento: 'Tuvo una mala experiencia con una aseguradora o banco en el pasado y siente desconfianza general.',
+    objecionFrecuente: 'Mire, la verdad no creo en los seguros, tuve una mala experiencia donde no quisieron pagar y no me interesa.',
+    dificultad: 'media'
+  },
+  {
+    tipo: 'El Escéptico de "¿De dónde sacaste mi número?"',
+    comportamiento: 'Le incomoda recibir llamadas no programadas y cuestiona el origen de los datos.',
+    objecionFrecuente: 'A ver, espérame tantito, ¿quién te dio mi celular y de dónde me marcas?',
+    dificultad: 'media'
+  },
+  {
+    tipo: 'El Inversionista Autosuficiente',
+    comportamiento: 'Cree que los seguros o planes de ahorro no convienen porque él invierte en bienes raíces o bolsa.',
+    objecionFrecuente: 'Yo no creo en seguros, prefiero mover mi propio dinero en bienes raíces, da mucho más rendimiento.',
+    dificultad: 'media'
+  },
+  {
+    tipo: 'El Defensivo de Flujo de Efectivo',
+    comportamiento: 'Siente que cualquier asesor financiero viene a sacarle dinero y pone la excusa de liquidez.',
+    objecionFrecuente: 'Ando bien apretado de flujo de efectivo con la empresa ahorita, no estoy para gastos nuevos.',
+    dificultad: 'media'
+  },
+  {
+    tipo: 'Empresario cortante y sin rodeos',
+    comportamiento: 'Trato seco y ejecutivo. Exige que le digan de qué se trata en 10 segundos o cuelga.',
+    objecionFrecuente: 'A ver, dígame al grano de qué se trata y cuánto cuesta o tengo que colgar.',
+    dificultad: 'alta'
   },
   {
     tipo: 'Escéptico y desconfiado',
@@ -118,33 +224,27 @@ const PERSONALIDADES = [
     dificultad: 'alta'
   },
   {
-    tipo: 'Amable pero evasivo',
-    comportamiento: 'Muy cordial, educado, pero su estrategia es mandar todo por WhatsApp para no comprometerse.',
-    objecionFrecuente: 'Suena muy bien, mándamelo por WhatsApp con calma y yo lo reviso el fin de semana.',
-    dificultad: 'baja'
-  },
-  {
-    tipo: 'Analítico numérico',
-    comportamiento: 'Quiere saber números, costos y porcentajes antes de aceptar cualquier cita.',
-    objecionFrecuente: 'Pero dígame los números primero, ¿de cuánto estamos hablando al mes?',
-    dificultad: 'media'
-  },
-  {
-    tipo: 'Satisfecho (Ya tiene seguros)',
-    comportamiento: 'Afirma que ya está cubierto por su banco o por la empresa y no necesita nada más.',
-    objecionFrecuente: 'Gracias, pero ya tengo seguro con otra compañía y estoy cubierto.',
-    dificultad: 'media'
-  },
-  {
-    tipo: 'Mala experiencia previa',
-    comportamiento: 'Tuvo una mala experiencia con una aseguradora o banco en el pasado y siente desconfianza general.',
-    objecionFrecuente: 'Mire, la verdad no creo en los seguros, tuve una mala experiencia donde no quisieron pagar y no me interesa.',
+    tipo: 'El Escéptico Anti-Trampas (Extremo)',
+    comportamiento: 'Desconfía profundamente de cualquier promesa exagerada o rendimiento irreal. Si el asesor promete demasiado o miente, cuelga o rechaza tajantemente.',
+    objecionFrecuente: 'He visto de todo en la industria, así que ahórrate los cuentos. ¿Exactamente qué ofreces?',
     dificultad: 'alta'
   },
   {
-    tipo: 'Empresario cortante y sin rodeos',
-    comportamiento: 'Trato seco y ejecutivo. Exige que le digan de qué se trata en 10 segundos o cuelga.',
-    objecionFrecuente: 'A ver, dígame al grano de qué se trata y cuánto cuesta o tengo que colgar.',
+    tipo: 'El Enemigo de los Robots (Extremo)',
+    comportamiento: 'Odia a la gente que lee guiones. Si siente que el asesor repite frases de memoria o no lo escucha, lo corta de inmediato.',
+    objecionFrecuente: '¿Estás leyendo un guion? Háblame como persona normal, no tengo tiempo para grabadoras.',
+    dificultad: 'alta'
+  },
+  {
+    tipo: 'El Muralla Inhackeable (Extremo)',
+    comportamiento: 'Inmune a técnicas baratas, ruego o lástima. Mantiene una frialdad absoluta en la negociación.',
+    objecionFrecuente: 'Mejor ve directo al grano, mis decisiones se basan 100% en números, no en sentimientos.',
+    dificultad: 'alta'
+  },
+  {
+    tipo: 'El Ejecutivo Ofendido (Extremo)',
+    comportamiento: 'Tiene muy poca tolerancia. Si el asesor es grosero, asume cosas de su dinero o le dice qué hacer, estalla de ira y cuelga.',
+    objecionFrecuente: '¿De qué te ríes o por qué asumes cosas? Vamos aclarando el tono si quieres que te dedique un minuto.',
     dificultad: 'alta'
   }
 ];
@@ -162,6 +262,17 @@ const ORIGENES = [
     })
   },
   {
+    tipo: 'referido_tibio',
+    titulo: 'REFERIDO SIN AVISAR',
+    icono: '📞',
+    dificultad: 'media',
+    generar: (referidor: string) => ({
+      brief: `Tu cliente "${referidor}" te dio sus datos de contacto porque pensó en él, pero NO le alcanzó a avisar.`,
+      tipPostLlamada: `Como no le avisaron, menciona a ${referidor} con calidez ("Me dio su número porque le brindamos una asesoría...") para evitar que piense que compraste su base de datos.`,
+      promptContext: `Conoces bien a "${referidor}", pero NO te avisó que te iban a llamar. Al principio te extraña la llamada y preguntas por qué te llaman o de dónde conocen a tu contacto.`
+    })
+  },
+  {
     tipo: 'inbound_solicitado',
     titulo: 'PIDIÓ INFORMES (INBOUND)',
     icono: '🔥',
@@ -173,12 +284,34 @@ const ORIGENES = [
     })
   },
   {
+    tipo: 'networking_evento',
+    titulo: 'CONTACTO DE NETWORKING',
+    icono: '👔',
+    dificultad: 'media',
+    generar: (_?: string) => ({
+      brief: `Intercambiaron teléfonos brevemente en un desayuno de negocios / networking la semana pasada.`,
+      tipPostLlamada: `Haz referencia inmediata al evento donde coincidieron para reavivar la conexión antes de proponer la fecha.`,
+      promptContext: `Coincidieron en un desayuno de negocios la semana pasada e intercambiaron tarjetas. Recuerdas el evento, pero quieres ver si realmente tiene algo de valor que ofrecer o solo quiere venderte.`
+    })
+  },
+  {
+    tipo: 'ex_contacto_reactivacion',
+    titulo: 'RE-ACTIVACIÓN DE PROSPECTO',
+    icono: '🔄',
+    dificultad: 'media',
+    generar: (_?: string) => ({
+      brief: `Habían tenido un primer contacto hace 6 meses pero se pospuso por temas de trabajo del prospecto.`,
+      tipPostLlamada: `Reconoce el tiempo transcurrido y retoma la conversación preguntando por cómo avanzaron sus proyectos este año.`,
+      promptContext: `Habías platicado brevemente hace meses con alguien de la promotoría pero estabas ocupado. Te sorprende que den seguimiento, pero valoras la persistencia profesional si van al grano.`
+    })
+  },
+  {
     tipo: 'frio_total',
     titulo: 'LLAMADA EN FRÍO TOTAL',
     icono: '❄️',
     dificultad: 'alta',
     generar: (_?: string) => ({
-      brief: `Contacto nuevo en frío. El prospecto NO TIENE IDEA de quién eres ni espera tu llamada.`,
+      brief: `Contacto nuevo en frío obtenido de directorio empresarial. El prospecto NO TIENE IDEA de quién eres.`,
       tipPostLlamada: `En frío no hay confianza previa: tienes solo 15 segundos para dar un gancho de curiosidad o dolor profesional antes de que te corte.`,
       promptContext: `No conoces a la persona que te llama ni a AACOM Seguros. Es un número no registrado. Eres cortante al inicio y preguntas con quién hablas y de dónde obtuvieron tus datos.`
     })
@@ -188,7 +321,9 @@ const ORIGENES = [
 const REFERIDORES = [
   'Juan Carlos Treviño', 'María Elena Garza', 'Dr. Ricardo Lozano', 'Lic. Andrés Morales',
   'Sofía Villarreal', 'Ing. Roberto Sada', 'Mauricio Benavides', 'Dra. Marcela Canales',
-  'Lic. Guillermo Elizondo', 'Arq. David Zambrano', 'Karla De la Torre', 'Ing. Esteban Quijano'
+  'Lic. Guillermo Elizondo', 'Arq. David Zambrano', 'Karla De la Torre', 'Ing. Esteban Quijano',
+  'Lic. Patricio Clariond', 'Dra. Valeria Montemayor', 'Ing. Carlos Kalifa', 'Lic. Bernardo Santos',
+  'Lic. Mónica Odriozola', 'Dr. Alfonso Junco', 'Ing. Rodrigo Barragán', 'Lic. Carolina Farías'
 ];
 
 export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion'): Scenario {
@@ -203,24 +338,31 @@ export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion'): 
 
   if (currentLevel <= 2) {
     const prob = Math.random();
-    origenBase = prob < 0.70 ? ORIGENES[0] : ORIGENES[1];
+    if (prob < 0.35) origenBase = ORIGENES[0]; // referido_avisado
+    else if (prob < 0.65) origenBase = ORIGENES[2]; // inbound_solicitado
+    else if (prob < 0.85) origenBase = ORIGENES[1]; // referido_tibio
+    else origenBase = ORIGENES[3]; // networking_evento
+
     const personalidadesBajas = PERSONALIDADES.filter(p => p.dificultad === 'baja' || p.dificultad === 'media');
     personalidad = personalidadesBajas[Math.floor(Math.random() * personalidadesBajas.length)];
     rigorNivel = 'Eres relativamente accesible. Si el asesor menciona al referidor o la solicitud y ofrece dos horarios de 30-40 min, aceptas con amabilidad sin hacer demasiadas trabas.';
   } else if (currentLevel <= 4) {
     const prob = Math.random();
-    if (prob < 0.40) origenBase = ORIGENES[0];
-    else if (prob < 0.75) origenBase = ORIGENES[2];
-    else origenBase = ORIGENES[1];
+    if (prob < 0.25) origenBase = ORIGENES[0]; // referido_avisado
+    else if (prob < 0.50) origenBase = ORIGENES[1]; // referido_tibio
+    else if (prob < 0.70) origenBase = ORIGENES[3]; // networking_evento
+    else if (prob < 0.85) origenBase = ORIGENES[4]; // ex_contacto_reactivacion
+    else origenBase = ORIGENES[5]; // frio_total
 
-    const personalidadesMedias = PERSONALIDADES.filter(p => p.dificultad === 'media' || p.tipo.includes('Acelerado') || p.tipo.includes('Analítico'));
+    const personalidadesMedias = PERSONALIDADES.filter(p => p.dificultad === 'media' || p.dificultad === 'baja');
     personalidad = personalidadesMedias[Math.floor(Math.random() * personalidadesMedias.length)] || PERSONALIDADES[0];
     rigorNivel = 'Exiges respeto a tu tiempo. Si no te explican claro de qué se trata o intentan darte un rollo largo, insistes con "¿de qué números estamos hablando?" o "mándemelo por correo". Solo aceptas si usan firmemente el argumento de diagnóstico antes de recetar y la doble alternativa.';
   } else {
     const prob = Math.random();
-    if (prob < 0.65) origenBase = ORIGENES[2];
-    else if (prob < 0.90) origenBase = ORIGENES[0];
-    else origenBase = ORIGENES[1];
+    if (prob < 0.45) origenBase = ORIGENES[5]; // frio_total
+    else if (prob < 0.70) origenBase = ORIGENES[1]; // referido_tibio
+    else if (prob < 0.85) origenBase = ORIGENES[4]; // ex_contacto_reactivacion
+    else origenBase = ORIGENES[3]; // networking_evento
 
     const personalidadesAltas = PERSONALIDADES.filter(p => p.dificultad === 'alta');
     personalidad = personalidadesAltas[Math.floor(Math.random() * personalidadesAltas.length)] || PERSONALIDADES[1];
@@ -258,6 +400,11 @@ export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion'): 
       `¿Bueno? Sí, con ${primerNombre}, dígame.`,
       `¿Bueno? Habla ${primerNombre}, a sus órdenes.`
     ],
+    referido_tibio: [
+      `¿Bueno? Sí, ¿quién habla?`,
+      `¿Bueno? Con ${primerNombre}, ¿de parte de quién?`,
+      `¿Bueno? Sí, dígame, a sus órdenes.`
+    ],
     frio_total: [
       `¿Bueno? Sí, ¿de parte de quién?`,
       `¿Bueno? Con ${persona.nombre}, ¿quién habla?`,
@@ -267,6 +414,16 @@ export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion'): 
       `¿Bueno? Sí, dígame.`,
       `¿Bueno? Sí, con ${primerNombre}.`,
       `¿Bueno? Hola, dígame.`
+    ],
+    networking_evento: [
+      `¿Bueno? Sí, con ${primerNombre}, dígame.`,
+      `¿Bueno? Hola, ¿quién habla?`,
+      `¿Bueno? A sus órdenes, dígame.`
+    ],
+    ex_contacto_reactivacion: [
+      `¿Bueno? Sí, dígame.`,
+      `¿Bueno? Con ${primerNombre}, ¿de dónde me marcas?`,
+      `¿Bueno? Habla ${primerNombre}, a sus órdenes.`
     ]
   };
 

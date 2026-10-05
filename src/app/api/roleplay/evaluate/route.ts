@@ -209,7 +209,7 @@ export async function POST(req: Request) {
 
       // Criterio 0: Presentación con Nombre y Firma (+15)
       const introPatterns = [
-        /\b(mi nombre es|soy|le habla|te habla|habla|servidor|un gusto|mucho gusto)\b/i
+        /\b(mi nombre es|soy|le habla|te habla|habla|servidor|me llamo|te saluda|le saluda|un servidor|un gusto|mucho gusto|a sus [oó]rdenes|a tus [oó]rdenes|aqu[ií] (con )?[a-z]+|saludos)\b/i
       ];
       const sePresento = introPatterns.some(p => p.test(agentMessages));
       if (sePresento) {
@@ -220,7 +220,7 @@ export async function POST(req: Request) {
       }
 
       // Criterio 1: Mención de referidor si aplicaba (+15)
-      if (scenario?.origen?.tipo === 'referido_avisado' && scenario?.referidor) {
+      if ((scenario?.origen?.tipo === 'referido_avisado' || scenario?.origen?.tipo === 'referido_tibio') && scenario?.referidor) {
         const refWords = scenario.referidor.toLowerCase().split(/\s+/).filter((w: string) => w.length > 3);
         const mencionoReferidor = refWords.some((w: string) => agentMessages.includes(w));
         if (mencionoReferidor) {
@@ -233,7 +233,7 @@ export async function POST(req: Request) {
 
       // Criterio 2: Posicionamiento como Asesoría Financiera / Patrimonial (+20)
       const asesoriaPatterns = [
-        /\b(asesor[ií]a|financiera|patrimonial|asesor|personalizada|an[aá]lisis|diagn[oó]stico|protecci[oó]n familiar|planeaci[oó]n|metas|retiro|ahorro)\b/i
+        /\b(asesor[ií]a|financiera|patrimonial|asesor|personalizada|an[aá]lisis|diagn[oó]stico|protecci[oó]n familiar|planeaci[oó]n|metas|retiro|ahorro|soluciones)\b/i
       ];
       if (asesoriaPatterns.some(p => p.test(agentMessages))) {
         score += 20;
@@ -262,20 +262,24 @@ export async function POST(req: Request) {
 
       // DETECCIÓN INTELIGENTE DE CITA AGENDADA POR EL PROSPECTO
       const acuerdoCierrePatterns = [
-        /\b(me queda bien|me parece bien|de acuerdo|perfecto|trato hecho|quedamos as[ií]|te espero|lo espero|le espero|agendado|an[oó]talo|an[oó]telo|nos vemos entonces|ah[ií] nos vemos|m[aá]ndame la invitaci[oó]n|m[aá]ndame el link|m[aá]ndame el meeting|m[aá]ndame el zoom|m[aá]ndame la confirmaci[oó]n|ah[ií] te veo|ah[ií] nos vemos|hasta el (lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo))\b/i,
+        /\b(me queda bien|me parece bien|de acuerdo|perfecto|trato hecho|quedamos as[ií]|te espero|lo espero|le espero|agendado|an[oó]talo|an[oó]telo|nos vemos entonces|ah[ií] nos vemos|ah[ií] te veo|nos vemos el (lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)|hasta el (lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)|m[aá]ndame la confirmaci[oó]n|ah[ií] platicamos)\b/i,
         /\b(el\s+)?(lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)\s+(a\s+las\s+)?(\d+|tres|cuatro|cinco|diez|once|doce|una|dos)/i
       ];
-      const brushOffPattern = /\b(m[aá]ndame info|m[aá]ndamelo|m[aá]ndame un correo|m[aá]ndame la info|env[ií]amelo|luego lo checo|no tengo tiempo|estoy ocupad[oa]|reviso el fin de semana|d[eé]jame revisarlo|d[eé]jame verlo|d[eé]jame checarlo)\b/i;
       
+      const ultimosMensajesProspecto = prospectTurns.slice(-2).map((t: any) => (t.message || '').toLowerCase()).join(' ');
       const hayAcuerdoExplicito = acuerdoCierrePatterns.some(p => p.test(prospectMessages));
-      const intentaDeshacerseDelAgente = brushOffPattern.test(prospectMessages);
+      const confirmoAlFinal = acuerdoCierrePatterns.some(p => p.test(ultimosMensajesProspecto));
+      
+      // Brush-off final: SOLO si el prospecto terminó la llamada despidiéndose con evasiva SIN confirmar cita
+      const brushOffFinalPattern = /\b(m[aá]ndame info|m[aá]ndamelo por correo|env[ií]amelo por correo|no tengo tiempo|reviso el fin de semana|d[eé]jame revisarlo|d[eé]jame verlo|d[eé]jame checarlo|ahorita no|no me interesa|pierde su tiempo)\b/i;
+      const terminoConBateo = brushOffFinalPattern.test(ultimosMensajesProspecto) && !confirmoAlFinal;
 
-      // Solo consideramos cita cerrada si aceptó explícitamente y no intentó batearlo pidiendo info por correo
-      const prospectAceptoCita = hayAcuerdoExplicito && !intentaDeshacerseDelAgente;
+      // La cita se considera cerrada si hubo acuerdo de fecha/hora y no terminó en rechazo
+      const prospectAceptoCita = hayAcuerdoExplicito && (confirmoAlFinal || !terminoConBateo);
 
       // Criterio 3: Diagnóstico antes de Recetar / Amplitud de soluciones (+25)
-      const palabrasVariedad = /\b(tantos? productos?|tantas? soluciones?|tantas? opciones?|tanta variedad|muchos? productos?|muchas? soluciones?|muchas? opciones?|amplia gama|amplio portafolio|variedad de|diversas?|m[uú]ltiples?|portafolio|abanico)\b/i;
-      const palabrasDiagnostico = /\b(sin conocer|sin saber|m[aá]s acertado|le acomoda|le conviene|m[aá]s adecuado|diagn[oó]stico|conocer su situaci[oó]n|conocer sus metas|conocer sus necesidades|revisar primero|platicar primero|conocerle|evaluar|a ciegas)\b/i;
+      const palabrasVariedad = /\b(tantos? productos?|tantas? soluciones?|tantas? opciones?|tanta variedad|muchos? productos?|muchas? soluciones?|muchas? opciones?|amplia gama|amplio portafolio|variedad de|diversas?|m[uú]ltiples?|portafolio|abanico|más de \d+)\b/i;
+      const palabrasDiagnostico = /\b(sin conocer|sin saber|m[aá]s acertado|le acomoda|le conviene|m[aá]s adecuado|diagn[oó]stico|conocer su situaci[oó]n|conocer sus metas|conocer sus necesidades|revisar primero|platicar primero|conocerle|evaluar|a ciegas|irresponsable)\b/i;
 
       const explicoDiagnostico = palabrasVariedad.test(agentMessages) && palabrasDiagnostico.test(agentMessages);
 
@@ -283,7 +287,6 @@ export async function POST(req: Request) {
         score += 25;
         aciertos.push('Excelente argumento: Explicaste que manejan tantas opciones que sería irresponsable recomendar una sin conocer su situación primero.');
       } else if (prospectAceptoCita && !agentMessages.includes('cotiz') && !agentMessages.includes('cuesta')) {
-        // Si el prospecto aceptó rápido la cita sin pedir cotización, el asesor fue ágil y efectivo
         score += 25;
         aciertos.push('Cierre ágil y efectivo: Concretaste la cita directamente sin rodeos innecesarios ni venta de producto.');
       } else {
@@ -291,14 +294,18 @@ export async function POST(req: Request) {
       }
 
       // --- PENALIZACIONES ESTRICTAS PROSPECCIÓN ---
-      const regexProducto = /\b(ppr|seguro de vida|te ofrezco un seguro|te vendo|venderte|te cotizo|cotizaci[oó]n|gastos m[eé]dicos|p[oó]liza)\b/i;
-      if (regexProducto.test(agentMessages)) {
+      const agentCleanedForProducts = agentMessages
+        .replace(/no\s+(es\s+)?(espec[ií]ficamente\s+)?(sobre\s+|de\s+)?seguros/gi, '')
+        .replace(/no\s+(vengo\s+a|te\s+vengo\s+a|se\s+trata\s+de|quiero)\s+vender(te)?/gi, '');
+
+      const regexProducto = /\b(ppr|seguro de vida|te ofrezco un seguro|te vendo\b|te cotizo|cotizaci[oó]n de la p[oó]liza|gastos m[eé]dicos)\b/i;
+      if (regexProducto.test(agentCleanedForProducts)) {
         score = Math.max(0, score - 30);
         cometioErrorFatal = true;
         errores.push(`Venta prematura de producto: Mencionaste palabras de venta técnica. En prospección el objetivo es vender la reunión.`);
       }
 
-      const regexRuego = /\b(no me cuelgues?|por favor esc[uú]chame|por favor escuchame|dame 30 minutos|dame 40 minutos|dame chance|no seas mal[oa])\b/i;
+      const regexRuego = /\b(no me cuelgues?|por favor esc[uú]chame|por favor escuchame|dame chance|no seas mal[oa])\b/i;
       if (regexRuego.test(agentMessages)) {
         score = Math.max(0, score - 25);
         cometioErrorFatal = true;
@@ -312,16 +319,11 @@ export async function POST(req: Request) {
         errores.push(`Fuga de datos técnicos: soltaste términos que no corresponden a una llamada telefónica (${tecnicosMatch[0]}).`);
       }
 
-      // El rechazo real solo debe tomarse en cuenta si la llamada TERMINÓ con el prospecto rechazando.
-      // Si el prospecto puso una objeción al inicio ("no me interesa") pero luego aceptó la cita ("nos vemos el jueves"), fue una objeción superada con éxito.
       const regexRechazoReal = /\b(no me interesa|no insista|no me vuelva a llamar|no me llame m[aá]s|no quiero nada|b[oó]rreme de su lista|pierde su tiempo)\b/i;
-      const lastProspectTurn = prospectTurns[prospectTurns.length - 1]?.message?.toLowerCase() || '';
-      const secondLastProspectTurn = prospectTurns[prospectTurns.length - 2]?.message?.toLowerCase() || '';
-      const ultimosMensajesProspecto = `${secondLastProspectTurn} ${lastProspectTurn}`;
-      const rechazoAlFinal = regexRechazoReal.test(ultimosMensajesProspecto);
+      const rechazoAlFinal = regexRechazoReal.test(ultimosMensajesProspecto) && !confirmoAlFinal;
       const tieneRechazoReal = rechazoAlFinal && !hayAcuerdoExplicito;
 
-      appointmentClosed = prospectAceptoCita && !tieneRechazoReal && !regexProducto.test(agentMessages) && !regexRuego.test(agentMessages);
+      appointmentClosed = prospectAceptoCita && !tieneRechazoReal && !regexProducto.test(agentCleanedForProducts) && !regexRuego.test(agentMessages);
 
       if (appointmentClosed) {
         score += 10;
