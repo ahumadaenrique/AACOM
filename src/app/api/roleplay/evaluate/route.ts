@@ -3,11 +3,17 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import {
   calculateLevelFromXp,
+  getLocalDateString,
   DAILY_XP_CAP,
-  DAILY_GOAL_CALLS,
-  LEVELS_CONFIG,
-  DEFAULT_BENEFITS
+  checkAndApplyInactivityPenalty
 } from '@/lib/roleplay/gamification';
+import { generateObject } from 'ai';
+import { createGoogleGenerativeAI } from '@ai-sdk/google';
+import { z } from 'zod';
+
+const google = createGoogleGenerativeAI({
+  apiKey: process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY
+});
 
 export async function POST(req: Request) {
   try {
@@ -37,12 +43,10 @@ export async function POST(req: Request) {
 
     const userTurns = transcript.filter((m: any) => m.source === 'user');
     const agentMessages = userTurns.map((m: any) => (m.message || '').toLowerCase()).join(' ');
-    const prospectTurns = transcript.filter((m: any) => m.source === 'ai');
-    const prospectMessages = prospectTurns.map((m: any) => (m.message || '').toLowerCase()).join(' ');
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateString();
 
-    // 1. CONTROL ESTRICTO: Si el agente no habló o colgó de inmediato (Anti-bug de 0 palabras)
+    // 1. CONTROL ESTRICTO: Si el agente no habló o colgó de inmediato
     if (userTurns.length === 0 || agentMessages.trim().length < 8 || durationSeconds < 6) {
       const emptyCall = await prisma.roleplayCall.create({
         data: {
@@ -64,7 +68,6 @@ export async function POST(req: Request) {
         }
       });
 
-      // Fetch user stats
       const stats = await prisma.roleplayStats.findUnique({ where: { userId } });
 
       return NextResponse.json({
@@ -86,399 +89,200 @@ export async function POST(req: Request) {
       });
     }
 
-    // 2. EVALUACIÓN PEDAGÓGICA RIGUROSA Y CALIBRADA
-    // 2. EVALUACIÓN PEDAGÓGICA RIGUROSA Y CALIBRADA
-    let score = 0;
-    const aciertos: string[] = [];
-    const errores: string[] = [];
-    let appointmentClosed = false;
-    let cometioErrorFatal = false;
-    let xpEarned = 0;
+    // 2. EVALUACIÓN CON IA (LLM-as-a-Judge)
+    const transcriptText = transcript.map((m: any) => \`\${m.source === 'user' ? 'Asesor' : 'Prospecto'}: \${m.message}\`).join('\\n');
 
+    let evalInstructions = '';
     if (moduleId === 'adn') {
-      // EVALUACIÓN DE ADN (ANÁLISIS DE NECESIDADES)
-      
-      // 1. Rompehielo (F.O.R.D) (+20)
-      const rompeHieloPatterns = /\b(a qu[eé] te dedicas|cu[aá]ntos hijos|tu familia|tu espos[oa]|tu pareja|tus hijos|qu[eé] haces en tu tiempo libre|hobbies|pasatiempos|a d[oó]nde te gusta viajar|cu[aá]les son tus metas|qu[eé] negocio)\b/i;
-      if (rompeHieloPatterns.test(agentMessages)) {
-        score += 20;
-        aciertos.push('Hiciste rapport/rompehielo e indagaste sobre sus prioridades personales (F.O.R.D.).');
-      } else {
-        errores.push('Faltó rompehielo: Entraste a números sin indagar primero preguntas específicas sobre su familia, metas o hobbies.');
-      }
-
-      // 2. Riesgo (Dolor) (+30)
-      const dolorPatterns = /\b(qu[eé] pasar[ií]a|si llegaras a faltar|c[oó]mo te ves|tu retiro|qu[eé] suceder[ií]a|qui[eé]n depende de ti|depende financieramente|te has imaginado|qu[eé] har[ií]a tu familia)\b/i;
-      if (dolorPatterns.test(agentMessages)) {
-        score += 30;
-        aciertos.push('Hiciste preguntas de alto impacto sobre riesgos e impactos financieros.');
-      } else {
-        errores.push('Faltó detección del dolor: No preguntaste abiertamente qué pasaría si falta, o cómo se visualiza en el futuro/retiro.');
-      }
-
-      // 3. Presupuesto Sensible (+20)
-      const presPatterns = /\b(cu[aá]nto podr[ií]as|capacidad de ahorro|presupuesto mensual|destinar al mes|ahorrar mensualmente|cu[aá]nto te gustar[ií]a destinar)\b/i;
-      if (presPatterns.test(agentMessages)) {
-        score += 20;
-        aciertos.push('Indagaste correctamente su capacidad de ahorro o presupuesto.');
-      } else {
-        errores.push('No definiste explícitamente cuánto podría destinar mensualmente.');
-      }
-
-      // 4. Cierre Cita Presentación (+20)
-      const citaPatterns = /\b(propuesta a la medida|traje a la medida|siguiente cita|reuni[oó]n para presentarte|siguiente paso|nos vemos el|nos vemos ma[ñn]ana|nos vemos la pr[oó]xima|dise[ñn]ar algo|hacer el an[aá]lisis)\b/i;
-      if (citaPatterns.test(agentMessages)) {
-        score += 20;
-        aciertos.push('Agendaste correctamente la siguiente cita para presentar la solución/proyecto a la medida.');
-        appointmentClosed = true;
-      } else {
-        errores.push('No agendaste claramente la siguiente cita (Cita de Presentación o Cierre).');
-      }
-
-      // Penalizaciones ADN
-      const productoPrematuro = /\b(cotizarte|te cotizo|costo de la p[oó]liza|prima anual|venderte un ppr|tu seguro de vida cuesta|te vendo|gastos m[eé]dicos)\b/i;
-      if (productoPrematuro.test(agentMessages)) {
-        score = Math.max(0, score - 50);
-        cometioErrorFatal = true;
-        errores.push('Venta prematura: Intentaste hablar de costos o pólizas sin haber terminado el diagnóstico completo.');
-      }
-
-      const duracionAgente = agentMessages.split(' ').length;
-      const duracionProspecto = prospectMessages.split(' ').length;
-      if (duracionAgente > (duracionProspecto * 1.6)) {
-        score = Math.max(0, score - 20);
-        errores.push('Monólogo: Hablaste mucho más que el cliente. Un buen ADN requiere escuchar la mayor parte del tiempo.');
-      }
-
+      evalInstructions = \`
+      Módulo: Análisis de Necesidades (ADN).
+      El asesor DEBE:
+      1. Hacer rompehielo (indagar sobre familia, hobbies o trabajo).
+      2. Detectar dolor o riesgo (ej. preguntar qué pasaría si falta, o sobre su retiro).
+      3. Indagar sutilmente la capacidad de ahorro o presupuesto.
+      4. Agendar explícitamente la siguiente cita para presentar el plan (Cita de Cierre).
+      ERRORES FATALES: Hablar de costos de pólizas, vender, o cotizar antes de terminar el diagnóstico.\`;
     } else if (moduleId === 'objeciones') {
-      // EVALUACIÓN DE OBJECIONES Y CIERRE
-      
-      // 1. Empatía / Validar Objeción (+25)
-      const empatiaPatterns = /\b(te entiendo|comprendo c[oó]mo te sientes|es muy normal|tienes toda la raz[oó]n|comprendo perfectamente|me pongo en tu lugar|tiene todo el sentido)\b/i;
-      if (empatiaPatterns.test(agentMessages)) {
-        score += 25;
-        aciertos.push('Amortiguaste la objeción mostrando empatía antes de rebatir.');
-      } else {
-        errores.push('Faltó empatía: Atacaste la objeción directamente sin validar al prospecto primero.');
-      }
-
-      // 2. Aislamiento (+25)
-      const aislarPatterns = /\b(adem[aá]s de|fuera de eso|hay algo m[aá]s|es la [uú]nica|existe alguna otra raz[oó]n|es lo [uú]nico que te detiene|si resolvi[eé]ramos|suponiendo que)\b/i;
-      if (aislarPatterns.test(agentMessages)) {
-        score += 25;
-        aciertos.push('Aislaste la objeción correctamente para asegurar que no hay objeciones ocultas.');
-      } else {
-        errores.push('No aislaste la objeción ("¿Además de eso hay algo más?") para descubrir motivos ocultos.');
-      }
-
-      // 3. Técnica de Rebote (+25)
-      const rebotePatterns = /\b(precisamente por eso|muchos clientes sent[ií]an|otros clientes|al principio pensaban|se dieron cuenta|lo importante es el valor|rentabilidad a largo plazo|no es un gasto|es una inversi[oó]n)\b/i;
-      if (rebotePatterns.test(agentMessages)) {
-        score += 25;
-        aciertos.push('Usaste una técnica de reversión o Boomerang para aportar valor frente al costo.');
-      } else {
-        errores.push('Faltó técnica de rebote: No lograste rebatir la objeción de manera estructurada.');
-      }
-
-      // 4. Cierre Asumido (+25)
-      const cierrePatterns = /\b(iniciamos el tr[aá]mite|llenamos la solicitud|a nombre de qui[eé]n|a qui[eé]n dejamos de beneficiario|tarjeta de cr[eé]dito|transferencia|para apartar tu|poner el cargo|lo domiciliamos|te env[ií]o la liga de pago)\b/i;
-      if (cierrePatterns.test(agentMessages)) {
-        score += 25;
-        aciertos.push('Usaste un cierre asumido o de doble alternativa para concretar el trámite.');
-        appointmentClosed = true;
-      } else {
-        errores.push('Rebatiste la objeción, pero no empujaste la solicitud hacia el cierre (pago o firma).');
-      }
-
-      // Penalizaciones Objeciones
-      const pelearPatterns = /\b(est[aá]s equivocado|eso no es cierto|no me est[aá]s entendiendo|est[aá]s mal|te equivocas|no no no)\b/i;
-      if (pelearPatterns.test(agentMessages)) {
-        score = Math.max(0, score - 50);
-        cometioErrorFatal = true;
-        errores.push('Discutiste con el cliente. Nunca contraataques o le digas al cliente que está equivocado.');
-      }
-      
-      const rendicionPatterns = /\b(bueno pi[eé]nsalo|te llamo despu[eé]s|est[aá] bien, te marco|m[aá]ndame mensaje cuando|ni hablar)\b/i;
-      if (rendicionPatterns.test(agentMessages)) {
-        score = Math.max(0, score - 30);
-        errores.push('Rendición prematura: Cediste a la primera objeción sin pelear por el valor de la asesoría.');
-      }
-
+      evalInstructions = \`
+      Módulo: Objeciones y Cierre.
+      El asesor DEBE:
+      1. Mostrar empatía y validar la objeción inicial del prospecto.
+      2. Aislar la objeción ("¿además de eso, hay algo más?").
+      3. Usar una técnica de rebote (revertir la objeción mostrando valor o casos de éxito).
+      4. Usar un cierre asumido (ej. "¿a qué tarjeta hacemos el cargo?" o "empecemos el trámite").
+      ERRORES FATALES: Discutir, pelear o decirle al prospecto que está equivocado.\`;
     } else {
-      // EVALUACIÓN DE PROSPECCIÓN (ORIGINAL)
-
-      // Criterio 0: Presentación con Nombre y Firma (+15)
-      const introPatterns = [
-        /\b(mi nombre es|soy|le habla|te habla|habla|servidor|me llamo|te saluda|le saluda|un servidor|un gusto|mucho gusto|a sus [oó]rdenes|a tus [oó]rdenes|aqu[ií] (con )?[a-z]+|saludos)\b/i
-      ];
-      const sePresento = introPatterns.some(p => p.test(agentMessages));
-      if (sePresento) {
-        score += 15;
-        aciertos.push('Te presentaste formalmente al iniciar la llamada.');
-      } else {
-        errores.push('Faltó presentación: No mencionaste explícitamente "soy [tu nombre]" o "habla [tu nombre]".');
-      }
-
-      // Criterio 1: Mención de referidor si aplicaba (+15)
-      if ((scenario?.origen?.tipo === 'referido_avisado' || scenario?.origen?.tipo === 'referido_tibio') && scenario?.referidor) {
-        const refWords = scenario.referidor.toLowerCase().split(/\s+/).filter((w: string) => w.length > 3);
-        const mencionoReferidor = refWords.some((w: string) => agentMessages.includes(w));
-        if (mencionoReferidor) {
-          score += 15;
-          aciertos.push(`Mencionaste a ${scenario.referidor} oportunamente para romper la barrera del prospecto.`);
-        } else {
-          errores.push(`El prospecto fue referido por ${scenario.referidor}, pero no lo mencionaste al inicio para generar confianza.`);
-        }
-      }
-
-      // Criterio 2: Posicionamiento como Asesoría Financiera / Patrimonial (+20)
-      const asesoriaPatterns = [
-        /\b(asesor[ií]a|financiera|patrimonial|asesor|personalizada|an[aá]lisis|diagn[oó]stico|protecci[oó]n familiar|planeaci[oó]n|metas|retiro|ahorro|soluciones)\b/i
-      ];
-      if (asesoriaPatterns.some(p => p.test(agentMessages))) {
-        score += 20;
-        aciertos.push('Posicionaste la llamada como una asesoría personalizada y no como venta telefónica.');
-      } else {
-        errores.push('Faltó enfatizar que brindas una asesoría financiera / patrimonial (evitando sonar a ventas).');
-      }
-
-      // Criterio 4: Cierre con Doble Alternativa y tiempo de 30-40 min (+15)
-      const diasHorasRegex = /\b(lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo|mañana|tarde|en la mañana|en la tarde)\b/gi;
-      const matchesDias = (agentMessages.match(diasHorasRegex) || []).map((d: string) => d.toLowerCase());
-      const uniqueDias = new Set(matchesDias);
-      const ofreceAlternativa = uniqueDias.size >= 2;
-      const estipulaTiempo = /\b(30|40|treinta|cuarenta|media hora)\b/i.test(agentMessages);
-
-      if (ofreceAlternativa && estipulaTiempo) {
-        score += 15;
-        aciertos.push('Cierre impecable: Propusiste una reunión de 30-40 min dando dos opciones de horario (doble alternativa).');
-      } else if (ofreceAlternativa || estipulaTiempo) {
-        score += 8;
-        if (!ofreceAlternativa) errores.push('Ofrece siempre dos alternativas concretas de horario (ej: "¿martes o jueves?").');
-        if (!estipulaTiempo) errores.push('Aclara siempre que la reunión solo tomará 30 a 40 minutos.');
-      } else {
-        errores.push('Faltó proponer rango de tiempo de 30-40 minutos y dar doble alternativa de horario.');
-      }
-
-      // DETECCIÓN INTELIGENTE DE CITA AGENDADA POR EL PROSPECTO
-      const acuerdoCierrePatterns = [
-        /\b(me queda bien|me parece bien|de acuerdo|perfecto|trato hecho|quedamos as[ií]|te espero|lo espero|le espero|agendado|an[oó]talo|an[oó]telo|nos vemos entonces|ah[ií] nos vemos|ah[ií] te veo|nos vemos el (lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)|hasta el (lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)|m[aá]ndame la confirmaci[oó]n|ah[ií] platicamos)\b/i,
-        /\b(el\s+)?(lunes|martes|mi[eé]rcoles|jueves|viernes|s[aá]bado|domingo)\s+(a\s+las\s+)?(\d+|tres|cuatro|cinco|diez|once|doce|una|dos)/i
-      ];
-      
-      const ultimosMensajesProspecto = prospectTurns.slice(-2).map((t: any) => (t.message || '').toLowerCase()).join(' ');
-      const hayAcuerdoExplicito = acuerdoCierrePatterns.some(p => p.test(prospectMessages));
-      const confirmoAlFinal = acuerdoCierrePatterns.some(p => p.test(ultimosMensajesProspecto));
-      
-      // Brush-off final: SOLO si el prospecto terminó la llamada despidiéndose con evasiva SIN confirmar cita
-      const brushOffFinalPattern = /\b(m[aá]ndame info|m[aá]ndamelo por correo|env[ií]amelo por correo|no tengo tiempo|reviso el fin de semana|d[eé]jame revisarlo|d[eé]jame verlo|d[eé]jame checarlo|ahorita no|no me interesa|pierde su tiempo)\b/i;
-      const terminoConBateo = brushOffFinalPattern.test(ultimosMensajesProspecto) && !confirmoAlFinal;
-
-      // La cita se considera cerrada si hubo acuerdo de fecha/hora y no terminó en rechazo
-      const prospectAceptoCita = hayAcuerdoExplicito && (confirmoAlFinal || !terminoConBateo);
-
-      // Criterio 3: Diagnóstico antes de Recetar / Amplitud de soluciones (+25)
-      const palabrasVariedad = /\b(tantos? productos?|tantas? soluciones?|tantas? opciones?|tanta variedad|muchos? productos?|muchas? soluciones?|muchas? opciones?|amplia gama|amplio portafolio|variedad de|diversas?|m[uú]ltiples?|portafolio|abanico|más de \d+)\b/i;
-      const palabrasDiagnostico = /\b(sin conocer|sin saber|m[aá]s acertado|le acomoda|le conviene|m[aá]s adecuado|diagn[oó]stico|conocer su situaci[oó]n|conocer sus metas|conocer sus necesidades|revisar primero|platicar primero|conocerle|evaluar|a ciegas|irresponsable)\b/i;
-
-      const explicoDiagnostico = palabrasVariedad.test(agentMessages) && palabrasDiagnostico.test(agentMessages);
-
-      if (explicoDiagnostico) {
-        score += 25;
-        aciertos.push('Excelente argumento: Explicaste que manejan tantas opciones que sería irresponsable recomendar una sin conocer su situación primero.');
-      } else if (prospectAceptoCita && !agentMessages.includes('cotiz') && !agentMessages.includes('cuesta')) {
-        score += 25;
-        aciertos.push('Cierre ágil y efectivo: Concretaste la cita directamente sin rodeos innecesarios ni venta de producto.');
-      } else {
-        errores.push('Faltó el principio de diagnóstico antes de recetar: ante objeciones o dudas, explica que manejamos tantas soluciones que no puedes recomendar nada sin conocerlo.');
-      }
-
-      // --- PENALIZACIONES ESTRICTAS PROSPECCIÓN ---
-      const agentCleanedForProducts = agentMessages
-        .replace(/no\s+(es\s+)?(espec[ií]ficamente\s+)?(sobre\s+|de\s+)?seguros/gi, '')
-        .replace(/no\s+(vengo\s+a|te\s+vengo\s+a|se\s+trata\s+de|quiero)\s+vender(te)?/gi, '');
-
-      const regexProducto = /\b(ppr|seguro de vida|te ofrezco un seguro|te vendo\b|te cotizo|cotizaci[oó]n de la p[oó]liza|gastos m[eé]dicos)\b/i;
-      if (regexProducto.test(agentCleanedForProducts)) {
-        score = Math.max(0, score - 30);
-        cometioErrorFatal = true;
-        errores.push(`Venta prematura de producto: Mencionaste palabras de venta técnica. En prospección el objetivo es vender la reunión.`);
-      }
-
-      const regexRuego = /\b(no me cuelgues?|por favor esc[uú]chame|por favor escuchame|dame chance|no seas mal[oa])\b/i;
-      if (regexRuego.test(agentMessages)) {
-        score = Math.max(0, score - 25);
-        cometioErrorFatal = true;
-        errores.push(`Pérdida de postura ejecutiva: Usaste frases de ruego o insistencia desesperada. Mantén siempre postura profesional.`);
-      }
-
-      const regexTecnicos = /\b(suma asegurada|cobertura de|prima de|deducible|pesos mensuales|cuesta pesos|\$|udis?)\b/i;
-      const tecnicosMatch = agentMessages.match(regexTecnicos);
-      if (tecnicosMatch) {
-        score = Math.max(0, score - 20);
-        errores.push(`Fuga de datos técnicos: soltaste términos que no corresponden a una llamada telefónica (${tecnicosMatch[0]}).`);
-      }
-
-      const regexRechazoReal = /\b(no me interesa|no insista|no me vuelva a llamar|no me llame m[aá]s|no quiero nada|b[oó]rreme de su lista|pierde su tiempo)\b/i;
-      const rechazoAlFinal = regexRechazoReal.test(ultimosMensajesProspecto) && !confirmoAlFinal;
-      const tieneRechazoReal = rechazoAlFinal && !hayAcuerdoExplicito;
-
-      appointmentClosed = prospectAceptoCita && !tieneRechazoReal && !regexProducto.test(agentCleanedForProducts) && !regexRuego.test(agentMessages);
-
-      if (appointmentClosed) {
-        score += 10;
-        aciertos.push('¡Cita Concretada con Éxito! El prospecto reservó la fecha en su agenda sin objeciones pendientes.');
-      } else if (tieneRechazoReal) {
-        errores.push('Llamada cerrada sin cita: El prospecto rechazó tajantemente la propuesta de reunión.');
-      } else {
-        errores.push('Llamada terminada sin agendar cita en firme.');
-      }
+      evalInstructions = \`
+      Módulo: Prospección Telefónica.
+      El asesor DEBE:
+      1. Presentarse profesionalmente.
+      2. Si es referido, mencionar el nombre de quien lo recomienda oportunamente.
+      3. Posicionar el valor de la asesoría (vender la cita, no la póliza).
+      4. Manejar objeciones de tiempo.
+      5. Cerrar con doble alternativa de horario (ej. "¿jueves a las 4 o viernes a las 10?").
+      ERRORES FATALES: Usar jerga técnica, rogar por tiempo, o aceptar que el prospecto "le avise después".\`;
     }
 
-    // Score final normalizado 0 - 100
-    const finalScore = Math.min(100, Math.max(0, score));
+    const EvaluationSchema = z.object({
+      score: z.number().min(0).max(100).describe('Calificación del 0 al 100 basada en la calidad del desempeño del asesor.'),
+      aciertos: z.array(z.string()).describe('Lista de 1 a 3 cosas que el asesor hizo muy bien.'),
+      errores: z.array(z.string()).describe('Lista de errores cometidos por el asesor o áreas de oportunidad.'),
+      cometioErrorFatal: z.boolean().describe('Verdadero si el asesor cometió un error crítico según las instrucciones del módulo.'),
+      appointmentClosed: z.boolean().describe('Verdadero SOLAMENTE si el asesor logró concretar explícitamente la agenda de la cita o el cierre (trámite/pago). No debe ser verdadero si el prospecto dijo "yo te aviso".'),
+      coachTip: z.string().describe('Un consejo breve (1 oración) técnico o motivacional para mejorar en la próxima llamada.')
+    });
 
-    // Cálculo calibrado de XP:
-    // Cita cerrada con excelencia: 95 XP
-    // Buen intento profesional sin cierre (score >= 60): 45 XP
-    // Intento regular (score 40-59): 15 XP
-    // PENALIZACIONES DE XP:
-    // - Errores fatales (Venta prematura de producto / Ruego): -50 XP
-    // - Reprobado por baja técnica (score < 40): -25 XP
-    xpEarned = 0;
-    // If not already true from the branches
-    if (!cometioErrorFatal && finalScore < 40) {
-      cometioErrorFatal = false; // Just to make sure it exists safely
-    }
+    const promptText = \`Eres un Master Coach de Ventas de Seguros evaluando una simulación de rol entre un Asesor y un Prospecto (que es una IA).
+Evalúa la siguiente transcripción basándote estrictamente en esta rúbrica:
 
+\${evalInstructions}
+
+<transcripcion>
+\${transcriptText}
+</transcripcion>
+
+Extrae la calificación, aciertos, errores, si hubo error fatal y si se logró la cita. Sé un juez imparcial y estricto.\`;
+
+    const { object } = await generateObject({
+      model: google('gemini-1.5-flash'),
+      schema: EvaluationSchema,
+      prompt: promptText
+    });
+
+    let { score, aciertos, errores, cometioErrorFatal, appointmentClosed, coachTip } = object;
+
+    // Ajuste de penalizaciones mayores
     if (cometioErrorFatal) {
-      xpEarned = -50; // Penalización por técnica destructiva
-    } else if (finalScore >= 80) {
-      xpEarned = appointmentClosed ? 95 : 65;
-    } else if (finalScore >= 60) {
-      xpEarned = appointmentClosed ? 80 : 45;
-    } else if (finalScore >= 40) {
-      xpEarned = appointmentClosed ? 60 : 15;
-    } else {
-      xpEarned = -25; // Penalización por reprobar llamada
+      score = Math.max(0, score - 50);
+    }
+    
+    // Si no hubo cierres efectivos en objeciones/prospeccion pero se marcó true
+    if (!appointmentClosed && score > 80) {
+      // Ajustar score si le faltó cerrar pero hizo buen trabajo
+      score = 75;
     }
 
-    // Actualización de Estadísticas en Base de Datos
-    let stats = await prisma.roleplayStats.findUnique({ where: { userId } });
-    if (!stats) {
-      stats = await prisma.roleplayStats.create({
-        data: {
-          userId,
-          xp: 0,
-          level: 1,
-          streak: 0,
-          todayXp: 0,
-          todayDate: todayStr,
-          todayCallsCount: 0,
-          totalCalls: 0,
-          closedCalls: 0,
-          badges: [],
-          unlockedBenefits: DEFAULT_BENEFITS[1]
-        }
-      });
+    // 3. CALCULO DE EXPERIENCIA (XP)
+    let xpEarned = Math.floor(score * 1.5);
+    if (appointmentClosed) xpEarned += 50;
+    
+    // Penalización por llamadas muy cortas que logran bypass de la IA
+    if (durationSeconds < 25 && appointmentClosed) {
+      xpEarned = Math.floor(xpEarned / 2);
+      coachTip = "El cierre fue muy rápido y artificial. Un prospecto real tomará más tiempo en convencerse. Sé más orgánico.";
     }
 
-    // Respetar límite diario de 500 XP
-    let todayXp = stats.todayDate === todayStr ? stats.todayXp : 0;
-    let todayCallsCount = stats.todayDate === todayStr ? stats.todayCallsCount + 1 : 1;
+    // 4. GUARDADO EN BASE DE DATOS Y GAMIFICACIÓN
+    const dbStats = await prisma.roleplayStats.findUnique({ where: { userId } });
+    let currentXp = dbStats?.xp || 0;
+    let streak = dbStats?.streak || 0;
+    let todayXp = dbStats?.todayXp || 0;
+    let lastActive = dbStats?.lastActiveDate || null;
+    let closedCalls = dbStats?.closedCalls || 0;
+    let todayCallsCount = dbStats?.todayCallsCount || 0;
 
-    let effectiveXpEarned = xpEarned;
-    if (xpEarned > 0) {
-      const availableXpToday = Math.max(0, DAILY_XP_CAP - todayXp);
-      effectiveXpEarned = Math.min(xpEarned, availableXpToday);
-      todayXp += effectiveXpEarned;
+    // Evaluar y aplicar penalizaciones de inactividad
+    const penaltyResult = checkAndApplyInactivityPenalty({
+      xp: currentXp,
+      lastActiveDate: lastActive,
+      streak
+    });
+    
+    currentXp = penaltyResult.newXp;
+    streak = penaltyResult.newStreak;
+
+    // Validar CAP diario
+    if (lastActive !== todayStr) {
+      todayXp = 0;
+      todayCallsCount = 0;
+      // Incrementamos la racha solo si su primera llamada del día fue exitosa/con puntaje
+      if (score > 30) {
+        streak += 1;
+      }
     }
 
-    const newTotalXp = Math.max(0, stats.xp + effectiveXpEarned);
-    const newLevel = calculateLevelFromXp(newTotalXp);
-    const newBenefits = DEFAULT_BENEFITS[newLevel] || [];
-
-    // Calcular racha de días (si hoy cumple la meta de 3 llamadas)
-    let newStreak = stats.streak;
-    if (todayCallsCount === DAILY_GOAL_CALLS) {
-      newStreak += 1;
+    let actualXpToAdd = xpEarned;
+    if (todayXp + xpEarned > DAILY_XP_CAP) {
+      actualXpToAdd = Math.max(0, DAILY_XP_CAP - todayXp);
     }
 
-    // Actualizar insignias ganadas
-    const currentBadges = new Set(stats.badges);
-    if (appointmentClosed) currentBadges.add('primera_cita');
-    if (newStreak >= 3) currentBadges.add('racha_3_dias');
-    if (finalScore >= 85) currentBadges.add('maestro_objecion');
-    if (scenario?.origen?.tipo === 'frio_total' && appointmentClosed) currentBadges.add('experto_frio');
-    if (todayXp + effectiveXpEarned >= DAILY_XP_CAP) currentBadges.add('dia_perfecto');
-    if (newLevel === 6) currentBadges.add('lobo_aacom');
+    currentXp += actualXpToAdd;
+    todayXp += actualXpToAdd;
+    todayCallsCount += 1;
 
-    const updatedBadges = Array.from(currentBadges);
+    if (appointmentClosed) {
+      closedCalls += 1;
+    }
 
-    // Persistir llamada
-    const savedCall = await prisma.roleplayCall.create({
-      data: {
+    const currentLevel = calculateLevelFromXp(currentXp);
+
+    const updatedStats = await prisma.roleplayStats.upsert({
+      where: { userId },
+      update: {
+        xp: currentXp,
+        level: currentLevel,
+        streak,
+        todayXp,
+        todayCallsCount,
+        totalCalls: { increment: 1 },
+        closedCalls,
+        lastActiveDate: todayStr,
+        updatedAt: new Date()
+      },
+      create: {
         userId,
-        scenarioId: scenario?.origen?.tipo || 'frio_total',
-        prospectName: scenario?.prospecto?.nombre || 'Prospecto',
-        scenarioTitle: scenario?.origen?.titulo || 'Llamada de Prospección',
-        level: scenario?.difficultyLevel || 1,
-        durationSeconds,
-        score: finalScore,
-        xpEarned: effectiveXpEarned,
-        conversationId,
-        transcript,
-        aciertos,
-        errores,
-        coachTip: scenario?.origen?.tipPostLlamada || 'Sigue practicando el principio de diagnóstico previo y la doble alternativa.',
-        objectionHandled: finalScore >= 50,
-        appointmentClosed
+        xp: currentXp,
+        level: currentLevel,
+        streak: score > 30 ? 1 : 0,
+        todayXp,
+        todayCallsCount: 1,
+        totalCalls: 1,
+        closedCalls: appointmentClosed ? 1 : 0,
+        lastActiveDate: todayStr
       }
     });
 
-    // Actualizar estadísticas del usuario
-    const updatedStats = await prisma.roleplayStats.update({
-      where: { userId },
+    const roleplayCall = await prisma.roleplayCall.create({
       data: {
-        xp: newTotalXp,
-        level: newLevel,
-        streak: newStreak,
-        lastActiveDate: todayStr,
-        todayXp: Math.max(0, todayXp),
-        todayDate: todayStr,
-        todayCallsCount,
-        totalCalls: stats.totalCalls + 1,
-        closedCalls: stats.closedCalls + (appointmentClosed ? 1 : 0),
-        badges: updatedBadges,
-        unlockedBenefits: DEFAULT_BENEFITS[newLevel] || []
+        userId,
+        scenarioId: scenario?.origen?.tipo || 'general',
+        prospectName: scenario?.prospecto?.nombre || 'Prospecto',
+        scenarioTitle: scenario?.origen?.titulo || 'Módulo de Práctica',
+        level: scenario?.difficultyLevel || 1,
+        durationSeconds,
+        score,
+        xpEarned: actualXpToAdd,
+        conversationId,
+        transcript,
+        evaluation: { rawScore: score, cometioErrorFatal },
+        aciertos,
+        errores,
+        coachTip,
+        objectionHandled: true,
+        appointmentClosed
       }
     });
 
     return NextResponse.json({
       success: true,
-      callId: savedCall.id,
-      score: finalScore,
-      xpEarned: effectiveXpEarned,
+      callId: roleplayCall.id,
+      score,
+      xpEarned: actualXpToAdd,
       appointmentClosed,
       aciertos,
       errores,
-      coachTip: scenario?.origen?.tipPostLlamada || 'Excelente esfuerzo en la llamada.',
+      coachTip,
       stats: {
         xp: updatedStats.xp,
         level: updatedStats.level,
-        levelInfo: LEVELS_CONFIG[updatedStats.level],
         streak: updatedStats.streak,
         todayXp: updatedStats.todayXp,
-        dailyCap: DAILY_XP_CAP,
-        todayCallsCount: updatedStats.todayCallsCount,
-        totalCalls: updatedStats.totalCalls,
-        closedCalls: updatedStats.closedCalls,
-        badges: updatedStats.badges,
-        unlockedBenefits: updatedStats.unlockedBenefits
+        todayCallsCount: updatedStats.todayCallsCount
       }
     });
+
   } catch (error: any) {
-    console.error("Error evaluating roleplay call:", error);
-    return NextResponse.json({ error: error.message || 'Error en evaluación' }, { status: 500 });
+    console.error('Error evaluating roleplay:', error);
+    return NextResponse.json({ error: 'Error interno del servidor evaluando la llamada' }, { status: 500 });
   }
 }

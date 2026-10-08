@@ -34,7 +34,7 @@ export const DEFAULT_BENEFITS: Record<number, string[]> = {
 };
 
 export const DAILY_XP_CAP = 500;
-export const MISSED_DAY_PENALTY_XP = 700;
+export const MISSED_DAY_PENALTY_XP = 250;
 export const DAILY_GOAL_CALLS = 3;
 
 export function calculateLevelFromXp(xp: number): number {
@@ -54,6 +54,16 @@ export function isBusinessDay(date: Date): boolean {
 /**
  * Revisa si el agente faltó días hábiles y aplica penalización de -700 XP por día hábil omitido
  */
+export function getLocalDateString(): string {
+  const date = new Date();
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Mexico_City',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+  });
+  return formatter.format(date);
+}
 export function checkAndApplyInactivityPenalty(stats: {
   xp: number;
   lastActiveDate: string | null;
@@ -63,7 +73,7 @@ export function checkAndApplyInactivityPenalty(stats: {
     return { newXp: stats.xp, newStreak: stats.streak, penalizedDays: 0, penaltyXp: 0 };
   }
 
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = getLocalDateString();
   if (stats.lastActiveDate === todayStr) {
     return { newXp: stats.xp, newStreak: stats.streak, penalizedDays: 0, penaltyXp: 0 };
   }
