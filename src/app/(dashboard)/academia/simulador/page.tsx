@@ -212,7 +212,7 @@ export default async function SimuladorHubPage() {
           {/* MODULES GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {misiones.map((mision) => {
-              const locked = currentLevel < mision.nivelRequerido;
+              const locked = (!isSuperAdmin && session?.user?.email !== 'enrique.ahumada@aacommx.com') && currentLevel < mision.nivelRequerido;
               
               return (
                 <div 
