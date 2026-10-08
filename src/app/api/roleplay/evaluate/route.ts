@@ -90,29 +90,29 @@ export async function POST(req: Request) {
     }
 
     // 2. EVALUACIÓN CON IA (LLM-as-a-Judge)
-    const transcriptText = transcript.map((m: any) => \`\${m.source === 'user' ? 'Asesor' : 'Prospecto'}: \${m.message}\`).join('\\n');
+    const transcriptText = transcript.map((m: any) => `${m.source === 'user' ? 'Asesor' : 'Prospecto'}: ${m.message}`).join('\n');
 
     let evalInstructions = '';
     if (moduleId === 'adn') {
-      evalInstructions = \`
+      evalInstructions = `
       Módulo: Análisis de Necesidades (ADN).
       El asesor DEBE:
       1. Hacer rompehielo (indagar sobre familia, hobbies o trabajo).
       2. Detectar dolor o riesgo (ej. preguntar qué pasaría si falta, o sobre su retiro).
       3. Indagar sutilmente la capacidad de ahorro o presupuesto.
       4. Agendar explícitamente la siguiente cita para presentar el plan (Cita de Cierre).
-      ERRORES FATALES: Hablar de costos de pólizas, vender, o cotizar antes de terminar el diagnóstico.\`;
+      ERRORES FATALES: Hablar de costos de pólizas, vender, o cotizar antes de terminar el diagnóstico.`;
     } else if (moduleId === 'objeciones') {
-      evalInstructions = \`
+      evalInstructions = `
       Módulo: Objeciones y Cierre.
       El asesor DEBE:
       1. Mostrar empatía y validar la objeción inicial del prospecto.
       2. Aislar la objeción ("¿además de eso, hay algo más?").
       3. Usar una técnica de rebote (revertir la objeción mostrando valor o casos de éxito).
       4. Usar un cierre asumido (ej. "¿a qué tarjeta hacemos el cargo?" o "empecemos el trámite").
-      ERRORES FATALES: Discutir, pelear o decirle al prospecto que está equivocado.\`;
+      ERRORES FATALES: Discutir, pelear o decirle al prospecto que está equivocado.`;
     } else {
-      evalInstructions = \`
+      evalInstructions = `
       Módulo: Prospección Telefónica.
       El asesor DEBE:
       1. Presentarse profesionalmente.
@@ -120,7 +120,7 @@ export async function POST(req: Request) {
       3. Posicionar el valor de la asesoría (vender la cita, no la póliza).
       4. Manejar objeciones de tiempo.
       5. Cerrar con doble alternativa de horario (ej. "¿jueves a las 4 o viernes a las 10?").
-      ERRORES FATALES: Usar jerga técnica, rogar por tiempo, o aceptar que el prospecto "le avise después".\`;
+      ERRORES FATALES: Usar jerga técnica, rogar por tiempo, o aceptar que el prospecto "le avise después".`;
     }
 
     const EvaluationSchema = z.object({
@@ -132,16 +132,16 @@ export async function POST(req: Request) {
       coachTip: z.string().describe('Un consejo breve (1 oración) técnico o motivacional para mejorar en la próxima llamada.')
     });
 
-    const promptText = \`Eres un Master Coach de Ventas de Seguros evaluando una simulación de rol entre un Asesor y un Prospecto (que es una IA).
+    const promptText = `Eres un Master Coach de Ventas de Seguros evaluando una simulación de rol entre un Asesor y un Prospecto (que es una IA).
 Evalúa la siguiente transcripción basándote estrictamente en esta rúbrica:
 
-\${evalInstructions}
+${evalInstructions}
 
 <transcripcion>
-\${transcriptText}
+${transcriptText}
 </transcripcion>
 
-Extrae la calificación, aciertos, errores, si hubo error fatal y si se logró la cita. Sé un juez imparcial y estricto.\`;
+Extrae la calificación, aciertos, errores, si hubo error fatal y si se logró la cita. Sé un juez imparcial y estricto.`;
 
     const { object } = await generateObject({
       model: google('gemini-3.5-flash-lite'),
