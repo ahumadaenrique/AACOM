@@ -7,6 +7,7 @@ import {
   DAILY_XP_CAP,
   checkAndApplyInactivityPenalty
 } from '@/lib/roleplay/gamification';
+import { BADGES } from '@/lib/roleplay/badges';
 import { generateObject } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { z } from 'zod';
@@ -129,7 +130,12 @@ export async function POST(req: Request) {
       errores: z.array(z.string()).describe('Lista de errores cometidos por el asesor. OBLIGATORIO: Debes incluir una cita textual (entre comillas) de la transcripci�n para demostrar exactamente en qu� momento cometi� el error.'),
       cometioErrorFatal: z.boolean().describe('Verdadero si el asesor cometió un error crítico según las instrucciones del módulo.'),
       appointmentClosed: z.boolean().describe('Verdadero SOLAMENTE si el asesor logró concretar explícitamente la agenda de la cita o el cierre (trámite/pago). No debe ser verdadero si el prospecto dijo "yo te aviso".'),
-      coachTip: z.string().describe('Un consejo breve. Si aplica, menciona exactamente la parte de la llamada donde se equivoc� para darle contexto exacto.')
+      coachTip: z.string().describe('Un consejo breve. Si aplica, menciona exactamente la parte de la llamada donde se equivoc� para darle contexto exacto.'),
+      insigniasGanadas: z.array(z.string()).describe('Lista de IDs de insignias desbloqueadas en esta llamada. Devuelve solo los IDs. Si no gan� ninguna, devuelve un arreglo vac�o.')
+    });
+
+    const moduleBadges = BADGES.filter(b => b.moduleId === moduleId || b.moduleId === 'general');
+    const badgesText = moduleBadges.map(b => "- ${b.id}: ${b.name} (${b.description})").join('\n');
     });
 
     const promptText = `Eres un Master Coach de Ventas de Seguros evaluando una simulación de rol entre un Asesor y un Prospecto (que es una IA).
@@ -144,15 +150,22 @@ ${transcriptText}
 Extrae la calificación, aciertos, errores, si hubo error fatal y si se logró la cita. Sé un juez imparcial y estricto.`;
 
     const { object } = await generateObject({
-      model: google('gemini-3.5-flash-lite'),
-      schema: EvaluationSchema,
+Extrae la calificaci�n, aciertos, errores, si hubo error fatal y si se logr� la cita. S� un juez imparcial y estricto.
+Adicionalmente, revisa si el asesor logr� alguna de estas insignias en esta llamada y devuelve sus IDs:
+${badgesText}`;
+    let { score, aciertos, errores, cometioErrorFatal, appointmentClosed, coachTip, insigniasGanadas = [] } = object;
+
+    // Deduplicar insignias
+    const currentBadges = stats?.badges || [];
+    const uniqueNewBadges = insigniasGanadas.filter(b => !currentBadges.includes(b));
+    const mergedBadges = [...currentBadges, ...uniqueNewBadges];
       prompt: promptText
     });
 
     let { score, aciertos, errores, cometioErrorFatal, appointmentClosed, coachTip } = object;
 
     // Ajuste de penalizaciones mayores
-    if (cometioErrorFatal) {
+    let { score, aciertos, errores, cometioErrorFatal, appointmentClosed, coachTip, insigniasGanadas = [] } = object;
       score = Math.max(0, score - 50);
     }
     
@@ -221,6 +234,7 @@ Extrae la calificación, aciertos, errores, si hubo error fatal y si se logró l
       update: {
         xp: currentXp,
         level: currentLevel,
+        badges: mergedBadges,
         streak,
         todayXp,
         todayCallsCount,
@@ -233,6 +247,7 @@ Extrae la calificación, aciertos, errores, si hubo error fatal y si se logró l
         userId,
         xp: currentXp,
         level: currentLevel,
+        badges: mergedBadges,
         streak: score > 30 ? 1 : 0,
         todayXp,
         todayCallsCount: 1,

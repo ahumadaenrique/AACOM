@@ -209,6 +209,12 @@ export default async function SimuladorHubPage() {
             </div>
           </div>
 
+                    <div className="flex justify-end">
+            <Link href="/academia/simulador/insignias" className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold text-sm transition-colors border border-amber-200">
+              <Award className="w-5 h-5" /> Ver �lbum de Insignias
+            </Link>
+          </div>
+
           {/* MODULES GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {misiones.map((mision) => {
