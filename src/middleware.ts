@@ -35,6 +35,8 @@ export default auth((req) => {
         req.nextUrl.pathname === '/' ||
         req.nextUrl.pathname.startsWith('/worklets') ||
         req.nextUrl.pathname.startsWith('/inicio') || 
+        req.nextUrl.pathname.startsWith('/demo') || 
+        req.nextUrl.pathname.startsWith('/reembolso') || 
         req.nextUrl.pathname.startsWith('/privacidad') || 
         req.nextUrl.pathname.startsWith('/terminos') || 
         req.nextUrl.pathname.startsWith('/login') || 

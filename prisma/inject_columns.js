@@ -164,7 +164,30 @@ async function injectColumns() {
         CONSTRAINT "AgentMonthlyBudget_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Agency"("id") ON DELETE SET NULL ON UPDATE CASCADE
       );`,
       `CREATE UNIQUE INDEX IF NOT EXISTS "AgentMonthlyBudget_agent_year_month_key" ON "AgentMonthlyBudget"("agentId", "year", "month");`,
-      `CREATE INDEX IF NOT EXISTS "AgentMonthlyBudget_agencyId_idx" ON "AgentMonthlyBudget"("agencyId");`
+      `CREATE INDEX IF NOT EXISTS "AgentMonthlyBudget_agencyId_idx" ON "AgentMonthlyBudget"("agencyId");`,
+      `CREATE TABLE IF NOT EXISTS "Lead" (
+        "id" TEXT PRIMARY KEY,
+        "fullName" TEXT NOT NULL,
+        "agencyName" TEXT NOT NULL,
+        "insurers" TEXT NOT NULL,
+        "city" TEXT NOT NULL,
+        "agentsCount" TEXT NOT NULL,
+        "whatsapp" TEXT NOT NULL,
+        "email" TEXT NOT NULL,
+        "privacyAccepted" BOOLEAN NOT NULL DEFAULT true,
+        "utmSource" TEXT,
+        "utmMedium" TEXT,
+        "utmCampaign" TEXT,
+        "utmContent" TEXT,
+        "utmTerm" TEXT,
+        "originPage" TEXT DEFAULT '/inicio',
+        "status" TEXT NOT NULL DEFAULT 'NUEVO',
+        "notes" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );`,
+      `CREATE INDEX IF NOT EXISTS "Lead_createdAt_idx" ON "Lead"("createdAt");`,
+      `CREATE INDEX IF NOT EXISTS "Lead_email_idx" ON "Lead"("email");`
     ];
 
     for (const q of queries) {

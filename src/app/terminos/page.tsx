@@ -16,10 +16,10 @@ export default function TerminosPage() {
             </Button>
           </Link>
           <div className="flex items-center gap-2">
-            <div className="bg-teal-600 text-white p-1.5 rounded-lg">
+            <div className="bg-teal-600 text-white p-1.5 rounded-lg shadow-sm">
               <ShieldCheck className="w-5 h-5" />
             </div>
-            <span className="text-xl font-black tracking-tight text-slate-800">SYSGPYA</span>
+            <span className="text-xl font-black tracking-tight text-slate-800">aacomsoft</span>
           </div>
         </div>
       </header>

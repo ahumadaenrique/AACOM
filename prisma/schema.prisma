@@ -981,3 +981,31 @@ model AgentMonthlyBudget {
   @@index([agencyId])
 }
 
+model Lead {
+  id              String   @id @default(cuid())
+  fullName        String
+  agencyName      String
+  insurers        String
+  city            String
+  agentsCount     String
+  whatsapp        String
+  email           String
+  privacyAccepted Boolean  @default(true)
+  
+  // UTMs & Tracking
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  utmContent      String?
+  utmTerm         String?
+  originPage      String?  @default("/inicio")
+  
+  status          String   @default("NUEVO")
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([createdAt])
+  @@index([email])
+}
+

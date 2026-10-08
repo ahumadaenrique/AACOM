@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+Allow: /inicio
+Allow: /demo
+Allow: /terminos
+Allow: /privacidad
+Allow: /reembolso
+
+# Rutas privadas de la aplicación y APIs
+Disallow: /login
+Disallow: /registro
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /api/
+Disallow: /admin/
+Disallow: /agents/
+Disallow: /cartera/
+Disallow: /cotizador/
+Disallow: /academia/
+Disallow: /activity/
+Disallow: /assistant/
+Disallow: /billing/
+
+Sitemap: https://www.aacomsoft.com/sitemap.xml

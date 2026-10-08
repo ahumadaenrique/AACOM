@@ -21,8 +21,21 @@ export async function generateMetadata(): Promise<Metadata> {
     const agencyName = agency?.name || "AACOMSOFT";
 
     return {
-        title: `SYSGPYA | ${agencyName}`,
-        description: "Sistema de Gestión de Promotorías y Agencias",
+        title: "aacomsoft · Plataforma para promotorías y agencias de seguros",
+        description: "Plataforma para promotorías de seguros: actividad con gamificación, formación y simulador Cédula A CNSF, cartera, renovaciones, producción e IA. Agenda tu demo.",
+        openGraph: {
+            title: "aacomsoft · Plataforma para promotorías y agencias de seguros",
+            description: "Plataforma para promotorías de seguros: actividad con gamificación, formación y simulador Cédula A CNSF, cartera, renovaciones, producción e IA. Agenda tu demo.",
+            url: "https://www.aacomsoft.com",
+            siteName: "aacomsoft",
+            locale: "es_MX",
+            type: "website",
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: "aacomsoft · Plataforma para promotorías y agencias de seguros",
+            description: "Plataforma para promotorías de seguros: actividad con gamificación, formación y simulador Cédula A CNSF, cartera, renovaciones, producción e IA. Agenda tu demo.",
+        },
         verification: {
             google: "5kX4pRTxF91CuddNpfrYcKAN-EeTtDVfRu6KvFi69RU",
         },
@@ -140,7 +153,7 @@ export default async function RootLayout({
     }
 
     return (
-        <html lang="es">
+        <html lang="es-MX">
             <body className={`min-h-screen bg-background font-sans antialiased flex flex-col`}>
                 {agencyColor && (
                     <style dangerouslySetInnerHTML={{ __html: `:root { --primary: ${agencyColor}; }` }} />
