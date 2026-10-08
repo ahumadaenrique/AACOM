@@ -21,7 +21,7 @@ export const SITE_CONFIG = {
   leadsEmail: 'enrique.ahumada@aacommx.com',
   
   // Tiempos y Promesas
-  responseTime: 'menos de 24 horas',
+  responseTime: 'a la brevedad (días hábiles)',
   demoDuration: '20 minutos',
   
   // Metodología de Actividad (REGLA LEGAL: Nombrar siempre "método de actividad por puntos", NUNCA "25 puntos")

@@ -38,6 +38,9 @@ export function HeroProductMockup() {
             <span className="ml-3 text-xs font-mono text-slate-400 hidden sm:inline">
               app.aacomsoft.com/dashboard — Promotoría Activa
             </span>
+            <span className="ml-2 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/10 text-amber-300 border border-amber-500/30">
+              Datos de ejemplo
+            </span>
           </div>
 
           {/* Interactive Mockup Tabs */}
@@ -354,7 +357,7 @@ export function HeroProductMockup() {
 
       <div className="hidden lg:flex items-center gap-2 absolute -bottom-5 -right-6 px-4 py-2 rounded-2xl bg-slate-900/95 border border-slate-700 shadow-xl backdrop-blur-xl">
         <ShieldCheck className="w-4 h-4 text-teal-400" />
-        <span className="text-xs font-bold text-slate-200">Datos cifrados & aislados por promotoría</span>
+        <span className="text-xs font-bold text-slate-200">Conexión segura SSL & aislamiento por promotoría</span>
       </div>
 
     </div>

@@ -167,7 +167,7 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
           ¡Solicitud Recibida con Éxito!
         </h3>
         <p className="text-slate-600 max-w-md mx-auto mb-6 leading-relaxed text-sm sm:text-base">
-          Gracias, <strong>{fullName}</strong>. Te contactaremos en <strong>menos de 24 horas</strong> para coordinar tu demo personalizada de 20 minutos para <strong>{agencyName}</strong>.
+          Gracias, <strong>{fullName}</strong>. Te contactaremos a la brevedad en días hábiles para coordinar tu demo personalizada de 20 minutos para <strong>{agencyName}</strong>.
         </p>
 
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-500 mb-8 max-w-md mx-auto space-y-1">
@@ -389,7 +389,7 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
       </div>
 
       <p className="text-center text-[11px] text-slate-400">
-        🔒 Tus datos están protegidos. Respuesta comprometida en menos de 24 horas.
+        🔒 Tus datos están protegidos. Nos comunicaremos contigo a la brevedad en días hábiles.
       </p>
     </form>
   );

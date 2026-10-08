@@ -81,7 +81,7 @@ export default function InicioPage() {
             name: '¿aacomsoft es una promotoría?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'No. aacomsoft es una compañía de soluciones tecnológicas para promotorías y agencias de seguros. No vendemos seguros ni competimos con tu promotoría.'
+              text: 'No. aacomsoft es una compañía de soluciones tecnológicas diseñada para promotorías y agencias de seguros. aacomsoft no vende seguros directamente al público ni comercializa pólizas; tu información, agentes y cartera pertenecen exclusivamente a tu promotoría bajo un estricto compromiso de confidencialidad por escrito.'
             }
           },
           {
@@ -831,7 +831,7 @@ export default function InicioPage() {
                 ¿aacomsoft es una promotoría?
               </AccordionTrigger>
               <AccordionContent className="text-xs sm:text-sm text-slate-400 leading-relaxed pb-5">
-                No. aacomsoft es una compañía de soluciones tecnológicas para promotorías y agencias de seguros. No vendemos seguros ni competimos con tu promotoría.
+                No. aacomsoft es una compañía de soluciones tecnológicas desarrollada exclusivamente para promotorías y agencias de seguros. aacomsoft no vende seguros directamente al público ni comercializa pólizas; tu información, agentes y cartera son 100% propiedad de tu promotoría y quedan protegidos bajo cláusula formal de confidencialidad por escrito.
               </AccordionContent>
             </AccordionItem>
 
@@ -894,7 +894,7 @@ export default function InicioPage() {
                 ¿Mis agentes lo pueden usar desde el celular?
               </AccordionTrigger>
               <AccordionContent className="text-xs sm:text-sm text-slate-400 leading-relaxed pb-5">
-                Sí. La plataforma está completamente optimizada para navegadores móviles y puede instalarse como aplicación web (PWA) directamente en dispositivos iOS y Android.
+                Sí. La plataforma está 100% optimizada para navegadores móviles (Safari, Chrome). Tus agentes pueden usarla directamente desde su celular sin necesidad de descargar aplicaciones pesadas de ninguna tienda, con la opción de agregar un acceso directo en su pantalla de inicio.
               </AccordionContent>
             </AccordionItem>
 
