@@ -4,6 +4,7 @@ import { Metadata } from 'next';
 import { SITE_CONFIG } from '@/config/site';
 import { DemoForm } from '@/components/public/DemoForm';
 import { WhatsAppFloatingButton } from '@/components/public/WhatsAppFloatingButton';
+import { BrandLogo } from '@/components/public/BrandLogo';
 import { ShieldCheck, CheckCircle2, Clock, Lock, Sparkles, MessageSquare } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -18,12 +19,7 @@ export default function DemoPage() {
       {/* Top Navbar Minimal */}
       <header className="w-full border-b bg-white/90 backdrop-blur-md sticky top-0 z-40">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          <Link href="/inicio" className="flex items-center gap-2">
-            <div className="bg-teal-600 text-white p-1.5 rounded-lg shadow-sm">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <span className="text-xl font-black tracking-tight text-slate-900">{SITE_CONFIG.brandName}</span>
-          </Link>
+          <BrandLogo href="/inicio" theme="light" size="sm" />
 
           <div className="flex items-center gap-4">
             <Link href="/inicio" className="text-sm font-semibold text-slate-600 hover:text-teal-600 transition-colors">

@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { SITE_CONFIG } from '@/config/site';
 import { DemoForm } from '@/components/public/DemoForm';
 import { WhatsAppFloatingButton } from '@/components/public/WhatsAppFloatingButton';
+import { BrandLogo } from '@/components/public/BrandLogo';
+import { HeroProductMockup } from '@/components/public/HeroProductMockup';
 import SoftAurora from '@/components/SoftAurora';
 import {
   Accordion,
@@ -131,15 +133,8 @@ export default function InicioPage() {
       <header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl transition-all">
         <div className="container mx-auto px-4 h-18 flex items-center justify-between">
           
-          {/* Logo aacomsoft */}
-          <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="bg-gradient-to-br from-teal-500 to-cyan-600 text-white p-2 rounded-xl shadow-lg shadow-teal-950/40 group-hover:scale-105 transition-transform">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <span className="text-xl font-black tracking-tight text-white group-hover:text-teal-400 transition-colors">
-              {SITE_CONFIG.brandName}
-            </span>
-          </Link>
+          {/* Logo aacomsoft Oficial */}
+          <BrandLogo href="/" size="md" />
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-400">
@@ -250,6 +245,8 @@ export default function InicioPage() {
             Demo personalizada de 20 minutos. Sin compromiso.
           </p>
 
+          {/* Interactive SaaS Browser Mockup */}
+          <HeroProductMockup />
         </div>
       </section>
 
@@ -1008,12 +1005,7 @@ export default function InicioPage() {
             
             {/* Columna 1: Marca & Descripción */}
             <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <div className="bg-teal-600 text-white p-1.5 rounded-lg shadow-sm">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <span className="text-xl font-black tracking-tight text-white">{SITE_CONFIG.brandName}</span>
-              </div>
+              <BrandLogo href="/" size="sm" />
               <p className="text-slate-400 leading-relaxed text-xs">
                 Soluciones tecnológicas para promotorías y agencias de seguros.
               </p>

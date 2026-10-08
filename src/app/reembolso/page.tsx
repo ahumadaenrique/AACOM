@@ -2,7 +2,8 @@ import React from 'react';
 import Link from 'next/link';
 import { Metadata } from 'next';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ShieldCheck, Mail, Phone } from 'lucide-react';
+import { BrandLogo } from '@/components/public/BrandLogo';
+import { ArrowLeft, Mail, Phone } from 'lucide-react';
 import { SITE_CONFIG } from '@/config/site';
 
 export const metadata: Metadata = {
@@ -23,12 +24,7 @@ export default function ReembolsoPage() {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             </Link>
-            <div className="flex items-center gap-2">
-              <div className="bg-teal-600 text-white p-1.5 rounded-lg shadow-sm">
-                <ShieldCheck className="w-5 h-5" />
-              </div>
-              <span className="text-xl font-black tracking-tight text-slate-900">{SITE_CONFIG.brandName}</span>
-            </div>
+            <BrandLogo href="/inicio" theme="light" size="sm" />
           </div>
 
           <Link href="/demo">

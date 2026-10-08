@@ -1,7 +1,8 @@
 import React from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, Home, Calendar } from 'lucide-react';
+import { BrandLogo } from '@/components/public/BrandLogo';
+import { Home, Calendar } from 'lucide-react';
 import { SITE_CONFIG } from '@/config/site';
 
 export default function NotFound() {
@@ -10,11 +11,8 @@ export default function NotFound() {
       <div className="max-w-md w-full text-center space-y-6">
         
         {/* Brand Logo */}
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800/80 border border-slate-700/60 mb-2">
-          <div className="bg-teal-500 text-white p-1 rounded-md">
-            <ShieldCheck className="w-4 h-4" />
-          </div>
-          <span className="text-sm font-black tracking-tight text-white">{SITE_CONFIG.brandName}</span>
+        <div className="flex justify-center mb-2">
+          <BrandLogo href="/inicio" size="md" />
         </div>
 
         {/* 404 Code & Badge */}
