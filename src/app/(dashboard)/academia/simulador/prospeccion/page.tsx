@@ -4,7 +4,7 @@ import { RoleplayClient } from "@/components/roleplay/RoleplayClient";
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Simulador de Prospección IA | AACOM Seguros",
+  title: "Academia PRO | AACOM Seguros",
   description: "Entrenamiento de llamadas telefónicas y prospección en frío con inteligencia artificial conversacional."
 };
 
@@ -47,7 +47,7 @@ export default async function SimuladorPage() {
         <div className="space-y-2">
           <h2 className="text-xl font-bold text-white">Módulo Desactivado para tu Agencia</h2>
           <p className="text-xs text-slate-400 leading-relaxed">
-            El acceso al <strong>Simulador de Prospección Telefónica con IA</strong> ha sido desactivado para tu agencia ({dbUser.agency.name}) por la administración central de AACOM.
+            El acceso al <strong>Academia PRO (Voz e IA)</strong> ha sido desactivado para tu agencia ({dbUser.agency.name}) por la administración central de AACOM.
           </p>
         </div>
         <div className="pt-2">

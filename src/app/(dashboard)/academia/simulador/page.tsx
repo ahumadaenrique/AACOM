@@ -49,7 +49,7 @@ export default async function SimuladorHubPage() {
         <div className="space-y-2">
           <h2 className="text-xl font-bold text-white">Módulo Desactivado</h2>
           <p className="text-xs text-slate-400 leading-relaxed">
-            El <strong>Simulador de Prospección IA</strong> ha sido desactivado para tu agencia por la administración.
+            El <strong>Academia PRO</strong> ha sido desactivado para tu agencia por la administración.
           </p>
         </div>
         <div className="pt-2">

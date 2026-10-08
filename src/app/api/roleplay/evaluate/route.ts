@@ -126,10 +126,10 @@ export async function POST(req: Request) {
     const EvaluationSchema = z.object({
       score: z.number().min(0).max(100).describe('Calificación del 0 al 100 basada en la calidad del desempeño del asesor.'),
       aciertos: z.array(z.string()).describe('Lista de 1 a 3 cosas que el asesor hizo muy bien.'),
-      errores: z.array(z.string()).describe('Lista de errores cometidos por el asesor o áreas de oportunidad.'),
+      errores: z.array(z.string()).describe('Lista de errores cometidos por el asesor. OBLIGATORIO: Debes incluir una cita textual (entre comillas) de la transcripci�n para demostrar exactamente en qu� momento cometi� el error.'),
       cometioErrorFatal: z.boolean().describe('Verdadero si el asesor cometió un error crítico según las instrucciones del módulo.'),
       appointmentClosed: z.boolean().describe('Verdadero SOLAMENTE si el asesor logró concretar explícitamente la agenda de la cita o el cierre (trámite/pago). No debe ser verdadero si el prospecto dijo "yo te aviso".'),
-      coachTip: z.string().describe('Un consejo breve (1 oración) técnico o motivacional para mejorar en la próxima llamada.')
+      coachTip: z.string().describe('Un consejo breve. Si aplica, menciona exactamente la parte de la llamada donde se equivoc� para darle contexto exacto.')
     });
 
     const promptText = `Eres un Master Coach de Ventas de Seguros evaluando una simulación de rol entre un Asesor y un Prospecto (que es una IA).

@@ -122,7 +122,7 @@ export default async function AcademiaPage() {
           </button>
         </div>
 
-        {/* Card 3: Simulador de Prospección IA */}
+        {/* Card 3: Academia PRO IA */}
         <div className="flex flex-col justify-between p-8 rounded-3xl bg-gradient-to-br from-indigo-950/20 to-slate-900/40 border border-indigo-500/20 backdrop-blur-md shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl group-hover:bg-purple-500/20 transition-all duration-500"></div>
 
@@ -136,7 +136,7 @@ export default async function AcademiaPage() {
                 ✨ Inteligencia Artificial • Voz en Vivo
               </span>
               <h2 className="text-2xl font-black text-slate-800 dark:text-slate-200 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
-                Simulador de Prospección
+                Academia PRO
               </h2>
             </div>
 
@@ -177,7 +177,7 @@ export default async function AcademiaPage() {
               href="/academia/simulador" 
               className="mt-8 flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-sm transition-all duration-200 shadow-md shadow-purple-900/20"
             >
-              Entrenar Prospección IA <ArrowRight className="h-4 w-4" />
+              Entrar a la Academia PRO <ArrowRight className="h-4 w-4" />
             </Link>
           )}
         </div>

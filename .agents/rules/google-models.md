@@ -1,11 +1,12 @@
 ---
-description: Preferencias sobre la elección de modelos de Google (Gemini)
+description: Preferencias sobre la elección de modelos de Google (Gemini 3.x)
 trigger: "always_on"
 ---
 
 # Preferencia de Modelos de Google
 
-Cuando se trate de elegir o sugerir modelos de IA para el proyecto (especialmente la API de Google Generative AI / Gemini):
-1. Revisa siempre la documentación y la versión más actual.
-2. Si el modelo **Gemini 1.5 Flash** (a veces referido informalmente por el usuario como "3.5 flash") es más barato y suficiente para la necesidad actual, **úsalos por defecto**.
-3. No asumas modelos más caros (como Pro) a menos que la tarea requiera explícitamente razonamiento complejo o multimodalidad pesada que Flash no pueda manejar.
+Cuando se trate de elegir o sugerir modelos de IA para el proyecto (API de Google Generative AI / Gemini):
+1. Estamos en la generación **Gemini 3.x** (2026). Jamás referencies modelos obsoletos como la serie 1.x.
+2. Si el objetivo es velocidad y bajo costo (evaluaciones masivas, JSON simple), usa **`gemini-3.5-flash-lite`** por defecto, ya que es la versión ligera y económica.
+3. Para razonamiento avanzado o agentes, sugiere `gemini-3.8-flash` o `gemini-3.1-pro`.
+4. Mantente siempre al día con los nombres correctos de la API.
