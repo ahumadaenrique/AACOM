@@ -136,7 +136,7 @@ export async function POST(req: Request) {
 
     const moduleBadges = BADGES.filter(b => b.moduleId === moduleId || b.moduleId === 'general');
     const badgesText = moduleBadges.map(b => "- ${b.id}: ${b.name} (${b.description})").join('\n');
-    });
+
 
     const promptText = `Eres un Master Coach de Ventas de Seguros evaluando una simulación de rol entre un Asesor y un Prospecto (que es una IA).
 Evalúa la siguiente transcripción basándote estrictamente en esta rúbrica:
