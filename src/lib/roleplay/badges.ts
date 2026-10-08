@@ -1,4 +1,3 @@
-
 export type ModuleId = 'prospeccion' | 'adn' | 'objeciones' | 'general';
 
 export interface Badge {
@@ -10,45 +9,44 @@ export interface Badge {
 }
 
 export const BADGES: Badge[] = [
-  // PROSPECCIÓN (10)
-  { id: 'p_rompehielo', moduleId: 'prospeccion', name: 'Rompehielo Maestro', description: 'Logró un tono amigable y relajado al inicio de la llamada.', icon: '??' },
-  { id: 'p_referido_oro', moduleId: 'prospeccion', name: 'El Referido de Oro', description: 'Mencionó al referidor estratégicamente en los primeros segundos.', icon: '??' },
-  { id: 'p_ninja_tiempo', moduleId: 'prospeccion', name: 'Ninja del Tiempo', description: 'Consiguió la cita en menos de 90 segundos.', icon: '??' },
-  { id: 'p_escudo_filtros', moduleId: 'prospeccion', name: 'Escudo Anti-Filtros', description: 'Superó el mándamelo por WhatsApp sin ceder.', icon: '???' },
-  { id: 'p_doble_alt', moduleId: 'prospeccion', name: 'Doble Alternativa', description: 'Ofreció dos opciones claras de horario para la cita.', icon: '??' },
-  { id: 'p_persistencia', moduleId: 'prospeccion', name: 'Persistencia Educada', description: 'Revirtió 2 objeciones iniciales negativas exitosamente.', icon: '?????' },
-  { id: 'p_citas_no_polizas', moduleId: 'prospeccion', name: 'Vendedor de Citas', description: 'Evitó dar precios, productos o nombres de aseguradoras.', icon: '???' },
-  { id: 'p_control_agenda', moduleId: 'prospeccion', name: 'Control de la Agenda', description: 'No aceptó el yo te aviso, y fijó un compromiso.', icon: '??' },
-  { id: 'p_frio_exitoso', moduleId: 'prospeccion', name: 'Contacto Frío Exitoso', description: 'Cerró cita con un desconocido total en dificultad media o alta.', icon: '??' },
-  { id: 'p_impecable', moduleId: 'prospeccion', name: 'Llamada Impecable', description: 'Obtuvo calificación perfecta (100) en el módulo de prospección.', icon: '??' },
+  // PROSPECCIÃ“N (10)
+  { id: 'p_rompehielo', moduleId: 'prospeccion', name: 'Rompehielo Maestro', description: 'LogrÃ³ un tono amigable y relajado al inicio de la llamada.', icon: 'ğŸ§Š' },
+  { id: 'p_referido_oro', moduleId: 'prospeccion', name: 'El Referido de Oro', description: 'MencionÃ³ al referidor estratÃ©gicamente en los primeros segundos.', icon: 'ğŸ¥‡' },
+  { id: 'p_ninja_tiempo', moduleId: 'prospeccion', name: 'Ninja del Tiempo', description: 'ConsiguiÃ³ la cita en menos de 90 segundos.', icon: 'â±ï¸' },
+  { id: 'p_escudo_filtros', moduleId: 'prospeccion', name: 'Escudo Anti-Filtros', description: 'SuperÃ³ el mÃ¡ndamelo por WhatsApp sin ceder.', icon: 'ğŸ›¡ï¸' },
+  { id: 'p_doble_alt', moduleId: 'prospeccion', name: 'Doble Alternativa', description: 'OfreciÃ³ dos opciones claras de horario para la cita.', icon: 'âš–ï¸' },
+  { id: 'p_persistencia', moduleId: 'prospeccion', name: 'Persistencia Educada', description: 'RevirtiÃ³ 2 objeciones iniciales negativas exitosamente.', icon: 'ğŸ§—â€â™‚ï¸' },
+  { id: 'p_citas_no_polizas', moduleId: 'prospeccion', name: 'Vendedor de Citas', description: 'EvitÃ³ dar precios, productos o nombres de aseguradoras.', icon: 'ğŸŸï¸' },
+  { id: 'p_control_agenda', moduleId: 'prospeccion', name: 'Control de la Agenda', description: 'No aceptÃ³ el yo te aviso, y fijÃ³ un compromiso.', icon: 'ğŸ“…' },
+  { id: 'p_frio_exitoso', moduleId: 'prospeccion', name: 'Contacto FrÃ­o Exitoso', description: 'CerrÃ³ cita con un desconocido total en dificultad media o alta.', icon: 'â„ï¸' },
+  { id: 'p_impecable', moduleId: 'prospeccion', name: 'Llamada Impecable', description: 'Obtuvo calificaciÃ³n perfecta (100) en el mÃ³dulo de prospecciÃ³n.', icon: 'ğŸŒŸ' },
 
   // ADN (12)
-  { id: 'a_escucha', moduleId: 'adn', name: 'Escucha Activa', description: 'El prospecto habló la mayor parte del tiempo, guiado por buenas preguntas.', icon: '??' },
-  { id: 'a_ford', moduleId: 'adn', name: 'Familia Primero', description: 'Indagó exitosamente la técnica F.O.R.D. (Familia, Ocupación, Recreación).', icon: '???????????' },
-  { id: 'a_dedo_llaga', moduleId: 'adn', name: 'El Dedo en la Llaga', description: 'Preguntó sobre el impacto de faltar mañana o en el retiro.', icon: '??' },
-  { id: 'a_arquitecto', moduleId: 'adn', name: 'Arquitecto del Futuro', description: 'Ayudó al cliente a visualizar su retiro y necesidades.', icon: '???' },
-  { id: 'a_presupuesto', moduleId: 'adn', name: 'Buscador de Presupuesto', description: 'Averiguó la capacidad real de ahorro mensual del cliente.', icon: '??' },
-  { id: 'a_cero_productos', moduleId: 'adn', name: 'Cero Productos', description: 'Hizo el diagnóstico sin vender ni mencionar seguros específicos.', icon: '??' },
-  { id: 'a_medico', moduleId: 'adn', name: 'El Médico Diagnóstica', description: 'Calmó a un cliente ansioso por precios para terminar el análisis.', icon: '??' },
-  { id: 'a_deudas', moduleId: 'adn', name: 'Descubridor de Deudas', description: 'Indagó exitosamente pasivos, hipotecas y créditos.', icon: '??' },
-  { id: 'a_compromiso', moduleId: 'adn', name: 'Compromiso Siguiente Cita', description: 'Fijó la Cita de Cierre con fecha y hora explícita.', icon: '??' },
-  { id: 'a_prioridades', moduleId: 'adn', name: 'Experto en Prioridades', description: 'Consiguió que el cliente ordenara sus metas de mayor a menor.', icon: '??' },
-  { id: 'a_rompemuros', moduleId: 'adn', name: 'Rompe-Muros', description: 'Relajó a un prospecto inicialmente a la defensiva o apático.', icon: '??' },
-  { id: 'a_perfecto', moduleId: 'adn', name: 'Diagnóstico Perfecto', description: 'Obtuvo 100/100 en un diagnóstico de Nivel 5 o superior.', icon: '??' },
+  { id: 'a_escucha', moduleId: 'adn', name: 'Escucha Activa', description: 'El prospecto hablÃ³ la mayor parte del tiempo, guiado por buenas preguntas.', icon: 'ğŸ‘‚' },
+  { id: 'a_ford', moduleId: 'adn', name: 'Familia Primero', description: 'IndagÃ³ exitosamente la tÃ©cnica F.O.R.D.', icon: 'ğŸ‘¨â€ğŸ‘©â€ğŸ‘§â€ğŸ‘¦' },
+  { id: 'a_dedo_llaga', moduleId: 'adn', name: 'El Dedo en la Llaga', description: 'PreguntÃ³ sobre el impacto de faltar maÃ±ana o en el retiro.', icon: 'ğŸ’¥' },
+  { id: 'a_arquitecto', moduleId: 'adn', name: 'Arquitecto del Futuro', description: 'AyudÃ³ al cliente a visualizar su retiro y necesidades.', icon: 'ğŸ—ï¸' },
+  { id: 'a_presupuesto', moduleId: 'adn', name: 'Buscador de Presupuesto', description: 'AveriguÃ³ la capacidad real de ahorro mensual del cliente.', icon: 'ğŸ’°' },
+  { id: 'a_cero_productos', moduleId: 'adn', name: 'Cero Productos', description: 'Hizo el diagnÃ³stico sin vender ni mencionar seguros especÃ­ficos.', icon: 'ğŸš«' },
+  { id: 'a_medico', moduleId: 'adn', name: 'El MÃ©dico DiagnÃ³stica', description: 'CalmÃ³ a un cliente ansioso por precios para terminar el anÃ¡lisis.', icon: 'ğŸ©º' },
+  { id: 'a_deudas', moduleId: 'adn', name: 'Descubridor de Deudas', description: 'IndagÃ³ exitosamente pasivos, hipotecas y crÃ©ditos.', icon: 'ğŸ’³' },
+  { id: 'a_compromiso', moduleId: 'adn', name: 'Compromiso Siguiente Cita', description: 'FijÃ³ la Cita de Cierre con fecha y hora explÃ­cita.', icon: 'ğŸ¤' },
+  { id: 'a_prioridades', moduleId: 'adn', name: 'Experto en Prioridades', description: 'ConsiguiÃ³ que el cliente ordenara sus metas de mayor a menor.', icon: 'ğŸ“‹' },
+  { id: 'a_rompemuros', moduleId: 'adn', name: 'Rompe-Muros', description: 'RelajÃ³ a un prospecto inicialmente a la defensiva o apÃ¡tico.', icon: 'ğŸ§±' },
+  { id: 'a_perfecto', moduleId: 'adn', name: 'DiagnÃ³stico Perfecto', description: 'Obtuvo 100/100 en un diagnÃ³stico de Nivel 5 o superior.', icon: 'ğŸ’' },
 
   // OBJECIONES Y CIERRE (12 + 1 final = 13)
-  { id: 'c_aislador', moduleId: 'objeciones', name: 'Aislador de Objeciones', description: 'Aisló la duda usando: ¿Además del precio, hay algo más?', icon: '??' },
-  { id: 'c_matacompetencias', moduleId: 'objeciones', name: 'Mata-Competencias', description: 'Resolvió comparaciones con el banco priorizando su valor como asesor.', icon: '??' },
-  { id: 'c_consultor', moduleId: 'objeciones', name: 'Consultor del Contador', description: 'Manejó la objeción Déjame revisarlo con mi esposo/contador.', icon: '??' },
-  { id: 'c_presupuesto_oculto', moduleId: 'objeciones', name: 'Presupuesto Oculto', description: 'Rebatió el No tengo dinero encontrando gastos hormiga o ajustes.', icon: '???' },
-  { id: 'c_asumido', moduleId: 'objeciones', name: 'Cierre Asumido', description: 'Asumió la compra avanzando al trámite (Ej. ¿A qué tarjeta va el cargo?).', icon: '??' },
-  { id: 'c_rescate', moduleId: 'objeciones', name: 'Rescate de Tarjeta', description: 'Superó el miedo a domiciliar u objeción de pago con alternativas.', icon: '??' },
-  { id: 'c_implacable', moduleId: 'objeciones', name: 'Seguridad Implacable', description: 'No usó muletillas durante la etapa de cierre.', icon: '??' },
-  { id: 'c_rapido', moduleId: 'objeciones', name: 'Cierre Rápido', description: 'Obtuvo el sí definitivo en los primeros minutos del módulo.', icon: '?' },
-  { id: 'c_valor', moduleId: 'objeciones', name: 'Vendedor de Valor', description: 'Se negó a dar descuentos o bajar la suma al primer intento de regateo.', icon: '??' },
-  { id: 'c_fiscal', moduleId: 'objeciones', name: 'Experto Fiscal', description: 'Explicó beneficios fiscales y deducibilidad para cerrar.', icon: '???' },
-  { id: 'c_boomerang', moduleId: 'objeciones', name: 'El Boomerang', description: 'Usó la excusa del cliente como la razón principal por la que debe comprar.', icon: '??' },
-  { id: 'c_hostil', moduleId: 'objeciones', name: 'Cierre Hostil Superado', description: 'Cerró la póliza ante un cliente agresivo de Nivel 6.', icon: '??' },
-  { id: 'c_maestro', moduleId: 'general', name: 'Maestro de la Academia', description: 'Obtuvo todas las insignias. ¡Bono desbloqueado!', icon: '??' }
+  { id: 'c_aislador', moduleId: 'objeciones', name: 'Aislador de Objeciones', description: 'AislÃ³ la duda usando: Â¿AdemÃ¡s del precio, hay algo mÃ¡s?', icon: 'ğŸ”¬' },
+  { id: 'c_matacompetencias', moduleId: 'objeciones', name: 'Mata-Competencias', description: 'ResolviÃ³ comparaciones con el banco priorizando su valor como asesor.', icon: 'âš”ï¸' },
+  { id: 'c_consultor', moduleId: 'objeciones', name: 'Consultor del Contador', description: 'ManejÃ³ la objeciÃ³n DÃ©jame revisarlo con mi esposo/contador.', icon: 'ğŸ“Š' },
+  { id: 'c_presupuesto_oculto', moduleId: 'objeciones', name: 'Presupuesto Oculto', description: 'RebatiÃ³ el No tengo dinero encontrando gastos hormiga o ajustes.', icon: 'ğŸ•µï¸' },
+  { id: 'c_asumido', moduleId: 'objeciones', name: 'Cierre Asumido', description: 'AsumiÃ³ la compra avanzando al trÃ¡mite (Ej. Â¿A quÃ© tarjeta va el cargo?).', icon: 'ğŸ“' },
+  { id: 'c_rescate', moduleId: 'objeciones', name: 'Rescate de Tarjeta', description: 'SuperÃ³ el miedo a domiciliar u objeciÃ³n de pago con alternativas.', icon: 'ğŸ›Ÿ' },
+  { id: 'c_implacable', moduleId: 'objeciones', name: 'Seguridad Implacable', description: 'No usÃ³ muletillas durante la etapa de cierre.', icon: 'ğŸ¯' },
+  { id: 'c_rapido', moduleId: 'objeciones', name: 'Cierre RÃ¡pido', description: 'Obtuvo el sÃ­ definitivo en los primeros minutos del mÃ³dulo.', icon: 'âš¡' },
+  { id: 'c_valor', moduleId: 'objeciones', name: 'Vendedor de Valor', description: 'Se negÃ³ a dar descuentos o bajar la suma al primer intento de regateo.', icon: 'ğŸ’' },
+  { id: 'c_fiscal', moduleId: 'objeciones', name: 'Experto Fiscal', description: 'ExplicÃ³ beneficios fiscales y deducibilidad para cerrar.', icon: 'ğŸ›ï¸' },
+  { id: 'c_boomerang', moduleId: 'objeciones', name: 'El Boomerang', description: 'UsÃ³ la excusa del cliente como la razÃ³n principal por la que debe comprar.', icon: 'ğŸªƒ' },
+  { id: 'c_hostil', moduleId: 'objeciones', name: 'Cierre Hostil Superado', description: 'CerrÃ³ la pÃ³liza ante un cliente agresivo de Nivel 6.', icon: 'ğŸ”¥' },
+  { id: 'c_maestro', moduleId: 'general', name: 'Maestro de la Academia', description: 'Obtuvo todas las insignias. Â¡Bono desbloqueado!', icon: 'ğŸ‘‘' }
 ];
-

@@ -130,15 +130,14 @@ export async function POST(req: Request) {
       errores: z.array(z.string()).describe('Lista de errores cometidos por el asesor. OBLIGATORIO: Debes incluir una cita textual (entre comillas) de la transcripci�n para demostrar exactamente en qu� momento cometi� el error.'),
       cometioErrorFatal: z.boolean().describe('Verdadero si el asesor cometió un error crítico según las instrucciones del módulo.'),
       appointmentClosed: z.boolean().describe('Verdadero SOLAMENTE si el asesor logró concretar explícitamente la agenda de la cita o el cierre (trámite/pago). No debe ser verdadero si el prospecto dijo "yo te aviso".'),
-      coachTip: z.string().describe('Un consejo breve. Si aplica, menciona exactamente la parte de la llamada donde se equivoc� para darle contexto exacto.'),
-      insigniasGanadas: z.array(z.string()).describe('Lista de IDs de insignias desbloqueadas en esta llamada. Devuelve solo los IDs. Si no gan� ninguna, devuelve un arreglo vac�o.')
+      coachTip: z.string().describe('Un consejo breve y técnico.'),
+      insigniasGanadas: z.array(z.string()).describe('Lista de IDs de insignias desbloqueadas en la llamada. Devuelve solo los IDs. Si no ganó, devuelve []')
     });
 
     const moduleBadges = BADGES.filter(b => b.moduleId === moduleId || b.moduleId === 'general');
-    const badgesText = moduleBadges.map(b => "- ${b.id}: ${b.name} (${b.description})").join('\n');
+    const badgesText = moduleBadges.map(b => `- ${b.id}: ${b.name} (${b.description})`).join('\n');
 
-
-    const promptText = `Eres un Master Coach de Ventas de Seguros evaluando una simulación de rol entre un Asesor y un Prospecto (que es una IA).
+    const promptText = `Eres un Master Coach de Ventas de Seguros evaluando una simulación de rol entre un Asesor y un Prospecto.
 Evalúa la siguiente transcripción basándote estrictamente en esta rúbrica:
 
 ${evalInstructions}
@@ -147,71 +146,51 @@ ${evalInstructions}
 ${transcriptText}
 </transcripcion>
 
-Extrae la calificación, aciertos, errores, si hubo error fatal y si se logró la cita. Sé un juez imparcial y estricto.`;
+Extrae la calificación, aciertos, errores, si hubo error fatal y si se logró la cita. Sé un juez imparcial y estricto.
+Adicionalmente, revisa si el asesor logró alguna de estas insignias en esta llamada y devuelve sus IDs:
+${badgesText}`;
 
     const { object } = await generateObject({
-Extrae la calificaci�n, aciertos, errores, si hubo error fatal y si se logr� la cita. S� un juez imparcial y estricto.
-Adicionalmente, revisa si el asesor logr� alguna de estas insignias en esta llamada y devuelve sus IDs:
-${badgesText}`;
+      model: google('gemini-3.5-flash-lite'),
+      schema: EvaluationSchema,
+      prompt: promptText
+    });
+
     let { score, aciertos, errores, cometioErrorFatal, appointmentClosed, coachTip, insigniasGanadas = [] } = object;
 
+    const stats = await prisma.roleplayStats.findUnique({ where: { userId } });
     // Deduplicar insignias
     const currentBadges = stats?.badges || [];
     const uniqueNewBadges = insigniasGanadas.filter(b => !currentBadges.includes(b));
     const mergedBadges = [...currentBadges, ...uniqueNewBadges];
-      prompt: promptText
-    });
 
-    let { score, aciertos, errores, cometioErrorFatal, appointmentClosed, coachTip } = object;
-
-    // Ajuste de penalizaciones mayores
-    let { score, aciertos, errores, cometioErrorFatal, appointmentClosed, coachTip, insigniasGanadas = [] } = object;
+    if (cometioErrorFatal) {
       score = Math.max(0, score - 50);
     }
     
-    // Si no hubo cierres efectivos en objeciones/prospeccion pero se marcó true
     if (!appointmentClosed && score > 80) {
-      // Ajustar score si le faltó cerrar pero hizo buen trabajo
       score = 75;
     }
 
-    // 3. CALCULO DE EXPERIENCIA (XP)
     let xpEarned = Math.floor(score * 1.5);
     if (appointmentClosed) xpEarned += 50;
     
-    // Penalización por llamadas muy cortas que logran bypass de la IA
     if (durationSeconds < 25 && appointmentClosed) {
-      xpEarned = Math.floor(xpEarned / 2);
-      coachTip = "El cierre fue muy rápido y artificial. Un prospecto real tomará más tiempo en convencerse. Sé más orgánico.";
+      xpEarned = 0;
     }
 
-    // 4. GUARDADO EN BASE DE DATOS Y GAMIFICACIÓN
-    const dbStats = await prisma.roleplayStats.findUnique({ where: { userId } });
-    let currentXp = dbStats?.xp || 0;
-    let streak = dbStats?.streak || 0;
-    let todayXp = dbStats?.todayXp || 0;
-    let lastActive = dbStats?.lastActiveDate || null;
-    let closedCalls = dbStats?.closedCalls || 0;
-    let todayCallsCount = dbStats?.todayCallsCount || 0;
-
-    // Evaluar y aplicar penalizaciones de inactividad
-    const penaltyResult = checkAndApplyInactivityPenalty({
-      xp: currentXp,
-      lastActiveDate: lastActive,
-      streak
-    });
-    
-    currentXp = penaltyResult.newXp;
-    streak = penaltyResult.newStreak;
-
-    // Validar CAP diario
-    if (lastActive !== todayStr) {
+    let currentXp = stats?.xp || 0;
+    let todayXp = stats?.todayXp || 0;
+    let todayCallsCount = stats?.todayCallsCount || 0;
+    let closedCalls = stats?.closedCalls || 0;
+    let streak = stats?.streak || 0;
+    const lastActiveDate = stats?.lastActiveDate || '';
+    if (lastActiveDate !== todayStr) {
+      const { newStreak, newXp: xpAfterPenalty } = checkAndApplyInactivityPenalty(stats || { xp: 0, streak: 0, lastActiveDate: '' });
+      streak = newStreak;
+      currentXp = xpAfterPenalty;
       todayXp = 0;
       todayCallsCount = 0;
-      // Incrementamos la racha solo si su primera llamada del día fue exitosa/con puntaje
-      if (score > 30) {
-        streak += 1;
-      }
     }
 
     let actualXpToAdd = xpEarned;
@@ -238,10 +217,8 @@ ${badgesText}`;
         streak,
         todayXp,
         todayCallsCount,
-        totalCalls: { increment: 1 },
         closedCalls,
-        lastActiveDate: todayStr,
-        updatedAt: new Date()
+        lastActiveDate: todayStr
       },
       create: {
         userId,
@@ -287,6 +264,7 @@ ${badgesText}`;
       aciertos,
       errores,
       coachTip,
+      insigniasNuevas: uniqueNewBadges,
       stats: {
         xp: updatedStats.xp,
         level: updatedStats.level,
