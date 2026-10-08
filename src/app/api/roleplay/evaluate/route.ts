@@ -144,7 +144,7 @@ Evalúa la siguiente transcripción basándote estrictamente en esta rúbrica:
 Extrae la calificación, aciertos, errores, si hubo error fatal y si se logró la cita. Sé un juez imparcial y estricto.\`;
 
     const { object } = await generateObject({
-      model: google('gemini-1.5-flash'),
+      model: google('gemini-3.5-flash-lite'),
       schema: EvaluationSchema,
       prompt: promptText
     });
