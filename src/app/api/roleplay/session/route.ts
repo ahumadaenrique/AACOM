@@ -135,12 +135,16 @@ export async function POST(req: Request) {
           },
           body: JSON.stringify({
             conversation_config: {
+              conversation: {
+                max_duration_seconds: moduleId === 'adn' ? 1800 : moduleId === 'objeciones' ? 1500 : 600
+              },
               agent: {
                 prompt: {
                   prompt: scenario.systemPrompt
                 },
                 first_message: scenario.firstMessage,
-                language: 'es'
+                language: 'es',
+                max_duration_seconds: moduleId === 'adn' ? 1800 : moduleId === 'objeciones' ? 1500 : 600
               },
               tts: {
                 voice_id: scenario.prospecto.voiceId || 'TNuNcwk4LzbPpi1XEANc',

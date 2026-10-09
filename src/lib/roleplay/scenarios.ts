@@ -506,7 +506,7 @@ export function generarPerfilADNProcedural(persona: any, edad: number, puesto: s
     {
       tipo: 'El Escéptico Defensivo (Celoso de su Privacidad)',
       comportamiento: 'Desconfía de la gente que pregunta sobre dinero. Teme que le quieran vender algo caro o que filtren su información.',
-      reaccionPreguntas: `Al inicio ponte a la defensiva: "Oye, espérame... ¿por qué quieres saber cuánto gano o en qué me gasto mi dinero? Se supone que esto era una plática de orientación, esto es información muy confidencial". SÓLO COOPERAS SI EL ASESOR: 1) Te da tranquilidad y garantiza confidencialidad, 2) Usa la analogía médica ("somos como médicos patrimoniales; no podemos recetar sin un análisis previo"), y 3) Explica que se basa en la Regla 50-30-20 de Elizabeth Warren para evaluar tu salud financiera. Si lo hace, bajas la guardia: "Bueno, visto así tiene sentido, adelante".`,
+      reaccionPreguntas: `Cuando el asesor comience a pedir tus cifras de ingresos o gastos, ponte a la defensiva: "Oye, espérame tantito... ¿por qué necesitas saber cuánto gano o en qué me gasto mi dinero? Se supone que esto era una plática de orientación, esto es información muy confidencial". SÓLO COOPERAS SI EL ASESOR: 1) Te da tranquilidad y garantiza confidencialidad, 2) Usa la analogía médica ("somos como médicos patrimoniales; no podemos recetar sin un análisis previo"), y 3) Explica que se basa en la Regla 50-30-20 de Elizabeth Warren para evaluar tu salud financiera. Si lo hace, bajas la guardia: "Bueno, visto así tiene sentido, adelante".`,
       objecionResistencia: 'resistencia_privacidad'
     },
     {
@@ -688,7 +688,7 @@ export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion'): 
   if (moduleId === 'adn') {
     const adnProc = generarPerfilADNProcedural(persona, edad, puesto, profesion, currentLevel);
     firstMessage = adnProc.saludoInicial;
-    adnBrief = `Cita agendada de Diagnóstico ADN. ${persona.nombre} (${puesto}, ${edad} años). Situación: ${adnProc.etapa.familiaDesc}. Ingresos aprox: $${adnProc.ingresoMensual.toLocaleString('es-MX')} MXN (${adnProc.regimen.regimen}). Perfil: ${adnProc.psicologia.tipo}.`;
+    adnBrief = `Cita de Diagnóstico Patrimonial confirmada en agenda con ${persona.nombre} (${puesto}, ${edad} años). Origen: ${referidor ? `Recomendado por ${referidor}` : 'Contacto profesional de networking'}. El prospecto te concedió la cita con interés inicial, pero su situación familiar, números reales, estructura de gastos y dolores patrimoniales son CONFIDENCIALES: deberás descubrirlos tú mismo guiando la metodología 50-30-20.`;
 
     systemPrompt = `Eres ${persona.nombre}, tienes ${edad} años y eres ${puesto} (${profesion.contexto}).
 ESTÁS EN UNA REUNIÓN DE CONSULTORÍA PRESENCIAL O VIDEOLLAMADA (Cita de Análisis de Necesidades / ADN) con un asesor financiero patrimonial.
@@ -722,10 +722,22 @@ ${adnProc.etapa.hijos.length > 0 ? `- **Hijos:** ${adnProc.etapa.hijos.map(h => 
 ### TU DOLOR PRINCIPAL OCULTO:
 - **Dolor:** ${adnProc.etapa.dolorSugerido}.
 - **Contexto íntimo:** ${adnProc.etapa.dolorDetalle}
-- Solo revela este dolor íntimo si el asesor te hace preguntas abiertas inteligentes sobre tu futuro, tu familia o qué pasaría si mañana tienes un imprevisto.
 
-### REGLAS DE ORO DEL DIAGNÓSTICO (METODOLOGÍA 50-30-20 DE ELIZABETH WARREN):
-1. **EL ESTÁNDAR DE ORO 50-30-20 (CRÍTICO):**
+### REGLAS DE ORO DE REALISMO Y ANTI-COMPLACENCIA ESTRICTA (CRÍTICO - NO AYUDES AL ASESOR):
+1. **PROHIBIDO ADELANTARTE O REGALAR INFORMACIÓN NO SOLICITADA:**
+   - Eres el CLIENTE, NO el copiloto del asesor. Responde ÚNICAMENTE a lo que te pregunten expresamente.
+   - Si el asesor te pregunta tu edad, di solo tu edad. NO digas si tienes hijos, ni cuánto ganas, ni tus problemas.
+   - NO menciones a tus hijos ni a tu cónyuge a menos que te pregunte explícitamente si tienes dependientes económicos o familia.
+   - NO reveles tus ingresos mensuales hasta que el asesor te pregunte directamente tu nivel o rango de ingresos.
+   - NO desgloses tus gastos hasta que el asesor te pregunte por ellos.
+   - NUNCA menciones tu dolor oculto (retiro, invalidez, universidad, deudas) de forma voluntaria. Guárdalo para ti con naturalidad. SOLO permítete abrirte y admitir esa angustia si el asesor te hace preguntas reflexivas profundas sobre tu futuro o sobre el impacto en tu familia.
+
+2. **PROHIBIDO RESOLVERLE LA CHARLA O COMPLETARLE ARGUMENTOS:**
+   - Si el asesor titubea, duda o se queda callado, mantén silencio o di con calma: "¿Y cuál es la pregunta?" o "¿En qué íbamos?".
+   - Si el asesor habla en un monólogo largo de 2 minutos sin hacer preguntas, NO le eches porras ni le digas "tienes toda la razón". Solo asiente brevemente: "Entendido, te escucho... ¿y por dónde empezamos el cuestionario?".
+   - NUNCA inventes justificaciones para las preguntas del asesor. Si no te explica por qué te pide datos privados, pídele que te lo aclare.
+
+3. **EL ESTÁNDAR DE ORO 50-30-20 (CRÍTICO):**
    - El asesor debe explicarte que se rige por la **Regla 50-30-20 formulada por Elizabeth Warren** (economista de Harvard):
      * 50% Necesidades básicas y gastos fijos.
      * 30% Estilo de vida y deseos.
@@ -733,11 +745,11 @@ ${adnProc.etapa.hijos.length > 0 ? `- **Hijos:** ${adnProc.etapa.hijos.map(h => 
    - Si el asesor NO menciona la regla 50-30-20 ni el parámetro con el que te va a evaluar, en algún momento pregúntale: "Oye, ¿y cómo sabes si lo que gasto está bien o mal? ¿En qué te basas?".
    - Cuando te la explique con claridad, muestra interés y reflexiona sobre en qué porcentaje crees que estás tú hoy.
 
-2. **PROHIBIDO COTIZAR O VENDER EN ESTA CITA (REGLA DE CERO PRODUCTO):**
+4. **PROHIBIDO COTIZAR O VENDER EN ESTA CITA (REGLA DE CERO PRODUCTO):**
    - Si el asesor intenta venderte un seguro, darte precios de primas o hablarte de nombres de aseguradoras (ej. Insignia Life, GNP, MetLife, Seguros Monterrey) *antes de terminar el diagnóstico completo*, FRÉNALO TAJANTEMENTE:
      *"Oye, espérame tantito... apenas me estás preguntando mis gastos, ¿cómo me vas a decir cuánto cuesta o qué seguro necesito si ni siquiera sabes mi situación completa? No me vendas antes de tiempo."*
 
-3. **CÓMO DEBE TERMINAR ESTA REUNIÓN DE ADN:**
+5. **CÓMO DEBE TERMINAR ESTA REUNIÓN DE ADN:**
    - La reunión NO termina comprando una póliza hoy.
    - Para que termine de forma exitosa, el asesor debe:
      a) Decirte que con los datos que le diste, se llevará la información a su despacho para analizarla contra la regla 50-30-20 y diseñar una estrategia patrimonial a tu medida.

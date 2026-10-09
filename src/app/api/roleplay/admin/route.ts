@@ -27,38 +27,58 @@ export async function GET() {
       ? {}
       : { user: { agencyId: dbUser.agencyId || undefined } };
 
-    // Load recent calls across authorized agents with user info
-    const calls = await prisma.roleplayCall.findMany({
-      where: agencyFilter,
-      take: 50,
-      orderBy: { createdAt: 'desc' },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true
+    // Load recent calls and ranking concurrently with optimized field selection
+    const [calls, agentStats] = await Promise.all([
+      prisma.roleplayCall.findMany({
+        where: agencyFilter,
+        take: 30,
+        orderBy: { createdAt: 'desc' },
+        select: {
+          id: true,
+          prospectName: true,
+          scenarioTitle: true,
+          level: true,
+          durationSeconds: true,
+          score: true,
+          xpEarned: true,
+          conversationId: true,
+          appointmentClosed: true,
+          coachTip: true,
+          aciertos: true,
+          errores: true,
+          transcript: true,
+          createdAt: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true
+            }
           }
         }
-      }
-    });
-
-    // Load ranking of authorized agents with stats
-    const agentStats = await prisma.roleplayStats.findMany({
-      where: agencyFilter,
-      take: 50,
-      orderBy: { xp: 'desc' },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true
+      }),
+      prisma.roleplayStats.findMany({
+        where: agencyFilter,
+        take: 30,
+        orderBy: { xp: 'desc' },
+        select: {
+          id: true,
+          level: true,
+          xp: true,
+          streak: true,
+          totalCalls: true,
+          closedCalls: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true
+            }
           }
         }
-      }
-    });
+      })
+    ]);
 
     return NextResponse.json({
       success: true,

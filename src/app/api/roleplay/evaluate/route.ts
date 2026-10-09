@@ -130,11 +130,11 @@ export async function POST(req: Request) {
     const EvaluationSchema = z.object({
       score: z.number().min(0).max(100).describe('Calificación del 0 al 100 basada en la calidad del desempeño del asesor.'),
       aciertos: z.array(z.string()).describe('Lista de 1 a 3 cosas que el asesor hizo muy bien.'),
-      errores: z.array(z.string()).describe('Lista de errores cometidos por el asesor. OBLIGATORIO: Debes incluir una cita textual (entre comillas) de la transcripci�n para demostrar exactamente en qu� momento cometi� el error.'),
+      errores: z.array(z.string()).describe('Lista de errores cometidos por el asesor. OBLIGATORIO: Debes incluir una cita textual (entre comillas) de la transcripción para demostrar exactamente en qué momento cometió el error.'),
       cometioErrorFatal: z.boolean().describe('Verdadero si el asesor cometió un error crítico según las instrucciones del módulo.'),
       appointmentClosed: z.boolean().describe('Verdadero SOLAMENTE si el asesor logró concretar explícitamente la agenda de la cita o el cierre (trámite/pago). No debe ser verdadero si el prospecto dijo "yo te aviso".'),
       coachTip: z.string().describe('Un consejo breve y técnico.'),
-      insigniasGanadas: z.array(z.string()).describe('Lista de IDs de insignias desbloqueadas en la llamada. Devuelve solo los IDs. Si no ganó, devuelve []')
+      insigniasGanadas: z.array(z.string()).describe('Lista de IDs de insignias desbloqueadas. COMO MÁXIMO 1 insignia por llamada, y SOLAMENTE si score >= 85 y la cita cerró con éxito. Si no califica o no cerró la cita, devuelve []')
     });
 
     const moduleBadges = BADGES.filter(b => b.moduleId === moduleId || b.moduleId === 'general');
@@ -150,7 +150,14 @@ ${transcriptText}
 </transcripcion>
 
 Extrae la calificación, aciertos, errores, si hubo error fatal y si se logró la cita. Sé un juez imparcial y estricto.
-Adicionalmente, revisa si el asesor logró alguna de estas insignias en esta llamada y devuelve sus IDs:
+
+### REGLAS ESTRICTAS PARA CONCESIÓN DE INSIGNIAS (DIFICULTAD MÁXIMA - RETO DE 30 DÍAS):
+- Las insignias son trofeos de élite y no se regalan. Para mantener una progresión que le tome a los asesores cerca de 1 mes:
+1. CONDICIÓN PREVIA OBLIGATORIA: Si appointmentClosed es false, o si score es menor a 85, o si la llamada no concluyó el proceso completo, TIENES ESTRICTAMENTE PROHIBIDO OTORGAR INSIGNIAS. Devuelve insigniasGanadas: [].
+2. LÍMITE DE 1 INSIGNIA: Incluso en una sesión sobresaliente (score >= 85 y cita cerrada), el asesor puede recibir COMO MÁXIMO UNA (1) SOLA INSIGNIA en toda la llamada. Selecciona únicamente la insignia que mejor demuestre su técnica más destacada.
+3. NUNCA devuelvas más de una insignia por intento.
+
+Catálogo disponible:
 ${badgesText}`;
 
     const { object } = await generateObject({
@@ -161,12 +168,6 @@ ${badgesText}`;
 
     let { score, aciertos, errores, cometioErrorFatal, appointmentClosed, coachTip, insigniasGanadas = [] } = object;
 
-    const stats = await prisma.roleplayStats.findUnique({ where: { userId } });
-    // Deduplicar insignias
-    const currentBadges = stats?.badges || [];
-    const uniqueNewBadges = insigniasGanadas.filter(b => !currentBadges.includes(b));
-    const mergedBadges = [...currentBadges, ...uniqueNewBadges];
-
     if (cometioErrorFatal) {
       score = Math.max(0, score - 50);
     }
@@ -175,10 +176,31 @@ ${badgesText}`;
       score = 75;
     }
 
-    let xpEarned = Math.floor(score * 1.5);
-    if (appointmentClosed) xpEarned += 50;
+    // Validación estricta en servidor de insignias ganadas:
+    // Requiere cita lograda, score >= 85 y máximo 1 insignia por llamada para progresión paulatina de 1 mes
+    if (!appointmentClosed || score < 85) {
+      insigniasGanadas = [];
+    } else {
+      insigniasGanadas = insigniasGanadas.slice(0, 1);
+    }
+
+    const stats = await prisma.roleplayStats.findUnique({ where: { userId } });
+    // Deduplicar insignias
+    const currentBadges = stats?.badges || [];
+    const uniqueNewBadges = insigniasGanadas.filter(b => !currentBadges.includes(b));
+    const mergedBadges = [...currentBadges, ...uniqueNewBadges];
+
+    // Ponderación de XP por módulo: ADN y Cierre reciben +25% por mayor duración y profundidad (15-20 min vs 3 min)
+    const isHighDurationModule = moduleId === 'adn' || moduleId === 'objeciones';
+    const xpMultiplier = isHighDurationModule ? 1.25 : 1.0;
+
+    let xpEarned = Math.floor(score * 1.5 * xpMultiplier);
+    if (appointmentClosed) {
+      xpEarned += Math.floor(50 * xpMultiplier); // +62 XP por concretar ADN o Cierre exitoso
+    }
     
-    if (durationSeconds < 25 && appointmentClosed) {
+    const minRealisticSeconds = moduleId === 'adn' ? 90 : moduleId === 'objeciones' ? 60 : 25;
+    if (durationSeconds < minRealisticSeconds && appointmentClosed) {
       xpEarned = 0;
     }
 

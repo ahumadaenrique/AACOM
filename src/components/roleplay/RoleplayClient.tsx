@@ -375,8 +375,8 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           timerRef.current = setInterval(() => {
             const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
             setCallDuration(elapsed);
-            // Limit: 15 min (900s) para ADN, 10 min (600s) para Cierre, 3 min (180s) para Prospección
-            const maxDuration = isADN ? 900 : isObjeciones ? 600 : 180;
+            // Limit: 30 min (1800s) para ADN, 20 min (1200s) para Cierre, 5 min (300s) para Prospección
+            const maxDuration = isADN ? 1800 : isObjeciones ? 1200 : 300;
             if (elapsed >= maxDuration) {
               hangupCall();
             }
