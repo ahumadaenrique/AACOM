@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { auth } from "@/auth"
 import ClientHome from "./ClientHome"
 import { headers } from "next/headers"
+import { Sparkles } from "lucide-react"
 
 export default async function HomePage() {
     const session = await auth();
@@ -127,12 +128,21 @@ export default async function HomePage() {
 
     return (
         <div className="flex flex-col gap-8 w-full max-w-6xl mx-auto py-4 animate-in fade-in duration-300">
-            <div className="flex flex-col gap-2">
-                <div className="flex items-center gap-2">
-                    <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-100">Inicio</h1>
-                    <span className="h-2.5 w-2.5 rounded-full bg-teal-500 animate-pulse" />
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-100 dark:border-slate-800/60">
+                <div className="flex flex-col gap-1">
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-100">Inicio</h1>
+                        <span className="h-2.5 w-2.5 rounded-full bg-teal-500 animate-pulse" />
+                    </div>
+                    <p className="text-sm text-muted-foreground font-medium">Bienvenido a SYSGPYA (Sistema de gestión de promotorías y agencias).</p>
                 </div>
-                <p className="text-sm text-muted-foreground font-medium">Bienvenido a SYSGPYA (Sistema de gestión de promotorías y agencias).</p>
+                
+                <div className="self-start sm:self-center">
+                    <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-800/40 text-[11px] font-medium text-indigo-700 dark:text-indigo-300 shadow-2xs">
+                        <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
+                        <span>Motor de IA: <strong className="font-bold text-indigo-900 dark:text-indigo-200">Google Gemini 3.7</strong></span>
+                    </div>
+                </div>
             </div>
 
             <ClientHome 
