@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { encrypt, decrypt } from '@/lib/encryption';
+import { validateElevenLabsKey, getOrProvisionAgencyAgent } from '@/lib/roleplay/elevenlabsProvisioning';
 
 export async function GET(req: Request, { params }: { params: { id: string } }) {
   try {
@@ -77,13 +78,30 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       if (elevenLabsApiKey === '') {
         // Clear the key
         updateData.elevenLabsApiKey = null;
+        updateData.elevenLabsVoiceId = null;
       } else if (!elevenLabsApiKey.startsWith('sk-...')) {
-        // Encrypt the new raw key
-        updateData.elevenLabsApiKey = encrypt(elevenLabsApiKey.trim());
+        const rawKey = elevenLabsApiKey.trim();
+
+        // 1. Validar la llave contra la API de ElevenLabs
+        const validation = await validateElevenLabsKey(rawKey);
+        if (!validation.valid) {
+          return NextResponse.json({ 
+            error: validation.error || 'La API Key de ElevenLabs no es válida. Verifica que esté copiada completa.' 
+          }, { status: 400 });
+        }
+
+        // 2. Auto-aprovisionar de forma 100% plug & play el agente Conversational AI en su cuenta
+        const provisionedAgentId = await getOrProvisionAgencyAgent(id, rawKey);
+        if (provisionedAgentId) {
+          updateData.elevenLabsVoiceId = provisionedAgentId;
+        }
+
+        // 3. Encriptar la nueva llave para almacenamiento seguro
+        updateData.elevenLabsApiKey = encrypt(rawKey);
       }
     }
 
-    if (elevenLabsVoiceId !== undefined) {
+    if (elevenLabsVoiceId !== undefined && !updateData.elevenLabsVoiceId) {
       updateData.elevenLabsVoiceId = elevenLabsVoiceId.trim() || null;
     }
 

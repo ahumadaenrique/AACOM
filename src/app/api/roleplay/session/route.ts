@@ -106,7 +106,7 @@ export async function POST(req: Request) {
     const scenario = generarEscenarioAleatorio(stats.level, moduleId);
 
     // Get signed WebSocket URL from ElevenLabs using the Agency's BYOK
-    const agentId = process.env.ELEVENLABS_AGENT_ID;
+    let agentId = process.env.ELEVENLABS_AGENT_ID;
     let apiKey = process.env.ELEVENLABS_API_KEY; // Fallback for SUPER_ADMIN or global testing
     
     // Check for Agency BYOK
@@ -114,6 +114,20 @@ export async function POST(req: Request) {
       try {
         const { decrypt } = await import('@/lib/encryption');
         apiKey = decrypt(userWithAgency.agency.elevenLabsApiKey);
+
+        if (apiKey) {
+          // Si la agencia ya tiene un agente aprovisionado en su cuenta de ElevenLabs, usarlo
+          if (userWithAgency.agency.elevenLabsVoiceId) {
+            agentId = userWithAgency.agency.elevenLabsVoiceId;
+          } else {
+            // Auto-aprovisionamiento transparente en tiempo real
+            const { getOrProvisionAgencyAgent } = await import('@/lib/roleplay/elevenlabsProvisioning');
+            const provisioned = await getOrProvisionAgencyAgent(userWithAgency.agency.id, apiKey);
+            if (provisioned) {
+              agentId = provisioned;
+            }
+          }
+        }
       } catch (e) {
         console.error("Error decrypting agency BYOK:", e);
       }
@@ -121,6 +135,10 @@ export async function POST(req: Request) {
 
     if (!apiKey) {
       return NextResponse.json({ error: 'Configuración de IA incompleta. Pide a tu promotor que configure su API Key en el panel de Agencias.' }, { status: 403 });
+    }
+
+    if (!agentId) {
+      return NextResponse.json({ error: 'No se pudo aprovisionar el agente conversacional en tu cuenta de ElevenLabs. Verifica los permisos de tu API Key.' }, { status: 500 });
     }
 
     let signedUrl = null;
