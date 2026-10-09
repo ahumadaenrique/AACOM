@@ -233,8 +233,9 @@ async function refreshUserData() {
                 console.log("Loaded promoterData from Neon DB:", promoterData);
                 
                 // Render replenish date if element exists
-                if (promoterData.nextReplenishDate) {
-                    const nextDateStr = new Date(promoterData.nextReplenishDate).toLocaleDateString('es-MX', {
+                const replenishDateVal = promoterData.nextReplenishDate || promoterData.promoter?.nextReplenish;
+                if (replenishDateVal) {
+                    const nextDateStr = new Date(replenishDateVal).toLocaleDateString('es-MX', {
                         day: 'numeric',
                         month: 'long',
                         year: 'numeric'
@@ -717,7 +718,16 @@ async function syncStudyProgressImmediate() {
 // -------------------------------------------------------------
 function updatePromoterDashboard() {
     // Global metrics
-    document.getElementById("promoter-tokens").innerText = `${promoterData.tokens} Días`;
+    const tokens = typeof promoterData.tokens === 'number' ? promoterData.tokens : (promoterData.promoter?.tokens ?? 0);
+    const tokenEl = document.getElementById("promoter-tokens");
+    if (tokenEl) tokenEl.innerText = `${tokens} Días`;
+    
+    const quotaDescEl = document.getElementById("promoter-quota-desc");
+    if (quotaDescEl) {
+        const planLimit = promoterData.planLimit || promoterData.promoter?.planLimit || 52;
+        quotaDescEl.innerHTML = `Tienes <strong>${planLimit} días incluidos</strong> garantizados según tu suscripción. Adquiere paquetes adicionales de 7 días por <strong>$299 MXN</strong> para distribuirlos entre tus agentes en formación.`;
+    }
+    
     document.getElementById("stat-active-agents").innerText = promoterData.agents.filter(a => a.remainingDays > 0).length;
     
     let sumTime = 0;
@@ -773,10 +783,19 @@ function updatePromoterDashboard() {
 }
 
 async function assignDaysPrompt(agentId) {
-    const agent = promoterData.agents.find(a => a.id === agentId);
+    const agent = promoterData.agents.find(a => String(a.id) === String(agentId));
     if (!agent) return;
     
-    const days = prompt(`¿Cuántos días de simulador deseas asignarle a ${agent.name}? (Tienes ${promoterData.tokens} días disponibles)`);
+    const availableTokens = typeof promoterData.tokens === 'number' ? promoterData.tokens : (promoterData.promoter?.tokens ?? 0);
+    
+    if (availableTokens <= 0) {
+        alert("No tienes días disponibles para transferir en tu saldo. Adquiere un paquete primero.");
+        return;
+    }
+    
+    const days = prompt(`¿Cuántos días de simulador deseas asignarle a ${agent.name}? (Tienes ${availableTokens} días disponibles)`);
+    if (days === null) return;
+    
     const parsedDays = parseInt(days);
     
     if (isNaN(parsedDays) || parsedDays <= 0) {
@@ -784,8 +803,8 @@ async function assignDaysPrompt(agentId) {
         return;
     }
     
-    if (parsedDays > promoterData.tokens) {
-        alert("No tienes suficientes días de saldo. Compra un paquete primero.");
+    if (parsedDays > availableTokens) {
+        alert(`No tienes suficientes días de saldo. Disponibles: ${availableTokens}. Adquiere un paquete primero.`);
         return;
     }
     

@@ -359,7 +359,8 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({
       tokens,
-      totalGiftedThisQuarter: 7, // mock
+      planLimit,
+      totalGiftedThisQuarter: planLimit,
       nextReplenishDate: nextReplenishDate.toISOString(),
       agents: agentsList
     });

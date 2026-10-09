@@ -270,6 +270,10 @@ export async function GET(req: NextRequest) {
     }
 
     return NextResponse.json({
+      tokens,
+      planLimit,
+      totalGiftedThisQuarter: planLimit,
+      nextReplenishDate: nextReplenishDate.toISOString(),
       promoter: {
         name: dbUser?.name || promoterEmail.split('@')[0],
         email: promoterEmail,
