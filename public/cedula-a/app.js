@@ -423,14 +423,7 @@ window.addEventListener("DOMContentLoaded", async () => {
     
     setupAgentListSelector();
     initGlobalTimers();
-    populateVoiceSelector();
 });
-
-if ('speechSynthesis' in window) {
-    window.speechSynthesis.onvoiceschanged = () => {
-        populateVoiceSelector();
-    };
-}
 
 // Load questions from JSON or use fallback
 async function loadQuestions() {
