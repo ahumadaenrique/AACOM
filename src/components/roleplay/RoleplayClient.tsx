@@ -654,8 +654,8 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                 <div className="p-12 text-center text-slate-500 text-sm">
                   Cargando expediente del prospecto asignado...
                 </div>
-              ) : isADN ? (
-                /* VISTA EJECUTIVA ADN: SALA DE REUNIÓN / FRENTE A LA MESA */
+              ) : (isADN || isObjeciones) ? (
+                /* VISTA EJECUTIVA: SALA DE REUNIÓN / FRENTE A LA MESA (ADN & CIERRE) */
                 <div className="p-6 md:p-8 border-b border-slate-800/80 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/40 space-y-5">
                   <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
                     <div className="flex items-center gap-2">
@@ -664,13 +664,20 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                         <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
                       </span>
                       <span className="text-xs font-black tracking-wider uppercase text-slate-200 flex items-center gap-1.5">
-                        <Video className="w-4 h-4 text-emerald-400" /> Sala Ejecutiva • Diagnóstico ADN
+                        <Video className={`w-4 h-4 ${isADN ? 'text-emerald-400' : 'text-purple-400'}`} />
+                        {isADN ? 'Sala Ejecutiva • Diagnóstico ADN' : 'Sala Ejecutiva • Presentación de Proyecto y Cierre'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1">
-                        <Sparkles className="w-3 h-3" /> Regla 50-30-20 Elizabeth Warren
-                      </span>
+                      {isADN ? (
+                        <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" /> Regla 50-30-20 Elizabeth Warren
+                        </span>
+                      ) : (
+                        <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-500/10 text-purple-400 border border-purple-500/30 flex items-center gap-1">
+                          <Sparkles className="w-3 h-3" /> Técnicas de Cierre Consultivo
+                        </span>
+                      )}
                       <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
                         Nivel {scenario.difficultyLevel}
                       </span>
@@ -722,7 +729,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                       <div className="text-right hidden sm:block">
                         <span className="text-[10px] uppercase font-bold text-slate-400 block">Posición</span>
                         <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1 justify-end">
-                          <CheckCircle2 className="w-3.5 h-3.5" /> Al otro lado de la mesa
+                          <CheckCircle2 className="w-3.5 h-3.5" /> {isObjeciones ? 'Revisando propuesta en pantalla' : 'Al otro lado de la mesa'}
                         </span>
                       </div>
                     </div>
@@ -731,14 +738,18 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                   {/* Pre-Meeting Briefing Card */}
                   <div className="p-4 rounded-2xl bg-indigo-950/30 border border-indigo-500/20 text-xs space-y-2">
                     <div className="font-bold text-indigo-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
-                      <Info className="h-4 w-4 text-indigo-400" /> Expediente & Contexto de la Cita:
+                      <Info className="h-4 w-4 text-indigo-400" /> {isObjeciones ? 'Expediente & Propuesta en Pantalla:' : 'Expediente & Contexto de la Cita:'}
                     </div>
                     <p className="text-slate-300 leading-relaxed">
                       {scenario.origen.brief}
                     </p>
                     <div className="pt-2 border-t border-indigo-500/10 text-[11px] text-slate-400 leading-snug">
                       <strong className="text-amber-300">Protocolo de Oro: </strong>
-                      Preséntate como asesor patrimonial, explica la Regla 50-30-20, pide permiso para el cuestionario y adapta tus preguntas (detalle o resumen en bloques si hay resistencia). Al final agenda la siguiente cita para entregar el proyecto. <strong>No vendas pólizas hoy.</strong>
+                      {isADN ? (
+                        <>Preséntate como asesor patrimonial, explica la Regla 50-30-20, pide permiso para el cuestionario y adapta tus preguntas (detalle o resumen en bloques si hay resistencia). Al final agenda la siguiente cita para entregar el proyecto. <strong>No vendas pólizas hoy.</strong></>
+                      ) : (
+                        <>Valida con empatía la duda del cliente, aísla la cortina de humo para llegar a la objeción real, rebate con técnica consultiva (Boomerang, Siente-Sentían-Comprobaron o Costo Diario) y remata con Cierre Asumido con doble alternativa. <strong>Jamás digas "piénsalo y me avisas".</strong></>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -874,12 +885,12 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                       onClick={startCall}
                       disabled={isConnecting || loadingScenario}
                       className={`flex items-center justify-center gap-3 px-8 py-4 rounded-2xl text-white font-bold text-base shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
-                        isADN 
+                        (isADN || isObjeciones)
                           ? 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-950/50' 
                           : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-950/50'
                       }`}
                     >
-                      {isADN ? <Video className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
+                      {(isADN || isObjeciones) ? <Video className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
                       <span>
                         {isConnecting 
                           ? 'Conectando...' 
@@ -895,7 +906,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                       onClick={hangupCall}
                       className="flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-base shadow-xl shadow-rose-950/50 transition-all hover:scale-105 animate-pulse"
                     >
-                      {isADN ? <LogOut className="h-5 w-5" /> : <PhoneOff className="h-5 w-5" />}
+                      {(isADN || isObjeciones) ? <LogOut className="h-5 w-5" /> : <PhoneOff className="h-5 w-5" />}
                       <span>
                         {isADN 
                           ? 'Finalizar Reunión y Evaluar' 

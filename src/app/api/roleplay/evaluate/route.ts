@@ -108,13 +108,21 @@ export async function POST(req: Request) {
       ERRORES FATALES: Vender pólizas, dar costos o cotizar aseguradoras durante el diagnóstico, o discutir con el cliente si este prefiere resumir gastos en lugar de dar centavos.`;
     } else if (moduleId === 'objeciones') {
       evalInstructions = `
-      Módulo: Objeciones y Cierre.
+      Módulo: Cierre de Ventas y Manejo de Objeciones - Metodología Consultiva AACOM.
       El asesor DEBE:
-      1. Mostrar empatía y validar la objeción inicial del prospecto.
-      2. Aislar la objeción ("¿además de eso, hay algo más?").
-      3. Usar una técnica de rebote (revertir la objeción mostrando valor o casos de éxito).
-      4. Usar un cierre asumido (ej. "¿a qué tarjeta hacemos el cargo?" o "empecemos el trámite").
-      ERRORES FATALES: Discutir, pelear o decirle al prospecto que está equivocado.`;
+      1. VALIDACIÓN EMPÁTICA: Recibir la resistencia o cortina de humo inicial del prospecto ("déjame pensarlo", "está caro", "lo consulto con mi esposa") con serenidad y empatía profesional. Jamás confrontar ni molestarse.
+      2. AISLAMIENTO QUIRÚRGICO DE LA OBJECIÓN: Preguntar con precisión si además de ese tiempo para pensar o consultar existe alguna otra inquietud sobre el plan, sumas aseguradas o costos, para despejar la cortina de humo y llegar a la objeción de raíz.
+      3. TÉCNICA DE REBOTE Y VALOR: Desmantelar la duda de fondo utilizando técnicas reconocidas de la industria:
+         - Técnica del Boomerang (convertir la misma objeción en la razón primordial para contratar hoy).
+         - Siente - Sentían - Comprobaron (validar casos de éxito de clientes similares).
+         - Reducción al Absurdo / Costo Diario (dividir la prima en un costo diario accesible de $100-$200 pesos vs un café/comida).
+         - Costo de la Inacción (recordar que la edad y la salud no se congelan y el riesgo corre desde hoy).
+         - Blindaje vs Inversión (separar ahorro garantizado con indemnización por fallecimiento/invalidez de instrumentos especulativos como CETES o bienes raíces).
+      4. CIERRE ASUMIDO CON DOBLE ALTERNATIVA: Al percibir la apertura o resolución de dudas, no quedarse pasivo esperando que el cliente compre solo; debe empujar el cierre con doble alternativa de trámite o método de pago (ej: "¿Te queda mejor domiciliarlo a tarjeta de crédito para acumular puntos o con cuenta de débito?", "¿Iniciamos con tu RFC personal o facturamos a la empresa?").
+      ERRORES FATALES:
+      - Rendirse y decir frases pasivas como "Bueno, piénsalo y me avisas", "Mándame un WhatsApp cuando gustes" o dejar la decisión abierta sin rebatir.
+      - Discutir, pelear o decirle al prospecto que está equivocado.
+      - Bajar la prima o suma asegurada de inmediato sin haber defendido el valor del proyecto primero.`;
     } else {
       evalInstructions = `
       Módulo: Prospección Telefónica.

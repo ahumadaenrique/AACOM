@@ -578,6 +578,200 @@ export function generarPerfilADNProcedural(persona: any, edad: number, puesto: s
   };
 }
 
+export interface PerfilCierreProcedural {
+  propuesta: {
+    tipo: string;
+    nombrePlan: string;
+    aportacionMensual: number;
+    sumaAsegurada: number;
+    plazoAnios: number;
+    enfoquePrincipal: string;
+    deducible: boolean;
+  };
+  arquetipo: {
+    nombre: string;
+    descripcion: string;
+    cortinaHumo: string;
+    objecionReal: string;
+    comportamiento: string;
+    claveDesbloqueo: string;
+    senalesDeCompra: string[];
+  };
+  entorno: {
+    lugar: string;
+    desc: string;
+    saludos: string[];
+  };
+  saludoInicial: string;
+}
+
+export function generarPerfilCierreProcedural(persona: any, edad: number, puesto: string, profesion: any, level: number): PerfilCierreProcedural {
+  // Vector 1: Propuestas Personalizadas Proyectadas en Pantalla
+  const planes = [
+    {
+      tipo: 'PPR Retiro Deducible Art. 151',
+      nombrePlan: 'Plan Personal de Retiro Inteligente (PPR)',
+      baseAportacion: [3500, 11000],
+      baseSuma: [3000000, 7500000],
+      plazoAnios: Math.max(10, 65 - edad),
+      enfoquePrincipal: 'Garantizar una pensión vitalicia independiente de la Afore y deducir hasta el 10% de ingresos anuales ante el SAT.',
+      deducible: true
+    },
+    {
+      tipo: 'Proyecto Educativo Universitario Garantizado',
+      nombrePlan: 'Segubeca Universitaria en UDIS',
+      baseAportacion: [3000, 8000],
+      baseSuma: [2000000, 4500000],
+      plazoAnios: 12,
+      enfoquePrincipal: 'Garantizar el fondo de universidad privada para tus hijos libre de inflación, con blindaje total por fallecimiento o invalidez.',
+      deducible: false
+    },
+    {
+      tipo: 'Vida Dotal y Ahorro Patrimonial en UDIS',
+      nombrePlan: 'Vida Entera con Valores Garantizados',
+      baseAportacion: [4500, 14000],
+      baseSuma: [3500000, 9000000],
+      plazoAnios: 15,
+      enfoquePrincipal: 'Blindaje patrimonial completo para tu familia con fondo de rescate en efectivo indexado al valor real de la inflación.',
+      deducible: false
+    },
+    {
+      tipo: 'Blindaje de Hombre Clave e Inembargabilidad PyME',
+      nombrePlan: 'Hombre Clave / Respaldo Societario',
+      baseAportacion: [8000, 22000],
+      baseSuma: [5000000, 12000000],
+      plazoAnios: 10,
+      enfoquePrincipal: 'Gasto deducible al 100% para la empresa que garantiza liquidez y rescate de acciones si el socio o director clave falta.',
+      deducible: true
+    }
+  ];
+
+  const planBase = planes[Math.floor(Math.random() * planes.length)];
+  const [minAp, maxAp] = planBase.baseAportacion;
+  const aportacionMensual = Math.round((Math.random() * (maxAp - minAp) + minAp) / 500) * 500;
+  const [minSum, maxSum] = planBase.baseSuma;
+  const sumaAsegurada = Math.round((Math.random() * (maxSum - minSum) + minSum) / 500000) * 500000;
+
+  const propuesta = {
+    tipo: planBase.tipo,
+    nombrePlan: planBase.nombrePlan,
+    aportacionMensual,
+    sumaAsegurada,
+    plazoAnios: planBase.plazoAnios,
+    enfoquePrincipal: planBase.enfoquePrincipal,
+    deducible: planBase.deducible
+  };
+
+  // Vector 2: Arquetipos Psicológicos de Negociación y Cierre
+  const arquetipos = [
+    {
+      nombre: 'El Postergador Crónico ("Déjame Pensarlo")',
+      descripcion: 'Le parece excelente la idea pero sufre de parálisis por análisis y aversión al compromiso. Cree que puede aplazar la decisión indefinidamente.',
+      cortinaHumo: 'Suena muy bien todo lo que me presentas. Déjame darle una buena pensada este fin de semana con la almohada y yo te busco el martes para decirte qué decidí.',
+      objecionReal: 'Miedo al compromiso a largo plazo y falta de sentido de urgencia; asume que hoy está sano y que nada le va a pasar.',
+      comportamiento: 'Si el asesor dice "Bueno, piénsalo y me avisas", sonríe aliviado, dice "Perfecto, yo te busco" y da por terminada la reunión. Pierde la venta.',
+      claveDesbloqueo: 'El asesor debe: 1) Aislar ("Aparte de pensarlo, ¿hay algo del plan que no te convenza?"), 2) Usar la técnica del Costo de la Inacción ("Podemos esperar, pero la edad y la salud no se congelan; el riesgo corre desde hoy"), y 3) Cerrar de forma asumida con trámite preliminar.',
+      senalesDeCompra: [
+        'Pues sí, tienes razón, la verdad es que si no lo hago hoy lo voy a seguir postergando un año más.',
+        '¿Y para la solicitud qué papelería necesitarías llenar ahorita?'
+      ]
+    },
+    {
+      nombre: 'El Apretado de Presupuesto ("Está Muy Caro")',
+      descripcion: 'Siente que la mensualidad es un golpe fuerte a su cartera porque la percibe como un gasto nuevo en lugar de un ahorro.',
+      cortinaHumo: `Me encantó la propuesta y la suma de $${sumaAsegurada.toLocaleString('es-MX')}, pero la verdad $${aportacionMensual.toLocaleString('es-MX')} pesos al mes se me hace carísimo, ando muy apretado de flujo ahorita.`,
+      objecionReal: 'No ha cuantificado el impacto en gasto diario y teme asfixiarse en meses de bajas ventas.',
+      comportamiento: 'Si el asesor baja la suma asegurada de inmediato sin defender el valor, siente que le estaban cobrando de más. Exige que le demuestren el valor.',
+      claveDesbloqueo: `El asesor debe aplicar: 1) Reducción al Absurdo o Costo Diario ("Son $${Math.round(aportacionMensual / 30)} pesos diarios, menos que un café y propina"), o 2) Técnica del Boomerang ("Precisamente si hoy con salud $${aportacionMensual.toLocaleString('es-MX')} se siente pesado, imagina a tu familia viviendo con $0 si tú faltas mañana").`,
+      senalesDeCompra: [
+        `Visto así por día de $${Math.round(aportacionMensual / 30)} pesos la verdad sí hace mucho más sentido.`,
+        '¿El cobro se puede hacer fraccionado o con tarjeta de crédito para generar puntos?'
+      ]
+    },
+    {
+      nombre: 'El Inversionista Autosuficiente ("CETES / Bienes Raíces")',
+      descripcion: 'Se enorgullece de mover su propio dinero. Considera que los seguros dan bajo rendimiento frente a activos de renta fija o bienes raíces.',
+      cortinaHumo: 'Estuve haciendo números rápidos y los rendimientos de la aseguradora no le ganan a CETES, la bolsa o un terreno en preventa. Prefiero mover yo mi capital.',
+      objecionReal: 'Confunde un instrumento de inversión especulativa con una red de protección patrimonial y blindaje ante invalidez.',
+      comportamiento: 'No le discutas de tasas de interés. Si peleas de matemáticas te va a ganar.',
+      claveDesbloqueo: `El asesor debe separar los instrumentos: 1) Validar su talento de inversión ("CETES y bienes raíces son fabulosos para multiplicar dinero"), 2) Marcar el contraste ("Pero si mañana tienes un accidente o invalidez, CETES no te va a pagar $${(sumaAsegurada / 1000000).toFixed(1)} millones de indemnización al día siguiente"), 3) Posicionar el plan como el cinturón de seguridad que protege sus otras inversiones.`,
+      senalesDeCompra: [
+        'Tienes un punto válido: nunca había visto el seguro como un blindaje de mis otras inversiones.',
+        '¿Y este fondo tiene alguna penalización si quiero aportar más capital en el futuro?'
+      ]
+    },
+    {
+      nombre: 'El Cónyuge Dependiente ("Debo Consultarlo con mi Pareja")',
+      descripcion: 'Comparte la administración del hogar y teme tomar una decisión financiera relevante sin el aval explícito de su cónyuge.',
+      cortinaHumo: 'Todo se ve muy bien estructurado, pero yo todas las decisiones de este tipo las tomo junto con mi esposa/esposo. Mándamelo por correo y lo reviso con ella este fin de semana.',
+      objecionReal: 'Miedo al reclamo familiar por comprometer dinero, o falta de argumentos para explicarle el valor a su pareja.',
+      comportamiento: 'Si le dices "No le digas a tu esposa", se ofende. Si aceptas "mándamelo por correo", el cónyuge verá una hoja de costo y dirá que no.',
+      claveDesbloqueo: 'El asesor debe: 1) Elogiar el acuerdo de pareja, 2) Preguntar: "¿Si tu pareja supiera que este plan garantiza la tranquilidad de la familia pase lo que pase, crees que te diría que sí?", 3) Ofrecer avanzar con la emisión preliminar con garantía de cancelación sin costo o agendar una llamada breve juntos para resolver dudas.',
+      senalesDeCompra: [
+        'Sí, la verdad a ella lo que más le preocupa es la escuela de los niños si a mí me pasa algo.',
+        '¿Podemos meter la solicitud preliminar y si ella tiene alguna duda la revisamos en la entrega?'
+      ]
+    },
+    {
+      nombre: 'El Escéptico de Inflación ("En 20 años el Peso no Vale Nada")',
+      descripcion: 'Recuerda devaluaciones pasadas en México y desconfía de las monedas a largo plazo.',
+      cortinaHumo: 'El problema de estos planes a 15 o 20 años es la inflación en México. Esos millones que me prometes a los 65 años van a alcanzar para comprar una despensa y nada más.',
+      objecionReal: 'Desconoce la figura legal de las UDIS (Unidades de Inversión) indexadas por ley al INPC del Banco de México.',
+      comportamiento: 'Es escéptico pero racional. Valora las explicaciones técnicas y regulatorias sólidas.',
+      claveDesbloqueo: 'El asesor debe explicar el mecanismo de UDIS / indexación inflacionaria garantizada por Banxico: el valor de la suma asegurada y el ahorro se calculan en poder adquisitivo constante, por lo que el dinero nunca pierde valor en el tiempo.',
+      senalesDeCompra: [
+        'Ah, o sea que la UDI se recalcula con la inflación oficial del Banco de México...',
+        '¿Y la indemnización también se paga en valor UDI al momento del evento?'
+      ]
+    },
+    {
+      nombre: 'El Empresario Celoso de su Liquidez ("En mi Negocio Gano Más")',
+      descripcion: 'Dueño de negocio que reinvierte todo en inventario, nómina y operación. Odia "inmovilizar" dinero en instrumentos externos.',
+      cortinaHumo: `Yo a cada peso en mi empresa le saco el 25% o 30% anual entre mercancía y rotación. Meter $${aportacionMensual.toLocaleString('es-MX')} a una aseguradora se me hace tener dinero muerto.`,
+      objecionReal: 'Teme quedarse sin liquidez para emergencias del negocio y tiene todo su patrimonio personal mezclado con la empresa.',
+      comportamiento: 'Trato rudo y negociador. No tolera rodeos.',
+      claveDesbloqueo: 'El asesor debe explicar el Blindaje Patrimonial y la Inembargabilidad: 1) "Tu negocio es tu motor, pero si una demanda laboral o mercantil lo embarga, tu patrimonio personal también corre riesgo", 2) La ley del contrato de seguro hace estas pólizas inembargables y deducibles de impuestos (Art. 151 / 27 LISR), 3) Es sacar dinero del riesgo de la empresa hacia la seguridad de la familia.',
+      senalesDeCompra: [
+        'No sabía que las pólizas de retiro y vida tenían blindaje legal inembargable.',
+        '¿Y cómo se factura esto para que mi contador lo deduzca al 100% en la empresa?'
+      ]
+    }
+  ];
+
+  const arquetipo = arquetipos[Math.floor(Math.random() * arquetipos.length)];
+
+  // Vector 3: Entornos de Cierre
+  const entornosCierre = [
+    {
+      lugar: 'Sesión por Zoom / Google Meet (Pantalla compartida con la propuesta)',
+      desc: 'El asesor acaba de compartir la pantalla con el PDF de la cotización formal y la tabla de proyección de ahorro y suma asegurada.',
+      saludos: [
+        `Hola, pues ya estuve viendo con mucha atención las láminas y la gráfica de proyección que me pusiste en la pantalla... y la verdad es que está muy interesante, pero ${arquetipo.cortinaHumo}`,
+        `¿Qué tal? Sí, veo los números que proyectaste en el PDF y el desglose de beneficios. Se ve bien presentado, pero siendo muy honestos, ${arquetipo.cortinaHumo}`,
+        `Hola, te estaba escuchando atento durante toda la corrida financiera. Te agradezco la propuesta, pero la verdad de entrada, ${arquetipo.cortinaHumo}`
+      ]
+    },
+    {
+      lugar: 'Oficina ejecutiva del prospecto (Reunión presencial con carpeta de propuesta)',
+      desc: 'El prospecto tiene la carpeta impresa con la propuesta sobre su escritorio, hojeando la página de costos y coberturas.',
+      saludos: [
+        `Hola, pasa, siéntate. Ya revisé la carpeta con la cotización que me dejaste... y mira, el plan se ve sólido, pero ${arquetipo.cortinaHumo}`,
+        `¿Qué tal? Gracias por venir a la oficina. Estuve analizando la tabla de aportaciones y sumas que me imprimiste, pero ${arquetipo.cortinaHumo}`
+      ]
+    }
+  ];
+
+  const entorno = entornosCierre[Math.floor(Math.random() * entornosCierre.length)];
+  const saludoInicial = entorno.saludos[Math.floor(Math.random() * entorno.saludos.length)];
+
+  return {
+    propuesta,
+    arquetipo,
+    entorno,
+    saludoInicial
+  };
+}
+
 export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion'): Scenario {
   const currentLevel = Math.max(1, Math.min(6, Math.floor(level) || 1));
   const persona = PROSPECTOS_PERSONAS[Math.floor(Math.random() * PROSPECTOS_PERSONAS.length)];
@@ -684,6 +878,7 @@ export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion'): 
 
   let systemPrompt = "";
   let adnBrief = "";
+  let cierreBrief = "";
 
   if (moduleId === 'adn') {
     const adnProc = generarPerfilADNProcedural(persona, edad, puesto, profesion, currentLevel);
@@ -757,25 +952,49 @@ ${adnProc.etapa.hijos.length > 0 ? `- **Hijos:** ${adnProc.etapa.hijos.map(h => 
    - Si hace esto, aceptas con gusto, confirmas el horario y dices: "Perfecto, prepara los números y nos vemos ese día".`;
 
   } else if (moduleId === 'objeciones') {
+    const cierreProc = generarPerfilCierreProcedural(persona, edad, puesto, profesion, currentLevel);
+    firstMessage = cierreProc.saludoInicial;
+    cierreBrief = `Cita de Presentación y Cierre de Proyecto Patrimonial con ${persona.nombre} (${puesto}, ${edad} años). Propuesta en pantalla: ${cierreProc.propuesta.nombrePlan} ($${cierreProc.propuesta.aportacionMensual.toLocaleString('es-MX')} MXN/mes por $${cierreProc.propuesta.sumaAsegurada.toLocaleString('es-MX')} MXN de suma asegurada). El prospecto muestra reservas iniciales. Tu objetivo: Desmantelar la cortina de humo, manejar la objeción raíz con técnica consultiva y ejecutar el cierre asumido.`;
+
     systemPrompt = `Eres ${persona.nombre}, tienes ${edad} años y eres ${puesto} (${profesion.contexto}).
-ESTÁS EN LA VIDEOLLAMADA DE ZOOM FINAL (Cita de Cierre). El asesor financiero y tú ya tuvieron la cita de diagnóstico la semana pasada.
-ESTO NO ES UNA LLAMADA TELEFÓNICA EN FRÍO. Estás sentado en tu computadora revisando la cotización y el plan financiero que el asesor acaba de presentarte en pantalla.
+ESTÁS EN LA CITA DE PRESENTACIÓN Y CIERRE DE TU PROYECTO PATRIMONIAL (por Zoom o presencial).
+El asesor financiero ya te hizo un diagnóstico previo la semana pasada y ACABA DE TERMINAR DE PRESENTARTE EN PANTALLA TU PROPUESTA PERSONALIZADA:
+- **Plan presentado:** ${cierreProc.propuesta.nombrePlan} (${cierreProc.propuesta.tipo}).
+- **Aportación mensual requerida:** $${cierreProc.propuesta.aportacionMensual.toLocaleString('es-MX')} MXN/mes.
+- **Suma Asegurada / Cobertura Garantizada:** $${cierreProc.propuesta.sumaAsegurada.toLocaleString('es-MX')} MXN.
+- **Plazo del proyecto:** ${cierreProc.propuesta.plazoAnios} años.
+- **Beneficio clave:** ${cierreProc.propuesta.enfoquePrincipal}
 
-### TU IDENTIDAD Y PSICOLOGÍA:
-- Tono: Exigente, dubitativo, pones trabas para soltar el dinero. Eres ${personalidad.tipo}.
-- Tienes UNA gran objeción principal (elige una al azar y mantente firme en ella): 
-  Opciones: "Está muy caro / Se me sale de presupuesto", "Déjame pensarlo y yo te marco después", "Déjame consultarlo con mi esposo/a / contador", o "Tengo un amigo en el banco que me vende lo mismo más barato".
+ESTO NO ES UNA LLAMADA TELEFÓNICA EN FRÍO. TÚ CONOCES AL ASESOR Y CONOCES LA PROPUESTA.
 
-### CÓMO DEBES ACTUAR:
-1. Al iniciar la simulación, lanza tu objeción principal casi de inmediato respecto a la propuesta que estás viendo.
-2. Si el asesor se rinde rápido o te dice "Bueno, piénsalo y me avisas", termina la reunión decepcionado y dile "Yo te busco".
-3. Si el asesor te ataca, te dice que estás equivocado o discute contigo, enójate y rechaza el trato.
-4. SOLO CUMPLES Y ACEPTAS SACAR TU TARJETA DE CRÉDITO SI EL ASESOR HACE ESTOS 4 PASOS:
-   a) Muestra empatía real ("Te entiendo perfectamente", "Es normal sentir eso").
-   b) Aísla la objeción ("Aparte del precio, ¿hay algo más que te detenga de proteger a tu familia hoy?").
-   c) Usa una buena técnica de rebote (ej. "Otros clientes sentían lo mismo, pero encontraron que el valor a largo plazo lo justifica...").
-   d) Te empuja al cierre asumiendo la venta de forma segura (ej. "Entonces, ¿a qué tarjeta hacemos el cargo inicial?" o "Empecemos el trámite de una vez").
-5. Exiges que peleen por ti al menos 2 veces rebatiendo tus excusas antes de rendirte y aceptar firmar.`;
+### TU IDENTIDAD Y PSICOLOGÍA EN ESTA NEGOCIACIÓN:
+- Eres **${cierreProc.arquetipo.nombre}**: ${cierreProc.arquetipo.descripcion}
+- **Tu Cortina de Humo (Pretexto Inicial):** "${cierreProc.arquetipo.cortinaHumo}"
+- **Tu Objeción Real Oculta:** ${cierreProc.arquetipo.objecionReal}
+- **Comportamiento:** ${cierreProc.arquetipo.comportamiento}
+
+### REGLAS DE ORO DE REALISMO Y ANTI-COMPLACENCIA ESTRICTA (NO SE LA PONGAS FÁCIL):
+1. **DEFIENDE TU CORTINA DE HUMO AL INICIO:**
+   - Al inicio mantén tu pretexto: "${cierreProc.arquetipo.cortinaHumo}".
+   - Si el asesor te dice: "Bueno, piénsalo y me avisas", "Mándame un WhatsApp cuando gustes" o se rinde sin rebatir, ACEPTA DE INMEDIATO SU RENDICIÓN:
+     *"Perfecto, muchas gracias por tu tiempo, yo te aviso si me decido. Que tengas buen día."* Y DA POR TERMINADA LA REUNIÓN. El asesor fracasó en el cierre.
+
+2. **CÓMO DEBE AISLAR TU OBJECIÓN EL ASESOR:**
+   - Para que tú reveles tu objeción real, el asesor DEBE aislar quirúrgicamente tu duda (ej: *"Entiendo que quieras pensarlo / consultar... pero además de eso, ¿hay algo del plan o de los números que te cause ruido?"*).
+   - Si el asesor aísla correctamente, revela tu verdadera inquietud oculta: "${cierreProc.arquetipo.objecionReal}".
+
+3. **CÓMO DESBLOQUEAS TU COMPRA (CLAVE DE CIERRE):**
+   - Eres una persona de negocios responsable; NO sueltas tu dinero ni aceptas a la primera.
+   - Solo comienzas a mostrar señales de compra si el asesor aplica la técnica adecuada:
+     ${cierreProc.arquetipo.claveDesbloqueo}
+   - Cuando el asesor use esa técnica con profesionalismo y empatía, relaja tu postura y utiliza alguna de tus señales de compra:
+${cierreProc.arquetipo.senalesDeCompra.map(s => `     * "${s}"`).join('\n')}
+
+4. **EL CIERRE ASUMIDO (EL REMATE FINAL):**
+   - Aunque ya estés convencido, NO digas "ya quiero comprar". ESPERA a que el asesor ejecute el Cierre Asumido con Doble Alternativa (ej: *"¿A qué tarjeta hacemos el cargo inicial, Visa o MasterCard?"* o *"¿Iniciamos con tu cuenta personal o de nómina?"*).
+   - Si el asesor asume el cierre con aplomo, responde:
+     *"Bueno, me parece bien. Vamos a meter la solicitud preliminar. Domicílialo a mi tarjeta de crédito Visa."*
+   - Si el asesor se queda esperando en silencio o te pregunta "¿Qué hacemos?", dile: "Pues no sé tú dime, ¿qué sigue?". No hagas su trabajo.`;
 
   } else {
     // Prospección Telefónica (Default)
@@ -860,10 +1079,10 @@ Tu primera objeción o respuesta natural cuando intentan hablarte es: "${persona
     },
     origen: {
       tipo: origenBase.tipo,
-      titulo: moduleId === 'adn' ? 'Cita Agendada de Diagnóstico' : origenBase.titulo,
-      icono: moduleId === 'adn' ? '📊' : origenBase.icono,
-      brief: (moduleId === 'adn' && adnBrief) ? adnBrief : ctx.brief,
-      tipPostLlamada: ctx.tipPostLlamada
+      titulo: moduleId === 'adn' ? 'Cita Agendada de Diagnóstico' : (moduleId === 'objeciones' ? 'Cita de Presentación y Cierre' : origenBase.titulo),
+      icono: moduleId === 'adn' ? '📊' : (moduleId === 'objeciones' ? '🎯' : origenBase.icono),
+      brief: (moduleId === 'adn' && adnBrief) ? adnBrief : (moduleId === 'objeciones' && cierreBrief) ? cierreBrief : ctx.brief,
+      tipPostLlamada: (moduleId === 'objeciones') ? 'Aísla la cortina de humo, rebate la objeción raíz con Boomerang o Costo Diario, y remata con Cierre Asumido con doble alternativa.' : ctx.tipPostLlamada
     },
     referidor: origenBase.tipo === 'referido_avisado' ? referidor : null,
     firstMessage,

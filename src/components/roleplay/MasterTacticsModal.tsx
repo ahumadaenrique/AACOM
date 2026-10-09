@@ -30,7 +30,11 @@ export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }
                 {isADN ? 'Manual Táctico de Diagnóstico ADN' : isObjeciones ? 'Manual de Cierre y Manejo de Objeciones' : 'Manual Táctico de Prospección AACOM'}
               </h2>
               <p className="text-xs text-slate-400">
-                {isADN ? 'Metodología basada en la Regla 50-30-20 de Elizabeth Warren y los 5 Pilares Patrimoniales' : 'Guía metodológica para agendar citas de 30-40 minutos sin vender por teléfono'}
+                {isADN
+                  ? 'Metodología basada en la Regla 50-30-20 de Elizabeth Warren y los 5 Pilares Patrimoniales'
+                  : isObjeciones
+                  ? 'Desmantelamiento de cortinas de humo, técnicas de rebote y cierre asumido'
+                  : 'Guía metodológica para agendar citas de 30-40 minutos sin vender por teléfono'}
               </p>
             </div>
           </div>
@@ -118,6 +122,91 @@ export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }
                   <div className="text-xs font-bold text-amber-400">Objeción: "¿Y de qué póliza o seguro me estás hablando? ¿Cuánto cuesta?"</div>
                   <div className="text-xs text-slate-300 italic">
                     "Justamente como no hemos terminado de diagnosticar sus metas ni su capacidad de ahorro del 20%, sería poco profesional darle un número al azar. Déjeme concluir el análisis y en la siguiente sesión le presento un traje a su medida."
+                  </div>
+                </div>
+              </div>
+            </>
+          ) : isObjeciones ? (
+            <>
+              {/* Regla de Oro Cierre y Objeciones */}
+              <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2">
+                <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
+                  <AlertTriangle className="h-4 w-4" /> REGLA DE ORO DEL CIERRE CONSULTIVO
+                </div>
+                <p className="text-xs text-amber-200/90 leading-relaxed">
+                  <strong>El 90% de las primeras dudas del cliente son cortinas de humo ("déjame pensarlo", "está caro", "tengo que hablar con mi esposa").</strong> Si el asesor debate el pretexto o dice <em>"bueno, piénsalo y me avisas"</em>, la venta muere de inmediato. Tu trabajo es: <strong>1) Validar con empatía</strong>, <strong>2) Aislar la duda raíz</strong>, <strong>3) Rebatir con técnica de valor</strong> (Boomerang, Siente-Sentían-Comprobaron o Costo Diario), y <strong>4) Rematar con un Cierre Asumido</strong> con doble alternativa.
+                </p>
+              </div>
+
+              {/* Los 4 Pilares del Cierre */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                
+                <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/50 space-y-2">
+                  <div className="flex items-center gap-2 text-indigo-400 font-semibold text-xs">
+                    <CheckCircle2 className="h-4 w-4" /> 1. Validación Empática
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Nunca confrontes ni contradigas al cliente. Valida su postura: <em>"Te entiendo perfectamente, es una decisión muy importante para tu patrimonio familiar."</em>
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/50 space-y-2">
+                  <div className="flex items-center gap-2 text-cyan-400 font-semibold text-xs">
+                    <ShieldCheck className="h-4 w-4" /> 2. Aislamiento Quirúrgico
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Despeja la cortina de humo: <em>"Además de analizar los números / consultar con tu pareja, ¿hay algo del plan o de las coberturas que no te termine de convencer?"</em>
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/50 space-y-2">
+                  <div className="flex items-center gap-2 text-purple-400 font-semibold text-xs">
+                    <Zap className="h-4 w-4" /> 3. Técnicas de Rebote y Valor
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Aplica la <strong>Reducción al Costo Diario</strong> ($150-$200 al día), el <strong>Boomerang</strong> (tu misma objeción es la razón para comprar), o el <strong>Costo de la Inacción</strong> (la edad y salud no se congelan).
+                  </p>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/50 space-y-2">
+                  <div className="flex items-center gap-2 text-emerald-400 font-semibold text-xs">
+                    <CheckCircle2 className="h-4 w-4" /> 4. Cierre Asumido (Doble Alternativa)
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    No preguntes "¿Qué hacemos?". Asume el cierre con naturalidad ejecutiva: <em>"¿Para la emisión te queda más cómodo domiciliar a tarjeta Visa o MasterCard?"</em>
+                  </p>
+                </div>
+              </div>
+
+              {/* Respuestas Maestras a Objeciones en Cierre */}
+              <div className="space-y-3 pt-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Objeciones Críticas en el Cierre</h3>
+                
+                <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800 space-y-1">
+                  <div className="text-xs font-bold text-amber-400">Objeción: "Déjame pensarlo este fin de semana y yo te marco después"</div>
+                  <div className="text-xs text-slate-300 italic">
+                    "Entiendo perfectamente que quieras analizarlo. Solo para tener claridad: además del tiempo para pensarlo, ¿hay algo del plan que no te termine de convencer, o es solo tema de flujo? Recuerda que la edad y la salud no se congelan; el riesgo está corriendo desde hoy. ¿Qué te parece si metemos la solicitud preliminar y apartamos tu tarifa hoy mismo?"
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800 space-y-1">
+                  <div className="text-xs font-bold text-amber-400">Objeción: "Está muy caro / Se me sale de presupuesto ahorita"</div>
+                  <div className="text-xs text-slate-300 italic">
+                    "Te entiendo, al verlo en un bloque mensual parece fuerte. Pero si lo dividimos entre 30 días, son $150 pesos diarios, menos que una comida fuera. La pregunta que debemos hacernos es: ¿vale la pena cambiar un café al día por garantizar 5 millones para tu familia y tu retiro garantizado?"
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800 space-y-1">
+                  <div className="text-xs font-bold text-amber-400">Objeción: "Tengo que consultarlo con mi esposo/a / contador"</div>
+                  <div className="text-xs text-slate-300 italic">
+                    "Elogio muchísimo que tomen las decisiones juntos. Si tu pareja estuviera sentada aquí y supiera que este plan garantiza la universidad de los niños y la casa pase lo que pase, ¿crees que te diría que sí? ¿Qué te parece si llenamos los datos preliminares y si ella tiene alguna duda técnica la resolvemos juntos en una llamada breve de 10 minutos?"
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800 space-y-1">
+                  <div className="text-xs font-bold text-amber-400">Objeción: "Prefiero meter ese dinero a CETES o comprar un terreno"</div>
+                  <div className="text-xs text-slate-300 italic">
+                    "CETES y bienes raíces son fabulosos para multiplicar capital. Pero si mañana tienes un accidente o una enfermedad grave, CETES no le pagará 5 millones de indemnización a tu familia al día siguiente. Este plan no compite con tus inversiones, es el cinturón de seguridad que las blinda ante imprevistos."
                   </div>
                 </div>
               </div>
