@@ -596,6 +596,8 @@ export interface PerfilCierreProcedural {
     comportamiento: string;
     claveDesbloqueo: string;
     senalesDeCompra: string[];
+    barrerasRequeridas: number;
+    dificultad: string;
   };
   entorno: {
     lugar: string;
@@ -662,83 +664,253 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
     deducible: planBase.deducible
   };
 
-  // Vector 2: Arquetipos Psicológicos de Negociación y Cierre
-  const arquetipos = [
+  // Vector 2: Arquetipos Psicológicos de Negociación y Cierre (12 Arquetipos con Multi-Barreras)
+  const arquetiposCatalogo = [
+    // DIFICULTAD BAJA (Niveles 1-2)
     {
       nombre: 'El Postergador Crónico ("Déjame Pensarlo")',
+      dificultad: 'baja',
       descripcion: 'Le parece excelente la idea pero sufre de parálisis por análisis y aversión al compromiso. Cree que puede aplazar la decisión indefinidamente.',
-      cortinaHumo: 'Suena muy bien todo lo que me presentas. Déjame darle una buena pensada este fin de semana con la almohada y yo te busco el martes para decirte qué decidí.',
+      cortinasHumo: [
+        'Suena muy bien todo lo que me presentas. Déjame darle una buena pensada este fin de semana con la almohada y yo te busco el martes para decirte qué decidí.',
+        'Me gusta mucho el plan, pero prefiero no tomar decisiones en caliente. Mándamelo por correo y lo reviso con calma el próximo mes.',
+        'Está excelente, pero ahorita ando cerrando cosas de trabajo. Búscame a principios del próximo trimestre cuando esté más desahogado.'
+      ],
       objecionReal: 'Miedo al compromiso a largo plazo y falta de sentido de urgencia; asume que hoy está sano y que nada le va a pasar.',
       comportamiento: 'Si el asesor dice "Bueno, piénsalo y me avisas", sonríe aliviado, dice "Perfecto, yo te busco" y da por terminada la reunión. Pierde la venta.',
       claveDesbloqueo: 'El asesor debe: 1) Aislar ("Aparte de pensarlo, ¿hay algo del plan que no te convenza?"), 2) Usar la técnica del Costo de la Inacción ("Podemos esperar, pero la edad y la salud no se congelan; el riesgo corre desde hoy"), y 3) Cerrar de forma asumida con trámite preliminar.',
       senalesDeCompra: [
         'Pues sí, tienes razón, la verdad es que si no lo hago hoy lo voy a seguir postergando un año más.',
-        '¿Y para la solicitud qué papelería necesitarías llenar ahorita?'
+        '¿Y para la solicitud preliminar qué papelería necesitarías llenar ahorita?',
+        '¿El cargo a la tarjeta se hace hoy o hasta que emitan la póliza formal?'
       ]
     },
     {
       nombre: 'El Apretado de Presupuesto ("Está Muy Caro")',
+      dificultad: 'baja',
       descripcion: 'Siente que la mensualidad es un golpe fuerte a su cartera porque la percibe como un gasto nuevo en lugar de un ahorro.',
-      cortinaHumo: `Me encantó la propuesta y la suma de $${sumaAsegurada.toLocaleString('es-MX')}, pero la verdad $${aportacionMensual.toLocaleString('es-MX')} pesos al mes se me hace carísimo, ando muy apretado de flujo ahorita.`,
+      cortinasHumo: [
+        `Me encantó la propuesta y la suma de $${sumaAsegurada.toLocaleString('es-MX')}, pero la verdad $${aportacionMensual.toLocaleString('es-MX')} pesos al mes se me hace carísimo, ando muy apretado de flujo ahorita.`,
+        `Ahorita tengo muchos compromisos de gastos en la casa y escuelas. No tengo margen para una mensualidad de $${aportacionMensual.toLocaleString('es-MX')} pesos.`,
+        `La prima está bastante más alta de lo que tenía contemplado destinar a un plan de protección.`
+      ],
       objecionReal: 'No ha cuantificado el impacto en gasto diario y teme asfixiarse en meses de bajas ventas.',
       comportamiento: 'Si el asesor baja la suma asegurada de inmediato sin defender el valor, siente que le estaban cobrando de más. Exige que le demuestren el valor.',
       claveDesbloqueo: `El asesor debe aplicar: 1) Reducción al Absurdo o Costo Diario ("Son $${Math.round(aportacionMensual / 30)} pesos diarios, menos que un café y propina"), o 2) Técnica del Boomerang ("Precisamente si hoy con salud $${aportacionMensual.toLocaleString('es-MX')} se siente pesado, imagina a tu familia viviendo con $0 si tú faltas mañana").`,
       senalesDeCompra: [
         `Visto así por día de $${Math.round(aportacionMensual / 30)} pesos la verdad sí hace mucho más sentido.`,
-        '¿El cobro se puede hacer fraccionado o con tarjeta de crédito para generar puntos?'
-      ]
-    },
-    {
-      nombre: 'El Inversionista Autosuficiente ("CETES / Bienes Raíces")',
-      descripcion: 'Se enorgullece de mover su propio dinero. Considera que los seguros dan bajo rendimiento frente a activos de renta fija o bienes raíces.',
-      cortinaHumo: 'Estuve haciendo números rápidos y los rendimientos de la aseguradora no le ganan a CETES, la bolsa o un terreno en preventa. Prefiero mover yo mi capital.',
-      objecionReal: 'Confunde un instrumento de inversión especulativa con una red de protección patrimonial y blindaje ante invalidez.',
-      comportamiento: 'No le discutas de tasas de interés. Si peleas de matemáticas te va a ganar.',
-      claveDesbloqueo: `El asesor debe separar los instrumentos: 1) Validar su talento de inversión ("CETES y bienes raíces son fabulosos para multiplicar dinero"), 2) Marcar el contraste ("Pero si mañana tienes un accidente o invalidez, CETES no te va a pagar $${(sumaAsegurada / 1000000).toFixed(1)} millones de indemnización al día siguiente"), 3) Posicionar el plan como el cinturón de seguridad que protege sus otras inversiones.`,
-      senalesDeCompra: [
-        'Tienes un punto válido: nunca había visto el seguro como un blindaje de mis otras inversiones.',
-        '¿Y este fondo tiene alguna penalización si quiero aportar más capital en el futuro?'
+        '¿El cobro se puede hacer fraccionado o con tarjeta de crédito para generar puntos?',
+        '¿En meses difíciles tengo algún periodo de gracia para no perder la póliza?'
       ]
     },
     {
       nombre: 'El Cónyuge Dependiente ("Debo Consultarlo con mi Pareja")',
+      dificultad: 'baja',
       descripcion: 'Comparte la administración del hogar y teme tomar una decisión financiera relevante sin el aval explícito de su cónyuge.',
-      cortinaHumo: 'Todo se ve muy bien estructurado, pero yo todas las decisiones de este tipo las tomo junto con mi esposa/esposo. Mándamelo por correo y lo reviso con ella este fin de semana.',
+      cortinasHumo: [
+        'Todo se ve muy bien estructurado, pero yo todas las decisiones de este tipo las tomo junto con mi esposa/esposo. Mándamelo por correo y lo reviso con ella este fin de semana.',
+        'Necesito que mi pareja vea la tabla y me dé el visto bueno antes de autorizar cualquier cargo.',
+        'Déjame platicarlo con mi señora hoy en la cena; si a ella le hace sentido te aviso el lunes.'
+      ],
       objecionReal: 'Miedo al reclamo familiar por comprometer dinero, o falta de argumentos para explicarle el valor a su pareja.',
       comportamiento: 'Si le dices "No le digas a tu esposa", se ofende. Si aceptas "mándamelo por correo", el cónyuge verá una hoja de costo y dirá que no.',
       claveDesbloqueo: 'El asesor debe: 1) Elogiar el acuerdo de pareja, 2) Preguntar: "¿Si tu pareja supiera que este plan garantiza la tranquilidad de la familia pase lo que pase, crees que te diría que sí?", 3) Ofrecer avanzar con la emisión preliminar con garantía de cancelación sin costo o agendar una llamada breve juntos para resolver dudas.',
       senalesDeCompra: [
         'Sí, la verdad a ella lo que más le preocupa es la escuela de los niños si a mí me pasa algo.',
-        '¿Podemos meter la solicitud preliminar y si ella tiene alguna duda la revisamos en la entrega?'
+        '¿Podemos meter la solicitud preliminar y si ella tiene alguna duda la revisamos en la entrega?',
+        '¿La puedo poner a ella como beneficiaria irrevocable del 100%?'
       ]
     },
     {
-      nombre: 'El Escéptico de Inflación ("En 20 años el Peso no Vale Nada")',
-      descripcion: 'Recuerda devaluaciones pasadas en México y desconfía de las monedas a largo plazo.',
-      cortinaHumo: 'El problema de estos planes a 15 o 20 años es la inflación en México. Esos millones que me prometes a los 65 años van a alcanzar para comprar una despensa y nada más.',
-      objecionReal: 'Desconoce la figura legal de las UDIS (Unidades de Inversión) indexadas por ley al INPC del Banco de México.',
-      comportamiento: 'Es escéptico pero racional. Valora las explicaciones técnicas y regulatorias sólidas.',
-      claveDesbloqueo: 'El asesor debe explicar el mecanismo de UDIS / indexación inflacionaria garantizada por Banxico: el valor de la suma asegurada y el ahorro se calculan en poder adquisitivo constante, por lo que el dinero nunca pierde valor en el tiempo.',
+      nombre: 'El Escéptico de Domiciliación ("No me Gusta Domiciliar")',
+      dificultad: 'baja',
+      descripcion: 'Ha tenido malas experiencias bancarias con cobros indebidos y se resiste a programar cargos automáticos recurrentes.',
+      cortinasHumo: [
+        'No me gusta dar datos de tarjeta ni que me domicilien cargos automáticos, luego es un dolor de cabeza cancelarlos con los bancos.',
+        'Prefiero que me mandes una ficha de pago referenciada para pagar en ventanilla cada mes cuando yo me acuerde.',
+        'A mí no me gusta amarrarme con tarjetas de crédito para servicios a largo plazo.'
+      ],
+      objecionReal: 'Miedo a perder el control de su dinero o a trámites engorrosos de cancelación.',
+      comportamiento: 'Si el asesor insiste en pedir la tarjeta sin explicar las garantías de seguridad, se cierra.',
+      claveDesbloqueo: 'El asesor debe explicar: 1) El riesgo del periodo de gracia (pagar en ventanilla pone en riesgo la cobertura si se olvida la fecha), 2) La protección legal de la domiciliación y que la póliza se cancela formalmente con un simple correo, 3) Los beneficios de puntos y meses sin intereses en la tarjeta.',
       senalesDeCompra: [
-        'Ah, o sea que la UDI se recalcula con la inflación oficial del Banco de México...',
-        '¿Y la indemnización también se paga en valor UDI al momento del evento?'
+        'Ah, o sea que si cambio de tarjeta en cualquier momento puedo actualizarla en el portal...',
+        '¿El estado de cuenta me llega cada mes a mi correo para conciliar el cargo?',
+        'Bueno, si genera puntos de recompensas en mi tarjeta Visa, me parece bien.'
+      ]
+    },
+
+    // DIFICULTAD MEDIA (Niveles 3-4)
+    {
+      nombre: 'El Inversionista Autosuficiente ("CETES / Bienes Raíces")',
+      dificultad: 'media',
+      descripcion: 'Se enorgullece de mover su propio dinero. Considera que los seguros dan bajo rendimiento frente a activos de renta fija o bienes raíces.',
+      cortinasHumo: [
+        'Estuve haciendo números rápidos y los rendimientos de la aseguradora no le ganan a CETES, la bolsa o un terreno en preventa. Prefiero mover yo mi capital.',
+        'Yo no creo en seguros con ahorro, los rendimientos son muy bajos comparados con lo que gano en mis inversiones privadas.',
+        'Prefiero comprar ladrillos; las rentas de bienes raíces son mi verdadero plan de retiro, dan mucho más flujo.'
+      ],
+      objecionReal: 'Confunde un instrumento de inversión especulativa con una red de protección patrimonial y blindaje ante invalidez.',
+      comportamiento: 'No le discutas de tasas de interés. Si peleas de matemáticas te va a ganar. Muestra carácter y separa los objetivos.',
+      claveDesbloqueo: `El asesor debe separar los instrumentos: 1) Validar su talento de inversión ("CETES y bienes raíces son fabulosos para multiplicar dinero"), 2) Marcar el contraste ("Pero si mañana tienes un accidente o invalidez, CETES no te va a pagar $${(sumaAsegurada / 1000000).toFixed(1)} millones de indemnización al día siguiente"), 3) Posicionar el plan como el cinturón de seguridad que protege sus otras inversiones.`,
+      senalesDeCompra: [
+        'Tienes un punto válido: nunca había visto el seguro como un blindaje de mis otras inversiones.',
+        '¿Y este fondo tiene alguna penalización si quiero aportar más capital en el futuro?',
+        '¿La suma asegurada por fallecimiento está exenta de impuestos ante el SAT?'
+      ]
+    },
+    {
+      nombre: 'El Amparado por el Trabajo ("Ya Tengo Seguro en mi Empresa")',
+      dificultad: 'media',
+      descripcion: 'Gana buen sueldo corporativo y cree que el paquete de prestaciones de su empresa lo blinda de por vida.',
+      cortinasHumo: [
+        'En la empresa donde trabajo me dan una póliza de vida corporativa por 36 meses de sueldo y gastos médicos mayores, estoy totalmente cubierto.',
+        'El corporativo ya me cubre con un paquete de prestaciones muy robusto, no necesito pagar uno particular de mi bolsa.',
+        'Tengo seguro de grupo en mi trabajo que me cubre bastante bien, sería duplicar coberturas.'
+      ],
+      objecionReal: 'Falsa sensación de pertenencia; asume que siempre trabajará en esa empresa o que podrá asegurarse igual en su vejez.',
+      comportamiento: 'Es educado pero autosuficiente. Cree que no tiene ninguna vulnerabilidad.',
+      claveDesbloqueo: 'El asesor debe evidenciar la trampa de la póliza de grupo: "Ese seguro es de la empresa, no tuyo. Si mañana renuncias, te despiden o te jubilas a los 55 años, esa póliza se extingue en 24 horas y a esa edad contratar una individual te costará 4 veces más o ya no serás asegurable por salud."',
+      senalesDeCompra: [
+        'Es cierto... mi compadre salió de la empresa el año pasado y se quedó sin seguro de un día para otro.',
+        '¿Y este plan individual me pertenece a mí sin importar en qué empresa trabaje?',
+        '¿Puedo deducir esta póliza en mi declaración anual independiente de mi nómina?'
+      ]
+    },
+    {
+      nombre: 'El Asustado por el Plazo ("¿Y si Pierdo mi Empleo en 5 años?")',
+      dificultad: 'media',
+      descripcion: 'Ha visto despidos o crisis en su sector y le aterra comprometerse a un plan de 10, 15 o 20 años.',
+      cortinasHumo: [
+        'Comprometerme a pagar esto por 15 o 20 años me da pavor. ¿Qué pasa si en 3 años me quedo sin trabajo o tengo una crisis y no puedo pagar?',
+        'Los seguros son muy rígidos; si dejas de pagar te quitan todo tu dinero y pierdes tus ahorros.',
+        'El plazo es demasiado largo para la incertidumbre que hay en el mercado laboral hoy.'
+      ],
+      objecionReal: 'Aversión al riesgo de iliquidez futura y desconocimiento de las cláusulas de flexibilidad de las aseguradoras.',
+      comportamiento: 'Duda mucho. Si el asesor minimiza su preocupación diciendo "no te va a pasar nada", desconfía.',
+      claveDesbloqueo: 'El asesor debe explicar las válvulas de escape del contrato: Periodo de gracia de 30-60 días, Préstamo automático sobre valores garantizados, Seguro Saldado (congelar el plan con cobertura reducida sin meter más dinero) y Rescate de fondos acumulados.',
+      senalesDeCompra: [
+        'No sabía que existía la opción de seguro saldado si no puedo seguir aportando.',
+        '¿A partir de qué año empieza a generar valores en efectivo de rescate?',
+        'O sea que el dinero no se pierde como en un seguro de auto...'
+      ]
+    },
+    {
+      nombre: 'El Fiel al Compadre ("Mi Amigo Vende en GNP / Monterrey")',
+      dificultad: 'media',
+      descripcion: 'Tiene un conocido o familiar en el sector y siente culpa moral de no comprarle a él.',
+      cortinasHumo: [
+        'La propuesta está excelente, pero la verdad mi primo/compadre trabaja en GNP/Seguros Monterrey y le prometí que si compraba algo lo vería con él.',
+        'Tengo un amigo de toda la vida que es agente de seguros; le voy a pasar tu cotización para que me haga una similar.',
+        'Prefiero darle el negocio a alguien de mi círculo cercano por lealtad.'
+      ],
+      objecionReal: 'Compromiso social incómodo; en el fondo le da pena revelar sus finanzas íntimas a un amigo o teme que su amigo no sea profesional.',
+      comportamiento: 'Usa a su amigo como escudo para no cerrar hoy.',
+      claveDesbloqueo: 'El asesor debe posicionar el valor fiduciario independiente: "Tu amigo es muy valioso, pero en finanzas familiares a veces da pena hablar de deudas, testamentos y salud íntima con un compadre. Además, AACOM es una promotoría multimarca independiente que no te encasilla en una sola opción, sino que defiende tus intereses ante cualquier compañía."',
+      senalesDeCompra: [
+        'Tienes razón en algo: a mi compadre la verdad no le tengo tanta confianza para que sepa mis ingresos exactos.',
+        '¿Y ustedes dan seguimiento directo a los trámites o todo es por conmutador?',
+        '¿Qué aseguradora respaldaría este proyecto en particular?'
+      ]
+    },
+
+    // DIFICULTAD ALTA / EXTREMA (Niveles 5-6)
+    {
+      nombre: 'El Escéptico de Inflación ("En 20 años el Peso no Vale Nada")',
+      dificultad: 'alta',
+      descripcion: 'Recuerda devaluaciones pasadas en México y desconfía de las monedas a largo plazo. Es numérico y analítico.',
+      cortinasHumo: [
+        'El problema de estos planes a 15 o 20 años es la inflación en México. Esos millones que me prometes a los 65 años van a alcanzar para comprar una despensa y nada más.',
+        'Con el historial de devaluaciones en México, meter dinero a 20 años en moneda nacional es un error financiero garrafal.',
+        'El peso pierde poder adquisitivo cada año, los seguros nunca le ganan a la inflación real.'
+      ],
+      objecionReal: 'Desconoce la figura legal de las UDIS (Unidades de Inversión) indexadas por ley al INPC del Banco de México.',
+      comportamiento: 'Es escéptico pero racional. Si el asesor titubea o no sabe explicar qué es una UDI, lo destruye numéricamente.',
+      claveDesbloqueo: 'El asesor debe explicar con solvencia el mecanismo de UDIS / indexación inflacionaria garantizada por Banxico: el valor de la suma asegurada y el ahorro se calculan en poder adquisitivo constante, garantizando que el dinero preserve su valor real en el tiempo.',
+      senalesDeCompra: [
+        'Ah, o sea que la UDI se recalcula diariamente con la inflación oficial del Banco de México...',
+        '¿Y la indemnización por fallecimiento o invalidez también se liquida al valor de la UDI del día del siniestro?',
+        '¿El contrato estipula esta garantía por escrito o es una tasa variable?'
       ]
     },
     {
       nombre: 'El Empresario Celoso de su Liquidez ("En mi Negocio Gano Más")',
-      descripcion: 'Dueño de negocio que reinvierte todo en inventario, nómina y operación. Odia "inmovilizar" dinero en instrumentos externos.',
-      cortinaHumo: `Yo a cada peso en mi empresa le saco el 25% o 30% anual entre mercancía y rotación. Meter $${aportacionMensual.toLocaleString('es-MX')} a una aseguradora se me hace tener dinero muerto.`,
-      objecionReal: 'Teme quedarse sin liquidez para emergencias del negocio y tiene todo su patrimonio personal mezclado con la empresa.',
-      comportamiento: 'Trato rudo y negociador. No tolera rodeos.',
-      claveDesbloqueo: 'El asesor debe explicar el Blindaje Patrimonial y la Inembargabilidad: 1) "Tu negocio es tu motor, pero si una demanda laboral o mercantil lo embarga, tu patrimonio personal también corre riesgo", 2) La ley del contrato de seguro hace estas pólizas inembargables y deducibles de impuestos (Art. 151 / 27 LISR), 3) Es sacar dinero del riesgo de la empresa hacia la seguridad de la familia.',
+      dificultad: 'alta',
+      descripcion: 'Dueño de empresa con colmillo. Reinvierte todo en mercancía y tiene todo su patrimonio mezclado con la persona moral.',
+      cortinasHumo: [
+        `Yo a cada peso en mi empresa le saco el 25% o 30% anual entre mercancía y rotación. Meter $${aportacionMensual.toLocaleString('es-MX')} a una aseguradora se me hace tener dinero muerto.`,
+        'Mi negocio requiere reinversión constante en inventario y maquinaria; no puedo inmovilizar capital en pólizas externas.',
+        'Cualquier peso que no esté en la operación de la empresa me genera costo de oportunidad brutal.'
+      ],
+      objecionReal: 'Teme quedarse sin liquidez para emergencias del negocio y tiene todo su patrimonio personal expuesto al riesgo operativo.',
+      comportamiento: 'Trato rudo, directo y dominante. Si detecta novatez o debilidad, corta la reunión en 30 segundos.',
+      claveDesbloqueo: 'El asesor debe demostrar temple y argumentar el Blindaje Patrimonial y la Inembargabilidad: 1) "Tu negocio es tu motor, pero si una demanda laboral o mercantil lo embarga, tu patrimonio personal también corre riesgo", 2) La ley del contrato de seguro hace estas pólizas inembargables y deducibles de impuestos (Art. 151 / 27 LISR), 3) Es sacar dinero del riesgo de la empresa hacia la seguridad de la familia.',
       senalesDeCompra: [
-        'No sabía que las pólizas de retiro y vida tenían blindaje legal inembargable.',
-        '¿Y cómo se factura esto para que mi contador lo deduzca al 100% en la empresa?'
+        'No sabía que las pólizas de retiro y vida tenían blindaje legal inembargable ante juicios mercantiles.',
+        '¿Y cómo se factura esto para que mi contador lo deduzca al 100% en la empresa?',
+        '¿Qué requisitos corporativos me pedirían para emitir como Hombre Clave?'
+      ]
+    },
+    {
+      nombre: 'El Escéptico de Letras Chiquitas ("Las Aseguradoras No Pagan")',
+      dificultad: 'alta',
+      descripcion: 'Cínico ante las instituciones financieras. Cree que los contratos de seguros están diseñados con trampas legales.',
+      cortinasHumo: [
+        'Todos los seguros te pintan las cosas color de rosa cuando te cobran, pero a la mera hora buscan cualquier pretexto en las letras chiquitas para no pagar.',
+        'Tuve una pésima experiencia con una aseguradora en un hospital donde no quisieron responder, la verdad no confío en la industria.',
+        'Las aseguradoras son expertas en cobrar puntual y expertas en lavarse las manos cuando hay una reclamación.'
+      ],
+      objecionReal: 'Miedo a ser engañado por cláusulas de exclusión o falta de asesoría técnica fiduciaria.',
+      comportamiento: 'Desafía al asesor. Exige fundamentos legales y regulatorios firmes.',
+      claveDesbloqueo: 'El asesor debe responder con absoluta seguridad jurídica: Citar la Ley sobre el Contrato de Seguro, la Cláusula de Indisputabilidad (después de 2 años la póliza no puede ser rescindida ni disputada por la aseguradora salvo dolo comprobado), la supervisión de la CNSF y CONDUSEF, y el papel de AACOM como agente fiduciario que tramita los siniestros a favor del cliente.',
+      senalesDeCompra: [
+        'Es la primera vez que un asesor me explica el fundamento legal de la indisputabilidad.',
+        '¿Y ustedes como despacho nos ayudan a ingresar la reclamación si algo pasa?',
+        '¿En qué aseguradora está respaldado el contrato?'
+      ]
+    },
+    {
+      nombre: 'El Negociador Regateador ("Bájame la Prima o Dame Descuento")',
+      dificultad: 'alta',
+      descripcion: 'Negociador implacable que busca probar al asesor pidiendo rebajas de tarifa o comisiones compartidas.',
+      cortinasHumo: [
+        'Si me bajas la mensualidad a la mitad o me consigues un descuento del 15% en la prima te lo firmo ahorita mismo.',
+        '¿Qué descuento o bono me puedes dar tú de tu comisión para cerrar hoy en la mesa?',
+        'Tu propuesta me gusta pero compite contra una que me ofrecen más barata en el banco; bájale y cerramos.'
+      ],
+      objecionReal: 'Estrategia de intimidación comercial para verificar si el producto tiene sobreprecio o si el asesor es novato.',
+      comportamiento: 'Si el asesor baja la tarifa de inmediato, pierde toda la autoridad y el cliente lo rechaza por falta de seriedad.',
+      claveDesbloqueo: 'El asesor debe mantener una postura de hierro: "Por ley de la Comisión Nacional de Seguros y Fianzas las tarifas son públicas, actuariales y estrictamente reguladas. Bajar la tarifa aquí no es como comprar un coche: significaría mutilar la suma asegurada de tus hijos a la mitad. ¿Prefieres regatear $500 pesos hoy o tener la tranquilidad de $5 millones garantizados?"',
+      senalesDeCompra: [
+        'Me gusta que defiendas tu producto con esa seguridad, se nota que sabes lo que vendes.',
+        '¿Y la prima se mantiene fija en UDIS durante todo el plazo sin incrementos adicionales?',
+        'Bueno, no se hable más. Vamos a emitirlo con las sumas que calculaste.'
       ]
     }
   ];
 
-  const arquetipo = arquetipos[Math.floor(Math.random() * arquetipos.length)];
+  // Filtro por Nivel de Dificultad
+  let arquetiposFiltrados = arquetiposCatalogo;
+  let barrerasRequeridas = 1;
+  if (level <= 2) {
+    arquetiposFiltrados = arquetiposCatalogo.filter(a => a.dificultad === 'baja');
+    barrerasRequeridas = 1;
+  } else if (level <= 4) {
+    arquetiposFiltrados = arquetiposCatalogo.filter(a => a.dificultad === 'media' || a.dificultad === 'baja');
+    barrerasRequeridas = 2;
+  } else {
+    arquetiposFiltrados = arquetiposCatalogo.filter(a => a.dificultad === 'alta');
+    barrerasRequeridas = 3;
+  }
+
+  const arquetipoBase = arquetiposFiltrados[Math.floor(Math.random() * arquetiposFiltrados.length)] || arquetiposCatalogo[0];
+  const cortinaHumoElegida = arquetipoBase.cortinasHumo[Math.floor(Math.random() * arquetipoBase.cortinasHumo.length)];
+
+  const arquetipo = {
+    ...arquetipoBase,
+    cortinaHumo: cortinaHumoElegida,
+    barrerasRequeridas
+  };
 
   // Vector 3: Entornos de Cierre
   const entornosCierre = [
@@ -746,17 +918,17 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       lugar: 'Sesión por Zoom / Google Meet (Pantalla compartida con la propuesta)',
       desc: 'El asesor acaba de compartir la pantalla con el PDF de la cotización formal y la tabla de proyección de ahorro y suma asegurada.',
       saludos: [
-        `Hola, pues ya estuve viendo con mucha atención las láminas y la gráfica de proyección que me pusiste en la pantalla... y la verdad es que está muy interesante, pero ${arquetipo.cortinaHumo}`,
-        `¿Qué tal? Sí, veo los números que proyectaste en el PDF y el desglose de beneficios. Se ve bien presentado, pero siendo muy honestos, ${arquetipo.cortinaHumo}`,
-        `Hola, te estaba escuchando atento durante toda la corrida financiera. Te agradezco la propuesta, pero la verdad de entrada, ${arquetipo.cortinaHumo}`
+        `Hola, pues ya estuve viendo con mucha atención las láminas y la gráfica de proyección que me pusiste en la pantalla... y la verdad es que está muy interesante, pero ${cortinaHumoElegida}`,
+        `¿Qué tal? Sí, veo los números que proyectaste en el PDF y el desglose de beneficios. Se ve bien presentado, pero siendo muy honestos, ${cortinaHumoElegida}`,
+        `Hola, te estaba escuchando atento durante toda la corrida financiera. Te agradezco la propuesta, pero la verdad de entrada, ${cortinaHumoElegida}`
       ]
     },
     {
       lugar: 'Oficina ejecutiva del prospecto (Reunión presencial con carpeta de propuesta)',
       desc: 'El prospecto tiene la carpeta impresa con la propuesta sobre su escritorio, hojeando la página de costos y coberturas.',
       saludos: [
-        `Hola, pasa, siéntate. Ya revisé la carpeta con la cotización que me dejaste... y mira, el plan se ve sólido, pero ${arquetipo.cortinaHumo}`,
-        `¿Qué tal? Gracias por venir a la oficina. Estuve analizando la tabla de aportaciones y sumas que me imprimiste, pero ${arquetipo.cortinaHumo}`
+        `Hola, pasa, siéntate. Ya revisé la carpeta con la cotización que me dejaste... y mira, el plan se ve sólido, pero ${cortinaHumoElegida}`,
+        `¿Qué tal? Gracias por venir a la oficina. Estuve analizando la tabla de aportaciones y sumas que me imprimiste, pero ${cortinaHumoElegida}`
       ]
     }
   ];
@@ -969,9 +1141,28 @@ ESTO NO ES UNA LLAMADA TELEFÓNICA EN FRÍO. TÚ CONOCES AL ASESOR Y CONOCES LA 
 
 ### TU IDENTIDAD Y PSICOLOGÍA EN ESTA NEGOCIACIÓN:
 - Eres **${cierreProc.arquetipo.nombre}**: ${cierreProc.arquetipo.descripcion}
+- Dificultad del escenario: NIVEL ${currentLevel}/6 (Dificultad: ${cierreProc.arquetipo.dificultad.toUpperCase()}, requiere superar ${cierreProc.arquetipo.barrerasRequeridas} barrera(s) de resistencia psicológica).
 - **Tu Cortina de Humo (Pretexto Inicial):** "${cierreProc.arquetipo.cortinaHumo}"
 - **Tu Objeción Real Oculta:** ${cierreProc.arquetipo.objecionReal}
 - **Comportamiento:** ${cierreProc.arquetipo.comportamiento}
+
+### CALIBRACIÓN DE RESISTENCIA POR NIVEL (${cierreProc.arquetipo.barrerasRequeridas} BARRERAS REQUERIDAS):
+${cierreProc.arquetipo.barrerasRequeridas === 1 ? `
+- **Nivel Principiante (1 Barrera):**
+  Defiende tu cortina de humo inicial. Si el asesor aísla la objeción con empatía y aplica su técnica de desbloqueo, ábrete con sinceridad, muestra una señal de compra y permítele ejecutar el cierre asumido.
+` : cierreProc.arquetipo.barrerasRequeridas === 2 ? `
+- **Nivel Intermedio (2 Barreras Consecutivas):**
+  NO cedas a la primera técnica. 
+  1) Presenta tu cortina de humo con firmeza.
+  2) Si el asesor la aísla, NO compres de inmediato; lanza una segunda objeción o duda técnica (ej. cuestiona el plazo, pide revisar con alguien más o compara con otra opción de inversión).
+  3) Solo si el asesor rebate con éxito AMBAS resistencias sin perder la calma, comienza a dar señales de compra.
+` : `
+- **Nivel Avanzado / Master (3 Barreras + Prueba de Carácter y Aplomo):**
+  Eres un prospecto sumamente exigente, escéptico o dominante.
+  1) Barrera 1 (Filtro rudo): Rechaza la propuesta de entrada con tu cortina de humo más dura.
+  2) Barrera 2 (Cuestionamiento técnico de fondo): Si el asesor aísla, desafía con tu objeción de fondo (inflación, inmovilidad de capital, desconfianza legal o regateo de comisiones).
+  3) Barrera 3 (Prueba de Aplomo Profesional): Pon a prueba la seguridad personal del asesor: "¿Y tú tienes este mismo seguro contratado?", "¿Cuánto tiempo llevas en esto?", o "¿A poco tú meterías tu dinero aquí?". Si el asesor titubea, baja la mirada o muestra inseguridad, córtalo y dile que no te interesa. Solo si demuestra aplomo de hierro, convicción fiduciaria y ejecuta un cierre asumido con doble alternativa, reconocerás su profesionalismo y aceptarás emitir.
+`}
 
 ### REGLAS DE ORO DE REALISMO Y ANTI-COMPLACENCIA ESTRICTA (NO SE LA PONGAS FÁCIL):
 1. **DEFIENDE TU CORTINA DE HUMO AL INICIO:**
