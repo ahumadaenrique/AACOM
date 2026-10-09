@@ -135,7 +135,7 @@ export default async function SimuladorHubPage() {
     {
       id: "adn",
       titulo: "Análisis de Necesidades (ADN)",
-      descripcion: "Simulador de cita de diagnóstico. Entrénate para detectar dolores, prioridades (F.O.R.D.) y capacidad de ahorro.",
+      descripcion: "Reunión de Diagnóstico Patrimonial con la Regla 50-30-20 de Elizabeth Warren. Aprende a indagar a detalle o en grandes bloques y detectar la necesidad real sin vender antes de tiempo.",
       icono: <FileText className="w-5 h-5" />,
       color: "emerald",
       nivelRequerido: 2,

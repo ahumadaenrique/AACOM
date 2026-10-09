@@ -96,13 +96,16 @@ export async function POST(req: Request) {
     let evalInstructions = '';
     if (moduleId === 'adn') {
       evalInstructions = `
-      Módulo: Análisis de Necesidades (ADN).
+      Módulo: Análisis de Necesidades (ADN) - Metodología Patrimonial AACOM.
       El asesor DEBE:
-      1. Hacer rompehielo (indagar sobre familia, hobbies o trabajo).
-      2. Detectar dolor o riesgo (ej. preguntar qué pasaría si falta, o sobre su retiro).
-      3. Indagar sutilmente la capacidad de ahorro o presupuesto.
-      4. Agendar explícitamente la siguiente cita para presentar el plan (Cita de Cierre).
-      ERRORES FATALES: Hablar de costos de pólizas, vender, o cotizar antes de terminar el diagnóstico.`;
+      1. POSICIONAMIENTO & REGLA 50-30-20: Explicar que actúa como Asesor Patrimonial y fundamentar el análisis en la Regla 50-30-20 de Elizabeth Warren (50% Necesidades y fijos, 30% Deseos y estilo de vida, 20% Ahorro y protección futura) como estándar de oro mundial.
+      2. PERMISO DIAGNÓSTICO: Pedir permiso formal y explícito para realizar las preguntas del cuestionario financiero.
+      3. FLEXIBILIDAD EN GASTOS: Preguntar a detalle si el cliente lo permite, o tener la habilidad de resumir en bloques grandes (Vivienda, Transporte, Educación, Estilo de vida) si el prospecto se resiste al desglose de centavos.
+      4. MANEJO DE RESISTENCIA Y CONFIDENCIALIDAD: Si el cliente duda en revelar sus finanzas, garantizar confidencialidad y usar la analogía médica ("somos médicos patrimoniales, no podemos recetar una solución sin un análisis previo").
+      5. DETECCIÓN DEL DOLOR: Indagar y escuchar profundamente para descubrir la necesidad prioritaria del prospecto (Retiro/PPR, Blindaje familiar por fallecimiento/invalidez, Fondo universitario para hijos, o Desorden de deudas).
+      6. CAPACIDAD DE AHORRO: Calcular o consensuar el monto real que el cliente puede comprometer al ahorro mensual para su futuro.
+      7. CIERRE DE LA REUNIÓN DE ADN: Indicar que se llevará la información a su despacho para diseñar una estrategia personalizada y agendar la Cita de Presentación/Cierre con doble alternativa de horario.
+      ERRORES FATALES: Vender pólizas, dar costos o cotizar aseguradoras durante el diagnóstico, o discutir con el cliente si este prefiere resumir gastos en lugar de dar centavos.`;
     } else if (moduleId === 'objeciones') {
       evalInstructions = `
       Módulo: Objeciones y Cierre.

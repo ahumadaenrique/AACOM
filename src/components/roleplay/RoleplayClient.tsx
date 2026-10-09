@@ -21,7 +21,12 @@ import {
   Clock,
   Mic,
   Headphones,
-  Settings
+  Settings,
+  Video,
+  VideoOff,
+  LogOut,
+  Users,
+  PieChart
 } from 'lucide-react';
 import { MasterTacticsModal } from './MasterTacticsModal';
 import { EvaluationModal } from './EvaluationModal';
@@ -76,6 +81,9 @@ if (typeof window !== 'undefined' && typeof (window as any).AudioWorklet !== 'un
 }
 
 export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: RoleplayClientProps) {
+  const isADN = moduleId === 'adn';
+  const isObjeciones = moduleId === 'objeciones';
+
   // Tabs: 'simulador' | 'historial' | 'admin'
   const [activeTab, setActiveTab] = useState<'simulador' | 'historial' | 'admin'>('simulador');
   const [isTacticsOpen, setIsTacticsOpen] = useState(false);
@@ -105,7 +113,13 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   const [isConnecting, setIsConnecting] = useState(false);
   const [callDuration, setCallDuration] = useState(0);
   const [prospectSpeaking, setProspectSpeaking] = useState(false);
-  const [callStatusText, setCallStatusText] = useState('Listo para iniciar llamada');
+  const [callStatusText, setCallStatusText] = useState(
+    isADN 
+      ? 'Listo para iniciar reunión ADN' 
+      : isObjeciones 
+        ? 'Listo para iniciar sesión de cierre' 
+        : 'Listo para iniciar llamada'
+  );
   const [transcript, setTranscript] = useState<{ source: 'ai' | 'user'; message: string }[]>([]);
   const [currentEval, setCurrentEval] = useState<any>(null);
 
@@ -309,8 +323,14 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       setIsConnecting(true);
       setTranscript([]);
       setCallDuration(0);
-      setCallStatusText(`Marcando a ${scenario.prospecto.nombre}...`);
-      playRing();
+      if (isADN) {
+        setCallStatusText(`Ingresando a la sala de diagnóstico con ${scenario.prospecto.nombre}...`);
+      } else if (isObjeciones) {
+        setCallStatusText(`Iniciando sesión de cierre con ${scenario.prospecto.nombre}...`);
+      } else {
+        setCallStatusText(`Marcando a ${scenario.prospecto.nombre}...`);
+        playRing();
+      }
 
       const conv = await Conversation.startSession({
         signedUrl,
@@ -343,14 +363,21 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           setIsCalling(true);
           conversationIdRef.current = conversationId || null;
           startTimeRef.current = Date.now();
-          setCallStatusText(`🟢 En llamada con ${scenario.prospecto.nombre}`);
+          if (isADN) {
+            setCallStatusText(`En reunión de diagnóstico ADN con ${scenario.prospecto.nombre}`);
+          } else if (isObjeciones) {
+            setCallStatusText(`En sesión de cierre con ${scenario.prospecto.nombre}`);
+          } else {
+            setCallStatusText(`🟢 En llamada con ${scenario.prospecto.nombre}`);
+          }
 
           // Timer
           timerRef.current = setInterval(() => {
             const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
             setCallDuration(elapsed);
-            // Hard limit de 3 minutos para prospección
-            if (elapsed >= 180) {
+            // Limit: 15 min (900s) para ADN, 10 min (600s) para Cierre, 3 min (180s) para Prospección
+            const maxDuration = isADN ? 900 : isObjeciones ? 600 : 180;
+            if (elapsed >= maxDuration) {
               hangupCall();
             }
           }, 1000);
@@ -447,7 +474,13 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     if (timerRef.current) clearInterval(timerRef.current);
 
     const elapsed = Math.max(callDuration, Math.floor((Date.now() - (startTimeRef.current || Date.now())) / 1000));
-    setCallStatusText('Evaluando desempeño y técnica de prospección...');
+    setCallStatusText(
+      isADN 
+        ? 'Evaluando diagnóstico patrimonial y técnica 50-30-20...' 
+        : isObjeciones 
+          ? 'Evaluando manejo de objeciones y técnicas de cierre...' 
+          : 'Evaluando desempeño y técnica de prospección...'
+    );
 
     try {
       const res = await fetch('/api/roleplay/evaluate', {
@@ -584,8 +617,8 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           onClick={() => setActiveTab('simulador')}
           className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-t-xl transition-colors border-t border-x ${activeTab === 'simulador' ? 'bg-slate-900 border-slate-800 text-indigo-400' : 'text-slate-400 hover:text-slate-200 border-transparent'}`}
         >
-          <Phone className="h-4 w-4" />
-          <span>Simulador Telefónico</span>
+          {isADN ? <Video className="h-4 w-4 text-emerald-400" /> : isObjeciones ? <Award className="h-4 w-4 text-amber-400" /> : <Phone className="h-4 w-4" />}
+          <span>{isADN ? 'Sala de Diagnóstico ADN' : isObjeciones ? 'Simulador de Cierre' : 'Simulador Telefónico'}</span>
         </button>
 
         <button
@@ -593,7 +626,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-t-xl transition-colors border-t border-x ${activeTab === 'historial' ? 'bg-slate-900 border-slate-800 text-indigo-400' : 'text-slate-400 hover:text-slate-200 border-transparent'}`}
         >
           <History className="h-4 w-4" />
-          <span>Mi Historial de Llamadas</span>
+          <span>{isADN ? 'Historial de Sesiones ADN' : isObjeciones ? 'Historial de Cierres' : 'Mi Historial de Llamadas'}</span>
         </button>
 
         {isAdmin && (
@@ -620,6 +653,94 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
               {loadingScenario || !scenario ? (
                 <div className="p-12 text-center text-slate-500 text-sm">
                   Cargando expediente del prospecto asignado...
+                </div>
+              ) : isADN ? (
+                /* VISTA EJECUTIVA ADN: SALA DE REUNIÓN / FRENTE A LA MESA */
+                <div className="p-6 md:p-8 border-b border-slate-800/80 bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950/40 space-y-5">
+                  <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800/80">
+                    <div className="flex items-center gap-2">
+                      <span className="flex h-3 w-3 relative">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                      </span>
+                      <span className="text-xs font-black tracking-wider uppercase text-slate-200 flex items-center gap-1.5">
+                        <Video className="w-4 h-4 text-emerald-400" /> Sala Ejecutiva • Diagnóstico ADN
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center gap-1">
+                        <Sparkles className="w-3 h-3" /> Regla 50-30-20 Elizabeth Warren
+                      </span>
+                      <span className="px-2.5 py-1 rounded-full text-[11px] font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                        Nivel {scenario.difficultyLevel}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Escenario de Videoconferencia / Frente a la mesa */}
+                  <div
+                    className={`relative w-full aspect-video max-h-[340px] sm:max-h-[380px] rounded-2xl overflow-hidden border-2 transition-all duration-500 bg-slate-950 shadow-2xl flex items-center justify-center ${
+                      prospectSpeaking ? 'border-emerald-500 shadow-emerald-500/20' : 'border-slate-800'
+                    }`}
+                  >
+                    <img
+                      src={scenario.prospecto.avatar}
+                      alt={scenario.prospecto.nombre}
+                      className={`w-full h-full object-cover object-top transition-transform duration-700 ${
+                        prospectSpeaking ? 'scale-105 brightness-105' : 'scale-100 brightness-95'
+                      }`}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-black/40 pointer-events-none" />
+
+                    {/* Tag Superior Cámara */}
+                    <div className="absolute top-3 left-3 flex items-center gap-2 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-white/10 text-[10px] text-white font-medium">
+                      <span className={`w-2 h-2 rounded-full ${prospectSpeaking ? 'bg-emerald-400 animate-pulse' : 'bg-slate-400'}`} />
+                      <span>Cámara de {scenario.prospecto.nombre.split(' ')[0]} (En Vivo)</span>
+                    </div>
+
+                    {/* Indicador Hablando */}
+                    {prospectSpeaking && (
+                      <div className="absolute top-3 right-3 flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-500 text-slate-950 text-[10px] font-black tracking-wider uppercase shadow-lg animate-bounce">
+                        <Mic className="w-3 h-3" /> Hablando
+                      </div>
+                    )}
+
+                    {/* Barra Inferior Identidad del Prospecto */}
+                    <div className="absolute bottom-3 left-3 right-3 flex flex-wrap items-end justify-between gap-3 p-3.5 rounded-xl bg-slate-950/85 backdrop-blur-md border border-white/10">
+                      <div>
+                        <h2 className="text-lg sm:text-xl font-black text-white flex items-center gap-2">
+                          {scenario.prospecto.nombre}
+                          <span className="text-xs font-normal text-slate-400">({scenario.prospecto.edad} años)</span>
+                        </h2>
+                        <p className="text-xs text-indigo-300 font-semibold">
+                          {scenario.prospecto.puesto}
+                        </p>
+                        <p className="text-[11px] text-slate-400 italic line-clamp-1">
+                          "{scenario.prospecto.contexto}"
+                        </p>
+                      </div>
+                      <div className="text-right hidden sm:block">
+                        <span className="text-[10px] uppercase font-bold text-slate-400 block">Posición</span>
+                        <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1 justify-end">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Al otro lado de la mesa
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Pre-Meeting Briefing Card */}
+                  <div className="p-4 rounded-2xl bg-indigo-950/30 border border-indigo-500/20 text-xs space-y-2">
+                    <div className="font-bold text-indigo-300 flex items-center gap-1.5 uppercase tracking-wider text-[11px]">
+                      <Info className="h-4 w-4 text-indigo-400" /> Expediente & Contexto de la Cita:
+                    </div>
+                    <p className="text-slate-300 leading-relaxed">
+                      {scenario.origen.brief}
+                    </p>
+                    <div className="pt-2 border-t border-indigo-500/10 text-[11px] text-slate-400 leading-snug">
+                      <strong className="text-amber-300">Protocolo de Oro: </strong>
+                      Preséntate como asesor patrimonial, explica la Regla 50-30-20, pide permiso para el cuestionario y adapta tus preguntas (detalle o resumen en bloques si hay resistencia). Al final agenda la siguiente cita para entregar el proyecto. <strong>No vendas pólizas hoy.</strong>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="p-6 md:p-8 border-b border-slate-800/80 bg-gradient-to-br from-slate-950/60 to-slate-900">
@@ -752,18 +873,36 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                     <button
                       onClick={startCall}
                       disabled={isConnecting || loadingScenario}
-                      className="flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-base shadow-xl shadow-emerald-950/50 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className={`flex items-center justify-center gap-3 px-8 py-4 rounded-2xl text-white font-bold text-base shadow-xl transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed ${
+                        isADN 
+                          ? 'bg-indigo-600 hover:bg-indigo-500 shadow-indigo-950/50' 
+                          : 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-950/50'
+                      }`}
                     >
-                      <Phone className="h-5 w-5" />
-                      <span>{isConnecting ? 'Conectando...' : 'Iniciar Llamada'}</span>
+                      {isADN ? <Video className="h-5 w-5" /> : <Phone className="h-5 w-5" />}
+                      <span>
+                        {isConnecting 
+                          ? 'Conectando...' 
+                          : isADN 
+                            ? 'Empezar Reunión ADN' 
+                            : moduleId === 'objeciones'
+                              ? 'Iniciar Sesión de Cierre'
+                              : 'Iniciar Llamada'}
+                      </span>
                     </button>
                   ) : (
                     <button
                       onClick={hangupCall}
                       className="flex items-center justify-center gap-3 px-8 py-4 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-base shadow-xl shadow-rose-950/50 transition-all hover:scale-105 animate-pulse"
                     >
-                      <PhoneOff className="h-5 w-5" />
-                      <span>Colgar y Evaluar</span>
+                      {isADN ? <LogOut className="h-5 w-5" /> : <PhoneOff className="h-5 w-5" />}
+                      <span>
+                        {isADN 
+                          ? 'Finalizar Reunión y Evaluar' 
+                          : moduleId === 'objeciones'
+                            ? 'Concluir Cierre y Evaluar'
+                            : 'Colgar y Evaluar'}
+                      </span>
                     </button>
                   )}
                 </div>
@@ -778,7 +917,9 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                   <div className="h-44 overflow-y-auto p-4 rounded-2xl bg-slate-950/60 border border-slate-800 space-y-2 text-xs">
                     {transcript.length === 0 ? (
                       <div className="h-full flex items-center justify-center text-slate-600 italic">
-                        Presiona "Iniciar Llamada" para hablar con el prospecto por tu micrófono...
+                        {isADN 
+                          ? 'Presiona "Empezar Reunión ADN" para abrir la sesión con el cliente...' 
+                          : 'Presiona "Iniciar Llamada" para hablar con el prospecto por tu micrófono...'}
                       </div>
                     ) : (
                       transcript.map((t, idx) => (
@@ -805,6 +946,59 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           {/* Right Column: Mission and Badges */}
           <div className="lg:col-span-4 space-y-6">
             
+            {/* Widget ADN: Metodología 50-30-20 (Elizabeth Warren) */}
+            {isADN && (
+              <div className="p-6 rounded-3xl bg-slate-900 border border-amber-500/30 space-y-4 shadow-lg relative overflow-hidden">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-amber-300 flex items-center gap-2">
+                    <Sparkles className="h-4 w-4 text-amber-400" /> Guía ADN: Regla 50-30-20
+                  </h3>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    Elizabeth Warren
+                  </span>
+                </div>
+
+                <div className="space-y-2 text-xs">
+                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
+                    <div className="flex justify-between font-bold text-slate-200">
+                      <span className="text-blue-400">50% Necesidades / Fijos</span>
+                      <span className="text-slate-400">Básicos</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Vivienda (renta/hipoteca, luz, gas, agua, predial, internet), transporte, despensa básica y colegiaturas.
+                    </p>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
+                    <div className="flex justify-between font-bold text-slate-200">
+                      <span className="text-amber-400">30% Estilo de Vida</span>
+                      <span className="text-slate-400">Deseos</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Hobbies, salidas, restaurantes, viajes, plataformas de streaming, compras no esenciales y diversión.
+                    </p>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
+                    <div className="flex justify-between font-bold text-slate-200">
+                      <span className="text-emerald-400">20% Ahorro & Protección</span>
+                      <span className="text-slate-400">Futuro</span>
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Fondo de emergencia, Retiro (PPR deducible), Educación universitaria futura y blindaje familiar.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-200 space-y-1">
+                  <strong className="block text-amber-300 font-bold">💡 Táctica ante Resistencia:</strong>
+                  <p>
+                    Si el prospecto dice: <em>"No me sé los centavos de la luz o gas"</em>, no insistas en recibos: agrupa en grandes bloques (Vivienda total, Transporte, Hobbies).
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Daily Mission Card */}
             <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4 shadow-lg">
               <div className="flex items-center justify-between">
@@ -950,12 +1144,14 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       <MasterTacticsModal
         isOpen={isTacticsOpen}
         onClose={() => setIsTacticsOpen(false)}
+        moduleId={moduleId}
       />
 
       <EvaluationModal
         isOpen={isEvalOpen}
         evaluation={currentEval}
         stats={stats}
+        moduleId={moduleId}
         onNextCall={() => {
           setIsEvalOpen(false);
           setTranscript([]);
