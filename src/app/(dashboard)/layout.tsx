@@ -310,10 +310,10 @@ export default async function DashboardLayout({
                                 {/* Dropdown Inteligencia Artificial Avanzada */}
                                 <DropdownMenu>
                                     <DropdownMenuTrigger asChild>
-                                        <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/assistant', '/agents'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                                            <Bot className={`h-4 w-4 ${['/assistant', '/agents'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-indigo-500'}`} />
+                                        <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${pathname.startsWith('/assistant') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                                            <Bot className={`h-4 w-4 ${pathname.startsWith('/assistant') ? 'text-primary' : 'text-indigo-500'}`} />
                                             Inteligencia Artificial Avanzada
-                                            {['/assistant', '/agents'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                            {pathname.startsWith('/assistant') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                         </button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="start" className="w-52">
@@ -323,14 +323,6 @@ export default async function DashboardLayout({
                                                 Asistente {shortAgencyName}
                                             </Link>
                                         </DropdownMenuItem>
-                                        {!isLiteAgent && !isReferidor && (
-                                            <DropdownMenuItem asChild>
-                                                <a href="/agents" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                    <Bot className="h-4 w-4 text-indigo-600" />
-                                                    Agentes IA
-                                                </a>
-                                            </DropdownMenuItem>
-                                        )}
                                     </DropdownMenuContent>
                                 </DropdownMenu>
 
@@ -555,12 +547,6 @@ export default async function DashboardLayout({
                                                          <MessageSquare className="h-4.5 w-4.5 text-pink-500" />
                                                          Asistente {shortAgencyName}
                                                      </Link>
-                                                    {!isReferidor && (
-                                                        <Link href="/agents" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
-                                                            <Bot className="h-4.5 w-4.5 text-indigo-600" />
-                                                            Agentes IA
-                                                        </Link>
-                                                    )}
                                                  </div>
                                              </div>
                                          )}
