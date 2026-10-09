@@ -1,0 +1,2353 @@
+[
+  {
+    "id": 463,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué autoridad tiene el objetivo de procurar la equidad entre los usuarios y las instituciones Financieras?",
+    "opciones": [
+      "El Banco de México",
+      "La Comisión Nacional Bancaria y de Valores (CNBV)",
+      "La Comisión Nacional para la Protección y Defensa de los Usuarios de Servicios Financieros (CONDUSEF)",
+      "La Secretaría de Hacienda y Crédito Público (SHCP)"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "La Comisión Nacional para la Protección y Defensa de los Usuarios de Servicios Financieros (CONDUSEF)",
+    "explicacion": ""
+  },
+  {
+    "id": 464,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuál de las siguientes entidades pertenece al Sistema Bursátil?",
+    "opciones": [
+      "Uniones de Crédito",
+      "Casas de Cambio",
+      "Sociedades de Inversión",
+      "Empresas de Factoraje"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Sociedades de Inversión",
+    "explicacion": ""
+  },
+  {
+    "id": 465,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué riesgo enfrenta un inversionista, cuando un emisor incumple el pago de intereses?",
+    "opciones": [
+      "De operación",
+      "De crédito",
+      "De mercado",
+      "Legal"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Legal",
+    "explicacion": ""
+  },
+  {
+    "id": 466,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Elegir, de la siguiente lista, los instrumentos de inversión que emite el Gobierno Federal:\n\n1- Certificados de Depósito\n2- Aceptaciones Bancarias\n3- CETES\n4- BONDES\n5- UDIBONES\n6- Pagarés de Indemnización Carretera\n7- Pagarés con rendimiento liquidables al vencimiento\n8- Acciones serie 'A'\n9- Acciones serie 'B'",
+    "opciones": [
+      "1, 5, 6, 7",
+      "3, 4, 7, 9",
+      "3, 4, 5, 6",
+      "2, 3, 8, 9"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "3, 4, 5, 6",
+    "explicacion": ""
+  },
+  {
+    "id": 467,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cómo se denomina la tasa que se paga por el uso de recursos financieros?",
+    "opciones": [
+      "Tasa pasiva",
+      "Tasa real",
+      "Tasa activa",
+      "Tasa de cambio"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Tasa activa",
+    "explicacion": ""
+  },
+  {
+    "id": 468,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Como se define ingresos?",
+    "opciones": [
+      "Los prestamos que se obtengan",
+      "Los que contribuyen al aumento de los activos de una empresa",
+      "El dinero proveniente de créditos",
+      "Las entradas de dinero"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Las entradas de dinero",
+    "explicacion": ""
+  },
+  {
+    "id": 469,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Señale como se determina el rendimiento.",
+    "opciones": [
+      "Es el precio de venta de los instrumentos financieros",
+      "Es el precio de compra de los instrumentos financieros",
+      "Es la diferencia entre el precio de compra y el precio de venta de los instrumentos financieros",
+      "Es la diferencia entre la oferta y la demanda de los instrumentos financieros"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Es la diferencia entre el precio de compra y el precio de venta de los instrumentos financieros",
+    "explicacion": ""
+  },
+  {
+    "id": 470,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cómo puede reducirse la exposición al riesgo que amenaza las inversiones de una Empresa?",
+    "opciones": [
+      "Con la emisión de acciones",
+      "Incrementando los pasivos",
+      "Mediante la diversificación de inversiones",
+      "A través de un instrumento de capital"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Mediante la diversificación de inversiones",
+    "explicacion": ""
+  },
+  {
+    "id": 471,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Quién invierte las aportaciones obligatorias de los trabajadores para la jubilación?",
+    "opciones": [
+      "Arrendadoras Financieras",
+      "Sociedades Financieras de Objeto Múltiple (Sofómes)",
+      "Administradoras de Fondo para el Retiro (Afores)",
+      "Sociedades de Inversión Especialidades en Fondos para el Retiro (Siefores)"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Administradoras de Fondo para el Retiro (Afores)",
+    "explicacion": ""
+  },
+  {
+    "id": 472,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cómo se define la diversificación, considerada una de los principios básicos de las Sociedades de inversión?",
+    "opciones": [
+      "Utilizar los principios de las probabilidades para no arriesgar",
+      "Invertir el 100% en una alternativa de bajo riesgo?",
+      "La distribución del capital por invertir entre varias alternativas con el fin de diluir el riesgo",
+      "La inversión de una proporción del capital y el gasto de la proporción restante"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "La distribución del capital por invertir entre varias alternativas con el fin de diluir el riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 473,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuál es uno de los instrumentos de deuda a largo plazo?",
+    "opciones": [
+      "Aceptaciones bancarias",
+      "Pagaré con rendimiento liquidable al vencimiento",
+      "Papel Comercial",
+      "Certificados de participación ordinarios"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Certificados de participación ordinarios",
+    "explicacion": ""
+  },
+  {
+    "id": 474,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cómo se conoce a la capitalización del dinero en el tiempo cuando los intereses recibidos son reinvertidos y pasan a convertirse en un nuevo capital?",
+    "opciones": [
+      "Interés simple",
+      "Interés compuesto",
+      "Factor simple de capitalización",
+      "Factor de acumulación"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Interés compuesto",
+    "explicacion": ""
+  },
+  {
+    "id": 475,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Los fondos de inversión de deuda tienen como característica principal que:",
+    "opciones": [
+      "Tienen un rendimiento preestablecido",
+      "Incluyen acciones",
+      "Todos los instrumentos que lo componen son de deuda",
+      "Los emite el Gobierno Federal"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Todos los instrumentos que lo componen son de deuda",
+    "explicacion": ""
+  },
+  {
+    "id": 476,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué concepto define la proyección de flujos equivalentes al capital inicial invertido en un Plazo determinado a una cierta tasa de interés?",
+    "opciones": [
+      "Nivel máximo de rentabilidad",
+      "Riesgo mínimo",
+      "Precio de equilibrio",
+      "Valor del dinero en el tiempo"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Valor del dinero en el tiempo",
+    "explicacion": ""
+  },
+  {
+    "id": 477,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Todas las siguientes son tipos de sociedades de inversión EXCEPTO:",
+    "opciones": [
+      "De objeto ilimitado",
+      "De Renta Variable",
+      "En instrumentos de deuda",
+      "De capitales"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "De capitales",
+    "explicacion": ""
+  },
+  {
+    "id": 478,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿A quién corresponde la facultad de autorizar la organización y operación de Sociedades de Inversiones y Casas de Bolsa?",
+    "opciones": [
+      "La Comisión Nacional para la Protección y defensa de los Usuarios de Servicios Financieros (CONDUSEF)",
+      "La Secretaria de Hacienda y Crédito Público (SHCP)",
+      "El Banco de México",
+      "La Comisión Nacional Bancaria y de Valores (CNBV)"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "La Secretaria de Hacienda y Crédito Público (SHCP)",
+    "explicacion": ""
+  },
+  {
+    "id": 479,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿A qué tipo de riesgo corresponden las probabilidades de fluctuación del tipo de cambio?",
+    "opciones": [
+      "de Operación",
+      "Financiero",
+      "Legal",
+      "De Mercado"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "De Mercado",
+    "explicacion": ""
+  },
+  {
+    "id": 480,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuál de las siguientes actividades no corresponde a las realizadas en los mercados financieros?",
+    "opciones": [
+      "Emitir instrumentos financieros",
+      "Asegurar la rentabilidad de los instrumentos de inversión",
+      "Poner en contacto a los agentes financieros",
+      "Reducir los plazos y los costos de intermediación"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Asegurar la rentabilidad de los instrumentos de inversión",
+    "explicacion": ""
+  },
+  {
+    "id": 481,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuáles son los instrumentos de inversión de alto rendimiento y mayor riesgo?",
+    "opciones": [
+      "Pagarés",
+      "CETES",
+      "Acciones",
+      "UDIBONOS"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Acciones",
+    "explicacion": ""
+  },
+  {
+    "id": 482,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Al calcular el valor presente, descontando los pagos futuros a la tasa de interés de Inversiones alternativas estamos considerando su",
+    "opciones": [
+      "Costo de oportunidad",
+      "Precio de mercado",
+      "Riesgo financiero",
+      "Utilidad neta"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Precio de mercado",
+    "explicacion": ""
+  },
+  {
+    "id": 483,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué institución financiera canaliza sus recursos hacia los sectores prioritarios para el Desarrollo económico del país?",
+    "opciones": [
+      "Sociedades de Inversión",
+      "Banca de Desarrollo",
+      "Banca Múltiple",
+      "Casas de Bolsa"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Banca de Desarrollo",
+    "explicacion": ""
+  },
+  {
+    "id": 484,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Del siguiente listado elegir 2 que administran sociedades de inversión:\n\na) Administradoras de Fondos para el Retiro\nb) Casas de Bolsa\nc) Sociedades Operadoras de Sociedades de Inversión\nd) Casas de Cambio\ne) Instituciones de Crédito",
+    "opciones": [
+      "a,c",
+      "d,e",
+      "b,d",
+      "b,c"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "b,c",
+    "explicacion": ""
+  },
+  {
+    "id": 485,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cómo se definen las sociedades de inversión de deuda?",
+    "opciones": [
+      "Las que invierten en operaciones de acciones en bolsa de bajo riesgo",
+      "Las que invierten en operación de títulos de tasas no garantizadas",
+      "Las que dirigen su inversión al mercado de dinero en el que operan títulos con tasa de Rendimiento garantizado",
+      "Las que dirigen su inversión a comprar títulos de alto riesgo"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Las que invierten en operación de títulos de tasas no garantizadas",
+    "explicacion": ""
+  },
+  {
+    "id": 486,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué operación financiera se identifica con el pago periódico de la prima de un seguro de vida?",
+    "opciones": [
+      "Anualidad",
+      "Interés",
+      "Interés compuesto",
+      "Descuento"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Anualidad",
+    "explicacion": ""
+  },
+  {
+    "id": 487,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Las letras de cambio que emite un banco en respaldo al préstamo que hace a una empresa son:",
+    "opciones": [
+      "Aceptaciones bancarias",
+      "Pagaré con rendimiento Liquidable al vencimiento",
+      "Depósitos a plazo",
+      "Cetés"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Aceptaciones bancarias",
+    "explicacion": ""
+  },
+  {
+    "id": 488,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "La característica principal de los instrumentos de deuda es:",
+    "opciones": [
+      "Los suscriben entidades privadas",
+      "Ofrecen un rendimiento preestablecido",
+      "Los emite el Gobierno Federal",
+      "Tienen renta variable"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Ofrecen un rendimiento preestablecido",
+    "explicacion": ""
+  },
+  {
+    "id": 489,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuál es la tasa que pagan las instituciones financieras sobre los fondos depositados?",
+    "opciones": [
+      "Tasa Real",
+      "Tasa Activa",
+      "Tasa Pasiva",
+      "Tasa de Inflación"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Tasa Pasiva",
+    "explicacion": ""
+  },
+  {
+    "id": 490,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Siguiendo el principio de la diversificación, ¿Cuál será la mejor opción para recomendar a un prospecto?",
+    "opciones": [
+      "Combinar un portafolio en función a los requerimientos de liquidez, aversión al riesgo y Rendimientos esperados",
+      "Elegir un plan de inversión de sociedades de inversión de instrumentos de renta variable",
+      "Elegir un plan de inversión de sociedades de inversión de instrumentos de deuda",
+      "Combinar la inversión en 75% de renta variable y 25% de deuda"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Combinar un portafolio en función a los requerimientos de liquidez, aversión al riesgo y Rendimientos esperados",
+    "explicacion": ""
+  },
+  {
+    "id": 491,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué autoridad se encarga de aplicar la política monetaria y el tipo de cambio?",
+    "opciones": [
+      "La secretaria de Hacienda y Crédito Público (SHCP)",
+      "El Instituto de Protección del Ahorro Bancario (IPAB)",
+      "El Banco de México",
+      "La Comisión Nacional Bancaria y de Valores (CNBV)"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "El Banco de México",
+    "explicacion": ""
+  },
+  {
+    "id": 492,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué instituciones privadas administran las aportaciones de los trabajadores por el concepto de retiro, cesantía en edad avanzada o vejez?",
+    "opciones": [
+      "Sociedad de Ahorro y Préstamo",
+      "Uniones de Crédito",
+      "Administradora de Fondo para el Retiro",
+      "Sociedades de inversión de los fondos de los trabajadores"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Sociedad de Ahorro y Préstamo",
+    "explicacion": ""
+  },
+  {
+    "id": 493,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Pagares con rendimiento al vencimiento",
+    "opciones": [
+      "1,2,7",
+      "3,4,6",
+      "2,6,7",
+      "2,4,5"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "1,2,7",
+    "explicacion": ""
+  },
+  {
+    "id": 494,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "El rendimiento de un fondo de inversión de deuda es:",
+    "opciones": [
+      "Fijo",
+      "Constante",
+      "Variable",
+      "Preestablecido"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Preestablecido",
+    "explicacion": ""
+  },
+  {
+    "id": 495,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuál es la Tasa de interés que mas le convendría a un prospecto?",
+    "opciones": [
+      "2% bimestral",
+      "1% mensual",
+      "6% semestral",
+      "12% anual"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "12% anual",
+    "explicacion": ""
+  },
+  {
+    "id": 496,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "La mejor forma de ayudar a incrementar el patrimonio familiar de un prospecto en nuestro país, seria ofrecerle un plan de seguros:",
+    "opciones": [
+      "Con un portafolio de inversión combinando con diferentes opciones de Riesgos y tasas",
+      "Con una inversión de bajo riesgo con un 3 % de tasa estimada sin ganancia",
+      "Con una inversión de una tasa de interés del 2 % garantizada",
+      "Con una inversión de una tasa de interés del 6 % sin garantía en un fondo de alto Riesgo"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Con un portafolio de inversión combinando con diferentes opciones de Riesgos y tasas",
+    "explicacion": ""
+  },
+  {
+    "id": 497,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Identifique el principal propósito del Mercado de Valores en una economía",
+    "opciones": [
+      "Fijar precios de bienes y servicios",
+      "Asegurar la rentabilidad de los instrumentos financieros",
+      "Determinar el tipo de cambio",
+      "Canalizar los ahorros de forma eficiente para los usuarios finales"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Canalizar los ahorros de forma eficiente para los usuarios finales",
+    "explicacion": ""
+  },
+  {
+    "id": 498,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Señale como se determina Rendimiento",
+    "opciones": [
+      "Es el precio de venta de los instrumentos financieros",
+      "Es el precio de compra de los instrumentos financieros",
+      "Es la diferencia entre la oferta y la demanda de los instrumentos financieros",
+      "Es la diferencia entre el precio de compra y el precio de venta de los instrumentos financieros"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Es la diferencia entre el precio de compra y el precio de venta de los instrumentos financieros",
+    "explicacion": ""
+  },
+  {
+    "id": 499,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "La rentabilidad de una inversión financiera es recompensa al poseedor por:",
+    "opciones": [
+      "Incrementar su participación en Mercado Accionario",
+      "Renunciar Temporalmente a la liquidez y soportar el Riesgo",
+      "Decrementar su poder de adquisición futura y sus ganancias",
+      "Participar en el Mercado de bienes y servicios."
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Renunciar Temporalmente a la liquidez y soportar el Riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 500,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué capacidad tiene una compañía de Seguros ante los Riesgos Financieros?",
+    "opciones": [
+      "Eliminarlos",
+      "Diversificarlos",
+      "Regularlos",
+      "Evadirlos"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Diversificarlos",
+    "explicacion": ""
+  },
+  {
+    "id": 501,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Cuales son las principales Características que definen al mercado de dinero",
+    "opciones": [
+      "Activos Financieros de largo plazo, con diferentes grados de riesgo y liquidez",
+      "Activos Financieros en forma de deuda a corto plazo, bajo riesgo y elevada liquidez",
+      "Activos Financieros emitidos en mediano plazo con renta fija o variable",
+      "Activos empresariales a mediano y largo plazo con renta variable"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Activos Financieros en forma de deuda a corto plazo, bajo riesgo y elevada liquidez",
+    "explicacion": ""
+  },
+  {
+    "id": 502,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿En qué mercado se negocia la compra-venta de nuevos instrumentos de renta fija o variable?",
+    "opciones": [
+      "Mercado de dinero",
+      "Mercado de valores",
+      "Mercado secundario",
+      "Mercado primario"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Mercado primario",
+    "explicacion": ""
+  },
+  {
+    "id": 503,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Si me aumentan el sueldo 5% cada año en un país cuya inflación es del 5% ¿Cuál es el efecto sobre mi poder adquisitivo?",
+    "opciones": [
+      "Se modifica",
+      "Se mantiene igual",
+      "Aumenta",
+      "Disminuye"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Se mantiene igual",
+    "explicacion": ""
+  },
+  {
+    "id": 504,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuál es la principal característica de la tasa de rendimiento Variable?",
+    "opciones": [
+      "No está garantizada",
+      "Está garantizada",
+      "Siempre es positiva",
+      "Depende de factores internos controlables"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "No está garantizada",
+    "explicacion": ""
+  },
+  {
+    "id": 505,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cómo se definen las sociedades de inversión de renta variable?",
+    "opciones": [
+      "Las que canalizan sus recursos al mercado de capitales en los que su rendimiento depende de las fluctuaciones del mismo",
+      "Las que invierten en acciones AAA",
+      "Las que operan títulos de empresas multinacionales con altos rendimientos y bajo riesgo",
+      "Las que invierten en instrumentos de tasa fija"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Las que canalizan sus recursos al mercado de capitales en los que su rendimiento depende de las fluctuaciones del mismo",
+    "explicacion": ""
+  },
+  {
+    "id": 506,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Los activos financieros en función de los emisores y de los rendimientos o ganancias pueden ser clasificados en",
+    "opciones": [
+      "Bonos o títulos de renta indexada",
+      "Títulos de renta o renta variable",
+      "Primarios o títulos de renta fija",
+      "Títulos de propiedad o a largo plazo"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Títulos de renta o renta variable",
+    "explicacion": ""
+  },
+  {
+    "id": 507,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "De las siguientes oraciones seleccione aquella que se refiera a la definición de activo",
+    "opciones": [
+      "Son los bienes y derechos que constituyen el capital de una empresa",
+      "Son las deudas y obligaciones que una empresa contrae derivada de sus operaciones",
+      "Se refiere solo al derecho sobre los títulos y valores que posee una empresa",
+      "Son los bienes y derechos que una empresa pose a determinada fecha, susceptibles a ser valorados económicamente"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Son los bienes y derechos que una empresa pose a determinada fecha, susceptibles a ser valorados económicamente",
+    "explicacion": ""
+  },
+  {
+    "id": 508,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Que fenómeno económico se enfrenta cuando se observa una reducción del valor de la moneda nacional en términos de las monedas extranjeras",
+    "opciones": [
+      "Inflación",
+      "Deflación",
+      "Decrecimiento",
+      "Devaluación"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Devaluación",
+    "explicacion": ""
+  },
+  {
+    "id": 509,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Cual es el propósito fundamental de la regulación del mercado financiero",
+    "opciones": [
+      "Incrementar la rentabilidad de los activos financieros",
+      "Vigilar la solvencia de las entidades financieras",
+      "Corregir las fallas de mercado",
+      "Fomentar el desarrollo del sector industrial"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Vigilar la solvencia de las entidades financieras",
+    "explicacion": ""
+  },
+  {
+    "id": 510,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Que concepto relaciona la rentabilidad a la cual se ha renunciado por invertir en proyectos en vez de invertir en otros activos financieros",
+    "opciones": [
+      "Solvencia",
+      "Costo de oportunidad",
+      "Productividad",
+      "Liquidez"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Costo de oportunidad",
+    "explicacion": ""
+  },
+  {
+    "id": 511,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "La relación entre la rentabilidad y la liquidez es:",
+    "opciones": [
+      "Creciente",
+      "Decreciente",
+      "Nula",
+      "Exponencial"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Creciente",
+    "explicacion": ""
+  },
+  {
+    "id": 512,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Que termino define el derecho de los propietarios sobre los activos netos de una empresa",
+    "opciones": [
+      "Riqueza",
+      "Patrimonio",
+      "Ganancias",
+      "Ingreso"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Patrimonio",
+    "explicacion": ""
+  },
+  {
+    "id": 513,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Que autoridad inspecciona y vigila el cumplimiento de las obligaciones de la ley de instituciones de crédito",
+    "opciones": [
+      "La CNSF",
+      "La CNBV",
+      "CONDUSEF",
+      "Instituto de protección al ahorro bancario"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "La CNBV",
+    "explicacion": ""
+  },
+  {
+    "id": 514,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Elija del siguiente listado las figuras que se consideran intermediarios del mercado de valores:\n\nA. Bolsa Mexicana de Valores\nB. Casas de Bolsa\nC. Sociedades operadoras de sociedades de inversión\nD. Casas de Cambio\nE. Instituciones de seguros",
+    "opciones": [
+      "C, D",
+      "B, C",
+      "B, E",
+      "A, D"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "B, C",
+    "explicacion": ""
+  },
+  {
+    "id": 515,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Como puede enfrentarse el riesgo propio, es decir aquel que se define por los peligros que rodean a determinada empresa",
+    "opciones": [
+      "A través de un intercambio de capital",
+      "Con la emisión de acciones",
+      "Mediante la diversificación de inversiones",
+      "Incrementando los pasivos"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Mediante la diversificación de inversiones",
+    "explicacion": ""
+  },
+  {
+    "id": 516,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Cuando la rentabilidad futura de algún activo financiero no es predecible, entonces el inversionista enfrenta un",
+    "opciones": [
+      "Costo",
+      "Gasto",
+      "Descuento",
+      "Riesgo"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 517,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Que significa una taza nominal de interés",
+    "opciones": [
+      "Tasa equivalente",
+      "La diferencia entre el peso de venta y el de compra",
+      "Tasa de interés que se expresa en términos de bienes reales",
+      "Tasa de interés sin ajuste inflacionario"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Tasa de interés sin ajuste inflacionario",
+    "explicacion": ""
+  },
+  {
+    "id": 518,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Que instrumento financiero avalado por el gobierno federal esta ligado con el índice nacional de precios al consumidor",
+    "opciones": [
+      "Bonos BPAS",
+      "Cetes",
+      "Udibonos",
+      "Bondes"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Udibonos",
+    "explicacion": ""
+  },
+  {
+    "id": 519,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Identifique de los siguientes instrumentos financieros cual corresponde al mercado de derivados",
+    "opciones": [
+      "Certificados de participación",
+      "Opciones",
+      "Bondes",
+      "Pagares"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Opciones",
+    "explicacion": ""
+  },
+  {
+    "id": 520,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Como se llama al instrumento de deuda a corto plazo emitido por empresas mexicanas bien conocidas, cuyas acciones están cotizadas en la bolsa",
+    "opciones": [
+      "Acción",
+      "Udibonos",
+      "Cete",
+      "Papel comercial"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Acción",
+    "explicacion": ""
+  },
+  {
+    "id": 521,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Relaciona el concepto de interés nominal con una de las siguientes definiciones",
+    "opciones": [
+      "Valor presente de una inversión",
+      "Rendimiento de una inversión expresada como el aumento de la cantidad de bienes y servicios y se pueden comprar",
+      "Tasa de interés del activo menos la inflación",
+      "Incremento del valor monetario de una inversión"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Incremento del valor monetario de una inversión",
+    "explicacion": ""
+  },
+  {
+    "id": 522,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "elija de las siguientes opciones lo que corresponda a las instituciones financieras que captan recursos de la colocación de instrumentos inscritos en el registro nacional de valores e intermediarios y otorgan créditos para determinadas actividades o sector",
+    "opciones": [
+      "Instituciones de seguros especializados en pensiones derivadas de las leyes de seguridad social",
+      "Administradora de fondos para el retiro (afores)",
+      "Sociedades financieras de objeto múltiple (sofomes)",
+      "Sociedades de inversión especializadas en fondos para el retiro (siefores)"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Sociedades financieras de objeto múltiple (sofomes)",
+    "explicacion": ""
+  },
+  {
+    "id": 523,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Una Cartera Diversificada se Caracteriza por ser:",
+    "opciones": [
+      "Más Riesgosa",
+      "Menos Riesgosa",
+      "Totalmente impredecible",
+      "Totalmente Predecible"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Menos Riesgosa",
+    "explicacion": ""
+  },
+  {
+    "id": 524,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Identifique el término que representa las deudas u obligaciones que son exigibles en un plazo no mayor de un año con la característica principal de que se encuentran en constante movimiento o rotación.",
+    "opciones": [
+      "Activo",
+      "Capital contable",
+      "Pasivo fijo",
+      "Pasivo circulante"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Pasivo circulante",
+    "explicacion": ""
+  },
+  {
+    "id": 525,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Que concepto se define como “las disminuciones patrimoniales que afectan los resultados de un periodo, aunque no constituyen desembolso o salida de efectivo”",
+    "opciones": [
+      "Egresos",
+      "Utilidades",
+      "Préstamo personal",
+      "Ingresos"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Préstamo personal",
+    "explicacion": ""
+  },
+  {
+    "id": 526,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "La variables rentabilidad, riesgo y liquidez mantienen una relación de:",
+    "opciones": [
+      "Exclusión",
+      "Interdependencia",
+      "Independencia",
+      "Complemento"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Interdependencia",
+    "explicacion": ""
+  },
+  {
+    "id": 527,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué define la tasa Nominal?",
+    "opciones": [
+      "El Valor Presente de una inversión",
+      "El incremento monetario de una inversión",
+      "La tasa de interés menos la inflación",
+      "El Incremento en la cantidad de bienes y servicios que se pueden comprar"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "El Valor Presente de una inversión",
+    "explicacion": ""
+  },
+  {
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuáles de los siguientes instrumentos de inversión tienen como emisor a instituciones privadas?\n\n1.- Certificados de depósito\n2.- BONDES\n3.- Acciones Serie “A”\n4.- UDIBONOS\n5.- Pagarés de Indemnización Carretera (PIC)\n6.- Pagarés con Rendimiento Liquidable al Vencimiento\n7.- Acciones Serie “E”",
+    "opciones": [
+      "2 y 4",
+      "1 y 2",
+      "3 y 7",
+      "5 y 6"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "3 y 7",
+    "explicacion": ""
+  },
+  {
+    "id": 529,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué instituciones financieras funcionan como mecanismo de intermediación que captan recursos de muchos inversionistas y usan lo captado en la compra de acciones y valores para conformar un portafolio o cartera?",
+    "opciones": [
+      "Empresas de factoraje",
+      "Uniones de crédito",
+      "Sociedades de inversión",
+      "Casas de Cambio"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Sociedades de inversión",
+    "explicacion": ""
+  },
+  {
+    "id": 530,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué son los derivados?",
+    "opciones": [
+      "Son instrumentos derivados de activos financieros clásicos, con renta fija o variable",
+      "Son los basados en activos financieros clásicos pero con elevados rendimientos",
+      "Son instrumentos existentes en el mercado cuyo valor depende del valor de un bien (financiero o no financiero)",
+      "Son los instrumentos cuya emisión proviene de la Administración Pública"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Son instrumentos existentes en el mercado cuyo valor depende del valor de un bien (financiero o no financiero)",
+    "explicacion": ""
+  },
+  {
+    "id": 531,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué sucede en una economía cuando se presenta una devaluación",
+    "opciones": [
+      "Se abaratan las importaciones para el país que devalúa en términos de su propia moneda",
+      "Se encarecen las exportaciones del país que devalúa con respecto a los demás países",
+      "Se abaratan las exportaciones del país que devalúa con respecto a los otros países",
+      "Se mantiene sin cambio en la balanza comercial"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Se abaratan las exportaciones del país que devalúa con respecto a los otros países",
+    "explicacion": ""
+  },
+  {
+    "id": 532,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué es valor presente?",
+    "opciones": [
+      "El valor del dinero expresado en términos del poder adquisitivo de hoy",
+      "Valor del dinero referenciado en el tiempo",
+      "Valor del dinero con relación a cualquier año",
+      "Valor del dinero expresado a precios constantes"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "El valor del dinero expresado en términos del poder adquisitivo de hoy",
+    "explicacion": ""
+  },
+  {
+    "id": 533,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Relaciona el concepto de Tasa de interés Nominal con una de las siguientes definiciones:",
+    "opciones": [
+      "Tasa de interés del activo menos la inflación",
+      "Incremento del valor monetario de una inversión",
+      "Valor presente de una Inversión",
+      "Rendimiento de una inversión expresada como el aumento de la cantidad de bienes y servicios que se pueden comprar"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Rendimiento de una inversión expresada como el aumento de la cantidad de bienes y servicios que se pueden comprar",
+    "explicacion": ""
+  },
+  {
+    "id": 534,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Los intermediarios Bursátiles son Certificados por:",
+    "opciones": [
+      "CNBV",
+      "CNSF",
+      "CONSAR",
+      "AMIB"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "AMIB",
+    "explicacion": ""
+  },
+  {
+    "id": 535,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Cuando un instrumento financiero presenta menor liquidez y mayor riesgo se espera que sea:",
+    "opciones": [
+      "Menos cotizado o",
+      "Mas rentable o",
+      "Mas estable o",
+      "Menos rentable"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Mas rentable o",
+    "explicacion": ""
+  },
+  {
+    "id": 536,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuál de las siguientes entidades pertenece al Sistema Bursátil?",
+    "opciones": [
+      "Empresas de Factoraje",
+      "Uniones de Crédito",
+      "Casas de Cambio",
+      "Sociedades de Inversión"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Sociedades de Inversión",
+    "explicacion": ""
+  },
+  {
+    "id": 537,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Es la capacidad financiera o cantidad de dinero del que disponen las personas físicas o morales?",
+    "opciones": [
+      "Utilidad",
+      "Interés",
+      "Crédito",
+      "Poder adquisitivo"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Poder adquisitivo",
+    "explicacion": ""
+  },
+  {
+    "id": 538,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Que variable juega un papel fundamental en la elección de un portafolio Financiero?",
+    "opciones": [
+      "Rendimiento o ganancia esperada",
+      "Utilidad Marginal",
+      "Estabilidad del Mercado",
+      "Utilidad Operativa"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Rendimiento o ganancia esperada",
+    "explicacion": ""
+  },
+  {
+    "id": 539,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Cuando una cantidad una cantidad a recibir en el futuro, traemos a valor presente deflactada por la inflación estamos calculando:",
+    "opciones": [
+      "Por su rendimiento",
+      "Su interés compuesto",
+      "Su poder adquisitivo",
+      "Su interés simple"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Su poder adquisitivo",
+    "explicacion": ""
+  },
+  {
+    "id": 540,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Todos los siguientes son objetivos de las Sociedades de Inversión, EXCEPTO",
+    "opciones": [
+      "El acceso al pequeño y mediano inversionista",
+      "La diversificación",
+      "La garantía de los rendimientos positivos para los pequeños inversionistas",
+      "El fortalecimiento y descentralización del mercado de valores"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "La garantía de los rendimientos positivos para los pequeños inversionistas",
+    "explicacion": ""
+  },
+  {
+    "id": 541,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Señale que sociedades adquieren valores y documentos seleccionados de acuerdo al criterio de diversificación de riesgos con recursos provenientes de la venta de acciones entre el publico inversionista",
+    "opciones": [
+      "Sociedades de Inversión",
+      "Sociedades Financieras de Objeto Limitado",
+      "Sociedades de Crédito",
+      "Sociedades de Información Crediticia"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Sociedades de Inversión",
+    "explicacion": ""
+  },
+  {
+    "id": 542,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Señale una actividad que relaciona al Banco de México con el Sistema Bancario",
+    "opciones": [
+      "Inspecciona y vigila el cumplimiento de las disposiciones de la Ley de Crédito",
+      "Envía billetes y moneda metálica a la Banca Múltiple y de Desarrollo",
+      "Autoriza la constitución y supervisión de operaciones bancarias.",
+      "Supervisa todas las instituciones del sistema Financiero"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Envía billetes y moneda metálica a la Banca Múltiple y de Desarrollo",
+    "explicacion": ""
+  },
+  {
+    "id": 543,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuál es la principal característica de la tasa de rendimiento?",
+    "opciones": [
+      "No esta garantizada",
+      "Esta Garantizada",
+      "Siempre es positiva",
+      "Depende de los factores internos controlables"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "No esta garantizada",
+    "explicacion": ""
+  },
+  {
+    "id": 544,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿En qué mercado se efectúan transacciones de valores que generalmente no presentan un vencimiento?",
+    "opciones": [
+      "En el monetario",
+      "En el de metales",
+      "En el de bienes",
+      "En el de capitales"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "En el de capitales",
+    "explicacion": ""
+  },
+  {
+    "id": 545,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué concepto define la proyección de flujos equivalentes al capital inicial invertido en un plazo determinado a una cierta tasa de interés?",
+    "opciones": [
+      "Nivel máximo de rentabilidad",
+      "Riesgo mínimo",
+      "Precio de equilibrio",
+      "Valor del dinero en el tiempo"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Valor del dinero en el tiempo",
+    "explicacion": ""
+  },
+  {
+    "id": 546,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Todas las siguientes son tipos de sociedades de inversión, EXCEPTO:",
+    "opciones": [
+      "De objeto ilimitado",
+      "De renta variable",
+      "En instrumentos de deuda",
+      "De capitales"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "De capitales",
+    "explicacion": ""
+  },
+  {
+    "id": 547,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Del siguiente listado elegir 2 que administran sociedades de inversión: a) Administradoras de fondos para el retiro b) Casas de bolsa c) Sociedades operadoras de sociedades de inversión d) Casas de cambio e) Instituciones de crédito",
+    "opciones": [
+      "a,c",
+      "d,e",
+      "b,d",
+      "b,c"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "a,c",
+    "explicacion": ""
+  },
+  {
+    "id": 548,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Elegir, de la siguiente lista, las características principales que definen al mercado de dinero a) Deuda a corto plazo b) Activos empresariales a mediano y largo plazo c) Bajo riesgo d) Alto riesgo e) Baja liquidez f) Alta liquidez g) Renta fija h) Renta variable",
+    "opciones": [
+      "a, c, f",
+      "b, d, e",
+      "a, g, h",
+      "c, e, h"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "a, c, f",
+    "explicacion": ""
+  },
+  {
+    "id": 549,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuál es la máxima autoridad del sistema financiero en México?",
+    "opciones": [
+      "La Comisión Nacional de Seguros y Fianzas (CNSF)",
+      "La Secretaría de Hacienda y Crédito Público (SHCP)",
+      "La Comisión Nacional Bancaria y de Valores (CNBV)",
+      "La Comisión Nacional para la Protección y Defensa de los Usuarios de Servicios Financieros (CONDUSEF"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "La Secretaría de Hacienda y Crédito Público (SHCP)",
+    "explicacion": ""
+  },
+  {
+    "id": 550,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿En qué mercado se negocia la compra-venta de nuevos instrumentos de renta fija o variable?",
+    "opciones": [
+      "Mercado de dinero",
+      "Mercado de valores",
+      "Mercado secundario",
+      "Mercado primario"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Mercado primario",
+    "explicacion": ""
+  },
+  {
+    "id": 551,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cómo se define la tasa de rendimiento?",
+    "opciones": [
+      "La que se expresa como porcentaje sobre el capital invertido inicialmente",
+      "Como la cantidad obtenida comparada contra la cantidad invertida",
+      "Como una tasa que garantiza en el tiempo un rendimiento",
+      "Como una por arriba de la inflación y positiva"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "La que se expresa como porcentaje sobre el capital invertido inicialmente",
+    "explicacion": ""
+  },
+  {
+    "id": 552,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuál es el concepto que representa el costo del dinero en el tiempo?",
+    "opciones": [
+      "Tasa de interés",
+      "Tasa de inflación",
+      "Renta",
+      "Dividendo"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Tasa de interés",
+    "explicacion": ""
+  },
+  {
+    "id": 553,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué se entiende por tipo de cambio?",
+    "opciones": [
+      "Precio de la divisa extranjera en términos de la unidad monetaria nacional",
+      "Precio de los bienes exportados",
+      "Precio del dinero",
+      "Tasa interna de rentabilidad"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Precio de la divisa extranjera en términos de la unidad monetaria nacional",
+    "explicacion": ""
+  },
+  {
+    "id": 554,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué se entiende por tipo de cambio?",
+    "opciones": [
+      "Precio de la divisa extranjera en términos de la unidad monetaria nacional",
+      "Precio de los bienes exportados",
+      "Precio del dinero",
+      "Tasa interna de rentabilidad"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Precio de la divisa extranjera en términos de la unidad monetaria nacional",
+    "explicacion": ""
+  },
+  {
+    "id": 555,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Qué autoridad tiene el objetivo de procurar la equidad entre los usuarios y las instituciones financieras?",
+    "opciones": [
+      "El Banco de México",
+      "La Comisión Nacional Bancaria y de Valores (CNBV)",
+      "La Comisión Nacional para la Protección y Defensa de los Usuarios de Servicios Financieros (CONDUSEF)",
+      "La Secretaría de Hacienda y Crédito Público (SHCP)"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "La Comisión Nacional para la Protección y Defensa de los Usuarios de Servicios Financieros (CONDUSEF)",
+    "explicacion": ""
+  },
+  {
+    "id": 556,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cómo se define la diversificación, considerada una de los principios básicos de las sociedades de inversión?",
+    "opciones": [
+      "utilizar los principios de las probabilidades para no arriesgar",
+      "invertir el 100% en una alternativa de bajo riesgo",
+      "la distribución del capital por invertir entre varias alternativas con el fin de diluir el riesgo",
+      "la inversión de una proporción del capital y el gasto de la proporción restante"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "la distribución del capital por invertir entre varias alternativas con el fin de diluir el riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 557,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Cuál de las siguientes actividades no corresponde a las realizadas en los mercados financieros?",
+    "opciones": [
+      "Emitir instrumentos financieros",
+      "Asegurar la rentabilidad de los instrumentos de inversión",
+      "Poner en contacto a los agentes financieros",
+      "Reducir los plazos y los costos de intermediación"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Asegurar la rentabilidad de los instrumentos de inversión",
+    "explicacion": ""
+  },
+  {
+    "id": 558,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cómo se definen las sociedades de inversión de deuda?",
+    "opciones": [
+      "las que invierten en operaciones de acciones en bolsa de bajo riesgo",
+      "las que invierten en operación de títulos de tasas no garantizadas",
+      "las que dirigen su inversión al mercado de dinero en el que operan títulos con tasa de rendimiento garantizada",
+      "las que dirigen su inversión a comprar títulos de alto riesgo"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "las que invierten en operación de títulos de tasas no garantizadas",
+    "explicacion": ""
+  },
+  {
+    "id": 559,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuál es el principal instrumento financiero del mercado de capitales?",
+    "opciones": [
+      "Acciones",
+      "Papel comercial",
+      "Certificados de depósitos no negociables",
+      "Aceptaciones bancaria"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Acciones",
+    "explicacion": ""
+  },
+  {
+    "id": 560,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuál es el principal instrumento financiero del mercado de capitales?",
+    "opciones": [
+      "Acciones",
+      "Papel comercial",
+      "Certificados de depósitos no negociables",
+      "Aceptaciones bancarias"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Acciones",
+    "explicacion": ""
+  },
+  {
+    "id": 561,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Un portafolio diversificado se caracteriza por ser:",
+    "opciones": [
+      "Totalmente impredecible",
+      "Menos riesgoso",
+      "Totalmente predecible",
+      "Más riesgoso"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Menos riesgoso",
+    "explicacion": ""
+  },
+  {
+    "id": 562,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Identifica el organismo que tiene por finalidad proveer a la economía del país de moneda nacional",
+    "opciones": [
+      "Casa de moneda",
+      "Banda de Desarrollo",
+      "Banco de México",
+      "SHCP"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Banco de México",
+    "explicacion": ""
+  },
+  {
+    "id": 563,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Identifique al intermediario financiero que utilizando principalmente recursos públicos otorga préstamos a individuos y empresas de sectores estratégicos",
+    "opciones": [
+      "Banca Comercial",
+      "Banca de Desarrollo",
+      "Sociedad de objeto limitado",
+      "Sociedad de Factoraje"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Banca de Desarrollo",
+    "explicacion": ""
+  },
+  {
+    "id": 564,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Todos son sectores regulados por la CNBV EXCEPTO",
+    "opciones": [
+      "Bancario",
+      "Seguros y de fianzas",
+      "Bursátil",
+      "Organizaciones auxiliares de Crédito"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Seguros y de fianzas",
+    "explicacion": ""
+  },
+  {
+    "id": 565,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Son Instituciones de banca de desarrollo EXCEPTO",
+    "opciones": [
+      "BANJERCITO",
+      "BANCOMEXT",
+      "BANOBARAS",
+      "BANXICO"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "BANXICO",
+    "explicacion": ""
+  },
+  {
+    "id": 566,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "De renta variable:\n\na. Acción\nb. Papel Comercial\nc. Cetes\nd. Acciones de Sociedades de Inversión",
+    "opciones": [
+      "1a d 2 b c",
+      "1b d 2 a c",
+      "1 b c 2 a d",
+      "1 a c 2 b a"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1 b c 2 a d",
+    "explicacion": ""
+  },
+  {
+    "id": 567,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Identifica la sociedad de inversión que puede vender y comprar acciones en cualquier tiempo:",
+    "opciones": [
+      "Abierta",
+      "Futuros",
+      "Cerrada",
+      "Derivados"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Abierta",
+    "explicacion": ""
+  },
+  {
+    "id": 568,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Los siguientes conceptos son ejemplos de anualidades financieras ciertas EXCEPTO",
+    "opciones": [
+      "Pagos fijos a una tienda comercial por 19 meses",
+      "Los intereses mensuales en un fondo de inversión a largo plazo",
+      "Pago de una prima de un plan a 25 años",
+      "Renta mensual de un contrato de arrendamiento"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Los intereses mensuales en un fondo de inversión a largo plazo",
+    "explicacion": ""
+  },
+  {
+    "id": 569,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "El Sr. Pérez adquirió una maquina a 1000 dólares y pago $9,976.00 pesos mexicanos. 10 años después la maquina vale $1,000 dólares pero se pagaron $10,890 por esta diferencia se dice que hay una afectación:",
+    "opciones": [
+      "Real",
+      "De rendimiento",
+      "Nominal",
+      "De cambio"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "De cambio",
+    "explicacion": ""
+  },
+  {
+    "id": 570,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Expresa en notación decimal 1/3, redondeando a 3 dígitos",
+    "opciones": [
+      "33.333%",
+      "33.333",
+      "3.333",
+      "0.333"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "33.333%",
+    "explicacion": ""
+  },
+  {
+    "id": 571,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": ".- Una empresa tiene ventas por $100 millones, cuentas por cobrar por $70 millones, activos totales por $72 millones, utilidad neta por $25 millones y deuda total por $406.6 millones Cual es el apalancamiento financiero de la deuda",
+    "opciones": [
+      "Utilidad neta / activos totales = 3.47 %",
+      "Ventas / cuentas por cobrar = 142.85 %",
+      "Deuda total / activos totales = 56.47 %(Este índice indica un mal apalancamiento)",
+      "Venta / activos totales = 13.88 %"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Deuda total / activos totales = 56.47 %(Este índice indica un mal apalancamiento)",
+    "explicacion": ""
+  },
+  {
+    "id": 572,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "una persona obtiene un préstamo por $50,000.00 y acepta liquidarlo año y medio después. Mientras exista el adeudo pagara un interés simple mensual de 3.5 %, Cuanto debe de pagar de interés cada mes",
+    "opciones": [
+      "$ 1,750.00",
+      "$ 31,500.00",
+      "$ 81,500.00",
+      "$ 51,750.00"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$ 1,750.00",
+    "explicacion": ""
+  },
+  {
+    "id": 573,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Cual es la tasa efectiva bimestral equivalente a una tasa del 36 % convertible semestralmente",
+    "opciones": [
+      "6.43 % .36/2=.18",
+      "5.67 % (1.18) 2 =1.3924",
+      "6.57 % .3924/6=0.0654",
+      "10.79 % = 6.54%"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "10.79 % = 6.54%",
+    "explicacion": ""
+  },
+  {
+    "id": 574,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "La Sra. Medrano invirtió $3,000.00 a una tasa de interés del 6 % capitalizable semestralmente por un periodo de 2 años ¿Cual es el monto que tendrá?",
+    "opciones": [
+      "$ 7,320.00",
+      "$3,787.43",
+      "$10,263.06",
+      "$5,600.00"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "$3,787.43",
+    "explicacion": ""
+  },
+  {
+    "id": 575,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Cual es la tasa efectiva de 2 años tres meses equivalente a una tasa de 15 % convertible trimestralmente",
+    "opciones": [
+      "39.28 %",
+      "15.69 %",
+      "11.88 %",
+      "33.75 %"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "39.28 %",
+    "explicacion": ""
+  },
+  {
+    "id": 576,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "expresa en notación decimal 12 %",
+    "opciones": [
+      "12/100",
+      "0.12",
+      "1.2",
+      "0.012"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "0.12",
+    "explicacion": ""
+  },
+  {
+    "id": 577,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "que porcentaje es $ 337.50 de $ 13,500.00",
+    "opciones": [
+      "15 %",
+      "2.5 %",
+      "0.15 %",
+      "25 %"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "2.5 %",
+    "explicacion": ""
+  },
+  {
+    "id": 578,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Se obtiene un crédito por $ 180,000.00 para pagar en 120 días a de una tasa de interés simple del 2 % mensual ¿Qué cantidad debe pagar al vencerse la deuda?",
+    "opciones": [
+      "$ 144,000.00 VF=VP*i*n",
+      "$ 172,800.00 =180000*.02*4",
+      "$ 194,830.00 =14400",
+      "$ 194,400.00 M=VF+180000 M=14400+180000= 194400"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "$ 194,400.00 M=VF+180000 M=14400+180000= 194400",
+    "explicacion": ""
+  },
+  {
+    "id": 579,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcule el monto de $ 450.00 al 6 % de interés simple durante 8 meses",
+    "opciones": [
+      "$216.00",
+      "$451.50",
+      "$666.00",
+      "$468.00"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "$468.00",
+    "explicacion": ""
+  },
+  {
+    "id": 580,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Cual es la tasa efectiva bimestral equivalente a una tasa del 36 % convertible semestralmente",
+    "opciones": [
+      "6.43 %",
+      "10.79 %",
+      "5.67 %",
+      "6.57 %"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "6.57 %",
+    "explicacion": ""
+  },
+  {
+    "id": 581,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Expresa en notación porcentual redondeado a 2 dígitos 5/9",
+    "opciones": [
+      "55.56 %",
+      "5.60 %",
+      "0.55 %",
+      "56.00 %"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "56.00 %",
+    "explicacion": ""
+  },
+  {
+    "id": 582,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcule el monto de $ 700.00 al 8 % de interés simple mensual durante 15 meses",
+    "opciones": [
+      "$ 770.00",
+      "$ 705.84",
+      "$ 70.00",
+      "$ 840.00"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "$ 840.00",
+    "explicacion": ""
+  },
+  {
+    "id": 583,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcula el valor que tendrían $525.00 después de 6 meses si se invirtiera a una tasa de interés simple después de 6 meses si se invirtiera a una tasa de interés simple que da un rendimiento del 2.5 % mensual",
+    "opciones": [
+      "$ 608.84",
+      "$ 531.52",
+      "$ 558.33",
+      "$ 603.75"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "$ 603.75",
+    "explicacion": ""
+  },
+  {
+    "id": 584,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Cual es la razón de la siguiente serie de números 20,30,45,67.5,101.25.",
+    "opciones": [
+      "3",
+      "1.5",
+      "5",
+      "0.5"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1.5",
+    "explicacion": ""
+  },
+  {
+    "id": 585,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "La diferencia entre los rendimientos en un año completo de un fondo de inversión en seguros y un fondo de operación en una operadora es de $1232.24 pesos a favor del que esta en la aseguradora. Se deposito de la siguiente forma $225000 a una tasa de interés simple de 7.25 % en la aseguradora y la operadora pago una tasa de interés simple de 6.43 % ¿Cuanto se invirtió en la operadora?",
+    "opciones": [
+      "$224428.66",
+      "$223851.06",
+      "$222130.78",
+      "$225575.74"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "$225575.74",
+    "explicacion": ""
+  },
+  {
+    "id": 586,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Un padre de familia invierte $ 55,000.00 para retirarlos dentro de 3 años y utilizarlos en la inscripción y primeros gastos de su hijo en una universidad extranjera, al final del primer año su ahorro ya ha alcanzado $58,850.00, al final del segundo año llego a $ 62,969.50 y al termino de 3 años $67,377.37. Si la operación se pacto a la misma tasa para los 3 años ¿Qué tasa de interés se aplica?",
+    "opciones": [
+      "6 % 58850/55000=1.07-1*100=7",
+      "7 %",
+      "6.5 %",
+      "7.5 %"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "7 %",
+    "explicacion": ""
+  },
+  {
+    "id": 587,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Después de 4 años de haber invertido un capital a una tasa de interés simple de 7.5 % el inversionista obtuvo $63250.78 pesos ¿Cuál fue el capital inicial?",
+    "opciones": [
+      "$47685.28 Vp=63250.78/(1.075) 4 =63250.78/1.3354=47362.22",
+      "$44275.55",
+      "$47362.22",
+      "$48654.45"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "$47362.22",
+    "explicacion": ""
+  },
+  {
+    "id": 588,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "El Sr. López repartió $1250.00 entre sus 2 hijos 3/8 para Pepe y el resto para Sandra ¿Cuánto recibió Sandra?",
+    "opciones": [
+      "$468.75 1250*.375=468.75-1250=781.25",
+      "$781.25",
+      "38 %",
+      "$156.25 más que Pepe"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "$781.25",
+    "explicacion": ""
+  },
+  {
+    "id": 589,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Si se tiene una inflación del 6 % y la tasa de interés nominal es del 10 % ¿calcula la tasa real que recibirá una inversión con dichas características?",
+    "opciones": [
+      "4 % 1.10/1.06=1.03773-1*100=3.77",
+      "3.64 %",
+      "5.77 %",
+      "3.77 %"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "3.77 %",
+    "explicacion": ""
+  },
+  {
+    "id": 590,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Que cantidad se tiene que invertir el día de hoy al 3.8 % de interés simple bimestral para tener $150000 dentro de 3 meses",
+    "opciones": [
+      "$ 134,649.91",
+      "$ 141,838.86",
+      "$ 141,911.07",
+      "$ 134,121.75"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "$ 141,911.07",
+    "explicacion": ""
+  },
+  {
+    "id": 591,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Si inviertes $18,500.00 a una tasa del 15 % anual de interés simple al final de 6 meses tendrías $19887.50 Si se maneja en interés compuesto con capitalización bimestral ¿Cuánto seria su valor futuro?",
+    "opciones": [
+      "$19931.50",
+      "$19922.48",
+      "$21454.33",
+      "$21473.96"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "$21454.33",
+    "explicacion": ""
+  },
+  {
+    "id": 592,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "El Sr. López repartió $1250.00 entre sus 2 hijos 3/8 para Pepe y el resto para Sandra ¿Cuánto recibió Pepe?",
+    "opciones": [
+      "40 % 3/8 =.375 * 1250= 468.75",
+      "$375.00",
+      "$468.75",
+      "$781.25"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "$468.75",
+    "explicacion": ""
+  },
+  {
+    "id": 593,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcule el interés que ganaría un capital de $75,000 con una tasa del interés del 10.5% no capitalizable por 3 años.",
+    "opciones": [
+      "$101,192.45",
+      "$98,625.00",
+      "$82,875.00",
+      "$78,375.00"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "$98,625.00",
+    "explicacion": ""
+  },
+  {
+    "id": 594,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Una persona invierte un capital en pagarés a 28 días durante 4 periodos y obtiene un rendimiento total del 11%. Si la inflación en ese periodo fue del 4.5%, ¿Cuál es la tasa de interés real que obtuvo?",
+    "opciones": [
+      "1.05%",
+      "7.00%",
+      "6.22%",
+      "6.73%"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "6.22%",
+    "explicacion": ""
+  },
+  {
+    "id": 595,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Si guardas $10,000 pesos en una caja de seguridad y la inflación es del 3% cada año durante 2 años, ¿Cuál es el valor futuro de tu dinero al final de los años, en términos del poder adquisitivo que tendrá?",
+    "opciones": [
+      "$9,425.96",
+      "$10,000.00",
+      "$9,708.74",
+      "$9,433.96"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$9,425.96",
+    "explicacion": ""
+  },
+  {
+    "id": 596,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcule la siguiente cantidad: 4/3 de 1,200.",
+    "opciones": [
+      "300",
+      "900",
+      "1,600",
+      "400"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1,600",
+    "explicacion": ""
+  },
+  {
+    "id": 597,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcular el monto de $7,000 al 18% de interés simple durante 15 meses",
+    "opciones": [
+      "$8,575.00",
+      "$8,751.62",
+      "$8,890.00",
+      "$1,751.62"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$8,575.00",
+    "explicacion": ""
+  },
+  {
+    "id": 598,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcular el valor que tendrán $5,250 después de 6 meses si se invierten a una tasa de Interés simple que da un rendimiento del 3.5% mensual.",
+    "opciones": [
+      "$6,679.47",
+      "$5,342.55",
+      "$5,341.88",
+      "$6,352.50"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "$6,352.50",
+    "explicacion": ""
+  },
+  {
+    "id": 599,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Si guardas $10,000 pesos en una caja de seguridad y la inflación es del 3% cada año durante 2 años, ¿Cuál es el valor futuro de tu dinero al final de los años, en términos del poder adquisitivo que tendrá?",
+    "opciones": [
+      "$10,000.00",
+      "$9,425.96",
+      "$9,708.74",
+      "$9,433.96"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "$9,425.96",
+    "explicacion": ""
+  },
+  {
+    "id": 600,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Una persona invierte un capital a 1 mes durante 2 periodos a una tasa de interés simple del 7% mensual. Si la inflación durante la inversión fue del 7%, ¿Cuál es la tasa de interés real que obtuvo?",
+    "opciones": [
+      "13.08%",
+      "7.00%",
+      "6.54%",
+      "7.46%"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "6.54%",
+    "explicacion": ""
+  },
+  {
+    "id": 601,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Expresar en notación decimal 21%",
+    "opciones": [
+      "0.021",
+      "12/100",
+      "0.012",
+      "0.21"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "0.21",
+    "explicacion": ""
+  },
+  {
+    "id": 602,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Expresar en notación porcentual 1/40",
+    "opciones": [
+      "25.00%",
+      "0.25%",
+      "2.50",
+      "2.50%"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "2.50%",
+    "explicacion": ""
+  },
+  {
+    "id": 603,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Si se tiene un capital inicial de $150,000.00 pesos y se invierte a un año con una tasa trimestral del 4%, ¿Cuál sería el monto del capital de retorno?",
+    "opciones": [
+      "$163,909.05 150000(1.04) 4 =175478.78",
+      "$154,550.88",
+      "$168,826.32",
+      "$151,800.32"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "$168,826.32",
+    "explicacion": ""
+  },
+  {
+    "id": 604,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Si inviertes $18,500 pesos a una tasa del 15% anual de interés simple, al final del año tendrías $21,275. Si se maneja en interés compuesto con capitalización bimestral. ¿Cuánto sería el valor futuro?",
+    "opciones": [
+      "$21,454.33",
+      "$24,880.44",
+      "$19,931.59",
+      "$21,473.96"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "$19,931.59",
+    "explicacion": ""
+  },
+  {
+    "id": 605,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcular la tasa semestral de $15,000 y que tendrá la cantidad de $15,913.50 al final del año",
+    "opciones": [
+      "1%",
+      "12%",
+      "6%",
+      "3%"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "3%",
+    "explicacion": ""
+  },
+  {
+    "id": 606,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Una persona invierte un capital en pagarés a 28 días durante 12 periodos y obtiene un rendimiento total del 15%. Si la inflación en ese periodo fue del 9%, ¿Cuál es la tasa de interés real que obtuvo?",
+    "opciones": [
+      "5.50%",
+      "7.26%",
+      "6.67%",
+      "6.00%"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "5.50%",
+    "explicacion": ""
+  },
+  {
+    "id": 607,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcular el interés simple de $41.500 al 1.5% mensual durante un año.",
+    "opciones": [
+      "$622.50",
+      "$49,618.15",
+      "$81,18.15",
+      "$7,470.00"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "$7,470.00",
+    "explicacion": ""
+  },
+  {
+    "id": 608,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Un artículo que cuesta $2,000 aumenta en 30%.Posteriormente sobre ese nuevo precio nos ofrecen un descuento del 15%. ¿Cuál es el precio final?",
+    "opciones": [
+      "$2,210.00",
+      "$2,400.00",
+      "$2,300.00",
+      "$1,955.00"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$2,210.00",
+    "explicacion": ""
+  },
+  {
+    "id": 609,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "El señor Martínez pagó $1,560 que corresponden al 3% de un préstamo que recibió ¿cuánto dinero pidió prestado?",
+    "opciones": [
+      "$55,000.00",
+      "$46.80",
+      "$49.50",
+      "$52,000.00"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "$52,000.00",
+    "explicacion": ""
+  },
+  {
+    "id": 610,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "En un taller de ropa entre25 señoras elaboraron 200 prendas en 4 días ¿Cuántas prendas elaboraran 5 personas en 20 días?",
+    "opciones": [
+      "32 200/ 25=8 prendas por persona 8/4 días = 2 prendas diarias",
+      "200 prendas diarias 2X5 personas X20 días = 200",
+      "100",
+      "225"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "200 prendas diarias 2X5 personas X20 días = 200",
+    "explicacion": ""
+  },
+  {
+    "id": 611,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcule el interés que ganaría un capital de $75,000 con una tasa del interés del 10.5% no capitalizable por 3 años.",
+    "opciones": [
+      "$101,192.45",
+      "$98,625.00",
+      "$82,875.00",
+      "$78,375.00"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "$98,625.00",
+    "explicacion": ""
+  },
+  {
+    "id": 612,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Una persona invierte un capital en pagarés a 28 días durante 4 periodos y obtiene un rendimiento total del 11%. Si la inflación en ese periodo fue del 4.5%, ¿Cuál es la tasa de interés real que obtuvo?",
+    "opciones": [
+      "1.05%",
+      "7.00%",
+      "6.22%",
+      "6.73%"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "6.22%",
+    "explicacion": ""
+  },
+  {
+    "id": 613,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Si guardas $10,000 pesos en una caja de seguridad y la inflación es del 3% cada año durante 2 años, ¿Cuál es el valor futuro de tu dinero al final de los años, en términos del poder adquisitivo que tendrá?",
+    "opciones": [
+      "$9,425.96",
+      "$10,000.00",
+      "$9,708.74",
+      "$9,433.96"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$9,425.96",
+    "explicacion": ""
+  },
+  {
+    "id": 614,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcular la tasa semestral de $15,000 y que el valor futuro seria de $15,913.5 al final del año",
+    "opciones": [
+      "1 %",
+      "12 %",
+      "6 %",
+      "3 %"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "3 %",
+    "explicacion": ""
+  },
+  {
+    "id": 615,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "En un negocio el 65.85% son mujeres, si son 27 mujeres laborando ¿Cuántas personas son en Total incluyendo los hombres?",
+    "opciones": [
+      "27",
+      "41",
+      "54",
+      "45"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "41",
+    "explicacion": ""
+  },
+  {
+    "id": 616,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcule la siguiente cantidad: 4/3 de 1,200.",
+    "opciones": [
+      "300",
+      "900",
+      "1,600",
+      "400"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "300",
+    "explicacion": ""
+  },
+  {
+    "id": 617,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcular el monto de $7,000 al 18% de interés simple durante 15 meses",
+    "opciones": [
+      "$8,575.00",
+      "$8,751.62",
+      "$8,890.00",
+      "$1,751.62"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$8,575.00",
+    "explicacion": ""
+  },
+  {
+    "id": 618,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcular el valor que tendrán $5,250 después de 6 meses si se invierten a una tasa de Interés simple que da un rendimiento del 3.5% mensual.",
+    "opciones": [
+      "$6,679.47",
+      "$5,342.55",
+      "$5,341.88",
+      "$6,352.50"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$6,679.47",
+    "explicacion": ""
+  },
+  {
+    "id": 619,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "La señora Juanita recibirá el fin de semana la cantidad de $2,265 que representa el 18.5% de su tanda, y le prometieron que al final de mes le entregarían el resto ¿de cuánto será el pago prometido?",
+    "opciones": [
+      "$ 12,243.24",
+      "$ 8,243.24",
+      "$ 9,978.24",
+      "$ 11,978.24"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "$ 9,978.24",
+    "explicacion": ""
+  },
+  {
+    "id": 620,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Una persona invierte un capital a 1 mes durante 2 periodos a una tasa de interés simple del 7% mensual. Si la inflación durante la inversión fue del 7%, ¿Cuál es la tasa de interés real que obtuvo?",
+    "opciones": [
+      "13.08%",
+      "7.00%",
+      "6.54%",
+      "7.46%"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "13.08%",
+    "explicacion": ""
+  },
+  {
+    "id": 621,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Expresar en notación decimal 21%",
+    "opciones": [
+      "0.021",
+      "12/100",
+      "0.012",
+      "0.21"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "0.021",
+    "explicacion": ""
+  },
+  {
+    "id": 622,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Expresar en notación porcentual 1/40",
+    "opciones": [
+      "25.00%",
+      "0.25%",
+      "2.50",
+      "2.50%"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "25.00%",
+    "explicacion": ""
+  },
+  {
+    "id": 623,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Si se tiene un capital inicial de $150,000.00 pesos y se invierte a un año con una tasa trimestral del 4%, ¿Cuál sería el monto del capital de retorno?",
+    "opciones": [
+      "$163,909.05",
+      "$154,550.88",
+      "$168,826.32",
+      "$175,478.78"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "$175,478.78",
+    "explicacion": ""
+  },
+  {
+    "id": 624,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Si inviertes $18,500 pesos a una tasa del 15% anual de interés simple, al final del año tendrías $21,275. Si se maneja en interés compuesto con capitalización bimestral. ¿Cuánto sería el valor futuro?",
+    "opciones": [
+      "$21,454.33",
+      "$24,880.44",
+      "$19,931.59",
+      "$21,473.96"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$21,454.33",
+    "explicacion": ""
+  },
+  {
+    "id": 625,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Una persona invierte un capital en pagarés a 28 días durante 12 periodos y obtiene un rendimiento total del 15%. Si la inflación en ese periodo fue del 9%, ¿Cuál es la tasa de interés real que obtuvo?",
+    "opciones": [
+      "5.50%",
+      "7.26%",
+      "6.67%",
+      "6.00%"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "5.50%",
+    "explicacion": ""
+  },
+  {
+    "id": 626,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Calcular el interés simple de $41.500 al 1.5% mensual durante un año.",
+    "opciones": [
+      "$622.50",
+      "$49,618.15",
+      "$81,18.15",
+      "$7,470.00"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$622.50",
+    "explicacion": ""
+  },
+  {
+    "id": 627,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuánto es el monto final de 18 meses de una cantidad de $500.00 si se invierte a una tasa del 18 % anual capitalizable semestralmente?",
+    "opciones": [
+      "$546.36 VF= VP(1+i)n",
+      "$821.51 500.00(1.09)3",
+      "$647.51",
+      "$760.43"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$546.36 VF= VP(1+i)n",
+    "explicacion": ""
+  },
+  {
+    "id": 628,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "El señor Martínez pagó $1,560 que corresponden al 3% de un préstamo que recibió ¿cuánto dinero pidió prestado?",
+    "opciones": [
+      "$55,000.00",
+      "$46.80",
+      "$49.50",
+      "$52,000.00"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$55,000.00",
+    "explicacion": ""
+  },
+  {
+    "id": 629,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "¿Cuanto será el monto al final de 18 meses de una cantidad de $500 si se invierte una tasa del 18% anual capitalizable semestralmente?",
+    "opciones": [
+      "$546.36 18/2= 9 9/100 +1= 1.09 VF=VP(1+i)n",
+      "$821.51 500(1.295029)= 647.51",
+      "$647.51",
+      "$760.43"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$546.36 18/2= 9 9/100 +1= 1.09 VF=VP(1+i)n",
+    "explicacion": ""
+  },
+  {
+    "id": 630,
+    "modulo": "Sistema y Mercados Financieros",
+    "pregunta": "Una persona al final de los tres meses tiene que pagar $1000¿Cuánto solicito de préstamo si al capital inicial le cobraron una tasa de interés de 24%anual?",
+    "opciones": [
+      "$943.39",
+      "$940",
+      "$892.85",
+      "$581.39"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$943.39",
+    "explicacion": ""
+  }
+]

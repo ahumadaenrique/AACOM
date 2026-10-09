@@ -187,7 +187,9 @@ async function injectColumns() {
         "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
       );`,
       `CREATE INDEX IF NOT EXISTS "Lead_createdAt_idx" ON "Lead"("createdAt");`,
-      `CREATE INDEX IF NOT EXISTS "Lead_email_idx" ON "Lead"("email");`
+      `CREATE INDEX IF NOT EXISTS "Lead_email_idx" ON "Lead"("email");`,
+      `ALTER TABLE "preguntas" ADD COLUMN IF NOT EXISTS "explanation" TEXT;`,
+      `ALTER TABLE "preguntas" ADD COLUMN IF NOT EXISTS "explicacion" TEXT;`
     ];
 
     for (const q of queries) {

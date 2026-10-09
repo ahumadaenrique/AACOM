@@ -1126,13 +1126,8 @@ function renderStudyQuestion() {
     // Render Contextual Animation
     renderContextAnimation(q.question);
     
-    // Autoplay voice narration (reads question + choices, but NOT the answer)
-    // Slight timeout to let DOM render and ensure focus activation
-    setTimeout(() => {
-        if (activeTab === "agent-study" && currentRole === "agent") {
-            startAudioSpeech();
-        }
-    }, 450);
+    // Reset any playing audio on next question (silent study by default)
+    stopAudioSpeech();
 }
 
 function selectStudyOption(selectedIndex) {
@@ -1148,6 +1143,9 @@ function selectStudyOption(selectedIndex) {
         
         // Highlight correct in green
         items[q.correct].classList.add("correct");
+        
+        // Render rich legal and technical explanation
+        showQuestionExplanation(q);
         
         // Enable next button
         const nextBtn = document.getElementById("btn-study-next");
@@ -1204,164 +1202,177 @@ function nextStudyQuestion() {
 
 function revealExplanation() {
     const q = studyQuestions[studyCurrentIdx];
+    if (!q) return;
     const items = document.querySelectorAll("#study-options-container .option-item");
-    items[q.correct].classList.add("correct");
+    if (items[q.correct]) {
+        items[q.correct].classList.add("correct");
+    }
+    isCurrentQuestionSolved = true;
+    const nextBtn = document.getElementById("btn-study-next");
+    if (nextBtn) nextBtn.disabled = false;
     
-    // Read correct answer & explanation
-    if ('speechSynthesis' in window) {
-        stopAudioSpeech();
-        const correctText = q.options[q.correct];
-        const descText = document.getElementById("animation-concept-desc").innerText.replace("Coaseguro y Deducible:", "").replace("Seguro Dotal vs Temporal:", "").replace("Estructura del Fideicomiso en Seguros:", "").replace("Composición de la Prima:", "");
-        
-        isSpeaking = true;
-        document.getElementById("btn-audio-speak").classList.add("active");
-        document.getElementById("voice-waveform").classList.add("active");
-        
-        const explanationText = `La respuesta correcta es la opción: ${correctText}. Explicación: ${descText}`;
-        speechUtterance = new SpeechSynthesisUtterance(explanationText);
-        speechUtterance.voice = getBestSpanishVoice();
-        speechUtterance.lang = "es-MX";
-        speechUtterance.rate = 0.98;
-        
-        speechUtterance.onend = stopAudioSpeech;
-        speechUtterance.onerror = stopAudioSpeech;
-        window.speechSynthesis.speak(speechUtterance);
+    showQuestionExplanation(q);
+}
+
+// ==========================================
+// ELEVENLABS AUDIO CONTROLLER & EXPLANATIONS
+// ==========================================
+let currentStudyAudio = null;
+let currentStudyAudioVolume = 1.0;
+let isAudioPlaying = false;
+
+function changeAudioVolume(val) {
+    currentStudyAudioVolume = parseFloat(val);
+    if (currentStudyAudio) {
+        currentStudyAudio.volume = currentStudyAudioVolume;
     }
 }
 
-// TEXT TO SPEECH (VOICE NARRATOR) WITH PREMIUM SPANISH VOICE
-let selectedVoiceName = "";
-
-function populateVoiceSelector() {
-    if (!('speechSynthesis' in window)) return;
-    const selector = document.getElementById("study-voice-selector");
-    if (!selector) return;
+function updatePlayButtonUI(playing) {
+    isAudioPlaying = playing;
+    const btn = document.getElementById("btn-audio-speak");
+    const icon = document.getElementById("audio-speak-icon");
+    const wave = document.getElementById("voice-waveform");
     
-    const voices = window.speechSynthesis.getVoices();
-    const esVoices = voices.filter(v => v.lang.startsWith("es") || v.lang.includes("ES") || v.lang.includes("MX"));
-    
-    selector.innerHTML = "";
-    
-    if (esVoices.length === 0) {
-        const opt = document.createElement("option");
-        opt.value = "";
-        opt.innerText = "Voz por defecto";
-        selector.appendChild(opt);
-        voices.forEach(v => {
-            const optAll = document.createElement("option");
-            optAll.value = v.name;
-            optAll.innerText = `${v.name} (${v.lang})`;
-            selector.appendChild(optAll);
-        });
-        return;
-    }
-    
-    esVoices.forEach(v => {
-        const opt = document.createElement("option");
-        opt.value = v.name;
-        let displayName = v.name.replace("Microsoft", "MS").replace("Google", "Google");
-        if (v.name.includes("Natural") || v.name.includes("Online")) {
-            displayName += " (Neural)";
+    if (btn) {
+        if (playing) {
+            btn.classList.add("active");
+            btn.title = "Pausar narración";
+            if (icon) icon.innerHTML = '<path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/>';
+        } else {
+            btn.classList.remove("active");
+            btn.title = "Escuchar con ElevenLabs HD";
+            if (icon) icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
         }
-        opt.innerText = `${displayName} (${v.lang})`;
-        selector.appendChild(opt);
-    });
-    
-    const bestVoice = getBestSpanishVoice();
-    if (bestVoice && !selectedVoiceName) {
-        selector.value = bestVoice.name;
-        selectedVoiceName = bestVoice.name;
-    } else if (selectedVoiceName) {
-        selector.value = selectedVoiceName;
+    }
+    if (wave) {
+        if (playing) wave.classList.add("active");
+        else wave.classList.remove("active");
     }
 }
 
-function changeVoice() {
-    selectedVoiceName = document.getElementById("study-voice-selector").value;
-    stopAudioSpeech();
-    setTimeout(startAudioSpeech, 150);
-}
-
-function getBestSpanishVoice() {
-    if (!('speechSynthesis' in window)) return null;
-    const voices = window.speechSynthesis.getVoices();
+function stopAudioSpeech() {
+    isAudioPlaying = false;
+    updatePlayButtonUI(false);
     
-    if (selectedVoiceName) {
-        const chosen = voices.find(v => v.name === selectedVoiceName);
-        if (chosen) return chosen;
+    if (currentStudyAudio) {
+        try {
+            currentStudyAudio.pause();
+            currentStudyAudio.currentTime = 0;
+        } catch (e) {}
+        currentStudyAudio = null;
     }
     
-    // 1. Try to find a premium Mexican Spanish voice (neural / Google / Microsoft / Hilda / Jorge / Dalia)
-    let voice = voices.find(v => v.lang.includes("MX") && (v.name.includes("Google") || v.name.includes("Natural") || v.name.includes("Microsoft") || v.name.includes("Online")));
-    // 2. Fallback to any Mexican Spanish voice
-    if (!voice) voice = voices.find(v => v.lang.includes("MX") || v.lang === "es-MX");
-    // 3. Fallback to a premium Spanish voice (Spain / other)
-    if (!voice) voice = voices.find(v => v.lang.startsWith("es") && (v.name.includes("Google") || v.name.includes("Natural") || v.name.includes("Microsoft") || v.name.includes("Online")));
-    // 4. Fallback to any Spanish voice
-    if (!voice) voice = voices.find(v => v.lang.startsWith("es"));
-    
-    return voice;
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+    }
 }
 
-function toggleAudioSpeech() {
-    // If speaking, clicking the "repeat" button restarts reading
-    stopAudioSpeech();
-    setTimeout(startAudioSpeech, 100);
-}
-
-function startAudioSpeech() {
-    if (!('speechSynthesis' in window)) {
-        console.log("Speech synthesis not supported.");
+async function toggleAudioSpeech() {
+    if (isAudioPlaying) {
+        stopAudioSpeech();
         return;
     }
     
     const q = studyQuestions[studyCurrentIdx];
     if (!q) return;
     
-    isSpeaking = true;
-    const btn = document.getElementById("btn-audio-speak");
-    if (btn) btn.classList.add("active");
-    
-    const wave = document.getElementById("voice-waveform");
-    if (wave) wave.classList.add("active");
-    
-    // Reads question + options, but NOT the answer to let the user guess
-    const optionA = q.options[0] ? `Opción A: ${q.options[0]}. ` : "";
-    const optionB = q.options[1] ? `Opción B: ${q.options[1]}. ` : "";
-    const optionC = q.options[2] ? `Opción C: ${q.options[2]}. ` : "";
-    const optionD = q.options[3] ? `Opción D: ${q.options[3]}. ` : "";
-    
+    const optionA = q.options && q.options[0] ? `Opción A: ${q.options[0]}. ` : "";
+    const optionB = q.options && q.options[1] ? `Opción B: ${q.options[1]}. ` : "";
+    const optionC = q.options && q.options[2] ? `Opción C: ${q.options[2]}. ` : "";
+    const optionD = q.options && q.options[3] ? `Opción D: ${q.options[3]}. ` : "";
     const textToRead = `${q.question}. ${optionA}${optionB}${optionC}${optionD}`;
     
-    speechUtterance = new SpeechSynthesisUtterance(textToRead);
-    
-    // Choose premium Mexican voice if possible
-    const bestVoice = getBestSpanishVoice();
-    if (bestVoice) {
-        speechUtterance.voice = bestVoice;
-        console.log(`Using Spanish Voice: ${bestVoice.name} (${bestVoice.lang})`);
-    }
-    
-    speechUtterance.lang = "es-MX";
-    speechUtterance.rate = 0.96; // Slightly slower, highly clear
-    
-    speechUtterance.onend = stopAudioSpeech;
-    speechUtterance.onerror = stopAudioSpeech;
-    
-    window.speechSynthesis.speak(speechUtterance);
+    await playAudioStream(textToRead, `q_${q.id || studyCurrentIdx}`);
 }
 
-function stopAudioSpeech() {
-    isSpeaking = false;
-    if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel();
+async function playExplanationAudio() {
+    const q = studyQuestions[studyCurrentIdx];
+    if (!q) return;
+    
+    if (isAudioPlaying) {
+        stopAudioSpeech();
+        return;
     }
     
-    const btn = document.getElementById("btn-audio-speak");
-    if (btn) btn.classList.remove("active");
+    const correctText = (q.options && q.options[q.correct]) || q.respuesta_correcta || "";
+    const explanation = q.explanation || q.explicacion || "";
+    const textToRead = `Respuesta correcta: ${correctText}. Explicación y fundamento: ${explanation}`;
     
-    const wave = document.getElementById("voice-waveform");
-    if (wave) wave.classList.remove("active");
+    await playAudioStream(textToRead, `expl_${q.id || studyCurrentIdx}`);
+}
+
+async function playAudioStream(textToRead, trackId = "") {
+    stopAudioSpeech();
+    updatePlayButtonUI(true);
+    
+    try {
+        const audioUrl = `/api/cedula-a/audio?text=${encodeURIComponent(textToRead)}&id=${encodeURIComponent(trackId)}`;
+        const audio = new Audio(audioUrl);
+        audio.volume = currentStudyAudioVolume;
+        currentStudyAudio = audio;
+        
+        audio.onended = () => {
+            stopAudioSpeech();
+        };
+        
+        audio.onerror = (e) => {
+            console.warn("ElevenLabs audio endpoint no disponible o sin conexión. Usando respaldo de voz local:", e);
+            fallbackToWebSpeech(textToRead);
+        };
+        
+        await audio.play();
+    } catch (err) {
+        console.warn("Error en reproducción ElevenLabs, usando respaldo:", err);
+        fallbackToWebSpeech(textToRead);
+    }
+}
+
+function fallbackToWebSpeech(textToRead) {
+    if (!('speechSynthesis' in window)) {
+        stopAudioSpeech();
+        return;
+    }
+    
+    const utterance = new SpeechSynthesisUtterance(textToRead);
+    utterance.lang = "es-MX";
+    utterance.rate = 0.96;
+    utterance.volume = currentStudyAudioVolume;
+    
+    const voices = window.speechSynthesis.getVoices();
+    const esVoice = voices.find(v => v.lang.includes("MX") || v.lang === "es-MX") || voices.find(v => v.lang.startsWith("es"));
+    if (esVoice) utterance.voice = esVoice;
+    
+    utterance.onend = stopAudioSpeech;
+    utterance.onerror = stopAudioSpeech;
+    
+    window.speechSynthesis.speak(utterance);
+}
+
+function showQuestionExplanation(q) {
+    const descEl = document.getElementById("animation-concept-desc");
+    if (!descEl) return;
+    
+    const explanation = q.explanation || q.explicacion || "Este reactivo forma parte del temario oficial de certificación Cédula A.";
+    const correctOptionText = (q.options && q.options[q.correct]) || q.respuesta_correcta || "";
+    
+    descEl.innerHTML = `
+        <div style="background: rgba(13, 148, 136, 0.15); border: 1px solid rgba(20, 184, 166, 0.4); border-radius: 12px; padding: 14px; text-align: left;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                <span style="font-size: 11px; font-weight: 800; color: #2dd4bf; text-transform: uppercase; letter-spacing: 0.5px;">✓ Respuesta Correcta</span>
+                <button onclick="playExplanationAudio()" style="background: rgba(20,184,166,0.2); border: 1px solid rgba(20,184,166,0.4); color: #2dd4bf; border-radius: 6px; padding: 3px 8px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-weight: 700;">
+                    <span>🔊</span> Escuchar explicación
+                </button>
+            </div>
+            <div style="font-weight: 700; color: #f8fafc; font-size: 14px; margin-bottom: 10px; line-height: 1.4;">
+                ${correctOptionText}
+            </div>
+            <div style="border-top: 1px solid rgba(255,255,255,0.08); padding-top: 8px;">
+                <span style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 4px;">Fundamento Técnico y Legal:</span>
+                <p style="font-size: 13.5px; line-height: 1.6; color: #e2e8f0; margin: 0;">${explanation}</p>
+            </div>
+        </div>
+    `;
 }
 
 function renderContextAnimation(questionText) {

@@ -681,6 +681,8 @@ model Pregunta {
   options   Json
   correct   Int
   has_error Boolean @default(false)
+  explanation String?
+  explicacion String?
 
   @@map("preguntas")
 }

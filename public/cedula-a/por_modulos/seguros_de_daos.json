@@ -1,0 +1,2199 @@
+[
+  {
+    "id": 316,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En un seguro obligatorio de RC Automóviles, la compañía una vez que indemniza a un tercero y descubre omisiones o inexactas declaraciones por parte del asegurado, ¿Qué acción puede ejercer la aseguradora contra este último?",
+    "opciones": [
+      "Rescindir el contrato y rembolsar el pago hecho por parte del asegurado",
+      "Cancelar la póliza",
+      "Asumir la pérdida",
+      "Exigir el reembolso de lo pagado"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Cancelar la póliza",
+    "explicacion": ""
+  },
+  {
+    "id": 317,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista, elija los cuatro riesgos que se pueden amparar bajo convenio expreso en la póliza de Automóviles:\n\n1. Destinarlo a un uso o servicio diferente 2. Arrastrar remolques 3. Utilizarlo para fines de enseñanza 4. La responsabilidad civil por daños causados por la carga peligrosa 5. Los daños causados por la marea 6. Los daños causados en las partes bajas por transitar fuera de caminos 7. Desbielamiento",
+    "opciones": [
+      "1, 2, 3, 4",
+      "3, 4, 5, 6",
+      "2, 3, 4, 5",
+      "4, 5, 6, 7"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "1, 2, 3, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 318,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De acuerdo al reglamento de tránsito del D. F., se clasifican en pesados aquellos vehículos que tienen un peso bruto mayor que:",
+    "opciones": [
+      "3.5 toneladas",
+      "3450 Kg.",
+      "5 toneladas",
+      "3550 kg"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "3.5 toneladas",
+    "explicacion": ""
+  },
+  {
+    "id": 319,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Indique que cobertura generalmente no tiene deducible, en la póliza de automóviles particulares:",
+    "opciones": [
+      "Equipo especial",
+      "Responsabilidad civil",
+      "Adaptaciones y conversiones",
+      "Cristales"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Responsabilidad civil",
+    "explicacion": ""
+  },
+  {
+    "id": 320,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista elija 4 riesgos que NO se cubren en la transportación del vehículo asegurado en la cobertura de daños materiales del Seguro de Automóviles:\n\n1. Hundimiento 2. Incendio 3. Explosión 4. Vuelco 5. Colisión 6. Rotura de Cristales 7. Huracán 8. Terremoto 9. Huelgas",
+    "opciones": [
+      "1, 3, 4, 5",
+      "3, 4, 5, 6",
+      "1, 2, 5, 7",
+      "6, 7, 8, 9"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "6, 7, 8, 9",
+    "explicacion": ""
+  },
+  {
+    "id": 321,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Es una exclusión particular de la cobertura de Responsabilidad Civil Personas:",
+    "opciones": [
+      "Agravación del riesgo asegurado",
+      "No se tenga licencia",
+      "Daños por la carga",
+      "Daños por acto intencional de la víctima"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Daños por acto intencional de la víctima",
+    "explicacion": ""
+  },
+  {
+    "id": 322,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En las coberturas de daños materiales y robo total del Seguro de Automóviles, la protección opera aún cuando los hechos que den lugar al siniestro constituyan el delito de abuso de confianza, EXCEPTO:",
+    "opciones": [
+      "Cuando el abuso de confianza sea cometido en estacionamientos públicos",
+      "Cuando una autoridad judicial lo determine",
+      "Cuando el delito sea cometido por familiares del asegurado",
+      "Cuando el delito sea cometido por empleados"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Cuando el delito sea cometido por familiares del asegurado",
+    "explicacion": ""
+  },
+  {
+    "id": 323,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De las siguientes exclusiones, elija 3 que son aplicables a la cobertura de Responsabilidad Civil en el Seguro de Automóviles:\n\n1. Bienes que sean propiedad de los dependientes del asegurado 2. Desgaste natural del vehículo 3. Acción normal de la marea 4. Bienes dentro del vehículo 5. Fianzas o cauciones a favor del conductor 6. Transitar fuera de caminos",
+    "opciones": [
+      "1, 3, 6",
+      "2, 3, 6",
+      "2, 4, 5",
+      "1, 4, 5"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "1, 4, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 324,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿En qué condiciones la existencia legal de la póliza de Automóviles no surte sus efectos?",
+    "opciones": [
+      "Cuando se encuentre en tratamiento psicológico",
+      "Cuando se encuentre bajo los efectos de sustancias no prescritas por médicos",
+      "Cuando el siniestro sea por imprudencia",
+      "Cuando se encuentre en carretera federal"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Cuando se encuentre bajo los efectos de sustancias no prescritas por médicos",
+    "explicacion": ""
+  },
+  {
+    "id": 325,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Cuando se contrata la cobertura de Robo Total sin la de Daños Materiales del Seguro de Automóviles, ¿Qué daños materiales quedan amparados?",
+    "opciones": [
+      "Rotura de cristales",
+      "Colisión, Vuelcos y Desbielamiento",
+      "Responsabilidad civil bienes",
+      "Riesgos meteorológicos, huelgas y transportación"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Riesgos meteorológicos, huelgas y transportación",
+    "explicacion": ""
+  },
+  {
+    "id": 326,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Qué cobertura, del Seguro de Automóviles, ampara los daños ocasionados por el vehículo asegurado a terceros en sus bienes y en sus personas?",
+    "opciones": [
+      "Gastos médicos",
+      "Responsabilidad civil",
+      "Asesoría jurídica",
+      "Daños materiales"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Responsabilidad civil",
+    "explicacion": ""
+  },
+  {
+    "id": 327,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En el Seguro de Automóviles, indique en qué momento legal, la Aseguradora tendrá la obligación de iniciar la valuación de daños al vehículo siniestrado:",
+    "opciones": [
+      "Cuando se encuentre libre de cualquier detención por las autoridades",
+      "En cuanto llegue el ajustador al lugar del siniestro",
+      "Cuando se defina quién de los involucrados ocasionó el accidente",
+      "En cuanto la unidad ingrese al taller mecánico"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Cuando se encuentre libre de cualquier detención por las autoridades",
+    "explicacion": ""
+  },
+  {
+    "id": 328,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En la cobertura de Gastos médicos a ocupantes del seguro de automóviles, quedan amparados los siguientes riesgos:",
+    "opciones": [
+      "Hospitalización, atención médica, aromaterapias, servicios de ambulancia y gastos de entierro",
+      "Hospitalización, atención médica, enfermeras, servicios de ambulancia y tratamientos estéticos",
+      "Emergencias por embarazo cuando el conductor es de sexo femenino, hospitalización, atención médica y medicamentos",
+      "Hospitalización, atención médica, enfermeras, servicios de ambulancia y gastos de entierro"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Hospitalización, atención médica, enfermeras, servicios de ambulancia y gastos de entierro",
+    "explicacion": ""
+  },
+  {
+    "id": 329,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En el seguro de automóviles, indique cuándo la compañía no reconocerá el daño del vehículo siniestrado:",
+    "opciones": [
+      "Cuando se repara en un taller no autorizado",
+      "Si es reparado por el asegurado antes de la valuación",
+      "Cuando el conductor no es el que aparece en la carátula de la póliza",
+      "Cuando se avisa a las autoridades"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Si es reparado por el asegurado antes de la valuación",
+    "explicacion": ""
+  },
+  {
+    "id": 330,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En el Seguro de Automóviles, cuando la Aseguradora ya cuenta con todos los documentos de la reclamación y no indemniza en el tiempo máximo estipulado, ¿A qué se hace acreedora?",
+    "opciones": [
+      "A una multa de la Comisión Nacional de Seguros y Fianzas",
+      "Remate de sus bienes hasta cubrir el monto de la indemnización",
+      "Al pago de intereses moratorios",
+      "A una demanda civil"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Al pago de intereses moratorios",
+    "explicacion": ""
+  },
+  {
+    "id": 331,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cuáles son las coberturas más comunes del Seguro de Cobertura limitada?",
+    "opciones": [
+      "Responsabilidad Civil y gastos médicos ocupantes",
+      "Robo total, responsabilidad civil y gastos médicos ocupantes",
+      "Robo total y responsabilidad civil",
+      "Daños materiales y robo total"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Robo total, responsabilidad civil y gastos médicos ocupantes",
+    "explicacion": ""
+  },
+  {
+    "id": 332,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cuáles son exclusiones que se pueden contratar mediante convenio expreso en el Seguro de Automóviles?",
+    "opciones": [
+      "Daños sufridos por falta de precaución o pérdida",
+      "Vehículos en prueba de velocidad o resistencia y automóviles con fines de enseñanza",
+      "Carecer de licencia o permiso para conducir al momento de ocurrir el siniestro",
+      "Daños causados a las vías de comunicación por conducir bajo el influjo de medicamentos"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Vehículos en prueba de velocidad o resistencia y automóviles con fines de enseñanza",
+    "explicacion": ""
+  },
+  {
+    "id": 333,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿En qué situación una Aseguradora no pagará un siniestro de robo total del vehículo, a pesar de tener contratada la cobertura?",
+    "opciones": [
+      "Cuando no se toman las precauciones necesarias",
+      "Cuando el delito sea cometido por policías",
+      "Cuando el delito sea cometido por empleados del asegurado",
+      "Cuando el delito sea cometido por abuso de confianza de los familiares del asegurado"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Cuando el delito sea cometido por abuso de confianza de los familiares del asegurado",
+    "explicacion": ""
+  },
+  {
+    "id": 334,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En un Seguro anual de Automóviles, se tienen amparadas las coberturas de daños materiales, robo total, responsabilidad civil y gastos médicos de ocupantes. Al cuarto mes de vigencia, en una colisión se determina la pérdida total de la unidad. Indique qué ocurre con las primas de las coberturas no afectadas:",
+    "opciones": [
+      "Se libera como utilidad al final del ejercicio",
+      "La devuelve a prorrata",
+      "La absorbe la aseguradora por ley",
+      "Se la queda el intermediario"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "La devuelve a prorrata",
+    "explicacion": ""
+  },
+  {
+    "id": 335,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cuál de los siguientes riesgos es una exclusión de la cobertura de daños materiales?",
+    "opciones": [
+      "Destinar el automóvil a uso o servicio diferente al indicado en la póliza",
+      "Participar en carreras",
+      "Arrastrar remolques",
+      "Daños por robo parcial"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Daños por robo parcial",
+    "explicacion": ""
+  },
+  {
+    "id": 336,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De las siguientes opciones ¿Qué cobertura no esta amparada en la cláusula de territorialidad?",
+    "opciones": [
+      "Daños materiales",
+      "Responsabilidad civil",
+      "Robo total",
+      "Adaptaciones y Conversiones"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Responsabilidad civil",
+    "explicacion": ""
+  },
+  {
+    "id": 337,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿En que condiciones la asistencia legal de la póliza de automóviles no sufre sus efectos?",
+    "opciones": [
+      "Cuando se encuentre en carretera federal",
+      "Cuando se encuentre en tratamiento psicológico",
+      "Cuando el siniestro sea por imprudencia",
+      "Cuando se encuentre bajo sustancias no prescritas por médicos"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Cuando se encuentre bajo sustancias no prescritas por médicos",
+    "explicacion": ""
+  },
+  {
+    "id": 338,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Relaciona la cobertura con los riesgos que cubre:\n\nCOBERTURA:\n1. Responsabilidad civil (R.C)\n2. Gastos médicos a ocupantes (G.M.O)\n\nRIESGOS:\na) Cubre daños materiales a terceros en sus bienes\nb) Daños corporales o la muerte a terceros\nc) Hospitalización\nd) Atención Medica\ne) Enfermedades",
+    "opciones": [
+      "1 a,c: 2 b,d,e",
+      "1 a,b: 2 c,d,e",
+      "1 b,c: 2 a,d,e",
+      "1 c, d: 2 a, b e"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1 a,b: 2 c,d,e",
+    "explicacion": ""
+  },
+  {
+    "id": 339,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En la cobertura de responsabilidad civil por daños a ocupantes, en adición y hasta por una cantidad igual al límite máximo amparado por esta cobertura se cubren:",
+    "opciones": [
+      "Fianzas y caución para obtener libertad",
+      "Sanciones y multas administrativas",
+      "Costos y fianzas de carácter penal",
+      "Gastos y cuotas de juicios civiles"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Fianzas y caución para obtener libertad",
+    "explicacion": ""
+  },
+  {
+    "id": 340,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Indique que debe hacer la aseguradora en la póliza de automóviles, con la prima no devengada, si el siniestro es perdida total por un evento no asegurado:",
+    "opciones": [
+      "La absorbe por ley",
+      "La devuelve a prorrata",
+      "La considera deducible",
+      "La mantiene con primas en depósito"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "La devuelve a prorrata",
+    "explicacion": ""
+  },
+  {
+    "id": 341,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Qué sucede si el asegurado ocasiono el siniestro y no tiene licencia de conducir?",
+    "opciones": [
+      "Se reduce el monto de la indemnización",
+      "Se cancela la póliza",
+      "Se rechaza el siniestro",
+      "Se cobra una extraprima"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Se rechaza el siniestro",
+    "explicacion": ""
+  },
+  {
+    "id": 342,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Si la aseguradora ya recibió toda la documentación para fundamentar la reclamación de un siniestro de autos. ¿Cuántos días tiene para indemnizar?",
+    "opciones": [
+      "15 días",
+      "60 días",
+      "30 días",
+      "45 días"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "30 días",
+    "explicacion": ""
+  },
+  {
+    "id": 343,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Una persona de 61 años de edad residente en México contrata un seguro de auto, ¿Qué documento personal deberá tener para que pueda circular:",
+    "opciones": [
+      "Credencial del INSEN",
+      "Permiso de conducir",
+      "Tarjeta de Circulación",
+      "Licencia de conducir"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Tarjeta de Circulación",
+    "explicacion": ""
+  },
+  {
+    "id": 344,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En el seguro de automóviles ampara los daños que cause o sufra el vehículo, EXEPTO cuando la licencia:",
+    "opciones": [
+      "Se encuentre vencida",
+      "Sea inadecuada del vehículo siniestrado",
+      "Sea permiso para conducir",
+      "Sea de tipo “A”"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Sea inadecuada del vehículo siniestrado",
+    "explicacion": ""
+  },
+  {
+    "id": 345,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Son exclusiones relativas en RC carga.",
+    "opciones": [
+      "Daños causados por la carga cuando el vehículo se encuentra en transito",
+      "Daños causados por la carga cuando ésta sea altamente peligrosa o peligrosa",
+      "Daños en personas ocupantes del vehículo",
+      "Daños causados por la carga cuando el vehículo transportador se encuentra estacionado"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Daños causados por la carga cuando ésta sea altamente peligrosa o peligrosa",
+    "explicacion": ""
+  },
+  {
+    "id": 346,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En un siniestro se afectaron las siguientes coberturas: Daños materiales (D.M.) por $35,000 Rotura de cristales por $1,200 Con deducible del 10% en D.M. y 20% en Cristales, el ajustador declara un sólo evento ¿Cuánto pagaría la aseguradora?",
+    "opciones": [
+      ",460",
+      ",500",
+      ",000",
+      ",000"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": ",500",
+    "explicacion": ""
+  },
+  {
+    "id": 347,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista, elija los 3 riesgos que NO están amparados en la cobertura de Daños Materiales: 1. Motines 2. El perjuicio por la privación del uso del vehículo por daños cubiertos 3. Rotura de cristales 4. Desgaste del vehículo 5. Transportación 6. Fallas mecánicas 7. Derrumbe piedras o construcciones.",
+    "opciones": [
+      "1, 2, 3",
+      "2, 3, 4",
+      "5, 6, 7",
+      "2, 4, 6"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "2, 4, 6",
+    "explicacion": ""
+  },
+  {
+    "id": 348,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista ¿qué cobertura es la excepción en la extensión territorial de la póliza de Automóviles?",
+    "opciones": [
+      "Daños Materiales",
+      "Robo Total",
+      "Responsabilidad Civil",
+      "Asistencia en Viajes"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Responsabilidad Civil",
+    "explicacion": ""
+  },
+  {
+    "id": 349,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En el seguro de Automóviles, las coberturas se excluyen a cubrir los daños en Estados Unidos y Canadá, a EXCEPCIÓN DE:",
+    "opciones": [
+      "Daños a terceros en bienes",
+      "Daños a terceros en personas",
+      "Daños Materiales",
+      "Daños a vías generales de Comunicación"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Daños Materiales",
+    "explicacion": ""
+  },
+  {
+    "id": 350,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En el seguro de Automóviles, ¿son indemnizables los daños materiales que sufra un vehículo y que hayan sido ocasionados por su propia carga?",
+    "opciones": [
+      "Si la carga esta asegurada",
+      "Si bajo convenio expreso",
+      "Solo carga tipo A",
+      "No"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "No",
+    "explicacion": ""
+  },
+  {
+    "id": 351,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En la cobertura de Responsabilidad Civil por Daños a terceros del seguro de Automóviles, en adición y hasta por una cantidad igual al límite máximo amparado por esta cobertura se cubren:",
+    "opciones": [
+      "Fianzas y Cauciones",
+      "Multas de transito",
+      "Los daños a terceros en bienes y personas acompañantes",
+      "Bienes dejados en el interior"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Fianzas y Cauciones",
+    "explicacion": ""
+  },
+  {
+    "id": 352,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En relación al paquete amplio del seguro de Automóviles, ¿cuál cobertura queda excluida en el paquete limitado?",
+    "opciones": [
+      "Adaptaciones y Conversiones",
+      "Gastos Médicos a Ocupantes",
+      "Robo Parcial",
+      "Daños Materiales"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Daños Materiales",
+    "explicacion": ""
+  },
+  {
+    "id": 353,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Dentro del seguro de Automóviles, indique, de acuerdo al Reglamento de tránsito del DF., ¿cuáles son los tipos de vehículos que considera?",
+    "opciones": [
+      "Públicos y particulares",
+      "Automóviles y camiones",
+      "Residentes y turistas",
+      "Pesados y ligeros"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Pesados y ligeros",
+    "explicacion": ""
+  },
+  {
+    "id": 354,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Indica cómo se denominan los permisos para conducir, en la póliza de Automóviles.",
+    "opciones": [
+      "Como un documento valido",
+      "Como un documento valido siempre que se acompañe de carta responsiva",
+      "Como un documento no valido, solo la licencia vigente",
+      "Como un documento no valido, solo la licencia aunque este vencida"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Como un documento valido",
+    "explicacion": ""
+  },
+  {
+    "id": 355,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista identifica las son coberturas del seguro de Automóviles a las que se aplica el ajuste automático de sumas aseguradas Excepto:",
+    "opciones": [
+      "Daños materiales",
+      "Robo total",
+      "Equipo especial",
+      "Responsabilidad Civil"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Equipo especial",
+    "explicacion": ""
+  },
+  {
+    "id": 356,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cuáles son exclusiones que se pueden contratar mediante convenio expreso en el seguro de Automóviles?",
+    "opciones": [
+      "Inundación y Terremoto",
+      "Carecer de Licencia Vigente",
+      "Escuela de manejo",
+      "Transitar por caminos intransitables"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Escuela de manejo",
+    "explicacion": ""
+  },
+  {
+    "id": 357,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De las coberturas del seguro de Automóviles que se enlistan, identifique en cuáles se aplica invariablemente un deducible en caso de siniestro: 1. Daños materiales 2. Robo total 3. Responsabilidad civil 4. Gastos médicos ocupantes 5. Equipo especial 6. Defensa Legal 7. Equipo Especial 8. Accidentes Automovilísticos al conductor",
+    "opciones": [
+      "1 2 3 4",
+      "1 2 5 7",
+      "1 2 4 8",
+      "1 2 6 7"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1 2 5 7",
+    "explicacion": ""
+  },
+  {
+    "id": 358,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De las coberturas del seguro de Automóviles que se enlistan, identifique en cuáles se aplica invariablemente un deducible en caso de siniestro Excepto:",
+    "opciones": [
+      "Daños materiales",
+      "Robo total",
+      "Responsabilidad civil",
+      "Equipo especial"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Responsabilidad civil",
+    "explicacion": ""
+  },
+  {
+    "id": 359,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista, elige 2 situaciones donde el asegurado tiene derecho a que se le devuelvan primas no devengadas: 1. Cuando se considera terminado el contrato anticipadamente 2. Cuando no haya lesiones en los ocupantes 3. Cuando el conductor sea declarado legalmente responsable 4. Cuando un riesgo no esta cubierto 5. Cuando sufre el auto asegurado una perdida total",
+    "opciones": [
+      "1 2",
+      "3 4",
+      "1 5",
+      "2 4"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1 5",
+    "explicacion": ""
+  },
+  {
+    "id": 360,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Indica qué debe hacer la Aseguradora en una póliza de Automóviles, con la prima no devengada, si el siniestro es pérdida total por un evento no asegurado.",
+    "opciones": [
+      "La absorbe por ley",
+      "La devuelve a prorrata",
+      "La considera deducible",
+      "La mantiene con primas en depósito"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "La devuelve a prorrata",
+    "explicacion": ""
+  },
+  {
+    "id": 361,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En el seguro de Automóviles, cuando la Aseguradora ya cuenta con todos los documentos de la reclamación y no indemniza en el tiempo máximo estipulado, ¿a qué se hace acreedora?",
+    "opciones": [
+      "A una Sanción de la SHCP",
+      "A una Sanción de la CONDUSEF",
+      "A pagar intereses Moratorios",
+      "A una Sanción de la AMIS"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "A pagar intereses Moratorios",
+    "explicacion": ""
+  },
+  {
+    "id": 362,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Si el asegurado ocasionó el siniestro y no tiene licencia de conducir, esto puede ser motivo de:",
+    "opciones": [
+      "Reducción del monto de la indemnización",
+      "Rechazo de siniestro",
+      "Recibir una amonestación por única vez por parte de la compañía",
+      "Aceptar el Siniestro"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Rechazo de siniestro",
+    "explicacion": ""
+  },
+  {
+    "id": 363,
+    "modulo": "Seguros de Daños",
+    "pregunta": "El señor Pérez le regaló a su hija de 16 años un automóvil, ¿Qué documento deberán tramitar para que el Seguro de Automóviles pague los daños en caso de siniestro?",
+    "opciones": [
+      "Licencia",
+      "Carta responsiva",
+      "Extensión de la RC",
+      "Permiso para conducir"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Permiso para conducir",
+    "explicacion": ""
+  },
+  {
+    "id": 364,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En caso de que ocurra un siniestro en un automóvil conducido por una persona menor de 18 años de edad y no tenga licencia: ¿Qué documento pediría la Aseguradora?",
+    "opciones": [
+      "Licencia",
+      "Carta responsiva",
+      "Extensión de la RC",
+      "Permiso para conducir"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Permiso para conducir",
+    "explicacion": ""
+  },
+  {
+    "id": 365,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En caso de siniestro con la póliza vigente, ¿Cuándo el conductor del vehículo asegurado se encuentra bajo los efectos de fármacos prescritos por un médico, la compañía aseguradora paga el siniestro?",
+    "opciones": [
+      "Depende del fármaco",
+      "Si",
+      "Si Bajo Convenio Expreso",
+      "Si pero solo aplica en autos particulares"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Si",
+    "explicacion": ""
+  },
+  {
+    "id": 366,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿En dónde nace la obligatoriedad de contar con un seguro de R.C. para el uso de un automóvil?",
+    "opciones": [
+      "Nota Técnica AMIS",
+      "En el Reglamento de transito",
+      "El la cama de Diputados",
+      "En el Código Civil"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "En el Reglamento de transito",
+    "explicacion": ""
+  },
+  {
+    "id": 367,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En el Seguro de Automóviles, las siguientes coberturas se reinstalan automáticamente cuando hayan sido reducidas por el pago de cualquier indemnización, a EXCEPCIÓN de 3: 1. Daños materiales 2. Robo total 3. Equipo especial 4. Adaptación y conversiones 5. Responsabilidad civil 6. Accidentes Automovilísticos al Conductor",
+    "opciones": [
+      "1 2 3",
+      "3 4 6",
+      "2 3 4",
+      "3 4 5"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "3 4 6",
+    "explicacion": ""
+  },
+  {
+    "id": 368,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista, elija los 4 riesgos que NO están amparados en la cobertura de Daños Materiales: 1. Motines 2. Privación del uso del vehículo por daños 3. Rotura de cristales 4. Desgaste del vehículo 5. Transportación 6. Fallas mecánicas 7. Derrumbe de Construcciones 8. Daños Materiales que sufra el vehículo al encontrase en un Estacionamiento Publico. 9. Defensa Legal",
+    "opciones": [
+      "1 4 7 8",
+      "2 4 6 8",
+      "2 4 6 9",
+      "1 3 5 9"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "2 4 6 9",
+    "explicacion": ""
+  },
+  {
+    "id": 369,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cuál es el beneficio del envío de grúa al lugar dónde se encuentre el vehículo y traslado a un taller mecánico?",
+    "opciones": [
+      "Asistencia en viajes",
+      "Daños Transportación",
+      "Asistencia Legal",
+      "Limitado a 30 DSMGVF"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Asistencia en viajes",
+    "explicacion": ""
+  },
+  {
+    "id": 370,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Son servicios de asistencia en viajes, EXCEPTO:",
+    "opciones": [
+      "Asistencia en viajes",
+      "Daños por Transportación",
+      "Asistencia mecánica en viajes",
+      "Hospedaje por algún accidente"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Daños por Transportación",
+    "explicacion": ""
+  },
+  {
+    "id": 371,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Es una exclusión particular de la cobertura de Responsabilidad Civil Bienes:",
+    "opciones": [
+      "Daños por la carga cuando el vehículo se encuentre estacionado",
+      "Daños de autos usados con fines de enseñanza",
+      "Daños por acto intencional de la víctima",
+      "Agravación del riesgo asegurado"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Daños por acto intencional de la víctima",
+    "explicacion": ""
+  },
+  {
+    "id": 372,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Bajo que circunstancia los daños materiales ocasionados a un autobús no están amparados por la póliza?",
+    "opciones": [
+      "Conducir en sentido contrario",
+      "Que el estado de ebriedad del conductor",
+      "Licencia Vencida",
+      "Conducir a exceso de velocidad"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Que el estado de ebriedad del conductor",
+    "explicacion": ""
+  },
+  {
+    "id": 373,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En un siniestro un camión impacta a un vehículo asegurado este a su vez colisionó a un auto, el oficial de tránsito determina responsable al chofer del camión. ¿Quién es responsable civilmente?",
+    "opciones": [
+      "El chofer del camión es civilmente responsable de los daños del auto asegurado solamente",
+      "El chofer del auto asegurado es civilmente responsable de los daños del auto que impactó",
+      "La opción uno y dos son correctas",
+      "El chofer del camión es civilmente responsable de los daños de todos los autos dañados"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "El chofer del camión es civilmente responsable de los daños de todos los autos dañados",
+    "explicacion": ""
+  },
+  {
+    "id": 1029,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Indique en qué cobertura del Seguro de Automóviles normal, está amparada la depreciación que sufre el valor del automóvil:",
+    "opciones": [
+      "Daños Materiales y Robo Total",
+      "Valor Comercial del Vehículo",
+      "En ninguna Cobertura",
+      "En Responsabilidad Civil"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "En ninguna Cobertura",
+    "explicacion": ""
+  },
+  {
+    "id": 374,
+    "modulo": "Seguros de Daños",
+    "pregunta": "El robo total, cuando no se contratan daños materiales ¿que daños del vehículo asegurado quedan cubiertos?",
+    "opciones": [
+      "Colisión, vuelco, alud",
+      "Rotura de cristales, explosión, caída de árboles",
+      "Colisión, vuelcos, caída de puentes",
+      "Huracán, huelgas, caída de piedras, inundación"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Huracán, huelgas, caída de piedras, inundación",
+    "explicacion": ""
+  },
+  {
+    "id": 375,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En gastos médicos a ocupantes se cubre el pago de:",
+    "opciones": [
+      "Hospitalización y defensa legal",
+      "Hospitalización y perjuicio",
+      "Hospitalización e incapacidades",
+      "Hospitalización y gastos de entierro"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Hospitalización y gastos de entierro",
+    "explicacion": ""
+  },
+  {
+    "id": 376,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Accidentes automovilísticos al conductor ampara:",
+    "opciones": [
+      "Al dueño del vehículo, aunque no lo maneje",
+      "Al conductor del vehículo asegurado",
+      "Al copiloto del vehículo asegurado",
+      "Al conductor y al copiloto del vehículo asegurado"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Al conductor del vehículo asegurado",
+    "explicacion": ""
+  },
+  {
+    "id": 377,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Qué documentos deberá presentar el asegurado junto con la solicitud de reclamo, para que sea indemnizado en caso de que le sean robadas pieles y/o joyas de su casa?",
+    "opciones": [
+      "Avalúos y acta jurídica",
+      "Factura y fotos o video",
+      "Facturas y avalúos",
+      "Factura, fotos o video y acta del Ministerio Público"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Factura, fotos o video y acta del Ministerio Público",
+    "explicacion": ""
+  },
+  {
+    "id": 378,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista, identifique 3 bienes que deban enumerarse en forma unitaria para poder quedar cubiertos en el Seguro de Robo con Violencia en casa habitación;\n\n1. Joyas 2. Ropa 3. Armas 4. Muebles 5. Pieles",
+    "opciones": [
+      "1, 3, 5",
+      "1, 3, 4",
+      "2, 3, 5",
+      "1, 2, 4"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "1, 3, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 379,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Un asegurado tiene en su casa un consultorio médico y es asaltado en el mismo, perdiendo su equipo médico. ¿Este siniestro se encuentra cubierto por la póliza Múltiple Casa Habitación?",
+    "opciones": [
+      "No, a menos que contrate una cobertura adicional",
+      "No",
+      "Si, en caso de que halla declarado los bienes que tenía",
+      "Si"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "No",
+    "explicacion": ""
+  },
+  {
+    "id": 380,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cuál debe ser la suma asegurada de cada vivienda, para que se aplique el descuento denominado núcleos habitacionales?",
+    "opciones": [
+      "Igual o menor a 30 veces el salario mínimo anual vigente en el Distrito Federal",
+      "Igual o menor a 10 veces el salario mínimo anual vigente en el Distrito Federal",
+      "Igual o menor a 15 veces el salario mínimo anual vigente en el Distrito Federal",
+      "Igual o menor a 25 veces el salario mínimo anual vigente en el Distrito Federal"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Igual o menor a 15 veces el salario mínimo anual vigente en el Distrito Federal",
+    "explicacion": ""
+  },
+  {
+    "id": 381,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Una persona contrata una póliza paquete para su casa, entre los contenidos tiene un dibujo de José Luis Cuevas, ¿A qué valor debe asegurar el valor en la sección de robo?",
+    "opciones": [
+      "Valor comercial",
+      "Valor convenido",
+      "Valor real",
+      "Valor de reposición"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Valor convenido",
+    "explicacion": ""
+  },
+  {
+    "id": 382,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Si un asegurado tiene en su casa un consultorio médico y es asaltado en el consultorio, perdiendo su equipo médico, ¿se encuentra cubierto por la póliza Múltiple Empresarial?",
+    "opciones": [
+      "Si",
+      "No",
+      "Si, en caso de que halla declarado los bienes que tenía",
+      "No, a menos que contrate una cobertura adicional"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Si",
+    "explicacion": ""
+  },
+  {
+    "id": 383,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Si el asegurado llegara a causar daños a terceros derivado de las actividades privadas y familiares como propietario de casa habitación, la póliza de responsabilidad civil cubriría lo siguiente, EXCEPTO:",
+    "opciones": [
+      "La tenencia o uso de armas, de aire o de fuego, para cacería, cuando esté legalmente autorizado",
+      "El uso de bicicletas, patines, embarcaciones de pedal o remo y vehículos no motorizados",
+      "Daños ocasionados por la práctica de deportes en forma profesional",
+      "Como propietario de animales domésticos, de caza y guardianes"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Daños ocasionados por la práctica de deportes en forma profesional",
+    "explicacion": ""
+  },
+  {
+    "id": 384,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista, escoge los 3 bienes que deben asegurarse en el inciso tres de la sección de robo con violencia en domicilio:\n\n1. Joyas\n2. Artículos deportivos\n3. Cámaras de video\n4. Artículos de oro\n5. Pianos\n6. Relojes",
+    "opciones": [
+      "2, 4, 6",
+      "2, 3, 5",
+      "1, 4, 6",
+      "1, 3, 5"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 4, 6",
+    "explicacion": ""
+  },
+  {
+    "id": 385,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Relacione las siguientes coberturas con sus deducibles correspondientes:\n\nCOBERTURA:\n1. Huracán y granizo\n2. Inundación\n3. Terremoto y/o erupción volcánica\n\nDEDUCIBLE:\na. 1% sobre la suma asegurada con un máximo de 500 días salario mínimo general vigente en el Distrito Federal\nb. 1% sobre el valor del deducible contratado\nc. Coaseguro y deducible según la zona geográfica de ubicación del predio\nd. 2% sobre el valor total de los bienes asegurados",
+    "opciones": [
+      "1b, 2a, 3d",
+      "1c, 2d, 3a",
+      "1d, 2b, 3c",
+      "1a, 2c, 3b"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1d, 2b, 3c",
+    "explicacion": ""
+  },
+  {
+    "id": 386,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En el Seguro de Responsabilidad Civil Familiar, se cubren la responsabilidad civil de las siguientes personas, EXCEPTO:",
+    "opciones": [
+      "Cónyuge",
+      "Personal doméstico",
+      "Padres del asegurado",
+      "Hijos menores"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Padres del asegurado",
+    "explicacion": ""
+  },
+  {
+    "id": 387,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista, identifique 3 exclusiones definitivas de la póliza de Responsabilidad Civil Familiar:\n\n1. Daños sufridos por el cónyuge\n2. Siniestros ocurridos fuera de la República Mexicana\n3. Daños causados con motivos de actividades comerciales o profesionales\n4. Daños causados por animales domésticos\n5. Daños a bienes bajo custodia o control del asegurado\n6. Daños causados por vehículos terrestres a motor propiedad del asegurado",
+    "opciones": [
+      "2, 3, 4",
+      "1, 4, 5",
+      "1, 3, 6",
+      "2, 5, 6"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 4, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 388,
+    "modulo": "Seguros de Daños",
+    "pregunta": "La póliza Múltiple Casa Habitación está estructurada por secciones, cada una conteniendo un tipo de seguro, ¿Cuál de los siguientes seguros no es una sección en dicha póliza?",
+    "opciones": [
+      "Robo",
+      "Rotura de cristales",
+      "Equipo electrónico",
+      "Incendio de contenidos"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Equipo electrónico",
+    "explicacion": ""
+  },
+  {
+    "id": 389,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En la sección de Accidentes Personales, ¿Qué conceptos se deducen de la indemnización en la cobertura de muerte accidental, si se muere antes de 90 días posteriores al accidente y derivada del mismo?",
+    "opciones": [
+      "Las cantidades pagadas con anterioridad al asegurado, por prestaciones cubiertas en escala de indemnizaciones, cuando hayan sido producidas por el mismo accidente, después de 180 días",
+      "Las cantidades pagadas a los beneficiarios a través de la cláusula de últimos gastos",
+      "Las cantidades pagadas con anterioridad al asegurado, por prestaciones cubiertas en escala de indemnizaciones, cuando hayan sido producidas por el mismo accidente",
+      "Las cantidades pagadas a los beneficiarios por otros beneficios adicionales"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Las cantidades pagadas con anterioridad al asegurado, por prestaciones cubiertas en escala de indemnizaciones, cuando hayan sido producidas por el mismo accidente",
+    "explicacion": ""
+  },
+  {
+    "id": 390,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cuántas casas debe integrar como mínimo el núcleo habitacional, para que se aplique el descuento denominado núcleos habitacionales?",
+    "opciones": [
+      "50 casas o departamentos",
+      "10 casas o departamentos",
+      "100 casas o departamentos",
+      "40 casas o departamentos"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "40 casas o departamentos",
+    "explicacion": ""
+  },
+  {
+    "id": 391,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cómo se llama al valor que se indemniza, sin considerar la depreciación física por uso?",
+    "opciones": [
+      "Reposición",
+      "Real",
+      "Avalúo",
+      "Convenido"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Reposición",
+    "explicacion": ""
+  },
+  {
+    "id": 392,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Qué elementos son fundamentales para considerar que se efectúo un asalto en el Seguro de Robo en Domicilio?",
+    "opciones": [
+      "Acto doloso de dependientes o familiares",
+      "Daño físico o moral a las personas fuera del inmueble",
+      "Violencia física o moral a las personas dentro del inmueble",
+      "Violencia visible del interior al exterior del inmueble"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Violencia física o moral a las personas dentro del inmueble",
+    "explicacion": ""
+  },
+  {
+    "id": 393,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista, elija 3 partes del edificio que se aseguran en la sección de incendio:\n\n1. Cimientos\n2. Plafones\n3. Alfombras\n4. Terreno\n5. Tapetes\n6. Bardas",
+    "opciones": [
+      "1, 3, 5",
+      "1, 4, 5",
+      "2, 3, 6",
+      "2, 4, 6"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "2, 3, 6",
+    "explicacion": ""
+  },
+  {
+    "id": 394,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En el caso de Robo con Violencia, la participación del asegurado puede reducirse al 50% si se demuestra:",
+    "opciones": [
+      "Fehacientemente la existencia de los bienes asegurados con facturas o avalúos, y que éstos se encuentren resguardados",
+      "Que el inmueble descrito cuenta con alarma contra robo, y siempre que los colindantes se encuentren fincados",
+      "Que los bienes asegurados cuentan con factura, avalúo y que el seguro existente opera a primer riesgo",
+      "Que el inmueble cuenta con alarma contra robo, y se demuestra la existencia de las facturas o avalúos de dichos bienes asegurados"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Que el inmueble cuenta con alarma contra robo, y se demuestra la existencia de las facturas o avalúos de dichos bienes asegurados",
+    "explicacion": ""
+  },
+  {
+    "id": 395,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la lista siguiente, identifique 3 riesgos que incluye la cobertura denominada Extensión de Cobertura:\n\n1. Vehículos 2. Actos vandálicos 3. Erupción volcánica 4. Derrame accidental de agua 5. Marejada 6. Nevada o helada",
+    "opciones": [
+      "2, 3, 6",
+      "4, 5, 6",
+      "1, 3, 5",
+      "1, 2, 4"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "1, 2, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 396,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Del listado siguiente, elija las 4 coberturas adicionales de incendio dentro de la póliza de paquete familiar:\n\n1. Granizo, ciclón y huracán\n2. Combustión espontánea\n3. Terremoto y erupción volcánica\n4. Huelgas y alborotos populares\n5. Humo y hollín\n6. Robo de contenidos",
+    "opciones": [
+      "1, 2, 4, 6",
+      "1, 3, 4, 6",
+      "2, 3, 4, 5",
+      "2, 3, 5, 6"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 3, 4, 6",
+    "explicacion": ""
+  },
+  {
+    "id": 397,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En los seguros de daños, la forma en que se indemniza un siniestro, considerando la relación entre suma asegurada y valor real de los bienes es:",
+    "opciones": [
+      "Seguros a todo riesgo",
+      "Seguro a primer riesgo",
+      "Seguro proporcional",
+      "Seguro de riesgos nombrados"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Seguro proporcional",
+    "explicacion": ""
+  },
+  {
+    "id": 398,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cuáles de los riesgos siguientes se aseguran en forma básica en la cobertura de Terremoto y/o erupción volcánica?\n\n1. Sismo\n2. Acoplamiento del suelo\n3. Vibraciones del suelo\n4. Emanación de ceniza volcánica\n5. Derrame de lava volcánica\n6. Maremoto",
+    "opciones": [
+      "2, 3, 6",
+      "1, 4, 5",
+      "2, 5, 6",
+      "1, 3, 4"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 4, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 399,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿En qué caso son asegurables las obras de arte en una póliza paquete de casa habitación?",
+    "opciones": [
+      "Al presentar relación de facturas y fotos",
+      "Con previo avalúo y convenio expreso",
+      "En ningún caso",
+      "Incluidas como parte de todos los contenidos"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Con previo avalúo y convenio expreso",
+    "explicacion": ""
+  },
+  {
+    "id": 400,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En la sección de Responsabilidad Civil de la póliza Múltiple Casa Habitación, ¿Cuál de los siguientes riesgos está cubierto?",
+    "opciones": [
+      "La mordedura por el perro del asegurado, hacia un tercero",
+      "Las lesiones del hijo del asegurado dentro de la casa",
+      "Las lesiones que sufra la sirvienta",
+      "Las lesiones de la esposa del asegurado ocasionado por algún artefacto de la casa"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "La mordedura por el perro del asegurado, hacia un tercero",
+    "explicacion": ""
+  },
+  {
+    "id": 401,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En la póliza de cristales, ¿Qué plazo máximo tiene el asegurado para entregar los documentos, datos e informes que la aseguradora le solicita en caso de siniestro?",
+    "opciones": [
+      "20 días",
+      "10 días",
+      "15 días",
+      "30 días"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "15 días",
+    "explicacion": ""
+  },
+  {
+    "id": 402,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Qué riesgo se ampara dentro de la cobertura de Inundación de las secciones de Edificios y Contenidos?",
+    "opciones": [
+      "Acción normal de la marea",
+      "Desbordamiento de ríos",
+      "Lluvia",
+      "Inexistencia de drenaje"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Desbordamiento de ríos",
+    "explicacion": ""
+  },
+  {
+    "id": 403,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Qué bienes están excluidos en la cobertura de Robo de Casa Habitación?",
+    "opciones": [
+      "Dinero en efectivo",
+      "Ropa de uso personal",
+      "Pertenencias en patios y azoteas",
+      "Pieles"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Pertenencias en patios y azoteas",
+    "explicacion": ""
+  },
+  {
+    "id": 404,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En la sección de responsabilidad civil de la póliza Múltiple Casa Habitación, si un empleado doméstico dañara por accidente la propiedad de un vecino ¿Estaría cubierto?",
+    "opciones": [
+      "Si",
+      "Solo si el daño es a la persona",
+      "No",
+      "Solo si el daño es mayor a 150 DSMGVDF"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Si",
+    "explicacion": ""
+  },
+  {
+    "id": 405,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Del listado siguiente, identifique 3 riesgos cubiertos en la cobertura básica de Responsabilidad Civil Familiar:\n\n1. Daños ocasionados a partir de un derrame de agua accidental\n2. Daños ocasionados por asentamiento del suelo\n3. Como propietario de animales domésticos\n4. Por la práctica de deporte como aficionado\n5. Daños ocasionados dolosamente por el asegurado\n6. Daños ocasionados por embarcaciones propiedad del asegurado",
+    "opciones": [
+      "2, 3, 5",
+      "4, 5, 6",
+      "1, 3, 4",
+      "1, 2, 6"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 3, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 406,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cuánto tiempo tiene el asegurado para reclamar la indemnización de un siniestro procedente?",
+    "opciones": [
+      "30 días a partir del conocimiento del siniestro",
+      "720 días a partir del conocimiento del siniestro",
+      "180 días a partir del conocimiento del siniestro",
+      "90 días a partir del conocimiento del siniestro"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "720 días a partir del conocimiento del siniestro",
+    "explicacion": ""
+  },
+  {
+    "id": 407,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Una persona contrata una póliza paquete para su casa, entre los contenidos tiene un dibujo de José Luis Cuevas, ¿A qué valor debe asegurar el valor en la sección de robo?",
+    "opciones": [
+      "Valor comercial",
+      "Valor convenido",
+      "Valor real",
+      "Valor de reposición"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Valor convenido",
+    "explicacion": ""
+  },
+  {
+    "id": 408,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cómo se llama al valor que se indemniza, sin considerar la depreciación física por uso?",
+    "opciones": [
+      "Reposición",
+      "Real",
+      "Avalúo",
+      "Convenido"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Real",
+    "explicacion": ""
+  },
+  {
+    "id": 409,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En póliza Múltiple de Casa Habitación, cuando sucede el siniestro y la Suma Asegurada es Inferior al valor real del objeto asegurado, el daño debe ser liquidado a:",
+    "opciones": [
+      "Valor comercial",
+      "Valor convenido",
+      "Valor real",
+      "Valor de reposición"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Valor de reposición",
+    "explicacion": ""
+  },
+  {
+    "id": 410,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista, elige las partes del edificio que se aseguran en la sección de Incendio: 1. Cimientos 2. Plafones 3. Alfombras 4. Terreno 5. Tanques de gas 30 kg. 6. Tapetes 7. Bardas.",
+    "opciones": [
+      "1, 2, 3",
+      "2, 3, 7",
+      "1, 2, 6",
+      "2, 3, 6"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "2, 3, 7",
+    "explicacion": ""
+  },
+  {
+    "id": 411,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista elige los 3 gastos que ampara la sección de Gastos Extraordinarios para Casa Habitación de la póliza Múltiple de Casa Habitación: 1. Renta de departamento 2. Perjuicios en general 3. Gastos de mudanza 4. Transporte de menaje 5. Renta bodega. 6 Seguro de Transporte. 7 Transporte escolar de los menores.",
+    "opciones": [
+      "1, 2, 3",
+      "2, 4, 6",
+      "1, 3, 4",
+      "2, 4, 6"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 3, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 412,
+    "modulo": "Seguros de Daños",
+    "pregunta": "La falta oportuna del aviso de Siniestro podrá dar lugar a que la indemnización sea:",
+    "opciones": [
+      "Rechazada",
+      "Reducida",
+      "A prorrata",
+      "A Valor Real"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Reducida",
+    "explicacion": ""
+  },
+  {
+    "id": 413,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Las costas de Juicio y Fianzas en la RC privada o Familiar se cubren al:",
+    "opciones": [
+      "El pago, estará cubierto en forma adicional, pero sin exceder de una suma igual al 25% del límite de responsabilidad asegurado en esta sección.",
+      "El pago, estará cubierto como LUC, pero sin exceder límite de responsabilidad asegurado en esta sección.",
+      "El pago, estará cubierto en forma adicional, pero sin exceder de una suma igual al 50% del límite de responsabilidad asegurado en esta sección.",
+      "El pago, estará cubierto en forma adicional, pero sin exceder de una suma igual al 20% del límite de responsabilidad asegurado en esta sección."
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "El pago, estará cubierto en forma adicional, pero sin exceder de una suma igual al 50% del límite de responsabilidad asegurado en esta sección.",
+    "explicacion": ""
+  },
+  {
+    "id": 414,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Dentro de una póliza Múltiple de Casa Habitación en la sección de Cristales, en caso de Reclamación que amerite indemnización, esta será pagada bajo el concepto de:",
+    "opciones": [
+      "Valor Real",
+      "Valor de Reposición",
+      "Proporción Indemnizable o Primer Riesgo.",
+      "Precio de Venta"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Proporción Indemnizable o Primer Riesgo.",
+    "explicacion": ""
+  },
+  {
+    "id": 415,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la siguiente lista, elige los 4 bienes que se pueden asegurar por convenio expreso en la Sección de Incendio de la póliza Múltiple de Casa Habitación:\n\n1. Edificio\n2. Obras de arte con valor mayor a 300 días del SMGVDF\n3. Mobiliario\n4. Piedras preciosas",
+    "opciones": [
+      "1, 2",
+      "3, 4",
+      "5, 6",
+      "2, 4"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "2, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 416,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cuáles de los siguientes bienes se aseguran Bajo Convenio en la cobertura de terremoto y/o erupción volcánica en una póliza Múltiple de Casa Habitación?",
+    "opciones": [
+      "Sismo",
+      "Maremoto",
+      "Emanación de Ceniza",
+      "Albercas"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Albercas",
+    "explicacion": ""
+  },
+  {
+    "id": 1004,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En los seguros de Daños, la forma en que se indemniza un siniestro, considerando la relación entre suma asegurada y valor real de los bienes, da origen a dos sistemas de aseguramiento, ¿cuáles son?",
+    "opciones": [
+      "Proporcional y Precio nuevo o iguales",
+      "Proporcional y Precio neto de Venta",
+      "Precio neto de Venta o Valor convenido",
+      "Proporcional y Primer Riesgo"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Proporcional y Primer Riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 417,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Del siguiente listado, elige los 2 conceptos que conforman el seguro de valor convenido en los seguros de Daños:\n\n1.- Asignación de un valor al interés asegurado de mutuo acuerdo entre la aseguradora y el asegurado\n2.- Aplica la Proporción Indemnizable\n3.- Se elimina la proporción indemnizable\n4.- Aplica la depreciación por tiempo y uso\n5.- No aplica la depreciación",
+    "opciones": [
+      "1, 2",
+      "3, 5",
+      "1, 3",
+      "3, 4"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "3, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 1005,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Dentro de la póliza Múltiple de Casa Habitación si se asegura una casa en un edificio que tiene hasta 5 niveles de altura, ¿qué coberturas incluye la cuota básica aplicada en las secciones de Incendio edificio y Contenidos de acuerdo a la fracción IV de la Tarifa de Incendio?",
+    "opciones": [
+      "Incendio, rayo y explosión",
+      "Incendio y/o Rayo",
+      "Incendio y/o rayo y extensión de cubierta",
+      "Incendio, TEV e Inundación"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Incendio y/o rayo y extensión de cubierta",
+    "explicacion": ""
+  },
+  {
+    "id": 418,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En la póliza Múltiple de Casa Habitación, ¿en qué secciones se aplica la proporción indemnizable?\n\n1.- Edificio\n2.- Contenidos\n3.- RC Familiar\n4.- Accidentes personales",
+    "opciones": [
+      "1, 4",
+      "2, 3",
+      "2, 4",
+      "1, 2"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "1, 2",
+    "explicacion": ""
+  },
+  {
+    "id": 419,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿En qué forma de aseguramiento dentro de la operación de Daños, la Aseguradora renuncia a aplicar la regla proporcional, y se obliga a pagar en caso de siniestro el importe total de los daños, hasta donde alcance el capital garantizado?",
+    "opciones": [
+      "Riesgos Nombrados",
+      "Primer Riesgo",
+      "Todo Riesgo",
+      "Proporcional"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Primer Riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 1006,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De la lista siguiente, identifique los bienes que integran los contenidos asegurables de casa habitación en el ramo de incendio:\n\n1. Sala\n2. Alfombra\n3. Libros\n4. Computadora\n5. Equipo dental\n6. Comedor\n7. Mercancías\n8. Dinero",
+    "opciones": [
+      "1, 2, 3, 5",
+      "3, 4, 5, 6",
+      "1, 3, 4, 8",
+      "1, 2, 4, 6"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "1, 2, 4, 6",
+    "explicacion": ""
+  },
+  {
+    "id": 1007,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Los títulos de crédito, cheques, letras y pagarés que se amparan en la sección de robo, ¿Qué requisito deben cumplir para asegurarse?",
+    "opciones": [
+      "Hasta el equivalente de 150 días de SMGVDF",
+      "Hasta el equivalente de 300 días de SMGVDF",
+      "Depositados en Caja de Seguridad",
+      "No están cubiertos"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Depositados en Caja de Seguridad",
+    "explicacion": ""
+  },
+  {
+    "id": 1008,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En la sección de responsabilidad civil de la póliza Múltiple Casa Habitación, si un empleado doméstico dañara por accidente la propiedad de un vecino ¿Estaría cubierto en?",
+    "opciones": [
+      "Accidentes Personales",
+      "RC arrendatario",
+      "RC Privada o Familiar",
+      "No está cubierto"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "RC Privada o Familiar",
+    "explicacion": ""
+  },
+  {
+    "id": 1009,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En la cobertura de Pérdidas Orgánicas, cuando son varias las pérdidas ocurridas durante la vigencia de la póliza en uno o varios accidentes, ¿Cuál es el procedimiento para pagar la(s) indemnización(es)?",
+    "opciones": [
+      "Se pagan los porcentajes de la tabla de pérdidas A o B, hasta el límite de la SA",
+      "Se cancela por alta siniestralidad regresando la prima no devengada",
+      "Se reduce la SA original y se cobra prima adicional",
+      "Se paga el 100% de la SA en cada accidente sin límite acumulado"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Se pagan los porcentajes de la tabla de pérdidas A o B, hasta el límite de la SA",
+    "explicacion": ""
+  },
+  {
+    "id": 420,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Ampara los daños por robo con violencia, Cristales.",
+    "opciones": [
+      "Ramo de R.C.",
+      "Ramo de Diversos",
+      "Ramo de Marítimo y Transportes",
+      "Grandes Riesgos"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Ramo de Diversos",
+    "explicacion": ""
+  },
+  {
+    "id": 421,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Cubre riesgos ordinarios de transito",
+    "opciones": [
+      "Ramo de RC.",
+      "Ramo de diversos",
+      "Ramo de Marítimo y Transportes",
+      "Grandes riesgos"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Ramo de Marítimo y Transportes",
+    "explicacion": ""
+  },
+  {
+    "id": 422,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Daños materiales, robo total, responsabilidad civil son riesgos cubiertos en el ramo de:",
+    "opciones": [
+      "Diversos",
+      "Incendio",
+      "Automóviles",
+      "Marítimo y transportes"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Automóviles",
+    "explicacion": ""
+  },
+  {
+    "id": 423,
+    "modulo": "Seguros de Daños",
+    "pregunta": "El edificio y sus aditamentos fijos es un bien cubierto en el ramo de:",
+    "opciones": [
+      "Agrícola y animales",
+      "Automóviles",
+      "Incendio",
+      "Responsabilidad Civil"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Incendio",
+    "explicacion": ""
+  },
+  {
+    "id": 424,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Qué sucede cuando la suma asegurada contratada es superior al valor de reposición o valor real del bien asegurado al momento del siniestro?",
+    "opciones": [
+      "Opera a primer riesgo",
+      "Se paga hasta el valor de reposición y se devuelven las primas por el excedente",
+      "Aplica la proporción indemnizable",
+      "Se paga hasta el valor de real y se devuelven las primas por el excedente"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Se paga hasta el valor de reposición y se devuelven las primas por el excedente",
+    "explicacion": ""
+  },
+  {
+    "id": 425,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Edificio y contenidos, robo con violencia, responsabilidad civil, cristales, dinero y valores, equipo electrodoméstico y electrónico, en la póliza Paquete Familiar reciben el nombre de:",
+    "opciones": [
+      "Capítulos",
+      "Unidades",
+      "Secciones",
+      "Bienes amparados"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Secciones",
+    "explicacion": ""
+  },
+  {
+    "id": 426,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Los contenidos en general de las habitaciones particulares mientras se encuentren dentro del (s) edificio (s) especificado (s) en la carátula de la póliza representan los:",
+    "opciones": [
+      "Bienes excluidos",
+      "Bienes cubiertos en la sección II",
+      "Bienes cubiertos en la sección I",
+      "Bienes excluidos que pueden protegerse por convenio expreso."
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Bienes cubiertos en la sección II",
+    "explicacion": ""
+  },
+  {
+    "id": 427,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Cual es la cobertura básica en las secciones I y II.",
+    "opciones": [
+      "Incendio y o rayo",
+      "Incendio y explosión",
+      "Incendio y extensión de cubierta",
+      "Incendio, rayo y extensión de cubierta"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Incendio y o rayo",
+    "explicacion": ""
+  },
+  {
+    "id": 428,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Estos son algunos riesgos adicionales de la sección I y II que pueden cubrirse en forma adicional: inundación, gastos extraordinarios, cobertura automática para incisos conocidos. ¿Cuales hacen falta?",
+    "opciones": [
+      "Accidentes y personales",
+      "Marítimo y transportes",
+      "Terremoto y erupción volcánica, remoción de escombros",
+      "Agrícola y animales"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Terremoto y erupción volcánica, remoción de escombros",
+    "explicacion": ""
+  },
+  {
+    "id": 429,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Los riesgos que se cubren en extensión de cubierta algunos de ellos son:",
+    "opciones": [
+      "Rotura de filtraciones de tuberías",
+      "Gastos extraordinarios, saqueos",
+      "Explosión, vehículos, humo o tizne, caída de árboles",
+      "Inundación, robo con violencia"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Explosión, vehículos, humo o tizne, caída de árboles",
+    "explicacion": ""
+  },
+  {
+    "id": 430,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿De cuantos incisos se compone la sección III de robo con violencia de contenidos?",
+    "opciones": [
+      "7",
+      "3",
+      "12",
+      "4"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "3",
+    "explicacion": ""
+  },
+  {
+    "id": 431,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En la responsabilidad civil familiar, se cubre el daño y adicionalmente:",
+    "opciones": [
+      "Perjuicio y daño consecuencial",
+      "Perjuicio y daño moral consecuencial",
+      "Perjurio y daño moral",
+      "Perjurio y daño moral consecuencial"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Perjuicio y daño moral consecuencial",
+    "explicacion": ""
+  },
+  {
+    "id": 432,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cuales son riesgos cubiertos en equipo electrónico y electrodoméstico?",
+    "opciones": [
+      "Impericia, descuido y sabotaje",
+      "Incendio y rayo",
+      "Robo con violencia",
+      "Garantía de piezas"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Impericia, descuido y sabotaje",
+    "explicacion": ""
+  },
+  {
+    "id": 433,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Que bienes se excluyen en la sección de edificio?",
+    "opciones": [
+      "Lingotes de oro y plata",
+      "Cimientos y terrenos",
+      "Incendio y explosión",
+      "Incendio y/ o rayo"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Cimientos y terrenos",
+    "explicacion": ""
+  },
+  {
+    "id": 434,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Bienes amparados solo bajo convenio expreso en las secciones I y II.",
+    "opciones": [
+      "Colección de monedas",
+      "Antenas parabólicas",
+      "Objetos raros o de arte",
+      "Títulos y obligaciones"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Antenas parabólicas",
+    "explicacion": ""
+  },
+  {
+    "id": 435,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cual es el convenio expreso en R.C. familiar?",
+    "opciones": [
+      "Daños por hundimiento del suelo",
+      "Daños en territorio nacional",
+      "Daños con el automóvil",
+      "Daños en el extranjero"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Daños en el extranjero",
+    "explicacion": ""
+  },
+  {
+    "id": 436,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En robo con violencia ¿cual es un riesgo excluido?",
+    "opciones": [
+      "Robo de Edificio",
+      "Robo con asalto",
+      "El abuso de confianza",
+      "Daños por incendio y explosión"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "El abuso de confianza",
+    "explicacion": ""
+  },
+  {
+    "modulo": "Seguros de Daños",
+    "pregunta": "En la póliza Múltiple de Casa Habitación, ¿qué secciones pueden operar de manera proporcional y a primer riesgo?\n\n1.- RC Familiar\n2.- Cristales\n3.- Accidentes personales\n4.- Robo con violencia",
+    "opciones": [
+      "1, 4",
+      "2, 3",
+      "2, 4",
+      "1, 2"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "2, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 438,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Modalidad de aseguramiento que delimita específicamente las eventualidades contra las que se asegura a la persona o al bien.",
+    "opciones": [
+      "Riesgos Nombrados",
+      "Primer Riesgo",
+      "Todo Riesgo",
+      "Proporcional"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Riesgos Nombrados",
+    "explicacion": ""
+  },
+  {
+    "id": 439,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Son aquellos cuyas sumas aseguradas inferiores a los valores reales totales asegurables, pero que llevan una preestablecida relación porcentual con éstos. En todos los casos, la aseguradora acepta reducir su límite de responsabilidad, modificando parcialmente los términos de la cláusula de infraseguro.",
+    "opciones": [
+      "Riesgos Nombrados",
+      "Primer Riesgo",
+      "Todo Riesgo",
+      "Proporcional"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Primer Riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 440,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Acción de la Aseguradora de sustituir al asegurado en el ejercicio de las acciones o derechos que tendría este contra los terceros causantes de un siniestro a fin de recuperar de ellos la cantidad por la que civilmente deberían responder a consecuencia de los daños producidos cuya indemnización, en virtud de la póliza de seguro ha corrido inicialmente a cargo de la aseguradora.",
+    "opciones": [
+      "Salvamento",
+      "Subrogación",
+      "Recuperaron",
+      "Reembolso"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Subrogación",
+    "explicacion": ""
+  },
+  {
+    "id": 441,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Un tanque de gas explota causando daños al edificio colindante, esta casa esta asegurada en una póliza múltiple Familiar ¿Qué nombre recibe técnicamente el daño?",
+    "opciones": [
+      "Daño Moral",
+      "Daño directo por explosión",
+      "Daño indirecto",
+      "Daño por aparato sujeto a presión"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Daño indirecto",
+    "explicacion": ""
+  },
+  {
+    "id": 442,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Una persona desea asegurar su velero que utiliza en Valle de Bravo los fines de semana, ¿Qué tipo de navegación utiliza esta embarcación?",
+    "opciones": [
+      "De placer",
+      "Nacional",
+      "Interior",
+      "Altura"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Interior",
+    "explicacion": ""
+  },
+  {
+    "id": 443,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Es la embarcación pequeña que se utiliza para transportar mercancías hacia el buque o de éste:",
+    "opciones": [
+      "Velero",
+      "Yate",
+      "Remolcador",
+      "Lancha"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Lancha",
+    "explicacion": ""
+  },
+  {
+    "id": 444,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cuál de los siguientes bienes está amparado en la cobertura de embarcaciones menores de placer?",
+    "opciones": [
+      "Velas",
+      "Equipo de comunicación",
+      "Refacciones",
+      "Bote salvavidas"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Bote salvavidas",
+    "explicacion": ""
+  },
+  {
+    "id": 445,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Relaciona los tipos de navegación con los recorridos que se realizan:\n\nNAVEGACIÓN:\n1. Interior\n2. De cabotaje\n3. De altura\n\nRECORRIDOS:\na. Entre puertos y puntos situados en litorales mexicanos\nb. En aguas mexicanas y cuerpos de agua tierra adentro\nc. De zonas marinas mexicanas a puertos extranjeros",
+    "opciones": [
+      "1b, 2a, 3c",
+      "1c, 2b, 3a",
+      "1a, 2c, 3b",
+      "1a, 2b, 3c"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "1b, 2a, 3c",
+    "explicacion": ""
+  },
+  {
+    "id": 446,
+    "modulo": "Seguros de Daños",
+    "pregunta": "El dueño de una lancha rápida la utiliza solamente para ir de Puerto Vallarta a Mazatlán, ¿Qué tipo de navegación realiza?",
+    "opciones": [
+      "Interior",
+      "Nacional",
+      "Cabotaje",
+      "Altura"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Cabotaje",
+    "explicacion": ""
+  },
+  {
+    "id": 447,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Acción de arrojar por la borda parte de la carga:",
+    "opciones": [
+      "Descarga",
+      "Avería simple",
+      "Echazón",
+      "Avería particular"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Echazón",
+    "explicacion": ""
+  },
+  {
+    "id": 448,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿Cómo se denomina a la embarcación con menos de 500 unidades de arqueo?",
+    "opciones": [
+      "Buque",
+      "Embarcación menor de placer",
+      "Barcaza",
+      "Crucero"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Embarcación menor de placer",
+    "explicacion": ""
+  },
+  {
+    "id": 449,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Es una pérdida parcial provocada de modo deliberado para salvar de una pérdida total los intereses en riesgo:",
+    "opciones": [
+      "Avería parcial",
+      "Avería particular",
+      "Echazón",
+      "Avería gruesa"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Avería gruesa",
+    "explicacion": ""
+  },
+  {
+    "id": 450,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Relaciona las siguientes columnas, de acuerdo al seguro de embarcaciones menores de placer:\n\nCONDICIÓN DEL BIEN:\n1. Amparados\n2. Excluidos\n\nBIENES:\na. Videocámara personal\nb. Rotura de ejes\nc. Juego de anzuelos\nd. Bote salvavidas",
+    "opciones": [
+      "1 a, c; 2 b, d",
+      "1 c, d; 2 a, b",
+      "1 b, c; 2 a, d",
+      "1 b, d; 2 a, c"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "1 b, d; 2 a, c",
+    "explicacion": ""
+  },
+  {
+    "id": 451,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Daño producido accidentalmente en la embarcación o en la carga:",
+    "opciones": [
+      "Cabotaje",
+      "Avería gruesa",
+      "Avería particular",
+      "Echazón"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Avería particular",
+    "explicacion": ""
+  },
+  {
+    "id": 452,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Tipo de Navegación que realiza embarcación al trasladarse de Mazatlán a La Paz BC.",
+    "opciones": [
+      "De placer",
+      "Cabotaje",
+      "Interior",
+      "Altura"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Altura",
+    "explicacion": ""
+  },
+  {
+    "id": 453,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Certificado de matrícula",
+    "opciones": [
+      "1 y 2",
+      "3 y 4",
+      "2 y 3",
+      "2 y 4"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "3 y 4",
+    "explicacion": ""
+  },
+  {
+    "id": 454,
+    "modulo": "Seguros de Daños",
+    "pregunta": "La remoción de escombros, costas y gastos judiciales derivados de una RC del uso de la Embarcación Riesgosa son cubiertos en:",
+    "opciones": [
+      "PANDI",
+      "Protección e Indemnización Completa (P & I Completa).",
+      "Buques Hermanos",
+      "Protección e Indemnización Simple (P & I Simple)."
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Protección e Indemnización Completa (P & I Completa).",
+    "explicacion": ""
+  },
+  {
+    "id": 455,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Forma en que participa en el siniestro el contratante de una póliza de embarcaciones menores y de Placer:",
+    "opciones": [
+      "Deducible",
+      "Franquicia",
+      "Copago",
+      "Coaseguro"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Franquicia",
+    "explicacion": ""
+  },
+  {
+    "id": 456,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Nombre que recibe una pérdida parcial en Embarcaciones Menores y de Placer.",
+    "opciones": [
+      "Averia Gruesa",
+      "Averia General o Comun",
+      "Averia Particular",
+      "Echazon"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Averia Particular",
+    "explicacion": ""
+  },
+  {
+    "id": 457,
+    "modulo": "Seguros de Daños",
+    "pregunta": "De que manera se cubre PANDI los daños ocasionados en buques hermanos.",
+    "opciones": [
+      "A primer Riesgo",
+      "Protección e Indemnización Completa (P & I Completa).",
+      "Convenio Expreso",
+      "Protección e Indemnización Simple (P & I Simple)."
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Convenio Expreso",
+    "explicacion": ""
+  },
+  {
+    "id": 458,
+    "modulo": "Seguros de Daños",
+    "pregunta": "El contratante de una embarcación menor que realiza pesca de recreo (marlin, dorado, pez vela) en Alta mar. ¿Qué tipo de Navegación realiza?",
+    "opciones": [
+      "De placer",
+      "Cabotaje",
+      "Interior",
+      "Altura"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Altura",
+    "explicacion": ""
+  },
+  {
+    "id": 459,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Daños a diques o dársenas",
+    "opciones": [
+      "1 y 2",
+      "2 y 3",
+      "3 y 4",
+      "1 y 4"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "2 y 3",
+    "explicacion": ""
+  },
+  {
+    "id": 460,
+    "modulo": "Seguros de Daños",
+    "pregunta": "A las maniobras de descarga de una embarcación se le conoce como:",
+    "opciones": [
+      "Avería Gruesa",
+      "Avería particular",
+      "Echazon",
+      "Alijo"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Alijo",
+    "explicacion": ""
+  },
+  {
+    "id": 461,
+    "modulo": "Seguros de Daños",
+    "pregunta": "¿El dueño de una lancha la utiliza solamente para pesca de recreo en presas y lagos qué tipo de Navegación realiza?",
+    "opciones": [
+      "Interior",
+      "Nacional",
+      "Cabotaje",
+      "Altura"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Interior",
+    "explicacion": ""
+  },
+  {
+    "id": 1010,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Al motor provisto de una hélice que se coloca en la parte posterior de la popa de una embarcación menor de placer, se le conoce como:",
+    "opciones": [
+      "Turbohélice",
+      "Timón",
+      "Motor fuera de borda",
+      "Motor trasero o en popa"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Motor fuera de borda",
+    "explicacion": ""
+  },
+  {
+    "id": 1011,
+    "modulo": "Seguros de Daños",
+    "pregunta": "En una póliza de Embarcaciones Menores de Placer ¿a qué se le llama navegación de cabotaje?",
+    "opciones": [
+      "A la navegación a lo largo de las costas, sin perder de vista la costa",
+      "A la navegación por los cabos",
+      "A la navegación Mercante",
+      "A la navegación en ríos, canales, presas y estanques"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "A la navegación a lo largo de las costas, sin perder de vista la costa",
+    "explicacion": ""
+  },
+  {
+    "id": 1012,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Una persona ha comprado un yate, planea hacer viajes frecuentes de San Carlos a San Diego y requiere de un seguro para su embarcación, ¿qué tipo de navegación informará que va a realizar?",
+    "opciones": [
+      "Interoceánica o de Altura",
+      "Interior",
+      "Cabotaje",
+      "Nacional"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Interoceánica o de Altura",
+    "explicacion": ""
+  },
+  {
+    "id": 462,
+    "modulo": "Seguros de Daños",
+    "pregunta": "Es la definición de Abordaje:",
+    "opciones": [
+      "Es la acción de subir a la embarcación",
+      "Llegar, tocar una embarcación con otra.",
+      "Colocar una embarcación al lado de otra o de un muelle, de forma tal que quede en contacto por su costado.",
+      "Ninguna es correcta."
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Llegar, tocar una embarcación con otra.",
+    "explicacion": ""
+  }
+]

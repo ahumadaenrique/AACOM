@@ -318,13 +318,14 @@
 
                         <!-- Audio and Navigation Controls -->
                         <div class="study-footer-controls">
-                            <div class="audio-controls">
-                                <button class="btn-audio" id="btn-audio-speak" title="Volver a escuchar / Repetir lectura" onclick="toggleAudioSpeech()">
-                                    <svg style="width:22px; height:22px; fill:currentColor;" viewBox="0 0 24 24" id="audio-speak-icon"><path d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"/></svg>
+                            <div class="audio-controls" style="display:flex; align-items:center; gap:10px;">
+                                <button class="btn-audio" id="btn-audio-speak" title="Escuchar pregunta (ElevenLabs HD)" onclick="toggleAudioSpeech()">
+                                    <svg style="width:20px; height:20px; fill:currentColor;" viewBox="0 0 24 24" id="audio-speak-icon"><path d="M8 5v14l11-7z"/></svg>
                                 </button>
-                                <select id="study-voice-selector" class="btn-secondary" style="padding: 6px; font-size: 12px; background: var(--bg-secondary); border-color: var(--glass-border); width: 140px; border-radius: 8px;" onchange="changeVoice()" title="Seleccionar voz del narrador">
-                                    <option value="">Voz por defecto</option>
-                                </select>
+                                <div style="display:flex; align-items:center; gap:5px;" title="Control de volumen">
+                                    <span style="font-size:13px; color:var(--text-secondary); user-select:none;">🔊</span>
+                                    <input type="range" id="study-audio-volume" min="0" max="1" step="0.05" value="1" style="width:70px; accent-color:#14b8a6; cursor:pointer;" oninput="changeAudioVolume(this.value)" title="Volumen">
+                                </div>
                                 <div class="waveform" id="voice-waveform">
                                     <div class="waveform-bar"></div>
                                     <div class="waveform-bar"></div>
@@ -332,6 +333,7 @@
                                     <div class="waveform-bar"></div>
                                     <div class="waveform-bar"></div>
                                 </div>
+                                <span style="font-size:10px; font-weight:700; color:#14b8a6; text-transform:uppercase; letter-spacing:0.5px; background:rgba(20,184,166,0.1); border:1px solid rgba(20,184,166,0.2); padding:2px 6px; border-radius:6px;">ElevenLabs HD</span>
                             </div>
 
                             <div style="display:flex; gap:12px;">
@@ -342,16 +344,16 @@
                         </div>
                     </div>
 
-                    <!-- Right Side: Context Animation Dynamic SVG -->
-                    <div class="glass-card study-card-right">
-                        <div class="card-title" style="position: absolute; top: 20px; left: 20px;">
-                            <h3>Explicador Gráfico</h3>
+                    <!-- Right Side: Context Animation Dynamic SVG & Rich Legal Explanation -->
+                    <div class="glass-card study-card-right" style="display:flex; flex-direction:column; overflow:hidden; position:relative; min-height:480px;">
+                        <div class="card-title" style="margin-bottom:12px;">
+                            <h3>Explicador Gráfico & Fundamento</h3>
                         </div>
-                        <div class="animation-canvas" id="animation-canvas-container">
+                        <div class="animation-canvas" id="animation-canvas-container" style="max-height:160px; min-height:120px; overflow:hidden;">
                             <!-- SVG animates dynamically in app.js -->
                         </div>
-                        <div id="animation-concept-desc" class="concept-description" style="width: calc(100% - 40px); position: absolute; bottom: 20px; left: 20px;">
-                            Se presenta una ilustración animada de acuerdo al concepto de seguros de la pregunta para facilitar el e-learning.
+                        <div id="animation-concept-desc" class="concept-description" style="flex:1; overflow-y:auto; margin-top:12px; padding:14px; border-radius:12px; background:rgba(15, 23, 42, 0.7); border:1px solid var(--glass-border); line-height:1.6; font-size:13.5px;">
+                            Selecciona una opción o presiona <strong>Explicar</strong> para ver la fundamentación técnica y legal de este reactivo.
                         </div>
                     </div>
 

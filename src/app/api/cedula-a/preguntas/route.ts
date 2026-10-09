@@ -41,7 +41,9 @@ export async function GET(req: NextRequest) {
             question: q.question,
             options: q.options,
             correct: q.correct,
-            has_error: q.has_error || false
+            has_error: q.has_error || false,
+            explanation: q.explanation || q.explicacion || '',
+            explicacion: q.explicacion || q.explanation || ''
           }))
         });
       }

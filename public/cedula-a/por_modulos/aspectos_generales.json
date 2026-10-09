@@ -1,0 +1,1920 @@
+[
+  {
+    "id": 1,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Ante qué organismo tendrá que comprobar la capacidad técnica una persona física que Solicite la autorización como agente?",
+    "opciones": [
+      "Asociación Mexicana de Instituciones y Seguros (AMIS)",
+      "Comisión Nacional de Seguros y Fianzas (CNSF)",
+      "Secretaría de Hacienda y Crédito Público (SHCP)",
+      "Comisión Nacional para la Protección y Defensa de los Usuarios de Servicios Financieros (CONDUSEF)"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Comisión Nacional de Seguros y Fianzas (CNSF)",
+    "explicacion": ""
+  },
+  {
+    "id": 1001,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cómo se define el pago por cargo fraccionado?",
+    "opciones": [
+      "Es el porcentaje de la prima que se cobra en planes de descuentos por nómina",
+      "Es el porcentaje de la prima que cobra la aseguradora cuando se cancela el seguro antes del vencimiento anual y aún no se ha pagado la prima",
+      "Es un porcentaje de la prima que se cobra por realizar pagos diferentes al anual",
+      "Es el porcentaje de la prima que se cobra cuando la vigencia del seguro es menor a un año"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Es un porcentaje de la prima que se cobra por realizar pagos diferentes al anual",
+    "explicacion": ""
+  },
+  {
+    "id": 2,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿A que ramo pertenece el seguro que esta dirigido a prevenir o restaurar la salud a través de la prestación de servicios?",
+    "opciones": [
+      "Salud",
+      "Gastos Médicos",
+      "Vida",
+      "Accidentes personales"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Salud",
+    "explicacion": ""
+  },
+  {
+    "id": 3,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De la siguiente lista identifique los dos conceptos que los aseguradores utilizan para determinar la cuota técnica o de “riesgo puro” 1. Índice de siniestralidad 2. Siniestros pagados 3. Frecuencia 4. Suma asegurada 5. Severidad",
+    "opciones": [
+      "3, 5",
+      "4, 5",
+      "1, 2",
+      "1, 3"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "3, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 4,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿A quien y con cuanto tiempo deben informar los agentes de seguros su cambio de ubicación?",
+    "opciones": [
+      "Por lo menos con 10 días de anticipación, a la Comisión de Seguros y Fianzas, de igual manera a los asegurados",
+      "Por lo menos con 10 días de anticipación, a la Asociación Mexicana de Instituciones de Seguros y a los asegurados",
+      "Con 30 días de anticipación, a la Secretaría de Hacienda y Crédito Público y a los asegurados",
+      "Por lo menos con 30 días de anticipación, a la Comisión Federal de mejora regulatoria"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Por lo menos con 10 días de anticipación, a la Comisión de Seguros y Fianzas, de igual manera a los asegurados",
+    "explicacion": ""
+  },
+  {
+    "id": 5,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Se consideran operaciones relevantes cuando la prima, cuota u aportación sea igual o superior al equivalente a:",
+    "opciones": [
+      "5,000 dólares de los E.U.A",
+      "20,000 dólares de los E.U.A",
+      "10,000 dólares de los E.U.A",
+      "15,000 dólares de los E.U.A"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "10,000 dólares de los E.U.A",
+    "explicacion": ""
+  },
+  {
+    "id": 6,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Las sanciones que recibe un agente de seguros cuando comete una infracción al Reglamento de Agentes de Seguros y Fianzas, ¿Se aplican en forma sucesiva?",
+    "opciones": [
+      "Si, depende de la importancia que le de la Comisión Nacional para la Protección y Defensa de los Usuarios de los Servicios Financieros",
+      "Si, porque lo marca la ley independientemente de la importancia de la infracción y las condiciones del infractor",
+      "No, depende de la importancia que le de el asegurado",
+      "No, se aplican de forma independiente considerando la importancia de la infracción y las condiciones de infractor"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "No, se aplican de forma independiente considerando la importancia de la infracción y las condiciones de infractor",
+    "explicacion": ""
+  },
+  {
+    "id": 7,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Señale el periodo en el que el agente de seguros persona física, deberá refrendar su autorización para realizar actividades de intermediación:",
+    "opciones": [
+      "Cada tres años",
+      "Cada seis años",
+      "Cada cinco años",
+      "Cada año"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Cada tres años",
+    "explicacion": ""
+  },
+  {
+    "id": 8,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De la siguiente lista elija cuatro elementos que se encuentran contenidos en la cédula: 1. Número de Cédula 2. Tipo de autorización 3. RFC de la Aseguradora 4. Nombre completo 5. Nombre del plan 6. Vigencia 7. Domicilio del asegurado 8.",
+    "opciones": [
+      "1, 3, 5, 7",
+      "1, 2, 4, 6",
+      "2, 4, 6, 7",
+      "3, 5, 6, 7"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 2, 4, 6",
+    "explicacion": ""
+  },
+  {
+    "id": 9,
+    "modulo": "Aspectos Generales",
+    "pregunta": "En función de las características del riesgo a asegurar, la posibilidad que ocurra el siniestro y el monto de la pérdida que tendrá el asegurado, se calcula la:",
+    "opciones": [
+      "Prima",
+      "Prima pura de riesgo",
+      "Prima neta",
+      "Prima emitida"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Prima pura de riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 10,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Los siguientes conceptos son formas que se aplican para compartir el riesgo entre asegurado y Aseguradora, EXCEPTO:",
+    "opciones": [
+      "Reaseguro",
+      "Franquicia",
+      "Coaseguro",
+      "Deducible"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Reaseguro",
+    "explicacion": ""
+  },
+  {
+    "id": 11,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De la siguiente lista, elija las tres características que debe tener un riesgo para poder ser asegurable: 1. Generar ganancia 2. Concreto 3. Subjetividad 4. Licito 5. Incertidumbre 6. Certeza del riesgo",
+    "opciones": [
+      "2, 4, 5",
+      "1, 3, 6",
+      "1, 3, 5",
+      "2, 4, 6"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "2, 4, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 12,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Quién debe cubrir los gastos de expedición y/o los impuestos que genere la póliza?",
+    "opciones": [
+      "La Aseguradora",
+      "El contratante",
+      "Los beneficiarios",
+      "El agente"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "El contratante",
+    "explicacion": ""
+  },
+  {
+    "id": 13,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Elija los dos motivos por los que una Institución debe constituir reservas para obligaciones pendientes de cumplir: 1. Por pólizas en vigor 2. Por las pólizas vencidas, siniestros ocurridos y reparto de periódico de utilidades 3. Por gastos de adquisición 4. Por los siniestros ocurridos y no reportados 5. Por fondo para comisiones 6. Por siniestros catastróficos por ocurrir",
+    "opciones": [
+      "2, 3",
+      "3, 6",
+      "1, 5",
+      "2, 4"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "2, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 14,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Cuando la CONDUSEF solicita información a cualquiera de las siguientes autoridades: Secretaria de Hacienda y Crédito Publico, Comisión Nacional de Seguros y Fianzas, Comisión Nacional Bancaria y de Valores o Comisión Nacional del Sistema de Ahorro para el Retiro, ¿Cuántos días hábiles tienen para contestar?",
+    "opciones": [
+      "60",
+      "15",
+      "30",
+      "10"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "30",
+    "explicacion": ""
+  },
+  {
+    "id": 15,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿En que documento se hace constar la autorización para ejercer la actividad de agente se seguros?",
+    "opciones": [
+      "En una carta expedida por la Secretaria de Hacienda y Crédito Publico",
+      "En un oficio de la compañía de seguros",
+      "En un contrato mercantil",
+      "En una cédula"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "En una cédula",
+    "explicacion": ""
+  },
+  {
+    "id": 16,
+    "modulo": "Aspectos Generales",
+    "pregunta": "La ley general de Instituciones y Sociedades Mutualistas de Seguros, ordena que los contratos de adhesión deban ser escritos:",
+    "opciones": [
+      "En papel seguridad, con tinta negra y sobre un fondo claro",
+      "Con letras de 8 puntos y a doble espacio",
+      "En idioma español y con características legibles a simple vista para una persona de visión normal",
+      "Resaltando con mayúsculas las exclusiones"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "En idioma español y con características legibles a simple vista para una persona de visión normal",
+    "explicacion": ""
+  },
+  {
+    "id": 17,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De conformidad con la Ley General de Instituciones y Sociedades Mutualistas de Seguros la autorización para realizar actividades de intermediación del Seguro de Pensiones derivados de las leyes de Seguridad Social solo se otorgará para intermediar:",
+    "opciones": [
+      "Solo con Instituciones de operaciones de vida",
+      "El seguro de personas en cualquier Institución de seguros",
+      "Con una sola Institución de seguros",
+      "Con diversas Instituciones."
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Con una sola Institución de seguros",
+    "explicacion": ""
+  },
+  {
+    "id": 18,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Las siguientes son obligaciones de un agente persona moral que cuenta con una póliza de seguro de errores y omisiones, EXCEPTO:",
+    "opciones": [
+      "Acreditar ante la Comisión Nacional de Seguros y Fianzas la contratación o renovación de la póliza",
+      "Presentar copia de la renovación de la póliza en un plazo no mayor de 10 días hábiles contados a partir del vencimiento de la misma",
+      "Contratar y mantener vigente la póliza",
+      "Calcular los montos y términos del Seguro"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Calcular los montos y términos del Seguro",
+    "explicacion": ""
+  },
+  {
+    "id": 19,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Un agente de seguros puede cobrar primas de seguros siempre y cuando:",
+    "opciones": [
+      "El prospecto firme la solicitud",
+      "Entregue el recibo oficial expedido por la Institución Aseguradora",
+      "La solicitud tenga el sello de recibido de la Institución",
+      "Entregue la póliza al asegurado"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Entregue el recibo oficial expedido por la Institución Aseguradora",
+    "explicacion": ""
+  },
+  {
+    "id": 20,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Cuando una persona física efectúa un pago de $11,000 U.S dólares por concepto del pago de una prima. ¿Qué tipo de documento debe presentar para identificarse?",
+    "opciones": [
+      "Credencial de la empresa privada donde labora con fotografía y firma",
+      "Documento oficial vigente con fotografía, firma y domicilio",
+      "Cédula de identificación fiscal",
+      "Registro Federal de Contribuyentes"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Documento oficial vigente con fotografía, firma y domicilio",
+    "explicacion": ""
+  },
+  {
+    "id": 21,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿A que autoridad le corresponde la adopción de medidas tendientes a regular la organización y funcionamiento de las Instituciones de Seguros?",
+    "opciones": [
+      "Comisión Nacional para la protección y Defensa de los Usuarios",
+      "Secretaria de Hacienda y Crédito Publico",
+      "Comisión Nacional de Seguros y Fianzas",
+      "Banco de México"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Comisión Nacional de Seguros y Fianzas",
+    "explicacion": ""
+  },
+  {
+    "id": 22,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Quién deberá cubrir los gastos que hace el asegurado para evitar o disminuir el daño y que no son considerados improcedentes?",
+    "opciones": [
+      "Los beneficiarios",
+      "En partes iguales aseguradora y asegurado",
+      "El asegurado",
+      "La Institución Aseguradora"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "La Institución Aseguradora",
+    "explicacion": ""
+  },
+  {
+    "id": 23,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Qué ocurre con las comisiones de los seguros de vida que se conservan en vigor, aún después de extinguida la relación que tuviere el agente con la aseguradora?",
+    "opciones": [
+      "Siguen perteneciendo al agente",
+      "Se otorgan a otro agente",
+      "Se otorgan al asegurado",
+      "Se cancelan"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Siguen perteneciendo al agente",
+    "explicacion": ""
+  },
+  {
+    "id": 24,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Relacione el tipo de sociedad de seguros con sus características correspondientes de acuerdo a la Ley:\n\nTIPO DE SOCIEDAD:\n1. Institución de Seguros (S.A.)\n2. Sociedad Mutualista\n\nCARACTERÍSTICAS:\na. Constituida como sociedad anónima de capital fijo o variable\nb. En ningún momento podrán participar en forma alguna en estas sociedades entidades financieras del exterior\nc. Las operaciones de seguro que practiquen no producirán lucro o utilidad a los socios\nd. Deberán contar con un capital mínimo pagado por cada operación o ramo que se les autorice",
+    "opciones": [
+      "1 a, d; 2 b, c",
+      "1 a, b; 2 c, d",
+      "1 b, c; 2 a, d",
+      "1 a, c; 2 b, d"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "1 a, d; 2 b, c",
+    "explicacion": ""
+  },
+  {
+    "id": 25,
+    "modulo": "Aspectos Generales",
+    "pregunta": "El contrato de seguro deberá hacerse constar por:",
+    "opciones": [
+      "Escrito",
+      "Duplicado",
+      "Consentimiento unilateral",
+      "Certificado"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Escrito",
+    "explicacion": ""
+  },
+  {
+    "id": 26,
+    "modulo": "Aspectos Generales",
+    "pregunta": "La actitud de apartar todas las variables que puedan causar que el riesgo se presente, se le conoce como:",
+    "opciones": [
+      "Transferirlo",
+      "Disminuirlo",
+      "Distribuirlo",
+      "Eliminarlo"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Eliminarlo",
+    "explicacion": ""
+  },
+  {
+    "id": 27,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Señale dentro de las siguientes opciones ¿Qué autoridad es competente para interpretar las Reglas que estables las orientaciones de política general aplicables a los agentes y apoderados de seguros y de fianzas?",
+    "opciones": [
+      "Comisión Nacional de Seguros y Fianzas",
+      "Comisión Nacional para la Protección y Defensa de los Usuarios de Servicios Financieros",
+      "Comisión Nacional del Sistema de Ahorro para el Retiro",
+      "Secretaría de Hacienda y Crédito Público"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Secretaría de Hacienda y Crédito Público",
+    "explicacion": ""
+  },
+  {
+    "id": 28,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De acuerdo a la Ley General de Instituciones de Seguros, la operación que tiene como base la lesión o incapacidad que afecte la integridad personal, salud o vigor vital del asegurado, se considera comprendida dentro de las operaciones de:",
+    "opciones": [
+      "Daños",
+      "Salud",
+      "Vida",
+      "Accidentes y enfermedades"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Vida",
+    "explicacion": ""
+  },
+  {
+    "id": 29,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Relaciona las operaciones y ramos con sus respectivos conceptos, de acuerdo a la Ley general de Instituciones y Sociedades Mutualistas de Seguros:\n\nCLASIFICACIÓN:\n1. Operaciones\n2. Ramos\n\nCONCEPTOS:\na. Incendio\nb. Vida\nc. Accidentes y enfermedades\nd. Salud\ne. Daños\nf. Automóviles",
+    "opciones": [
+      "1 c, d, f ; 2 a, b, e",
+      "1 a, b, e; 2 c, d, f",
+      "1 b, c, a; 2 d, e, f",
+      "1 b, c, e; 2 a, d, f"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "1 b, c, e; 2 a, d, f",
+    "explicacion": ""
+  },
+  {
+    "id": 30,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cómo se llama al interés económico que una persona tiene en que no se produzca un siniestro?",
+    "opciones": [
+      "Bancario",
+      "Acumulable",
+      "Propio",
+      "Asegurable"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Asegurable",
+    "explicacion": ""
+  },
+  {
+    "id": 31,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Una vez que la compañía de seguros cuenta con todos los elementos que le permitan determinar la procedencia del siniestro, ¿Cuál es el plazo máximo para efectuar la indemnización?",
+    "opciones": [
+      "10 días",
+      "30 días",
+      "45 días",
+      "15 días"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "30 días",
+    "explicacion": ""
+  },
+  {
+    "id": 32,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Conforme a la Ley del Contrato del Seguro, ¿A que está obligado el prospecto al solicitar un seguro?",
+    "opciones": [
+      "A pagar la prima",
+      "A declarar por escrito todos los hechos importantes para la apreciación del riesgo",
+      "A comprobar su edad con una identificación oficial actualizada",
+      "A manifestar su interés por escrito de adquirir un seguro"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "A declarar por escrito todos los hechos importantes para la apreciación del riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 33,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De acuerdo a la Ley sobre el Contrato del Seguro, ¿A quien le corresponde la obligación de declarar por escrito en el cuestionario relativo, todos los hechos importantes para la apreciación del riesgo, tal como los conoce o deba conocerlos?",
+    "opciones": [
+      "Contratante",
+      "Proponente",
+      "Asegurado",
+      "Agente de Seguros"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Proponente",
+    "explicacion": ""
+  },
+  {
+    "id": 34,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Una empresa mexicana, para proteger sus actividades en la República Mexicana, contrató una póliza de Responsabilidad Civil, con una compañía de Seguros Inglesa sin representación en nuestro territorio. De acuerdo a la Ley General de Instituciones y Sociedades Mutualistas de Seguros esta operación de Seguros se considera:",
+    "opciones": [
+      "Autorizada",
+      "Valida",
+      "Prohibida",
+      "Especial"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Prohibida",
+    "explicacion": ""
+  },
+  {
+    "id": 35,
+    "modulo": "Aspectos Generales",
+    "pregunta": "En los seguros cuando la siniestralidad prevista para el cálculo de primas es menor a la realmente ocurrida, la utilidad se puede repartir a los asegurados a través de:",
+    "opciones": [
+      "Acciones",
+      "Valores garantizados",
+      "Bonos de siniestralidad",
+      "Dividendos"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Dividendos",
+    "explicacion": ""
+  },
+  {
+    "id": 36,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Señale cuales son las prohibiciones para comercializar el Seguro de acuerdo a la Ley General de Instituciones y Sociedades Mutualistas de Seguros:",
+    "opciones": [
+      "Contratar por aseguradores no autorizados por Secretaria de Hacienda y Crédito Público",
+      "Contratar seguros empresariales con agentes cedula “A”",
+      "Contratar seguros con agentes provisionales",
+      "Contratar seguros directos sin asignación de agentes"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Contratar por aseguradores no autorizados por Secretaria de Hacienda y Crédito Público",
+    "explicacion": ""
+  },
+  {
+    "id": 37,
+    "modulo": "Aspectos Generales",
+    "pregunta": "La realización del riesgo ha de producir una pérdida económica, por lo tanto es:",
+    "opciones": [
+      "Especulativo",
+      "Contenido económico",
+      "Concreto",
+      "Oneroso"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Contenido económico",
+    "explicacion": ""
+  },
+  {
+    "id": 38,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Bajo que condiciones los agentes pueden cobrar primas a los asegurados?",
+    "opciones": [
+      "Contra el llenado de solicitud",
+      "Contra la entrega de póliza",
+      "Contra entrega del recibo oficial emitido por la institución",
+      "Contra recibo emitido por el agente"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Contra entrega del recibo oficial emitido por la institución",
+    "explicacion": ""
+  },
+  {
+    "id": 39,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cuál es el límite máximo de responsabilidad para la Aseguradora en caso de siniestro?",
+    "opciones": [
+      "El valor real del bien",
+      "La suma asegurada",
+      "El importe total del daño",
+      "El valor factura del bien"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "La suma asegurada",
+    "explicacion": ""
+  },
+  {
+    "id": 40,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cómo se define el recargo por pago fraccionado?",
+    "opciones": [
+      "Es el porcentaje de la prima que cobra la aseguradora cuando se cancela el seguro antes del vencimiento anual y aun no se ha pagado la prima",
+      "Es el porcentaje de la prima que se cobra en planes de descuento por nomina",
+      "Es un porcentaje que se cobra por realizar pagos diferentes al anual",
+      "Es el porcentaje de la prima que se cobra cuando la vigencia del seguro es menor a un año"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Es un porcentaje que se cobra por realizar pagos diferentes al anual",
+    "explicacion": ""
+  },
+  {
+    "id": 41,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Los agentes con cedula definitiva podrán intermediar en la contratación de seguros para una o varias instituciones EXCEPTO:",
+    "opciones": [
+      "En seguros denominados grandes riesgos",
+      "En seguros de pensiones derivados de planes privados",
+      "En seguros de cascos de aeronaves y embarcaciones",
+      "En seguros de pensiones derivados de las leyes de seguridad social"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "En seguros de pensiones derivados de las leyes de seguridad social",
+    "explicacion": ""
+  },
+  {
+    "id": 42,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cuántos días hábiles tienen los agentes para ingresar a la institución de seguros las primas que hayan cobrado directamente?",
+    "opciones": [
+      "5",
+      "3",
+      "10",
+      "1"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "10",
+    "explicacion": ""
+  },
+  {
+    "id": 43,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Es el mecanismo mediante el cual una compañía de seguros reduce su riesgo al transferir una parte del mismo a una o más compañías",
+    "opciones": [
+      "Reaseguro financiero",
+      "Distribución de riesgo",
+      "Coaseguro",
+      "Reaseguro"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Reaseguro",
+    "explicacion": ""
+  },
+  {
+    "id": 44,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Qué ley establece que el proponente esta obligado a declarar por escrito a la aseguradora todos los hechos importantes para la apreciación del riesgo, tal como los conozca y debiera conocer en el momento de la celebración del contrato?",
+    "opciones": [
+      "Ley general de instituciones y sociedades mutualistas de seguros",
+      "Ley sobre el contrato del seguro",
+      "Ley de protección y defensa a los usuarios de servicios financieros",
+      "Ley del instituto mexicano del seguro social"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Ley sobre el contrato del seguro",
+    "explicacion": ""
+  },
+  {
+    "id": 45,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Señale cuales son las obligaciones de los agentes en relación con el público usuario al momento de realizar actividades de intermediación:",
+    "opciones": [
+      "Mejorar los beneficios ofrecidos por las instituciones",
+      "Destacar que el producto que intermedia puede adecuarse a las necesidades del propio usuario",
+      "Ofrecerle prerrogativas adicionales a las establecidas en las condiciones generales del contrato",
+      "Asesorar en forma objetiva y veraz, sobre las distintas características, derechos, obligaciones y costos de los productos que resulten adecuados a las necesidades del usuario."
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Asesorar en forma objetiva y veraz, sobre las distintas características, derechos, obligaciones y costos de los productos que resulten adecuados a las necesidades del usuario.",
+    "explicacion": ""
+  },
+  {
+    "id": 46,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Es la posibilidad de frecuencia de un suceso cuya ocurrencia de cómo consecuencia una pérdida:",
+    "opciones": [
+      "Estadística",
+      "Frecuencia",
+      "Ley de los grandes números",
+      "Probabilidad"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Probabilidad",
+    "explicacion": ""
+  },
+  {
+    "id": 47,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿En que caso la comisión nacional de seguros y fianzas no otorgara a un agente la autorización para ejercer actividades de intermediación aun cuando este reúna los requisitos necesarios para el efecto?",
+    "opciones": [
+      "Cuando sean empleados de las instituciones aseguradoras",
+      "Cuando se pueda ejercer coacción para la contratación de seguros",
+      "Cuando no se hayan pagado debidamente impuestos",
+      "Cuando las compañías de seguros así lo soliciten"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Cuando se pueda ejercer coacción para la contratación de seguros",
+    "explicacion": ""
+  },
+  {
+    "id": 48,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Qué autoridad tiene la facultad de suspender a un agente de seguros de acuerdo al reglamento de agentes de seguros y fianzas?",
+    "opciones": [
+      "Comisión Nacional de Seguros y Fianzas",
+      "Secretaria de Hacienda y Crédito Publico",
+      "Comisión Federal de Mejora Regulatoria",
+      "Comisión para la protección y Defensa de los Usuarios de Servicios Financieros"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Comisión Nacional de Seguros y Fianzas",
+    "explicacion": ""
+  },
+  {
+    "id": 49,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De la siguiente lista señale 2 objetivos que persiguen con la aplicación del deducible en un seguro: Incrementar las ventas de la aseguradora Bajar el costo de indemnizaciones y gastos administrativos Estimular al asegurado a prevenir el daño Que la responsabilidad de la aseguradora disminuya",
+    "opciones": [
+      "2, 3",
+      "2, 4",
+      "1, 3",
+      "1, 4"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "2, 3",
+    "explicacion": ""
+  },
+  {
+    "id": 50,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Las sanciones que recibe un agente de seguros cuando comete una infracción al reglamento de agentes de seguros y fianzas ¿Se aplican en forma sucesiva?",
+    "opciones": [
+      "Si, porque lo marca la ley independientemente de la importancia de la infracción y las condiciones del infractor",
+      "No, depende de la importancia que le de el asegurado",
+      "No, se aplican en forma independiente, considerando la importancia de la infracción y las condiciones del infractor",
+      "Si, depende de la importancia que le de la comisión nacional para la protección y defensa de los usuarios de los servicios financieros"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "No, se aplican en forma independiente, considerando la importancia de la infracción y las condiciones del infractor",
+    "explicacion": ""
+  },
+  {
+    "id": 51,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De las siguientes opciones elija la que se refiera a la siguiente definición “Todo interés económico que una persona tenga en que no se produzca un siniestro”",
+    "opciones": [
+      "Seguro",
+      "Interés asegurable",
+      "Valor asegurable",
+      "Suma asegurada"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Interés asegurable",
+    "explicacion": ""
+  },
+  {
+    "id": 52,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cuáles son los 4 datos que deben contener en forma obligatoria las pólizas de seguro de personas? 1. Nombre completo del asegurado 2. Nombre completo de los beneficiarios 3. Domicilio del asegurado 4. Estado civil 5. Fechas de nacimiento 6. R.F.C 7. Valores garantizados",
+    "opciones": [
+      "1, 4, 5, 6",
+      "1, 2, 5, 7",
+      "2, 4, 6, 7",
+      "1, 3, 5, 7"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 2, 5, 7",
+    "explicacion": ""
+  },
+  {
+    "id": 53,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Qué plazo tiene el árbitro o tribunal de arbitraje para emitir un laudo, una vez que se ha cerrado la etapa probatoria?",
+    "opciones": [
+      "90 días",
+      "60 días",
+      "30 días",
+      "150 días"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "30 días",
+    "explicacion": ""
+  },
+  {
+    "id": 54,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Relacione las operaciones con sus ramos de acuerdo a la Ley:\n\nOPERACIONES:\n1. Accidentes y enfermedades\n2. Daños\n\nRAMOS:\na. Agrícola y de animales\nb. Responsabilidad civil, riesgos profesionales\nc. Salud\nd. Pensiones\ne. Accidentes personales\nf. Gastos médicos mayores\ng. Diversos",
+    "opciones": [
+      "1 d, e, f; 2 b, c, g",
+      "1 b, e, g; 2 a, d, c",
+      "1 a, c, d; 2 b, e, f",
+      "1 c, e, f ; 2 a, b, g"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "1 c, e, f ; 2 a, b, g",
+    "explicacion": ""
+  },
+  {
+    "id": 55,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Qué plazo tiene el asegurado a partir de que tiene conocimiento del hecho para avisar a la aseguradora de una agravación esencial en el riesgo?",
+    "opciones": [
+      "72 hrs.",
+      "48 hrs.",
+      "36 hrs.",
+      "24 hrs."
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "24 hrs.",
+    "explicacion": ""
+  },
+  {
+    "id": 56,
+    "modulo": "Aspectos Generales",
+    "pregunta": "El asegurado al solicitar copia o duplicado de su póliza y/o solicitud, la aseguradora:",
+    "opciones": [
+      "Solo entrega copia de la póliza",
+      "Puede negarse a expedirlas",
+      "Solo entrega copia de la solicitud",
+      "Tiene la obligación de expedirlos"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Tiene la obligación de expedirlos",
+    "explicacion": ""
+  },
+  {
+    "id": 57,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De la siguiente lista elija 3 datos que debe contener la autorización que emite la comisión nacional de seguros y fianzas para un agente persona física o apoderado: 1. Fecha de expedición 2. Ramos y subramos autorizados 3. Asegurados con los que puede trabajar 4. Nombre completo 5. Nacionalidad",
+    "opciones": [
+      "1, 3, 5",
+      "2, 3, 5",
+      "1, 4, 5",
+      "1, 2, 4"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "1, 2, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 58,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De acuerdo a la ley sobre el contrato del seguro, elija de la siguiente lista los 3 casos en que no corre el lapso de 2 años de prescripción:\n\n1. Por omisiones\n2. Al realizar convenio expreso\n3. Por inexactas declaraciones\n4. Por ausencia de beneficiarios\n5. Indisputabilidad\n6. Por nombramiento de perito",
+    "opciones": [
+      "1, 4, 5",
+      "1, 3, 6",
+      "2, 3, 5",
+      "2, 4, 6"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 3, 6",
+    "explicacion": ""
+  },
+  {
+    "id": 59,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Los siguientes tipos de desviaciones favorables generan dividendos EXCEPTO:",
+    "opciones": [
+      "Rendimientos financieros",
+      "Primas Excedentes",
+      "Mortalidad",
+      "Derechos de inspección"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Derechos de inspección",
+    "explicacion": ""
+  },
+  {
+    "id": 60,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿En que momento se perfecciona el contrato de seguro?",
+    "opciones": [
+      "Cuando el proponente firma la oferta",
+      "Cuando la aseguradora recibe la oferta",
+      "Cuando la aseguradora acepta la oferta",
+      "Cuando el proponente conoce la aceptación de la oferta"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Cuando el proponente conoce la aceptación de la oferta",
+    "explicacion": ""
+  },
+  {
+    "id": 61,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cuál es el objeto de las reglas que establecen las orientaciones de política general aplicables a los agentes y apoderados de seguros y fianzas?",
+    "opciones": [
+      "Establecer desarrollo de las actividades de intermediación que realizan los agentes, a fin de elevar la comercialización de los contratos de seguros y de fianzas, ampliando la población protegida por dichos instrumentos",
+      "Establecer el eficiente desarrollo de las actividades de intermediación que realizan los agentes bajo un marco de ética y profesionalismo de calidad apegado a derecho",
+      "Fomentaran la generación de conductas en beneficio de las personas relacionadas con las actividades de intermediación",
+      "Fomentaran la generación de conductas en beneficio de instituciones de seguros y fianzas"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Establecer el eficiente desarrollo de las actividades de intermediación que realizan los agentes bajo un marco de ética y profesionalismo de calidad apegado a derecho",
+    "explicacion": ""
+  },
+  {
+    "id": 62,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Cuando una persona adquiere un seguro, ¿Qué actitud esta mostrando ante el riesgo?",
+    "opciones": [
+      "Prevenir",
+      "Distribuir",
+      "Transferir",
+      "Eliminar"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Transferir",
+    "explicacion": ""
+  },
+  {
+    "id": 63,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Al realizar una operación relevante una persona física con actividad empresarial, debe presentar los siguientes documentos, EXCEPTO:",
+    "opciones": [
+      "Credencial de elector",
+      "Acta constitutiva",
+      "RFC",
+      "Cedula de identificación fiscal"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Acta constitutiva",
+    "explicacion": ""
+  },
+  {
+    "id": 64,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De la siguiente lista elija los 4 ramos que corresponden a la operación de daños: 1. Incendio 2. Agrícola y de animales 3. Salud 4. Crédito 5. Accidentes personales 6. Diversos 7. Gastos médicos",
+    "opciones": [
+      "1, 3, 5, 7",
+      "1, 2, 4, 6",
+      "2, 3, 5, 6",
+      "2, 4, 6, 7"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 2, 4, 6",
+    "explicacion": ""
+  },
+  {
+    "id": 65,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Identifique 4 aspectos que el agente debe informar a quien pretende contratar un seguro: 1. Forma de conservarlo 2. Que debe señalar los hechos importantes para apreciar el riesgo 3. Bases financieras 4. Forma de cancelarlo 5. Autorización de la nota técnica 6. Ventajas de la competencia 7. Solo se cobraran primas contra recibo oficial expedido por la aseguradora",
+    "opciones": [
+      "1, 4, 5, 6",
+      "1, 2, 4, 7",
+      "2, 3, 5, 7",
+      "2, 3, 5, 6"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 2, 4, 7",
+    "explicacion": ""
+  },
+  {
+    "id": 66,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De conformidad con la ley general de instituciones y sociedades mutualistas de seguros, la autorización para realizar actividades de intermediación del seguro de pensiones derivados de las leyes de seguridad social solo se otorgara para intermediar:",
+    "opciones": [
+      "Con diversas instituciones",
+      "Solo con instituciones de operaciones de vida",
+      "Con una sola institución de seguros",
+      "El seguro de personas en cualquier institución de seguros"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Con una sola institución de seguros",
+    "explicacion": ""
+  },
+  {
+    "id": 67,
+    "modulo": "Aspectos Generales",
+    "pregunta": "El procedimiento para arbitraje en contra de las instituciones de seguros se sujetara a lo dispuesto por la:",
+    "opciones": [
+      "Ley General de Instituciones y Sociedades Mutualistas de Seguros",
+      "Ley para la Defensa y Protección del Usuario de ServiciosFinancieros",
+      "Ley de Instituciones de Crédito",
+      "Ley Federal de Instituciones de Finanzas"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Ley para la Defensa y Protección del Usuario de ServiciosFinancieros",
+    "explicacion": ""
+  },
+  {
+    "id": 68,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cómo deben constituirse las personas morales que buscan obtener la autorización como agentes de seguros?",
+    "opciones": [
+      "Como sociedad anónima",
+      "Como asociación civil",
+      "Como sociedad de responsabilidad limitada",
+      "Como sociedad civil"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Como sociedad anónima",
+    "explicacion": ""
+  },
+  {
+    "id": 69,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Señale como se denomina a la persona que explica y asesora a los adquirientes del seguro sobre las distintas características, derechos, obligaciones y costos del mismo:",
+    "opciones": [
+      "Seleccionador de riesgo",
+      "Agente de seguros",
+      "Ajustador de seguros",
+      "Defensor legal"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Agente de seguros",
+    "explicacion": ""
+  },
+  {
+    "id": 70,
+    "modulo": "Aspectos Generales",
+    "pregunta": "El riesgo debe prevenir de un acto o acontecimiento ajeno a la voluntad humana, por lo tanto es:",
+    "opciones": [
+      "Incierto",
+      "Fortuito",
+      "Aleatorio",
+      "Posible"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Incierto",
+    "explicacion": ""
+  },
+  {
+    "id": 71,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Sobre que primas las instituciones de seguros pueden pagar comisiones y cualquier otra compensación?",
+    "opciones": [
+      "Sobre las primas cobradas con tarjeta de crédito",
+      "Sobre las primas cobradas con cheque",
+      "Sobre las primas cobradas en efectivo",
+      "Sobre las primas ingresadas a la institución"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Sobre las primas ingresadas a la institución",
+    "explicacion": ""
+  },
+  {
+    "id": 72,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Qué organismo es el encargado de sancionar a los agentes de seguros cuando cometen una infracción administrativa?",
+    "opciones": [
+      "CNSF",
+      "CONDUSEF",
+      "SHCP",
+      "AMIS"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "CNSF",
+    "explicacion": ""
+  },
+  {
+    "id": 73,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cuál de los siguientes conceptos se refiere a severidad?",
+    "opciones": [
+      "Es el monto de los siniestros registrados en un periodo determinado",
+      "Es el porcentaje que represente los siniestros en relación a la suma asegurada",
+      "Es el costo promedio de los siniestros producidos en un año",
+      "Es el monto promedio de siniestros pagados en un periodo determinado"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Es el costo promedio de los siniestros producidos en un año",
+    "explicacion": ""
+  },
+  {
+    "id": 74,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Es el organismo encargado de la inspección y vigilancia de los agentes de seguros:",
+    "opciones": [
+      "Asociación Mexicana de Instituciones de Seguros",
+      "Comisión Federal de Mejora Regulatoria",
+      "La Comisión Nacional de Seguros y Fianzas",
+      "Secretaria de Hacienda y Crédito Publico"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "La Comisión Nacional de Seguros y Fianzas",
+    "explicacion": ""
+  },
+  {
+    "id": 75,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Son los contratos elaborados unilateralmente por una institución de seguros, en donde se establecen los términos y condiciones aplicables al seguro en cuestión:",
+    "opciones": [
+      "Contratos de adhesión",
+      "Contratos civiles",
+      "Contratos de no adhesión",
+      "Contratos mercantiles"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Contratos de adhesión",
+    "explicacion": ""
+  },
+  {
+    "id": 76,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Qué organismo debe formular la petición para que se proceda penalmente en caso de detectar una operación relacionada con el lavado de dinero?",
+    "opciones": [
+      "Comisión Nacional Bancaria y de Valores",
+      "Comisión Nacional del Sistema de Ahorro para el Retiro",
+      "La Comisión Nacional de Seguros y Fianzas",
+      "Secretaria de Hacienda y Crédito Publico"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Secretaria de Hacienda y Crédito Publico",
+    "explicacion": ""
+  },
+  {
+    "id": 77,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Es la comisión que tiene por finalidad arbitrar las diferencias de manera imparcial y proveer a la equidad en las relaciones entre los asegurados y aseguradoras:",
+    "opciones": [
+      "Comisión nacional de servicios financieros",
+      "Comisión nacional para la protección y defensa de los asegurados",
+      "Comisión nacional de seguros y fianzas",
+      "Comisión nacional para la protección y defensa de los usuarios de servicios financieros"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Comisión nacional para la protección y defensa de los usuarios de servicios financieros",
+    "explicacion": ""
+  },
+  {
+    "id": 78,
+    "modulo": "Aspectos Generales",
+    "pregunta": "La obligación de constituir un capital mínimo de garantía trae consigo los siguientes. EXCEPTO:",
+    "opciones": [
+      "Fortalecer el patrimonio de la aseguradora",
+      "Proteger a los asegurados de una posible insolvencia de la aseguradora",
+      "Elevar las ventas de la aseguradora",
+      "Permitir liquidez en la posible desviación del riesgo"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Elevar las ventas de la aseguradora",
+    "explicacion": ""
+  },
+  {
+    "id": 79,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De la siguiente lista elija a quienes un agente puede ceder los derechos de su cartera de pólizas: 1. Otros agentes 2. Sociedad mutualista 3. Asegurado 4. Causahabiente del agente 5. Contratante",
+    "opciones": [
+      "2, 5",
+      "2, 4",
+      "1, 4",
+      "3, 5"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 80,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Señale de acuerdo a las reglas que establecen las orientaciones de política general aplicables a los agentes y apoderados de seguros y de fianzas, las características de la actuación de los agentes y apoderados:",
+    "opciones": [
+      "Respetuosa, amable, honesta e identificarse con el original de la cedula de autorización vigente",
+      "Creativa, escrupulosa, amena y considerando el interés de la institución para la que presta sus servicios, para la correcta valoración del riesgo",
+      "Rápida, concreta, formal y documentando los diferentes productos que intermedia",
+      "Transparente, justa, técnica y documentando su actividad de intermediación a fin de evitar responsabilidades a su cargo"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Respetuosa, amable, honesta e identificarse con el original de la cedula de autorización vigente",
+    "explicacion": ""
+  },
+  {
+    "id": 81,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Mediante que documento la autoridad permite a una persona física o apoderado actuar como agente de seguros?",
+    "opciones": [
+      "La cedula",
+      "El oficio",
+      "El contrato",
+      "El acta"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "La cedula",
+    "explicacion": ""
+  },
+  {
+    "id": 82,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cuánto tiempo mínimo de vigencia debe tener una póliza para que en caso de suicidio, la aseguradora este obligada a pagar la suma asegurada?",
+    "opciones": [
+      "5 años",
+      "2 años",
+      "1 año",
+      "3 años"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "2 años",
+    "explicacion": ""
+  },
+  {
+    "id": 83,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Los siguientes elementos conforman el cálculo de la prima, EXCEPTO:",
+    "opciones": [
+      "Gastos de redistribución de riesgos",
+      "Prima pura de riesgo",
+      "Utilidades",
+      "Derechos de póliza"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Utilidades",
+    "explicacion": ""
+  },
+  {
+    "id": 84,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Qué tipo de seguro comprende todos los riesgos que puede afectar a la persona del asegurado, en su integridad personal, en su existencia, salud o vigor vital?",
+    "opciones": [
+      "Seguro de personas",
+      "Seguro de gastos médicos mayores",
+      "Seguro de accidentes y enfermedades",
+      "Seguro de salud"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Seguro de personas",
+    "explicacion": ""
+  },
+  {
+    "id": 85,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De acuerdo a la ley general de instituciones de seguro, las operaciones de seguros son las siguientes a EXCEPCION de: 1. Vida 2. Accidentes y enfermedades 3. Danos 4. Incendio 5. Agrícola 6. Marítimos 7. Crédito 8. Automóviles",
+    "opciones": [
+      "2, 3, 4, 7, 8",
+      "1, 2, 5, 6, 7",
+      "4, 5, 6, 7, 8",
+      "1, 3, 4, 5, 8"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "4, 5, 6, 7, 8",
+    "explicacion": ""
+  },
+  {
+    "id": 86,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De la siguiente lista elija 3 características de una institución de seguros: 1. Constituida como sociedad anónima de capital fijo o variable 2. Contar con un capital mínimo pagado en cada operación autorizada 3. El numero de integrantes no podrá ser menor a 300 en vida individual 4. El contrato social debe constituirse ante la SHCP 5. Tratándose de sociedades de capital variable, el capital mínimo obligatorio estará integrado por acciones sin derecho a retiro",
+    "opciones": [
+      "2, 3, 4",
+      "1, 2, 5",
+      "2, 4, 5",
+      "1, 3, 4"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 2, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 87,
+    "modulo": "Aspectos Generales",
+    "pregunta": "El objetivo de que los agentes tengan la obligación de contar con una póliza de responsabilidad civil por errores y omisiones es:",
+    "opciones": [
+      "Garantizar el pago de comisiones de la aseguradora al agente",
+      "Garantizar el cumplimiento de las responsabilidades en que pueda incurrir ante el público usuario.",
+      "Garantizar el pago de primas a los clientes que contrataron un seguro a través de el",
+      "Garantizar el pago de siniestros a los clientes que contrataron un seguro a través de el"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Garantizar el cumplimiento de las responsabilidades en que pueda incurrir ante el público usuario.",
+    "explicacion": ""
+  },
+  {
+    "id": 88,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿En qué documento se hace constar la autorización para ejercer la actividad de agente de seguros Persona Moral?",
+    "opciones": [
+      "En una carta expedida por la Secretaría de Hacienda y Crédito Público",
+      "En un oficio de la compañía de seguros",
+      "En un oficio que expide la CNSF",
+      "En una cédula"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "En un oficio que expide la CNSF",
+    "explicacion": ""
+  },
+  {
+    "id": 1002,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cómo deben constituirse las personas morales que buscan obtener la autorización como agentes de seguros?",
+    "opciones": [
+      "Como persona física",
+      "Como sociedades anónimas",
+      "Como una Sociedad Cerrada",
+      "Como promotoría o agencia"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Como sociedades anónimas",
+    "explicacion": ""
+  },
+  {
+    "id": 89,
+    "modulo": "Aspectos Generales",
+    "pregunta": "La probabilidad de que ocurra un acontecimiento que traiga consecuencias económicamente negativas recibe el nombre de:",
+    "opciones": [
+      "Siniestro",
+      "Incendio",
+      "Riesgo",
+      "Accidente"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 90,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Cuando una persona en forma consciente acepta correr un riesgo de perder con la esperanza de ganar, tiene un riesgo:",
+    "opciones": [
+      "Fortuito",
+      "Especulativo",
+      "Probable",
+      "Puro"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Especulativo",
+    "explicacion": ""
+  },
+  {
+    "id": 91,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Cuando alguien analiza las posibles causas del riesgo, con el afán de bajar al máximo la probabilidad de ocurrencia, decimos que lo esta:",
+    "opciones": [
+      "Asumiendo",
+      "Previniéndolo",
+      "Transfiriendo",
+      "Eliminándolo"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Previniéndolo",
+    "explicacion": ""
+  },
+  {
+    "id": 92,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Todos los miembros de una sociedad se ponen de acuerdo y aportan una cantidad determinada para resarcir el daño que haya sufrido uno de ellos, a esto se le llama:",
+    "opciones": [
+      "Retener o asumir",
+      "Transferir",
+      "Distribución",
+      "Reducción"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Distribución",
+    "explicacion": ""
+  },
+  {
+    "id": 93,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Cuando al sentir un riesgo, una persona celebra un contrato con alguna compañía de seguros para que esta se encargue de resarcir el daño, estamos hablando de:",
+    "opciones": [
+      "Distribución",
+      "Reducción",
+      "Eliminación",
+      "Transferencia"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Transferencia",
+    "explicacion": ""
+  },
+  {
+    "id": 1003,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cuántos años de prisión se impondrá a las personas que auxilien en la operación o distribución de recursos de procedencia ilícita?",
+    "opciones": [
+      "De 1 a 9 años de prisión y multa de hasta 4,000 DSMGVDF",
+      "De 2 a 10 años de prisión",
+      "De 5 a 15 años de prisión",
+      "No hay sanción de prisión"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "De 1 a 9 años de prisión y multa de hasta 4,000 DSMGVDF",
+    "explicacion": ""
+  },
+  {
+    "id": 94,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Identifica 2 tipos de reservas técnicas que las Instituciones deben constituir de acuerdo a la Ley: 1. Reservas de previsión 2. Reservas de riesgo en curso 3. Reservas para obligaciones pendientes de cubrir 4. Reservas para fluctuación de inversiones",
+    "opciones": [
+      "1 2",
+      "2 3",
+      "1 3",
+      "2 4"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "2 3",
+    "explicacion": ""
+  },
+  {
+    "id": 95,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Elija la causa que NUNCA provoca el término de un Contrato de Seguro de Vida:",
+    "opciones": [
+      "Rescatar el valor garantizado",
+      "Declaración de invalidez",
+      "Fin de la vigencia",
+      "No pagar la prima"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Declaración de invalidez",
+    "explicacion": ""
+  },
+  {
+    "id": 96,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Un agente puede ceder los derechos de su cartera de pólizas a:",
+    "opciones": [
+      "Agente Autorizado",
+      "Sociedad mutualista",
+      "Causahabiente del agente",
+      "Contratante"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Agente Autorizado",
+    "explicacion": ""
+  },
+  {
+    "id": 97,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cuántos días hábiles tiene la Comisión Nacional para la Protección y Defensa de los Usuarios de Servicios Financieros para citar a las partes de la audiencia conciliatoria? R: Veinte días Hábiles.\n\n121. Cuando a un usuario de alguna Institución de servicios financieros se le presentan hechos que pudieran considerarse como origen de una reclamación ¿Qué plazo máximo tiene el usuario para poder presentar dicha reclamación?",
+    "opciones": [
+      "Dos años",
+      "Un año",
+      "Cinco años",
+      "30 días"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Dos años",
+    "explicacion": ""
+  },
+  {
+    "id": 98,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De la siguiente lista, identifique funciones de la Comisión Nacional para la Protección y Defensa de los Usuarios de Servicios Financieros:",
+    "opciones": [
+      "Llevar a cabo el procedimiento conciliatorio entre la institución y el usuario",
+      "Emitir sentencias judiciales",
+      "Defender a todo tipo de Usuario Financiero",
+      "Defender a Instituciones Financieras"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Llevar a cabo el procedimiento conciliatorio entre la institución y el usuario",
+    "explicacion": ""
+  },
+  {
+    "id": 99,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿En qué ramo se puede incluir el beneficio adicional de Responsabilidad Civil?",
+    "opciones": [
+      "Automóviles",
+      "Incendio",
+      "Diversos",
+      "Agrícola"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Automóviles",
+    "explicacion": ""
+  },
+  {
+    "id": 100,
+    "modulo": "Aspectos Generales",
+    "pregunta": "En cinco años contados a partir de la fecha del siniestro para la Cobertura de Perdida de la existencia de los seguros de vida.",
+    "opciones": [
+      "1, 2",
+      "2, 3",
+      "3, 4",
+      "2, 4"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "3, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 101,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Cuando la Compañía ha transferido parte o la totalidad del riesgo a otra Compañía y ocurre un siniestro, ¿cuál o cuáles son las partes plenamente obligadas con el asegurado?",
+    "opciones": [
+      "La Reaseguradora que asume el riesgo a través de un contrato con la aseguradora.",
+      "La Aseguradora que asume el riesgo a través de un contrato de Seguro.",
+      "La Aseguradora y Reaseguradora que asumen el riesgo a través de un contrato de Seguro.",
+      "Reaseguro Convenido"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "La Aseguradora que asume el riesgo a través de un contrato de Seguro.",
+    "explicacion": ""
+  },
+  {
+    "id": 102,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Qué plazo tiene el árbitro o tribunal de arbitraje para emitir un laudo, una vez que se ha cerrado la etapa probatoria?",
+    "opciones": [
+      "90 días",
+      "60 días",
+      "30 días",
+      "150 días"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "30 días",
+    "explicacion": ""
+  },
+  {
+    "id": 103,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cuándo terminan las obligaciones de la aseguradora en caso de de una agravación esencial en el riesgo no comunicada?",
+    "opciones": [
+      "15 dias naturales",
+      "30 dias habiles",
+      "30 dias naturales",
+      "15 dias habiles"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "15 dias habiles",
+    "explicacion": ""
+  },
+  {
+    "id": 104,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Menciona la Ley que establece que mientras el número de unidades de riesgo aumenta, es más seguro que la experiencia de pérdida efectiva sea igual a la experiencia de pérdida probable",
+    "opciones": [
+      "Ley de los Grandes Números",
+      "Ley de Probabilidad",
+      "Ley de Distribución.",
+      "Ley o principio Mutual"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Ley de los Grandes Números",
+    "explicacion": ""
+  },
+  {
+    "id": 105,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Los siguientes tipos de desviaciones favorables generan dividendos EXCEPTO:",
+    "opciones": [
+      "Rendimientos financieros",
+      "Primas excedentes",
+      "Mortalidad Favorable",
+      "Derechos de inspección"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Derechos de inspección",
+    "explicacion": ""
+  },
+  {
+    "id": 106,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿En que momento se perfecciona el contrato de seguro?",
+    "opciones": [
+      "Cuando el proponente firma la Póliza",
+      "Cuando la aseguradora recibe la propuesta",
+      "Cuando la aseguradora acepta el riesgo",
+      "Cuando el proponente paga la prima"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Cuando la aseguradora acepta el riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 107,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cuál es el objeto de las reglas que establecen las orientaciones de política general aplicables a los agentes y apoderados de seguros y fianzas? elevar la comercialización de los contratos de seguros y de fianzas, ampliando la población protegida por dichos instrumentos actividades de intermediación",
+    "opciones": [
+      "Establecer desarrollo de las actividades de intermediación que realizan los agentes, a fin de",
+      "Establecer el eficiente desarrollo de las actividades de intermediación que realizan los agentes bajo un marco de ética y profesionalismo de calidad apegado a derecho",
+      "Fomentaran la generación de conductas en beneficio de las personas relacionadas con las",
+      "Fomentaran la generación de conductas en beneficio de instituciones de seguros y fianzas"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Establecer el eficiente desarrollo de las actividades de intermediación que realizan los agentes bajo un marco de ética y profesionalismo de calidad apegado a derecho",
+    "explicacion": ""
+  },
+  {
+    "id": 108,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Cuando una persona adquiere un seguro, ¿Qué actitud esta mostrando ante el riesgo?",
+    "opciones": [
+      "Prevenir",
+      "Distribuir",
+      "Transferir",
+      "Eliminar"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Transferir",
+    "explicacion": ""
+  },
+  {
+    "id": 109,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Al realizar una operación relevante una persona física con actividad empresarial, debe presentar los siguientes documentos, EXCEPTO:",
+    "opciones": [
+      "Credencial de elector",
+      "Acta constitutiva",
+      "RFC",
+      "Cedula de identificación fiscal"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Credencial de elector",
+    "explicacion": ""
+  },
+  {
+    "id": 110,
+    "modulo": "Aspectos Generales",
+    "pregunta": "El procedimiento para arbitraje en contra de las instituciones de seguros se sujetara a lo dispuesto por la:",
+    "opciones": [
+      "Ley General de Instituciones y Sociedades Mutualistas de Seguros",
+      "Ley para la Defensa y Protección del Usuario de Servicios Financieros",
+      "Ley de Instituciones de Crédito",
+      "Ley Federal de Instituciones de Finanzas"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Ley para la Defensa y Protección del Usuario de Servicios Financieros",
+    "explicacion": ""
+  },
+  {
+    "id": 111,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cómo deben constituirse las personas morales que buscan obtener la autorización como agentes de seguros?",
+    "opciones": [
+      "Como sociedad anónima",
+      "Como asociación civil",
+      "Como sociedad de responsabilidad limitada",
+      "Como sociedad civil"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Como sociedad anónima",
+    "explicacion": ""
+  },
+  {
+    "id": 112,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Señale como se denomina a la persona que explica y asesora a los adquirientes del seguro sobre las distintas características, derechos, obligaciones y costos del mismo:",
+    "opciones": [
+      "Asesor de riesgos",
+      "Agente de seguros",
+      "Ajustador de seguros",
+      "Asesor de Seguros"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Agente de seguros",
+    "explicacion": ""
+  },
+  {
+    "id": 113,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Sobre que primas las instituciones de seguros pueden pagar comisiones y cualquier otra compensación?",
+    "opciones": [
+      "Sobre las primas cobradas con tarjeta de crédito",
+      "Sobre las primas cobradas con cheque",
+      "Sobre las primas cobradas en efectivo",
+      "Sobre las primas ingresadas a la institución"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Sobre las primas ingresadas a la institución",
+    "explicacion": ""
+  },
+  {
+    "id": 114,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Agente que tiene la autorización de cobrar primas a su nombre, suscribir riesgos, pagar siniestros.",
+    "opciones": [
+      "Agente Provisional",
+      "Agente Definitivo",
+      "Agente apoderado de una persona Moral",
+      "Agente mandatario"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Agente mandatario",
+    "explicacion": ""
+  },
+  {
+    "id": 115,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cuál de los siguientes conceptos se refiere a severidad?",
+    "opciones": [
+      "Es el monto de los siniestros registrados en un periodo determinado",
+      "Es el porcentaje que represente los siniestros en relación a la suma asegurada",
+      "Es el costo promedio de los siniestros producidos en un año",
+      "Es el monto promedio de siniestros pagados en un periodo determinado"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Es el costo promedio de los siniestros producidos en un año",
+    "explicacion": ""
+  },
+  {
+    "id": 116,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Son los contratos elaborados bilateralmente por una institución de seguros y un proponente, en donde se establecen los términos y condiciones aplicables al seguro en cuestión:",
+    "opciones": [
+      "Contratos de adhesión",
+      "Contratos civiles",
+      "Contratos de no adhesión",
+      "Contratos mercantiles"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Contratos de no adhesión",
+    "explicacion": ""
+  },
+  {
+    "id": 117,
+    "modulo": "Aspectos Generales",
+    "pregunta": "La obligación de constituir un capital mínimo de garantía trae consigo lo siguiente. EXCEPTO:",
+    "opciones": [
+      "Fortalecer el patrimonio de la aseguradora",
+      "Proteger a los asegurados de una posible insolvencia de la aseguradora",
+      "Elevar las ventas de la aseguradora",
+      "Permitir liquidez en la posible desviación del riesgo"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Elevar las ventas de la aseguradora",
+    "explicacion": ""
+  },
+  {
+    "id": 118,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De la siguiente lista elija a quienes pueden ceder los derechos de su cartera de pólizas:\n\n1. Los agentes 2. Los Causahabientes del asegurado 3. El asegurado 4. Los causahabientes del agente fallecido 5. El contratante",
+    "opciones": [
+      "2, 5",
+      "2, 4",
+      "1, 4",
+      "3, 5"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 119,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Señale de acuerdo a las reglas que establecen las orientaciones de política general aplicables a los agentes y apoderados de seguros y de fianzas, las características de la actuación de los agentes y apoderados: servicios, para la correcta valoración del riesgo responsabilidades a su cargo",
+    "opciones": [
+      "Respetuosa, amable, honesta e identificarse con el original de la cedula de autorización vigente",
+      "Creativa, escrupulosa, amena y considerando el interés de la institución para la que presta sus",
+      "Rápida, concreta, formal y documentando los diferentes productos que intermedia",
+      "Transparente, justa, técnica y documentando su actividad de intermediación a fin de evitar"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Respetuosa, amable, honesta e identificarse con el original de la cedula de autorización vigente",
+    "explicacion": ""
+  },
+  {
+    "id": 120,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cuánto tiempo mínimo de vigencia debe tener una póliza para que en caso de suicidio, la aseguradora este obligada a pagar la suma asegurada?",
+    "opciones": [
+      "5 años",
+      "2 años",
+      "1 año",
+      "3 años"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "2 años",
+    "explicacion": ""
+  },
+  {
+    "id": 121,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Los siguientes son elementos para el cálculo de la prima, EXCEPTO:",
+    "opciones": [
+      "Gastos de redistribución de riesgos",
+      "Prima pura de riesgo",
+      "Utilidades",
+      "Derechos de póliza"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Gastos de redistribución de riesgos",
+    "explicacion": ""
+  },
+  {
+    "id": 122,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Qué tipo de seguro comprende todos los riesgos que puede afectar a la persona del asegurado, en su integridad personal, en su existencia, salud o vigor vital?",
+    "opciones": [
+      "Seguro de personas",
+      "Seguro de gastos médicos mayores",
+      "Seguro de accidentes y enfermedades",
+      "Seguro de salud"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Seguro de personas",
+    "explicacion": ""
+  },
+  {
+    "id": 123,
+    "modulo": "Aspectos Generales",
+    "pregunta": "De la siguiente lista elija 3 características de una institución de seguros:\n\n1. Constituida como sociedad anónima de capital fijo o variable 2. Contar con un capital mínimo pagado en cada operación autorizada 3. El número de integrantes no podrá ser menor a 300 en vida individual 4. El contrato social debe constituirse ante la SHCP 5. Tratándose de sociedades de capital variable, el capital mínimo obligatorio estará integrado por acciones sin derecho a retiro",
+    "opciones": [
+      "2, 3, 4",
+      "1, 2, 5",
+      "2, 4, 5",
+      "1, 3, 4"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 2, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 124,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Del listado siguiente, identifique 3 riesgos cubiertos en la cobertura básica de Responsabilidad Civil Familiar:\n\n1. Daños ocasionados a partir de un derrame de agua accidental\n2. Daños ocasionados por asentamiento del suelo\n3. Como propietario de animales domésticos\n4. Por la práctica de deporte como aficionado\n5. Daños ocasionados dolosamente por el asegurado\n6. Daños ocasionados por embarcaciones propiedad del asegurado",
+    "opciones": [
+      "Garantizar el cumplimiento de las responsabilidades en que pueda incurrir ante el público",
+      "usuario",
+      "Garantizar el pago de primas a los clientes que contrataron un seguro a través de el",
+      "Garantizar el pago de siniestros a los clientes que contrataron un seguro"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "usuario",
+    "explicacion": ""
+  },
+  {
+    "id": 125,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿En que documento se hace constar la autorización para ejercer la actividad de agente se seguros Persona Moral?",
+    "opciones": [
+      "En una carta expedida por la Secretaria de Hacienda y Crédito Publico",
+      "En un oficio de la compañía de seguros",
+      "En un oficio que expide la CNSF",
+      "En una cédula"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "En un oficio que expide la CNSF",
+    "explicacion": ""
+  },
+  {
+    "id": 126,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Cómo deben constituirse las personas morales que buscan obtener la autorización como agentes de seguros?",
+    "opciones": [
+      "Como Promotorias, Gerencias de Zona o Agencias de Seguros",
+      "Como Sociedades Anónimas",
+      "Como un Sociedad Civil",
+      "Como Persona Física con Actividad Empresarial"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Como Sociedades Anónimas",
+    "explicacion": ""
+  },
+  {
+    "id": 127,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Persona física que tiene celebrado un contrato de mandato con un agente persona moral para que, a nombre de él, realice la actividad de intermediación:",
+    "opciones": [
+      "Agente Apoderado",
+      "Agente Mandatario",
+      "Agente Persona Moral",
+      "Promotor de Seguros"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Agente Apoderado",
+    "explicacion": ""
+  },
+  {
+    "id": 128,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Cuando a un usuario de alguna Institución de servicios financieros se le presentan hechos que pudieran considerarse como origen de una reclamación ¿Qué plazo máximo tiene el usuario para poder presentar dicha reclamación? A la CONDUSEF",
+    "opciones": [
+      "Un año",
+      "Dos Años",
+      "Dos años para Vida y cinco para daños",
+      "30 días"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Dos Años",
+    "explicacion": ""
+  },
+  {
+    "id": 129,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Cuando una empresa de seguros toma total o parcialmente un riesgo ya cubierto por otra, se le conoce como:",
+    "opciones": [
+      "Reaseguro",
+      "Deducible",
+      "Coaseguro",
+      "Copago"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Reaseguro",
+    "explicacion": ""
+  },
+  {
+    "id": 130,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Identifica 2 tipos de reservas técnicas que las Instituciones deben constituir de acuerdo a la Ley: 1. Reservas de previsión 2. Reservas de riesgo en curso 3. Reservas para obligaciones pendientes de cubrir 4. Reservas para fluctuación de inversiones",
+    "opciones": [
+      "1 2",
+      "2 3",
+      "1 3",
+      "2 4"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "2 3",
+    "explicacion": ""
+  },
+  {
+    "id": 131,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Elija la causa que NUNCA provoca el término de un Contrato de Seguro de Vida:",
+    "opciones": [
+      "Rescatar el valor garantizado",
+      "Declaración de invalidez",
+      "Fin de la vigencia",
+      "No pagar la prima"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Declaración de invalidez",
+    "explicacion": ""
+  },
+  {
+    "id": 132,
+    "modulo": "Aspectos Generales",
+    "pregunta": "¿Qué plazo tienen las Instituciones de seguros para ejercer el derecho de preferencia sobre la cesión de la cartera de un agente?",
+    "opciones": [
+      "15 días Naturales",
+      "30 días Naturales",
+      "15 días hábiles",
+      "30 días hábiles"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "15 días hábiles",
+    "explicacion": ""
+  },
+  {
+    "id": 133,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Señale el plazo dentro del cual la CONDUSEF debe citar a las partes a la audiencia de conciliación:",
+    "opciones": [
+      "Veinte días Hábiles.",
+      "Diez días Hábiles.",
+      "Quince días Hábiles.",
+      "Treinta días Hábiles."
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Veinte días Hábiles.",
+    "explicacion": ""
+  },
+  {
+    "id": 134,
+    "modulo": "Aspectos Generales",
+    "pregunta": "Sancionar Administrativamente al Agente de Seguros",
+    "opciones": [
+      "1,5",
+      "2,4",
+      "1,4",
+      "3,5"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1,4",
+    "explicacion": ""
+  }
+]

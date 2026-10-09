@@ -1,0 +1,436 @@
+[
+  {
+    "id": 135,
+    "modulo": "Regulación CNSF",
+    "pregunta": "En caso de que la CONDUSEF, no sea designada como árbitro en una reclamación de un usuario contra una Institución financiera ¿A qué instancias podrá acudir el usuario?",
+    "opciones": [
+      "CNSF",
+      "AMIS",
+      "Tribunales Correspondientes",
+      "AMASFAC"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Tribunales Correspondientes",
+    "explicacion": ""
+  },
+  {
+    "id": 136,
+    "modulo": "Regulación CNSF",
+    "pregunta": "¿En qué ramo se puede incluir como beneficio el ramo de Responsabilidad Civil?",
+    "opciones": [
+      "Paquete Familiar Casa Habitación",
+      "Automóviles",
+      "Paquete Múltiple Empresarial",
+      "Profesiones Médicas"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Automóviles",
+    "explicacion": ""
+  },
+  {
+    "id": 137,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Es el límite máximo de responsabilidad para la compañía de Seguros y no representa el la existencia del bien o el valor del mismo:",
+    "opciones": [
+      "Suma Asegurada",
+      "Suma Asegurada para personas",
+      "Suma Asegurada Para Daños",
+      "Suma Asegurada para Vida"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Suma Asegurada Para Daños",
+    "explicacion": ""
+  },
+  {
+    "id": 138,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Diversos Técnicos\n\na.- Cristales b.- Robo de Mercancías c.- Montaje de Maquinaria d.- Equipo de Contratista e.- Resp Civil Obra Civil f.- Calderas y aparatos Sujetos a presión g.- Dinero y Valores",
+    "opciones": [
+      "1a,c,g 2b,d,e",
+      "1a,b,g 2c,d,f",
+      "1a,b,g 2d,e,f",
+      "1a,c,d 2e,f,g"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1a,b,g 2c,d,f",
+    "explicacion": ""
+  },
+  {
+    "id": 139,
+    "modulo": "Regulación CNSF",
+    "pregunta": "De manera indefinida",
+    "opciones": [
+      "2,4",
+      "3,4",
+      "1,4",
+      "2,5"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "2,4",
+    "explicacion": ""
+  },
+  {
+    "id": 140,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Señale como se denomina a la persona que explica y asesora a los adquirientes del seguro sobre las distintas características, derechos, obligaciones y costos del mismo:",
+    "opciones": [
+      "Asesor de riesgos",
+      "Intermediario Financiero",
+      "Intermediario de Seguros",
+      "Agente de Fianzas"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Intermediario de Seguros",
+    "explicacion": ""
+  },
+  {
+    "id": 141,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Contrato de seguro en virtud del cual el asegurador se compromete, al cumplirse determinadas condiciones, a rembolsar al asegurado las primas satisfechas por este.",
+    "opciones": [
+      "Coaseguro",
+      "Reaseguro",
+      "Contraseguro",
+      "Franquicia"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Contraseguro",
+    "explicacion": ""
+  },
+  {
+    "id": 142,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Son impedimentos para ser autorizados como agentes de seguros EXCEPTO:",
+    "opciones": [
+      "Los condenados por delito patrimonial intencional o delitos contra la salud",
+      "Los empleados de instituciones financieras",
+      "Ajustadores, inspectores de riesgos",
+      "Los agentes empleados"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Los agentes empleados",
+    "explicacion": ""
+  },
+  {
+    "id": 143,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Las multas serán impuestas administrativamente por la CNSF tomando como base:",
+    "opciones": [
+      "El salario mínimo de la Zona (Estado) al momento de cometerse la infracción",
+      "El IPC",
+      "El deslizamiento del peso frente al dólar",
+      "El salario mínimo general vigente en el Distrito Federal al momento de cometerse la infracción"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "El salario mínimo general vigente en el Distrito Federal al momento de cometerse la infracción",
+    "explicacion": ""
+  },
+  {
+    "id": 144,
+    "modulo": "Regulación CNSF",
+    "pregunta": "En cuanto tiempo y a quien deberán liquidarse las multas impuestas por la CNSF al cometerse una falta Administrativa:",
+    "opciones": [
+      "Dentro de los quince días naturales a la imposición de la infracción y deberá pagarse a la CNSF",
+      "Dentro de los treinta días hábiles a la imposición de la infracción y deberá pagarse a la SHCP",
+      "Dentro de los quince días hábiles a la imposición de la infracción y deberá pagarse a la SHCP",
+      "Dentro de los quince días naturales a la imposición de la infracción y deberá pagarse a la SHCP"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Dentro de los quince días hábiles a la imposición de la infracción y deberá pagarse a la SHCP",
+    "explicacion": ""
+  },
+  {
+    "id": 145,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Las siguientes son causales de revocación de una Cedula como agente de seguros EXCEPTO:",
+    "opciones": [
+      "Dejar de entregar las primas a las Instituciones perjudicando al cliente",
+      "Dejar de informar su cambio de ubicación a la CNSF y a los asegurados.",
+      "Actuar dentro del territorio nacional celebrando de contratos de seguros para una compañía no autorizada",
+      "Entrar en concurso mercantil o quiebra"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Dejar de informar su cambio de ubicación a la CNSF y a los asegurados.",
+    "explicacion": ""
+  },
+  {
+    "id": 146,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Dentro de las operaciones ilícitas es una forma de devolver los recursos económicos a un sistema legal",
+    "opciones": [
+      "Estratificación",
+      "Colocación",
+      "Integración",
+      "Diversificación"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Integración",
+    "explicacion": ""
+  },
+  {
+    "id": 147,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Contrato de seguro en virtud del cual el asegurador se compromete, al cumplirse determinadas condiciones, a rembolsar al asegurado las primas satisfechas por este.",
+    "opciones": [
+      "Coaseguro",
+      "Contraseguro",
+      "Franquicia",
+      "Dotal"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Contraseguro",
+    "explicacion": ""
+  },
+  {
+    "id": 148,
+    "modulo": "Regulación CNSF",
+    "pregunta": "El dueño de una camioneta pick up no notifica a la aseguradora la agravación del riesgo al poner un tanque de gas y cambiando el combustible, durante la vigencia del seguro el bien asegurado se siniestra a consecuencia de vuelco, el ajustador determina que el siniestro es:",
+    "opciones": [
+      "Improcedente porque no se comunico la agravación del riesgo",
+      "Se cancela el seguro y la responsabilidad terminará quince días después de la fecha en que comunique su resolución al asegurado.",
+      "Procedente porque la agravación no ejerció influencia sobre el siniestro",
+      "Se considera una omisión e inexacta declaración."
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Procedente porque la agravación no ejerció influencia sobre el siniestro",
+    "explicacion": ""
+  },
+  {
+    "id": 149,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Es un ejemplo en donde las aseguradoras renuncian expresa o tácitamente al derecho de rescindir el contrato por agravación de Riesgos.",
+    "opciones": [
+      "Cláusula de Indisputabilidad",
+      "Cláusula de Carencia de Restricciones",
+      "Cláusula de Inmutabilidad",
+      "Cláusula de preexistencia declarada"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Cláusula de Inmutabilidad",
+    "explicacion": ""
+  },
+  {
+    "id": 150,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Es un ejemplo en donde las aseguradoras podrán hacer retroactivo y cubrir por convenio expreso de las partes contratantes un siniestro ocurrido antes de inicio de vigencia.",
+    "opciones": [
+      "Cláusula de Indisputabilidad",
+      "No se puede cubrir ya que el contrato en estas circunstancias es nulo",
+      "Cláusula de Inmutabilidad",
+      "Cláusula de preexistencia declarada"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Cláusula de preexistencia declarada",
+    "explicacion": ""
+  },
+  {
+    "id": 151,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Son formulas y reglas empleadas en la ciencia actuarial para calcular en cada ramo o modalidad las primas, tasas o recargos para cada riesgo cubierto por una aseguradora:",
+    "opciones": [
+      "Ley de los grandes Números",
+      "Principio mutual",
+      "Bases técnicas",
+      "Ley de probabilidad"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Bases técnicas",
+    "explicacion": ""
+  },
+  {
+    "id": 152,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Se aplica a los contratos en los que las partes quedan obligadas recíprocamente. Se denomina también Sinalagmático.",
+    "opciones": [
+      "Adhesión",
+      "Bilateral",
+      "Oneroso",
+      "De buena fe"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Bilateral",
+    "explicacion": ""
+  },
+  {
+    "id": 153,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Acto por el que, en general, una persona se solidariza con las condiciones o postulados establecidos por otra.",
+    "opciones": [
+      "Adhesión",
+      "Bilateral",
+      "Oneroso",
+      "De buena fe"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Adhesión",
+    "explicacion": ""
+  },
+  {
+    "id": 154,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Persona quien habiendo celebrado contrato de mandato con agente persona moral, queda expresamente facultado para desempeñar a su nombre alguna o algunas de las actividades de intermediación. Solo puede prestar sus servicios a un agente persona moral cuando cuente con la autorización.",
+    "opciones": [
+      "Agente persona física",
+      "Agente persona Moral",
+      "Agente Apoderado de la persona Moral",
+      "Agente apoderado de la Compañía de Seguros"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Agente Apoderado de la persona Moral",
+    "explicacion": ""
+  },
+  {
+    "id": 155,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Principio básico y característico de todos los contratos que obliga a las partes a actuar entre sí con la máxima honestidad, no interpretando arbitrariamente el sentido recto de los términos recogidos en su acuerdo, ni limitando o exagerando los efectos que naturalmente se derivarían del modo en que los contratantes hayan expresado su voluntad y contraído sus obligaciones.",
+    "opciones": [
+      "Adhesión",
+      "Bilateral",
+      "Oneroso",
+      "De buena fe"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "De buena fe",
+    "explicacion": ""
+  },
+  {
+    "id": 156,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Contrato en donde el asegurador confía en la honestidad, lealtad y prudencia del asegurado y viceversa.",
+    "opciones": [
+      "Adhesión",
+      "Bilateral",
+      "Oneroso",
+      "De buena fe"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "De buena fe",
+    "explicacion": ""
+  },
+  {
+    "id": 157,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Daño que es consecuencia mediata o indirecta de un siniestro.",
+    "opciones": [
+      "Daño Moral",
+      "Daño Natural",
+      "Daño Consecuencial",
+      "Daño en bienes"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Daño Consecuencial",
+    "explicacion": ""
+  },
+  {
+    "id": 158,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Operación financiera o comercial que pretende legalizar los bienes, recursos y servicios provenientes de actividades ilícitas.",
+    "opciones": [
+      "Lavado de Dinero",
+      "Lavado de Seguros",
+      "Prevención de Operaciones Ilícitas",
+      "Fase de Integración"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Lavado de Dinero",
+    "explicacion": ""
+  },
+  {
+    "id": 159,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Significa que, si analizamos un número cada vez mayor de casos, nuestras conclusiones sobre lo ocurrido en el pasado serían más certeras.",
+    "opciones": [
+      "Ley de los grandes Números",
+      "Principio mutual",
+      "Bases técnicas",
+      "Ley de probabilidad"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Ley de los grandes Números",
+    "explicacion": ""
+  },
+  {
+    "id": 160,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Es aquella entidad de seguros privada, que opera a prima fija o variable, sin ánimo de lucro, fuera del marco de los sistemas de previsión que constituyen la Seguridad Social obligatoria, y ejerce una modalidad aseguradora de carácter voluntario encaminada a proteger a sus miembros, o a sus bienes, contra circunstancias o acontecimientos de carácter fortuito y previsible, mediante aportaciones directas de sus asociados o de otras entidades o personas protectoras.",
+    "opciones": [
+      "Institución de Seguros",
+      "Institución de Reaseguro",
+      "Institución Mutualista de Previsión Social",
+      "Auto asegurarse"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Institución Mutualista de Previsión Social",
+    "explicacion": ""
+  },
+  {
+    "id": 161,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Documento de carácter legal y oficial que especifica las características distintivas de un producto de seguro o fianza, mediante el que se determinan las primas y recargos de este a través de modelos de cálculo actuarial. En el que se considera la utilidad de la compañía, la formación de reservas, así como los gastos de operación y adquisición.",
+    "opciones": [
+      "Contrato de Seguros",
+      "Nota Técnica",
+      "Condiciones Generales",
+      "Endosos"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Nota Técnica",
+    "explicacion": ""
+  },
+  {
+    "id": 162,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Es derivada como consecuencia de un daño cubierto y la póliza. Su inclusión entre las coberturas de la póliza dependerá de los que haya pactado al respecto.",
+    "opciones": [
+      "Daño Moral",
+      "Daño Natural",
+      "Daño Consecuencial",
+      "Daño en bienes"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Daño Consecuencial",
+    "explicacion": ""
+  },
+  {
+    "id": 163,
+    "modulo": "Regulación CNSF",
+    "pregunta": "El dueño de una camioneta pick up no notifico a la aseguradora el cambio de combustible a gas, durante la vigencia del seguro el tanque explota provocando la pérdida total esto es un ejemplo de:",
+    "opciones": [
+      "Agravación del riesgo",
+      "Agravación esencial del riesgo",
+      "Extra prima",
+      "Sobre seguro"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Agravación esencial del riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 164,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Cuando una aseguradora se obliga a resarcir al acreedor los daños y perjuicios que le haya ocasionado el incumplimiento de; dar , hacer o pagar a consecuencia de un siniestro se refiere a:",
+    "opciones": [
+      "Una fianza",
+      "Seguro de crédito",
+      "Seguro de Caución",
+      "Aval"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Seguro de Caución",
+    "explicacion": ""
+  },
+  {
+    "id": 165,
+    "modulo": "Regulación CNSF",
+    "pregunta": "Fianzas\n\na.- Garantía personal en donde un tercero se obliga a pagar o cumplir una prestación debida por el deudor al acreedor b.- Se obliga a resarcir al acreedor los daños y perjuicios que el incumplimiento le haya ocasionado c.- Es un contrato Principal no accesoria d.- Es un contrato accesorio",
+    "opciones": [
+      "1a c 2 b d",
+      "1 b c 2 a d",
+      "1 a c 2 b d",
+      "1 c d 2 a b"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1 b c 2 a d",
+    "explicacion": ""
+  }
+]

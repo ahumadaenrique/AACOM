@@ -1,0 +1,1064 @@
+[
+  {
+    "id": 245,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En una póliza de Gastos Médicos Mayores, existen gastos cubiertos y exclusiones. Relaciona éstos con los conceptos descritos:\n\nGASTOS:\n1. Cubiertos\n2. Excluidos\n\nCONCEPTOS:\na. Eclampsia\nb. Circuncisión\nc. Parto normal\nd. Embarazo molar",
+    "opciones": [
+      "1a, d; 2b, c",
+      "1b; 2a, c, d",
+      "1a, c; 2b, d",
+      "1a, b, c; 2d"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1a, c; 2b, d",
+    "explicacion": ""
+  },
+  {
+    "id": 246,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En caso de que la suma asegurada se agote en una sola enfermedad, ¿Qué pasa si se presenta durante la misma vigencia un accidente que no tiene ninguna relación con la enfermedad?",
+    "opciones": [
+      "Se cubre hasta por otro tanto de la suma asegurada contratada",
+      "Se cubre a la renovación de la póliza para que la suma asegurada se reinstale",
+      "No se cubre el accidente porque no tiene reinstalación automática",
+      "No se cubre porque la aseguradora ya cumplió con su responsabilidad"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Se cubre hasta por otro tanto de la suma asegurada contratada",
+    "explicacion": ""
+  },
+  {
+    "id": 247,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En el Seguro de Gastos Médicos, en el caso de gastos complementarios de alguna enfermedad, ¿Qué ocurre con el coaseguro?",
+    "opciones": [
+      "Se aplica el coaseguro hasta terminar con los gastos complementarios",
+      "Se aplica deducible y coaseguro a cada gasto complementario",
+      "No se aplica coaseguro y deducible a los gastos complementarios",
+      "Se aplica coaseguro sólo en la primera reclamación"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Se aplica el coaseguro hasta terminar con los gastos complementarios",
+    "explicacion": ""
+  },
+  {
+    "id": 248,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En la póliza de Gastos Médicos Mayores, las siguientes definiciones describen un padecimiento preexistente, EXCEPTO:",
+    "opciones": [
+      "Que con anterioridad a la vigencia de la póliza, las alteraciones de la salud se desarrollen asintomáticamente",
+      "Que haya sido diagnosticado médicamente con anterior a la vigencia del contrato de Seguro",
+      "Que antes de iniciar el contrato de seguro se manifiesten signos y/o síntomas",
+      "Que antes del inicio de la cobertura existieran muestras aparentes a la vista que no pudieron pasar desapercibidas"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Que con anterioridad a la vigencia de la póliza, las alteraciones de la salud se desarrollen asintomáticamente",
+    "explicacion": ""
+  },
+  {
+    "id": 249,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Son obligaciones de las ISES, EXCEPTO:",
+    "opciones": [
+      "Mantener actualizados los directorios de prestadores de servicios",
+      "Comunicar la actualización de los directorios médicos",
+      "Operar con recursos propios",
+      "Mantener su infraestructura operando con apego a las NOM"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Operar con recursos propios",
+    "explicacion": ""
+  },
+  {
+    "id": 250,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "El Seguro de Salud ampara los siguientes riesgos, EXCEPTO:",
+    "opciones": [
+      "Vacunación",
+      "Check-up",
+      "Aplicación de flúor",
+      "Enfermedades"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Check-up",
+    "explicacion": ""
+  },
+  {
+    "id": 251,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Las pérdidas orgánicas se cubren si suceden a consecuencia de un accidente dentro de un plazo máximo de:",
+    "opciones": [
+      "90 días después del accidente",
+      "30 días después del accidente",
+      "60 días después del accidente",
+      "150 días después del accidente"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "90 días después del accidente",
+    "explicacion": ""
+  },
+  {
+    "id": 252,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿Cuáles de los siguientes conceptos son exclusiones cubiertas únicamente bajo convenio expreso en el Seguro de Accidentes Personales?\n\na. Lesiones que sufra el asegurado por participación en riñas b. Lesiones que sufra el asegurado a consecuencia de paracaidismo, buceo, alpinismo c. Miembros de la tripulación de cualquier aeronave d. Lesiones que sufra el asegurado en servicio militar, guerra, insurrección",
+    "opciones": [
+      "b, c, d",
+      "b, c",
+      "a, c",
+      "a, b, d"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "b, c",
+    "explicacion": ""
+  },
+  {
+    "id": 253,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "De la siguiente lista de condiciones, elija aquellas que son exclusiones de la póliza de Gastos Médicos Mayores:\n\n1. Tratamiento médico derivado de un padecimiento congénito detectado dentro de la vigencia de la póliza y la misma no estaba contratada desde el nacimiento del asegurado 2. Tratamiento de obesidad por razones orgánicas 3. Lesiones que el asegurado tenga por viajar como ocupante en un vehículo de carreras 4. Reposición de prótesis dañadas que ya tenía el asegurado antes de contratar la póliza, a consecuencia de un accidente cubierto 5. Tratamiento reconstructivo como resultado de un accidente cubierto",
+    "opciones": [
+      "2, 3, 4",
+      "3, 4, 5",
+      "1, 2, 5",
+      "1, 3, 4"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 2, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 254,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Son servicios adicionales al Seguro de Salud, EXCEPTO:",
+    "opciones": [
+      "Terapias de rehabilitación por alcoholismo",
+      "Servicio de ambulancia",
+      "Cuidados en casa",
+      "Suministro de oxígeno"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Terapias de rehabilitación por alcoholismo",
+    "explicacion": ""
+  },
+  {
+    "id": 255,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿Cómo se define el copago?",
+    "opciones": [
+      "Es la cantidad de dinero con que participa el asegurado en los estudios de laboratorios",
+      "Es el porcentaje de participación del asegurado en las consultas médicas de cualquier nivel",
+      "Es la participación a cargo del asegurado que cubre al utilizar cualquier servicio",
+      "Son los pagos pequeños a cargo del asegurado al usar los servicios médicos."
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Es la participación a cargo del asegurado que cubre al utilizar cualquier servicio",
+    "explicacion": ""
+  },
+  {
+    "id": 256,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Relaciona los conceptos con sus definiciones:\n\nCONCEPTOS:\n1. Accidente\n2. Enfermedad\n3. Padecimiento\n4. Enfermedad preexistente\n\nDEFINICIONES:\na. Son las alteraciones morfológicas o funcionales del organismo cuyos síntomas eran aparentes a la vista o habían sido diagnosticadas por un médico antes de iniciar la vigencia del Seguro\nb. Toda lesión causada al asegurado por eventos fortuitos, súbitos, violentos y causas externas\nc. Son alteraciones morfológicas, estructurales y/o funcionales del organismo por causas anormales internas o externas\nd. Son alteraciones morfológicas, estructurales y/o funcionales del organismo o sistema del cuerpo, por causas ocurridas en el período de gestación",
+    "opciones": [
+      "1a, 2b, 3c, 4d",
+      "1d, 2a, 3b, 4c",
+      "1b, 2c, 3d, 4a",
+      "1c, 2d, 3a, 4b"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1b, 2c, 3d, 4a",
+    "explicacion": ""
+  },
+  {
+    "id": 257,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿A qué unidad administrativa de la Comisión Nacional de Arbitraje Médico le corresponde la atención de inconformidades en amigable composición?",
+    "opciones": [
+      "Dirección General de Orientación y Gestión",
+      "Dirección General de Asesoría Legal",
+      "Dirección General de Asuntos Jurídicos",
+      "Dirección General de Conciliación"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Dirección General de Conciliación",
+    "explicacion": ""
+  },
+  {
+    "id": 258,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Las siguientes condiciones corresponden al sistema de reembolso de Gastos Médicos Mayores, EXCEPTO:",
+    "opciones": [
+      "Que el gasto sea hasta el porcentaje de la tabla de honorarios quirúrgicos dentro de la red",
+      "Que a consecuencia de algún accidente o enfermedad cubiertos por la póliza, surja la erogación fuera de red",
+      "El gasto que proceda será posteriormente reintegrado al asegurado fuera de red",
+      "El gasto realizado debe ser liquidado por el asegurado fuera de red"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Que el gasto sea hasta el porcentaje de la tabla de honorarios quirúrgicos dentro de la red",
+    "explicacion": ""
+  },
+  {
+    "id": 259,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿Qué plazo tienen las instituciones de Seguros Especializadas en Seguros de Salud, para informar a los asegurados sobre los cambios en la estructura hospitalaria?",
+    "opciones": [
+      "30 días hábiles",
+      "15 días naturales",
+      "30 días naturales",
+      "15 días hábiles"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "15 días hábiles",
+    "explicacion": ""
+  },
+  {
+    "id": 260,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "De acuerdo a los siguientes datos: ¿Por cuánto se indemniza a un asegurado por concepto de gastos médicos?\n\n1. Suma asegurada $1,000,000.00 2. Deducible $10,000.00 3. Coaseguro 10% 4. Valor del gasto erogado $500,000.00",
+    "opciones": [
+      "$459,000.00",
+      "$441,000.00",
+      "$440,000.00",
+      "$390,000.00"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "$441,000.00",
+    "explicacion": ""
+  },
+  {
+    "id": 261,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En el Seguro de Accidentes Personales, los siguientes son elementos que se toman en cuenta para cobrar la prima adecuada, EXCEPTO:",
+    "opciones": [
+      "Ocupación",
+      "Suma asegurada",
+      "Sexo",
+      "Edad"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Sexo",
+    "explicacion": ""
+  },
+  {
+    "id": 262,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Las siguientes son características del reconocimiento de antigüedad en la póliza de Gastos Médicos, EXCEPTO:",
+    "opciones": [
+      "Considera el período asegurado ininterrumpido en caso de cambiar de compañía aseguradora",
+      "Considera el período asegurado ininterrumpido en caso de cambiar de plan",
+      "Permite cambiar en forma abierta los padecimientos preexistentes",
+      "El tiempo transcurrido para los padecimientos con período de espera se respeta en el nuevo plan"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Permite cambiar en forma abierta los padecimientos preexistentes",
+    "explicacion": ""
+  },
+  {
+    "id": 263,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Indique cómo se consideran, dentro del Seguro de Gastos Médicos, las competencias de automóviles (pruebas de resistencia, velocidad, etc.), la práctica de paracaidismo y el buceo:",
+    "opciones": [
+      "Riesgos cubiertos",
+      "Riesgos independientes",
+      "Agravación del riesgo asegurado",
+      "Riesgos no cubiertos, pero que pueden serlo mediante convenio expreso"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Riesgos no cubiertos, pero que pueden serlo mediante convenio expreso",
+    "explicacion": ""
+  },
+  {
+    "id": 264,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Son especialidades de segundo nivel, EXCEPTO:",
+    "opciones": [
+      "Oftalmología",
+      "Cirugía general",
+      "Ortopedia",
+      "Homeopatía"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Cirugía general",
+    "explicacion": ""
+  },
+  {
+    "id": 265,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En el seguro de accidentes personales, si como consecuencia de un accidente el asegurado debe someterse a atención médica urgente, la compañía pagará los gastos por medio de la cobertura de:",
+    "opciones": [
+      "Reembolso de gastos médicos por accidente",
+      "Indemnización diaria por hospitalización",
+      "Reembolso de gastos médicos por incapacidad",
+      "Gastos hospitalarios"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Reembolso de gastos médicos por accidente",
+    "explicacion": ""
+  },
+  {
+    "id": 266,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Los siguientes elementos sirven para seleccionar el riesgo, EXCEPTO:",
+    "opciones": [
+      "Residencia",
+      "Deportes",
+      "Profesión",
+      "Estado Civil"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Estado Civil",
+    "explicacion": ""
+  },
+  {
+    "id": 267,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Cuando el asegurado haga uso del servicio contratado, está obligado a:",
+    "opciones": [
+      "Realizar el copago del servicio",
+      "Presentar la póliza",
+      "Verificar que el médico sea de la red",
+      "Verificar que el precio del servicio sea el facturado"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Realizar el copago del servicio",
+    "explicacion": ""
+  },
+  {
+    "id": 268,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿Cuál es el objetivo de la medicina de primer nivel o contacto?",
+    "opciones": [
+      "El mantenimiento de la salud y la prevención de accidentes",
+      "El restablecimiento de la salud",
+      "La prevención de enfermedades y la rehabilitación de los pacientes",
+      "La eliminación y disminución de riesgos de salud"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "El restablecimiento de la salud",
+    "explicacion": ""
+  },
+  {
+    "id": 269,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿En qué formas se puede estipular el copago?",
+    "opciones": [
+      "Como un porcentaje del costo del servicio o una cantidad fija",
+      "Siempre se estipula como un porcentaje del servicio",
+      "Únicamente como un monto fijo",
+      "Como un porcentaje de la suma asegurada o una cantidad fija por servicio"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Como un porcentaje del costo del servicio o una cantidad fija",
+    "explicacion": ""
+  },
+  {
+    "id": 270,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿A qué organismo, aparte de la Comisión Nacional para la Defensa de los Usuarios de Servicios Financieros deben sujetarse las Instituciones de Seguros Especialistas en Salud, para consultas y reclamaciones?",
+    "opciones": [
+      "La Comisión Nacional de Arbitraje Médico",
+      "La Asociación Mexicana de Instituciones de Seguros",
+      "La Secretaría de Salud",
+      "La Comisión Nacional de Seguros y Fianzas"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "La Comisión Nacional de Arbitraje Médico",
+    "explicacion": ""
+  },
+  {
+    "id": 271,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En la póliza de gastos médicos mayores, los tratamientos que no son médicamente indispensables para la recuperación de la salud, tales como los estéticos, dietéticos, de obesidad y calvicie son:",
+    "opciones": [
+      "Tratamientos asegurables con extraprima.",
+      "Tratamientos excluidos.",
+      "Tratamientos asegurables con periodo de espera.",
+      "Tratamientos asegurables bajo convenio expreso."
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Tratamientos excluidos.",
+    "explicacion": ""
+  },
+  {
+    "id": 272,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Señale qué afectaciones se contemplan en la escala “B” de pérdidas orgánicas y que están excluidas en la escala “A” de la póliza de accidentes personales:",
+    "opciones": [
+      "Anquilosis de manos o pies.",
+      "Orejas.",
+      "Pérdida total de la vista.",
+      "Pérdida de manos o pies."
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Anquilosis de manos o pies.",
+    "explicacion": ""
+  },
+  {
+    "id": 273,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En la póliza de gastos médicos mayores, las siguientes definiciones describen un padecimiento preexistente:",
+    "opciones": [
+      "Que haya sido diagnosticado médicamente con anterioridad a la vigencia del contrato de seguro.",
+      "Que antes de iniciar el contrato de seguro se manifiesten signos y/o síntomas.",
+      "Que antes del inicio de la cobertura existieran muestras aparentes a la vista que no pudieron pasar desapercibidos.",
+      "Todas las anteriores"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Todas las anteriores",
+    "explicacion": ""
+  },
+  {
+    "id": 274,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿Cuáles de las siguientes pérdidas orgánicas presentadas en la lista se cubren en la escala de indemnización “B” pero no en la escala de indemnización “A”?\n\n1. El maxilar. 2. El dedo meñique. 3. Ambas orejas. 4. Una mano o un pie y la vista de un ojo. 5. Amputación parcial de un pie, comprendiendo todos los dedos.",
+    "opciones": [
+      "3, 4, 5",
+      "2, 5",
+      "1, 5",
+      "1, 2, 3"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "2, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 275,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "El seguro de salud ampara los siguientes riesgos, excepto:",
+    "opciones": [
+      "Enfermedades",
+      "Aplicación de flúor",
+      "Vacunación",
+      "Check-up"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Enfermedades",
+    "explicacion": ""
+  },
+  {
+    "id": 1030,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿Por qué motivo se puede modificar la prima del seguro de accidentes personales mientras se encuentre en vigor la póliza?",
+    "opciones": [
+      "Por un cambio en su estado de salud.",
+      "Por un cambio de ocupación o actividad.",
+      "Por la estatura y el peso.",
+      "Por cualquier tipo de accidente."
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Por un cambio de ocupación o actividad.",
+    "explicacion": ""
+  },
+  {
+    "id": 276,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En la póliza de gastos médicos mayores, el lapso predeterminado e ininterrumpido que comienza a partir del primer año de vigencia y que debe transcurrir para cubrir algunos padecimientos se le denomina:",
+    "opciones": [
+      "Periodo de beneficio.",
+      "Periodo al descubierto.",
+      "Periodo de espera.",
+      "Periodo de gracia."
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Periodo de espera.",
+    "explicacion": ""
+  },
+  {
+    "id": 277,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿En qué momento se efectúa el siniestro?",
+    "opciones": [
+      "Al momento que el asegurado presenta síntomas de alguna enfermedad.",
+      "Al momento que el asegurado acude a hacer uso de los servicios que contrató.",
+      "Al momento de iniciar el tratamiento médico.",
+      "Al momento que el prestador de servicio solicita el pago a la aseguradora."
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Al momento que el prestador de servicio solicita el pago a la aseguradora.",
+    "explicacion": ""
+  },
+  {
+    "id": 278,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En el ramo de salud, “prevenir”, implica llevar a cabo acciones que:",
+    "opciones": [
+      "Fomenten la salud.",
+      "Eviten accidentes de trabajo.",
+      "Promueven actividades deportivas.",
+      "Mejoran el bienestar del asegurado."
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Fomenten la salud.",
+    "explicacion": ""
+  },
+  {
+    "id": 279,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "De la siguiente lista, identifique las 3 formas en que puede terminar la obligación de la aseguradora en el seguro de salud:\n\n1. Al certificarse la curación del padecimiento\n2. Al año de haberse iniciado el padecimiento\n3. A los dos años de agotado el deducible\n4. Al agotarse la suma asegurada\n5. Al terminar la vigencia del contrato\n6. Por fallecimiento del asegurado",
+    "opciones": [
+      "1, 4, 6",
+      "3, 4, 5",
+      "2, 3, 5",
+      "4, 1, 2"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "1, 4, 6",
+    "explicacion": ""
+  },
+  {
+    "id": 280,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿A partir de qué edad las compañías aplican recargos para una póliza de accidentes personales?",
+    "opciones": [
+      "65 años",
+      "60 años",
+      "55 años",
+      "70 años"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "60 años",
+    "explicacion": ""
+  },
+  {
+    "id": 281,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Relacione los siguientes conceptos del seguro de Gastos Médicos Mayores con sus características:\n\nCONCEPTOS:\n1. Deducible\n2. Coaseguro\n\nCARACTERÍSTICAS:\na. Es aplicado una vez por cada enfermedad\nb. Es un porcentaje a cargo del asegurado\nc. Es una cantidad fija que cubre el asegurado\nd. Se aplica sobre el total de los gastos cubiertos del siniestro\ne. Sirve para disminuir el costo de la prima\nf. Se aplica sobre el total de los gastos cubiertos excedentes del deducible",
+    "opciones": [
+      "1a, b, f; 2c, d, e",
+      "1a, c, e; 2b, d, f",
+      "1b, d, e; 2a, c, f",
+      "1a, c, d; 2b, e, f"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1a, c, e; 2b, d, f",
+    "explicacion": ""
+  },
+  {
+    "id": 282,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Son exclusiones del seguro de salud, excepto:",
+    "opciones": [
+      "Radioterapia",
+      "Lentes de contacto",
+      "Gastos por mantenimiento de los aparatos de prótesis",
+      "Servicios médicos fuera del territorio nacional"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Radioterapia",
+    "explicacion": ""
+  },
+  {
+    "id": 283,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿Cuál es la finalidad de los cuestionarios médicos?",
+    "opciones": [
+      "Conocer la edad y el sexo del asegurado",
+      "Determinar el tipo de copago",
+      "Determinar el estado o condición física del individuo",
+      "Conocer los hábitos de la persona"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Determinar el estado o condición física del individuo",
+    "explicacion": ""
+  },
+  {
+    "id": 284,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Si al momento del accidente a un máximo de 90 días después, las lesiones producen cualquiera de las perdidas especificas en las escalas de indemnización “A” o “B”. ¿Qué sección entra en funcionamiento?",
+    "opciones": [
+      "Invalidez total y permanente",
+      "Pérdidas orgánicas",
+      "Indemnización por incapacidad",
+      "Reembolso de gastos médicos"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Pérdidas orgánicas",
+    "explicacion": ""
+  },
+  {
+    "id": 285,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Cuando se pagan los gastos realizados en el extranjero por la atención médica de un accidente o una enfermedad amparada, nos referimos a la cobertura de:",
+    "opciones": [
+      "Cobertura de salud en el extranjero",
+      "Cobertura de servicios médicos en el extranjero",
+      "Cobertura de emergencia en el extranjero",
+      "Cobertura en el extranjero"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Cobertura en el extranjero",
+    "explicacion": ""
+  },
+  {
+    "id": 286,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "De las siguientes cláusulas del seguro de gastos médicos, elija 3 que “no” quedan cubiertas: 1. Transporte en ambulancia terrestre 2. Padecimientos preexistentes 3. Gastos como receptor en un transplante de órganos 4. Padecimientos que resulten del alcoholismo o toxicomanía 5. Gastos originados por consumo de oxigeno 6. Tratamientos encaminados a corregir trastornos de conducta y aprendizaje",
+    "opciones": [
+      "1, 2, 5",
+      "1, 3, 4",
+      "2, 4, 6",
+      "3, 4, 5"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "2, 4, 6",
+    "explicacion": ""
+  },
+  {
+    "id": 287,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Cuando el asegurado llegara a estar fuera del país y necesitara atención de emergencia debido a un accidente o enfermedad aguda ¿En que caso se pagarían los gastos?",
+    "opciones": [
+      "Cuando haya contratado la cláusula de “emergencia en el extranjero”",
+      "Cuando haya contratado la cláusula de “cobertura en el extranjero”",
+      "Cuando haya contratado la cláusula de “servicios médicos en el extranjero”",
+      "Cuando haya contratado la cláusula de “cobertura de salud en el extranjero”"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Cuando haya contratado la cláusula de “emergencia en el extranjero”",
+    "explicacion": ""
+  },
+  {
+    "id": 288,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En una póliza de Gastos Médicos Mayores con suma asegurada sin límite, se presenta una reclamación donde el total de los gastos procedentes es de 50,000 ¿Cuánto será el total de gastos cuando cuenta con un deducible de $3,000 y el coaseguro del 10%:",
+    "opciones": [
+      "$42,300",
+      "$42,000",
+      "$50,000",
+      "$45,000"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "$42,000",
+    "explicacion": ""
+  },
+  {
+    "id": 289,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Distingue entre los siguientes riesgos excluidos, ¿cuál 'no' puede cubrirse bajo convenio expreso en la póliza de Accidentes Personales?",
+    "opciones": [
+      "Limpiadores de ventanas",
+      "Constructores de torres de televisión",
+      "Pilotos, aeromozas",
+      "Piloto fumigador"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Piloto fumigador",
+    "explicacion": ""
+  },
+  {
+    "id": 290,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En la póliza de Accidentes Personales los siguientes gastos son reembolsables, EXCEPTO:",
+    "opciones": [
+      "Gastos hospitalarios derivados de la atención de un accidente",
+      "Honorarios de médico familiar del asegurado, derivados de la atención de un accidente",
+      "Radiología derivados de la atención de un accidente",
+      "Gastos ambulancia derivados de la atención de un accidente"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Honorarios de médico familiar del asegurado, derivados de la atención de un accidente",
+    "explicacion": ""
+  },
+  {
+    "id": 291,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿En la póliza de Accidentes Personales los siguientes gastos son reembolsables, EXCEPTO: Bajo qué concepto la Compañía otorga al beneficiario de la póliza de Accidentes Personales una indemnización?",
+    "opciones": [
+      "Secciones I y II",
+      "Secciones I, II y III",
+      "Secciones II y IV",
+      "Secciones IV y V"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Secciones I y II",
+    "explicacion": ""
+  },
+  {
+    "id": 292,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿El seguro de Gastos Médicos Mayores cubre las lesiones que sufra el asegurado al encontrarse bajo la influencia de estimulantes prescritos por un médico?",
+    "opciones": [
+      "No",
+      "Si",
+      "Si bajo Convenio Expreso",
+      "Solo si es por accidente"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Si",
+    "explicacion": ""
+  },
+  {
+    "id": 293,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En el ramo de Salud se le llama prevenir, a las acciones que:",
+    "opciones": [
+      "Mejoran el bienestar del asegurado",
+      "Fomenten la salud",
+      "Restauración de la salud",
+      "Para prevenir enfermedades"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Para prevenir enfermedades",
+    "explicacion": ""
+  },
+  {
+    "id": 294,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿Cuál es el objetivo de los seguros de Salud?",
+    "opciones": [
+      "Prestar servicios dirigidos a prevenir o restaurar la Salud",
+      "Prestar servicios dirigidos a Fomentar la salud",
+      "Prestar servicios dirigidos a Restaurar la salud",
+      "Prestar servicios dirigidos a Prevenir enfermedades"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Prestar servicios dirigidos a prevenir o restaurar la Salud",
+    "explicacion": ""
+  },
+  {
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "De la siguiente lista de palabras, cuáles son las 4 que forman parte de la definición de accidente amparado en el seguro de Accidentes Personales:\n\n1.- Causa externa\n2.- Violenta\n3.- Causa interna\n4.- Súbita\n5.- Paulatina\n6.- Eventualidad\n7.- Fortuita",
+    "opciones": [
+      "1, 2, 3, 4",
+      "1, 2, 4, 5",
+      "1, 2, 4, 7",
+      "1, 2, 3, 7"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 2, 4, 7",
+    "explicacion": ""
+  },
+  {
+    "id": 296,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "De las siguientes partes del cuerpo descritas en la lista, elige 4 que se consideran indemnizables en un seguro de Accidentes Personales: 1. Manos 2. Ojos 3. Riñones 4. Pies 5. Pulmones 6. Dedos 7. Orejas",
+    "opciones": [
+      "1, 2, 3, 4",
+      "1, 2, 4, 5",
+      "1, 2, 4, 6",
+      "1, 2, 3, 7"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 2, 4, 6",
+    "explicacion": ""
+  },
+  {
+    "id": 297,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "COBERTURAS 1) Incapacidad total por accidente 2) Reembolso de gastos médicos\n\nPERIODO DE BENEFICIOS a) 90 días b) 182 días c) 1460 días d) 365 días e) 730",
+    "opciones": [
+      "1 a b 2 d e",
+      "1 b c 2 e",
+      "1 b c 2 d",
+      "1 a b 2 a e"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1 b c 2 d",
+    "explicacion": ""
+  },
+  {
+    "id": 298,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "De la siguiente lista de enfermedades, padecimientos o deformidades distingue que cobran primas adicionales o restringen el otorgamiento de alguna cobertura en el seguro de Accidentes Personales 1. Diabetes 2. Epilepsia 3. Hernias, eventraciones 4. Deformidad en espalda 5. Embarazo Molar 6. Lunares o nevus",
+    "opciones": [
+      "1, 2, 3",
+      "4, 5, 6",
+      "1, 2, 4",
+      "1, 3, 5"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 2, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 299,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En el seguro de Accidentes Personales, clasifique los riesgos de acuerdo a si están cubiertos en forma básica o bajo convenio expreso:\n\nCLASE DE RIESGO:\n1. Cubiertos en forma básica\n2. Cubiertos bajo convenio expreso\n\nRIESGOS:\na. Aborto\nb. Paracaidismo\nc. Envenenamiento\nd. Taxi aéreo\ne. Aeromozas, ingenieros de vuelo\nf. Manejo de la energía atómica",
+    "opciones": [
+      "1 a, b, c; 2 d, e, f",
+      "1 a, c, e; 2 b, d, f",
+      "1 a, b, f; 2 b, d, e",
+      "1 d, e, f; 2 a, b, c"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1 a, b, f; 2 b, d, e",
+    "explicacion": ""
+  },
+  {
+    "id": 300,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿Quién define los componentes del plan mínimo que ofrecen las Instituciones de Seguros Especializadas en Salud?",
+    "opciones": [
+      "CNSF",
+      "CONAMED",
+      "Secretaria de Salud",
+      "SHCP"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "CNSF",
+    "explicacion": ""
+  },
+  {
+    "id": 301,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En la póliza de Gastos Médicos Mayores, el lapso predeterminado e ininterrumpido que cuenta a partir del primer año de vigencia y que debe transcurrir para cubrir algunos padecimientos, se le denomina:",
+    "opciones": [
+      "Preexistencia",
+      "Indisputabilidad",
+      "Antigüedad",
+      "Periodo de espera"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Periodo de espera",
+    "explicacion": ""
+  },
+  {
+    "id": 302,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En una póliza de Gastos Médicos Mayores con suma asegurada sin límite, se presenta una reclamación donde el total de los gastos procedentes es de 50,000 ¿Cuánto será el total de gastos cubiertos al descontarle el deducible de $3,000 y el coaseguro del 10%",
+    "opciones": [
+      "$ 42,300",
+      "$ 42,000",
+      "$ 50,000",
+      "$ 45,000"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "$ 42,300",
+    "explicacion": ""
+  },
+  {
+    "id": 303,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "De la siguiente lista elija las 3 características que corresponden al deducible: 1. Es una cantidad fija establecida en la carátula de la póliza 2. Es un porcentaje establecido en la carátula de la póliza 3. Se aplica sobre cada reclamación y gastos complementarios. 4. Se aplica por única vez por evento.",
+    "opciones": [
+      "1 2",
+      "2 3",
+      "1 4",
+      "1 3"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1 4",
+    "explicacion": ""
+  },
+  {
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "De la siguiente lista, distinga 5 tratamientos que en ningún caso son cubiertos en el Seguro de Gastos Médicos Mayores:\n\n1.- Control de la natalidad\n2.- Congénitos\n3.- Obesidad\n4.- Alcoholismo\n5.- Psiquiátricos\n6.- Lunares\n7.- Reconstructivo\n8.- Dentales",
+    "opciones": [
+      "1 2 3 4 5",
+      "1 3 4 5 8",
+      "1 2 6 7 8",
+      "1 3 5 7 8"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1 3 4 5 8",
+    "explicacion": ""
+  },
+  {
+    "id": 305,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Cuando se analiza una reclamación de Gastos Médicos Mayores y se descubre que al momento de la celebración del contrato, la edad del asegurado estaba fuera de los límites de admisión, ¿Cómo procede la Compañía?",
+    "opciones": [
+      "Se reduce la Protección hasta la prima pagada",
+      "Se Rescinde el Contrato",
+      "Se cobra la diferencia de la Prima",
+      "Se Rescinde el contrato se devuelve la prima no devengada menos gastos."
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Se Rescinde el contrato se devuelve la prima no devengada menos gastos.",
+    "explicacion": ""
+  },
+  {
+    "id": 306,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En el Seguro de Gastos Médicos Mayores, ¿cuándo se debe dar aviso a la aseguradora sobre el nacimiento de un hijo nacido durante la vigencia de la póliza para que éste sea asegurado?",
+    "opciones": [
+      "Dentro de las 24 hrs.",
+      "En un plazo no mayor a 5 días",
+      "Dentro de los 30 de su nacimiento.",
+      "Tan pronto tenga conocimiento."
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Dentro de los 30 de su nacimiento.",
+    "explicacion": ""
+  },
+  {
+    "id": 307,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Si un asegurado realiza un pago por concepto de una enfermedad cubierta por el Seguro de Gastos Médicos Mayores con proveedores médicos que no pertenecen a la red de la compañía, la aseguradora:",
+    "opciones": [
+      "Si se ajusta a la Red lo paga",
+      "Opera pago directo por ser procedente",
+      "Lo reembolsa",
+      "Lo rechaza"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Lo reembolsa",
+    "explicacion": ""
+  },
+  {
+    "id": 308,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Es el encargado de vigilar que los funcionarios y empleados de la ISES cumplan con la normatividad externa e interna en materia de prestación de servicios médicos que sea aplicable:",
+    "opciones": [
+      "CNSF",
+      "SHCP",
+      "CONAMED",
+      "Secretaria de Salud"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Secretaria de Salud",
+    "explicacion": ""
+  },
+  {
+    "id": 309,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Son usuarios de la CONAMED los siguientes, EXCEPTO:",
+    "opciones": [
+      "A los pacientes que recibieron una mala atención",
+      "A los médicos que son demandados ante la CONAMED",
+      "A los familiares de los pacientes que recibieron una mala atención",
+      "A las ISES por controversia en su contrato de Seguros"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "A las ISES por controversia en su contrato de Seguros",
+    "explicacion": ""
+  },
+  {
+    "id": 310,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "¿A partir de que edad se otorga atención médica en la especialidad de gineco-obstetricia?",
+    "opciones": [
+      "0-14",
+      "3-18",
+      "14 en adelante",
+      "2-16"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "14 en adelante",
+    "explicacion": ""
+  },
+  {
+    "id": 311,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Son derechos de las ISES, EXCEPTO:",
+    "opciones": [
+      "Seleccionar los riesgos",
+      "Recibir la prima por parte del asegurado",
+      "Comunicar la actualización de los directorios médicos",
+      "Elegir el médico de cabecera"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Elegir el médico de cabecera",
+    "explicacion": ""
+  },
+  {
+    "id": 1025,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En el Seguro de Salud en qué casos procede el reembolso:",
+    "opciones": [
+      "En estudios de laboratorio",
+      "En estado de urgencia Médica",
+      "En gastos fuera de la Red Médica",
+      "No aplica el reembolso"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "En estado de urgencia Médica",
+    "explicacion": ""
+  },
+  {
+    "id": 1026,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Cuáles son los conceptos que NO se consideran para el cobro de la prima de accidentes personales:",
+    "opciones": [
+      "Ocupación y deportes",
+      "Riesgos subnormales y estado de salud",
+      "Edad, estatura, peso y hábitos",
+      "Preexistencias y coberturas"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Edad, estatura, peso y hábitos",
+    "explicacion": ""
+  },
+  {
+    "id": 1027,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "El asegurado de una Póliza de Salud tiene derecho EXCEPTO a:",
+    "opciones": [
+      "Dar su consentimiento ante cualquier procedimiento",
+      "Acudir directamente ante un médico de segundo nivel",
+      "Derecho a negativa de tratamiento",
+      "Escoger médico de cabecera"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Acudir directamente ante un médico de segundo nivel",
+    "explicacion": ""
+  },
+  {
+    "id": 1028,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Cuándo se cancela la Póliza de Salud:",
+    "opciones": [
+      "Al agotar el número de servicios durante el año",
+      "Al agotarse la suma asegurada",
+      "Se cancela automáticamente por falta de pago",
+      "Se cancela al terminar el período al descubierto"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Se cancela automáticamente por falta de pago",
+    "explicacion": ""
+  },
+  {
+    "id": 312,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Es una especialidad de primer nivel:",
+    "opciones": [
+      "Dermatología",
+      "Odontología",
+      "Medicina interna",
+      "Homeopatía"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Medicina interna",
+    "explicacion": ""
+  },
+  {
+    "id": 313,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "En el seguro de gastos médicos en caso de accidente, que ocurre con el deducible?",
+    "opciones": [
+      "Se resta de la suma asegurada",
+      "Se elimina",
+      "No se aplica",
+      "Los primeros gastos serán a cargo del asegurado hasta el límite estipulado en la caratula de la póliza"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Los primeros gastos serán a cargo del asegurado hasta el límite estipulado en la caratula de la póliza",
+    "explicacion": ""
+  },
+  {
+    "id": 314,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "El seguro de salud ampara los siguientes riesgos excepto:",
+    "opciones": [
+      "Aplicación flúor",
+      "Vacunación",
+      "Check up",
+      "Enfermedades"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Check up",
+    "explicacion": ""
+  },
+  {
+    "id": 315,
+    "modulo": "Accidentes y Enfermedades",
+    "pregunta": "Son gastos médicos que se cubren como consecuencia de accidente excepto:",
+    "opciones": [
+      "Eventraciones",
+      "Hospitalización",
+      "Honorarios médicos",
+      "Intervención quirúrgica"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Eventraciones",
+    "explicacion": ""
+  }
+]

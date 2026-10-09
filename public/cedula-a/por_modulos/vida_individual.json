@@ -1,0 +1,1175 @@
+[
+  {
+    "id": 166,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Los fideicomisos de las aseguradoras contienen un número de cuenta individual para cada póliza-certificado que participe en éste?",
+    "opciones": [
+      "Sólo si es una póliza individual",
+      "No, es global",
+      "Sólo bajo convenio",
+      "Si"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Si",
+    "explicacion": ""
+  },
+  {
+    "id": 167,
+    "modulo": "Vida Individual",
+    "pregunta": "Tipo de plan que siempre garantiza el pago de una cierta suma si el asegurado fallece durante la vigencia de la póliza o en caso de supervivencia:",
+    "opciones": [
+      "Flexible",
+      "Temporal",
+      "Dotal",
+      "Universal"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Dotal",
+    "explicacion": ""
+  },
+  {
+    "id": 168,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Qué condición se requiere para que se considere accidente colectivo, la muerte de un asegurado?",
+    "opciones": [
+      "Todas las opciones son válidas",
+      "Que tenga póliza colectiva",
+      "Que se presente un incendio en un edificio público",
+      "Que mueran varias personas"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Que se presente un incendio en un edificio público",
+    "explicacion": ""
+  },
+  {
+    "id": 169,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Cuál es la prima que se obtiene de la tabla de mortalidad y cubre únicamente el costo de la misma?",
+    "opciones": [
+      "Prima de tarifa",
+      "Prima pura de riesgo",
+      "Prima única",
+      "Prima total"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Prima pura de riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 170,
+    "modulo": "Vida Individual",
+    "pregunta": "La definición de fideicomitente es:",
+    "opciones": [
+      "Persona que ordena el fideicomiso",
+      "Institución que administra el fideicomiso",
+      "Persona beneficiaria del fideicomiso",
+      "Institución que funge como intermediaria para la celebración del fideicomiso"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Persona que ordena el fideicomiso",
+    "explicacion": ""
+  },
+  {
+    "id": 171,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Qué cantidad se devuelve cuando el contrato se rescinde por error en la edad del asegurado, cuando la misma se encuentre fuera de los límites de admisión fijados por la empresa?",
+    "opciones": [
+      "Los valores garantizados",
+      "Las primas pagadas",
+      "No se paga ninguna cantidad",
+      "La reserva matemática"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "La reserva matemática",
+    "explicacion": ""
+  },
+  {
+    "id": 172,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Cuáles de las siguientes características corresponden a un Seguro Dotal?\n\na. Al término de la vigencia el asegurado recibe la suma asegurada b. El valor garantizado es cada vez mayor durante la vigencia c. La prima es la más baja de todos los planes d. La reserva matemática es decreciente en la segunda etapa del plazo e. Indemniza por muerte o sobre vivencia f. Indemniza sólo por fallecimiento",
+    "opciones": [
+      "b, c, e",
+      "a, b, e",
+      "c, d, f",
+      "b, d, f"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "a, b, e",
+    "explicacion": ""
+  },
+  {
+    "id": 173,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Cuál es la prima que se mantiene constante durante toda la vigencia del Seguro de Vida?",
+    "opciones": [
+      "Prima de ahorro",
+      "Prima nivelada",
+      "Prima única",
+      "Prima escalonada"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Prima nivelada",
+    "explicacion": ""
+  },
+  {
+    "id": 174,
+    "modulo": "Vida Individual",
+    "pregunta": "¿El fideicomisario puede cambiar los términos en los que fue creado el fideicomiso?",
+    "opciones": [
+      "Sólo con la autorización de la fiduciaria",
+      "Si",
+      "No",
+      "Sólo con la autorización de la CNSF"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "No",
+    "explicacion": ""
+  },
+  {
+    "id": 175,
+    "modulo": "Vida Individual",
+    "pregunta": "De la siguiente lista, elija 2 opciones que operan en la cláusula de restricciones:\n\n1. Deportes 2. Estado civil 3. Residencia 4. Ocupación 5. Viajes",
+    "opciones": [
+      "1, 4",
+      "1, 2",
+      "3, 5",
+      "2, 4"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "3, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 176,
+    "modulo": "Vida Individual",
+    "pregunta": "Relaciona las columnas buscando la característica correcta de cada uno de los valores y seguros de vida:\n\nTIPO DE VALOR O SEGURO:\n1. Valores garantizados\n2. Valores de rescate\n3. Seguro saldado\n4. Seguro prorrogado\n\nCARACTERÍSTICAS:\na. La compañía reducirá el plazo del seguro en base a la tabla de valores, conservando la misma suma asegurada sin más pago de primas\nb. La compañía reducirá la suma asegurada de acuerdo a la tabla de valores, conservando el plazo contratado sin más pago de primas\nc. El asegurado tendrá derecho al valor efectivo que corresponda, de acuerdo con la tabla de valores\nd. Son los distintos usos que se le pueden dar a la parte de reserva a la que tiene derecho el asegurado",
+    "opciones": [
+      "1c, 2d, 3a, 4b",
+      "1d, 2c, 3b, 4a",
+      "1a, 2b, 3c, 4d",
+      "1b, 2a, 3d, 4c"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1d, 2c, 3b, 4a",
+    "explicacion": ""
+  },
+  {
+    "id": 177,
+    "modulo": "Vida Individual",
+    "pregunta": "La cláusula de carencia de restricciones establece que el contrato no está sujeto a restricción alguna por causa de:",
+    "opciones": [
+      "Residencia, viajes y género de vida del asegurado",
+      "Género de vida, sexo y edad",
+      "Edad, ocupación y residencia",
+      "Residencia, viajes y estado civil"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Residencia, viajes y género de vida del asegurado",
+    "explicacion": ""
+  },
+  {
+    "id": 178,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Cuáles son los beneficios adicionales que se agregan al Seguro de Vida?",
+    "opciones": [
+      "Por deportes riesgosos y accidentes",
+      "Por accidente e invalidez",
+      "Por invalidez y enfermedad",
+      "Por edad y enfermedad"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Por accidente e invalidez",
+    "explicacion": ""
+  },
+  {
+    "id": 179,
+    "modulo": "Vida Individual",
+    "pregunta": "En el Seguro de Menores, ¿Qué edad mínima debe tener el asegurado a su fallecimiento para que se indemnice la suma asegurada?",
+    "opciones": [
+      "16 años",
+      "12 años",
+      "14 años",
+      "15 años"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "12 años",
+    "explicacion": ""
+  },
+  {
+    "id": 180,
+    "modulo": "Vida Individual",
+    "pregunta": "En un Seguro de Vida a 10 años, ¿Cuál es la prima que paga un asegurado para cubrir el riesgo en un plazo máximo de 12 meses?",
+    "opciones": [
+      "Única",
+      "Anual",
+      "Tarifa",
+      "Nivelada"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Anual",
+    "explicacion": ""
+  },
+  {
+    "id": 181,
+    "modulo": "Vida Individual",
+    "pregunta": "Cuando el asegurado en su póliza de vida individual opta por un Seguro Prorrogado, la Aseguradora le respeta:",
+    "opciones": [
+      "Dividendos",
+      "Plazo y suma asegurada",
+      "La misma suma asegurada",
+      "El mismo plazo"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "La misma suma asegurada",
+    "explicacion": ""
+  },
+  {
+    "id": 182,
+    "modulo": "Vida Individual",
+    "pregunta": "Cuando el asegurado renuncia a su derecho de cambiar los beneficiarios se considera:",
+    "opciones": [
+      "Inembargable",
+      "Irrevocable",
+      "Revocable",
+      "Indisputable"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Irrevocable",
+    "explicacion": ""
+  },
+  {
+    "id": 183,
+    "modulo": "Vida Individual",
+    "pregunta": "Para los efectos del Contrato de Seguro Colectivo, se considera como edad del asegurado, la que haya alcanzado:",
+    "opciones": [
+      "A la fecha de emisión",
+      "A la fecha en que paga la prima",
+      "A la fecha de inicio de la vigencia",
+      "A la fecha de alta del seguro"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "A la fecha de alta del seguro",
+    "explicacion": ""
+  },
+  {
+    "id": 184,
+    "modulo": "Vida Individual",
+    "pregunta": "Elija 2 formas de utilizar los valores garantizados:\n\n1. Dividendos 2. Seguro saldado 3. Valor en efectivo 4. Aportaciones adicionales 5. Seguro prorrogado",
+    "opciones": [
+      "1, 2",
+      "2, 4",
+      "3, 4",
+      "2, 5"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "2, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 185,
+    "modulo": "Vida Individual",
+    "pregunta": "Cuando la compañía dispone de la reserva matemática para cubrir el pago de algunas primas que el asegurado ha dejado de cubrir, se le conoce como:",
+    "opciones": [
+      "Seguro prorrogado",
+      "Valor de rescate",
+      "Seguro saldado",
+      "Préstamo automático"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Préstamo automático",
+    "explicacion": ""
+  },
+  {
+    "id": 186,
+    "modulo": "Vida Individual",
+    "pregunta": "En la póliza de seguro de vida, indique la cláusula mediante la cual se indemniza una suma asegurada previamente pactada en caso de fallecimiento por accidente antes de 90 días:",
+    "opciones": [
+      "beneficio de homicidio intencional",
+      "Beneficio por muerte accidental",
+      "Doble indemnización",
+      "Indemnización por accidente"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Beneficio por muerte accidental",
+    "explicacion": ""
+  },
+  {
+    "id": 187,
+    "modulo": "Vida Individual",
+    "pregunta": "Es la cantidad adicional que cubre el asegurado o contratante a la prima básica para cubrir un riesgo agravado en un Seguro de Vida:",
+    "opciones": [
+      "Prima de depósito",
+      "Extraprima",
+      "Prima creciente",
+      "Prima excedente"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Extraprima",
+    "explicacion": ""
+  },
+  {
+    "id": 188,
+    "modulo": "Vida Individual",
+    "pregunta": "De la siguiente lista, seleccione 3 planes de Seguro de Vida que garantizan al titular de la póliza cobrar la suma asegurada al terminar el plazo convenido:\n\n1. Temporal 2. Ordinario de Vida 3. Dotal 4. Vida pagos limitados 5. Vida universal",
+    "opciones": [
+      "2, 3, 4",
+      "1, 4, 5",
+      "1, 3, 5",
+      "2, 3, 5"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "2, 3, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 189,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Qué nombre recibe el fondo que se constituye en los primeros años del Seguro cuando el costo de mortalidad es más bajo que la prima que se está pagando?",
+    "opciones": [
+      "Rescate",
+      "Reserva matemática",
+      "Utilidades",
+      "Dividendos"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Reserva matemática",
+    "explicacion": ""
+  },
+  {
+    "id": 190,
+    "modulo": "Vida Individual",
+    "pregunta": "El Sr. Fuentes falleció el mes pasado víctima de un ataque cardiaco, ¿Qué opciones de cobro de la suma asegurada tienen los beneficiarios, si el Seguro contratado fue un Ordinario de Vida?",
+    "opciones": [
+      "El cobro de un porcentaje de la suma asegurada y el resto en un esquema de pagos mensuales",
+      "El cobro de una pensión mensual hasta agotar la suma asegurada",
+      "Todas las anteriores",
+      "El cobro de la suma asegurada en una sola exhibición"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Todas las anteriores",
+    "explicacion": ""
+  },
+  {
+    "id": 191,
+    "modulo": "Vida Individual",
+    "pregunta": "Seleccione las 3 excepciones a las exclusiones en el beneficio por invalidez:\n\n1. Actos delictivos intencionales en que participe directamente el asegurado 2. Accidentes que ocurran mientras el asegurado se encuentre abordo de una aeronave particular 3. Accidentes abordo de una aeronave como pasajero en avión comercial 4. Estado de invalidez originado a consecuencia de alcoholismo o enervantes 5. Envenenamiento de cualquier naturaleza derivado de un accidente 6. Inhalación de gases de cualquier clase cuando se derive de un accidente",
+    "opciones": [
+      "1, 4, 5",
+      "1, 2, 6",
+      "2, 3, 6",
+      "3, 5, 6"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "3, 5, 6",
+    "explicacion": ""
+  },
+  {
+    "id": 192,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Qué contiene la tabla de mortalidad que sirve como base para el cálculo del costo del Seguro?",
+    "opciones": [
+      "Las tasas de mortalidad en las cuales no se deben aceptar riesgos",
+      "El número de vivos por edad cada año",
+      "La proporción de personas por cada edad que mueren en el término de un año",
+      "La velocidad que aumenta cada año el número de muertos"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "La proporción de personas por cada edad que mueren en el término de un año",
+    "explicacion": ""
+  },
+  {
+    "id": 193,
+    "modulo": "Vida Individual",
+    "pregunta": "De la siguiente relación, elija las 2 condiciones que NO se necesitan para generar dividendos:\n\n1. Que exista un ahorro en la mortalidad 2. Que haya un incremento en el número de asegurados 3. Que el uso de los valores sea inferior a la reserva 4. Que las sumas aseguradas contratadas sean menores 5. Que se genere ahorro en los recargos cobrados 6. Que la tasa de interés sea mayor a la supuesta",
+    "opciones": [
+      "2, 4",
+      "1, 3",
+      "2, 6",
+      "5, 6"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "2, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 194,
+    "modulo": "Vida Individual",
+    "pregunta": "En caso de que la muerte del asegurado ocurra por suicidio, ¿Cuál es el tiempo mínimo, según la ley sobre el contrato de Seguro, que debe estar vigente el Seguro de Vida para que los beneficiarios reciban la indemnización?",
+    "opciones": [
+      "1 año",
+      "2 años",
+      "6 meses",
+      "3 años"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "2 años",
+    "explicacion": ""
+  },
+  {
+    "id": 195,
+    "modulo": "Vida Individual",
+    "pregunta": "Las condiciones generales de la póliza solo pueden modificarse mediante:",
+    "opciones": [
+      "Endosos",
+      "Modificaciones al contrato",
+      "Modificaciones en las cláusulas",
+      "Acuerdo entre la aseguradora y el asegurado"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Modificaciones al contrato",
+    "explicacion": ""
+  },
+  {
+    "id": 196,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Qué ocurre en la solicitud existe omisión o declaraciones inexactas o declaraciones del proponente después de 13 meses de haber contratado la póliza?",
+    "opciones": [
+      "Se cobra extra prima",
+      "Modifica los valores garantizados",
+      "Es disputable el contrato",
+      "Es indisputable la póliza"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Es disputable el contrato",
+    "explicacion": ""
+  },
+  {
+    "id": 197,
+    "modulo": "Vida Individual",
+    "pregunta": "En caso de suicido, los beneficiarios pueden cobrar la suma asegurada solo si presentan los siguientes documentos:",
+    "opciones": [
+      "Póliza, actuación del ministerio público y acta de nacimiento",
+      "Póliza, acta responsiva del ministerio publico",
+      "Póliza, certificado de fallecimiento y acta de nacimiento",
+      "Póliza, certificado de fallecimiento y fe de bautismo"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Póliza, actuación del ministerio público y acta de nacimiento",
+    "explicacion": ""
+  },
+  {
+    "id": 198,
+    "modulo": "Vida Individual",
+    "pregunta": "De la siguiente relación indique 2 características para que una lesión corporal sea considerada un accidente:\n\n1. Involuntario 2. En forma permitida 3. En forma súbita 4. Por una causa interna del organismo",
+    "opciones": [
+      "3,4",
+      "2,4",
+      "1,2",
+      "1,3"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "1,3",
+    "explicacion": ""
+  },
+  {
+    "id": 199,
+    "modulo": "Vida Individual",
+    "pregunta": "La definición del fideicomiso es:",
+    "opciones": [
+      "Fondo en donde una persona deja su dinero o administración de uno o varios bienes encomendados bajo el contrato a NAFINSA para que, en caso y tiempo determinados, la trasmita u otra persona",
+      "Fondo en donde varias personas dejan su dinero o administración de uno o varios bienes encomendados bajo contrato a una organización financiera para que, en caso y tiempo determinados, la transmita a otra persona.",
+      "Fondo en donde varias personas dejan su dinero administración de un bien encomendado bajo contrato a una persona física para que, en caso y tiempo determinados, la transmita a otra persona.",
+      "Fondo en donde una persona deja su dinero o administración de un bien encomendado bajo contrato a una persona moral para que, en caso y tiempo determinados, la transmita a otra persona."
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Fondo en donde varias personas dejan su dinero o administración de uno o varios bienes encomendados bajo contrato a una organización financiera para que, en caso y tiempo determinados, la transmita a otra persona.",
+    "explicacion": ""
+  },
+  {
+    "id": 200,
+    "modulo": "Vida Individual",
+    "pregunta": "Este evento esta cubierto después de 2 años a partir de la fecha de inicio de vigencia de la póliza:",
+    "opciones": [
+      "Envenenamiento",
+      "Suicidio",
+      "Muerte accidental",
+      "Riña"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Suicidio",
+    "explicacion": ""
+  },
+  {
+    "id": 201,
+    "modulo": "Vida Individual",
+    "pregunta": "Las siguientes son exclusiones y excepciones del beneficio de muerte accidental, relaciona las columnas:\n\nGRUPO:\n1. Excepciones (Cubiertas)\n2. Exclusiones (No cubiertas)\n\nDESCRIPCIÓN:\na. Actos delictivos intencionales en que participe el asegurado\nb. Accidentes bajo influencia de drogas prescritos por médicos\nc. Envenenamiento por inhalación accidental de gases\nd. Accidentes del asegurado originado bajo los efectos del alcohol",
+    "opciones": [
+      "1 a, d; 2 b, c",
+      "1 b, d; 2 a, c",
+      "1 b, c; 2 a, d",
+      "1 a, b; 2 c, d"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1 b, c; 2 a, d",
+    "explicacion": ""
+  },
+  {
+    "id": 202,
+    "modulo": "Vida Individual",
+    "pregunta": "Cuando fallece el asegurado y no existe ningún beneficiario designado en su póliza ¿a quién se le paga la suma asegurada?",
+    "opciones": [
+      "Dependientes económicos.",
+      "A los sucesores legales.",
+      "A ninguna persona.",
+      "Se ingresa a un fideicomiso."
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "A los sucesores legales.",
+    "explicacion": ""
+  },
+  {
+    "id": 203,
+    "modulo": "Vida Individual",
+    "pregunta": "La siguiente es una causa para poder tener derecho a la indemnización por invalidez:",
+    "opciones": [
+      "Práctica de servicio militar.",
+      "Intento de suicidio.",
+      "Accidente automovilístico.",
+      "Envenenamiento."
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Accidente automovilístico.",
+    "explicacion": ""
+  },
+  {
+    "id": 204,
+    "modulo": "Vida Individual",
+    "pregunta": "La pérdida de manos por amputación quirúrgica o traumática, se ampara en la cobertura que recibe el nombre de:",
+    "opciones": [
+      "Pérdida corporal.",
+      "Pérdida anquitóxica.",
+      "Pérdida de miembros.",
+      "Pérdidas orgánicas."
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Pérdidas orgánicas.",
+    "explicacion": ""
+  },
+  {
+    "id": 205,
+    "modulo": "Vida Individual",
+    "pregunta": "¿En qué plan del seguro de vida, se estipula que el plazo del pago de primas es menor al plazo del seguro?",
+    "opciones": [
+      "Ordinario de vida.",
+      "Temporal.",
+      "Vida pagos limitados.",
+      "Dotal."
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Vida pagos limitados.",
+    "explicacion": ""
+  },
+  {
+    "id": 206,
+    "modulo": "Vida Individual",
+    "pregunta": "Es el seguro cuyo objetivo es proteger al asegurado únicamente contra fallecimiento:",
+    "opciones": [
+      "Ordinario de vida.",
+      "Dotal.",
+      "Vida pagos limitados.",
+      "Temporal."
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Temporal.",
+    "explicacion": ""
+  },
+  {
+    "id": 207,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Qué cantidad debe pagar la aseguradora cuando fallece el asegurado menor antes de cumplir 11 años?",
+    "opciones": [
+      "Los valores garantizados.",
+      "No se paga ninguna cantidad.",
+      "La suma asegurada contratada.",
+      "Las primas pagadas menos gastos."
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Las primas pagadas menos gastos.",
+    "explicacion": ""
+  },
+  {
+    "id": 208,
+    "modulo": "Vida Individual",
+    "pregunta": "Cuando una aseguradora acepta riesgos subnormales, ¿cómo compensa la siniestralidad adicional?",
+    "opciones": [
+      "Aplicando extraprima .",
+      "Aumentando la reserva matemática.",
+      "Disminuyendo la suma asegurada.",
+      "Aplicando la indemnización proporcional."
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Aplicando extraprima .",
+    "explicacion": ""
+  },
+  {
+    "id": 209,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Cuál es la prima que incluye la prima nivelada, gastos de adquisición, gastos de administración y la utilidad esperada por la aseguradora?",
+    "opciones": [
+      "Prima de tarifa.",
+      "Prima de riesgo.",
+      "Prima comercial.",
+      "Prima total."
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Prima de tarifa.",
+    "explicacion": ""
+  },
+  {
+    "id": 210,
+    "modulo": "Vida Individual",
+    "pregunta": "La definición de fiduciaria es:",
+    "opciones": [
+      "Es la persona, que crea el fideicomiso a favor de un beneficiario.",
+      "Es la institución, autorizada por las organizaciones de crédito, para cumplir los fines para los cuales fue creado el fondo.",
+      "Es la persona, beneficiaria de los fines para los cuales fue creado el fideicomiso.",
+      "Es la institución, autorizada por las autoridades financieras, para cumplir los fines para los cuales fue creado el fideicomiso."
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Es la institución, autorizada por las autoridades financieras, para cumplir los fines para los cuales fue creado el fideicomiso.",
+    "explicacion": ""
+  },
+  {
+    "id": 211,
+    "modulo": "Vida Individual",
+    "pregunta": "La prima que tiene un aumento sucesivo anual y que aplica para toda la vigencia del seguro o para un plazo determinado se denomina:",
+    "opciones": [
+      "Prima anual.",
+      "Prima creciente.",
+      "Prima de tarifa.",
+      "Prima variable."
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Prima creciente.",
+    "explicacion": ""
+  },
+  {
+    "id": 212,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Cómo se le llama al fondo donde se acumulan junto con los rendimientos obtenidos por la inversión, los excedentes pagados durante los primeros años de vigencia del seguro a través de la prima neta nivelada?",
+    "opciones": [
+      "Reserva técnica.",
+      "Reserva en curso.",
+      "Reserva de inversión.",
+      "Reserva matemática."
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Reserva matemática.",
+    "explicacion": ""
+  },
+  {
+    "id": 213,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Cuál es el plazo que el asegurado tiene para revisar el contenido de la póliza y en su caso, solicitar las modificaciones correspondientes?",
+    "opciones": [
+      "30 días a partir de recibir la póliza.",
+      "30 días a partir de descubierto el error.",
+      "30 días a partir del inicio de vigencia.",
+      "30 días a partir del pago de la prima."
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "30 días a partir de recibir la póliza.",
+    "explicacion": ""
+  },
+  {
+    "id": 214,
+    "modulo": "Vida Individual",
+    "pregunta": "La siguiente es una causa para poder tener derecho a la indemnización por invalidez en el seguro de Vida individual:",
+    "opciones": [
+      "Que sea a consecuencia de un accidente o enfermedad dentro de los 90 días siguientes.",
+      "Que sea a consecuencia de un accidente o enfermedad y que requiera reclusión en hospital o en su hogar.",
+      "Que originada por una enfermedad o accidente, impida al asegurado trabajar en su actividad usual u otra compatible con sus conocimientos, aptitudes y posición social.",
+      "Que el asegurado sufriere una incapacidad para el desempeño de todas las labores diarias propias de su ocupación y se encontrare recluido en un sanatorio"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Que originada por una enfermedad o accidente, impida al asegurado trabajar en su actividad usual u otra compatible con sus conocimientos, aptitudes y posición social.",
+    "explicacion": ""
+  },
+  {
+    "id": 215,
+    "modulo": "Vida Individual",
+    "pregunta": "En la póliza de seguro de Vida, indique la cláusula mediante la cual se indemniza una suma asegurada previamente pactada en caso de fallecimiento por accidente antes de 90 días:",
+    "opciones": [
+      "Indemnización por muerte Accidental",
+      "Beneficio de Muerte Accidental",
+      "Muerte Accidental y Perdidas Orgánicas",
+      "Doble indemnización"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Beneficio de Muerte Accidental",
+    "explicacion": ""
+  },
+  {
+    "id": 216,
+    "modulo": "Vida Individual",
+    "pregunta": "En el seguro de Vida, los principales beneficios adicionales son los siguientes, EXCEPTO:",
+    "opciones": [
+      "Beneficio de Muerte Accidental",
+      "Beneficio de Incapacidad total y permanente",
+      "Beneficios de Accidente e Invalidez",
+      "Indemnización Pérdidas Orgánicas"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Indemnización Pérdidas Orgánicas",
+    "explicacion": ""
+  },
+  {
+    "id": 217,
+    "modulo": "Vida Individual",
+    "pregunta": "Las siguientes son condiciones indispensables para el trámite del anticipo para últimos gastos en el seguro de Vida individual, EXCEPTO:",
+    "opciones": [
+      "Que el seguro tenga al menos dos años de vigencia",
+      "Presentar la póliza, recibo y acta de defunción.",
+      "Que el seguro tenga menos dos años de vigencia.",
+      "Se anticipa un porcentaje de la Suma Asegurada."
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Que el seguro tenga menos dos años de vigencia.",
+    "explicacion": ""
+  },
+  {
+    "id": 218,
+    "modulo": "Vida Individual",
+    "pregunta": "Con el fin de dar una solución completa a los problemas económicos del asegurado, el seguro de Vida individual puede proporcionar beneficios:",
+    "opciones": [
+      "De Accidente y Enfermedades.",
+      "De Accidentes y Gastos Médicos.",
+      "De Accidentes e Invalidez.",
+      "Conyugal y Mancomunado."
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "De Accidentes e Invalidez.",
+    "explicacion": ""
+  },
+  {
+    "id": 219,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Cuál es el plazo máximo que debe transcurrir para que la Compañía de Seguros pague la indemnización del Beneficio de Muerte Accidental dentro del seguro de Vida individual?",
+    "opciones": [
+      "Después de 90 días siguientes al accidente.",
+      "Dentro de los 90 días siguientes al accidente.",
+      "Dentro de los 30 días de haber entregado los documentos justificantes del siniestro.",
+      "Dos años contados a partir de la fecha del siniestro."
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Dentro de los 90 días siguientes al accidente.",
+    "explicacion": ""
+  },
+  {
+    "id": 220,
+    "modulo": "Vida Individual",
+    "pregunta": "En la tabla de mortalidad del seguro de Vida, ¿qué se obtiene si se divide el número de muertos al final del año entre el número de vivos al inicio del año? a.- La probabilidad anual de muerte. b.- La tasa de Morbilidad. c.- La Tasa de Mortalidad. d.- El numero de muertos por enfermedad",
+    "opciones": [
+      "a y b",
+      "b y c",
+      "a y c",
+      "a y d"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "a y c",
+    "explicacion": ""
+  },
+  {
+    "id": 221,
+    "modulo": "Vida Individual",
+    "pregunta": "Es la prima en el seguro de Vida, que refleja el reparto del costo por fallecimiento, y se obtiene directamente de la tabla de mortalidad:",
+    "opciones": [
+      "Tasa de Mortalidad",
+      "Prima Total",
+      "Prima neta",
+      "Prima pura de Riesgo"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Prima pura de Riesgo",
+    "explicacion": ""
+  },
+  {
+    "id": 222,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Qué tipo de prima se aplica al cobro de los siguientes seguros de Vida? 1. Dotal edad alcanzada 65 2. Ordinario de vida 3. Temporal 20",
+    "opciones": [
+      "Prima Pura de Riesgo",
+      "Prima Creciente",
+      "Prima Nivelada",
+      "Prima Decreciente"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Prima Nivelada",
+    "explicacion": ""
+  },
+  {
+    "id": 223,
+    "modulo": "Vida Individual",
+    "pregunta": "Cuando el asegurado retira en una sola exhibición los valores garantizados en el seguro de Vida individual, se habla de:",
+    "opciones": [
+      "Préstamo Ordinario",
+      "Valores en Efectivo",
+      "Valores Garantizados",
+      "Valor de Rescate"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Valor de Rescate",
+    "explicacion": ""
+  },
+  {
+    "modulo": "Vida Individual",
+    "pregunta": "De los siguientes factores elige los 3 que afectan para determinar el monto de los valores garantizados en el seguro de Vida:\n\n1.- Plan contratado\n2.- Interés compuesto\n3.- Beneficios adicionales\n4.- Años de primas pagadas\n5.- Edad del asegurado\n6.- Mortalidad esperada",
+    "opciones": [
+      "1 ,2 y 3",
+      "3, 4 y 5",
+      "1, 2 y 4",
+      "1, 2 y 5"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 2 y 4",
+    "explicacion": ""
+  },
+  {
+    "id": 225,
+    "modulo": "Vida Individual",
+    "pregunta": "En el seguro de Vida individual, ¿quién tiene derecho a disponer de la reserva matemática?",
+    "opciones": [
+      "El Beneficiario del Seguro",
+      "El Contratante del seguro",
+      "El proponente del Seguro",
+      "El Fideicomisario"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "El Contratante del seguro",
+    "explicacion": ""
+  },
+  {
+    "id": 226,
+    "modulo": "Vida Individual",
+    "pregunta": "Dentro del seguro de Vida individual, cuando el asegurado hace uso de los valores garantizados y solicita que se reduzca el plazo del seguro manteniendo la misma suma asegurada, estamos hablando de:",
+    "opciones": [
+      "Seguro Saldado",
+      "Seguro Prorrogado",
+      "Valores en efectivo",
+      "Valores Garantizados"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Seguro Prorrogado",
+    "explicacion": ""
+  },
+  {
+    "id": 227,
+    "modulo": "Vida Individual",
+    "pregunta": "En el seguro de Vida individual, ¿cómo se le conoce al derecho que tiene el asegurado de disponer de la reserva matemática?",
+    "opciones": [
+      "Seguro Saldado",
+      "Seguro Prorrogado",
+      "Valores en efectivo",
+      "Valores Garantizados"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Valores Garantizados",
+    "explicacion": ""
+  },
+  {
+    "id": 228,
+    "modulo": "Vida Individual",
+    "pregunta": "En una póliza de Vida individual, cuando el asegurado renuncia a su derecho de cambiar los beneficiarios se considera:",
+    "opciones": [
+      "Inembargable",
+      "Irrevocable",
+      "Revocable",
+      "Indisputable"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Irrevocable",
+    "explicacion": ""
+  },
+  {
+    "id": 229,
+    "modulo": "Vida Individual",
+    "pregunta": "Este evento está cubierto después de dos años a partir de la fecha de inicio de vigencia de la póliza:",
+    "opciones": [
+      "Suicidio",
+      "Enfermedad Preexistente",
+      "Omisión o inexacta Declaración (Indisputabilidad)",
+      "Accidente Colectivo"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Omisión o inexacta Declaración (Indisputabilidad)",
+    "explicacion": ""
+  },
+  {
+    "id": 1020,
+    "modulo": "Vida Individual",
+    "pregunta": "Liquidar la diferencia entre la reserva matemática actual y la que tiene que constituirse para un nuevo Seguro de Vida, es una obligación que adquiere el asegurado ante la Aseguradora cuando:",
+    "opciones": [
+      "Se cambia de Plan en el Seguro de Vida",
+      "Se rehabilita la póliza",
+      "Se solicita un préstamo automático",
+      "Se realiza la cesión de cartera"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Se cambia de Plan en el Seguro de Vida",
+    "explicacion": ""
+  },
+  {
+    "id": 1021,
+    "modulo": "Vida Individual",
+    "pregunta": "Dentro del seguro de Vida individual, ¿cómo se distribuye la suma asegurada cuando los beneficiarios son el cónyuge y los descendientes del asegurado, y no se especifica la participación de cada uno de ellos?",
+    "opciones": [
+      "Por partes Iguales",
+      "100% a la Cónyuge",
+      "50% a la Cónyuge el otro 50% a los hijos",
+      "De acuerdo con el Testamento"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Por partes Iguales",
+    "explicacion": ""
+  },
+  {
+    "id": 1022,
+    "modulo": "Vida Individual",
+    "pregunta": "En el seguro de Vida individual, ¿quién debe de cobrar la suma asegurada cuando fallece el asegurado?",
+    "opciones": [
+      "Los Causahabientes",
+      "Los Ascendentes",
+      "Los Beneficiarios",
+      "Los Descendientes"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Los Beneficiarios",
+    "explicacion": ""
+  },
+  {
+    "id": 1023,
+    "modulo": "Vida Individual",
+    "pregunta": "De la siguiente lista de siniestros, selecciona qué hace posible la devolución de primas pagadas en un seguro de Vida individual:",
+    "opciones": [
+      "Desaparece uno de los asegurados mancomunados",
+      "Fallece un asegurado de 14 años de edad",
+      "Se incapacita el contratante",
+      "Fallece un asegurado menor de 12 años de edad"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Fallece un asegurado menor de 12 años de edad",
+    "explicacion": ""
+  },
+  {
+    "id": 1024,
+    "modulo": "Vida Individual",
+    "pregunta": "Cuando el asegurado no fallece dentro del período contratado de un plan temporal, la Aseguradora está obligada a:",
+    "opciones": [
+      "Devolver las primas",
+      "Devolver una parte de las primas",
+      "No está obligada a nada",
+      "A pagar dividendos producto de la inversión de la Reserva Matemática"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "No está obligada a nada",
+    "explicacion": ""
+  },
+  {
+    "id": 230,
+    "modulo": "Vida Individual",
+    "pregunta": "Cuando se demuestra legalmente el estado de invalidez total y permanente.",
+    "opciones": [
+      "1,2 y 3",
+      "2, 3 y 4",
+      "3, 4 y 5",
+      "4, 5 y 6"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "2, 3 y 4",
+    "explicacion": ""
+  },
+  {
+    "modulo": "Vida Individual",
+    "pregunta": "De la siguiente lista de Pérdidas Orgánicas, identifica las 3 que dan derecho a indemnización del 100% de la suma contratada para los beneficios por accidente:\n\n1. La pérdida de todos los dedos de las manos\n2. La pérdida de la vista en ambos ojos\n3. Una mano y un pie\n4.- Ambas manos\n5.- Ambos pies\n6.- La anquilosis",
+    "opciones": [
+      "1, 2, 3",
+      "2, 4, 5",
+      "2, 3, 5",
+      "1, 2, 6"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "2, 3, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 232,
+    "modulo": "Vida Individual",
+    "pregunta": "De la siguiente relación, elige 2 planes de Vida individual que no obligan al asegurado a pagar primas durante su vigencia: 1. Dotal 20 2. Vida pagos limitados 10 3. Temporal 15 4. Ordinario de vida prima única 5. Temporal a un año",
+    "opciones": [
+      "1, 2",
+      "2, 4",
+      "2, 5",
+      "1, 5"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "2, 4",
+    "explicacion": ""
+  },
+  {
+    "id": 233,
+    "modulo": "Vida Individual",
+    "pregunta": "En el Seguro de Vida, ¿Cuál es el plan que garantiza el pago de la suma asegurada al momento del fallecimiento del asegurado, pero que en caso de sobrevivir al período contratado la Aseguradora no tiene responsabilidad alguna?",
+    "opciones": [
+      "Temporal",
+      "Ordinario de Vida",
+      "VPL",
+      "Dotal"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Temporal",
+    "explicacion": ""
+  },
+  {
+    "modulo": "Vida Individual",
+    "pregunta": "De la siguiente lista elija cuáles son las 3 pólizas de vida entera:\n\n1.- Ordinario de vida\n2.- Vida universal\n3.- Dotal\n4.- Vida pagos limitados\n5.- Vida entera prima única\n6.- Temporal",
+    "opciones": [
+      "1, 2, 3",
+      "1, 4, 5",
+      "1, 2, 4",
+      "1, 2, 5"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 4, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 235,
+    "modulo": "Vida Individual",
+    "pregunta": "Si un asegurado tiene una póliza de Seguro de Vida que le garantiza pagar la suma asegurada cuando fallezca en cualquier tiempo sin importar la edad ni el número de años pagados, decimos que el plan contratado es:",
+    "opciones": [
+      "Ordinario de Vida",
+      "Vida pagos limitados",
+      "Vida Entera",
+      "Vitalicios"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Ordinario de Vida",
+    "explicacion": ""
+  },
+  {
+    "id": 236,
+    "modulo": "Vida Individual",
+    "pregunta": "Dentro del Seguro de Vida, es aquel plan el cual después de haber pagado las primas correspondientes en un tiempo estipulado, no se necesita efectuar ningún otro pago y el Seguro sigue vigente hasta que el asegurado muere.",
+    "opciones": [
+      "Ordinario de Vida",
+      "Vida pagos limitados",
+      "Vida Entera",
+      "Vitalicios"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Vida pagos limitados",
+    "explicacion": ""
+  },
+  {
+    "id": 237,
+    "modulo": "Vida Individual",
+    "pregunta": "De la siguiente lista, seleccione 3 ventajas de contratar un Seguro a prima nivelada mayor a 10 años: 1. No aumenta la prima al haber cambios en su estado de salud 2. Garantiza dividendos todos los años 3. Evita que el costo del seguro se eleve año con año 4. Tiene una Cuenta de Valores en Efectivo 5. Cuenta con Valores Garantizados",
+    "opciones": [
+      "1, 2, 3",
+      "1, 3, 5",
+      "1, 3, 4",
+      "1, 2, 4"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 3, 5",
+    "explicacion": ""
+  },
+  {
+    "id": 238,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Cuál es la prima que resulta de promediar las primas puras de riesgo que el asegurado tenga que pagar durante los años en que participe del Seguro?",
+    "opciones": [
+      "Prima de Riesgo",
+      "Prima en depósito",
+      "Prima Creciente",
+      "Prima Nivelada"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Prima Nivelada",
+    "explicacion": ""
+  },
+  {
+    "id": 239,
+    "modulo": "Vida Individual",
+    "pregunta": "¿Cuáles conceptos se relacionan con prestaciones en efectivo para el asegurado?",
+    "opciones": [
+      "Préstamo automático",
+      "Valores garantizados",
+      "Rescate",
+      "Seguro prorrogado"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "Préstamo automático",
+    "explicacion": ""
+  },
+  {
+    "id": 240,
+    "modulo": "Vida Individual",
+    "pregunta": "Si fallece el asegurado, ¿A quién se le paga la suma asegurada que le correspondería a un beneficiario desaparecido?",
+    "opciones": [
+      "A los Padres del Asegurado",
+      "A los Padres del Beneficiario",
+      "A los designados en el testamento",
+      "Ninguna respuesta es correcta"
+    ],
+    "indice_correcto": 0,
+    "respuesta_correcta": "A los Padres del Asegurado",
+    "explicacion": ""
+  },
+  {
+    "id": 241,
+    "modulo": "Vida Individual",
+    "pregunta": "Son los documentos del asegurado necesarios para que los beneficiarios puedan cobrar la suma asegurada estipulada en la póliza: a) Póliza b) Acta de matrimonio en caso de que el beneficiario sea el cónyuge c) Acta de nacimiento d) Certificado de defunción e) Copia de identificación del Asegurado y sus beneficiarios f) Averiguaciones previas del C. Agente del Ministerio Público cuando el siniestro haya ocurrido a consecuencia de accidente, homicidio, suicidio o cualquier otra causa no definida como muerte natural",
+    "opciones": [
+      "a, b, c, d, e",
+      "a, c, d, e, f",
+      "Ninguna es correcta",
+      "Todas las Opciones son correctas"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "a, c, d, e, f",
+    "explicacion": ""
+  },
+  {
+    "id": 242,
+    "modulo": "Vida Individual",
+    "pregunta": "En caso de suicidio, los beneficiarios pueden cobrar la suma asegurada solo si presentan los siguientes documentos:",
+    "opciones": [
+      "Póliza, certificado de fallecimiento, acta de nacimiento",
+      "Póliza, actuación del Ministerio Público, acta de nacimiento",
+      "Póliza, acta de nacimiento, RFC",
+      "Póliza, certificado de fallecimiento, Denuncia ante las Autoridades Competentes"
+    ],
+    "indice_correcto": 1,
+    "respuesta_correcta": "Póliza, actuación del Ministerio Público, acta de nacimiento",
+    "explicacion": ""
+  },
+  {
+    "id": 243,
+    "modulo": "Vida Individual",
+    "pregunta": "El Lic. González adquirió un Seguro de Vida junto con otros dos socios de su despacho para proteger los intereses del mismo en caso de fallecimiento de alguno de ellos. ¿Qué documentación es necesaria para hacer efectivo el cobro de la suma asegurada si alguno de los socios falleciera?",
+    "opciones": [
+      "Póliza, certificado de fallecimiento, acta de nacimiento",
+      "Póliza, acta de nacimiento, Acta Constitutiva la Sociedad",
+      "Póliza, certificado de fallecimiento, Denuncia ante las Autoridades Competentes",
+      "Póliza, certificado de fallecimiento, acta de nacimiento, acta notarial"
+    ],
+    "indice_correcto": 3,
+    "respuesta_correcta": "Póliza, certificado de fallecimiento, acta de nacimiento, acta notarial",
+    "explicacion": ""
+  },
+  {
+    "id": 244,
+    "modulo": "Vida Individual",
+    "pregunta": "Hace más de veinticinco años que el Sr. Ramírez contrató una pensión con la aseguradora 'Nacional Fellowship de México', dicho contrato será efectivo en cinco años, lo cual le dará al beneficiario la opción de:",
+    "opciones": [
+      "Pago único una sola exhibición o Renta vitalicia",
+      "Renta vitalicia con garantía, Renta cierta o Plazo fijo.",
+      "Todas son correctas",
+      "Solo renta Vitalicia"
+    ],
+    "indice_correcto": 2,
+    "respuesta_correcta": "Todas son correctas",
+    "explicacion": ""
+  }
+]
