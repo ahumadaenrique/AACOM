@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
     
     const licenseRows = await prisma.estudioLicencia.findMany({
       where: { agente_email: emailLower },
+      orderBy: { fecha_expiracion: 'desc' },
       select: { dias_asignados: true, fecha_expiracion: true }
     });
     if (licenseRows.length > 0) {

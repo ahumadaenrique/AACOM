@@ -106,19 +106,26 @@ export async function GET(req: NextRequest) {
       })
     }
     
-    const allEmails = dbAgents.map(a => a.email.toLowerCase())
+    // Filter out promoter themselves to avoid duplication
+    dbAgents = dbAgents.filter(a => a.email.toLowerCase() !== promoterEmail.toLowerCase())
     
-    // 2. Fetch licenses for all agents in agency
+    const allEmails = [promoterEmail.toLowerCase(), ...dbAgents.map(a => a.email.toLowerCase())]
+    
+    // 2. Fetch licenses for all agents and promoter in agency
     let licensesMap: Record<string, { dias_asignados: number | null; fecha_expiracion: Date | null }> = {}
     if (allEmails.length > 0) {
       const licensesRows = await prisma.estudioLicencia.findMany({
         where: { agente_email: { in: allEmails } },
+        orderBy: { fecha_expiracion: 'desc' },
         select: { agente_email: true, dias_asignados: true, fecha_expiracion: true }
       })
       licensesRows.forEach(row => {
-        licensesMap[row.agente_email.toLowerCase()] = {
-          dias_asignados: row.dias_asignados,
-          fecha_expiracion: row.fecha_expiracion
+        const agEmail = row.agente_email.toLowerCase()
+        if (!licensesMap[agEmail]) {
+          licensesMap[agEmail] = {
+            dias_asignados: row.dias_asignados,
+            fecha_expiracion: row.fecha_expiracion
+          }
         }
       })
     }
@@ -238,11 +245,7 @@ export async function GET(req: NextRequest) {
 
     // Promotor self-account
     const promoterSelfEmail = promoterEmail.toLowerCase()
-    const promoterLic = await prisma.estudioLicencia.findUnique({
-      where: {
-        promotor_email_agente_email: { promotor_email: promotorEmailLow, agente_email: promoterSelfEmail }
-      }
-    })
+    const promoterLic = licensesMap[promoterSelfEmail]
 
     let promoterRemainingDays = 0
     if (promoterLic && promoterLic.fecha_expiracion) {
@@ -255,19 +258,48 @@ export async function GET(req: NextRequest) {
       promoterRemainingDays = tokens > 0 ? tokens : 0
     }
 
+    const promoterTimesPerModule: Record<string, number> = {}
+    const promoterStudyProgress: Record<string, number> = {}
+    CEDULA_B_MODULES.forEach(m => {
+      promoterTimesPerModule[m] = (progressMap[promoterSelfEmail] && progressMap[promoterSelfEmail][m]) || 0
+      promoterStudyProgress[m] = (progressIndexMap[promoterSelfEmail] && progressIndexMap[promoterSelfEmail][m]) || 0
+    })
+
+    let promoterStudyMinutes = 0
+    Object.values(promoterTimesPerModule).forEach(v => {
+      promoterStudyMinutes += v
+    })
+
+    const promoterAttempts = attemptsMap[promoterSelfEmail] || []
+    const promoterModuleScores: Record<string, number> = {}
+    CEDULA_B_MODULES.forEach(m => { promoterModuleScores[m] = 0 })
+
+    const promoterLatestDetails = latestAttemptMap[promoterSelfEmail] as Record<string, any>
+    if (promoterLatestDetails) {
+      Object.keys(promoterLatestDetails).forEach(mod => {
+        const modData = promoterLatestDetails[mod]
+        if (modData && modData.total > 0 && promoterModuleScores[mod] !== undefined) {
+          promoterModuleScores[mod] = Math.round((modData.correct / modData.total) * 100)
+        }
+      })
+    }
+
     const promoterSelfAccount = {
-      id: "promoter-self",
-      name: (dbUser?.name || promoterEmail.split('@')[0]) + " (Mi Cuenta)",
+      id: 99,
+      name: `Tú (${dbUser?.name || 'Cuenta de Estudio'})`,
       initials: (dbUser?.name ? dbUser.name.substring(0, 2) : "PR").toUpperCase(),
       email: promoterSelfEmail,
       status: promoterRemainingDays > 0 ? "active" : "inactive",
-      studyTime: 0,
+      studyTime: promoterStudyMinutes,
       remainingDays: promoterRemainingDays,
-      attempts: [],
-      timesPerModule: {},
-      moduleScores: {},
-      studyProgress: {}
+      attempts: promoterAttempts,
+      timesPerModule: promoterTimesPerModule,
+      moduleScores: promoterModuleScores,
+      studyProgress: promoterStudyProgress
     }
+
+    // Insert promoter self account as first agent in the list
+    agentsList.unshift(promoterSelfAccount)
 
     return NextResponse.json({
       tokens,

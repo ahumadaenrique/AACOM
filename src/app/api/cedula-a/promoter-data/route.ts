@@ -343,10 +343,10 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    agentsList.push({
+    agentsList.unshift({
       id: 99, // promoter self-study ID matches existing switchRole expectations
-      name: "Tú (Cuenta de Estudio)",
-      initials: "PR",
+      name: `Tú (${dbUser?.name || 'Cuenta de Estudio'})`,
+      initials: (dbUser?.name ? dbUser.name.substring(0, 2) : "PR").toUpperCase(),
       email: promoterSelfEmail,
       status: promoterRemainingDays > 0 ? "active" : "inactive",
       studyTime: promoterStudyTime,

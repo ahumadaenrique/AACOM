@@ -247,7 +247,10 @@ async function refreshUserData() {
                 }
                 
                 // Also set activeAgent to promoter's self account
-                activeAgent = promoterData.agents.find(a => a.email === currentUser.email.toLowerCase()) || promoterData.agents[0];
+                const myEmail = currentUser?.email?.toLowerCase();
+                activeAgent = promoterData.agents.find(a => a.id === 99) || 
+                              promoterData.agents.find(a => a.email?.toLowerCase() === myEmail) || 
+                              promoterData.agents[0];
             }
         } else {
             const res = await fetch('/api/cedula-b/agent-data');
@@ -524,12 +527,15 @@ function switchRole(role) {
         
         switchTab("promoter-dash");
     } else {
-        // By default log into the promoter's personal study account (id: 99)
-        activeAgent = promoterData.agents.find(a => a.id === 99) || promoterData.agents[0];
+        // By default log into the promoter's personal study account (id: 99 or matching currentUser.email)
+        const myEmail = currentUser?.email?.toLowerCase();
+        activeAgent = promoterData.agents.find(a => a.id === 99) || 
+                      promoterData.agents.find(a => a.email?.toLowerCase() === myEmail) || 
+                      promoterData.agents[0];
         
-        nameEl.innerText = activeAgent.name;
+        nameEl.innerText = activeAgent ? activeAgent.name : (currentUser?.name || "Mi Cuenta");
         roleEl.innerText = "Agente en Capacitación";
-        avatarEl.innerText = activeAgent.initials;
+        avatarEl.innerText = activeAgent ? activeAgent.initials : "PR";
         
         // Hide role switcher, show logout (hides promoter navigation features from the agent view)
         if (roleSwitcher) roleSwitcher.style.display = "none";
@@ -811,6 +817,7 @@ async function assignDaysPrompt(agentId) {
         if (res.ok) {
             await refreshUserData();
             updatePromoterDashboard();
+            setupAgentListSelector();
             alert(`Se han transferido ${parsedDays} días de estudio a ${agent.name} con éxito.`);
         } else {
             const errData = await res.json();
