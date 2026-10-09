@@ -27,7 +27,7 @@ export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }
             </div>
             <div>
               <h2 className="text-lg font-bold text-white tracking-tight">
-                {isADN ? 'Manual Táctico de Diagnóstico ADN' : isObjeciones ? 'Manual de Cierre y Manejo de Objeciones' : 'Manual Táctico de Prospección AACOM'}
+                {isADN ? 'Manual Táctico de Diagnóstico ADN' : isObjeciones ? 'Manual de Cierre y Manejo de Objeciones' : 'Manual Táctico de Prospección Telefónica'}
               </h2>
               <p className="text-xs text-slate-400">
                 {isADN
@@ -231,7 +231,7 @@ export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }
                     <CheckCircle2 className="h-4 w-4" /> 1. Posicionamiento Consultivo
                   </div>
                   <p className="text-xs text-slate-300">
-                    Preséntate como asesor de <strong>AACOM Seguros</strong> brindando una <em>asesoría financiera personalizada</em>. No eres un vendedor de seguros, eres un estratega patrimonial.
+                    Preséntate como asesor de tu promotoría o despacho brindando una <em>asesoría financiera personalizada</em>. No eres un vendedor de seguros, eres un estratega patrimonial.
                   </p>
                 </div>
 
@@ -296,7 +296,7 @@ export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }
           {/* Footer Motivacional */}
           <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex items-center justify-between text-xs">
             <span className="text-slate-400">
-              {isADN ? 'Metodología oficial de Diagnóstico ADN • AACOM Seguros' : 'Metodología oficial de prospección telefónica • AACOM Seguros'}
+              {isADN ? 'Metodología oficial de Diagnóstico ADN • Regla 50-30-20' : isObjeciones ? 'Metodología oficial de Cierre y Manejo de Objeciones' : 'Metodología oficial de prospección telefónica'}
             </span>
             <span className="text-emerald-400 font-semibold">
               {isADN ? 'Estándar 50-30-20' : 'Efectividad > 80% en citas'}

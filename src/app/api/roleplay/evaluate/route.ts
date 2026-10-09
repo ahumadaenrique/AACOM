@@ -96,7 +96,7 @@ export async function POST(req: Request) {
     let evalInstructions = '';
     if (moduleId === 'adn') {
       evalInstructions = `
-      Módulo: Análisis de Necesidades (ADN) - Metodología Patrimonial AACOM.
+      Módulo: Análisis de Necesidades (ADN) - Metodología Patrimonial Consultiva.
       El asesor DEBE:
       1. POSICIONAMIENTO & REGLA 50-30-20: Explicar que actúa como Asesor Patrimonial y fundamentar el análisis en la Regla 50-30-20 de Elizabeth Warren (50% Necesidades y fijos, 30% Deseos y estilo de vida, 20% Ahorro y protección futura) como estándar de oro mundial.
       2. PERMISO DIAGNÓSTICO: Pedir permiso formal y explícito para realizar las preguntas del cuestionario financiero.
@@ -108,7 +108,7 @@ export async function POST(req: Request) {
       ERRORES FATALES: Vender pólizas, dar costos o cotizar aseguradoras durante el diagnóstico, o discutir con el cliente si este prefiere resumir gastos en lugar de dar centavos.`;
     } else if (moduleId === 'objeciones') {
       evalInstructions = `
-      Módulo: Cierre de Ventas y Manejo de Objeciones - Metodología Consultiva AACOM.
+      Módulo: Cierre de Ventas y Manejo de Objeciones - Metodología Consultiva.
       El asesor DEBE:
       1. VALIDACIÓN EMPÁTICA: Recibir la resistencia o cortina de humo inicial del prospecto ("déjame pensarlo", "está caro", "lo consulto con mi esposa") con serenidad y empatía profesional. Jamás confrontar ni molestarse.
       2. AISLAMIENTO QUIRÚRGICO DE LA OBJECIÓN: Preguntar con precisión si además de ese tiempo para pensar o consultar existe alguna otra inquietud sobre el plan, sumas aseguradas o costos, para despejar la cortina de humo y llegar a la objeción de raíz.
@@ -127,7 +127,7 @@ export async function POST(req: Request) {
       evalInstructions = `
       Módulo: Prospección Telefónica.
       El asesor DEBE:
-      1. Presentarse profesionalmente.
+      1. Presentarse profesionalmente (mencionando su nombre y el de su promotoría o despacho).
       2. Si es referido, mencionar el nombre de quien lo recomienda oportunamente.
       3. Posicionar el valor de la asesoría (vender la cita, no la póliza).
       4. Manejar objeciones de tiempo.

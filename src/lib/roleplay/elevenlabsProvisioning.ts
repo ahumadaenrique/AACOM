@@ -41,7 +41,7 @@ export async function validateElevenLabsKey(apiKey: string): Promise<ElevenLabsK
  * listo y configurado ("AACOM Academia PRO").
  * Si no existe, lo crea automáticamente vía API de ElevenLabs con cero intervención manual.
  */
-export async function getOrProvisionAgencyAgent(agencyId: string, apiKey: string): Promise<string | null> {
+export async function getOrProvisionAgencyAgent(agencyId: string, apiKey: string, agencyName = 'AACOM Seguros'): Promise<string | null> {
   try {
     const cleanKey = apiKey.trim();
 
@@ -56,7 +56,7 @@ export async function getOrProvisionAgencyAgent(agencyId: string, apiKey: string
       const data = await listResp.json();
       const agents = data.agents || [];
       const existing = agents.find((a: any) => 
-        a.name === 'AACOM Academia PRO' || a.name === 'AACOM Simulador PRO' || a.name?.startsWith('AACOM')
+        a.name === `${agencyName} Academia PRO` || a.name === 'AACOM Academia PRO' || a.name === 'AACOM Simulador PRO' || a.name?.includes('Academia PRO')
       );
 
       if (existing?.agent_id) {
@@ -76,11 +76,11 @@ export async function getOrProvisionAgencyAgent(agencyId: string, apiKey: string
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        name: 'AACOM Academia PRO',
+        name: `${agencyName} Academia PRO`,
         conversation_config: {
           agent: {
             prompt: {
-              prompt: 'Eres un prospecto mexicano participando en una sesión interactiva de entrenamiento comercial de AACOM Seguros.'
+              prompt: `Eres un prospecto mexicano participando en una sesión interactiva de entrenamiento comercial de ${agencyName}.`
             },
             first_message: 'Hola, buenas tardes.',
             language: 'es'

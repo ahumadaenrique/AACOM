@@ -90,8 +90,10 @@ export async function POST(req: Request, { params }: { params: { id: string } })
           }, { status: 400 });
         }
 
-        // 2. Auto-aprovisionar de forma 100% plug & play el agente Conversational AI en su cuenta
-        const provisionedAgentId = await getOrProvisionAgencyAgent(id, rawKey);
+        // 2. Auto-aprovisionar de forma 100% plug & play el agente Conversational AI en su cuenta con marca blanca
+        const targetAgency = await prisma.agency.findUnique({ where: { id }, select: { name: true } });
+        const agencyName = targetAgency?.name || 'AACOM Seguros';
+        const provisionedAgentId = await getOrProvisionAgencyAgent(id, rawKey, agencyName);
         if (provisionedAgentId) {
           updateData.elevenLabsVoiceId = provisionedAgentId;
         }

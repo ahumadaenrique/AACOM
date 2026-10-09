@@ -102,8 +102,11 @@ export async function POST(req: Request) {
       });
     }
 
-    // Generate scenario tailored to current level and selected module
-    const scenario = generarEscenarioAleatorio(stats.level, moduleId);
+    // White-label: Usar el nombre de la agencia del asesor si existe
+    const agencyName = userWithAgency?.agency?.name?.trim() || 'AACOM Seguros';
+
+    // Generate scenario tailored to current level, selected module, and dynamic white-label agency
+    const scenario = generarEscenarioAleatorio(stats.level, moduleId, agencyName);
 
     // Get signed WebSocket URL from ElevenLabs using the Agency's BYOK
     let agentId = process.env.ELEVENLABS_AGENT_ID;
@@ -120,9 +123,9 @@ export async function POST(req: Request) {
           if (userWithAgency.agency.elevenLabsVoiceId) {
             agentId = userWithAgency.agency.elevenLabsVoiceId;
           } else {
-            // Auto-aprovisionamiento transparente en tiempo real
+            // Auto-aprovisionamiento transparente en tiempo real con marca blanca
             const { getOrProvisionAgencyAgent } = await import('@/lib/roleplay/elevenlabsProvisioning');
-            const provisioned = await getOrProvisionAgencyAgent(userWithAgency.agency.id, apiKey);
+            const provisioned = await getOrProvisionAgencyAgent(userWithAgency.agency.id, apiKey, agencyName);
             if (provisioned) {
               agentId = provisioned;
             }

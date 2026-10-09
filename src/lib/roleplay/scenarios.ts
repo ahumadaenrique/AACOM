@@ -255,10 +255,10 @@ const ORIGENES = [
     titulo: 'REFERIDO AVISADO',
     icono: '🤝',
     dificultad: 'baja',
-    generar: (referidor: string) => ({
+    generar: (referidor: string, agencyName = 'AACOM Seguros') => ({
       brief: `Tu cliente "${referidor}" le recomendó tu servicio y le avisó que le ibas a llamar hoy.`,
       tipPostLlamada: `En prospectos referidos avisados, menciona el nombre de ${referidor} en los primeros 5 segundos para que te ubique inmediatamente y baje la guardia.`,
-      promptContext: `Fuiste referido por tu amigo/socio "${referidor}", quien te comentó que un asesor de AACOM Seguros te marcaría. Sí recuerdas la recomendación, pero quieres saber de qué se trata exactamente antes de dar tu tiempo.`
+      promptContext: `Fuiste referido por tu amigo/socio "${referidor}", quien te comentó que un asesor de ${agencyName} te marcaría. Sí recuerdas la recomendación, pero quieres saber de qué se trata exactamente antes de dar tu tiempo.`
     })
   },
   {
@@ -266,7 +266,7 @@ const ORIGENES = [
     titulo: 'REFERIDO SIN AVISAR',
     icono: '📞',
     dificultad: 'media',
-    generar: (referidor: string) => ({
+    generar: (referidor: string, _agencyName = 'AACOM Seguros') => ({
       brief: `Tu cliente "${referidor}" te dio sus datos de contacto porque pensó en él, pero NO le alcanzó a avisar.`,
       tipPostLlamada: `Como no le avisaron, menciona a ${referidor} con calidez ("Me dio su número porque le brindamos una asesoría...") para evitar que piense que compraste su base de datos.`,
       promptContext: `Conoces bien a "${referidor}", pero NO te avisó que te iban a llamar. Al principio te extraña la llamada y preguntas por qué te llaman o de dónde conocen a tu contacto.`
@@ -277,10 +277,10 @@ const ORIGENES = [
     titulo: 'PIDIÓ INFORMES (INBOUND)',
     icono: '🔥',
     dificultad: 'baja',
-    generar: (_?: string) => ({
-      brief: `El prospecto dejó sus datos en una publicación de internet de AACOM Seguros hace unos días.`,
+    generar: (_?: string, agencyName = 'AACOM Seguros') => ({
+      brief: `El prospecto dejó sus datos en una publicación de internet de ${agencyName} hace unos días.`,
       tipPostLlamada: `Recuérdale que él mismo solicitó la asesoría en la página web, pero no asumas que tiene 1 hora para hablar hoy; enfócate en agendar la reunión formal.`,
-      promptContext: `Llenaste un formulario en internet de AACOM Seguros hace unos días por curiosidad sobre ahorro o protección. Recuerdas haberlo hecho, pero andas ocupado en tu trabajo y no quieres que te den un discurso largo por teléfono.`
+      promptContext: `Llenaste un formulario en internet de ${agencyName} hace unos días por curiosidad sobre ahorro o protección. Recuerdas haberlo hecho, pero andas ocupado en tu trabajo y no quieres que te den un discurso largo por teléfono.`
     })
   },
   {
@@ -288,7 +288,7 @@ const ORIGENES = [
     titulo: 'CONTACTO DE NETWORKING',
     icono: '👔',
     dificultad: 'media',
-    generar: (_?: string) => ({
+    generar: (_?: string, _agencyName = 'AACOM Seguros') => ({
       brief: `Intercambiaron teléfonos brevemente en un desayuno de negocios / networking la semana pasada.`,
       tipPostLlamada: `Haz referencia inmediata al evento donde coincidieron para reavivar la conexión antes de proponer la fecha.`,
       promptContext: `Coincidieron en un desayuno de negocios la semana pasada e intercambiaron tarjetas. Recuerdas el evento, pero quieres ver si realmente tiene algo de valor que ofrecer o solo quiere venderte.`
@@ -299,7 +299,7 @@ const ORIGENES = [
     titulo: 'RE-ACTIVACIÓN DE PROSPECTO',
     icono: '🔄',
     dificultad: 'media',
-    generar: (_?: string) => ({
+    generar: (_?: string, _agencyName = 'AACOM Seguros') => ({
       brief: `Habían tenido un primer contacto hace 6 meses pero se pospuso por temas de trabajo del prospecto.`,
       tipPostLlamada: `Reconoce el tiempo transcurrido y retoma la conversación preguntando por cómo avanzaron sus proyectos este año.`,
       promptContext: `Habías platicado brevemente hace meses con alguien de la promotoría pero estabas ocupado. Te sorprende que den seguimiento, pero valoras la persistencia profesional si van al grano.`
@@ -310,10 +310,10 @@ const ORIGENES = [
     titulo: 'LLAMADA EN FRÍO TOTAL',
     icono: '❄️',
     dificultad: 'alta',
-    generar: (_?: string) => ({
+    generar: (_?: string, agencyName = 'AACOM Seguros') => ({
       brief: `Contacto nuevo en frío obtenido de directorio empresarial. El prospecto NO TIENE IDEA de quién eres.`,
       tipPostLlamada: `En frío no hay confianza previa: tienes solo 15 segundos para dar un gancho de curiosidad o dolor profesional antes de que te corte.`,
-      promptContext: `No conoces a la persona que te llama ni a AACOM Seguros. Es un número no registrado. Eres cortante al inicio y preguntas con quién hablas y de dónde obtuvieron tus datos.`
+      promptContext: `No conoces a la persona que te llama ni a ${agencyName}. Es un número no registrado. Eres cortante al inicio y preguntas con quién hablas y de dónde obtuvieron tus datos.`
     })
   }
 ];
@@ -607,7 +607,7 @@ export interface PerfilCierreProcedural {
   saludoInicial: string;
 }
 
-export function generarPerfilCierreProcedural(persona: any, edad: number, puesto: string, profesion: any, level: number): PerfilCierreProcedural {
+export function generarPerfilCierreProcedural(persona: any, edad: number, puesto: string, profesion: any, level: number, agencyName = 'AACOM Seguros'): PerfilCierreProcedural {
   // Vector 1: Propuestas Personalizadas Proyectadas en Pantalla
   const planes = [
     {
@@ -806,7 +806,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'Compromiso social incómodo; en el fondo le da pena revelar sus finanzas íntimas a un amigo o teme que su amigo no sea profesional.',
       comportamiento: 'Usa a su amigo como escudo para no cerrar hoy.',
-      claveDesbloqueo: 'El asesor debe posicionar el valor fiduciario independiente: "Tu amigo es muy valioso, pero en finanzas familiares a veces da pena hablar de deudas, testamentos y salud íntima con un compadre. Además, AACOM es una promotoría multimarca independiente que no te encasilla en una sola opción, sino que defiende tus intereses ante cualquier compañía."',
+      claveDesbloqueo: `El asesor debe posicionar el valor fiduciario independiente: "Tu amigo es muy valioso, pero en finanzas familiares a veces da pena hablar de deudas, testamentos y salud íntima con un compadre. Además, ${agencyName} es una promotoría multimarca independiente que no te encasilla en una sola opción, sino que defiende tus intereses ante cualquier compañía."`,
       senalesDeCompra: [
         'Tienes razón en algo: a mi compadre la verdad no le tengo tanta confianza para que sepa mis ingresos exactos.',
         '¿Y ustedes dan seguimiento directo a los trámites o todo es por conmutador?',
@@ -862,7 +862,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'Miedo a ser engañado por cláusulas de exclusión o falta de asesoría técnica fiduciaria.',
       comportamiento: 'Desafía al asesor. Exige fundamentos legales y regulatorios firmes.',
-      claveDesbloqueo: 'El asesor debe responder con absoluta seguridad jurídica: Citar la Ley sobre el Contrato de Seguro, la Cláusula de Indisputabilidad (después de 2 años la póliza no puede ser rescindida ni disputada por la aseguradora salvo dolo comprobado), la supervisión de la CNSF y CONDUSEF, y el papel de AACOM como agente fiduciario que tramita los siniestros a favor del cliente.',
+      claveDesbloqueo: `El asesor debe responder con absoluta seguridad jurídica: Citar la Ley sobre el Contrato de Seguro, la Cláusula de Indisputabilidad (después de 2 años la póliza no puede ser rescindida ni disputada por la aseguradora salvo dolo comprobado), la supervisión de la CNSF y CONDUSEF, y el papel de ${agencyName} como agente fiduciario que tramita los siniestros a favor del cliente.`,
       senalesDeCompra: [
         'Es la primera vez que un asesor me explica el fundamento legal de la indisputabilidad.',
         '¿Y ustedes como despacho nos ayudan a ingresar la reclamación si algo pasa?',
@@ -944,7 +944,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
   };
 }
 
-export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion'): Scenario {
+export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion', agencyName = 'AACOM Seguros'): Scenario {
   const currentLevel = Math.max(1, Math.min(6, Math.floor(level) || 1));
   const persona = PROSPECTOS_PERSONAS[Math.floor(Math.random() * PROSPECTOS_PERSONAS.length)];
   const profesion = PROFESIONES[Math.floor(Math.random() * PROFESIONES.length)];
@@ -989,7 +989,7 @@ export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion'): 
 
   const edad = 35 + Math.floor(Math.random() * 20);
   const puesto = persona.genero === 'F' ? profesion.puestoF : profesion.puestoM;
-  const ctx = origenBase.generar(referidor);
+  const ctx = origenBase.generar(referidor, agencyName);
 
   const pLower = puesto.toLowerCase();
   let avatarUrl = '/avatars/roberto.jpg';
@@ -1124,7 +1124,7 @@ ${adnProc.etapa.hijos.length > 0 ? `- **Hijos:** ${adnProc.etapa.hijos.map(h => 
    - Si hace esto, aceptas con gusto, confirmas el horario y dices: "Perfecto, prepara los números y nos vemos ese día".`;
 
   } else if (moduleId === 'objeciones') {
-    const cierreProc = generarPerfilCierreProcedural(persona, edad, puesto, profesion, currentLevel);
+    const cierreProc = generarPerfilCierreProcedural(persona, edad, puesto, profesion, currentLevel, agencyName);
     firstMessage = cierreProc.saludoInicial;
     cierreBrief = `Cita de Presentación y Cierre de Proyecto Patrimonial con ${persona.nombre} (${puesto}, ${edad} años). Propuesta en pantalla: ${cierreProc.propuesta.nombrePlan} ($${cierreProc.propuesta.aportacionMensual.toLocaleString('es-MX')} MXN/mes por $${cierreProc.propuesta.sumaAsegurada.toLocaleString('es-MX')} MXN de suma asegurada). El prospecto muestra reservas iniciales. Tu objetivo: Desmantelar la cortina de humo, manejar la objeción raíz con técnica consultiva y ejecutar el cierre asumido.`;
 
@@ -1246,7 +1246,7 @@ Tu primera objeción o respuesta natural cuando intentan hablarte es: "${persona
 
 4. **¿BAJO QUÉ ÚNICAS CONDICIONES ACEPTAS AGENDAR UNA CITA?**
    Para que tú aceptes una reunión de 30 a 40 minutos, el asesor DEBE CUMPLIR OBLIGATORIAMENTE ESTOS REQUISITOS:
-   a) Se presentó formalmente con su nombre y mencionó a AACOM Seguros.
+   a) Se presentó formalmente con su nombre y mencionó a ${agencyName}.
    b) Manejó tu objeción de tiempo con empatía ejecutiva, explicando con sus propias palabras que manejan una amplia variedad de soluciones y que precisamente por respeto a tu tiempo no te venderá nada por teléfono, sino evaluar si hay algo que te haga sentido.
    c) Propuso DOS alternativas específicas de horario (doble alternativa, ej: "¿Te queda mejor el martes por la mañana o el jueves por la tarde?").
    - SI EL ASESOR TE DICE "CUANDO TÚ ME DIGAS" O "DIME QUÉ DÍA": NO aceptes. Responde: "No tengo mi agenda aquí, mándamelo por mensaje mejor."
