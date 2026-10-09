@@ -326,95 +326,257 @@ const REFERIDORES = [
   'Lic. Mónica Odriozola', 'Dr. Alfonso Junco', 'Ing. Rodrigo Barragán', 'Lic. Carolina Farías'
 ];
 
-export const ARQUETIPOS_ADN = [
-  {
-    tipo: 'El Detallista Transparente',
-    subtitulo: 'Apertura Total al Cuestionario de Servicios y Gastos',
-    apertura: 'transparente',
-    ingresoMensual: 65000,
-    datosFinancieros: {
-      viviendaDetalle: 'Renta $16,000, luz $1,400, gas $750, agua $450, internet $800, mantenimiento $2,200',
-      viviendaTotal: 21600,
-      transporte: 'Mensualidad auto $8,500, gasolina $3,500, seguro auto $1,800 prorrateado',
-      despensa: 'Supermercado $12,000 al mes',
-      estiloDeVida: 'Restaurantes, cafecitos y salidas los fines de semana $11,000, streamings $900',
-      ahorroActual: 'Casi nada formal, solo unos $5,000 que a veces se quedan en débito'
+interface ProceduralHijo {
+  nombre: string;
+  edad: number;
+  grado: string;
+}
+
+export interface PerfilADNProcedural {
+  etapa: {
+    tipo: string;
+    familiaDesc: string;
+    hijos: ProceduralHijo[];
+    dolorSugerido: string;
+    dolorDetalle: string;
+  };
+  regimen: {
+    regimen: string;
+    prestaciones: string;
+    habitoFiscal: string;
+  };
+  ingresoMensual: number;
+  fijosTotal: number;
+  deseosTotal: number;
+  ahorroActual: number;
+  metaAhorroIdealWarren: number;
+  rentaHipoteca: number;
+  luz: number;
+  gas: number;
+  agua: number;
+  internet: number;
+  mantenimiento: number;
+  despensaSuper: number;
+  transporteTotal: number;
+  psicologia: {
+    tipo: string;
+    comportamiento: string;
+    reaccionPreguntas: string;
+    objecionResistencia: string | null;
+  };
+  entorno: {
+    lugar: string;
+    desc: string;
+    saludos: string[];
+  };
+  saludoInicial: string;
+}
+
+export function generarPerfilADNProcedural(persona: any, edad: number, puesto: string, profesion: any, level: number): PerfilADNProcedural {
+  // Vector 1: Etapas de Vida y Familia Dinámica
+  const etapasVida = [
+    {
+      tipo: 'Soltero Joven Independiente',
+      condicion: edad < 36,
+      familiaDesc: 'Soltero/a, vive de forma independiente, sin hijos ni dependientes económicos directos.',
+      hijos: [] as ProceduralHijo[],
+      dolorSugerido: 'Retiro Temprano, Salud e Invalidez',
+      dolorDetalle: 'Le aterra que un accidente o enfermedad le impida generar ingresos, o llegar a los 60 años sin un patrimonio estructurado. Sabe que no tiene afore sólida.'
     },
-    dolorOculto: 'Retiro y Vejez Digna (PPR Deducible)',
-    revelacionDolor: 'Tiene 42 años. Creía que su Afore le daría para vivir bien, pero leyó hace poco que solo le dará el 25% de su último sueldo. Le aterra ser una carga para sus hijos o tener que trabajar hasta los 75 años.',
-    instruccionesApertura: `Estás completamente dispuesto a dar el detalle de tus gastos rubro por rubro (luz, agua, gas, internet, despensa, etc.). Si el asesor te pregunta el detalle, respóndele con las cifras exactas. Cuando te explique la Regla 50-30-20 de Elizabeth Warren, felicítalo y dile: "Oye, qué interesante, jamás me habían explicado mis finanzas así". Descubrirás que tu 20% de ahorro debería ser de $13,000 al mes y que hoy estás en cero.`
-  },
-  {
-    tipo: 'El Ejecutivo Resumidor',
-    subtitulo: 'Reticente al Detalle de Centavos (Prefiere Bloques Grandes)',
-    apertura: 'resumen',
-    ingresoMensual: 95000,
-    datosFinancieros: {
-      viviendaTotal: 36000,
-      transporteTotal: 16000,
-      educacionTotal: 18000,
-      estiloDeVidaTotal: 15000,
-      ahorroActual: 'Flujo variable, unos $10,000 mensuales si se disciplina'
+    {
+      tipo: 'Recién Casados sin Hijos',
+      condicion: edad >= 27 && edad <= 38,
+      familiaDesc: 'Casado/a hace 2 años, planeando tener su primer bebé el próximo año y buscando comprar casa propia.',
+      hijos: [] as ProceduralHijo[],
+      dolorSugerido: 'Blindaje de Pareja y Fondo Patrimonial Inicial',
+      dolorDetalle: 'Tienen gastos compartidos e hipoteca o renta alta; les preocupa qué pasaría con su cónyuge si uno de los dos llega a faltar o enfermar.'
     },
-    dolorOculto: 'Blindaje Familiar por Fallecimiento / Invalidez',
-    revelacionDolor: 'Tiene 2 hijos pequeños (4 y 7 años) y una hipoteca bancaria de 4 millones de pesos. Si él llega a faltar mañana, su esposa no tiene ingresos propios y perderían la casa y el colegio en menos de 6 meses.',
-    instruccionesApertura: `ODIAS que te pregunten centavos de luz, gas o despensa. Si el asesor empieza a preguntarte: "¿Cuánto pagas de luz? ¿Y de teléfono?", interrúmpelo con impaciencia: "Mira, la verdad no me sé los centavos ni cuánto llega el recibo de la luz, no hagamos cuentas de abarrotes. Mejor pregúntame por bloques grandes, ¿cuánto gasto en vivienda en total? Unos 36 mil al mes". 
-SI EL ASESOR ES INTELIGENTE y se adapta a tu estilo agrupando por Vivienda, Transporte, Educación y Estilo de Vida, te relajas y cooperas con entusiasmo. Si insiste en los recibos pequeños, te pones tajante.`
-  },
-  {
-    tipo: 'El Desconfiado a la Defensiva',
-    subtitulo: 'Resistencia Inicial por Privacidad y Dudas',
-    apertura: 'defensivo',
-    ingresoMensual: 52000,
-    datosFinancieros: {
-      viviendaTotal: 18000,
-      transporteTotal: 9000,
-      deudasTarjetas: 12000,
-      estiloDeVidaTotal: 11000,
-      ahorroActual: 'Cero. Vive ahogado por los pagos mínimos de las tarjetas de crédito'
+    {
+      tipo: 'Familia Joven con Hijos Pequeños',
+      condicion: edad >= 30 && edad <= 46,
+      familiaDesc: 'Casado/a con hijos pequeños en edad de maternal/primaria.',
+      hijos: [
+        { nombre: Math.random() > 0.5 ? 'Mateo' : 'Santiago', edad: Math.floor(Math.random() * 3) + 2, grado: 'maternal/kínder' },
+        { nombre: Math.random() > 0.5 ? 'Sofía' : 'Valentina', edad: Math.floor(Math.random() * 4) + 5, grado: 'primaria' }
+      ],
+      dolorSugerido: 'Orfandad/Invalidez y Universidad Garantizada',
+      dolorDetalle: 'Si llega a faltar mañana, sus hijos y su cónyuge no tendrían sustento económico garantizado para mantener su nivel de vida ni sus estudios.'
     },
-    dolorOculto: 'Desorden Financiero y Asfixia por Deudas',
-    revelacionDolor: 'Debe más de $150,000 en tarjetas de crédito y créditos personales. Le da vergüenza aceptarlo, pero vive estresado y no duerme bien.',
-    instruccionesApertura: `Al inicio eres MUY desconfiado. Cuando el asesor intente preguntarte tus ingresos o gastos, ponte a la defensiva: "Oye, espérame... ¿por qué quieres saber cuánto gano o en qué me gasto mi dinero? Se supone que esto era una plática de orientación, esto es información muy privada".
-SÓLO COOPERAS SI EL ASESOR:
-1. Te tranquiliza con calidez y garantiza que la información es 100% confidencial.
-2. Usa la analogía médica: "Como asesores somos médicos patrimoniales; no podemos recomendar una solución sin antes hacer un análisis de sangre preventivo".
-3. Te explica que la evaluación se basa en la Regla 50-30-20 de Elizabeth Warren (el estándar de oro mundial) para ver tu equilibrio financiero.
-Si el asesor hace esto, bajas la guardia y dices: "Bueno... visto de esa forma profesional tiene sentido. Te agradezco la aclaración, adelante". Si no lo explica, te mantienes cerrado.`
-  },
-  {
-    tipo: 'El Rey de los Guardaditos',
-    subtitulo: 'Falsa Sensación de Seguridad Financiera',
-    apertura: 'guardaditos',
-    ingresoMensual: 78000,
-    datosFinancieros: {
-      viviendaTotal: 25000,
-      transporteTotal: 12000,
-      estiloDeVidaTotal: 28000,
-      ahorroActual: 'Guarda unos $10,000 a $15,000 en su cuenta a la vista o Cetes'
+    {
+      tipo: 'Familia Consolidada con Adolescentes',
+      condicion: edad >= 40 && edad <= 54,
+      familiaDesc: 'Casado/a con hijos adolescentes en secundaria o preparatoria; la universidad privada está muy cerca.',
+      hijos: [
+        { nombre: Math.random() > 0.5 ? 'Emiliano' : 'Sebastián', edad: 14, grado: 'secundaria' },
+        { nombre: Math.random() > 0.5 ? 'Camila' : 'Mariana', edad: 17, grado: 'preparatoria (a 1 año de universidad)' }
+      ],
+      dolorSugerido: 'Universidad Inminente y Retiro en Cuenta Regresiva',
+      dolorDetalle: 'Gastan mucho en colegiaturas hoy y saben que la universidad costará más de 2 millones de pesos por hijo, descuidando su propio retiro.'
     },
-    dolorOculto: 'Ahorro Nulo a Largo Plazo (Gasto Hormiga y Fugas)',
-    revelacionDolor: 'Gana muy bien pero gasta el 36% en estilo de vida. Presume que ahorra porque tiene $80,000 en su cuenta de débito, pero siempre se lo gasta en vacaciones, el enganche de un coche nuevo o fiestas.',
-    instruccionesApertura: `Entras a la reunión muy seguro de ti mismo. Dices: "La verdad yo no tengo problemas de dinero, gano bien y siempre tengo mi guardadito en el banco".
-EL RETO DEL ASESOR: Debe hacerte ver la diferencia entre un "guardadito a la vista" (que siempre te terminas gastando) y un patrimonio formal a largo plazo para tu retiro o emergencias que no se pueda tocar. Si te pregunta con habilidad: "¿Y cuánto tiempo ha sobrevivido ese guardadito sin que lo uses para vacaciones o imprevistos?", confiesa con una sonrisa culpable: "Pues la verdad tienes razón, el año pasado me lo gasté todo en un viaje a Cancún".`
-  },
-  {
-    tipo: 'El Padre Preocupado por la Universidad',
-    subtitulo: 'Hijos Pequeños y Cero Fondo Educativo',
-    apertura: 'educativo',
-    ingresoMensual: 70000,
-    datosFinancieros: {
-      viviendaTotal: 24000,
-      transporteTotal: 11000,
-      colegiaturasHoy: 12000,
-      estiloDeVidaTotal: 15000,
-      ahorroActual: 'Unos $8,000 mensuales'
+    {
+      tipo: 'Madurez / Nido Vacío',
+      condicion: edad >= 50,
+      familiaDesc: 'Hijos ya mayores y económicamente independientes. Pensando en cuándo y cómo jubilarse.',
+      hijos: [] as ProceduralHijo[],
+      dolorSugerido: 'Retiro Digno, Gastos Médicos y Conservación Patrimonial',
+      dolorDetalle: 'Le quedan entre 8 y 12 años productivos. Su Afore es mínima y le preocupa mantener su nivel de vida y salud en la vejez.'
     },
-    dolorOculto: 'Educación Universitaria Privada Garantizada',
-    revelacionDolor: 'Tiene dos hijos: Mateo (3 años) y Sofía (6 años). Paga colegiaturas hoy, pero no tiene nada ahorrado para la universidad. Cuando el asesor le hace el cálculo de que una carrera privada costará más de 2 millones de pesos por hijo, entra en shock.',
-    instruccionesApertura: `Hablas con mucho amor y orgullo de tus dos hijos pequeños. Si el asesor te pregunta sobre su futuro y qué pasaría con sus estudios si tú llegaras a faltar o enfermar, te conmueves y admites: "Es mi mayor miedo. Si yo no estoy, mi mayor angustia es que mis hijos no puedan estudiar en una buena universidad". Estás buscando un plan que garantice sus estudios pase lo que pase.`
-  }
-];
+    {
+      tipo: 'Padre/Madre Soltero/a Divorciado/a',
+      condicion: edad >= 32 && edad <= 50,
+      familiaDesc: 'Divorciado/a con custodia y manutención de sus hijos. Principal sostén del hogar.',
+      hijos: [
+        { nombre: Math.random() > 0.5 ? 'Diego' : 'Lucía', edad: Math.floor(Math.random() * 6) + 4, grado: 'primaria' }
+      ],
+      dolorSugerido: 'Blindaje Absoluto por Fallecimiento (Fideicomiso Testamentario)',
+      dolorDetalle: 'Si falta mañana, le angustia qué pasaría con sus hijos y teme que su expareja malgaste los recursos que deje para ellos.'
+    }
+  ];
+
+  const etapasValidas = etapasVida.filter(e => e.condicion);
+  const etapa = etapasValidas.length > 0 
+    ? etapasValidas[Math.floor(Math.random() * etapasValidas.length)]
+    : etapasVida[2];
+
+  // Vector 2: Régimen Laboral e Ingreso Mensual
+  const tiposIngreso = [
+    {
+      regimen: 'Sueldo Asalariado Corporativo',
+      baseIngreso: [45000, 140000],
+      prestaciones: 'Tiene IMSS, fondo de ahorro, aguinaldo y SGMM de empresa (que perdería si sale de la empresa).',
+      habitoFiscal: 'Retención de ISR en nómina; no deduce casi nada salvo si contrata un PPR bajo el Art. 151.'
+    },
+    {
+      regimen: 'Empresario / Dueño de PyME',
+      baseIngreso: [70000, 220000],
+      prestaciones: 'Sin prestaciones de ley; su dinero está en la operación e inventarios.',
+      habitoFiscal: 'Busca deducir y bajar la base gravable de su empresa y personal.'
+    },
+    {
+      regimen: 'Honorarios / Profesionista Independiente (Médico, Notario, Consultor)',
+      baseIngreso: [55000, 180000],
+      prestaciones: 'Cero prestaciones, sin afore patronal. Si no da consulta o proyectos, no cobra.',
+      habitoFiscal: 'Paga altas tasas de ISR por honorarios; le urge deducir gastos personales.'
+    },
+    {
+      regimen: 'Director Comercial / Comisionista de Alto Nivel',
+      baseIngreso: [50000, 160000],
+      prestaciones: 'Sueldo base bajo y comisiones altas pero variables cada trimestre.',
+      habitoFiscal: 'Flujo irregular: gasta mucho en meses buenos y no tiene fondo de contingencia.'
+    }
+  ];
+  const regimen = tiposIngreso[Math.floor(Math.random() * tiposIngreso.length)];
+
+  const [minIng, maxIng] = regimen.baseIngreso;
+  const ingresoMensual = Math.round((Math.random() * (maxIng - minIng) + minIng) / 5000) * 5000;
+
+  // Vector 3: Estructura Financiera Calculada Matemáticamente
+  const pctFijos = (Math.random() * 0.14 + 0.48); // 48% a 62%
+  const pctDeseos = (Math.random() * 0.12 + 0.30); // 30% a 42%
+  const pctAhorro = Math.max(0.02, 1 - (pctFijos + pctDeseos)); // 2% a 8%
+
+  const fijosTotal = Math.round((ingresoMensual * pctFijos) / 1000) * 1000;
+  const deseosTotal = Math.round((ingresoMensual * pctDeseos) / 1000) * 1000;
+  const ahorroActual = Math.round((ingresoMensual * pctAhorro) / 1000) * 1000;
+  const metaAhorroIdealWarren = Math.round((ingresoMensual * 0.20) / 1000) * 1000;
+
+  const rentaHipoteca = Math.round((fijosTotal * 0.60) / 1000) * 1000;
+  const luz = Math.round((Math.random() * 1200 + 800) / 100) * 100;
+  const gas = Math.round((Math.random() * 600 + 400) / 100) * 100;
+  const agua = Math.round((Math.random() * 400 + 250) / 50) * 50;
+  const internet = Math.round((Math.random() * 400 + 750) / 50) * 50;
+  const mantenimiento = Math.round((Math.random() * 1800 + 1200) / 100) * 100;
+  const despensaSuper = Math.round((fijosTotal * 0.25) / 1000) * 1000;
+  const transporteTotal = Math.round((fijosTotal * 0.15) / 1000) * 1000;
+
+  // Vector 4: Psicología y Apertura ante el Cuestionario
+  const psicologiasApertura = [
+    {
+      tipo: 'El Transparente al Centavo',
+      comportamiento: 'Tiene orden mental y le gusta hablar de números. Si le preguntas el desglose de luz, gas, despensa o predial, te da los montos exactos sin titubear.',
+      reaccionPreguntas: `Estás 100% abierto a contestar el cuestionario a detalle. Si el asesor te pregunta por luz, gas, agua, despensa o predial, dile los montos exactos ($${luz} de luz, $${gas} de gas, $${despensaSuper.toLocaleString('es-MX')} de despensa). Cuando te explique la Regla 50-30-20, di que te parece genial y reflexiona en cómo andas tú.`,
+      objecionResistencia: null
+    },
+    {
+      tipo: 'El Resumidor Ejecutivo (Odia los Centavos)',
+      comportamiento: 'Práctico y ejecutivo. Le desespera que le pregunten centavos de luz o cuentas de tienda de abarrotes. Prefiere dar cifras globales por bloque grande.',
+      reaccionPreguntas: `Si el asesor empieza a preguntarte: "¿Cuánto pagas de luz? ¿Y de gas? ¿Y de teléfono?", interrúmpelo con impaciencia: "Mira, la verdad no me sé los centavos de la luz o el gas, no hagamos cuentas de abarrotes. Mejor pregúntame por bloques grandes: ¿cuánto gasto en vivienda con servicios en total? Unos $${(rentaHipoteca + luz + gas + agua + internet + mantenimiento).toLocaleString('es-MX')} al mes". SI EL ASESOR SE ADAPTA y agrupa por Vivienda, Transporte, Hobbies y Despensa, te relajas y cooperas con gusto. Si insiste en los recibos pequeños, te pones tajante.`,
+      objecionResistencia: 'resistencia_centavos'
+    },
+    {
+      tipo: 'El Escéptico Defensivo (Celoso de su Privacidad)',
+      comportamiento: 'Desconfía de la gente que pregunta sobre dinero. Teme que le quieran vender algo caro o que filtren su información.',
+      reaccionPreguntas: `Al inicio ponte a la defensiva: "Oye, espérame... ¿por qué quieres saber cuánto gano o en qué me gasto mi dinero? Se supone que esto era una plática de orientación, esto es información muy confidencial". SÓLO COOPERAS SI EL ASESOR: 1) Te da tranquilidad y garantiza confidencialidad, 2) Usa la analogía médica ("somos como médicos patrimoniales; no podemos recetar sin un análisis previo"), y 3) Explica que se basa en la Regla 50-30-20 de Elizabeth Warren para evaluar tu salud financiera. Si lo hace, bajas la guardia: "Bueno, visto así tiene sentido, adelante".`,
+      objecionResistencia: 'resistencia_privacidad'
+    },
+    {
+      tipo: 'El Avergonzado por Desorden y Deudas',
+      comportamiento: 'Gana buen sueldo pero vive estresado porque gasta de más en salidas y compras. Le da pena admitir que tiene tarjetas de crédito saturadas.',
+      reaccionPreguntas: `Te cuesta admitir tus gastos al inicio. Si te preguntan deudas, titubea un poco antes de confesar: "Pues... la verdad sí traigo como $${(Math.round(ingresoMensual * 1.8 / 10000) * 10000).toLocaleString('es-MX')} pesos entre dos tarjetas de crédito que me están quitando el sueño". Buscas que el asesor sea empático y te ayude a encontrar orden sin juzgarte.`,
+      objecionResistencia: 'resistencia_deudas'
+    },
+    {
+      tipo: 'El Confiado de los Guardaditos',
+      comportamiento: 'Cree que tiene sus finanzas resueltas porque ahorra en su cuenta de débito o Cetes, pero carece de un plan estructurado a largo plazo.',
+      reaccionPreguntas: `Dices con orgullo que tú sí ahorras unos $${ahorroActual.toLocaleString('es-MX')} pesos al mes. Pero si el asesor te indaga qué pasa con ese dinero al final del año, confiesas que siempre te lo terminas gastando en vacaciones o compras no planeadas. No tienes nada intocable para tu retiro ni protección de invalidez.`,
+      objecionResistencia: 'falso_ahorro'
+    }
+  ];
+  const psicologia = psicologiasApertura[Math.floor(Math.random() * psicologiasApertura.length)];
+
+  // Vector 5: Entorno / Atmósfera y Saludos Iniciales
+  const entornosReunion = [
+    {
+      lugar: 'Oficina privada del prospecto',
+      desc: 'Estás sentado en tu sillón ejecutivo frente a tu escritorio de madera. Tienes tu laptop abierta y una taza de café recién servida.',
+      saludos: [
+        `Hola, ¿qué tal? Buenos días. Pasa, por favor, toma asiento. ¿Gustas un café o un vaso de agua antes de empezar?`,
+        `¿Qué tal? Buenas tardes. Pasa, adelante. Listo, ya cerré mi puerta para que platiquemos con calma. Tú dime.`,
+        `Hola, bienvenido. Gracias por la puntualidad. A ver, platícame bien de qué se trata esta sesión patrimonial.`
+      ]
+    },
+    {
+      lugar: 'Videollamada por Zoom / Google Meet desde Home Office',
+      desc: 'Estás conectado desde el estudio de tu casa frente a la cámara web. Ambiente ejecutivo pero relajado.',
+      saludos: [
+        `Hola, ¿cómo estás? Ya estoy conectado. Te escucho y te veo perfecto. Tú dime por dónde empezamos.`,
+        `¿Qué tal? Buenos días. Listo, ya entré a la liga de Zoom. Gracias por el tiempo, adelante.`,
+        `Hola hola, buenas tardes. Perdón por la demora de un par de minutitos, estaba cerrando una llamada, pero listo, ya tengo toda mi atención contigo.`
+      ]
+    },
+    {
+      lugar: 'Cafetería ejecutiva / Restaurante',
+      desc: 'Estás sentado en una mesa privada de un café ejecutivo, con tu iPad o libreta enfrente.',
+      saludos: [
+        `Hola, ¿qué tal? Qué bueno que llegaste bien. Ya pedí un café para mí, ¿tú ya estás cómodo? Adelante, te escucho.`,
+        `¿Qué tal? Buenas tardes. Muy buen lugar para platicar con tranquilidad. Listo, tú dime cómo está la dinámica.`
+      ]
+    }
+  ];
+  const entorno = entornosReunion[Math.floor(Math.random() * entornosReunion.length)];
+  const saludoInicial = entorno.saludos[Math.floor(Math.random() * entorno.saludos.length)];
+
+  return {
+    etapa,
+    regimen,
+    ingresoMensual,
+    fijosTotal,
+    deseosTotal,
+    ahorroActual,
+    metaAhorroIdealWarren,
+    rentaHipoteca,
+    luz,
+    gas,
+    agua,
+    internet,
+    mantenimiento,
+    despensaSuper,
+    transporteTotal,
+    psicologia,
+    entorno,
+    saludoInicial
+  };
+}
 
 export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion'): Scenario {
   const currentLevel = Math.max(1, Math.min(6, Math.floor(level) || 1));
@@ -520,50 +682,54 @@ export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion'): 
   const saludosLista = primerosSaludos[origenBase.tipo] || primerosSaludos.frio_total;
   let firstMessage = saludosLista[Math.floor(Math.random() * saludosLista.length)];
 
-  if (moduleId === 'adn') {
-    const saludosADN = [
-      `Hola, buenos días. ¿Qué tal? Ya estoy aquí listo para la sesión.`,
-      `Hola, buenas tardes. Gracias por el tiempo, a ver cuéntame de qué se trata exactamente esto.`,
-      `¿Qué tal? Buenos días. Sí te escucho y te veo bien. Adelante.`,
-      `Hola hola, perdón la demora de un minutito. Listo, tú dime por dónde empezamos.`
-    ];
-    firstMessage = saludosADN[Math.floor(Math.random() * saludosADN.length)];
-  } else if (moduleId === 'objeciones') {
-    const saludosObjeciones = [
-      `Hola de nuevo. ¿Qué tal? Pues listo para ver los números que me preparaste.`,
-      `Hola, buenas tardes. Ya vi el PDF por encima que me mandaste, pero a ver, platícamelo.`,
-      `¿Qué tal? Buen día. Listo, ya estoy conectado. ¿Qué propuesta traes?`,
-      `Hola, ¿cómo estás? Bueno, ya revisé más o menos la información, la verdad tengo varias dudas, pero adelante.`
-    ];
-    firstMessage = saludosObjeciones[Math.floor(Math.random() * saludosObjeciones.length)];
-  }
-
   let systemPrompt = "";
+  let adnBrief = "";
 
   if (moduleId === 'adn') {
-    const arquetipo = ARQUETIPOS_ADN[Math.floor(Math.random() * ARQUETIPOS_ADN.length)];
+    const adnProc = generarPerfilADNProcedural(persona, edad, puesto, profesion, currentLevel);
+    firstMessage = adnProc.saludoInicial;
+    adnBrief = `Cita agendada de Diagnóstico ADN. ${persona.nombre} (${puesto}, ${edad} años). Situación: ${adnProc.etapa.familiaDesc}. Ingresos aprox: $${adnProc.ingresoMensual.toLocaleString('es-MX')} MXN (${adnProc.regimen.regimen}). Perfil: ${adnProc.psicologia.tipo}.`;
 
     systemPrompt = `Eres ${persona.nombre}, tienes ${edad} años y eres ${puesto} (${profesion.contexto}).
 ESTÁS EN UNA REUNIÓN DE CONSULTORÍA PRESENCIAL O VIDEOLLAMADA (Cita de Análisis de Necesidades / ADN) con un asesor financiero patrimonial.
 TÚ YA ACEPTASTE ESTA REUNIÓN PREVIAMENTE PARA EVALUAR TU SITUACIÓN FINANCIERA. ESTÁS SENTADO FRENTE A ÉL / EN TU COMPUTADORA CON TIEMPO DEDICADO PARA ESTA SESIÓN.
 NUNCA DIGAS "ESTOY OCUPADO", "MÁNDAMELO POR CORREO" NI "VOY MANEJANDO". NO ES UNA LLAMADA TELEFÓNICA EN FRÍO.
 
-### TU PERFIL FINANCIERO Y PERSONALIDAD:
-- **Arquetipo:** ${arquetipo.tipo} (${arquetipo.subtitulo})
-- **Ingreso mensual neto:** $${arquetipo.ingresoMensual.toLocaleString('es-MX')} MXN.
-- **Tono general:** Natural, mexicano, educado y reflexivo. Hablas como una persona real conversando sobre su dinero.
-- **Dolor Principal Oculto:** ${arquetipo.dolorOculto}.
-- **Contexto íntimo de este dolor:** ${arquetipo.revelacionDolor}
+### ENTORNO DE LA SESIÓN:
+- **Lugar:** ${adnProc.entorno.lugar}. ${adnProc.entorno.desc}
+- **Tono general:** Natural, mexicano, educado y reflexivo. Hablas como una persona real conversando con un especialista.
 
-### TUS INSTRUCCIONES DE APERTURA Y REACCIÓN ANTE EL CUESTIONARIO:
-${arquetipo.instruccionesApertura}
+### TU RADIOGRAFÍA FINANCIERA Y FAMILIAR REAL:
+- **Etapa de vida y Familia:** ${adnProc.etapa.tipo}. ${adnProc.etapa.familiaDesc}
+${adnProc.etapa.hijos.length > 0 ? `- **Hijos:** ${adnProc.etapa.hijos.map(h => `${h.nombre} (${h.edad} años, ${h.grado})`).join(', ')}.` : ''}
+- **Régimen laboral e ingresos:** ${adnProc.regimen.regimen}. Ganas aproximadamente **$${adnProc.ingresoMensual.toLocaleString('es-MX')} MXN netos mensuales**.
+- **Prestaciones y situación fiscal:** ${adnProc.regimen.prestaciones} ${adnProc.regimen.habitoFiscal}
+
+### TUS NÚMEROS REALES ACTUALES (CÁLCULO PRIVADO):
+- **Gastos Básicos y Fijos:** Gastas ~$${adnProc.fijosTotal.toLocaleString('es-MX')} MXN/mes (${Math.round((adnProc.fijosTotal / adnProc.ingresoMensual) * 100)}% de tu ingreso).
+  * Vivienda (renta/hipoteca): ~$${adnProc.rentaHipoteca.toLocaleString('es-MX')} MXN
+  * Servicios: Luz ~$${adnProc.luz}, Gas ~$${adnProc.gas}, Agua ~$${adnProc.agua}, Internet ~$${adnProc.internet}, Mantenimiento ~$${adnProc.mantenimiento}
+  * Despensa / Supermercado: ~$${adnProc.despensaSuper.toLocaleString('es-MX')} MXN
+  * Transporte y auto: ~$${adnProc.transporteTotal.toLocaleString('es-MX')} MXN
+- **Gastos de Estilo de Vida / Deseos:** Gastas ~$${adnProc.deseosTotal.toLocaleString('es-MX')} MXN/mes (${Math.round((adnProc.deseosTotal / adnProc.ingresoMensual) * 100)}% de tu ingreso) en comidas fuera, viajes, plataformas y compras personales.
+- **Ahorro Actual:** Solo ahorras ~$${adnProc.ahorroActual.toLocaleString('es-MX')} MXN/mes (${Math.round((adnProc.ahorroActual / adnProc.ingresoMensual) * 100)}%), sin disciplina forzosa ni estrategia de retiro.
+- **Meta Ideal Warren (20%):** Deberías ahorrar **$${adnProc.metaAhorroIdealWarren.toLocaleString('es-MX')} MXN/mes**, pero hoy estás muy lejos de esa cifra.
+
+### TU PSICOLOGÍA ANTE EL CUESTIONARIO:
+- **Perfil:** ${adnProc.psicologia.tipo}. ${adnProc.psicologia.comportamiento}
+- **Cómo debes reaccionar:** ${adnProc.psicologia.reaccionPreguntas}
+
+### TU DOLOR PRINCIPAL OCULTO:
+- **Dolor:** ${adnProc.etapa.dolorSugerido}.
+- **Contexto íntimo:** ${adnProc.etapa.dolorDetalle}
+- Solo revela este dolor íntimo si el asesor te hace preguntas abiertas inteligentes sobre tu futuro, tu familia o qué pasaría si mañana tienes un imprevisto.
 
 ### REGLAS DE ORO DEL DIAGNÓSTICO (METODOLOGÍA 50-30-20 DE ELIZABETH WARREN):
 1. **EL ESTÁNDAR DE ORO 50-30-20 (CRÍTICO):**
    - El asesor debe explicarte que se rige por la **Regla 50-30-20 formulada por Elizabeth Warren** (economista de Harvard):
-     * 50% Necesidades básicas y gastos fijos (vivienda, servicios, comida, transporte, colegiaturas).
-     * 30% Estilo de vida y deseos (hobbies, comidas fuera, viajes, entretenimiento).
-     * 20% Ahorro e inversión para el futuro (retiro, fondo de emergencia, educación futura, protección).
+     * 50% Necesidades básicas y gastos fijos.
+     * 30% Estilo de vida y deseos.
+     * 20% Ahorro e inversión para el futuro.
    - Si el asesor NO menciona la regla 50-30-20 ni el parámetro con el que te va a evaluar, en algún momento pregúntale: "Oye, ¿y cómo sabes si lo que gasto está bien o mal? ¿En qué te basas?".
    - Cuando te la explique con claridad, muestra interés y reflexiona sobre en qué porcentaje crees que estás tú hoy.
 
@@ -575,7 +741,7 @@ ${arquetipo.instruccionesApertura}
    - La reunión NO termina comprando una póliza hoy.
    - Para que termine de forma exitosa, el asesor debe:
      a) Decirte que con los datos que le diste, se llevará la información a su despacho para analizarla contra la regla 50-30-20 y diseñar una estrategia patrimonial a tu medida.
-     b) Proponerte explícitamente agendar la siguiente reunión (Cita de Presentación de Solución / Cierre) con doble alternativa de horario (ej: "¿Te queda mejor vernos el jueves a las 5 o el viernes a las 11?").
+     b) Proponerte explícitamente agendar la siguiente reunión (Cita de Presentación de Solución / Cierre) con doble alternativa de horario.
    - Si hace esto, aceptas con gusto, confirmas el horario y dices: "Perfecto, prepara los números y nos vemos ese día".`;
 
   } else if (moduleId === 'objeciones') {
@@ -682,9 +848,9 @@ Tu primera objeción o respuesta natural cuando intentan hablarte es: "${persona
     },
     origen: {
       tipo: origenBase.tipo,
-      titulo: origenBase.titulo,
-      icono: origenBase.icono,
-      brief: ctx.brief,
+      titulo: moduleId === 'adn' ? 'Cita Agendada de Diagnóstico' : origenBase.titulo,
+      icono: moduleId === 'adn' ? '📊' : origenBase.icono,
+      brief: (moduleId === 'adn' && adnBrief) ? adnBrief : ctx.brief,
       tipPostLlamada: ctx.tipPostLlamada
     },
     referidor: origenBase.tipo === 'referido_avisado' ? referidor : null,
