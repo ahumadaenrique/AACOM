@@ -1,0 +1,1702 @@
+[
+  {
+    "id": 337,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "Cobertura básica de la póliza de robo de mercancías.",
+    "pregunta": "Cobertura básica de la póliza de robo de mercancías.",
+    "options": [
+      "Robo sin violencia.",
+      "Robo con asalto.",
+      "Robo con violencia.",
+      "Abuso de confianza."
+    ],
+    "opciones": [
+      "Robo sin violencia.",
+      "Robo con asalto.",
+      "Robo con violencia.",
+      "Abuso de confianza."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Robo con violencia.",
+    "explanation": "La cobertura básica de la póliza de robo de mercancías es el robo con violencia, que deja huellas visibles en el acceso. El robo sin violencia y el abuso de confianza se excluyen, y el asalto se contrata como adicional.",
+    "explicacion": "La cobertura básica de la póliza de robo de mercancías es el robo con violencia, que deja huellas visibles en el acceso. El robo sin violencia y el abuso de confianza se excluyen, y el asalto se contrata como adicional."
+  },
+  {
+    "id": 338,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "Acto perpetrado por cualquier persona o personas que haciendo uso de violencia del exterior al interior del local en que los bienes se encuentren, dejen señales visibles de la violencia en el lugar donde se penetró, esta definición corresponde a:",
+    "pregunta": "Acto perpetrado por cualquier persona o personas que haciendo uso de violencia del exterior al interior del local en que los bienes se encuentren, dejen señales visibles de la violencia en el lugar donde se penetró, esta definición corresponde a:",
+    "options": [
+      "Asalto con uso de fuerza física.",
+      "Robo con violencia.",
+      "Asalto con uso de fuerza moral.",
+      "Robo sin violencia."
+    ],
+    "opciones": [
+      "Asalto con uso de fuerza física.",
+      "Robo con violencia.",
+      "Asalto con uso de fuerza moral.",
+      "Robo sin violencia."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Robo con violencia.",
+    "explanation": "El robo con violencia es el que se comete con violencia del exterior al interior del local, dejando señales visibles en el lugar de acceso. El asalto implica violencia física o moral contra las personas, y el robo sin violencia no deja huellas.",
+    "explicacion": "El robo con violencia es el que se comete con violencia del exterior al interior del local, dejando señales visibles en el lugar de acceso. El asalto implica violencia física o moral contra las personas, y el robo sin violencia no deja huellas."
+  },
+  {
+    "id": 339,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "Es un bien excluido en la póliza de robo.",
+    "pregunta": "Es un bien excluido en la póliza de robo.",
+    "options": [
+      "Materia prima.",
+      "Artículos raros con valor inferior a 500 días de salario.",
+      "Billetes de lotería.",
+      "Mobiliario."
+    ],
+    "opciones": [
+      "Materia prima.",
+      "Artículos raros con valor inferior a 500 días de salario.",
+      "Billetes de lotería.",
+      "Mobiliario."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Billetes de lotería.",
+    "explanation": "Los billetes de lotería son bienes excluidos en la póliza de robo de mercancías, porque su valor es aleatorio. La materia prima y el mobiliario se cubren, y los artículos raros tienen reglas propias de valor.",
+    "explicacion": "Los billetes de lotería son bienes excluidos en la póliza de robo de mercancías, porque su valor es aleatorio. La materia prima y el mobiliario se cubren, y los artículos raros tienen reglas propias de valor."
+  },
+  {
+    "id": 340,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "¿Cómo quedan comprendidos en la póliza de Robo, los daños materiales que sufra el inmueble causados con motivo del Robo con Violencia?",
+    "pregunta": "¿Cómo quedan comprendidos en la póliza de Robo, los daños materiales que sufra el inmueble causados con motivo del Robo con Violencia?",
+    "options": [
+      "Cobertura básica",
+      "Bien por convenio expreso",
+      "Riesgo por convenio expreso",
+      "Exclusión absoluta"
+    ],
+    "opciones": [
+      "Cobertura básica",
+      "Bien por convenio expreso",
+      "Riesgo por convenio expreso",
+      "Exclusión absoluta"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Cobertura básica",
+    "explanation": "Los daños materiales al inmueble causados por un robo con violencia forman parte de la cobertura básica de la póliza de robo. No requieren convenio expreso ni son una exclusión.",
+    "explicacion": "Los daños materiales al inmueble causados por un robo con violencia forman parte de la cobertura básica de la póliza de robo. No requieren convenio expreso ni son una exclusión."
+  },
+  {
+    "id": 341,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "Señala un riesgo excluido en la póliza de Robo con Violencia:",
+    "pregunta": "Señala un riesgo excluido en la póliza de Robo con Violencia:",
+    "options": [
+      "Robo por asalto",
+      "Contenidos en cajas fuertes",
+      "Pérdidas causadas directamente por huelguistas",
+      "Daños materiales"
+    ],
+    "opciones": [
+      "Robo por asalto",
+      "Contenidos en cajas fuertes",
+      "Pérdidas causadas directamente por huelguistas",
+      "Daños materiales"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Pérdidas causadas directamente por huelguistas",
+    "explanation": "Las pérdidas causadas directamente por huelguistas se excluyen de la póliza de robo con violencia. El asalto puede contratarse, y los contenidos en cajas fuertes y los daños materiales por el robo se cubren.",
+    "explicacion": "Las pérdidas causadas directamente por huelguistas se excluyen de la póliza de robo con violencia. El asalto puede contratarse, y los contenidos en cajas fuertes y los daños materiales por el robo se cubren."
+  },
+  {
+    "id": 342,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "Los bienes asegurados en la póliza de robo ¿en cuántos incisos se enuncian para su protección?",
+    "pregunta": "Los bienes asegurados en la póliza de robo ¿en cuántos incisos se enuncian para su protección?",
+    "options": [
+      "Incisos a, b, c y d.",
+      "Incisos a, b y c.",
+      "Incisos a y b.",
+      "Inciso a."
+    ],
+    "opciones": [
+      "Incisos a, b, c y d.",
+      "Incisos a, b y c.",
+      "Incisos a y b.",
+      "Inciso a."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Incisos a y b.",
+    "explanation": "Según la clave de la guía, los bienes asegurados en la póliza de robo se enuncian en dos incisos, a y b: los bienes propios del negocio y los artículos raros o de arte. Otras estructuras de incisos corresponden a otros productos.",
+    "explicacion": "Según la clave de la guía, los bienes asegurados en la póliza de robo se enuncian en dos incisos, a y b: los bienes propios del negocio y los artículos raros o de arte. Otras estructuras de incisos corresponden a otros productos."
+  },
+  {
+    "id": 343,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "¿Cuál es el valor mínimo de los bienes que se pueden asegurar en robo y que no son necesarios a la índole del negocio asegurado?.",
+    "pregunta": "¿Cuál es el valor mínimo de los bienes que se pueden asegurar en robo y que no son necesarios a la índole del negocio asegurado?.",
+    "options": [
+      "150 veces la UMA diaria",
+      "200 veces la UMA diaria",
+      "300 veces la UMA diaria",
+      "500 veces la UMA diaria"
+    ],
+    "opciones": [
+      "150 veces la UMA diaria",
+      "200 veces la UMA diaria",
+      "300 veces la UMA diaria",
+      "500 veces la UMA diaria"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "500 veces la UMA diaria",
+    "explanation": "Según la clave de la guía, los bienes no necesarios para el giro del negocio pueden asegurarse en robo si su valor es de al menos 500 días de salario mínimo de 2011, hoy referido a UMA diaria. Los valores de 150, 200 o 300 son menores al de la guía.",
+    "explicacion": "Según la clave de la guía, los bienes no necesarios para el giro del negocio pueden asegurarse en robo si su valor es de al menos 500 días de salario mínimo de 2011, hoy referido a UMA diaria. Los valores de 150, 200 o 300 son menores al de la guía."
+  },
+  {
+    "id": 344,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "El robo perpetrado con violencia física o moral hacia las personas que tienen en su poder los bienes, se conoce como:",
+    "pregunta": "El robo perpetrado con violencia física o moral hacia las personas que tienen en su poder los bienes, se conoce como:",
+    "options": [
+      "Asalto",
+      "Robo con violencia",
+      "Robo sin violencia",
+      "Fraude"
+    ],
+    "opciones": [
+      "Asalto",
+      "Robo con violencia",
+      "Robo sin violencia",
+      "Fraude"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Asalto",
+    "explanation": "El asalto es el robo cometido con violencia física o moral contra las personas que tienen en su poder los bienes. El robo con violencia se ejerce sobre el inmueble, y el fraude implica engaño.",
+    "explicacion": "El asalto es el robo cometido con violencia física o moral contra las personas que tienen en su poder los bienes. El robo con violencia se ejerce sobre el inmueble, y el fraude implica engaño."
+  },
+  {
+    "id": 345,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "Elige de la lista, los bienes que se cubren en el Seguro de Robo de Mercancías: 1. Joyas 2. Mercancías 3. Maquinaria 4. Electrodomésticos 5. Productos terminados 6. Dinero en efectivo:",
+    "pregunta": "Elige de la lista, los bienes que se cubren en el Seguro de Robo de Mercancías: 1. Joyas 2. Mercancías 3. Maquinaria 4. Electrodomésticos 5. Productos terminados 6. Dinero en efectivo:",
+    "options": [
+      "4, 5, 6",
+      "1, 2, 3",
+      "1, 4, 6",
+      "2, 3, 5"
+    ],
+    "opciones": [
+      "4, 5, 6",
+      "1, 2, 3",
+      "1, 4, 6",
+      "2, 3, 5"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "2, 3, 5",
+    "explanation": "El seguro de robo de mercancías cubre mercancías, maquinaria y productos terminados del negocio. Las joyas tienen reglas especiales, y el dinero en efectivo se asegura en la póliza de dinero y valores.",
+    "explicacion": "El seguro de robo de mercancías cubre mercancías, maquinaria y productos terminados del negocio. Las joyas tienen reglas especiales, y el dinero en efectivo se asegura en la póliza de dinero y valores."
+  },
+  {
+    "id": 346,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "¿Cuál es un riesgo amparado en la cobertura básica del Seguro de Robo?",
+    "pregunta": "¿Cuál es un riesgo amparado en la cobertura básica del Seguro de Robo?",
+    "options": [
+      "Asalto perpetrado por el servicio doméstico",
+      "Robo efectuado por huelguistas",
+      "Daños provocados por saqueo",
+      "Daños materiales a los muebles por intento de robo"
+    ],
+    "opciones": [
+      "Asalto perpetrado por el servicio doméstico",
+      "Robo efectuado por huelguistas",
+      "Daños provocados por saqueo",
+      "Daños materiales a los muebles por intento de robo"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Daños materiales a los muebles por intento de robo",
+    "explanation": "La cobertura básica de robo ampara los daños materiales a los muebles causados por intento de robo. El asalto por el servicio doméstico, el robo por huelguistas y el saqueo se excluyen.",
+    "explicacion": "La cobertura básica de robo ampara los daños materiales a los muebles causados por intento de robo. El asalto por el servicio doméstico, el robo por huelguistas y el saqueo se excluyen."
+  },
+  {
+    "id": 347,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "Es una exclusión del Seguro de Robo:",
+    "pregunta": "Es una exclusión del Seguro de Robo:",
+    "options": [
+      "Daños al inmueble por intento de robo",
+      "Robo con violencia",
+      "Asalto",
+      "Expropiación"
+    ],
+    "opciones": [
+      "Daños al inmueble por intento de robo",
+      "Robo con violencia",
+      "Asalto",
+      "Expropiación"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Expropiación",
+    "explanation": "La expropiación es una exclusión del seguro de robo, porque es un acto de autoridad y no un delito. Los daños al inmueble por intento de robo y el robo con violencia se cubren, y el asalto puede contratarse.",
+    "explicacion": "La expropiación es una exclusión del seguro de robo, porque es un acto de autoridad y no un delito. Los daños al inmueble por intento de robo y el robo con violencia se cubren, y el asalto puede contratarse."
+  },
+  {
+    "id": 348,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "¿En qué seguro y de qué forma una joyería puede asegurar lingotes de oro y plata?",
+    "pregunta": "¿En qué seguro y de qué forma una joyería puede asegurar lingotes de oro y plata?",
+    "options": [
+      "En el Seguro de Objetos Personales de manera automática",
+      "En el Seguro de Robo, por convenio expreso",
+      "En el Seguro de Dinero y/o Valores, por convenio expreso",
+      "En el Seguro de Incendio, en la cobertura básica"
+    ],
+    "opciones": [
+      "En el Seguro de Objetos Personales de manera automática",
+      "En el Seguro de Robo, por convenio expreso",
+      "En el Seguro de Dinero y/o Valores, por convenio expreso",
+      "En el Seguro de Incendio, en la cobertura básica"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "En el Seguro de Robo, por convenio expreso",
+    "explanation": "Una joyería puede asegurar lingotes de oro y plata en el seguro de robo mediante convenio expreso, por ser bienes de alto valor. Objetos personales cubre bienes de personas físicas, y dinero y valores no incluye mercancía en lingotes.",
+    "explicacion": "Una joyería puede asegurar lingotes de oro y plata en el seguro de robo mediante convenio expreso, por ser bienes de alto valor. Objetos personales cubre bienes de personas físicas, y dinero y valores no incluye mercancía en lingotes."
+  },
+  {
+    "id": 349,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "¿Qué bienes se amparan en el inciso 2 del Seguro de Robo de Mercancías?",
+    "pregunta": "¿Qué bienes se amparan en el inciso 2 del Seguro de Robo de Mercancías?",
+    "options": [
+      "Dinero en efectivo",
+      "Materia prima",
+      "Maquinaria en desuso",
+      "Artículos raros o de arte"
+    ],
+    "opciones": [
+      "Dinero en efectivo",
+      "Materia prima",
+      "Maquinaria en desuso",
+      "Artículos raros o de arte"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Artículos raros o de arte",
+    "explanation": "Según la clave de la guía, el inciso 2 del seguro de robo ampara los artículos raros o de arte. El dinero en efectivo corresponde a otra póliza, y la materia prima se cubre en el inciso de bienes del negocio.",
+    "explicacion": "Según la clave de la guía, el inciso 2 del seguro de robo ampara los artículos raros o de arte. El dinero en efectivo corresponde a otra póliza, y la materia prima se cubre en el inciso de bienes del negocio."
+  },
+  {
+    "id": 350,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "¿Qué riesgo está incluido en la cobertura básica del Seguro de Robo?",
+    "pregunta": "¿Qué riesgo está incluido en la cobertura básica del Seguro de Robo?",
+    "options": [
+      "Saqueo",
+      "Fraude",
+      "Robo con Violencia",
+      "Robo sin Violencia"
+    ],
+    "opciones": [
+      "Saqueo",
+      "Fraude",
+      "Robo con Violencia",
+      "Robo sin Violencia"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Robo con Violencia",
+    "explanation": "El robo con violencia está incluido en la cobertura básica del seguro de robo. El saqueo y el fraude se excluyen, y el robo sin violencia no deja huellas que permitan comprobarlo.",
+    "explicacion": "El robo con violencia está incluido en la cobertura básica del seguro de robo. El saqueo y el fraude se excluyen, y el robo sin violencia no deja huellas que permitan comprobarlo."
+  },
+  {
+    "id": 351,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "Dentro del Seguro de Robo, ¿Cómo se le conoce a la pérdida a través del uso de violencia del exterior al interior del local asegurado?",
+    "pregunta": "Dentro del Seguro de Robo, ¿Cómo se le conoce a la pérdida a través del uso de violencia del exterior al interior del local asegurado?",
+    "options": [
+      "Robo con Violencia",
+      "Asalto",
+      "Robo sin violencia",
+      "Atraco"
+    ],
+    "opciones": [
+      "Robo con Violencia",
+      "Asalto",
+      "Robo sin violencia",
+      "Atraco"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Robo con Violencia",
+    "explanation": "El robo con violencia es la pérdida mediante violencia del exterior al interior del local asegurado. El asalto se dirige contra personas, y atraco no es un término de la póliza.",
+    "explicacion": "El robo con violencia es la pérdida mediante violencia del exterior al interior del local asegurado. El asalto se dirige contra personas, y atraco no es un término de la póliza."
+  },
+  {
+    "id": 352,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Robo de Mercancías",
+    "question": "Durante el horario de trabajo se presenta un acto de insurrección con robo y rapiña, provocando la suspensión de garantías, ¿quedaría cubierta la pérdida en el Seguro de Robo de Mercancías?",
+    "pregunta": "Durante el horario de trabajo se presenta un acto de insurrección con robo y rapiña, provocando la suspensión de garantías, ¿quedaría cubierta la pérdida en el Seguro de Robo de Mercancías?",
+    "options": [
+      "Se pagan todos los daños hasta agotar la suma asegurada",
+      "Procede la reclamación por ser un acto cubierto",
+      "Se rechaza la reclamación por ser un acto excluido",
+      "Se paga solo a primer riesgo"
+    ],
+    "opciones": [
+      "Se pagan todos los daños hasta agotar la suma asegurada",
+      "Procede la reclamación por ser un acto cubierto",
+      "Se rechaza la reclamación por ser un acto excluido",
+      "Se paga solo a primer riesgo"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Se rechaza la reclamación por ser un acto excluido",
+    "explanation": "La insurrección, el saqueo y la suspensión de garantías son actos excluidos del seguro de robo de mercancías, por lo que la reclamación se rechaza. No se paga a primer riesgo ni hasta agotar la suma asegurada.",
+    "explicacion": "La insurrección, el saqueo y la suspensión de garantías son actos excluidos del seguro de robo de mercancías, por lo que la reclamación se rechaza. No se paga a primer riesgo ni hasta agotar la suma asegurada."
+  },
+  {
+    "id": 353,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "Menciona dos riesgos cubiertos en la póliza de dinero y valores.",
+    "pregunta": "Menciona dos riesgos cubiertos en la póliza de dinero y valores.",
+    "options": [
+      "Dentro y fuera del inmueble.",
+      "Robo y abuso de confianza.",
+      "Dinero y valores.",
+      "Dinero y valores fuera de cajas fuerte."
+    ],
+    "opciones": [
+      "Dentro y fuera del inmueble.",
+      "Robo y abuso de confianza.",
+      "Dinero y valores.",
+      "Dinero y valores fuera de cajas fuerte."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Dentro y fuera del inmueble.",
+    "explanation": "La póliza de dinero y valores cubre riesgos dentro y fuera del inmueble, por ejemplo durante su traslado. Robo y abuso de confianza no son la clasificación de la póliza, y dinero y valores son los bienes, no los riesgos.",
+    "explicacion": "La póliza de dinero y valores cubre riesgos dentro y fuera del inmueble, por ejemplo durante su traslado. Robo y abuso de confianza no son la clasificación de la póliza, y dinero y valores son los bienes, no los riesgos."
+  },
+  {
+    "id": 354,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "Señala dos bienes cubiertos por la póliza de dinero y valores.",
+    "pregunta": "Señala dos bienes cubiertos por la póliza de dinero y valores.",
+    "options": [
+      "Pagarés y pieles.",
+      "Acciones y cédulas hipotecarias.",
+      "Pagarés y joyas.",
+      "Billetes y cheques de viajero."
+    ],
+    "opciones": [
+      "Pagarés y pieles.",
+      "Acciones y cédulas hipotecarias.",
+      "Pagarés y joyas.",
+      "Billetes y cheques de viajero."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Acciones y cédulas hipotecarias.",
+    "explanation": "Las acciones y las cédulas hipotecarias son valores amparados por la póliza de dinero y valores. Las pieles y joyas se cubren en otros ramos.",
+    "explicacion": "Las acciones y las cédulas hipotecarias son valores amparados por la póliza de dinero y valores. Las pieles y joyas se cubren en otros ramos."
+  },
+  {
+    "id": 355,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "Identifica un bien que se puede cubrir bajo convenio expreso.",
+    "pregunta": "Identifica un bien que se puede cubrir bajo convenio expreso.",
+    "options": [
+      "Cheques.",
+      "Billetes de lotería.",
+      "Dinero en poder de cobradores.",
+      "Calcomanía de verificación vehicular."
+    ],
+    "opciones": [
+      "Cheques.",
+      "Billetes de lotería.",
+      "Dinero en poder de cobradores.",
+      "Calcomanía de verificación vehicular."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Dinero en poder de cobradores.",
+    "explanation": "El dinero en poder de cobradores puede cubrirse bajo convenio expreso en la póliza de dinero y valores. Los billetes de lotería y las calcomanías de verificación se excluyen.",
+    "explicacion": "El dinero en poder de cobradores puede cubrirse bajo convenio expreso en la póliza de dinero y valores. Los billetes de lotería y las calcomanías de verificación se excluyen."
+  },
+  {
+    "id": 356,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "Es un riesgo amparado dentro del local en la póliza de dinero y valores.",
+    "pregunta": "Es un riesgo amparado dentro del local en la póliza de dinero y valores.",
+    "options": [
+      "Incendio y explosión.",
+      "Billete de lotería,",
+      "Incapacidad física.",
+      "Dinero en poder de cobradores."
+    ],
+    "opciones": [
+      "Incendio y explosión.",
+      "Billete de lotería,",
+      "Incapacidad física.",
+      "Dinero en poder de cobradores."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Incendio y explosión.",
+    "explanation": "Dentro del local, la póliza de dinero y valores ampara incendio y explosión, además del robo. Los billetes de lotería se excluyen, la incapacidad física corresponde a accidentes y el dinero de cobradores es un riesgo fuera del local.",
+    "explicacion": "Dentro del local, la póliza de dinero y valores ampara incendio y explosión, además del robo. Los billetes de lotería se excluyen, la incapacidad física corresponde a accidentes y el dinero de cobradores es un riesgo fuera del local."
+  },
+  {
+    "id": 357,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "Es un riesgo cubierto fuera del local en la póliza de dinero y valores.",
+    "pregunta": "Es un riesgo cubierto fuera del local en la póliza de dinero y valores.",
+    "options": [
+      "Dinero retirado de cajero automático.",
+      "Daños materiales.",
+      "Accidentes del vehículo.",
+      "Extensión de cubierta."
+    ],
+    "opciones": [
+      "Dinero retirado de cajero automático.",
+      "Daños materiales.",
+      "Accidentes del vehículo.",
+      "Extensión de cubierta."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Accidentes del vehículo.",
+    "explanation": "Fuera del local, la póliza de dinero y valores cubre las pérdidas por accidentes del vehículo que transporta los bienes, además del robo con violencia o asalto. El dinero retirado de cajeros, los daños materiales y la extensión de cubierta no son riesgos de esta sección.",
+    "explicacion": "Fuera del local, la póliza de dinero y valores cubre las pérdidas por accidentes del vehículo que transporta los bienes, además del robo con violencia o asalto. El dinero retirado de cajeros, los daños materiales y la extensión de cubierta no son riesgos de esta sección."
+  },
+  {
+    "id": 358,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "requisito para amparar dinero y valores que se encuentren bajo custodia del asegurado.",
+    "pregunta": "requisito para amparar dinero y valores que se encuentren bajo custodia del asegurado.",
+    "options": [
+      "Que exista contrato de operaciones.",
+      "Que el propietario del dinero viva con el asegurado.",
+      "Que exista interés asegurable.",
+      "Que no sea familiar del asegurado."
+    ],
+    "opciones": [
+      "Que exista contrato de operaciones.",
+      "Que el propietario del dinero viva con el asegurado.",
+      "Que exista interés asegurable.",
+      "Que no sea familiar del asegurado."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Que exista contrato de operaciones.",
+    "explanation": "Según la clave de la guía, para amparar dinero y valores de terceros bajo custodia del asegurado debe existir un contrato que respalde la operación. El parentesco o vivir con el propietario no son requisitos.",
+    "explicacion": "Según la clave de la guía, para amparar dinero y valores de terceros bajo custodia del asegurado debe existir un contrato que respalde la operación. El parentesco o vivir con el propietario no son requisitos."
+  },
+  {
+    "id": 359,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "Es un bien excluido en la póliza de dinero y valores.",
+    "pregunta": "Es un bien excluido en la póliza de dinero y valores.",
+    "options": [
+      "Billetes de banco.",
+      "Bonos financieros.",
+      "Monedas.",
+      "Pronósticos deportivos."
+    ],
+    "opciones": [
+      "Billetes de banco.",
+      "Bonos financieros.",
+      "Monedas.",
+      "Pronósticos deportivos."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Pronósticos deportivos.",
+    "explanation": "Los pronósticos deportivos se excluyen de la póliza de dinero y valores, porque su valor es aleatorio. Los billetes de banco, monedas y bonos sí son bienes amparados.",
+    "explicacion": "Los pronósticos deportivos se excluyen de la póliza de dinero y valores, porque su valor es aleatorio. Los billetes de banco, monedas y bonos sí son bienes amparados."
+  },
+  {
+    "id": 360,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "¿Cuál es el período máximo de cobertura para amparar la nómina de los empleados en caso de que ésta o parte de misma no haya sido cobrada?",
+    "pregunta": "¿Cuál es el período máximo de cobertura para amparar la nómina de los empleados en caso de que ésta o parte de misma no haya sido cobrada?",
+    "options": [
+      "24 horas",
+      "48 horas",
+      "72 horas",
+      "96 horas"
+    ],
+    "opciones": [
+      "24 horas",
+      "48 horas",
+      "72 horas",
+      "96 horas"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "72 horas",
+    "explanation": "Según la clave de la guía, la nómina no cobrada por los empleados se cubre por un periodo máximo de 72 horas. Los plazos de 24, 48 o 96 horas no corresponden a la guía.",
+    "explicacion": "Según la clave de la guía, la nómina no cobrada por los empleados se cubre por un periodo máximo de 72 horas. Los plazos de 24, 48 o 96 horas no corresponden a la guía."
+  },
+  {
+    "id": 361,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "¿Cuál es una exclusión del seguro de Dinero y/o Valores?",
+    "pregunta": "¿Cuál es una exclusión del seguro de Dinero y/o Valores?",
+    "options": [
+      "Robo con violencia en cajas fuertes",
+      "Robo cometido por funcionarios",
+      "Robo por accidentes del vehículo portador",
+      "Robo en camionetas de cobro"
+    ],
+    "opciones": [
+      "Robo con violencia en cajas fuertes",
+      "Robo cometido por funcionarios",
+      "Robo por accidentes del vehículo portador",
+      "Robo en camionetas de cobro"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Robo cometido por funcionarios",
+    "explanation": "El robo cometido por funcionarios o empleados del asegurado es una exclusión del seguro de dinero y valores, porque corresponde a un seguro de fidelidad. El robo con violencia en cajas fuertes y los accidentes del vehículo portador sí se cubren.",
+    "explicacion": "El robo cometido por funcionarios o empleados del asegurado es una exclusión del seguro de dinero y valores, porque corresponde a un seguro de fidelidad. El robo con violencia en cajas fuertes y los accidentes del vehículo portador sí se cubren."
+  },
+  {
+    "id": 362,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "Es un riesgo que se contrata mediante convenio expreso en el Seguro de Dinero y/o Valores:",
+    "pregunta": "Es un riesgo que se contrata mediante convenio expreso en el Seguro de Dinero y/o Valores:",
+    "options": [
+      "Extravío de valores",
+      "Asalto a camionetas de cobro",
+      "Robo de dinero cuando no hay caja fuerte",
+      "Robo sin violencia"
+    ],
+    "opciones": [
+      "Extravío de valores",
+      "Asalto a camionetas de cobro",
+      "Robo de dinero cuando no hay caja fuerte",
+      "Robo sin violencia"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Asalto a camionetas de cobro",
+    "explanation": "El asalto a bordo de camionetas de cobro se contrata mediante convenio expreso en dinero y valores. El extravío y el robo sin violencia se excluyen, por la dificultad de comprobarlos.",
+    "explicacion": "El asalto a bordo de camionetas de cobro se contrata mediante convenio expreso en dinero y valores. El extravío y el robo sin violencia se excluyen, por la dificultad de comprobarlos."
+  },
+  {
+    "id": 363,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "Todos son riesgos que se amparan en el Seguro de Dinero y/o Valores, excepto:",
+    "pregunta": "Todos son riesgos que se amparan en el Seguro de Dinero y/o Valores, excepto:",
+    "options": [
+      "Incendio",
+      "Robo con violencia",
+      "Saqueo",
+      "Explosión"
+    ],
+    "opciones": [
+      "Incendio",
+      "Robo con violencia",
+      "Saqueo",
+      "Explosión"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Saqueo",
+    "explanation": "El seguro de dinero y valores ampara incendio, explosión y robo con violencia. El saqueo, ligado a alborotos o disturbios, se excluye.",
+    "explicacion": "El seguro de dinero y valores ampara incendio, explosión y robo con violencia. El saqueo, ligado a alborotos o disturbios, se excluye."
+  },
+  {
+    "id": 364,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "El robo de dinero cuando no está guardado en caja de seguridad, mientras el local está cerrado, es un riesgo que se puede amparar:",
+    "pregunta": "El robo de dinero cuando no está guardado en caja de seguridad, mientras el local está cerrado, es un riesgo que se puede amparar:",
+    "options": [
+      "Mediante convenio expreso",
+      "Está excluido",
+      "En la cobertura básica",
+      "No es asegurable"
+    ],
+    "opciones": [
+      "Mediante convenio expreso",
+      "Está excluido",
+      "En la cobertura básica",
+      "No es asegurable"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Mediante convenio expreso",
+    "explanation": "El robo de dinero que no está en caja de seguridad mientras el local está cerrado puede ampararse mediante convenio expreso, normalmente con un límite menor. No está excluido de forma absoluta ni forma parte de la cobertura básica.",
+    "explicacion": "El robo de dinero que no está en caja de seguridad mientras el local está cerrado puede ampararse mediante convenio expreso, normalmente con un límite menor. No está excluido de forma absoluta ni forma parte de la cobertura básica."
+  },
+  {
+    "id": 365,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "¿En qué seguro se ampara el robo de los bienes por volcadura del vehículo que los transporta?",
+    "pregunta": "¿En qué seguro se ampara el robo de los bienes por volcadura del vehículo que los transporta?",
+    "options": [
+      "Robo en domicilio",
+      "Objetos personales",
+      "Robo de mercancías",
+      "Dinero y/o valores"
+    ],
+    "opciones": [
+      "Robo en domicilio",
+      "Objetos personales",
+      "Robo de mercancías",
+      "Dinero y/o valores"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Dinero y/o valores",
+    "explanation": "El robo de bienes por volcadura del vehículo que los transporta se ampara en el seguro de dinero y valores, en su sección fuera del local. Robo en domicilio, objetos personales y robo de mercancías no cubren ese supuesto.",
+    "explicacion": "El robo de bienes por volcadura del vehículo que los transporta se ampara en el seguro de dinero y valores, en su sección fuera del local. Robo en domicilio, objetos personales y robo de mercancías no cubren ese supuesto."
+  },
+  {
+    "id": 366,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "En el Seguro de Dinero y/o Valores, se cubren los bienes fuera del local por:",
+    "pregunta": "En el Seguro de Dinero y/o Valores, se cubren los bienes fuera del local por:",
+    "options": [
+      "Pérdidas causadas por huelguistas",
+      "Incapacidad física del portador",
+      "Extravío",
+      "Robo con violencia de empleados"
+    ],
+    "opciones": [
+      "Pérdidas causadas por huelguistas",
+      "Incapacidad física del portador",
+      "Extravío",
+      "Robo con violencia de empleados"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Incapacidad física del portador",
+    "explanation": "Fuera del local, dinero y valores cubre la pérdida por incapacidad física del portador, por ejemplo por un accidente o enfermedad repentina. Las pérdidas por huelguistas, el extravío y el robo de empleados se excluyen.",
+    "explicacion": "Fuera del local, dinero y valores cubre la pérdida por incapacidad física del portador, por ejemplo por un accidente o enfermedad repentina. Las pérdidas por huelguistas, el extravío y el robo de empleados se excluyen."
+  },
+  {
+    "id": 367,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "Un cliente desea asegurar la nómina en efectivo que va a pagar a sus empleados cada dos semanas. Indica cuál es la cobertura que más le conviene:",
+    "pregunta": "Un cliente desea asegurar la nómina en efectivo que va a pagar a sus empleados cada dos semanas. Indica cuál es la cobertura que más le conviene:",
+    "options": [
+      "Robo con violencia cuando no se tiene caja fuerte o bóveda y el local esté cerrado al público",
+      "En la cobertura adicional de dinero y/o valores para asalto cuando los bienes estén a bordo de camiones de cobro",
+      "Especificando la periodicidad y monto en la cobertura de robo de mercancías",
+      "En la cobertura básica de dinero y/o valores, especificando el monto y periodicidad"
+    ],
+    "opciones": [
+      "Robo con violencia cuando no se tiene caja fuerte o bóveda y el local esté cerrado al público",
+      "En la cobertura adicional de dinero y/o valores para asalto cuando los bienes estén a bordo de camiones de cobro",
+      "Especificando la periodicidad y monto en la cobertura de robo de mercancías",
+      "En la cobertura básica de dinero y/o valores, especificando el monto y periodicidad"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "En la cobertura básica de dinero y/o valores, especificando el monto y periodicidad",
+    "explanation": "Para la nómina en efectivo que se paga periódicamente conviene la cobertura básica de dinero y valores, especificando el monto y la periodicidad. Robo de mercancías no ampara efectivo, y las demás opciones son coberturas parciales de convenio.",
+    "explicacion": "Para la nómina en efectivo que se paga periódicamente conviene la cobertura básica de dinero y valores, especificando el monto y la periodicidad. Robo de mercancías no ampara efectivo, y las demás opciones son coberturas parciales de convenio."
+  },
+  {
+    "id": 368,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "De la siguiente lista elige 3 coberturas por convenio expreso del seguro de dinero y valores: 1- Pérdidas con consecuencia de robo sin violencia 2- Robo con violencia en bóvedas 3- Robo con violencia cuando el asegurado no cuente con caja fuerte 4- Robo con violencia y/o asalto a bordo de camiones de cobranza 5- Saqueos populares durante huelgas o alborotos 6- Robo con violencia y/o asalto a bordo de camionetas de reparto de mercancías:",
+    "pregunta": "De la siguiente lista elige 3 coberturas por convenio expreso del seguro de dinero y valores: 1- Pérdidas con consecuencia de robo sin violencia 2- Robo con violencia en bóvedas 3- Robo con violencia cuando el asegurado no cuente con caja fuerte 4- Robo con violencia y/o asalto a bordo de camiones de cobranza 5- Saqueos populares durante huelgas o alborotos 6- Robo con violencia y/o asalto a bordo de camionetas de reparto de mercancías:",
+    "options": [
+      "3, 4, 6",
+      "1, 2, 3",
+      "2, 3, 4",
+      "4, 5, 6"
+    ],
+    "opciones": [
+      "3, 4, 6",
+      "1, 2, 3",
+      "2, 3, 4",
+      "4, 5, 6"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "3, 4, 6",
+    "explanation": "Según la clave de la guía, son coberturas por convenio expreso de dinero y valores el robo con violencia sin caja fuerte, el asalto a bordo de camiones de cobranza y el asalto en camionetas de reparto. El robo sin violencia y el saqueo se excluyen, y el robo en bóvedas forma parte de la básica.",
+    "explicacion": "Según la clave de la guía, son coberturas por convenio expreso de dinero y valores el robo con violencia sin caja fuerte, el asalto a bordo de camiones de cobranza y el asalto en camionetas de reparto. El robo sin violencia y el saqueo se excluyen, y el robo en bóvedas forma parte de la básica."
+  },
+  {
+    "id": 369,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "Señala el ejemplo que describe el seguro de asalto:",
+    "pregunta": "Señala el ejemplo que describe el seguro de asalto:",
+    "options": [
+      "Perder algún bien, sin saber dónde",
+      "Engañar o timar al personal de confianza",
+      "Daño físico o moral al asegurado dentro del local, obligándolo a entregar sus bienes",
+      "Accidente del vehículo que transporta los bienes asegurados"
+    ],
+    "opciones": [
+      "Perder algún bien, sin saber dónde",
+      "Engañar o timar al personal de confianza",
+      "Daño físico o moral al asegurado dentro del local, obligándolo a entregar sus bienes",
+      "Accidente del vehículo que transporta los bienes asegurados"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Daño físico o moral al asegurado dentro del local, obligándolo a entregar sus bienes",
+    "explanation": "El asalto es el daño físico o moral al asegurado o a sus empleados para obligarlos a entregar los bienes. Perder un bien sin saber dónde es extravío, el engaño es fraude y el accidente del vehículo es otro riesgo.",
+    "explicacion": "El asalto es el daño físico o moral al asegurado o a sus empleados para obligarlos a entregar los bienes. Perder un bien sin saber dónde es extravío, el engaño es fraude y el accidente del vehículo es otro riesgo."
+  },
+  {
+    "id": 370,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "¿Qué seguros se contratan a primer riesgo en el ramo de diversos misceláneos?",
+    "pregunta": "¿Qué seguros se contratan a primer riesgo en el ramo de diversos misceláneos?",
+    "options": [
+      "Robo de mercancías",
+      "Automóviles",
+      "Terremoto",
+      "Rotura de maquinaria"
+    ],
+    "opciones": [
+      "Robo de mercancías",
+      "Automóviles",
+      "Terremoto",
+      "Rotura de maquinaria"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Robo de mercancías",
+    "explanation": "Según la clave de la guía, el seguro de robo de mercancías se contrata a primer riesgo dentro de los diversos misceláneos. Automóviles, terremoto y rotura de maquinaria no son del ramo de diversos misceláneos.",
+    "explicacion": "Según la clave de la guía, el seguro de robo de mercancías se contrata a primer riesgo dentro de los diversos misceláneos. Automóviles, terremoto y rotura de maquinaria no son del ramo de diversos misceláneos."
+  },
+  {
+    "id": 371,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Dinero y Valores",
+    "question": "Relaciona la columna de seguro con la de bienes cubiertos: Seguro bienes cubiertos 1- Dinero A) Inventario 2- Robo B) Nómina C) Cédulas hipotecarias D) Obras de arte:",
+    "pregunta": "Relaciona la columna de seguro con la de bienes cubiertos: Seguro bienes cubiertos 1- Dinero A) Inventario 2- Robo B) Nómina C) Cédulas hipotecarias D) Obras de arte:",
+    "options": [
+      "1 - B, C; 2 - A, D",
+      "1 - A, B; 2 - C, D",
+      "1 - B, D; 2 - A, C",
+      "1 - C, D; 2 - A, B"
+    ],
+    "opciones": [
+      "1 - B, C; 2 - A, D",
+      "1 - A, B; 2 - C, D",
+      "1 - B, D; 2 - A, C",
+      "1 - C, D; 2 - A, B"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "1 - B, C; 2 - A, D",
+    "explanation": "El seguro de dinero ampara la nómina y las cédulas hipotecarias, mientras que el seguro de robo ampara el inventario y las obras de arte. Las demás combinaciones confunden bienes monetarios con bienes físicos.",
+    "explicacion": "El seguro de dinero ampara la nómina y las cédulas hipotecarias, mientras que el seguro de robo ampara el inventario y las obras de arte. Las demás combinaciones confunden bienes monetarios con bienes físicos."
+  },
+  {
+    "id": 372,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "¿Cuál es el espesor mínimo de los cristales para quedar amparados en ésta póliza?.",
+    "pregunta": "¿Cuál es el espesor mínimo de los cristales para quedar amparados en ésta póliza?.",
+    "options": [
+      "3 mm.",
+      "6 mm.",
+      "4 mm.",
+      "8 mm."
+    ],
+    "opciones": [
+      "3 mm.",
+      "6 mm.",
+      "4 mm.",
+      "8 mm."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "4 mm.",
+    "explanation": "Según la clave de la guía, los cristales deben tener un espesor mínimo de 4 mm para quedar amparados. Los espesores de 3, 6 u 8 mm no son el mínimo señalado por la guía.",
+    "explicacion": "Según la clave de la guía, los cristales deben tener un espesor mínimo de 4 mm para quedar amparados. Los espesores de 3, 6 u 8 mm no son el mínimo señalado por la guía."
+  },
+  {
+    "id": 373,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "Son riesgos cubiertos en forma básica en la póliza de cristales.",
+    "pregunta": "Son riesgos cubiertos en forma básica en la póliza de cristales.",
+    "options": [
+      "Rayaduras y raspaduras.",
+      "Dobladura y rajadura.",
+      "Actos vandálicos.",
+      "Robo con violencia."
+    ],
+    "opciones": [
+      "Rayaduras y raspaduras.",
+      "Dobladura y rajadura.",
+      "Actos vandálicos.",
+      "Robo con violencia."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Actos vandálicos.",
+    "explanation": "Los actos vandálicos son un riesgo básico de la póliza de cristales, como parte de la rotura accidental. Las rayaduras, raspaduras y dobladuras se excluyen, y el robo corresponde a otro seguro.",
+    "explicacion": "Los actos vandálicos son un riesgo básico de la póliza de cristales, como parte de la rotura accidental. Las rayaduras, raspaduras y dobladuras se excluyen, y el robo corresponde a otro seguro."
+  },
+  {
+    "id": 374,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "Los daños a los cristales con motivo de su remoción, ¿cómo están considerados dentro de la póliza?",
+    "pregunta": "Los daños a los cristales con motivo de su remoción, ¿cómo están considerados dentro de la póliza?",
+    "options": [
+      "Cobertura básica.",
+      "Cobertura por convenio.",
+      "Exclusión total.",
+      "No se menciona en la póliza."
+    ],
+    "opciones": [
+      "Cobertura básica.",
+      "Cobertura por convenio.",
+      "Exclusión total.",
+      "No se menciona en la póliza."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Cobertura por convenio.",
+    "explanation": "Los daños a los cristales durante su remoción se cubren por convenio, porque la maniobra agrava el riesgo. No son básicos ni una exclusión total.",
+    "explicacion": "Los daños a los cristales durante su remoción se cubren por convenio, porque la maniobra agrava el riesgo. No son básicos ni una exclusión total."
+  },
+  {
+    "id": 375,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "Riesgo por convenio expreso cubierto en la póliza de cristales.",
+    "pregunta": "Riesgo por convenio expreso cubierto en la póliza de cristales.",
+    "options": [
+      "Instalación del cristal.",
+      "Daños durante reparaciones del edificio.",
+      "Daños a terceros.",
+      "Valor de Reposición."
+    ],
+    "opciones": [
+      "Instalación del cristal.",
+      "Daños durante reparaciones del edificio.",
+      "Daños a terceros.",
+      "Valor de Reposición."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Daños durante reparaciones del edificio.",
+    "explanation": "Los daños a los cristales durante reparaciones del edificio son un riesgo por convenio expreso. La instalación del cristal se excluye, los daños a terceros son materia de RC y el valor de reposición es una base de indemnización.",
+    "explicacion": "Los daños a los cristales durante reparaciones del edificio son un riesgo por convenio expreso. La instalación del cristal se excluye, los daños a terceros son materia de RC y el valor de reposición es una base de indemnización."
+  },
+  {
+    "id": 376,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "Bien por convenio expreso en la póliza de cristales.",
+    "pregunta": "Bien por convenio expreso en la póliza de cristales.",
+    "options": [
+      "Vitrinas.",
+      "Espejos.",
+      "Teñido.",
+      "Lunas."
+    ],
+    "opciones": [
+      "Vitrinas.",
+      "Espejos.",
+      "Teñido.",
+      "Lunas."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Teñido.",
+    "explanation": "El teñido o decorado de los cristales es un bien que se cubre por convenio expreso. Las vitrinas, espejos y lunas son cristales amparados normalmente.",
+    "explicacion": "El teñido o decorado de los cristales es un bien que se cubre por convenio expreso. Las vitrinas, espejos y lunas son cristales amparados normalmente."
+  },
+  {
+    "id": 377,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "Es un bien excluido en forma total por la póliza de cristales.",
+    "pregunta": "Es un bien excluido en forma total por la póliza de cristales.",
+    "options": [
+      "Cristales curvos.",
+      "Sobremesas.",
+      "Remoción.",
+      "Defectos superficiales."
+    ],
+    "opciones": [
+      "Cristales curvos.",
+      "Sobremesas.",
+      "Remoción.",
+      "Defectos superficiales."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Defectos superficiales.",
+    "explanation": "Los defectos superficiales, como rayaduras, son una exclusión total de la póliza de cristales. Los cristales curvos y sobremesas pueden asegurarse, y la remoción se cubre por convenio.",
+    "explicacion": "Los defectos superficiales, como rayaduras, son una exclusión total de la póliza de cristales. Los cristales curvos y sobremesas pueden asegurarse, y la remoción se cubre por convenio."
+  },
+  {
+    "id": 378,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "En caso de siniestro la responsabilidad máxima de la Compañía será a:",
+    "pregunta": "En caso de siniestro la responsabilidad máxima de la Compañía será a:",
+    "options": [
+      "Valor de reposición.",
+      "Valor real.",
+      "Valor comercial.",
+      "Valor convenido."
+    ],
+    "opciones": [
+      "Valor de reposición.",
+      "Valor real.",
+      "Valor comercial.",
+      "Valor convenido."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Valor de reposición.",
+    "explanation": "La responsabilidad máxima de la aseguradora en cristales es el valor de reposición del cristal, es decir, el costo de uno nuevo. El valor real, el comercial y el convenido no se usan en este seguro.",
+    "explicacion": "La responsabilidad máxima de la aseguradora en cristales es el valor de reposición del cristal, es decir, el costo de uno nuevo. El valor real, el comercial y el convenido no se usan en este seguro."
+  },
+  {
+    "id": 379,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "En caso de reclamación que amerite indemnización, ésta será pagada bajo el concepto de:",
+    "pregunta": "En caso de reclamación que amerite indemnización, ésta será pagada bajo el concepto de:",
+    "options": [
+      "Gasto usual y acostumbrado.",
+      "Primer riesgo.",
+      "Seguro proporcional.",
+      "Gasto incurrido."
+    ],
+    "opciones": [
+      "Gasto usual y acostumbrado.",
+      "Primer riesgo.",
+      "Seguro proporcional.",
+      "Gasto incurrido."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Primer riesgo.",
+    "explanation": "La indemnización en cristales se paga a primer riesgo, sin aplicar la proporción indemnizable. El seguro proporcional y el gasto usual y acostumbrado no aplican a este ramo.",
+    "explicacion": "La indemnización en cristales se paga a primer riesgo, sin aplicar la proporción indemnizable. El seguro proporcional y el gasto usual y acostumbrado no aplican a este ramo."
+  },
+  {
+    "id": 380,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "El decorado de los cristales se contrata como:",
+    "pregunta": "El decorado de los cristales se contrata como:",
+    "options": [
+      "Bien en cobertura básica",
+      "Bien por convenio expreso",
+      "Riesgo por convenio expreso",
+      "Bien excluido"
+    ],
+    "opciones": [
+      "Bien en cobertura básica",
+      "Bien por convenio expreso",
+      "Riesgo por convenio expreso",
+      "Bien excluido"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Bien por convenio expreso",
+    "explanation": "El decorado de los cristales se contrata como bien por convenio expreso. No forma parte de la cobertura básica y no es un riesgo, sino un bien adicional.",
+    "explicacion": "El decorado de los cristales se contrata como bien por convenio expreso. No forma parte de la cobertura básica y no es un riesgo, sino un bien adicional."
+  },
+  {
+    "id": 381,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "¿Qué características deben tener los cristales para ser asegurados?",
+    "pregunta": "¿Qué características deben tener los cristales para ser asegurados?",
+    "options": [
+      "Que sean antirreflejantes",
+      "Que la compañía los coloque",
+      "Un grosor mínimo de 4 mm",
+      "Un grosor máximo de 3 mm"
+    ],
+    "opciones": [
+      "Que sean antirreflejantes",
+      "Que la compañía los coloque",
+      "Un grosor mínimo de 4 mm",
+      "Un grosor máximo de 3 mm"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Un grosor mínimo de 4 mm",
+    "explanation": "Según la clave de la guía, para ser asegurados los cristales deben tener un grosor mínimo de 4 mm. No se exige que sean antirreflejantes ni que la aseguradora los coloque.",
+    "explicacion": "Según la clave de la guía, para ser asegurados los cristales deben tener un grosor mínimo de 4 mm. No se exige que sean antirreflejantes ni que la aseguradora los coloque."
+  },
+  {
+    "id": 382,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "Los cristales de 4 mm de espesor se contratan como bienes:",
+    "pregunta": "Los cristales de 4 mm de espesor se contratan como bienes:",
+    "options": [
+      "Básicos",
+      "Por convenio expreso",
+      "Excluidos",
+      "No asegurables"
+    ],
+    "opciones": [
+      "Básicos",
+      "Por convenio expreso",
+      "Excluidos",
+      "No asegurables"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Básicos",
+    "explanation": "Los cristales de 4 mm de espesor cumplen el mínimo y se contratan como bienes básicos. Los de menor espesor no son asegurables en esta póliza.",
+    "explicacion": "Los cristales de 4 mm de espesor cumplen el mínimo y se contratan como bienes básicos. Los de menor espesor no son asegurables en esta póliza."
+  },
+  {
+    "id": 383,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "Es un riesgo cubierto mediante convenio expreso en el seguro de rotura de cristales, los daños por:",
+    "pregunta": "Es un riesgo cubierto mediante convenio expreso en el seguro de rotura de cristales, los daños por:",
+    "options": [
+      "Raspaduras",
+      "Rayadura",
+      "Pintura del inmueble",
+      "Rotura accidental"
+    ],
+    "opciones": [
+      "Raspaduras",
+      "Rayadura",
+      "Pintura del inmueble",
+      "Rotura accidental"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Pintura del inmueble",
+    "explanation": "Los daños a cristales por la pintura del inmueble se cubren mediante convenio expreso. Las raspaduras y rayaduras se excluyen, y la rotura accidental es la cobertura básica.",
+    "explicacion": "Los daños a cristales por la pintura del inmueble se cubren mediante convenio expreso. Las raspaduras y rayaduras se excluyen, y la rotura accidental es la cobertura básica."
+  },
+  {
+    "id": 384,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "El seguro de rotura de cristales se puede contratar:",
+    "pregunta": "El seguro de rotura de cristales se puede contratar:",
+    "options": [
+      "A riesgos nombrados",
+      "Sin franquicia",
+      "A primer riesgo",
+      "A proporción indemnizable"
+    ],
+    "opciones": [
+      "A riesgos nombrados",
+      "Sin franquicia",
+      "A primer riesgo",
+      "A proporción indemnizable"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "A primer riesgo",
+    "explanation": "El seguro de rotura de cristales se contrata a primer riesgo, sin proporción indemnizable. No opera a riesgos nombrados ni a proporción.",
+    "explicacion": "El seguro de rotura de cristales se contrata a primer riesgo, sin proporción indemnizable. No opera a riesgos nombrados ni a proporción."
+  },
+  {
+    "id": 385,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "¿Cuál es la cobertura básica del seguro de cristales?",
+    "pregunta": "¿Cuál es la cobertura básica del seguro de cristales?",
+    "options": [
+      "Raspaduras, rayaduras, despostilladuras",
+      "Rotura súbita, accidental e imprevista",
+      "Manchas y oxidación por incendio",
+      "Rotura por reparaciones del inmueble"
+    ],
+    "opciones": [
+      "Raspaduras, rayaduras, despostilladuras",
+      "Rotura súbita, accidental e imprevista",
+      "Manchas y oxidación por incendio",
+      "Rotura por reparaciones del inmueble"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Rotura súbita, accidental e imprevista",
+    "explanation": "La cobertura básica de cristales es la rotura súbita, accidental e imprevista. Las raspaduras se excluyen, las manchas no son rotura y la rotura por reparaciones se cubre por convenio.",
+    "explicacion": "La cobertura básica de cristales es la rotura súbita, accidental e imprevista. Las raspaduras se excluyen, las manchas no son rotura y la rotura por reparaciones se cubre por convenio."
+  },
+  {
+    "id": 386,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "¿Qué bienes se amparan automáticamente en el seguro de cristales?",
+    "pregunta": "¿Qué bienes se amparan automáticamente en el seguro de cristales?",
+    "options": [
+      "Cualquier cristal con grosor máximo de 3 mm",
+      "Lunas, vitrinas y espejos",
+      "Cristales debidamente colocados",
+      "Piezas de cristal cortado"
+    ],
+    "opciones": [
+      "Cualquier cristal con grosor máximo de 3 mm",
+      "Lunas, vitrinas y espejos",
+      "Cristales debidamente colocados",
+      "Piezas de cristal cortado"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Cristales debidamente colocados",
+    "explanation": "Se amparan automáticamente los cristales debidamente colocados en su sitio. El grosor máximo de 3 mm no cumple el mínimo, y las piezas de cristal cortado sin instalar no se cubren.",
+    "explicacion": "Se amparan automáticamente los cristales debidamente colocados en su sitio. El grosor máximo de 3 mm no cumple el mínimo, y las piezas de cristal cortado sin instalar no se cubren."
+  },
+  {
+    "id": 387,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Rotura de Cristales",
+    "question": "La cobertura básica del seguro de cristales, ¿en qué ejemplo aplica?",
+    "pregunta": "La cobertura básica del seguro de cristales, ¿en qué ejemplo aplica?",
+    "options": [
+      "Los cristales se rompen por un terremoto",
+      "Una persona choca con un cristal",
+      "Un niño raspa el dorado de un cristal",
+      "Una persona despega el logotipo de un cristal"
+    ],
+    "opciones": [
+      "Los cristales se rompen por un terremoto",
+      "Una persona choca con un cristal",
+      "Un niño raspa el dorado de un cristal",
+      "Una persona despega el logotipo de un cristal"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Una persona choca con un cristal",
+    "explanation": "La cobertura básica aplica si una persona choca accidentalmente con un cristal y lo rompe. El terremoto requiere cobertura especial, y los raspones o despegues de decorado no son rotura.",
+    "explicacion": "La cobertura básica aplica si una persona choca accidentalmente con un cristal y lo rompe. El terremoto requiere cobertura especial, y los raspones o despegues de decorado no son rotura."
+  },
+  {
+    "id": 388,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Anuncios Luminosos",
+    "question": "Señala una exclusión en la póliza de anuncios luminosos.",
+    "pregunta": "Señala una exclusión en la póliza de anuncios luminosos.",
+    "options": [
+      "Daños por incendio.",
+      "Reparación del anuncio luminoso.",
+      "Defectos estéticos.",
+      "Mejora del edificio."
+    ],
+    "opciones": [
+      "Daños por incendio.",
+      "Reparación del anuncio luminoso.",
+      "Defectos estéticos.",
+      "Mejora del edificio."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Defectos estéticos.",
+    "explanation": "Los defectos estéticos, como rayaduras, son una exclusión de la póliza de anuncios luminosos. Los daños por incendio se cubren, y las reparaciones y mejoras se contratan por convenio.",
+    "explicacion": "Los defectos estéticos, como rayaduras, son una exclusión de la póliza de anuncios luminosos. Los daños por incendio se cubren, y las reparaciones y mejoras se contratan por convenio."
+  },
+  {
+    "id": 389,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Anuncios Luminosos",
+    "question": "Señala un riesgo por convenio expreso en la póliza de anuncios luminosos.",
+    "pregunta": "Señala un riesgo por convenio expreso en la póliza de anuncios luminosos.",
+    "options": [
+      "Daños ocasionados por vientos.",
+      "Daños durante la reparación del anuncio.",
+      "Daños ocasionados por incendio.",
+      "Daños por falta de mantenimiento."
+    ],
+    "opciones": [
+      "Daños ocasionados por vientos.",
+      "Daños durante la reparación del anuncio.",
+      "Daños ocasionados por incendio.",
+      "Daños por falta de mantenimiento."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Daños durante la reparación del anuncio.",
+    "explanation": "Los daños durante la reparación del anuncio son un riesgo por convenio expreso. Los vientos y el incendio forman parte de la básica, y la falta de mantenimiento se excluye.",
+    "explicacion": "Los daños durante la reparación del anuncio son un riesgo por convenio expreso. Los vientos y el incendio forman parte de la básica, y la falta de mantenimiento se excluye."
+  },
+  {
+    "id": 390,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Anuncios Luminosos",
+    "question": "¿Cómo deberá estar asegurado un cartel publicitario en la póliza de anuncios luminosos?",
+    "pregunta": "¿Cómo deberá estar asegurado un cartel publicitario en la póliza de anuncios luminosos?",
+    "options": [
+      "Cobertura básica.",
+      "Cobertura por convenio.",
+      "Exclusión total.",
+      "No se puede asegurar."
+    ],
+    "opciones": [
+      "Cobertura básica.",
+      "Cobertura por convenio.",
+      "Exclusión total.",
+      "No se puede asegurar."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Cobertura básica.",
+    "explanation": "Un cartel publicitario puede asegurarse en la cobertura básica de la póliza de anuncios luminosos. No requiere convenio ni está excluido.",
+    "explicacion": "Un cartel publicitario puede asegurarse en la cobertura básica de la póliza de anuncios luminosos. No requiere convenio ni está excluido."
+  },
+  {
+    "id": 391,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Anuncios Luminosos",
+    "question": "¿Cómo es considerado el daño del anuncio luminoso por interrupción o fallas en el suministro de corriente eléctrica, proveniente de la red pública?",
+    "pregunta": "¿Cómo es considerado el daño del anuncio luminoso por interrupción o fallas en el suministro de corriente eléctrica, proveniente de la red pública?",
+    "options": [
+      "Cobertura básica.",
+      "Convenio expreso.",
+      "Exclusión total.",
+      "Todo riesgo de incendio."
+    ],
+    "opciones": [
+      "Cobertura básica.",
+      "Convenio expreso.",
+      "Exclusión total.",
+      "Todo riesgo de incendio."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Exclusión total.",
+    "explanation": "Los daños al anuncio por fallas en el suministro eléctrico de la red pública son una exclusión total, porque se atribuyen a un tercero ajeno. No forman parte de la básica ni del convenio expreso.",
+    "explicacion": "Los daños al anuncio por fallas en el suministro eléctrico de la red pública son una exclusión total, porque se atribuyen a un tercero ajeno. No forman parte de la básica ni del convenio expreso."
+  },
+  {
+    "id": 392,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Anuncios Luminosos",
+    "question": "En caso de reclamación que amerite indemnización en el seguro de Anuncios Luminosos; ésta será pagada bajo el concepto de:",
+    "pregunta": "En caso de reclamación que amerite indemnización en el seguro de Anuncios Luminosos; ésta será pagada bajo el concepto de:",
+    "options": [
+      "Valor de reposición.",
+      "Valor real.",
+      "Valor comercial.",
+      "Valor convenido."
+    ],
+    "opciones": [
+      "Valor de reposición.",
+      "Valor real.",
+      "Valor comercial.",
+      "Valor convenido."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Valor de reposición.",
+    "explanation": "La indemnización en anuncios luminosos se paga a valor de reposición, es decir, el costo de un anuncio nuevo equivalente. No se usa el valor real, comercial o convenido.",
+    "explicacion": "La indemnización en anuncios luminosos se paga a valor de reposición, es decir, el costo de un anuncio nuevo equivalente. No se usa el valor real, comercial o convenido."
+  },
+  {
+    "id": 393,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Anuncios Luminosos",
+    "question": "En caso de siniestro, si la suma asegurada es inferior al valor del anuncio luminoso, la Aseguradora pagará bajo el concepto de:",
+    "pregunta": "En caso de siniestro, si la suma asegurada es inferior al valor del anuncio luminoso, la Aseguradora pagará bajo el concepto de:",
+    "options": [
+      "Primer riesgo.",
+      "Seguro proporcional.",
+      "Coaseguro convenido.",
+      "Valor real."
+    ],
+    "opciones": [
+      "Primer riesgo.",
+      "Seguro proporcional.",
+      "Coaseguro convenido.",
+      "Valor real."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Seguro proporcional.",
+    "explanation": "Si la suma asegurada es inferior al valor del anuncio, la aseguradora paga en forma proporcional, aplicando la regla de la Ley sobre el Contrato de Seguro. El primer riesgo y el coaseguro convenido requieren pacto.",
+    "explicacion": "Si la suma asegurada es inferior al valor del anuncio, la aseguradora paga en forma proporcional, aplicando la regla de la Ley sobre el Contrato de Seguro. El primer riesgo y el coaseguro convenido requieren pacto."
+  },
+  {
+    "id": 394,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Anuncios Luminosos",
+    "question": "Los daños ocasionados por reparaciones y mejoras del anuncio son riesgos contratados:",
+    "pregunta": "Los daños ocasionados por reparaciones y mejoras del anuncio son riesgos contratados:",
+    "options": [
+      "No contemplados",
+      "Excluidos",
+      "Por convenio expreso",
+      "En la cobertura básica"
+    ],
+    "opciones": [
+      "No contemplados",
+      "Excluidos",
+      "Por convenio expreso",
+      "En la cobertura básica"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Por convenio expreso",
+    "explanation": "Los daños por reparaciones y mejoras del anuncio se contratan por convenio expreso. No están excluidos ni forman parte de la cobertura básica.",
+    "explicacion": "Los daños por reparaciones y mejoras del anuncio se contratan por convenio expreso. No están excluidos ni forman parte de la cobertura básica."
+  },
+  {
+    "id": 395,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Anuncios Luminosos",
+    "question": "Todos son riesgos que se pueden contratar por convenio expreso en el seguro de anuncios luminosos, excepto:",
+    "pregunta": "Todos son riesgos que se pueden contratar por convenio expreso en el seguro de anuncios luminosos, excepto:",
+    "options": [
+      "Pintura del anuncio",
+      "Mejoras del anuncio",
+      "Alteraciones del inmueble",
+      "Rayaduras al anuncio"
+    ],
+    "opciones": [
+      "Pintura del anuncio",
+      "Mejoras del anuncio",
+      "Alteraciones del inmueble",
+      "Rayaduras al anuncio"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Rayaduras al anuncio",
+    "explanation": "La pintura y las mejoras del anuncio y las alteraciones del inmueble pueden contratarse por convenio expreso. Las rayaduras al anuncio son un defecto estético excluido.",
+    "explicacion": "La pintura y las mejoras del anuncio y las alteraciones del inmueble pueden contratarse por convenio expreso. Las rayaduras al anuncio son un defecto estético excluido."
+  },
+  {
+    "id": 396,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Anuncios Luminosos",
+    "question": "¿Cuál es la cobertura básica del seguro de anuncios luminosos?",
+    "pregunta": "¿Cuál es la cobertura básica del seguro de anuncios luminosos?",
+    "options": [
+      "Daños ocasionados por mala instalación",
+      "Daños causados por incendio, explosión y corto circuito",
+      "Todos los daños que sufra el anuncio por riesgos meteorológicos",
+      "Daños por uso, desgaste y depreciación normal"
+    ],
+    "opciones": [
+      "Daños ocasionados por mala instalación",
+      "Daños causados por incendio, explosión y corto circuito",
+      "Todos los daños que sufra el anuncio por riesgos meteorológicos",
+      "Daños por uso, desgaste y depreciación normal"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Todos los daños que sufra el anuncio por riesgos meteorológicos",
+    "explanation": "Según la clave de la guía, la cobertura básica de anuncios luminosos ampara los daños por riesgos meteorológicos, además de los accidentes súbitos. La mala instalación y el desgaste se excluyen, y el corto circuito tiene un tratamiento especial.",
+    "explicacion": "Según la clave de la guía, la cobertura básica de anuncios luminosos ampara los daños por riesgos meteorológicos, además de los accidentes súbitos. La mala instalación y el desgaste se excluyen, y el corto circuito tiene un tratamiento especial."
+  },
+  {
+    "id": 397,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Anuncios Luminosos",
+    "question": "Todos son exclusiones del seguro de anuncios luminosos, excepto:",
+    "pregunta": "Todos son exclusiones del seguro de anuncios luminosos, excepto:",
+    "options": [
+      "Daños por instalación defectuosa",
+      "Desgaste por uso",
+      "Terremoto y erupción volcánica",
+      "Rayaduras y defectos estéticos"
+    ],
+    "opciones": [
+      "Daños por instalación defectuosa",
+      "Desgaste por uso",
+      "Terremoto y erupción volcánica",
+      "Rayaduras y defectos estéticos"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Terremoto y erupción volcánica",
+    "explanation": "El terremoto y la erupción volcánica pueden contratarse en el seguro de anuncios luminosos, por lo que no son exclusiones definitivas. La instalación defectuosa, el desgaste y las rayaduras sí se excluyen.",
+    "explicacion": "El terremoto y la erupción volcánica pueden contratarse en el seguro de anuncios luminosos, por lo que no son exclusiones definitivas. La instalación defectuosa, el desgaste y las rayaduras sí se excluyen."
+  },
+  {
+    "id": 398,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Anuncios Luminosos",
+    "question": "¿Cuáles son tres riesgos cubiertos en la póliza de anuncios luminosos?",
+    "pregunta": "¿Cuáles son tres riesgos cubiertos en la póliza de anuncios luminosos?",
+    "options": [
+      "Incendio, explosión y robo total",
+      "Corrosión, remontaje y reparación",
+      "Fallas mecánicas, corto circuito e incendio",
+      "Humedad atmosférica, explosión, traslado del anuncio"
+    ],
+    "opciones": [
+      "Incendio, explosión y robo total",
+      "Corrosión, remontaje y reparación",
+      "Fallas mecánicas, corto circuito e incendio",
+      "Humedad atmosférica, explosión, traslado del anuncio"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Incendio, explosión y robo total",
+    "explanation": "Según la clave de la guía, incendio, explosión y robo total son riesgos cubiertos en la póliza de anuncios luminosos. La corrosión, las fallas mecánicas y la humedad atmosférica son exclusiones.",
+    "explicacion": "Según la clave de la guía, incendio, explosión y robo total son riesgos cubiertos en la póliza de anuncios luminosos. La corrosión, las fallas mecánicas y la humedad atmosférica son exclusiones."
+  },
+  {
+    "id": 399,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Anuncios Luminosos",
+    "question": "Los anuncios luminosos de un local comercial, se dañan debido a su instalación defectuosa, ¿cómo se cubre la pérdida?",
+    "pregunta": "Los anuncios luminosos de un local comercial, se dañan debido a su instalación defectuosa, ¿cómo se cubre la pérdida?",
+    "options": [
+      "La compañía cubre el 80% de su valor de reposición",
+      "Por ser un riesgo bajo convenio expreso, procede la reclamación",
+      "Por ser un riesgo amparado en la cobertura básica, se paga la reclamación",
+      "Por ser un riesgo excluido no se cubre la pérdida"
+    ],
+    "opciones": [
+      "La compañía cubre el 80% de su valor de reposición",
+      "Por ser un riesgo bajo convenio expreso, procede la reclamación",
+      "Por ser un riesgo amparado en la cobertura básica, se paga la reclamación",
+      "Por ser un riesgo excluido no se cubre la pérdida"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Por ser un riesgo excluido no se cubre la pérdida",
+    "explanation": "Los daños por instalación defectuosa son un riesgo excluido del seguro de anuncios luminosos, por lo que la pérdida no se cubre. No se paga el 80% ni procede por convenio.",
+    "explicacion": "Los daños por instalación defectuosa son un riesgo excluido del seguro de anuncios luminosos, por lo que la pérdida no se cubre. No se paga el 80% ni procede por convenio."
+  },
+  {
+    "id": 400,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Objetos Personales",
+    "question": "¿Cuál es un riesgo excluido del seguro de objetos personales?",
+    "pregunta": "¿Cuál es un riesgo excluido del seguro de objetos personales?",
+    "options": [
+      "Rotura súbita e imprevista",
+      "Humedad y cambios atmosféricos",
+      "Robo en galerías",
+      "Robo dentro del domicilio del asegurado"
+    ],
+    "opciones": [
+      "Rotura súbita e imprevista",
+      "Humedad y cambios atmosféricos",
+      "Robo en galerías",
+      "Robo dentro del domicilio del asegurado"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Humedad y cambios atmosféricos",
+    "explanation": "La humedad y los cambios atmosféricos son riesgos excluidos del seguro de objetos personales, porque causan deterioro gradual. La rotura súbita y el robo pueden cubrirse.",
+    "explicacion": "La humedad y los cambios atmosféricos son riesgos excluidos del seguro de objetos personales, porque causan deterioro gradual. La rotura súbita y el robo pueden cubrirse."
+  },
+  {
+    "id": 401,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Objetos Personales",
+    "question": "¿Cómo se consideran los bienes depositados en cajas de seguridad en bancos, en el seguro de objetos personales?",
+    "pregunta": "¿Cómo se consideran los bienes depositados en cajas de seguridad en bancos, en el seguro de objetos personales?",
+    "options": [
+      "No asegurables",
+      "Excluidos",
+      "Amparados mediante convenio expreso",
+      "Amparados en la cobertura básica"
+    ],
+    "opciones": [
+      "No asegurables",
+      "Excluidos",
+      "Amparados mediante convenio expreso",
+      "Amparados en la cobertura básica"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Excluidos",
+    "explanation": "Los bienes depositados en cajas de seguridad bancarias se excluyen del seguro de objetos personales, porque el banco responde por su custodia. No se cubren por convenio ni en la básica.",
+    "explicacion": "Los bienes depositados en cajas de seguridad bancarias se excluyen del seguro de objetos personales, porque el banco responde por su custodia. No se cubren por convenio ni en la básica."
+  },
+  {
+    "id": 402,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Objetos Personales",
+    "question": "Todos son riesgos excluidos del seguro de objetos personales, excepto:",
+    "pregunta": "Todos son riesgos excluidos del seguro de objetos personales, excepto:",
+    "options": [
+      "Procesos de limpieza",
+      "Pérdidas consecuenciales",
+      "Robo en una galería",
+      "Desgaste"
+    ],
+    "opciones": [
+      "Procesos de limpieza",
+      "Pérdidas consecuenciales",
+      "Robo en una galería",
+      "Desgaste"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Procesos de limpieza",
+    "explanation": "Los procesos de limpieza pueden cubrirse en objetos personales, por lo que no son una exclusión. Las pérdidas consecuenciales, el robo en galerías y el desgaste sí se excluyen.",
+    "explicacion": "Los procesos de limpieza pueden cubrirse en objetos personales, por lo que no son una exclusión. Las pérdidas consecuenciales, el robo en galerías y el desgaste sí se excluyen."
+  },
+  {
+    "id": 403,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Objetos Personales",
+    "question": "En la cobertura básica de objetos personales se amparan los bienes contra daños o pérdidas:",
+    "pregunta": "En la cobertura básica de objetos personales se amparan los bienes contra daños o pérdidas:",
+    "options": [
+      "Súbitos e imprevistos cuando se encuentran dentro del domicilio del asegurado",
+      "Súbitos e imprevistos cuando se encuentran fuera del domicilio del asegurado",
+      "Causados por empleados del asegurado cuando realicen labores bajo sus órdenes",
+      "Ocasionados por descuido o negligencia de los empleados domésticos del asegurado"
+    ],
+    "opciones": [
+      "Súbitos e imprevistos cuando se encuentran dentro del domicilio del asegurado",
+      "Súbitos e imprevistos cuando se encuentran fuera del domicilio del asegurado",
+      "Causados por empleados del asegurado cuando realicen labores bajo sus órdenes",
+      "Ocasionados por descuido o negligencia de los empleados domésticos del asegurado"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Súbitos e imprevistos cuando se encuentran fuera del domicilio del asegurado",
+    "explanation": "Según la clave de la guía, la cobertura básica de objetos personales ampara daños o pérdidas súbitos e imprevistos cuando los bienes están fuera del domicilio del asegurado. Los daños por empleados o por su negligencia se excluyen.",
+    "explicacion": "Según la clave de la guía, la cobertura básica de objetos personales ampara daños o pérdidas súbitos e imprevistos cuando los bienes están fuera del domicilio del asegurado. Los daños por empleados o por su negligencia se excluyen."
+  },
+  {
+    "id": 404,
+    "module": "Ramos Diversos y Misceláneos",
+    "modulo": "Ramos Diversos y Misceláneos",
+    "submodulo": "Diversos: Objetos Personales",
+    "question": "De la siguiente lista de exclusiones elige 3 que correspondan al seguro de objetos personales: 1- Daños materiales por raspaduras 2- Daños que sufran los bienes en forma accidental 3- Daños materiales por acción de la polilla 4- Daños ocasionados por hurto 5- Daños a los bienes dentro del domicilio 6- Daños durante la exposición al público en galerías:",
+    "pregunta": "De la siguiente lista de exclusiones elige 3 que correspondan al seguro de objetos personales: 1- Daños materiales por raspaduras 2- Daños que sufran los bienes en forma accidental 3- Daños materiales por acción de la polilla 4- Daños ocasionados por hurto 5- Daños a los bienes dentro del domicilio 6- Daños durante la exposición al público en galerías:",
+    "options": [
+      "1, 2, 6",
+      "1, 3, 4",
+      "2, 3, 5",
+      "3, 4, 6"
+    ],
+    "opciones": [
+      "1, 2, 6",
+      "1, 3, 4",
+      "2, 3, 5",
+      "3, 4, 6"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 3, 4",
+    "explanation": "Son exclusiones del seguro de objetos personales las raspaduras, la polilla y el hurto. Los daños accidentales y los ocurridos dentro del domicilio pueden cubrirse.",
+    "explicacion": "Son exclusiones del seguro de objetos personales las raspaduras, la polilla y el hurto. Los daños accidentales y los ocurridos dentro del domicilio pueden cubrirse."
+  }
+]

@@ -758,11 +758,11 @@ export async function createAgentUser(data: { name: string; email: string; role:
             });
             const activeUsersCount = premiumUsersCount + (liteUsersCount * 0.20);
             
-            const limit = ['aacom', 'aacomsoft'].includes(currentUser.agency?.slug || '') ? Infinity : 10 + (currentUser.agency?.purchasedSeats || 0);
+            const limit = ['aacom', 'aacomsoft'].includes(currentUser.agency?.slug || '') ? Infinity : 20 + (currentUser.agency?.purchasedSeats || 0);
             if (activeUsersCount >= limit) {
                 return { 
                     success: false, 
-                    message: `LÃ­mite alcanzado (${limit} asientos ocupados. Tienes ${premiumUsersCount} premium y ${liteUsersCount} limitados). Adquiere mÃ¡s licencias en tu Portal de Pagos o envÃ­ale a este agente una invitaciÃ³n para que pague su propia cuenta.` 
+                    message: `Límite alcanzado (${limit} asientos ocupados. Tienes ${premiumUsersCount} premium y ${liteUsersCount} limitados). Adquiere más licencias en tu Portal de Pagos o envíale a este agente una invitación para que pague su propia cuenta.` 
                 };
             }
         }

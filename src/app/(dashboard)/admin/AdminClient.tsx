@@ -1965,10 +1965,10 @@ export default function AdminClient() {
                     <div className="flex flex-col items-start md:items-end gap-1.5 bg-white p-3 rounded-xl border border-slate-200 shadow-sm w-full md:w-auto">
                       <div className="flex items-center gap-2 text-xs font-black text-slate-700">
                         <Users className="h-4 w-4 text-indigo-500" />
-                        Capacidad: {usersList.length} / {['aacom', 'aacomsoft'].includes(currentUserData.agency.slug) ? 'Ilimitada' : (10 + (currentUserData.agency.purchasedSeats || 0))}
+                        Capacidad: {usersList.length} / {['aacom', 'aacomsoft'].includes(currentUserData.agency.slug) ? 'Ilimitada' : (20 + (currentUserData.agency.purchasedSeats || 0))}
                       </div>
                       <p className="text-[10px] text-muted-foreground font-semibold">
-                        {['aacom', 'aacomsoft'].includes(currentUserData.agency.slug) ? '(Beneficio de cuenta fundadora)' : `(10 lugares base + ${currentUserData.agency.purchasedSeats || 0} extra)`}
+                        {['aacom', 'aacomsoft'].includes(currentUserData.agency.slug) ? '(Beneficio de cuenta fundadora)' : `(20 lugares base + ${currentUserData.agency.purchasedSeats || 0} extra)`}
                       </p>
                       <Button 
                         size="sm" 
@@ -2015,7 +2015,7 @@ export default function AdminClient() {
                           <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
                             <div className="flex justify-between text-sm">
                               <span className="text-slate-500">Asientos Base (Incluidos)</span>
-                              <span className="font-bold text-slate-700">10</span>
+                              <span className="font-bold text-slate-700">20</span>
                             </div>
                             <div className="flex justify-between text-sm">
                               <span className="text-slate-500">Asientos Extras</span>
@@ -2023,7 +2023,7 @@ export default function AdminClient() {
                             </div>
                             <div className="pt-3 border-t border-slate-200 flex justify-between items-center">
                               <span className="text-sm font-bold text-slate-700">Total Capacidad (Usuarios)</span>
-                              <span className="text-xl font-black text-slate-900">{10 + selectedExtraSeats}</span>
+                              <span className="text-xl font-black text-slate-900">{20 + selectedExtraSeats}</span>
                             </div>
                           </div>
 

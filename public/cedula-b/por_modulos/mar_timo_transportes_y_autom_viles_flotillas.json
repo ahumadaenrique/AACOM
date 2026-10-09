@@ -1,0 +1,1977 @@
+[
+  {
+    "id": 174,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "Conjunto de vehículos propiedad del titular de la póliza sea persona física o persona moral. Normalmente todos los vehículos tienen el mismo paquete de protección, es el concepto de:",
+    "pregunta": "Conjunto de vehículos propiedad del titular de la póliza sea persona física o persona moral. Normalmente todos los vehículos tienen el mismo paquete de protección, es el concepto de:",
+    "options": [
+      "Flotilla.",
+      "Colectividad.",
+      "Dividendo.",
+      "Camiones."
+    ],
+    "opciones": [
+      "Flotilla.",
+      "Colectividad.",
+      "Dividendo.",
+      "Camiones."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Flotilla.",
+    "explanation": "La flotilla es el conjunto de vehículos propiedad del titular de la póliza, generalmente con el mismo paquete de protección. La colectividad agrupa vehículos de distintos propietarios con características distintas, y dividendo o camiones no son el concepto.",
+    "explicacion": "La flotilla es el conjunto de vehículos propiedad del titular de la póliza, generalmente con el mismo paquete de protección. La colectividad agrupa vehículos de distintos propietarios con características distintas, y dividendo o camiones no son el concepto."
+  },
+  {
+    "id": 175,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "Conjunto de vehículos de un grupo, colectividad, asociación o empresa cuyas características de contratación son diferentes, es el concepto de:",
+    "pregunta": "Conjunto de vehículos de un grupo, colectividad, asociación o empresa cuyas características de contratación son diferentes, es el concepto de:",
+    "options": [
+      "Flotilla.",
+      "Colectividad.",
+      "Dividendo.",
+      "Camiones."
+    ],
+    "opciones": [
+      "Flotilla.",
+      "Colectividad.",
+      "Dividendo.",
+      "Camiones."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Colectividad.",
+    "explanation": "La colectividad es el conjunto de vehículos de un grupo, asociación o empresa cuyas características de contratación son diferentes. La flotilla pertenece a un solo titular con condiciones homogéneas.",
+    "explicacion": "La colectividad es el conjunto de vehículos de un grupo, asociación o empresa cuyas características de contratación son diferentes. La flotilla pertenece a un solo titular con condiciones homogéneas."
+  },
+  {
+    "id": 176,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "Un camión causa daños a otros vehículos en San Antonio, California. El seguro no paga los daños. ¿En qué cláusula se encuentra la razón de ésta decisión?",
+    "pregunta": "Un camión causa daños a otros vehículos en San Antonio, California. El seguro no paga los daños. ¿En qué cláusula se encuentra la razón de ésta decisión?",
+    "options": [
+      "Otros seguros",
+      "Territorialidad",
+      "Exclusiones",
+      "Riesgos cubiertos"
+    ],
+    "opciones": [
+      "Otros seguros",
+      "Territorialidad",
+      "Exclusiones",
+      "Riesgos cubiertos"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Territorialidad",
+    "explanation": "La cláusula de territorialidad delimita que la póliza opera en México y, en su caso, extiende ciertas coberturas al extranjero, pero no la responsabilidad civil en Estados Unidos. Por eso los daños a terceros en territorio estadounidense no se pagan.",
+    "explicacion": "La cláusula de territorialidad delimita que la póliza opera en México y, en su caso, extiende ciertas coberturas al extranjero, pero no la responsabilidad civil en Estados Unidos. Por eso los daños a terceros en territorio estadounidense no se pagan."
+  },
+  {
+    "id": 177,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "¿Cuál es el ejemplo de carga peligrosa para R.C. Camiones?",
+    "pregunta": "¿Cuál es el ejemplo de carga peligrosa para R.C. Camiones?",
+    "options": [
+      "Joyería",
+      "Ropa",
+      "Electrodomésticos",
+      "Troncos de madera"
+    ],
+    "opciones": [
+      "Joyería",
+      "Ropa",
+      "Electrodomésticos",
+      "Troncos de madera"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Troncos de madera",
+    "explanation": "Según la clave de la guía, los troncos de madera se consideran carga peligrosa para la responsabilidad civil de camiones, por el riesgo de que se desprendan y causen daños. La joyería, la ropa y los electrodomésticos son carga no peligrosa.",
+    "explicacion": "Según la clave de la guía, los troncos de madera se consideran carga peligrosa para la responsabilidad civil de camiones, por el riesgo de que se desprendan y causen daños. La joyería, la ropa y los electrodomésticos son carga no peligrosa."
+  },
+  {
+    "id": 178,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "Todas son coberturas incluidas en el paquete amplio, EXCEPTO:",
+    "pregunta": "Todas son coberturas incluidas en el paquete amplio, EXCEPTO:",
+    "options": [
+      "Equipo especial",
+      "Daños materiales",
+      "Gastos médicos a ocupantes",
+      "Robo total"
+    ],
+    "opciones": [
+      "Equipo especial",
+      "Daños materiales",
+      "Gastos médicos a ocupantes",
+      "Robo total"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Equipo especial",
+    "explanation": "El paquete amplio de automóviles incluye daños materiales, robo total, responsabilidad civil y gastos médicos a ocupantes. El equipo especial, como rines o equipo de sonido no original, es una cobertura adicional que se contrata con suma asegurada propia.",
+    "explicacion": "El paquete amplio de automóviles incluye daños materiales, robo total, responsabilidad civil y gastos médicos a ocupantes. El equipo especial, como rines o equipo de sonido no original, es una cobertura adicional que se contrata con suma asegurada propia."
+  },
+  {
+    "id": 179,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "Un camión choca y el chofer tiene aliento alcohólico. ¿en qué cobertura queda amparado?",
+    "pregunta": "Un camión choca y el chofer tiene aliento alcohólico. ¿en qué cobertura queda amparado?",
+    "options": [
+      "Daños por la carga",
+      "Responsabilidad civil",
+      "Es una exclusión",
+      "Daños materiales"
+    ],
+    "opciones": [
+      "Daños por la carga",
+      "Responsabilidad civil",
+      "Es una exclusión",
+      "Daños materiales"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Es una exclusión",
+    "explanation": "Según la clave de la guía, si el conductor maneja con aliento alcohólico el siniestro cae en una exclusión de la póliza. En muchas pólizas actuales la exclusión aplica a daños materiales del vehículo, pero la responsabilidad civil frente a terceros se sigue atendiendo, por lo que conviene revisar las condiciones.",
+    "explicacion": "Según la clave de la guía, si el conductor maneja con aliento alcohólico el siniestro cae en una exclusión de la póliza. En muchas pólizas actuales la exclusión aplica a daños materiales del vehículo, pero la responsabilidad civil frente a terceros se sigue atendiendo, por lo que conviene revisar las condiciones."
+  },
+  {
+    "id": 180,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "¿Qué cobertura no queda incluida en el paquete limitado?",
+    "pregunta": "¿Qué cobertura no queda incluida en el paquete limitado?",
+    "options": [
+      "Robo Total",
+      "Daños Materiales",
+      "Responsabilidad Civil",
+      "Gastos Médicos a Ocupantes"
+    ],
+    "opciones": [
+      "Robo Total",
+      "Daños Materiales",
+      "Responsabilidad Civil",
+      "Gastos Médicos a Ocupantes"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Daños Materiales",
+    "explanation": "El paquete limitado incluye robo total, responsabilidad civil y gastos médicos a ocupantes, pero no daños materiales al propio vehículo. Esa cobertura es la que distingue al paquete amplio.",
+    "explicacion": "El paquete limitado incluye robo total, responsabilidad civil y gastos médicos a ocupantes, pero no daños materiales al propio vehículo. Esa cobertura es la que distingue al paquete amplio."
+  },
+  {
+    "id": 181,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "Un camión causa daños a otros vehículos con la carga que transporta. ¿Qué tipo de cobertura ampara este suceso?",
+    "pregunta": "Un camión causa daños a otros vehículos con la carga que transporta. ¿Qué tipo de cobertura ampara este suceso?",
+    "options": [
+      "Exclusión",
+      "Básica o Principal",
+      "Adicional",
+      "Por convenio expreso"
+    ],
+    "opciones": [
+      "Exclusión",
+      "Básica o Principal",
+      "Adicional",
+      "Por convenio expreso"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Por convenio expreso",
+    "explanation": "Los daños que causa la carga de un camión a terceros se amparan solo por convenio expreso, es decir, si se contrata la cobertura de responsabilidad civil por la carga. No es una cobertura básica ni una exclusión absoluta.",
+    "explicacion": "Los daños que causa la carga de un camión a terceros se amparan solo por convenio expreso, es decir, si se contrata la cobertura de responsabilidad civil por la carga. No es una cobertura básica ni una exclusión absoluta."
+  },
+  {
+    "id": 182,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "¿En qué tiempo máximo debe valuar los daños de un vehículo la Aseguradora?",
+    "pregunta": "¿En qué tiempo máximo debe valuar los daños de un vehículo la Aseguradora?",
+    "options": [
+      "12 horas",
+      "24 horas",
+      "48 horas",
+      "72 horas"
+    ],
+    "opciones": [
+      "12 horas",
+      "24 horas",
+      "48 horas",
+      "72 horas"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "72 horas",
+    "explanation": "Según la clave de la guía, la aseguradora debe valuar los daños del vehículo en un máximo de 72 horas. Los plazos de 12, 24 o 48 horas no son los que señala la guía.",
+    "explicacion": "Según la clave de la guía, la aseguradora debe valuar los daños del vehículo en un máximo de 72 horas. Los plazos de 12, 24 o 48 horas no son los que señala la guía."
+  },
+  {
+    "id": 183,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "Relaciona la columna de Tipo de Licencias con la de Vehículos: TIPO DE LICENCIA VEHICULO 1.- Tipo A A.- menos de 8 asientos 2.- Tipo B B.- más de 8 asientos 3.- Tipo C C.- Transporte público 4.- Tipo D D.- Motocicletas:",
+    "pregunta": "Relaciona la columna de Tipo de Licencias con la de Vehículos: TIPO DE LICENCIA VEHICULO 1.- Tipo A A.- menos de 8 asientos 2.- Tipo B B.- más de 8 asientos 3.- Tipo C C.- Transporte público 4.- Tipo D D.- Motocicletas:",
+    "options": [
+      "1-A, 2-B, 3-C, 4-D",
+      "1-C, 2-A, 3-B, 4-D",
+      "1-D, 2-C, 3-B, 4-A",
+      "1-A, 2-B, 3-D, 4-B"
+    ],
+    "opciones": [
+      "1-A, 2-B, 3-C, 4-D",
+      "1-C, 2-A, 3-B, 4-D",
+      "1-D, 2-C, 3-B, 4-A",
+      "1-A, 2-B, 3-D, 4-B"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "1-A, 2-B, 3-C, 4-D",
+    "explanation": "Según la clave de la guía, la licencia tipo A corresponde a vehículos de menos de 8 asientos, la B a más de 8, la C al transporte público y la D a motocicletas. La clasificación de licencias depende del reglamento de tránsito de cada entidad.",
+    "explicacion": "Según la clave de la guía, la licencia tipo A corresponde a vehículos de menos de 8 asientos, la B a más de 8, la C al transporte público y la D a motocicletas. La clasificación de licencias depende del reglamento de tránsito de cada entidad."
+  },
+  {
+    "id": 184,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "Todas son obligaciones que tiene el Asegurado cuando sucede un siniestro que afecta el seguro de automóviles, EXCEPTO:",
+    "pregunta": "Todas son obligaciones que tiene el Asegurado cuando sucede un siniestro que afecta el seguro de automóviles, EXCEPTO:",
+    "options": [
+      "Comparecer en todo procedimiento civil",
+      "Comprobar la propiedad del vehículo",
+      "Dar aviso a la Aseguradora al conocer el siniestro",
+      "Tomar las medidas que indique la Aseguradora para minimizar el daño"
+    ],
+    "opciones": [
+      "Comparecer en todo procedimiento civil",
+      "Comprobar la propiedad del vehículo",
+      "Dar aviso a la Aseguradora al conocer el siniestro",
+      "Tomar las medidas que indique la Aseguradora para minimizar el daño"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Comprobar la propiedad del vehículo",
+    "explanation": "Ante un siniestro de automóviles, el asegurado debe dar aviso, minimizar el daño siguiendo las indicaciones de la aseguradora y comparecer en los procedimientos. Comprobar la propiedad se exige para indemnizar una pérdida total o robo, no como obligación inmediata del siniestro.",
+    "explicacion": "Ante un siniestro de automóviles, el asegurado debe dar aviso, minimizar el daño siguiendo las indicaciones de la aseguradora y comparecer en los procedimientos. Comprobar la propiedad se exige para indemnizar una pérdida total o robo, no como obligación inmediata del siniestro."
+  },
+  {
+    "id": 185,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "Elige de la lista, los elementos que se toman en cuenta para la indemnización de pérdidas parciales en el seguro de automóviles: 1. Valor factura de refacciones 2. Impuestos 3. Gastos médicos a ocupantes 4. Mano de obra 5. Asistencia legal:",
+    "pregunta": "Elige de la lista, los elementos que se toman en cuenta para la indemnización de pérdidas parciales en el seguro de automóviles: 1. Valor factura de refacciones 2. Impuestos 3. Gastos médicos a ocupantes 4. Mano de obra 5. Asistencia legal:",
+    "options": [
+      "3, 4, 5",
+      "1, 4, 5",
+      "1, 2, 4",
+      "2, 3, 4"
+    ],
+    "opciones": [
+      "3, 4, 5",
+      "1, 4, 5",
+      "1, 2, 4",
+      "2, 3, 4"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 2, 4",
+    "explanation": "En pérdidas parciales de automóviles se indemnizan el valor de las refacciones, los impuestos y la mano de obra necesarios para la reparación. Los gastos médicos a ocupantes y la asistencia legal son coberturas distintas.",
+    "explicacion": "En pérdidas parciales de automóviles se indemnizan el valor de las refacciones, los impuestos y la mano de obra necesarios para la reparación. Los gastos médicos a ocupantes y la asistencia legal son coberturas distintas."
+  },
+  {
+    "id": 186,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "Es una de las obligaciones del ajustador:",
+    "pregunta": "Es una de las obligaciones del ajustador:",
+    "options": [
+      "Intentar evitar el pago del siniestro.",
+      "Deslindar responsabilidades en contra del tercero.",
+      "Deslindar responsabilidades en contra del asegurado.",
+      "Deslindar responsabilidades en contra de quien las tenga."
+    ],
+    "opciones": [
+      "Intentar evitar el pago del siniestro.",
+      "Deslindar responsabilidades en contra del tercero.",
+      "Deslindar responsabilidades en contra del asegurado.",
+      "Deslindar responsabilidades en contra de quien las tenga."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Deslindar responsabilidades en contra de quien las tenga.",
+    "explanation": "El ajustador debe deslindar responsabilidades en contra de quien las tenga, de forma imparcial. No debe buscar evitar el pago ni culpar de antemano al tercero o al asegurado.",
+    "explicacion": "El ajustador debe deslindar responsabilidades en contra de quien las tenga, de forma imparcial. No debe buscar evitar el pago ni culpar de antemano al tercero o al asegurado."
+  },
+  {
+    "id": 187,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "El asegurado podrá solicitar la pérdida total del auto cuando la reparación se encuentre:",
+    "pregunta": "El asegurado podrá solicitar la pérdida total del auto cuando la reparación se encuentre:",
+    "options": [
+      "Por arriba del 20% sin llegar al 50% del valor del auto.",
+      "Por arriba del 50% sin llegar al 75% del valor del auto.",
+      "Sólo cuando llegue al 75% del valor del auto.",
+      "Nunca puede solicitarlo. Es la aseguradora quien lo determina."
+    ],
+    "opciones": [
+      "Por arriba del 20% sin llegar al 50% del valor del auto.",
+      "Por arriba del 50% sin llegar al 75% del valor del auto.",
+      "Sólo cuando llegue al 75% del valor del auto.",
+      "Nunca puede solicitarlo. Es la aseguradora quien lo determina."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Por arriba del 50% sin llegar al 75% del valor del auto.",
+    "explanation": "Según la clave de la guía, el asegurado puede solicitar que se considere pérdida total cuando la reparación supera el 50% sin llegar al 75% del valor del auto. A partir del 75% la pérdida total suele ser automática.",
+    "explicacion": "Según la clave de la guía, el asegurado puede solicitar que se considere pérdida total cuando la reparación supera el 50% sin llegar al 75% del valor del auto. A partir del 75% la pérdida total suele ser automática."
+  },
+  {
+    "id": 188,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "Si en el siniestro el asegurado opta por trasladarlo a un lugar distinto del elegido por la compañía, ¿cuál es la suma asegurada para este concepto?.",
+    "pregunta": "Si en el siniestro el asegurado opta por trasladarlo a un lugar distinto del elegido por la compañía, ¿cuál es la suma asegurada para este concepto?.",
+    "options": [
+      "Valor factura.",
+      "Gasto incurrido.",
+      "Una vez la UMA mensual.",
+      "15 veces la UMA diaria."
+    ],
+    "opciones": [
+      "Valor factura.",
+      "Gasto incurrido.",
+      "Una vez la UMA mensual.",
+      "15 veces la UMA diaria."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Una vez la UMA mensual.",
+    "explanation": "Si el asegurado traslada el vehículo a un lugar distinto al elegido por la aseguradora, el gasto se cubre solo hasta un límite equivalente a una vez la UMA mensual. No se paga el valor factura ni el gasto incurrido completo.",
+    "explicacion": "Si el asegurado traslada el vehículo a un lugar distinto al elegido por la aseguradora, el gasto se cubre solo hasta un límite equivalente a una vez la UMA mensual. No se paga el valor factura ni el gasto incurrido completo."
+  },
+  {
+    "id": 243,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Señala un riesgo cubierto en forma básica en la póliza de transportes de carga terrestre:",
+    "pregunta": "Señala un riesgo cubierto en forma básica en la póliza de transportes de carga terrestre:",
+    "options": [
+      "Volcadura.",
+      "Barredura.",
+      "Robo parcial.",
+      "Derrame."
+    ],
+    "opciones": [
+      "Volcadura.",
+      "Barredura.",
+      "Robo parcial.",
+      "Derrame."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Volcadura.",
+    "explanation": "La volcadura del vehículo es un riesgo básico del seguro de transporte terrestre de carga. La barredura es propia del transporte marítimo, y el robo parcial y el derrame son coberturas adicionales.",
+    "explicacion": "La volcadura del vehículo es un riesgo básico del seguro de transporte terrestre de carga. La barredura es propia del transporte marítimo, y el robo parcial y el derrame son coberturas adicionales."
+  },
+  {
+    "id": 244,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Si la carretera está bloqueada y el transporte tiene que cambiar de ruta. ¿Qué cláusula ampara la mercancía si sufre un siniestro?",
+    "pregunta": "Si la carretera está bloqueada y el transporte tiene que cambiar de ruta. ¿Qué cláusula ampara la mercancía si sufre un siniestro?",
+    "options": [
+      "Bandera de conveniencia",
+      "Variaciones",
+      "Interrupción en el transporte",
+      "Avería particular"
+    ],
+    "opciones": [
+      "Bandera de conveniencia",
+      "Variaciones",
+      "Interrupción en el transporte",
+      "Avería particular"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Variaciones",
+    "explanation": "La cláusula de variaciones ampara la mercancía cuando el transporte cambia de ruta por causas ajenas al asegurado, como un bloqueo. La interrupción en el transporte se refiere a detenciones, y la avería particular es un tipo de daño.",
+    "explicacion": "La cláusula de variaciones ampara la mercancía cuando el transporte cambia de ruta por causas ajenas al asegurado, como un bloqueo. La interrupción en el transporte se refiere a detenciones, y la avería particular es un tipo de daño."
+  },
+  {
+    "id": 245,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Si un capitán decide arrojar parte de la mercancía que transporta, para salvar el resto y la embarcación, se dice que está haciendo un sacrificio por:",
+    "pregunta": "Si un capitán decide arrojar parte de la mercancía que transporta, para salvar el resto y la embarcación, se dice que está haciendo un sacrificio por:",
+    "options": [
+      "Medidas de salvamento",
+      "Autoridad del capitán",
+      "Avería mecánica",
+      "Avería gruesa"
+    ],
+    "opciones": [
+      "Medidas de salvamento",
+      "Autoridad del capitán",
+      "Avería mecánica",
+      "Avería gruesa"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Avería gruesa",
+    "explanation": "Arrojar parte de la carga para salvar el resto y la embarcación es un sacrificio por avería gruesa, cuyo costo se reparte entre todos los interesados de la aventura marítima. Las medidas de salvamento y la avería mecánica son conceptos distintos.",
+    "explicacion": "Arrojar parte de la carga para salvar el resto y la embarcación es un sacrificio por avería gruesa, cuyo costo se reparte entre todos los interesados de la aventura marítima. Las medidas de salvamento y la avería mecánica son conceptos distintos."
+  },
+  {
+    "id": 246,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Durante un acto de avería gruesa. ¿Qué legislación aplica en el ajuste?",
+    "pregunta": "Durante un acto de avería gruesa. ¿Qué legislación aplica en el ajuste?",
+    "options": [
+      "Reglas de York Amberes y Código de Comercio",
+      "Ley de Navegación y Código de Comercio",
+      "Reglas de York-Amberes y Ley de Navegación y Comercio Marítimo",
+      "Código de Comercio y Tratado de Varsovia"
+    ],
+    "opciones": [
+      "Reglas de York Amberes y Código de Comercio",
+      "Ley de Navegación y Código de Comercio",
+      "Reglas de York-Amberes y Ley de Navegación y Comercio Marítimo",
+      "Código de Comercio y Tratado de Varsovia"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Reglas de York-Amberes y Ley de Navegación y Comercio Marítimo",
+    "explanation": "El ajuste de la avería gruesa se rige por las Reglas de York-Amberes y por la Ley de Navegación y Comercio Marítimo en México. El Tratado de Varsovia regula el transporte aéreo, y el Código de Comercio ya no es la norma marítima principal.",
+    "explicacion": "El ajuste de la avería gruesa se rige por las Reglas de York-Amberes y por la Ley de Navegación y Comercio Marítimo en México. El Tratado de Varsovia regula el transporte aéreo, y el Código de Comercio ya no es la norma marítima principal."
+  },
+  {
+    "id": 247,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Si la mercancía sufre daño. ¿Qué procede si el buque no está clasificado?",
+    "pregunta": "Si la mercancía sufre daño. ¿Qué procede si el buque no está clasificado?",
+    "options": [
+      "El siniestro se paga al 50%",
+      "El siniestro no se paga",
+      "El siniestro se paga al 25%",
+      "El siniestro se paga al 100%"
+    ],
+    "opciones": [
+      "El siniestro se paga al 50%",
+      "El siniestro no se paga",
+      "El siniestro se paga al 25%",
+      "El siniestro se paga al 100%"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "El siniestro no se paga",
+    "explanation": "Según la clave de la guía, si la mercancía viaja en un buque no clasificado el siniestro no se paga, porque se viola la cláusula de clasificación. En algunas pólizas se permite cubrirlo con extraprima o aviso previo.",
+    "explicacion": "Según la clave de la guía, si la mercancía viaja en un buque no clasificado el siniestro no se paga, porque se viola la cláusula de clasificación. En algunas pólizas se permite cubrirlo con extraprima o aviso previo."
+  },
+  {
+    "id": 248,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Todos son contratos de Compra-Venta, EXCEPTO:",
+    "pregunta": "Todos son contratos de Compra-Venta, EXCEPTO:",
+    "options": [
+      "Sat",
+      "Fob",
+      "C&f",
+      "Fas"
+    ],
+    "opciones": [
+      "Sat",
+      "Fob",
+      "C&f",
+      "Fas"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Sat",
+    "explanation": "FOB, C&F (CFR) y FAS son términos de compraventa internacional (Incoterms) que fijan responsabilidades entre comprador y vendedor. SAT no es un contrato de compraventa.",
+    "explicacion": "FOB, C&F (CFR) y FAS son términos de compraventa internacional (Incoterms) que fijan responsabilidades entre comprador y vendedor. SAT no es un contrato de compraventa."
+  },
+  {
+    "id": 249,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "A la descomposición natural de los perecederos se le conoce como:",
+    "pregunta": "A la descomposición natural de los perecederos se le conoce como:",
+    "options": [
+      "Contaminación",
+      "Merma",
+      "Vicio propio",
+      "Combustión espontánea"
+    ],
+    "opciones": [
+      "Contaminación",
+      "Merma",
+      "Vicio propio",
+      "Combustión espontánea"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Vicio propio",
+    "explanation": "La descomposición natural de los perecederos es vicio propio, porque proviene de la naturaleza del bien y no de un riesgo externo. La merma es una pérdida de peso o volumen, y la contaminación viene de agentes externos.",
+    "explicacion": "La descomposición natural de los perecederos es vicio propio, porque proviene de la naturaleza del bien y no de un riesgo externo. La merma es una pérdida de peso o volumen, y la contaminación viene de agentes externos."
+  },
+  {
+    "id": 250,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Elige de la lista, las exclusiones definitivas del seguro transporte de mercancías: 1.- Violación de Leyes 2.- Contaminación 3.- Mojadura 4.- Desaparición misteriosa 5.- Dolo del asegurado 6.- Avería gruesa:",
+    "pregunta": "Elige de la lista, las exclusiones definitivas del seguro transporte de mercancías: 1.- Violación de Leyes 2.- Contaminación 3.- Mojadura 4.- Desaparición misteriosa 5.- Dolo del asegurado 6.- Avería gruesa:",
+    "options": [
+      "2, 3, 6",
+      "1, 4. 5",
+      "1, 3, 5",
+      "2, 4, 6"
+    ],
+    "opciones": [
+      "2, 3, 6",
+      "1, 4. 5",
+      "1, 3, 5",
+      "2, 4, 6"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 4. 5",
+    "explanation": "Son exclusiones definitivas del seguro de transporte la violación de leyes, la desaparición misteriosa y el dolo del asegurado. La contaminación y la mojadura pueden contratarse como adicionales, y la avería gruesa se cubre.",
+    "explicacion": "Son exclusiones definitivas del seguro de transporte la violación de leyes, la desaparición misteriosa y el dolo del asegurado. La contaminación y la mojadura pueden contratarse como adicionales, y la avería gruesa se cubre."
+  },
+  {
+    "id": 251,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Cuál es un riesgo que se ampara en la cobertura básica del seguro de Transporte vía terrestre?",
+    "pregunta": "¿Cuál es un riesgo que se ampara en la cobertura básica del seguro de Transporte vía terrestre?",
+    "options": [
+      "Vicio propio",
+      "Mojadura de la mercancía",
+      "Maniobras de descarga",
+      "Colisión del vehículo"
+    ],
+    "opciones": [
+      "Vicio propio",
+      "Mojadura de la mercancía",
+      "Maniobras de descarga",
+      "Colisión del vehículo"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Colisión del vehículo",
+    "explanation": "La colisión del vehículo es un riesgo básico del transporte terrestre. El vicio propio se excluye, y la mojadura o las maniobras de descarga se cubren como adicionales.",
+    "explicacion": "La colisión del vehículo es un riesgo básico del transporte terrestre. El vicio propio se excluye, y la mojadura o las maniobras de descarga se cubren como adicionales."
+  },
+  {
+    "id": 252,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Todos son riesgos que se amparan en la cobertura básica del seguro de Transporte vía Marítima, EXCEPTO:",
+    "pregunta": "Todos son riesgos que se amparan en la cobertura básica del seguro de Transporte vía Marítima, EXCEPTO:",
+    "options": [
+      "Avería particular",
+      "Incendio",
+      "Varada",
+      "Avería Gruesa"
+    ],
+    "opciones": [
+      "Avería particular",
+      "Incendio",
+      "Varada",
+      "Avería Gruesa"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Avería particular",
+    "explanation": "La cobertura básica marítima ampara incendio, varada, hundimiento y la contribución por avería gruesa. La avería particular, como manchas o mojaduras, requiere coberturas adicionales.",
+    "explicacion": "La cobertura básica marítima ampara incendio, varada, hundimiento y la contribución por avería gruesa. La avería particular, como manchas o mojaduras, requiere coberturas adicionales."
+  },
+  {
+    "id": 253,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Cuál es la causa por la que está cubierta la pérdida de bulto por entero dentro de la cobertura básica del Transporte Marítimo?",
+    "pregunta": "¿Cuál es la causa por la que está cubierta la pérdida de bulto por entero dentro de la cobertura básica del Transporte Marítimo?",
+    "options": [
+      "Cuando es necesario un sacrificio por contaminación",
+      "Cuando la mercancía contamina",
+      "Durante las maniobras de carga, transbordo y descarga",
+      "Por avería gruesa"
+    ],
+    "opciones": [
+      "Cuando es necesario un sacrificio por contaminación",
+      "Cuando la mercancía contamina",
+      "Durante las maniobras de carga, transbordo y descarga",
+      "Por avería gruesa"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Durante las maniobras de carga, transbordo y descarga",
+    "explanation": "La pérdida de bulto por entero se cubre en la básica marítima cuando ocurre durante las maniobras de carga, transbordo y descarga. La contaminación y la avería gruesa son conceptos distintos.",
+    "explicacion": "La pérdida de bulto por entero se cubre en la básica marítima cuando ocurre durante las maniobras de carga, transbordo y descarga. La contaminación y la avería gruesa son conceptos distintos."
+  },
+  {
+    "id": 254,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Relaciona la columna de Coberturas Adicionales con la de Riesgos: COBERTURAS ADICIONALES RIESGOS 1- Mojadura A- Daños por contaminación 2- Contacto con otras cargas B- Daños por orín 3- Oxidación C- Daños por agua dulce:",
+    "pregunta": "Relaciona la columna de Coberturas Adicionales con la de Riesgos: COBERTURAS ADICIONALES RIESGOS 1- Mojadura A- Daños por contaminación 2- Contacto con otras cargas B- Daños por orín 3- Oxidación C- Daños por agua dulce:",
+    "options": [
+      "1- C; 2- B; 3- A",
+      "1- A; 2- B; 3- C",
+      "1- B; 2; c; 3- A",
+      "1- C; 2- A; 3- B"
+    ],
+    "opciones": [
+      "1- C; 2- B; 3- A",
+      "1- A; 2- B; 3- C",
+      "1- B; 2; c; 3- A",
+      "1- C; 2- A; 3- B"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "1- C; 2- A; 3- B",
+    "explanation": "La mojadura cubre daños por agua dulce, el contacto con otras cargas cubre la contaminación y la oxidación cubre los daños por orín. Las demás combinaciones invierten estas relaciones.",
+    "explicacion": "La mojadura cubre daños por agua dulce, el contacto con otras cargas cubre la contaminación y la oxidación cubre los daños por orín. Las demás combinaciones invierten estas relaciones."
+  },
+  {
+    "id": 255,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Si el valor de la carga es superior a la suma asegurada al momento del siniestro; ¿cómo se indemniza?",
+    "pregunta": "Si el valor de la carga es superior a la suma asegurada al momento del siniestro; ¿cómo se indemniza?",
+    "options": [
+      "Aplica proporcionalidad",
+      "A primer riesgo",
+      "Aplica doble deducible",
+      "A primer riesgo relativo"
+    ],
+    "opciones": [
+      "Aplica proporcionalidad",
+      "A primer riesgo",
+      "Aplica doble deducible",
+      "A primer riesgo relativo"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Aplica proporcionalidad",
+    "explanation": "Si el valor de la carga supera la suma asegurada al momento del siniestro, se aplica la proporcionalidad, conforme a la Ley sobre el Contrato de Seguro. El primer riesgo elimina esa proporción solo si se pacta.",
+    "explicacion": "Si el valor de la carga supera la suma asegurada al momento del siniestro, se aplica la proporcionalidad, conforme a la Ley sobre el Contrato de Seguro. El primer riesgo elimina esa proporción solo si se pacta."
+  },
+  {
+    "id": 256,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Todas son características de la póliza específica por viaje, EXCEPTO:",
+    "pregunta": "Todas son características de la póliza específica por viaje, EXCEPTO:",
+    "options": [
+      "Es no cancelable",
+      "Se paga de contado la prima",
+      "Se realizan declaraciones mensuales",
+      "Ampara un solo viaje"
+    ],
+    "opciones": [
+      "Es no cancelable",
+      "Se paga de contado la prima",
+      "Se realizan declaraciones mensuales",
+      "Ampara un solo viaje"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Se realizan declaraciones mensuales",
+    "explanation": "La póliza específica ampara un solo viaje, no es cancelable y su prima se paga de contado. Las declaraciones mensuales son propias de la póliza abierta o anual a declaración.",
+    "explicacion": "La póliza específica ampara un solo viaje, no es cancelable y su prima se paga de contado. Las declaraciones mensuales son propias de la póliza abierta o anual a declaración."
+  },
+  {
+    "id": 257,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "El contrato Free As Side especifica la responsabilidad tanto del comprador como del vendedor ante la mercancía cuando se le transporta por:",
+    "pregunta": "El contrato Free As Side especifica la responsabilidad tanto del comprador como del vendedor ante la mercancía cuando se le transporta por:",
+    "options": [
+      "Ferrocarril",
+      "Mar",
+      "Aire",
+      "Tierra"
+    ],
+    "opciones": [
+      "Ferrocarril",
+      "Mar",
+      "Aire",
+      "Tierra"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Mar",
+    "explanation": "El término FAS (Free Alongside Ship, libre al costado del buque) aplica al transporte por mar, porque la responsabilidad del vendedor termina al dejar la mercancía al costado del buque. No aplica a ferrocarril, aire o tierra.",
+    "explicacion": "El término FAS (Free Alongside Ship, libre al costado del buque) aplica al transporte por mar, porque la responsabilidad del vendedor termina al dejar la mercancía al costado del buque. No aplica a ferrocarril, aire o tierra."
+  },
+  {
+    "id": 258,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Indica cómo se le conoce a la acción de tirar la mercancía por la borda, en presencia de peligro para tratar de salvar el buque:",
+    "pregunta": "Indica cómo se le conoce a la acción de tirar la mercancía por la borda, en presencia de peligro para tratar de salvar el buque:",
+    "options": [
+      "Barredura",
+      "Echazón",
+      "Avería particular",
+      "Arrastre"
+    ],
+    "opciones": [
+      "Barredura",
+      "Echazón",
+      "Avería particular",
+      "Arrastre"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Echazón",
+    "explanation": "La echazón es la acción de arrojar mercancía por la borda ante un peligro para salvar el buque. La barredura es la pérdida de carga arrastrada por las olas, y el arrastre no es un término técnico de esta cobertura.",
+    "explicacion": "La echazón es la acción de arrojar mercancía por la borda ante un peligro para salvar el buque. La barredura es la pérdida de carga arrastrada por las olas, y el arrastre no es un término técnico de esta cobertura."
+  },
+  {
+    "id": 259,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "La vigencia del Seguro de Transporte de mercancías marítimo inicia cuando la mercancía llega a los porteadores y termina cuando es descargada en:",
+    "pregunta": "La vigencia del Seguro de Transporte de mercancías marítimo inicia cuando la mercancía llega a los porteadores y termina cuando es descargada en:",
+    "options": [
+      "Las embarcaciones auxiliares",
+      "La bodega del comprador",
+      "La bodega del contratante",
+      "El muelle del puerto de destino"
+    ],
+    "opciones": [
+      "Las embarcaciones auxiliares",
+      "La bodega del comprador",
+      "La bodega del contratante",
+      "El muelle del puerto de destino"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "El muelle del puerto de destino",
+    "explanation": "El seguro marítimo de mercancías inicia cuando la carga se entrega a los porteadores y termina con la descarga en el muelle del puerto de destino. La bodega del comprador o del contratante corresponde a una extensión de bodega a bodega.",
+    "explicacion": "El seguro marítimo de mercancías inicia cuando la carga se entrega a los porteadores y termina con la descarga en el muelle del puerto de destino. La bodega del comprador o del contratante corresponde a una extensión de bodega a bodega."
+  },
+  {
+    "id": 260,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Cuál es el límite máximo de responsabilidad por embarque en el seguro de Transporte de Mercancías?",
+    "pregunta": "¿Cuál es el límite máximo de responsabilidad por embarque en el seguro de Transporte de Mercancías?",
+    "options": [
+      "El valor más alto de un embarque",
+      "El valor más bajo de un embarque",
+      "El valor promedio de los embarques",
+      "El valor de mercado de un embarque"
+    ],
+    "opciones": [
+      "El valor más alto de un embarque",
+      "El valor más bajo de un embarque",
+      "El valor promedio de los embarques",
+      "El valor de mercado de un embarque"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "El valor más alto de un embarque",
+    "explanation": "El límite máximo de responsabilidad por embarque debe corresponder al valor más alto de un embarque, para que ningún envío quede infraasegurado. El valor promedio o el más bajo dejaría embarques sin protección suficiente.",
+    "explicacion": "El límite máximo de responsabilidad por embarque debe corresponder al valor más alto de un embarque, para que ningún envío quede infraasegurado. El valor promedio o el más bajo dejaría embarques sin protección suficiente."
+  },
+  {
+    "id": 261,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Todos los siguientes son averías particulares del Seguro de Transportes de Mercancías, EXCEPTO:",
+    "pregunta": "Todos los siguientes son averías particulares del Seguro de Transportes de Mercancías, EXCEPTO:",
+    "options": [
+      "Manchas, echazón y barredura",
+      "Huelgas y alborotos, robo parcial, mojadura",
+      "Incendio, varadura, explosión",
+      "merma, contaminación, manchas"
+    ],
+    "opciones": [
+      "Manchas, echazón y barredura",
+      "Huelgas y alborotos, robo parcial, mojadura",
+      "Incendio, varadura, explosión",
+      "merma, contaminación, manchas"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Incendio, varadura, explosión",
+    "explanation": "Incendio, varadura y explosión son riesgos ordinarios de tránsito de la cobertura básica, no averías particulares. Manchas, mojadura, robo parcial, merma y contaminación sí son averías particulares.",
+    "explicacion": "Incendio, varadura y explosión son riesgos ordinarios de tránsito de la cobertura básica, no averías particulares. Manchas, mojadura, robo parcial, merma y contaminación sí son averías particulares."
+  },
+  {
+    "id": 262,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Indica cuál es la base para establecer la suma asegurada en el Seguro de Transporte de Mercancías:",
+    "pregunta": "Indica cuál es la base para establecer la suma asegurada en el Seguro de Transporte de Mercancías:",
+    "options": [
+      "El valor de la mercancía establecido por las fluctuaciones del mercado",
+      "El avalúo de la mercancía establecido por un perito reconocido",
+      "El valor declarado por el asegurado del embarque",
+      "El precio neto de venta de la mercancía"
+    ],
+    "opciones": [
+      "El valor de la mercancía establecido por las fluctuaciones del mercado",
+      "El avalúo de la mercancía establecido por un perito reconocido",
+      "El valor declarado por el asegurado del embarque",
+      "El precio neto de venta de la mercancía"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "El precio neto de venta de la mercancía",
+    "explanation": "Según la clave de la guía, la suma asegurada en transporte se basa en el precio neto de venta de la mercancía. En la práctica suele usarse el valor factura más gastos, por lo que conviene revisar la póliza.",
+    "explicacion": "Según la clave de la guía, la suma asegurada en transporte se basa en el precio neto de venta de la mercancía. En la práctica suele usarse el valor factura más gastos, por lo que conviene revisar la póliza."
+  },
+  {
+    "id": 263,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Todas son tipos de pólizas que se utilizan en el seguro de Transporte de Mercancías, excepto:",
+    "pregunta": "Todas son tipos de pólizas que se utilizan en el seguro de Transporte de Mercancías, excepto:",
+    "options": [
+      "Anual a declaración",
+      "Todo riesgo",
+      "Abierta",
+      "Específica"
+    ],
+    "opciones": [
+      "Anual a declaración",
+      "Todo riesgo",
+      "Abierta",
+      "Específica"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Todo riesgo",
+    "explanation": "En transporte de mercancías se usan las pólizas anual a declaración, abierta y específica. Todo riesgo es una cobertura, no un tipo de póliza.",
+    "explicacion": "En transporte de mercancías se usan las pólizas anual a declaración, abierta y específica. Todo riesgo es una cobertura, no un tipo de póliza."
+  },
+  {
+    "id": 264,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Cuál es el costo por milla de remolque al puerto más cercano por daño a la embarcación asegurada?.",
+    "pregunta": "¿Cuál es el costo por milla de remolque al puerto más cercano por daño a la embarcación asegurada?.",
+    "options": [
+      "$10.00 UScy.",
+      "$12.00 UScy.",
+      "$15.00 UScy.",
+      "$20.00 UScy."
+    ],
+    "opciones": [
+      "$10.00 UScy.",
+      "$12.00 UScy.",
+      "$15.00 UScy.",
+      "$20.00 UScy."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "$12.00 UScy.",
+    "explanation": "Según la clave de la guía, el remolque al puerto más cercano por daño a la embarcación se paga a $12.00 dólares por milla. Las cifras de 10, 15 o 20 dólares no son las de la guía.",
+    "explicacion": "Según la clave de la guía, el remolque al puerto más cercano por daño a la embarcación se paga a $12.00 dólares por milla. Las cifras de 10, 15 o 20 dólares no son las de la guía."
+  },
+  {
+    "id": 265,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Cuál es la responsabilidad máxima de la compañía en caso de abordaje?",
+    "pregunta": "¿Cuál es la responsabilidad máxima de la compañía en caso de abordaje?",
+    "options": [
+      "¼ parte del valor del casco amparado.",
+      "½ del valor del casco amparado.",
+      "¾ partes del valor del casco amparado.",
+      "100% del valor del casco amparado."
+    ],
+    "opciones": [
+      "¼ parte del valor del casco amparado.",
+      "½ del valor del casco amparado.",
+      "¾ partes del valor del casco amparado.",
+      "100% del valor del casco amparado."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "¾ partes del valor del casco amparado.",
+    "explanation": "En caso de abordaje, la cláusula clásica de colisión limita la responsabilidad de la aseguradora a tres cuartas partes del valor del casco, y el resto lo absorbe el armador. Por eso no se paga ni el 100% ni fracciones menores.",
+    "explicacion": "En caso de abordaje, la cláusula clásica de colisión limita la responsabilidad de la aseguradora a tres cuartas partes del valor del casco, y el resto lo absorbe el armador. Por eso no se paga ni el 100% ni fracciones menores."
+  },
+  {
+    "id": 266,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Cuál es el periodo máximo por interrupción en el transporte, cuando la carga se encuentra en la misma ciudad de destino?",
+    "pregunta": "¿Cuál es el periodo máximo por interrupción en el transporte, cuando la carga se encuentra en la misma ciudad de destino?",
+    "options": [
+      "45 días naturales.",
+      "30 días naturales.",
+      "15 días naturales.",
+      "20 días naturales."
+    ],
+    "opciones": [
+      "45 días naturales.",
+      "30 días naturales.",
+      "15 días naturales.",
+      "20 días naturales."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "15 días naturales.",
+    "explanation": "Según la clave de la guía, si la carga queda detenida en la misma ciudad de destino, la interrupción del transporte se cubre por un máximo de 15 días naturales. Los plazos de 20, 30 o 45 días no corresponden a ese caso.",
+    "explicacion": "Según la clave de la guía, si la carga queda detenida en la misma ciudad de destino, la interrupción del transporte se cubre por un máximo de 15 días naturales. Los plazos de 20, 30 o 45 días no corresponden a ese caso."
+  },
+  {
+    "id": 267,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "El seguro de transporte de carga marítimo autoriza que los bienes asegurados sean transportados en barcos con casco de acero y mecánicamente autopropulsados ¿de cuánto es la antigüedad máxima que deben de tener estos barcos?",
+    "pregunta": "El seguro de transporte de carga marítimo autoriza que los bienes asegurados sean transportados en barcos con casco de acero y mecánicamente autopropulsados ¿de cuánto es la antigüedad máxima que deben de tener estos barcos?",
+    "options": [
+      "25 años.",
+      "10 años.",
+      "20 años.",
+      "15 años."
+    ],
+    "opciones": [
+      "25 años.",
+      "10 años.",
+      "20 años.",
+      "15 años."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "15 años.",
+    "explanation": "Según la clave de la guía, los buques de casco de acero y autopropulsados deben tener una antigüedad máxima de 15 años. Las antigüedades de 10, 20 o 25 años no son las que señala la guía.",
+    "explicacion": "Según la clave de la guía, los buques de casco de acero y autopropulsados deben tener una antigüedad máxima de 15 años. Las antigüedades de 10, 20 o 25 años no son las que señala la guía."
+  },
+  {
+    "id": 268,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Señala tres riesgos adicionales que se pueden contratar en el seguro de transportes de carga:",
+    "pregunta": "Señala tres riesgos adicionales que se pueden contratar en el seguro de transportes de carga:",
+    "options": [
+      "Incendio, rayo y explosión.",
+      "Mojaduras, derrame y echazón.",
+      "Varadura, hundimiento y colisión.",
+      "Pérdida de bultos por entero, trasbordo y descarga."
+    ],
+    "opciones": [
+      "Incendio, rayo y explosión.",
+      "Mojaduras, derrame y echazón.",
+      "Varadura, hundimiento y colisión.",
+      "Pérdida de bultos por entero, trasbordo y descarga."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Mojaduras, derrame y echazón.",
+    "explanation": "Mojaduras, derrame y echazón son riesgos adicionales del seguro de transporte de carga. Incendio, rayo, explosión, varadura, hundimiento, colisión y la pérdida de bultos en maniobras forman parte de la básica.",
+    "explicacion": "Mojaduras, derrame y echazón son riesgos adicionales del seguro de transporte de carga. Incendio, rayo, explosión, varadura, hundimiento, colisión y la pérdida de bultos en maniobras forman parte de la básica."
+  },
+  {
+    "id": 269,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Cuál es el periodo máximo por interrupción en el transporte, si el destino final de los bienes asegurados se localiza en otro lugar del destino final?",
+    "pregunta": "¿Cuál es el periodo máximo por interrupción en el transporte, si el destino final de los bienes asegurados se localiza en otro lugar del destino final?",
+    "options": [
+      "45 días naturales.",
+      "30 días naturales.",
+      "15 días naturales.",
+      "20 días naturales."
+    ],
+    "opciones": [
+      "45 días naturales.",
+      "30 días naturales.",
+      "15 días naturales.",
+      "20 días naturales."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "30 días naturales.",
+    "explanation": "Según la clave de la guía, si el destino final de los bienes está en otro lugar, la interrupción del transporte se cubre hasta 30 días naturales. Los 15 días aplican cuando la carga está en la ciudad de destino.",
+    "explicacion": "Según la clave de la guía, si el destino final de los bienes está en otro lugar, la interrupción del transporte se cubre hasta 30 días naturales. Los 15 días aplican cuando la carga está en la ciudad de destino."
+  },
+  {
+    "id": 270,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "En el seguro terrestre o aéreo ¿cuándo termina la vigencia del seguro?",
+    "pregunta": "En el seguro terrestre o aéreo ¿cuándo termina la vigencia del seguro?",
+    "options": [
+      "12 horas de días hábiles después de la llegada de los bienes.",
+      "24 horas de días hábiles después de la llegada de los bienes.",
+      "48 horas de días hábiles después de la llegada de los bienes.",
+      "72 horas de días hábiles después de la llegada de los bienes."
+    ],
+    "opciones": [
+      "12 horas de días hábiles después de la llegada de los bienes.",
+      "24 horas de días hábiles después de la llegada de los bienes.",
+      "48 horas de días hábiles después de la llegada de los bienes.",
+      "72 horas de días hábiles después de la llegada de los bienes."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "48 horas de días hábiles después de la llegada de los bienes.",
+    "explanation": "Según la clave de la guía, en el transporte terrestre o aéreo el seguro termina 48 horas hábiles después de la llegada de los bienes. Los plazos de 12, 24 o 72 horas no corresponden a la guía.",
+    "explicacion": "Según la clave de la guía, en el transporte terrestre o aéreo el seguro termina 48 horas hábiles después de la llegada de los bienes. Los plazos de 12, 24 o 72 horas no corresponden a la guía."
+  },
+  {
+    "id": 271,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿En qué momento termina la vigencia del transporte marítimo?",
+    "pregunta": "¿En qué momento termina la vigencia del transporte marítimo?",
+    "options": [
+      "Al ser depositada en la embarcación auxiliar.",
+      "Con la entrega al destinatario.",
+      "Con la llegada al puerto.",
+      "Con la descarga sobre los muelles del puerto."
+    ],
+    "opciones": [
+      "Al ser depositada en la embarcación auxiliar.",
+      "Con la entrega al destinatario.",
+      "Con la llegada al puerto.",
+      "Con la descarga sobre los muelles del puerto."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Con la descarga sobre los muelles del puerto.",
+    "explanation": "El seguro de transporte marítimo termina con la descarga de la mercancía sobre los muelles del puerto de destino. La embarcación auxiliar y la llegada al puerto son momentos anteriores, y la entrega al destinatario requiere extensión.",
+    "explicacion": "El seguro de transporte marítimo termina con la descarga de la mercancía sobre los muelles del puerto de destino. La embarcación auxiliar y la llegada al puerto son momentos anteriores, y la entrega al destinatario requiere extensión."
+  },
+  {
+    "id": 272,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Para la cobertura de transporte marítimo aplica exclusivamente bienes transportados en barcos con una antigüedad de hasta:",
+    "pregunta": "Para la cobertura de transporte marítimo aplica exclusivamente bienes transportados en barcos con una antigüedad de hasta:",
+    "options": [
+      "5 años de antigüedad.",
+      "10 años de antigüedad.",
+      "15 años de antigüedad.",
+      "20 años de antigüedad."
+    ],
+    "opciones": [
+      "5 años de antigüedad.",
+      "10 años de antigüedad.",
+      "15 años de antigüedad.",
+      "20 años de antigüedad."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "15 años de antigüedad.",
+    "explanation": "Según la clave de la guía, el transporte marítimo se ampara solo en barcos con antigüedad de hasta 15 años. Los límites de 5, 10 o 20 años no son los de la guía.",
+    "explicacion": "Según la clave de la guía, el transporte marítimo se ampara solo en barcos con antigüedad de hasta 15 años. Los límites de 5, 10 o 20 años no son los de la guía."
+  },
+  {
+    "id": 273,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Cuál es la cobertura básica del seguro de Transporte de Carga?",
+    "pregunta": "¿Cuál es la cobertura básica del seguro de Transporte de Carga?",
+    "options": [
+      "Todo Riesgo.",
+      "Robo de bulto por entero.",
+      "Baratería del capitán o tripulación.",
+      "Riesgos Ordinarios de Tránsito (ROT)."
+    ],
+    "opciones": [
+      "Todo Riesgo.",
+      "Robo de bulto por entero.",
+      "Baratería del capitán o tripulación.",
+      "Riesgos Ordinarios de Tránsito (ROT)."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Riesgos Ordinarios de Tránsito (ROT).",
+    "explanation": "La cobertura básica del seguro de transporte de carga es la de riesgos ordinarios de tránsito, que incluye incendio, colisión, volcadura, varada y hundimiento. Todo riesgo, robo de bulto y baratería se contratan como adicionales.",
+    "explicacion": "La cobertura básica del seguro de transporte de carga es la de riesgos ordinarios de tránsito, que incluye incendio, colisión, volcadura, varada y hundimiento. Todo riesgo, robo de bulto y baratería se contratan como adicionales."
+  },
+  {
+    "id": 274,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Son tres coberturas que forman parte de la cobertura adicional de Todo Riesgo.",
+    "pregunta": "Son tres coberturas que forman parte de la cobertura adicional de Todo Riesgo.",
+    "options": [
+      "Robo parcial, manchas y echazón.",
+      "Robo de bulto por entero, derrame y guerra.",
+      "Contaminación, rotura y oxidación.",
+      "Robo de bulto por entero, robo parcial y barredura."
+    ],
+    "opciones": [
+      "Robo parcial, manchas y echazón.",
+      "Robo de bulto por entero, derrame y guerra.",
+      "Contaminación, rotura y oxidación.",
+      "Robo de bulto por entero, robo parcial y barredura."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Contaminación, rotura y oxidación.",
+    "explanation": "Según la clave de la guía, contaminación, rotura y oxidación forman parte de la cobertura adicional de todo riesgo. El robo de bulto por entero y la guerra suelen contratarse por separado.",
+    "explicacion": "Según la clave de la guía, contaminación, rotura y oxidación forman parte de la cobertura adicional de todo riesgo. El robo de bulto por entero y la guerra suelen contratarse por separado."
+  },
+  {
+    "id": 275,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Cubre los daños o pérdidas a los bienes causados directamente por derrames, pero cuando éstos sean motivados por la rotura del envase, empaque, medio de transporte o contenedor en que estén siendo transportados.",
+    "pregunta": "Cubre los daños o pérdidas a los bienes causados directamente por derrames, pero cuando éstos sean motivados por la rotura del envase, empaque, medio de transporte o contenedor en que estén siendo transportados.",
+    "options": [
+      "Contaminación.",
+      "Derrame.",
+      "Manchas.",
+      "Mojaduras."
+    ],
+    "opciones": [
+      "Contaminación.",
+      "Derrame.",
+      "Manchas.",
+      "Mojaduras."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Derrame.",
+    "explanation": "La cobertura de derrame ampara los daños por derrame cuando se deben a la rotura del envase, empaque, medio de transporte o contenedor. La contaminación, las manchas y las mojaduras son riesgos distintos.",
+    "explicacion": "La cobertura de derrame ampara los daños por derrame cuando se deben a la rotura del envase, empaque, medio de transporte o contenedor. La contaminación, las manchas y las mojaduras son riesgos distintos."
+  },
+  {
+    "id": 276,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Cubre bienes asegurados contra pérdidas o daños, por actos ilícitos cometidos voluntariamente por el capitán o tripulación en perjuicio del propietario o fletador del buque.",
+    "pregunta": "Cubre bienes asegurados contra pérdidas o daños, por actos ilícitos cometidos voluntariamente por el capitán o tripulación en perjuicio del propietario o fletador del buque.",
+    "options": [
+      "Baratería del capitán.",
+      "Robo de bulto por entero.",
+      "Robo parcial.",
+      "Rotura, abolladura, dobladura y/o rajadura."
+    ],
+    "opciones": [
+      "Baratería del capitán.",
+      "Robo de bulto por entero.",
+      "Robo parcial.",
+      "Rotura, abolladura, dobladura y/o rajadura."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Baratería del capitán.",
+    "explanation": "La baratería del capitán cubre los actos ilícitos cometidos voluntariamente por el capitán o la tripulación en perjuicio del propietario o fletador. El robo de bulto y el robo parcial son actos de terceros.",
+    "explicacion": "La baratería del capitán cubre los actos ilícitos cometidos voluntariamente por el capitán o la tripulación en perjuicio del propietario o fletador. El robo de bulto y el robo parcial son actos de terceros."
+  },
+  {
+    "id": 277,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Cubre la pérdida de los bienes asegurados cuando los bienes encontrándose sobre cubierta, sean barridos por las olas.",
+    "pregunta": "Cubre la pérdida de los bienes asegurados cuando los bienes encontrándose sobre cubierta, sean barridos por las olas.",
+    "options": [
+      "Avería gruesa.",
+      "Echazón.",
+      "Barredura.",
+      "Contaminación."
+    ],
+    "opciones": [
+      "Avería gruesa.",
+      "Echazón.",
+      "Barredura.",
+      "Contaminación."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Barredura.",
+    "explanation": "La barredura cubre la pérdida de bienes que, estando sobre cubierta, son arrastrados por las olas. La echazón es un acto voluntario de arrojar carga, y la avería gruesa es el reparto de ese sacrificio.",
+    "explicacion": "La barredura cubre la pérdida de bienes que, estando sobre cubierta, son arrastrados por las olas. La echazón es un acto voluntario de arrojar carga, y la avería gruesa es el reparto de ese sacrificio."
+  },
+  {
+    "id": 278,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Cubre los bienes asegurados contra los daños materiales causados a los mismos por mojadura directa e imprevista, ya sea por agua dulce, salada o ambas.",
+    "pregunta": "Cubre los bienes asegurados contra los daños materiales causados a los mismos por mojadura directa e imprevista, ya sea por agua dulce, salada o ambas.",
+    "options": [
+      "Manchas.",
+      "Mojaduras.",
+      "Contaminación.",
+      "Derrame."
+    ],
+    "opciones": [
+      "Manchas.",
+      "Mojaduras.",
+      "Contaminación.",
+      "Derrame."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Mojaduras.",
+    "explanation": "La cobertura de mojaduras ampara los daños por mojadura directa e imprevista con agua dulce, salada o ambas. Las manchas, la contaminación y el derrame son riesgos distintos.",
+    "explicacion": "La cobertura de mojaduras ampara los daños por mojadura directa e imprevista con agua dulce, salada o ambas. Las manchas, la contaminación y el derrame son riesgos distintos."
+  },
+  {
+    "id": 279,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Cubre los bienes asegurados contra los daños materiales causados por oxidación. Aclarándose que no quedarán cubiertos los bienes que carezcan de empaque.",
+    "pregunta": "Cubre los bienes asegurados contra los daños materiales causados por oxidación. Aclarándose que no quedarán cubiertos los bienes que carezcan de empaque.",
+    "options": [
+      "Mojaduras.",
+      "Manchas.",
+      "Derrame.",
+      "Oxidación."
+    ],
+    "opciones": [
+      "Mojaduras.",
+      "Manchas.",
+      "Derrame.",
+      "Oxidación."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Oxidación.",
+    "explanation": "La cobertura de oxidación ampara los daños por óxido, pero excluye bienes sin empaque. Mojaduras, manchas y derrame cubren otros tipos de daño.",
+    "explicacion": "La cobertura de oxidación ampara los daños por óxido, pero excluye bienes sin empaque. Mojaduras, manchas y derrame cubren otros tipos de daño."
+  },
+  {
+    "id": 280,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Cubre los bienes asegurados contra rotura, abolladura, dobladura o rajadura; quedando específicamente excluidas raspaduras y desportilladura, así como los daños que sufra los bienes que carezcan de material de empaque o embalaje.",
+    "pregunta": "Cubre los bienes asegurados contra rotura, abolladura, dobladura o rajadura; quedando específicamente excluidas raspaduras y desportilladura, así como los daños que sufra los bienes que carezcan de material de empaque o embalaje.",
+    "options": [
+      "Barredura.",
+      "Echazón.",
+      "Huelgas y alborotos populares.",
+      "Rotura, abolladura, dobladura, rajadura."
+    ],
+    "opciones": [
+      "Barredura.",
+      "Echazón.",
+      "Huelgas y alborotos populares.",
+      "Rotura, abolladura, dobladura, rajadura."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Rotura, abolladura, dobladura, rajadura.",
+    "explanation": "La cobertura de rotura, abolladura, dobladura y rajadura ampara esos daños físicos, excluyendo raspaduras, desportilladuras y bienes sin empaque. Barredura, echazón y huelgas son riesgos distintos.",
+    "explicacion": "La cobertura de rotura, abolladura, dobladura y rajadura ampara esos daños físicos, excluyendo raspaduras, desportilladuras y bienes sin empaque. Barredura, echazón y huelgas son riesgos distintos."
+  },
+  {
+    "id": 281,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Exclusión del seguro de transporte de carga:",
+    "pregunta": "Exclusión del seguro de transporte de carga:",
+    "options": [
+      "Interrupción en el transporte.",
+      "Demora o pérdida de mercado.",
+      "Robo de bulto por entero.",
+      "Contribución por avería gruesa."
+    ],
+    "opciones": [
+      "Interrupción en el transporte.",
+      "Demora o pérdida de mercado.",
+      "Robo de bulto por entero.",
+      "Contribución por avería gruesa."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Demora o pérdida de mercado.",
+    "explanation": "La demora o pérdida de mercado es una exclusión del seguro de transporte, porque es un perjuicio económico y no un daño material. La interrupción, el robo de bulto y la avería gruesa sí pueden cubrirse.",
+    "explicacion": "La demora o pérdida de mercado es una exclusión del seguro de transporte, porque es un perjuicio económico y no un daño material. La interrupción, el robo de bulto y la avería gruesa sí pueden cubrirse."
+  },
+  {
+    "id": 282,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Cuando el daño sea causado por una o más personas que procedan en nombre de organizaciones de cualquier tipo o en forma independiente y esta produzca alarma, temor, terror en la población, para perturbar la paz pública o tratar de menoscabar la autoridad del estado, o presionar a la autoridad para que tome una determinación, es considerada en la póliza como:",
+    "pregunta": "Cuando el daño sea causado por una o más personas que procedan en nombre de organizaciones de cualquier tipo o en forma independiente y esta produzca alarma, temor, terror en la población, para perturbar la paz pública o tratar de menoscabar la autoridad del estado, o presionar a la autoridad para que tome una determinación, es considerada en la póliza como:",
+    "options": [
+      "Exclusión del riesgo de terrorismo.",
+      "Cobertura básica por terrorismo.",
+      "Cobertura básica por huelgas y alborotos populares.",
+      "Cobertura Adicional por huelgas y alborotos populares."
+    ],
+    "opciones": [
+      "Exclusión del riesgo de terrorismo.",
+      "Cobertura básica por terrorismo.",
+      "Cobertura básica por huelgas y alborotos populares.",
+      "Cobertura Adicional por huelgas y alborotos populares."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Exclusión del riesgo de terrorismo.",
+    "explanation": "Los actos que buscan producir alarma o terror en la población, perturbar la paz pública o presionar a la autoridad se definen en la póliza como terrorismo, y es un riesgo excluido. No es una cobertura básica ni equivale a huelgas y alborotos.",
+    "explicacion": "Los actos que buscan producir alarma o terror en la población, perturbar la paz pública o presionar a la autoridad se definen en la póliza como terrorismo, y es un riesgo excluido. No es una cobertura básica ni equivale a huelgas y alborotos."
+  },
+  {
+    "id": 283,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Cubre los bienes asegurados contra la falta de entrega del contenido de uno o más bultos por robo con violencia y/o asalto.",
+    "pregunta": "Cubre los bienes asegurados contra la falta de entrega del contenido de uno o más bultos por robo con violencia y/o asalto.",
+    "options": [
+      "Robo de bulto por entero.",
+      "Robo parcial.",
+      "Huelgas y alborotos populares.",
+      "Baratería del capitán."
+    ],
+    "opciones": [
+      "Robo de bulto por entero.",
+      "Robo parcial.",
+      "Huelgas y alborotos populares.",
+      "Baratería del capitán."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Robo parcial.",
+    "explanation": "El robo parcial cubre la falta de entrega del contenido de uno o más bultos por robo con violencia o asalto. El robo de bulto por entero aplica cuando se pierde el bulto completo.",
+    "explicacion": "El robo parcial cubre la falta de entrega del contenido de uno o más bultos por robo con violencia o asalto. El robo de bulto por entero aplica cuando se pierde el bulto completo."
+  },
+  {
+    "id": 284,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Qué se entiende por el límite máximo por embarque?",
+    "pregunta": "¿Qué se entiende por el límite máximo por embarque?",
+    "options": [
+      "Suma asegurada de un solo contenedor.",
+      "Suma asegurada de un bulto.",
+      "Suma asegurada total.",
+      "Suma asegurada de la cobertura de convenio expreso."
+    ],
+    "opciones": [
+      "Suma asegurada de un solo contenedor.",
+      "Suma asegurada de un bulto.",
+      "Suma asegurada total.",
+      "Suma asegurada de la cobertura de convenio expreso."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Suma asegurada total.",
+    "explanation": "Según la clave de la guía, el límite máximo por embarque es la suma asegurada total que la aseguradora responde por un envío. No se refiere a un solo contenedor, a un bulto ni a una cobertura de convenio expreso.",
+    "explicacion": "Según la clave de la guía, el límite máximo por embarque es la suma asegurada total que la aseguradora responde por un envío. No se refiere a un solo contenedor, a un bulto ni a una cobertura de convenio expreso."
+  },
+  {
+    "id": 285,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Cuál es la Ley que regula las Vías Generales de Comunicación Marítima en México:",
+    "pregunta": "Cuál es la Ley que regula las Vías Generales de Comunicación Marítima en México:",
+    "options": [
+      "Ley de Caminos, Puentes y Autotransporte Federal",
+      "Ley de Navegación y Comercio Marítimo",
+      "Ley Marítima Federal",
+      "Ley de Embarcaciones Menores de Placer"
+    ],
+    "opciones": [
+      "Ley de Caminos, Puentes y Autotransporte Federal",
+      "Ley de Navegación y Comercio Marítimo",
+      "Ley Marítima Federal",
+      "Ley de Embarcaciones Menores de Placer"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Ley de Navegación y Comercio Marítimo",
+    "explanation": "La ley que regula las vías generales de comunicación por agua en México es la Ley de Navegación y Comercio Marítimo, que sustituyó a la Ley de Navegación en 2006. La Ley de Carreteras regula vías terrestres, y no existe una Ley de Embarcaciones Menores de Placer.",
+    "explicacion": "La ley que regula las vías generales de comunicación por agua en México es la Ley de Navegación y Comercio Marítimo, que sustituyó a la Ley de Navegación en 2006. La Ley de Carreteras regula vías terrestres, y no existe una Ley de Embarcaciones Menores de Placer."
+  },
+  {
+    "id": 286,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Cuál es la Ley que regula internacionalmente el procedimiento de ajuste de Transporte Marítimo:",
+    "pregunta": "Cuál es la Ley que regula internacionalmente el procedimiento de ajuste de Transporte Marítimo:",
+    "options": [
+      "Ley de Navegación Internacional",
+      "Reglas de York-Amberes",
+      "Reglas de la Haya",
+      "Ley Marítima"
+    ],
+    "opciones": [
+      "Ley de Navegación Internacional",
+      "Reglas de York-Amberes",
+      "Reglas de la Haya",
+      "Ley Marítima"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Reglas de York-Amberes",
+    "explanation": "Las Reglas de York-Amberes regulan internacionalmente el ajuste de la avería gruesa en el transporte marítimo. Las Reglas de La Haya regulan la responsabilidad del porteador en el conocimiento de embarque.",
+    "explicacion": "Las Reglas de York-Amberes regulan internacionalmente el ajuste de la avería gruesa en el transporte marítimo. Las Reglas de La Haya regulan la responsabilidad del porteador en el conocimiento de embarque."
+  },
+  {
+    "id": 287,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "De acuerdo a la Ley de Navegación, en qué momento se debe realizar la reclamación de daños de la mercancía en el Seguro Marítimo:",
+    "pregunta": "De acuerdo a la Ley de Navegación, en qué momento se debe realizar la reclamación de daños de la mercancía en el Seguro Marítimo:",
+    "options": [
+      "Al entregarlo el porteador",
+      "Al enterarse el dueño de la mercancía",
+      "Antes o al momento de retirar la mercancía y que esté en custodia del destinatario",
+      "Antes o al momento de entregar la póliza del seguro"
+    ],
+    "opciones": [
+      "Al entregarlo el porteador",
+      "Al enterarse el dueño de la mercancía",
+      "Antes o al momento de retirar la mercancía y que esté en custodia del destinatario",
+      "Antes o al momento de entregar la póliza del seguro"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Antes o al momento de retirar la mercancía y que esté en custodia del destinatario",
+    "explanation": "Conforme a la Ley de Navegación y Comercio Marítimo, el aviso de pérdida o daño debe darse por escrito al porteador antes o en el momento de retirar la mercancía y quedar bajo custodia del destinatario; si el daño no es aparente, se cuenta con un plazo breve posterior. Esperar a que el dueño se entere o ligarlo a la póliza no es la regla legal.",
+    "explicacion": "Conforme a la Ley de Navegación y Comercio Marítimo, el aviso de pérdida o daño debe darse por escrito al porteador antes o en el momento de retirar la mercancía y quedar bajo custodia del destinatario; si el daño no es aparente, se cuenta con un plazo breve posterior. Esperar a que el dueño se entere o ligarlo a la póliza no es la regla legal."
+  },
+  {
+    "id": 288,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Son Países con Bandera de Conveniencia en el Seguro Marítimo:",
+    "pregunta": "Son Países con Bandera de Conveniencia en el Seguro Marítimo:",
+    "options": [
+      "México, Panamá, Costa Rica",
+      "México, Perú, Somalia",
+      "Panamá, Somalia, Islas Malvinas",
+      "Panamá, Somalia, México"
+    ],
+    "opciones": [
+      "México, Panamá, Costa Rica",
+      "México, Perú, Somalia",
+      "Panamá, Somalia, Islas Malvinas",
+      "Panamá, Somalia, México"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Panamá, Somalia, Islas Malvinas",
+    "explanation": "Según la clave de la guía, Panamá, Somalia e Islas Malvinas se mencionan como países con bandera de conveniencia. México no se considera bandera de conveniencia; la lista de países con este régimen cambia con el tiempo.",
+    "explicacion": "Según la clave de la guía, Panamá, Somalia e Islas Malvinas se mencionan como países con bandera de conveniencia. México no se considera bandera de conveniencia; la lista de países con este régimen cambia con el tiempo."
+  },
+  {
+    "id": 289,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Se consideran Sociedades Clasificadoras de Buques, EXCEPTO:",
+    "pregunta": "Se consideran Sociedades Clasificadoras de Buques, EXCEPTO:",
+    "options": [
+      "Bureau Veritas",
+      "Registro Italiano",
+      "British Corporation",
+      "Islas caiman"
+    ],
+    "opciones": [
+      "Bureau Veritas",
+      "Registro Italiano",
+      "British Corporation",
+      "Islas caiman"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Islas caiman",
+    "explanation": "Bureau Veritas, el Registro Italiano y la British Corporation son sociedades clasificadoras de buques. Islas Caimán es un territorio y no una sociedad clasificadora.",
+    "explicacion": "Bureau Veritas, el Registro Italiano y la British Corporation son sociedades clasificadoras de buques. Islas Caimán es un territorio y no una sociedad clasificadora."
+  },
+  {
+    "id": 290,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Cuál es el plazo máximo para reclamar al porteador los daños ocurridos a la mercancía asegurada en el Seguro Marítimo:",
+    "pregunta": "Cuál es el plazo máximo para reclamar al porteador los daños ocurridos a la mercancía asegurada en el Seguro Marítimo:",
+    "options": [
+      "15 días",
+      "30 días",
+      "90 días",
+      "12 meses"
+    ],
+    "opciones": [
+      "15 días",
+      "30 días",
+      "90 días",
+      "12 meses"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "15 días",
+    "explanation": "Según la clave de la guía, el plazo máximo para reclamar al porteador los daños a la mercancía es de 15 días. Los plazos de 30, 90 días o 12 meses no son los que señala la guía.",
+    "explicacion": "Según la clave de la guía, el plazo máximo para reclamar al porteador los daños a la mercancía es de 15 días. Los plazos de 30, 90 días o 12 meses no son los que señala la guía."
+  },
+  {
+    "id": 291,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Cuando la mercancía sufre un daño, el Asegurado debe tomar las siguientes acciones, EXCEPTO:",
+    "pregunta": "Cuando la mercancía sufre un daño, el Asegurado debe tomar las siguientes acciones, EXCEPTO:",
+    "options": [
+      "Comunicarlo a su Agente de Seguros",
+      "Reclamar por escrito al porteador",
+      "Avisar por escrito a la Compañía de Seguros",
+      "El Certificado de Daños"
+    ],
+    "opciones": [
+      "Comunicarlo a su Agente de Seguros",
+      "Reclamar por escrito al porteador",
+      "Avisar por escrito a la Compañía de Seguros",
+      "El Certificado de Daños"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Comunicarlo a su Agente de Seguros",
+    "explanation": "Ante un daño a la mercancía el asegurado debe reclamar por escrito al porteador, avisar por escrito a la aseguradora y obtener el certificado de daños. Comunicarlo al agente es recomendable, pero no sustituye estas obligaciones.",
+    "explicacion": "Ante un daño a la mercancía el asegurado debe reclamar por escrito al porteador, avisar por escrito a la aseguradora y obtener el certificado de daños. Comunicarlo al agente es recomendable, pero no sustituye estas obligaciones."
+  },
+  {
+    "id": 292,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Cuando en un siniestro se dañan las envolturas y la marca de mercancías, qué cláusula deberá contratar el Asegurado?",
+    "pregunta": "Cuando en un siniestro se dañan las envolturas y la marca de mercancías, qué cláusula deberá contratar el Asegurado?",
+    "options": [
+      "Empaque y recubrimientos",
+      "Empaque y sellos",
+      "Envolturas y marcas",
+      "Envolturas y tapones"
+    ],
+    "opciones": [
+      "Empaque y recubrimientos",
+      "Empaque y sellos",
+      "Envolturas y marcas",
+      "Envolturas y tapones"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Envolturas y marcas",
+    "explanation": "La cláusula de envolturas y marcas cubre el costo de reponer envolturas y marcas dañadas en un siniestro. Las demás opciones no son cláusulas del seguro de transporte.",
+    "explicacion": "La cláusula de envolturas y marcas cubre el costo de reponer envolturas y marcas dañadas en un siniestro. Las demás opciones no son cláusulas del seguro de transporte."
+  },
+  {
+    "id": 617,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Bajo las reglas Incoterms 2020, ¿qué término obliga al vendedor a contratar un seguro de la carga con cobertura amplia equivalente a las Cláusulas del Instituto (A)?",
+    "pregunta": "Bajo las reglas Incoterms 2020, ¿qué término obliga al vendedor a contratar un seguro de la carga con cobertura amplia equivalente a las Cláusulas del Instituto (A)?",
+    "options": [
+      "EXW (en fábrica).",
+      "FCA (franco transportista).",
+      "FOB (franco a bordo).",
+      "CIP (transporte y seguro pagados hasta)."
+    ],
+    "opciones": [
+      "EXW (en fábrica).",
+      "FCA (franco transportista).",
+      "FOB (franco a bordo).",
+      "CIP (transporte y seguro pagados hasta)."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "CIP (transporte y seguro pagados hasta).",
+    "explanation": "Con Incoterms 2020 el término CIP exige al vendedor contratar un seguro con cobertura amplia, equivalente a las Cláusulas del Instituto (A), mientras que el CIF mantiene la cobertura mínima (C). En FOB, EXW y FCA el vendedor no está obligado a contratar seguro para el comprador.",
+    "explicacion": "Con Incoterms 2020 el término CIP exige al vendedor contratar un seguro con cobertura amplia, equivalente a las Cláusulas del Instituto (A), mientras que el CIF mantiene la cobertura mínima (C). En FOB, EXW y FCA el vendedor no está obligado a contratar seguro para el comprador."
+  },
+  {
+    "id": 618,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Bajo Incoterms 2020, ¿qué nivel mínimo de seguro debe contratar el vendedor en una venta CIF?",
+    "pregunta": "Bajo Incoterms 2020, ¿qué nivel mínimo de seguro debe contratar el vendedor en una venta CIF?",
+    "options": [
+      "Cobertura mínima equivalente a las Cláusulas del Instituto (C).",
+      "Cobertura todo riesgo equivalente a las Cláusulas (A).",
+      "No debe contratar seguro.",
+      "Solo seguro de responsabilidad civil."
+    ],
+    "opciones": [
+      "Cobertura mínima equivalente a las Cláusulas del Instituto (C).",
+      "Cobertura todo riesgo equivalente a las Cláusulas (A).",
+      "No debe contratar seguro.",
+      "Solo seguro de responsabilidad civil."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Cobertura mínima equivalente a las Cláusulas del Instituto (C).",
+    "explanation": "En el término CIF el vendedor debe contratar un seguro con cobertura mínima, equivalente a las Cláusulas del Instituto (C), salvo pacto distinto. La cobertura (A) es la que Incoterms 2020 exige para CIP, y en CIF sí existe obligación de asegurar la carga, no la responsabilidad civil.",
+    "explicacion": "En el término CIF el vendedor debe contratar un seguro con cobertura mínima, equivalente a las Cláusulas del Instituto (C), salvo pacto distinto. La cobertura (A) es la que Incoterms 2020 exige para CIP, y en CIF sí existe obligación de asegurar la carga, no la responsabilidad civil."
+  },
+  {
+    "id": 619,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Qué son las Cláusulas del Instituto para Carga (A), (B) y (C)?",
+    "pregunta": "¿Qué son las Cláusulas del Instituto para Carga (A), (B) y (C)?",
+    "options": [
+      "Tarifas de flete marítimo.",
+      "Reglas para clasificar buques.",
+      "Requisitos aduanales de importación.",
+      "Condiciones internacionales de cobertura para mercancías en tránsito, de mayor a menor amplitud."
+    ],
+    "opciones": [
+      "Tarifas de flete marítimo.",
+      "Reglas para clasificar buques.",
+      "Requisitos aduanales de importación.",
+      "Condiciones internacionales de cobertura para mercancías en tránsito, de mayor a menor amplitud."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Condiciones internacionales de cobertura para mercancías en tránsito, de mayor a menor amplitud.",
+    "explanation": "Las Cláusulas del Instituto para Carga son condiciones estándar del mercado internacional: la (A) es todo riesgo con exclusiones, la (B) cubre riesgos nombrados más amplios y la (C) riesgos nombrados mínimos. No son tarifas de flete, requisitos aduanales ni reglas de clasificación de buques.",
+    "explicacion": "Las Cláusulas del Instituto para Carga son condiciones estándar del mercado internacional: la (A) es todo riesgo con exclusiones, la (B) cubre riesgos nombrados más amplios y la (C) riesgos nombrados mínimos. No son tarifas de flete, requisitos aduanales ni reglas de clasificación de buques."
+  },
+  {
+    "id": 620,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Qué ley mexicana vigente regula la navegación y el comercio marítimo, incluida la avería gruesa?",
+    "pregunta": "¿Qué ley mexicana vigente regula la navegación y el comercio marítimo, incluida la avería gruesa?",
+    "options": [
+      "Código Civil Federal.",
+      "Ley de Aviación Civil.",
+      "Ley de Navegación de 1994.",
+      "Ley de Navegación y Comercio Marítimo."
+    ],
+    "opciones": [
+      "Código Civil Federal.",
+      "Ley de Aviación Civil.",
+      "Ley de Navegación de 1994.",
+      "Ley de Navegación y Comercio Marítimo."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Ley de Navegación y Comercio Marítimo.",
+    "explanation": "La Ley de Navegación y Comercio Marítimo, publicada en 2006, regula la navegación, los contratos marítimos y la avería gruesa, y sustituyó a la Ley de Navegación de 1994. El Código Civil regula obligaciones generales y la Ley de Aviación Civil el transporte aéreo.",
+    "explicacion": "La Ley de Navegación y Comercio Marítimo, publicada en 2006, regula la navegación, los contratos marítimos y la avería gruesa, y sustituyó a la Ley de Navegación de 1994. El Código Civil regula obligaciones generales y la Ley de Aviación Civil el transporte aéreo."
+  },
+  {
+    "id": 621,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Qué ampara la cláusula de bodega a bodega en un seguro de transporte de mercancías?",
+    "pregunta": "¿Qué ampara la cláusula de bodega a bodega en un seguro de transporte de mercancías?",
+    "options": [
+      "Los bienes desde que salen de la bodega de origen hasta que llegan a la bodega de destino, dentro del curso ordinario del viaje.",
+      "Los bienes mientras permanecen almacenados de forma indefinida.",
+      "Solo el trayecto marítimo entre puertos.",
+      "Únicamente las maniobras de carga."
+    ],
+    "opciones": [
+      "Los bienes desde que salen de la bodega de origen hasta que llegan a la bodega de destino, dentro del curso ordinario del viaje.",
+      "Los bienes mientras permanecen almacenados de forma indefinida.",
+      "Solo el trayecto marítimo entre puertos.",
+      "Únicamente las maniobras de carga."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Los bienes desde que salen de la bodega de origen hasta que llegan a la bodega de destino, dentro del curso ordinario del viaje.",
+    "explanation": "La cláusula de bodega a bodega extiende la cobertura desde la bodega de origen hasta la de destino durante el curso ordinario del tránsito, incluidos los trayectos terrestres complementarios. Limitarla al tramo marítimo o a las maniobras reduce la protección, y el almacenamiento indefinido no está cubierto.",
+    "explicacion": "La cláusula de bodega a bodega extiende la cobertura desde la bodega de origen hasta la de destino durante el curso ordinario del tránsito, incluidos los trayectos terrestres complementarios. Limitarla al tramo marítimo o a las maniobras reduce la protección, y el almacenamiento indefinido no está cubierto."
+  },
+  {
+    "id": 622,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "Un importador asegura cada embarque del año con una sola póliza y reporta periódicamente lo que transporta. ¿Qué tipo de póliza utiliza?",
+    "pregunta": "Un importador asegura cada embarque del año con una sola póliza y reporta periódicamente lo que transporta. ¿Qué tipo de póliza utiliza?",
+    "options": [
+      "Póliza de responsabilidad civil general.",
+      "Póliza abierta o anual de declaración.",
+      "Póliza específica por viaje.",
+      "Póliza de casco."
+    ],
+    "opciones": [
+      "Póliza de responsabilidad civil general.",
+      "Póliza abierta o anual de declaración.",
+      "Póliza específica por viaje.",
+      "Póliza de casco."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Póliza abierta o anual de declaración.",
+    "explanation": "La póliza abierta o anual de declaración cubre automáticamente los embarques del periodo y el asegurado declara cada envío para ajustar la prima. La póliza específica ampara un solo viaje, la de casco asegura la embarcación y la RC general cubre daños a terceros.",
+    "explicacion": "La póliza abierta o anual de declaración cubre automáticamente los embarques del periodo y el asegurado declara cada envío para ajustar la prima. La póliza específica ampara un solo viaje, la de casco asegura la embarcación y la RC general cubre daños a terceros."
+  },
+  {
+    "id": 623,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Qué asegura el seguro de casco marítimo?",
+    "pregunta": "¿Qué asegura el seguro de casco marítimo?",
+    "options": [
+      "La responsabilidad del agente aduanal.",
+      "Los salarios de la tripulación.",
+      "Las mercancías transportadas en la embarcación.",
+      "La embarcación y su maquinaria contra daños materiales."
+    ],
+    "opciones": [
+      "La responsabilidad del agente aduanal.",
+      "Los salarios de la tripulación.",
+      "Las mercancías transportadas en la embarcación.",
+      "La embarcación y su maquinaria contra daños materiales."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "La embarcación y su maquinaria contra daños materiales.",
+    "explanation": "El seguro de casco cubre la embarcación, su maquinaria y equipo contra pérdidas o daños materiales, y puede incluir la responsabilidad por colisión. La carga se asegura con el seguro de transporte de mercancías, y el agente aduanal o los salarios no son objeto de esta cobertura.",
+    "explicacion": "El seguro de casco cubre la embarcación, su maquinaria y equipo contra pérdidas o daños materiales, y puede incluir la responsabilidad por colisión. La carga se asegura con el seguro de transporte de mercancías, y el agente aduanal o los salarios no son objeto de esta cobertura."
+  },
+  {
+    "id": 624,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Marítimo y Transportes",
+    "question": "¿Qué son los clubes de Protección e Indemnización (P&I)?",
+    "pregunta": "¿Qué son los clubes de Protección e Indemnización (P&I)?",
+    "options": [
+      "Asociaciones de agentes de seguros.",
+      "Mutualidades de armadores que cubren responsabilidades de los buques frente a terceros, como contaminación, lesiones a tripulantes y daños a la carga.",
+      "Oficinas de la CONDUSEF en puertos.",
+      "Sociedades clasificadoras de buques."
+    ],
+    "opciones": [
+      "Asociaciones de agentes de seguros.",
+      "Mutualidades de armadores que cubren responsabilidades de los buques frente a terceros, como contaminación, lesiones a tripulantes y daños a la carga.",
+      "Oficinas de la CONDUSEF en puertos.",
+      "Sociedades clasificadoras de buques."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Mutualidades de armadores que cubren responsabilidades de los buques frente a terceros, como contaminación, lesiones a tripulantes y daños a la carga.",
+    "explanation": "Los clubes P&I son mutualidades de armadores que cubren responsabilidades de los buques que el seguro de casco no ampara, como contaminación, lesiones a tripulantes o daños a la carga. No son asociaciones de agentes, oficinas de la CONDUSEF ni sociedades clasificadoras.",
+    "explicacion": "Los clubes P&I son mutualidades de armadores que cubren responsabilidades de los buques que el seguro de casco no ampara, como contaminación, lesiones a tripulantes o daños a la carga. No son asociaciones de agentes, oficinas de la CONDUSEF ni sociedades clasificadoras."
+  },
+  {
+    "id": 633,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "¿Qué cubre la responsabilidad civil obligatoria de un vehículo que circula por caminos federales?",
+    "pregunta": "¿Qué cubre la responsabilidad civil obligatoria de un vehículo que circula por caminos federales?",
+    "options": [
+      "Los daños que el conductor cause a terceros en sus bienes y personas.",
+      "Los daños al propio vehículo asegurado.",
+      "El robo total del vehículo.",
+      "Los gastos médicos del conductor por enfermedad."
+    ],
+    "opciones": [
+      "Los daños que el conductor cause a terceros en sus bienes y personas.",
+      "Los daños al propio vehículo asegurado.",
+      "El robo total del vehículo.",
+      "Los gastos médicos del conductor por enfermedad."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Los daños que el conductor cause a terceros en sus bienes y personas.",
+    "explanation": "La responsabilidad civil obligatoria cubre los daños que se causen a terceros, tanto en sus bienes como en sus personas, al usar el vehículo. Los daños al propio vehículo y el robo son coberturas de daños materiales y robo, y los gastos médicos por enfermedad no son materia del seguro de autos.",
+    "explicacion": "La responsabilidad civil obligatoria cubre los daños que se causen a terceros, tanto en sus bienes como en sus personas, al usar el vehículo. Los daños al propio vehículo y el robo son coberturas de daños materiales y robo, y los gastos médicos por enfermedad no son materia del seguro de autos."
+  },
+  {
+    "id": 634,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "¿Qué ventaja ofrece asegurar los vehículos de una empresa en una póliza de flotilla?",
+    "pregunta": "¿Qué ventaja ofrece asegurar los vehículos de una empresa en una póliza de flotilla?",
+    "options": [
+      "Evitar la obligación de contratar responsabilidad civil.",
+      "Administrar todas las unidades en una sola póliza con condiciones homogéneas y, en su caso, tarifas por volumen.",
+      "Asegurar vehículos sin necesidad de registrarlos.",
+      "Eliminar los deducibles de todas las unidades."
+    ],
+    "opciones": [
+      "Evitar la obligación de contratar responsabilidad civil.",
+      "Administrar todas las unidades en una sola póliza con condiciones homogéneas y, en su caso, tarifas por volumen.",
+      "Asegurar vehículos sin necesidad de registrarlos.",
+      "Eliminar los deducibles de todas las unidades."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Administrar todas las unidades en una sola póliza con condiciones homogéneas y, en su caso, tarifas por volumen.",
+    "explanation": "La póliza de flotilla agrupa los vehículos de un titular en una sola póliza, lo que simplifica la administración y puede dar acceso a tarifas por volumen. No elimina deducibles, requiere identificar cada unidad y no exime de la responsabilidad civil obligatoria.",
+    "explicacion": "La póliza de flotilla agrupa los vehículos de un titular en una sola póliza, lo que simplifica la administración y puede dar acceso a tarifas por volumen. No elimina deducibles, requiere identificar cada unidad y no exime de la responsabilidad civil obligatoria."
+  },
+  {
+    "id": 635,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "En automóviles, ¿qué es el valor comercial del vehículo para efectos de pérdida total?",
+    "pregunta": "En automóviles, ¿qué es el valor comercial del vehículo para efectos de pérdida total?",
+    "options": [
+      "El valor de las refacciones nuevas.",
+      "El valor que el asegurado decida en el siniestro.",
+      "El precio de factura original sin depreciación.",
+      "El valor de mercado del vehículo al momento del siniestro, según guías de referencia."
+    ],
+    "opciones": [
+      "El valor de las refacciones nuevas.",
+      "El valor que el asegurado decida en el siniestro.",
+      "El precio de factura original sin depreciación.",
+      "El valor de mercado del vehículo al momento del siniestro, según guías de referencia."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "El valor de mercado del vehículo al momento del siniestro, según guías de referencia.",
+    "explanation": "El valor comercial es el valor de mercado del vehículo en la fecha del siniestro, determinado con guías de referencia, y es la base usual de indemnización en pérdida total. El valor factura aplica solo si se contrató así, el asegurado no lo fija unilateralmente y las refacciones se refieren a pérdidas parciales.",
+    "explicacion": "El valor comercial es el valor de mercado del vehículo en la fecha del siniestro, determinado con guías de referencia, y es la base usual de indemnización en pérdida total. El valor factura aplica solo si se contrató así, el asegurado no lo fija unilateralmente y las refacciones se refieren a pérdidas parciales."
+  },
+  {
+    "id": 636,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "Un vehículo de una flotilla con valor comercial de $300,000 sufre robo total y la póliza tiene deducible de 10% en robo. ¿Cuánto paga la aseguradora?",
+    "pregunta": "Un vehículo de una flotilla con valor comercial de $300,000 sufre robo total y la póliza tiene deducible de 10% en robo. ¿Cuánto paga la aseguradora?",
+    "options": [
+      "$300,000.",
+      "$30,000.",
+      "$330,000.",
+      "$270,000."
+    ],
+    "opciones": [
+      "$300,000.",
+      "$30,000.",
+      "$330,000.",
+      "$270,000."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "$270,000.",
+    "explanation": "El deducible de robo total se calcula sobre el valor comercial: 10% de 300,000 es 30,000, que queda a cargo del asegurado. La aseguradora paga 300,000 menos 30,000, es decir, $270,000; $30,000 es solo el deducible y $330,000 lo suma en lugar de restarlo.",
+    "explicacion": "El deducible de robo total se calcula sobre el valor comercial: 10% de 300,000 es 30,000, que queda a cargo del asegurado. La aseguradora paga 300,000 menos 30,000, es decir, $270,000; $30,000 es solo el deducible y $330,000 lo suma en lugar de restarlo."
+  },
+  {
+    "id": 637,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "¿Qué cubre la cobertura de responsabilidad civil por daños ocasionados por la carga en un seguro de camiones?",
+    "pregunta": "¿Qué cubre la cobertura de responsabilidad civil por daños ocasionados por la carga en un seguro de camiones?",
+    "options": [
+      "El robo del camión.",
+      "Las multas de tránsito del conductor.",
+      "Los daños a la propia carga transportada.",
+      "Los daños a terceros causados por la carga que transporta el camión."
+    ],
+    "opciones": [
+      "El robo del camión.",
+      "Las multas de tránsito del conductor.",
+      "Los daños a la propia carga transportada.",
+      "Los daños a terceros causados por la carga que transporta el camión."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Los daños a terceros causados por la carga que transporta el camión.",
+    "explanation": "La RC por la carga ampara los daños que la mercancía transportada cause a terceros, por ejemplo si cae o se derrama en la vía. Los daños a la propia carga se aseguran con el seguro de transporte de mercancías, el robo del camión es otra cobertura y las multas no son asegurables.",
+    "explicacion": "La RC por la carga ampara los daños que la mercancía transportada cause a terceros, por ejemplo si cae o se derrama en la vía. Los daños a la propia carga se aseguran con el seguro de transporte de mercancías, el robo del camión es otra cobertura y las multas no son asegurables."
+  },
+  {
+    "id": 638,
+    "module": "Marítimo, Transportes y Automóviles Flotillas",
+    "modulo": "Marítimo, Transportes y Automóviles Flotillas",
+    "submodulo": "Automóviles Flotillas",
+    "question": "¿Por qué conviene a una empresa contratar la cobertura de asistencia legal en su flotilla?",
+    "pregunta": "¿Por qué conviene a una empresa contratar la cobertura de asistencia legal en su flotilla?",
+    "options": [
+      "Porque paga las multas por exceso de velocidad.",
+      "Porque sustituye la responsabilidad civil obligatoria.",
+      "Porque elimina la responsabilidad del conductor.",
+      "Porque cubre la defensa jurídica del conductor y los gastos legales derivados de un accidente."
+    ],
+    "opciones": [
+      "Porque paga las multas por exceso de velocidad.",
+      "Porque sustituye la responsabilidad civil obligatoria.",
+      "Porque elimina la responsabilidad del conductor.",
+      "Porque cubre la defensa jurídica del conductor y los gastos legales derivados de un accidente."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Porque cubre la defensa jurídica del conductor y los gastos legales derivados de un accidente.",
+    "explanation": "La asistencia legal cubre la defensa del conductor y los trámites y gastos legales tras un accidente, incluidos en su caso los de liberación conforme a la póliza. No elimina la responsabilidad, no sustituye la RC obligatoria y no paga multas por infracciones.",
+    "explicacion": "La asistencia legal cubre la defensa del conductor y los trámites y gastos legales tras un accidente, incluidos en su caso los de liberación conforme a la póliza. No elimina la responsabilidad, no sustituye la RC obligatoria y no paga multas por infracciones."
+  }
+]

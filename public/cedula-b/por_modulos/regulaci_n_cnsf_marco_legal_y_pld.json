@@ -1,0 +1,2102 @@
+[
+  {
+    "id": 495,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Qué ley regula actualmente la organización, operación y funcionamiento de las instituciones de seguros en México?",
+    "pregunta": "¿Qué ley regula actualmente la organización, operación y funcionamiento de las instituciones de seguros en México?",
+    "options": [
+      "Ley sobre el Contrato de Seguro.",
+      "Ley General de Instituciones y Sociedades Mutualistas de Seguros.",
+      "Ley de Protección y Defensa al Usuario de Servicios Financieros.",
+      "Ley de Instituciones de Seguros y de Fianzas (LISF)."
+    ],
+    "opciones": [
+      "Ley sobre el Contrato de Seguro.",
+      "Ley General de Instituciones y Sociedades Mutualistas de Seguros.",
+      "Ley de Protección y Defensa al Usuario de Servicios Financieros.",
+      "Ley de Instituciones de Seguros y de Fianzas (LISF)."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Ley de Instituciones de Seguros y de Fianzas (LISF).",
+    "explanation": "La LISF entró en vigor el 4 de abril de 2015 y regula la organización y operación de aseguradoras y afianzadoras. Sustituyó a la Ley General de Instituciones y Sociedades Mutualistas de Seguros, mientras que la Ley sobre el Contrato de Seguro regula el contrato entre las partes y la LPDUSF la protección del usuario.",
+    "explicacion": "La LISF entró en vigor el 4 de abril de 2015 y regula la organización y operación de aseguradoras y afianzadoras. Sustituyó a la Ley General de Instituciones y Sociedades Mutualistas de Seguros, mientras que la Ley sobre el Contrato de Seguro regula el contrato entre las partes y la LPDUSF la protección del usuario."
+  },
+  {
+    "id": 496,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿En qué fecha entró en vigor la Ley de Instituciones de Seguros y de Fianzas?",
+    "pregunta": "¿En qué fecha entró en vigor la Ley de Instituciones de Seguros y de Fianzas?",
+    "options": [
+      "4 de abril de 2013.",
+      "1 de enero de 2017.",
+      "1 de enero de 2011.",
+      "4 de abril de 2015."
+    ],
+    "opciones": [
+      "4 de abril de 2013.",
+      "1 de enero de 2017.",
+      "1 de enero de 2011.",
+      "4 de abril de 2015."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "4 de abril de 2015.",
+    "explanation": "La LISF se publicó en el Diario Oficial de la Federación el 4 de abril de 2013 y entró en vigor dos años después, el 4 de abril de 2015, para dar tiempo al sector de adaptarse al nuevo régimen de solvencia. La fecha de 2013 corresponde a su publicación, no a su vigencia.",
+    "explicacion": "La LISF se publicó en el Diario Oficial de la Federación el 4 de abril de 2013 y entró en vigor dos años después, el 4 de abril de 2015, para dar tiempo al sector de adaptarse al nuevo régimen de solvencia. La fecha de 2013 corresponde a su publicación, no a su vigencia."
+  },
+  {
+    "id": 497,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Cómo se denomina el ordenamiento que concentra las disposiciones secundarias emitidas por la CNSF para desarrollar la LISF?",
+    "pregunta": "¿Cómo se denomina el ordenamiento que concentra las disposiciones secundarias emitidas por la CNSF para desarrollar la LISF?",
+    "options": [
+      "Código de Comercio.",
+      "Reglamento Interior de la SHCP.",
+      "Circular Única Bancaria.",
+      "Circular Única de Seguros y Fianzas (CUSF)."
+    ],
+    "opciones": [
+      "Código de Comercio.",
+      "Reglamento Interior de la SHCP.",
+      "Circular Única Bancaria.",
+      "Circular Única de Seguros y Fianzas (CUSF)."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Circular Única de Seguros y Fianzas (CUSF).",
+    "explanation": "La CUSF reúne en un solo documento las disposiciones de carácter general que emite la Comisión Nacional de Seguros y Fianzas para aplicar la LISF, como reservas, inversiones, reaseguro y agentes. La Circular Única Bancaria corresponde a la CNBV y el Código de Comercio no es normativa secundaria de seguros.",
+    "explicacion": "La CUSF reúne en un solo documento las disposiciones de carácter general que emite la Comisión Nacional de Seguros y Fianzas para aplicar la LISF, como reservas, inversiones, reaseguro y agentes. La Circular Única Bancaria corresponde a la CNBV y el Código de Comercio no es normativa secundaria de seguros."
+  },
+  {
+    "id": 498,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "El régimen de solvencia que introdujo la LISF se basa en tres pilares. ¿Cuál de las siguientes combinaciones los describe correctamente?",
+    "pregunta": "El régimen de solvencia que introdujo la LISF se basa en tres pilares. ¿Cuál de las siguientes combinaciones los describe correctamente?",
+    "options": [
+      "Primas, siniestros y comisiones.",
+      "Suscripción, ajuste y cobranza.",
+      "Requerimientos cuantitativos, gobierno corporativo y revelación de información.",
+      "Reaseguro, coaseguro y retención."
+    ],
+    "opciones": [
+      "Primas, siniestros y comisiones.",
+      "Suscripción, ajuste y cobranza.",
+      "Requerimientos cuantitativos, gobierno corporativo y revelación de información.",
+      "Reaseguro, coaseguro y retención."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Requerimientos cuantitativos, gobierno corporativo y revelación de información.",
+    "explanation": "La LISF adoptó un esquema inspirado en Solvencia II con tres pilares: requerimientos cuantitativos de capital y reservas, gobierno corporativo y control interno, y revelación de información al mercado y al supervisor. Las demás combinaciones describen procesos operativos o formas de distribuir riesgos, no los pilares de solvencia.",
+    "explicacion": "La LISF adoptó un esquema inspirado en Solvencia II con tres pilares: requerimientos cuantitativos de capital y reservas, gobierno corporativo y control interno, y revelación de información al mercado y al supervisor. Las demás combinaciones describen procesos operativos o formas de distribuir riesgos, no los pilares de solvencia."
+  },
+  {
+    "id": 499,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Qué nombre recibe en la LISF el capital que una aseguradora debe mantener para hacer frente a pérdidas inesperadas con un nivel de confianza determinado?",
+    "pregunta": "¿Qué nombre recibe en la LISF el capital que una aseguradora debe mantener para hacer frente a pérdidas inesperadas con un nivel de confianza determinado?",
+    "options": [
+      "Capital mínimo de garantía de reservas.",
+      "Reserva de riesgos en curso.",
+      "Margen de comisión de agentes.",
+      "Requerimiento de Capital de Solvencia (RCS)."
+    ],
+    "opciones": [
+      "Capital mínimo de garantía de reservas.",
+      "Reserva de riesgos en curso.",
+      "Margen de comisión de agentes.",
+      "Requerimiento de Capital de Solvencia (RCS)."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Requerimiento de Capital de Solvencia (RCS).",
+    "explanation": "El Requerimiento de Capital de Solvencia es el capital que la institución debe cubrir con fondos propios admisibles para absorber pérdidas imprevistas, conforme a la LISF y la CUSF. La reserva de riesgos en curso cubre obligaciones esperadas de pólizas vigentes, y las comisiones no son capital.",
+    "explicacion": "El Requerimiento de Capital de Solvencia es el capital que la institución debe cubrir con fondos propios admisibles para absorber pérdidas imprevistas, conforme a la LISF y la CUSF. La reserva de riesgos en curso cubre obligaciones esperadas de pólizas vigentes, y las comisiones no son capital."
+  },
+  {
+    "id": 500,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Qué reserva técnica tiene por objeto cubrir los siniestros ocurridos que aún no han sido pagados o que no han sido reportados?",
+    "pregunta": "¿Qué reserva técnica tiene por objeto cubrir los siniestros ocurridos que aún no han sido pagados o que no han sido reportados?",
+    "options": [
+      "Reserva de riesgos catastróficos.",
+      "Reserva legal del capital social.",
+      "Reserva de riesgos en curso.",
+      "Reserva para obligaciones pendientes de cumplir."
+    ],
+    "opciones": [
+      "Reserva de riesgos catastróficos.",
+      "Reserva legal del capital social.",
+      "Reserva de riesgos en curso.",
+      "Reserva para obligaciones pendientes de cumplir."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Reserva para obligaciones pendientes de cumplir.",
+    "explanation": "La reserva para obligaciones pendientes de cumplir respalda siniestros ocurridos pendientes de pago, incluidos los ocurridos no reportados. La de riesgos en curso cubre siniestros futuros de pólizas vigentes, la catastrófica acumula recursos para eventos severos como terremoto o huracán, y la legal es societaria.",
+    "explicacion": "La reserva para obligaciones pendientes de cumplir respalda siniestros ocurridos pendientes de pago, incluidos los ocurridos no reportados. La de riesgos en curso cubre siniestros futuros de pólizas vigentes, la catastrófica acumula recursos para eventos severos como terremoto o huracán, y la legal es societaria."
+  },
+  {
+    "id": 501,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Qué reserva técnica deben constituir las aseguradoras que operan terremoto y riesgos hidrometeorológicos para enfrentar eventos de gran severidad?",
+    "pregunta": "¿Qué reserva técnica deben constituir las aseguradoras que operan terremoto y riesgos hidrometeorológicos para enfrentar eventos de gran severidad?",
+    "options": [
+      "Reserva de riesgos catastróficos.",
+      "Reserva de dividendos.",
+      "Reserva de previsión social.",
+      "Reserva para obligaciones pendientes de cumplir."
+    ],
+    "opciones": [
+      "Reserva de riesgos catastróficos.",
+      "Reserva de dividendos.",
+      "Reserva de previsión social.",
+      "Reserva para obligaciones pendientes de cumplir."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Reserva de riesgos catastróficos.",
+    "explanation": "La reserva de riesgos catastróficos se acumula para responder a eventos de baja frecuencia y alta severidad, como sismos y huracanes, que pueden generar pérdidas muy superiores a las esperadas. La de obligaciones pendientes cubre siniestros ya ocurridos, y las de dividendos o previsión social no son reservas técnicas de daños.",
+    "explicacion": "La reserva de riesgos catastróficos se acumula para responder a eventos de baja frecuencia y alta severidad, como sismos y huracanes, que pueden generar pérdidas muy superiores a las esperadas. La de obligaciones pendientes cubre siniestros ya ocurridos, y las de dividendos o previsión social no son reservas técnicas de daños."
+  },
+  {
+    "id": 502,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Qué naturaleza jurídica tiene la Comisión Nacional de Seguros y Fianzas (CNSF)?",
+    "pregunta": "¿Qué naturaleza jurídica tiene la Comisión Nacional de Seguros y Fianzas (CNSF)?",
+    "options": [
+      "Órgano desconcentrado de la Secretaría de Hacienda y Crédito Público.",
+      "Asociación civil de aseguradoras.",
+      "Organismo autónomo constitucional.",
+      "Organismo público descentralizado de la Secretaría de Economía."
+    ],
+    "opciones": [
+      "Órgano desconcentrado de la Secretaría de Hacienda y Crédito Público.",
+      "Asociación civil de aseguradoras.",
+      "Organismo autónomo constitucional.",
+      "Organismo público descentralizado de la Secretaría de Economía."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Órgano desconcentrado de la Secretaría de Hacienda y Crédito Público.",
+    "explanation": "La CNSF es un órgano desconcentrado de la SHCP encargado de supervisar a las instituciones de seguros y fianzas y a los agentes, conforme a la LISF. No es autónoma constitucionalmente, no es una asociación privada como la AMIS y no depende de la Secretaría de Economía.",
+    "explicacion": "La CNSF es un órgano desconcentrado de la SHCP encargado de supervisar a las instituciones de seguros y fianzas y a los agentes, conforme a la LISF. No es autónoma constitucionalmente, no es una asociación privada como la AMIS y no depende de la Secretaría de Economía."
+  },
+  {
+    "id": 503,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "Conforme a la LISF, ¿cuáles son las tres operaciones de seguros que pueden autorizarse?",
+    "pregunta": "Conforme a la LISF, ¿cuáles son las tres operaciones de seguros que pueden autorizarse?",
+    "options": [
+      "Personas; patrimonio; y responsabilidades.",
+      "Vida; fianzas; y crédito.",
+      "Individual; grupo; y colectivo.",
+      "Vida; accidentes y enfermedades; y daños."
+    ],
+    "opciones": [
+      "Personas; patrimonio; y responsabilidades.",
+      "Vida; fianzas; y crédito.",
+      "Individual; grupo; y colectivo.",
+      "Vida; accidentes y enfermedades; y daños."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Vida; accidentes y enfermedades; y daños.",
+    "explanation": "La LISF clasifica las operaciones de seguros en vida, accidentes y enfermedades, y daños, y dentro de cada operación agrupa los ramos. Las fianzas son una actividad distinta, y individual, grupo o colectivo son modalidades de contratación, no operaciones.",
+    "explicacion": "La LISF clasifica las operaciones de seguros en vida, accidentes y enfermedades, y daños, y dentro de cada operación agrupa los ramos. Las fianzas son una actividad distinta, y individual, grupo o colectivo son modalidades de contratación, no operaciones."
+  },
+  {
+    "id": 504,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "Según la LISF, ¿en qué operación se ubica el ramo de gastos médicos?",
+    "pregunta": "Según la LISF, ¿en qué operación se ubica el ramo de gastos médicos?",
+    "options": [
+      "Diversos.",
+      "Vida.",
+      "Accidentes y enfermedades.",
+      "Daños."
+    ],
+    "opciones": [
+      "Diversos.",
+      "Vida.",
+      "Accidentes y enfermedades.",
+      "Daños."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Accidentes y enfermedades.",
+    "explanation": "La operación de accidentes y enfermedades comprende los ramos de accidentes personales, gastos médicos y salud, conforme a la LISF. Vida cubre fallecimiento y supervivencia, daños cubre bienes y responsabilidades, y diversos es un ramo de daños.",
+    "explicacion": "La operación de accidentes y enfermedades comprende los ramos de accidentes personales, gastos médicos y salud, conforme a la LISF. Vida cubre fallecimiento y supervivencia, daños cubre bienes y responsabilidades, y diversos es un ramo de daños."
+  },
+  {
+    "id": 505,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "Conforme a la LISF, el terremoto, el huracán y otros riesgos hidrometeorológicos se agrupan en el ramo de:",
+    "pregunta": "Conforme a la LISF, el terremoto, el huracán y otros riesgos hidrometeorológicos se agrupan en el ramo de:",
+    "options": [
+      "Incendio, dentro de la operación de vida.",
+      "Diversos misceláneos, dentro de accidentes y enfermedades.",
+      "Riesgos catastróficos, dentro de la operación de daños.",
+      "Agrícola y de animales, dentro de la operación de daños."
+    ],
+    "opciones": [
+      "Incendio, dentro de la operación de vida.",
+      "Diversos misceláneos, dentro de accidentes y enfermedades.",
+      "Riesgos catastróficos, dentro de la operación de daños.",
+      "Agrícola y de animales, dentro de la operación de daños."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Riesgos catastróficos, dentro de la operación de daños.",
+    "explanation": "La LISF incluye en la operación de daños el ramo de riesgos catastróficos, que agrupa terremoto, huracán y otros riesgos hidrometeorológicos. Aunque comercialmente se venden junto con incendio, no pertenecen a vida ni a accidentes y enfermedades, y el ramo agrícola cubre cultivos y ganado.",
+    "explicacion": "La LISF incluye en la operación de daños el ramo de riesgos catastróficos, que agrupa terremoto, huracán y otros riesgos hidrometeorológicos. Aunque comercialmente se venden junto con incendio, no pertenecen a vida ni a accidentes y enfermedades, y el ramo agrícola cubre cultivos y ganado."
+  },
+  {
+    "id": 506,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "Bajo la LISF, ¿quién otorga la autorización para organizarse y operar como institución de seguros?",
+    "pregunta": "Bajo la LISF, ¿quién otorga la autorización para organizarse y operar como institución de seguros?",
+    "options": [
+      "El Banco de México.",
+      "La CONDUSEF.",
+      "La Asociación Mexicana de Instituciones de Seguros.",
+      "La Comisión Nacional de Seguros y Fianzas, previo acuerdo de su Junta de Gobierno."
+    ],
+    "opciones": [
+      "El Banco de México.",
+      "La CONDUSEF.",
+      "La Asociación Mexicana de Instituciones de Seguros.",
+      "La Comisión Nacional de Seguros y Fianzas, previo acuerdo de su Junta de Gobierno."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "La Comisión Nacional de Seguros y Fianzas, previo acuerdo de su Junta de Gobierno.",
+    "explanation": "Con la LISF la autorización para operar como aseguradora compete a la CNSF, previo acuerdo de su Junta de Gobierno; antes la otorgaba directamente la SHCP. La AMIS es una asociación gremial, la CONDUSEF protege usuarios y Banxico no autoriza aseguradoras.",
+    "explicacion": "Con la LISF la autorización para operar como aseguradora compete a la CNSF, previo acuerdo de su Junta de Gobierno; antes la otorgaba directamente la SHCP. La AMIS es una asociación gremial, la CONDUSEF protege usuarios y Banxico no autoriza aseguradoras."
+  },
+  {
+    "id": 507,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "Antes de ofrecer un producto de seguros al público, la institución debe:",
+    "pregunta": "Antes de ofrecer un producto de seguros al público, la institución debe:",
+    "options": [
+      "Registrarlo ante la CNSF con su documentación contractual y su nota técnica.",
+      "Publicarlo en el Diario Oficial de la Federación.",
+      "Obtener autorización de la CONDUSEF para cada póliza vendida.",
+      "Registrarlo únicamente ante la AMIS."
+    ],
+    "opciones": [
+      "Registrarlo ante la CNSF con su documentación contractual y su nota técnica.",
+      "Publicarlo en el Diario Oficial de la Federación.",
+      "Obtener autorización de la CONDUSEF para cada póliza vendida.",
+      "Registrarlo únicamente ante la AMIS."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Registrarlo ante la CNSF con su documentación contractual y su nota técnica.",
+    "explanation": "La LISF y la CUSF exigen registrar ante la CNSF los productos, con su documentación contractual y la nota técnica elaborada por un actuario, antes de comercializarlos. La CONDUSEF revisa la transparencia de los contratos, pero no autoriza cada venta, y ni el DOF ni la AMIS sustituyen el registro.",
+    "explicacion": "La LISF y la CUSF exigen registrar ante la CNSF los productos, con su documentación contractual y la nota técnica elaborada por un actuario, antes de comercializarlos. La CONDUSEF revisa la transparencia de los contratos, pero no autoriza cada venta, y ni el DOF ni la AMIS sustituyen el registro."
+  },
+  {
+    "id": 508,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Qué profesional debe elaborar y firmar la nota técnica de un producto de seguros?",
+    "pregunta": "¿Qué profesional debe elaborar y firmar la nota técnica de un producto de seguros?",
+    "options": [
+      "Un actuario con certificación vigente.",
+      "El abogado general de la institución.",
+      "El contador de la institución.",
+      "El agente que vende el producto."
+    ],
+    "opciones": [
+      "Un actuario con certificación vigente.",
+      "El abogado general de la institución.",
+      "El contador de la institución.",
+      "El agente que vende el producto."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Un actuario con certificación vigente.",
+    "explanation": "La nota técnica contiene las bases técnicas para calcular primas y reservas, por lo que la CUSF exige que la elabore y firme un actuario certificado. El agente comercializa, el contador registra la operación y el abogado revisa la parte jurídica, pero ninguno puede firmar la nota técnica.",
+    "explicacion": "La nota técnica contiene las bases técnicas para calcular primas y reservas, por lo que la CUSF exige que la elabore y firme un actuario certificado. El agente comercializa, el contador registra la operación y el abogado revisa la parte jurídica, pero ninguno puede firmar la nota técnica."
+  },
+  {
+    "id": 509,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "Dentro del gobierno corporativo que exige la LISF, ¿qué órgano es responsable de definir y aprobar las políticas de la institución?",
+    "pregunta": "Dentro del gobierno corporativo que exige la LISF, ¿qué órgano es responsable de definir y aprobar las políticas de la institución?",
+    "options": [
+      "El agente con mayor producción.",
+      "El consejo de administración.",
+      "La CONDUSEF.",
+      "El comité de usuarios."
+    ],
+    "opciones": [
+      "El agente con mayor producción.",
+      "El consejo de administración.",
+      "La CONDUSEF.",
+      "El comité de usuarios."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "El consejo de administración.",
+    "explanation": "La LISF hace responsable al consejo de administración de definir y aprobar las políticas de gobierno corporativo, administración de riesgos, control interno, suscripción y reaseguro. Los agentes y la CONDUSEF son externos a ese gobierno, y no existe un comité de usuarios dentro de la estructura legal.",
+    "explicacion": "La LISF hace responsable al consejo de administración de definir y aprobar las políticas de gobierno corporativo, administración de riesgos, control interno, suscripción y reaseguro. Los agentes y la CONDUSEF son externos a ese gobierno, y no existe un comité de usuarios dentro de la estructura legal."
+  },
+  {
+    "id": 510,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Cómo se llama el ejercicio anual en el que la aseguradora evalúa sus propios riesgos y sus necesidades de solvencia, como parte de su sistema de administración de riesgos?",
+    "pregunta": "¿Cómo se llama el ejercicio anual en el que la aseguradora evalúa sus propios riesgos y sus necesidades de solvencia, como parte de su sistema de administración de riesgos?",
+    "options": [
+      "Reporte de operaciones relevantes.",
+      "Dictamen fiscal anual.",
+      "Prueba de selección adversa.",
+      "Autoevaluación de riesgos y solvencia institucionales (ARSI)."
+    ],
+    "opciones": [
+      "Reporte de operaciones relevantes.",
+      "Dictamen fiscal anual.",
+      "Prueba de selección adversa.",
+      "Autoevaluación de riesgos y solvencia institucionales (ARSI)."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Autoevaluación de riesgos y solvencia institucionales (ARSI).",
+    "explanation": "La ARSI es la autoevaluación que la LISF y la CUSF exigen para que la institución analice sus riesgos y la suficiencia de su capital frente a ellos. El dictamen fiscal es tributario, la selección adversa es un fenómeno de suscripción y el reporte de operaciones relevantes es una obligación de prevención de lavado de dinero.",
+    "explicacion": "La ARSI es la autoevaluación que la LISF y la CUSF exigen para que la institución analice sus riesgos y la suficiencia de su capital frente a ellos. El dictamen fiscal es tributario, la selección adversa es un fenómeno de suscripción y el reporte de operaciones relevantes es una obligación de prevención de lavado de dinero."
+  },
+  {
+    "id": 511,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Qué informe deben publicar anualmente las aseguradoras para revelar al público su situación de solvencia?",
+    "pregunta": "¿Qué informe deben publicar anualmente las aseguradoras para revelar al público su situación de solvencia?",
+    "options": [
+      "Declaración patrimonial del director general.",
+      "Reporte sobre la Solvencia y Condición Financiera (RSCF).",
+      "Informe de comisiones a agentes.",
+      "Reporte de operaciones inusuales."
+    ],
+    "opciones": [
+      "Declaración patrimonial del director general.",
+      "Reporte sobre la Solvencia y Condición Financiera (RSCF).",
+      "Informe de comisiones a agentes.",
+      "Reporte de operaciones inusuales."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Reporte sobre la Solvencia y Condición Financiera (RSCF).",
+    "explanation": "El RSCF forma parte del pilar de revelación de información de la LISF y da a conocer al público la situación de solvencia, riesgos y gobierno de la institución. Las comisiones no se publican de esa forma, la declaración patrimonial no aplica y los reportes de operaciones inusuales son confidenciales.",
+    "explicacion": "El RSCF forma parte del pilar de revelación de información de la LISF y da a conocer al público la situación de solvencia, riesgos y gobierno de la institución. Las comisiones no se publican de esa forma, la declaración patrimonial no aplica y los reportes de operaciones inusuales son confidenciales."
+  },
+  {
+    "id": 512,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Cuál es la función del reaseguro para una aseguradora?",
+    "pregunta": "¿Cuál es la función del reaseguro para una aseguradora?",
+    "options": [
+      "Aumentar la comisión del agente.",
+      "Cobrar primas a nombre del asegurado.",
+      "Sustituir a la CNSF en la supervisión.",
+      "Transferir a otra entidad parte de los riesgos que asumió para limitar su exposición."
+    ],
+    "opciones": [
+      "Aumentar la comisión del agente.",
+      "Cobrar primas a nombre del asegurado.",
+      "Sustituir a la CNSF en la supervisión.",
+      "Transferir a otra entidad parte de los riesgos que asumió para limitar su exposición."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Transferir a otra entidad parte de los riesgos que asumió para limitar su exposición.",
+    "explanation": "Con el reaseguro la aseguradora cede parte de sus riesgos a una reaseguradora para proteger su solvencia y su capacidad de suscripción. La relación con el asegurado no cambia, porque la aseguradora directa sigue siendo la responsable frente a él, y el reaseguro no supervisa ni paga comisiones al agente.",
+    "explicacion": "Con el reaseguro la aseguradora cede parte de sus riesgos a una reaseguradora para proteger su solvencia y su capacidad de suscripción. La relación con el asegurado no cambia, porque la aseguradora directa sigue siendo la responsable frente a él, y el reaseguro no supervisa ni paga comisiones al agente."
+  },
+  {
+    "id": 513,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "Si una aseguradora tiene contratado reaseguro y ocurre un siniestro, ¿quién es responsable frente al asegurado?",
+    "pregunta": "Si una aseguradora tiene contratado reaseguro y ocurre un siniestro, ¿quién es responsable frente al asegurado?",
+    "options": [
+      "La aseguradora que emitió la póliza.",
+      "La CNSF.",
+      "El agente que colocó la póliza.",
+      "La reaseguradora directamente."
+    ],
+    "opciones": [
+      "La aseguradora que emitió la póliza.",
+      "La CNSF.",
+      "El agente que colocó la póliza.",
+      "La reaseguradora directamente."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "La aseguradora que emitió la póliza.",
+    "explanation": "El contrato de reaseguro vincula solo a la aseguradora y a la reaseguradora, por lo que el asegurado no tiene relación jurídica con esta última y siempre reclama a la aseguradora emisora. El agente es intermediario y la CNSF supervisa, pero ninguno paga el siniestro.",
+    "explicacion": "El contrato de reaseguro vincula solo a la aseguradora y a la reaseguradora, por lo que el asegurado no tiene relación jurídica con esta última y siempre reclama a la aseguradora emisora. El agente es intermediario y la CNSF supervisa, pero ninguno paga el siniestro."
+  },
+  {
+    "id": 514,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Qué figura permite que dos o más aseguradoras participen en un mismo riesgo directo, cada una con un porcentaje frente al asegurado?",
+    "pregunta": "¿Qué figura permite que dos o más aseguradoras participen en un mismo riesgo directo, cada una con un porcentaje frente al asegurado?",
+    "options": [
+      "Coaseguro entre aseguradoras.",
+      "Subrogación.",
+      "Contraseguro.",
+      "Retrocesión."
+    ],
+    "opciones": [
+      "Coaseguro entre aseguradoras.",
+      "Subrogación.",
+      "Contraseguro.",
+      "Retrocesión."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Coaseguro entre aseguradoras.",
+    "explanation": "En el coaseguro entre aseguradoras varias instituciones participan en el riesgo directo y cada una responde ante el asegurado en su porcentaje, lo que es común en grandes riesgos empresariales. La retrocesión es el reaseguro de una reaseguradora, la subrogación es la sustitución de derechos tras pagar y el contraseguro es un pacto de devolución de primas.",
+    "explicacion": "En el coaseguro entre aseguradoras varias instituciones participan en el riesgo directo y cada una responde ante el asegurado en su porcentaje, lo que es común en grandes riesgos empresariales. La retrocesión es el reaseguro de una reaseguradora, la subrogación es la sustitución de derechos tras pagar y el contraseguro es un pacto de devolución de primas."
+  },
+  {
+    "id": 515,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Qué entidad gremial agrupa a las aseguradoras en México y elabora estadísticas y estándares de la industria?",
+    "pregunta": "¿Qué entidad gremial agrupa a las aseguradoras en México y elabora estadísticas y estándares de la industria?",
+    "options": [
+      "La Asociación Mexicana de Instituciones de Seguros (AMIS).",
+      "La CNSF.",
+      "La Unidad de Inteligencia Financiera.",
+      "La CONDUSEF."
+    ],
+    "opciones": [
+      "La Asociación Mexicana de Instituciones de Seguros (AMIS).",
+      "La CNSF.",
+      "La Unidad de Inteligencia Financiera.",
+      "La CONDUSEF."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "La Asociación Mexicana de Instituciones de Seguros (AMIS).",
+    "explanation": "La AMIS es una asociación civil que agrupa a las aseguradoras, genera estadísticas y promueve prácticas del sector, pero no tiene facultades de autoridad. La CNSF supervisa, la CONDUSEF protege a los usuarios y la UIF combate el lavado de dinero.",
+    "explicacion": "La AMIS es una asociación civil que agrupa a las aseguradoras, genera estadísticas y promueve prácticas del sector, pero no tiene facultades de autoridad. La CNSF supervisa, la CONDUSEF protege a los usuarios y la UIF combate el lavado de dinero."
+  },
+  {
+    "id": 516,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Cuál es el propósito principal de la reserva de riesgos en curso?",
+    "pregunta": "¿Cuál es el propósito principal de la reserva de riesgos en curso?",
+    "options": [
+      "Acumular recursos para dividendos a accionistas.",
+      "Garantizar el pago de comisiones a agentes.",
+      "Pagar siniestros ya ocurridos y reportados.",
+      "Cubrir los siniestros y gastos futuros esperados de las pólizas vigentes."
+    ],
+    "opciones": [
+      "Acumular recursos para dividendos a accionistas.",
+      "Garantizar el pago de comisiones a agentes.",
+      "Pagar siniestros ya ocurridos y reportados.",
+      "Cubrir los siniestros y gastos futuros esperados de las pólizas vigentes."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Cubrir los siniestros y gastos futuros esperados de las pólizas vigentes.",
+    "explanation": "La reserva de riesgos en curso respalda las obligaciones futuras esperadas de las pólizas en vigor por el periodo no transcurrido. Los siniestros ya ocurridos van en la reserva de obligaciones pendientes, y los dividendos y comisiones no son el objeto de las reservas técnicas.",
+    "explicacion": "La reserva de riesgos en curso respalda las obligaciones futuras esperadas de las pólizas en vigor por el periodo no transcurrido. Los siniestros ya ocurridos van en la reserva de obligaciones pendientes, y los dividendos y comisiones no son el objeto de las reservas técnicas."
+  },
+  {
+    "id": 517,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "Con la LISF, el antiguo régimen de margen de solvencia de la ley anterior fue sustituido por un esquema basado principalmente en:",
+    "pregunta": "Con la LISF, el antiguo régimen de margen de solvencia de la ley anterior fue sustituido por un esquema basado principalmente en:",
+    "options": [
+      "La medición de los riesgos que asume cada institución.",
+      "Un porcentaje fijo de las primas emitidas, igual para todas.",
+      "El número de agentes que tiene la institución.",
+      "La antigüedad de la institución en el mercado."
+    ],
+    "opciones": [
+      "La medición de los riesgos que asume cada institución.",
+      "Un porcentaje fijo de las primas emitidas, igual para todas.",
+      "El número de agentes que tiene la institución.",
+      "La antigüedad de la institución en el mercado."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "La medición de los riesgos que asume cada institución.",
+    "explanation": "La LISF cambió el capital mínimo de garantía basado en factores fijos por un requerimiento de capital que refleja los riesgos reales de cada institución, como los de suscripción, mercado, crédito y operativos. Un porcentaje fijo de primas era el enfoque anterior, y el número de agentes o la antigüedad no miden la solvencia.",
+    "explicacion": "La LISF cambió el capital mínimo de garantía basado en factores fijos por un requerimiento de capital que refleja los riesgos reales de cada institución, como los de suscripción, mercado, crédito y operativos. Un porcentaje fijo de primas era el enfoque anterior, y el número de agentes o la antigüedad no miden la solvencia."
+  },
+  {
+    "id": 518,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Qué ley regula las relaciones contractuales entre el asegurado y la aseguradora, como la declaración del riesgo, el pago de primas y el aviso de siniestro?",
+    "pregunta": "¿Qué ley regula las relaciones contractuales entre el asegurado y la aseguradora, como la declaración del riesgo, el pago de primas y el aviso de siniestro?",
+    "options": [
+      "Ley de Instituciones de Seguros y de Fianzas.",
+      "Ley sobre el Contrato de Seguro.",
+      "Ley General de Sociedades Mercantiles.",
+      "Ley del Seguro Social."
+    ],
+    "opciones": [
+      "Ley de Instituciones de Seguros y de Fianzas.",
+      "Ley sobre el Contrato de Seguro.",
+      "Ley General de Sociedades Mercantiles.",
+      "Ley del Seguro Social."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Ley sobre el Contrato de Seguro.",
+    "explanation": "La Ley sobre el Contrato de Seguro regula los derechos y obligaciones de las partes en el contrato, como la declaración de hechos, la prima y el aviso de siniestro. La LISF regula a las instituciones y su supervisión, la Ley del Seguro Social el régimen del IMSS y la de sociedades la constitución de empresas.",
+    "explicacion": "La Ley sobre el Contrato de Seguro regula los derechos y obligaciones de las partes en el contrato, como la declaración de hechos, la prima y el aviso de siniestro. La LISF regula a las instituciones y su supervisión, la Ley del Seguro Social el régimen del IMSS y la de sociedades la constitución de empresas."
+  },
+  {
+    "id": 519,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Cuál es la función de la Unidad de Medida y Actualización (UMA) en la normativa vigente?",
+    "pregunta": "¿Cuál es la función de la Unidad de Medida y Actualización (UMA) en la normativa vigente?",
+    "options": [
+      "Fijar el salario mínimo que deben pagar los patrones.",
+      "Medir la inflación mensual del país.",
+      "Determinar la prima de los seguros de vida.",
+      "Servir como referencia económica para determinar montos de obligaciones y sanciones previstos en las leyes."
+    ],
+    "opciones": [
+      "Fijar el salario mínimo que deben pagar los patrones.",
+      "Medir la inflación mensual del país.",
+      "Determinar la prima de los seguros de vida.",
+      "Servir como referencia económica para determinar montos de obligaciones y sanciones previstos en las leyes."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Servir como referencia económica para determinar montos de obligaciones y sanciones previstos en las leyes.",
+    "explanation": "Desde la reforma constitucional de desindexación de 2016, la UMA sustituyó al salario mínimo como referencia para cuantificar obligaciones, multas y umbrales legales. El salario mínimo sigue siendo la remuneración mínima laboral, la prima se calcula con notas técnicas y la inflación se mide con el INPC.",
+    "explicacion": "Desde la reforma constitucional de desindexación de 2016, la UMA sustituyó al salario mínimo como referencia para cuantificar obligaciones, multas y umbrales legales. El salario mínimo sigue siendo la remuneración mínima laboral, la prima se calcula con notas técnicas y la inflación se mide con el INPC."
+  },
+  {
+    "id": 520,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Qué institución calcula y publica el valor de la UMA?",
+    "pregunta": "¿Qué institución calcula y publica el valor de la UMA?",
+    "options": [
+      "El Instituto Nacional de Estadística y Geografía (INEGI).",
+      "El Banco de México.",
+      "La CNSF.",
+      "La Comisión Nacional de los Salarios Mínimos."
+    ],
+    "opciones": [
+      "El Instituto Nacional de Estadística y Geografía (INEGI).",
+      "El Banco de México.",
+      "La CNSF.",
+      "La Comisión Nacional de los Salarios Mínimos."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "El Instituto Nacional de Estadística y Geografía (INEGI).",
+    "explanation": "El INEGI calcula el valor de la UMA cada año y lo publica en el DOF, aplicando la variación del Índice Nacional de Precios al Consumidor. La CONASAMI fija el salario mínimo, la CNSF supervisa seguros y Banxico publica el valor de la UDI.",
+    "explicacion": "El INEGI calcula el valor de la UMA cada año y lo publica en el DOF, aplicando la variación del Índice Nacional de Precios al Consumidor. La CONASAMI fija el salario mínimo, la CNSF supervisa seguros y Banxico publica el valor de la UDI."
+  },
+  {
+    "id": 521,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Cuál de las siguientes unidades se usa en la LISF para calcular la indemnización por mora cuando la aseguradora no paga en tiempo?",
+    "pregunta": "¿Cuál de las siguientes unidades se usa en la LISF para calcular la indemnización por mora cuando la aseguradora no paga en tiempo?",
+    "options": [
+      "Puntos de comisión del agente.",
+      "Salarios mínimos del Distrito Federal.",
+      "Dólares estadounidenses en todos los casos.",
+      "Unidades de Inversión (UDI)."
+    ],
+    "opciones": [
+      "Puntos de comisión del agente.",
+      "Salarios mínimos del Distrito Federal.",
+      "Dólares estadounidenses en todos los casos.",
+      "Unidades de Inversión (UDI)."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Unidades de Inversión (UDI).",
+    "explanation": "La LISF establece que, si la aseguradora no cumple en el plazo legal, debe pagar una indemnización por mora que actualiza la obligación en UDI y agrega intereses moratorios. El salario mínimo ya no se usa como referencia, el dólar aplica solo en pólizas en moneda extranjera y las comisiones no intervienen.",
+    "explicacion": "La LISF establece que, si la aseguradora no cumple en el plazo legal, debe pagar una indemnización por mora que actualiza la obligación en UDI y agrega intereses moratorios. El salario mínimo ya no se usa como referencia, el dólar aplica solo en pólizas en moneda extranjera y las comisiones no intervienen."
+  },
+  {
+    "id": 522,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Qué es un microseguro según el marco regulatorio vigente?",
+    "pregunta": "¿Qué es un microseguro según el marco regulatorio vigente?",
+    "options": [
+      "Un reaseguro de montos pequeños.",
+      "Un seguro sin registro ante la CNSF.",
+      "Un seguro exclusivo para microempresas manufactureras.",
+      "Un seguro de bajo costo y fácil contratación dirigido a población de bajos ingresos."
+    ],
+    "opciones": [
+      "Un reaseguro de montos pequeños.",
+      "Un seguro sin registro ante la CNSF.",
+      "Un seguro exclusivo para microempresas manufactureras.",
+      "Un seguro de bajo costo y fácil contratación dirigido a población de bajos ingresos."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Un seguro de bajo costo y fácil contratación dirigido a población de bajos ingresos.",
+    "explanation": "Los microseguros son productos de primas y sumas reducidas, con condiciones sencillas, diseñados para dar acceso al seguro a la población de bajos ingresos, y la regulación les da reglas de comercialización simplificadas. No se limitan a microempresas, no son reaseguro y sí deben registrarse ante la CNSF.",
+    "explicacion": "Los microseguros son productos de primas y sumas reducidas, con condiciones sencillas, diseñados para dar acceso al seguro a la población de bajos ingresos, y la regulación les da reglas de comercialización simplificadas. No se limitan a microempresas, no son reaseguro y sí deben registrarse ante la CNSF."
+  },
+  {
+    "id": 523,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Marco Legal: LISF y CUSF",
+    "question": "¿Cuál es el objetivo de la función actuarial que exige la LISF dentro del gobierno corporativo?",
+    "pregunta": "¿Cuál es el objetivo de la función actuarial que exige la LISF dentro del gobierno corporativo?",
+    "options": [
+      "Coordinar el cálculo de reservas técnicas, la suficiencia de primas y opinar sobre suscripción y reaseguro.",
+      "Vender pólizas a grandes clientes.",
+      "Atender las reclamaciones de la CONDUSEF.",
+      "Llevar la contabilidad fiscal."
+    ],
+    "opciones": [
+      "Coordinar el cálculo de reservas técnicas, la suficiencia de primas y opinar sobre suscripción y reaseguro.",
+      "Vender pólizas a grandes clientes.",
+      "Atender las reclamaciones de la CONDUSEF.",
+      "Llevar la contabilidad fiscal."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Coordinar el cálculo de reservas técnicas, la suficiencia de primas y opinar sobre suscripción y reaseguro.",
+    "explanation": "La función actuarial es responsable de la calidad del cálculo de reservas y primas y de opinar sobre las políticas de suscripción y reaseguro, conforme a la LISF y la CUSF. La venta corresponde a la fuerza comercial, la contabilidad fiscal a finanzas y las reclamaciones a la Unidad Especializada.",
+    "explicacion": "La función actuarial es responsable de la calidad del cálculo de reservas y primas y de opinar sobre las políticas de suscripción y reaseguro, conforme a la LISF y la CUSF. La venta corresponde a la fuerza comercial, la contabilidad fiscal a finanzas y las reclamaciones a la Unidad Especializada."
+  },
+  {
+    "id": 524,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "Conforme a la LISF, ¿quiénes son agentes de seguros?",
+    "pregunta": "Conforme a la LISF, ¿quiénes son agentes de seguros?",
+    "options": [
+      "Personas físicas o morales que intervienen en la contratación de seguros mediante el intercambio de propuestas y aceptaciones, y en el asesoramiento para celebrarlos, conservarlos o modificarlos.",
+      "Los ajustadores que valúan siniestros.",
+      "Únicamente los empleados de la aseguradora que emiten pólizas.",
+      "Cualquier persona que recomiende un seguro a un familiar."
+    ],
+    "opciones": [
+      "Personas físicas o morales que intervienen en la contratación de seguros mediante el intercambio de propuestas y aceptaciones, y en el asesoramiento para celebrarlos, conservarlos o modificarlos.",
+      "Los ajustadores que valúan siniestros.",
+      "Únicamente los empleados de la aseguradora que emiten pólizas.",
+      "Cualquier persona que recomiende un seguro a un familiar."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Personas físicas o morales que intervienen en la contratación de seguros mediante el intercambio de propuestas y aceptaciones, y en el asesoramiento para celebrarlos, conservarlos o modificarlos.",
+    "explanation": "La LISF define a los agentes como personas físicas o morales que intervienen en la contratación de seguros y asesoran para celebrarlos, conservarlos o modificarlos, con autorización de la CNSF. No se limita a empleados emisores, una recomendación informal no constituye intermediación y los ajustadores realizan otra función.",
+    "explicacion": "La LISF define a los agentes como personas físicas o morales que intervienen en la contratación de seguros y asesoran para celebrarlos, conservarlos o modificarlos, con autorización de la CNSF. No se limita a empleados emisores, una recomendación informal no constituye intermediación y los ajustadores realizan otra función."
+  },
+  {
+    "id": 525,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "¿Qué autoridad otorga la autorización para actuar como agente de seguros?",
+    "pregunta": "¿Qué autoridad otorga la autorización para actuar como agente de seguros?",
+    "options": [
+      "La CONDUSEF.",
+      "La aseguradora con la que trabaja el agente.",
+      "La Secretaría del Trabajo.",
+      "La Comisión Nacional de Seguros y Fianzas."
+    ],
+    "opciones": [
+      "La CONDUSEF.",
+      "La aseguradora con la que trabaja el agente.",
+      "La Secretaría del Trabajo.",
+      "La Comisión Nacional de Seguros y Fianzas."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "La Comisión Nacional de Seguros y Fianzas.",
+    "explanation": "La autorización para ejercer como agente la otorga la CNSF, previo cumplimiento de requisitos como acreditar la capacidad técnica mediante examen, conforme a la LISF y el Reglamento de Agentes de Seguros y de Fianzas. La aseguradora puede proponer o contratar al agente, pero no lo autoriza.",
+    "explicacion": "La autorización para ejercer como agente la otorga la CNSF, previo cumplimiento de requisitos como acreditar la capacidad técnica mediante examen, conforme a la LISF y el Reglamento de Agentes de Seguros y de Fianzas. La aseguradora puede proponer o contratar al agente, pero no lo autoriza."
+  },
+  {
+    "id": 526,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "Según la LISF, ¿cuáles son los tipos de agentes de seguros?",
+    "pregunta": "Según la LISF, ¿cuáles son los tipos de agentes de seguros?",
+    "options": [
+      "Agentes nacionales, extranjeros y honorarios.",
+      "Agentes de vida, de daños y de fianzas únicamente.",
+      "Personas físicas vinculadas por relación de trabajo, personas físicas independientes y personas morales.",
+      "Agentes titulares, suplentes y temporales."
+    ],
+    "opciones": [
+      "Agentes nacionales, extranjeros y honorarios.",
+      "Agentes de vida, de daños y de fianzas únicamente.",
+      "Personas físicas vinculadas por relación de trabajo, personas físicas independientes y personas morales.",
+      "Agentes titulares, suplentes y temporales."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Personas físicas vinculadas por relación de trabajo, personas físicas independientes y personas morales.",
+    "explanation": "La LISF reconoce agentes personas físicas vinculados a la aseguradora por relación laboral, agentes personas físicas que actúan de forma independiente con contrato mercantil y agentes personas morales que operan mediante apoderados. Las demás clasificaciones no existen en la ley; vida, daños o fianzas se refieren a las cédulas o actividades autorizadas.",
+    "explicacion": "La LISF reconoce agentes personas físicas vinculados a la aseguradora por relación laboral, agentes personas físicas que actúan de forma independiente con contrato mercantil y agentes personas morales que operan mediante apoderados. Las demás clasificaciones no existen en la ley; vida, daños o fianzas se refieren a las cédulas o actividades autorizadas."
+  },
+  {
+    "id": 527,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "¿Cómo actúa un agente persona moral frente al público?",
+    "pregunta": "¿Cómo actúa un agente persona moral frente al público?",
+    "options": [
+      "Exclusivamente mediante su consejo de administración.",
+      "Por medio de agentes sin autorización supervisados por un socio.",
+      "Por medio de cualquier empleado administrativo.",
+      "Por medio de apoderados que cuentan con autorización de la CNSF."
+    ],
+    "opciones": [
+      "Exclusivamente mediante su consejo de administración.",
+      "Por medio de agentes sin autorización supervisados por un socio.",
+      "Por medio de cualquier empleado administrativo.",
+      "Por medio de apoderados que cuentan con autorización de la CNSF."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Por medio de apoderados que cuentan con autorización de la CNSF.",
+    "explanation": "El agente persona moral intermedia por conducto de apoderados, que deben estar autorizados por la CNSF para la actividad correspondiente. Un empleado administrativo o un agente sin autorización no puede intermediar, y el consejo de administración no realiza directamente la venta.",
+    "explicacion": "El agente persona moral intermedia por conducto de apoderados, que deben estar autorizados por la CNSF para la actividad correspondiente. Un empleado administrativo o un agente sin autorización no puede intermediar, y el consejo de administración no realiza directamente la venta."
+  },
+  {
+    "id": 528,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "¿Qué alcance tiene la autorización de Cédula B para un agente persona física?",
+    "pregunta": "¿Qué alcance tiene la autorización de Cédula B para un agente persona física?",
+    "options": [
+      "Exclusivamente fianzas.",
+      "Comprende los seguros de la Cédula A más los ramos empresariales de personas y de daños.",
+      "Únicamente seguros de autos individuales.",
+      "Solo seguros de vida individual."
+    ],
+    "opciones": [
+      "Exclusivamente fianzas.",
+      "Comprende los seguros de la Cédula A más los ramos empresariales de personas y de daños.",
+      "Únicamente seguros de autos individuales.",
+      "Solo seguros de vida individual."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Comprende los seguros de la Cédula A más los ramos empresariales de personas y de daños.",
+    "explanation": "La Cédula B incluye lo autorizado en la Cédula A para riesgos individuales y agrega los ramos empresariales, como vida grupo, gastos médicos colectivos, incendio, transportes, responsabilidad civil y ramos técnicos. Autos individuales y vida individual forman parte de la Cédula A, y las fianzas requieren otra autorización.",
+    "explicacion": "La Cédula B incluye lo autorizado en la Cédula A para riesgos individuales y agrega los ramos empresariales, como vida grupo, gastos médicos colectivos, incendio, transportes, responsabilidad civil y ramos técnicos. Autos individuales y vida individual forman parte de la Cédula A, y las fianzas requieren otra autorización."
+  },
+  {
+    "id": 529,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "Un agente sin autorización vigente de la CNSF intermedia una póliza. ¿Cuál es la situación?",
+    "pregunta": "Un agente sin autorización vigente de la CNSF intermedia una póliza. ¿Cuál es la situación?",
+    "options": [
+      "Es válido si el cliente firma una carta de conformidad.",
+      "Solo está prohibido en seguros de vida.",
+      "Es válido si la aseguradora lo acepta.",
+      "Realiza intermediación no autorizada y puede ser sancionado conforme a la LISF."
+    ],
+    "opciones": [
+      "Es válido si el cliente firma una carta de conformidad.",
+      "Solo está prohibido en seguros de vida.",
+      "Es válido si la aseguradora lo acepta.",
+      "Realiza intermediación no autorizada y puede ser sancionado conforme a la LISF."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Realiza intermediación no autorizada y puede ser sancionado conforme a la LISF.",
+    "explanation": "La LISF prohíbe intermediar seguros sin autorización de la CNSF y prevé sanciones para quien lo haga y para la institución que lo permita. La aceptación de la aseguradora o del cliente no sustituye la autorización, y la prohibición aplica a todas las operaciones.",
+    "explicacion": "La LISF prohíbe intermediar seguros sin autorización de la CNSF y prevé sanciones para quien lo haga y para la institución que lo permita. La aceptación de la aseguradora o del cliente no sustituye la autorización, y la prohibición aplica a todas las operaciones."
+  },
+  {
+    "id": 530,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "¿Qué sanciones puede imponer la CNSF a un agente que incumple la normativa?",
+    "pregunta": "¿Qué sanciones puede imponer la CNSF a un agente que incumple la normativa?",
+    "options": [
+      "La cancelación de las pólizas que vendió.",
+      "Solo una carta de recomendación.",
+      "Únicamente la reducción de comisiones.",
+      "Amonestación, multa, suspensión o revocación de la autorización, según la gravedad."
+    ],
+    "opciones": [
+      "La cancelación de las pólizas que vendió.",
+      "Solo una carta de recomendación.",
+      "Únicamente la reducción de comisiones.",
+      "Amonestación, multa, suspensión o revocación de la autorización, según la gravedad."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Amonestación, multa, suspensión o revocación de la autorización, según la gravedad.",
+    "explanation": "La LISF y el Reglamento de Agentes facultan a la CNSF para amonestar, multar, suspender o revocar la autorización del agente según la gravedad de la falta. La reducción de comisiones es un tema contractual con la aseguradora, y las pólizas vendidas conservan su validez para proteger al asegurado.",
+    "explicacion": "La LISF y el Reglamento de Agentes facultan a la CNSF para amonestar, multar, suspender o revocar la autorización del agente según la gravedad de la falta. La reducción de comisiones es un tema contractual con la aseguradora, y las pólizas vendidas conservan su validez para proteger al asegurado."
+  },
+  {
+    "id": 531,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "Durante la vigencia de la póliza, el contratante desea saber cuánto gana el intermediario por su póliza. ¿Qué derecho tiene?",
+    "pregunta": "Durante la vigencia de la póliza, el contratante desea saber cuánto gana el intermediario por su póliza. ¿Qué derecho tiene?",
+    "options": [
+      "Debe pedirlo a la CNSF mediante juicio.",
+      "Puede solicitar por escrito a la aseguradora que le informe el porcentaje de la prima que corresponde al intermediario por comisión o compensación directa.",
+      "Ninguno, porque la comisión es confidencial.",
+      "Solo puede saberlo si cancela la póliza."
+    ],
+    "opciones": [
+      "Debe pedirlo a la CNSF mediante juicio.",
+      "Puede solicitar por escrito a la aseguradora que le informe el porcentaje de la prima que corresponde al intermediario por comisión o compensación directa.",
+      "Ninguno, porque la comisión es confidencial.",
+      "Solo puede saberlo si cancela la póliza."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Puede solicitar por escrito a la aseguradora que le informe el porcentaje de la prima que corresponde al intermediario por comisión o compensación directa.",
+    "explanation": "La regulación vigente permite al contratante solicitar por escrito a la institución el porcentaje de la prima que corresponde al intermediario por comisión o compensación directa, y la aseguradora debe informarlo en un plazo breve. No es información confidencial frente al contratante y no requiere cancelar la póliza ni acudir a juicio.",
+    "explicacion": "La regulación vigente permite al contratante solicitar por escrito a la institución el porcentaje de la prima que corresponde al intermediario por comisión o compensación directa, y la aseguradora debe informarlo en un plazo breve. No es información confidencial frente al contratante y no requiere cancelar la póliza ni acudir a juicio."
+  },
+  {
+    "id": 532,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "¿Bajo qué condición puede un agente recibir el pago de primas de sus clientes?",
+    "pregunta": "¿Bajo qué condición puede un agente recibir el pago de primas de sus clientes?",
+    "options": [
+      "Cuando la aseguradora lo autorice y entregue el recibo oficial de la institución.",
+      "Nunca, en ningún caso.",
+      "Solo en efectivo y sin recibo.",
+      "Siempre, con un recibo personal del agente."
+    ],
+    "opciones": [
+      "Cuando la aseguradora lo autorice y entregue el recibo oficial de la institución.",
+      "Nunca, en ningún caso.",
+      "Solo en efectivo y sin recibo.",
+      "Siempre, con un recibo personal del agente."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Cuando la aseguradora lo autorice y entregue el recibo oficial de la institución.",
+    "explanation": "El agente puede cobrar primas solo si la institución lo autoriza y debe entregar el recibo oficial de la aseguradora, que es el que acredita el pago. Un recibo personal no prueba el pago ante la institución, y recibir efectivo sin recibo expone al cliente y contraviene las políticas de prevención de lavado.",
+    "explicacion": "El agente puede cobrar primas solo si la institución lo autoriza y debe entregar el recibo oficial de la aseguradora, que es el que acredita el pago. Un recibo personal no prueba el pago ante la institución, y recibir efectivo sin recibo expone al cliente y contraviene las políticas de prevención de lavado."
+  },
+  {
+    "id": 533,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "¿Cuál es una obligación del agente al ofrecer un seguro?",
+    "pregunta": "¿Cuál es una obligación del agente al ofrecer un seguro?",
+    "options": [
+      "Informar al cliente de manera clara sobre el alcance de la cobertura, sus exclusiones y la forma de conservarla o darla por terminada.",
+      "Ocultar las exclusiones para facilitar la venta.",
+      "Garantizar que todos los siniestros serán pagados.",
+      "Firmar la solicitud en nombre del cliente."
+    ],
+    "opciones": [
+      "Informar al cliente de manera clara sobre el alcance de la cobertura, sus exclusiones y la forma de conservarla o darla por terminada.",
+      "Ocultar las exclusiones para facilitar la venta.",
+      "Garantizar que todos los siniestros serán pagados.",
+      "Firmar la solicitud en nombre del cliente."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Informar al cliente de manera clara sobre el alcance de la cobertura, sus exclusiones y la forma de conservarla o darla por terminada.",
+    "explanation": "La normativa de agentes exige asesorar al cliente con información clara y veraz sobre coberturas, exclusiones, conservación y terminación del seguro. Garantizar pagos que dependen de las condiciones, ocultar exclusiones o firmar por el cliente son prácticas prohibidas que pueden causar sanciones.",
+    "explicacion": "La normativa de agentes exige asesorar al cliente con información clara y veraz sobre coberturas, exclusiones, conservación y terminación del seguro. Garantizar pagos que dependen de las condiciones, ocultar exclusiones o firmar por el cliente son prácticas prohibidas que pueden causar sanciones."
+  },
+  {
+    "id": 534,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "Un agente ofrece al cliente devolverle parte de su comisión para cerrar la venta. ¿Cómo se califica esta práctica?",
+    "pregunta": "Un agente ofrece al cliente devolverle parte de su comisión para cerrar la venta. ¿Cómo se califica esta práctica?",
+    "options": [
+      "Es una práctica prohibida, porque distorsiona la competencia y la tarifa registrada.",
+      "Es obligatoria en seguros empresariales.",
+      "Es válida si se hace en efectivo.",
+      "Es una práctica recomendada para fidelizar clientes."
+    ],
+    "opciones": [
+      "Es una práctica prohibida, porque distorsiona la competencia y la tarifa registrada.",
+      "Es obligatoria en seguros empresariales.",
+      "Es válida si se hace en efectivo.",
+      "Es una práctica recomendada para fidelizar clientes."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Es una práctica prohibida, porque distorsiona la competencia y la tarifa registrada.",
+    "explanation": "Ofrecer devoluciones de comisión, descuentos o beneficios no previstos en la póliza para inducir la contratación está prohibido por la normativa de agentes, porque altera la prima registrada y la sana competencia. No es una práctica de fidelización permitida ni obligatoria, y hacerlo en efectivo agrava el riesgo.",
+    "explicacion": "Ofrecer devoluciones de comisión, descuentos o beneficios no previstos en la póliza para inducir la contratación está prohibido por la normativa de agentes, porque altera la prima registrada y la sana competencia. No es una práctica de fidelización permitida ni obligatoria, y hacerlo en efectivo agrava el riesgo."
+  },
+  {
+    "id": 535,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "¿Qué debe hacer el agente con la información y documentación personal de sus clientes?",
+    "pregunta": "¿Qué debe hacer el agente con la información y documentación personal de sus clientes?",
+    "options": [
+      "Compartirla con otras aseguradoras para cotizar sin avisar.",
+      "Venderla a empresas de mercadotecnia.",
+      "Tratarla de forma confidencial y conforme a la legislación de protección de datos personales.",
+      "Publicarla en redes sociales como referencia."
+    ],
+    "opciones": [
+      "Compartirla con otras aseguradoras para cotizar sin avisar.",
+      "Venderla a empresas de mercadotecnia.",
+      "Tratarla de forma confidencial y conforme a la legislación de protección de datos personales.",
+      "Publicarla en redes sociales como referencia."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Tratarla de forma confidencial y conforme a la legislación de protección de datos personales.",
+    "explanation": "El agente debe guardar confidencialidad y tratar los datos personales con las finalidades informadas en el aviso de privacidad, conforme a la legislación de protección de datos en posesión de particulares. Compartirlos sin consentimiento, publicarlos o venderlos viola esa ley y la confianza del cliente.",
+    "explicacion": "El agente debe guardar confidencialidad y tratar los datos personales con las finalidades informadas en el aviso de privacidad, conforme a la legislación de protección de datos en posesión de particulares. Compartirlos sin consentimiento, publicarlos o venderlos viola esa ley y la confianza del cliente."
+  },
+  {
+    "id": 536,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "¿Qué requisito de capacidad técnica debe acreditar una persona para obtener la autorización como agente?",
+    "pregunta": "¿Qué requisito de capacidad técnica debe acreditar una persona para obtener la autorización como agente?",
+    "options": [
+      "Contar con título de licenciatura en actuaría.",
+      "Presentar una carta de recomendación de un cliente.",
+      "Aprobar el examen de conocimientos que aplica o reconoce la CNSF para la cédula solicitada.",
+      "Tener cinco años de experiencia como empleado bancario."
+    ],
+    "opciones": [
+      "Contar con título de licenciatura en actuaría.",
+      "Presentar una carta de recomendación de un cliente.",
+      "Aprobar el examen de conocimientos que aplica o reconoce la CNSF para la cédula solicitada.",
+      "Tener cinco años de experiencia como empleado bancario."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Aprobar el examen de conocimientos que aplica o reconoce la CNSF para la cédula solicitada.",
+    "explanation": "La CNSF exige acreditar la capacidad técnica mediante la evaluación de conocimientos correspondiente a la cédula solicitada, con resultados vigentes, conforme al Reglamento de Agentes y la CUSF. No se exige título en actuaría ni experiencia bancaria, y una carta de recomendación no acredita conocimientos.",
+    "explicacion": "La CNSF exige acreditar la capacidad técnica mediante la evaluación de conocimientos correspondiente a la cédula solicitada, con resultados vigentes, conforme al Reglamento de Agentes y la CUSF. No se exige título en actuaría ni experiencia bancaria, y una carta de recomendación no acredita conocimientos."
+  },
+  {
+    "id": 537,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "¿Qué ocurre con la autorización de un agente cuando no la refrenda o renueva en el plazo establecido?",
+    "pregunta": "¿Qué ocurre con la autorización de un agente cuando no la refrenda o renueva en el plazo establecido?",
+    "options": [
+      "Deja de estar vigente y el agente no puede intermediar hasta obtener una nueva autorización.",
+      "Solo pierde el derecho a cobrar primas.",
+      "Se transforma en autorización de persona moral.",
+      "Se renueva automáticamente de por vida."
+    ],
+    "opciones": [
+      "Deja de estar vigente y el agente no puede intermediar hasta obtener una nueva autorización.",
+      "Solo pierde el derecho a cobrar primas.",
+      "Se transforma en autorización de persona moral.",
+      "Se renueva automáticamente de por vida."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Deja de estar vigente y el agente no puede intermediar hasta obtener una nueva autorización.",
+    "explanation": "La autorización de agente tiene una vigencia determinada y debe refrendarse cumpliendo los requisitos de capacitación o evaluación; si no se refrenda, deja de estar vigente. No es vitalicia, no cambia de tipo de agente y la falta de vigencia impide toda intermediación, no solo la cobranza.",
+    "explicacion": "La autorización de agente tiene una vigencia determinada y debe refrendarse cumpliendo los requisitos de capacitación o evaluación; si no se refrenda, deja de estar vigente. No es vitalicia, no cambia de tipo de agente y la falta de vigencia impide toda intermediación, no solo la cobranza."
+  },
+  {
+    "id": 538,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "¿Qué figura vincula a un agente persona física con la aseguradora cuando existe subordinación y pago de salario?",
+    "pregunta": "¿Qué figura vincula a un agente persona física con la aseguradora cuando existe subordinación y pago de salario?",
+    "options": [
+      "Una sociedad cooperativa.",
+      "Una relación de trabajo regida por la Ley Federal del Trabajo.",
+      "Un contrato de reaseguro.",
+      "Un contrato de fianza."
+    ],
+    "opciones": [
+      "Una sociedad cooperativa.",
+      "Una relación de trabajo regida por la Ley Federal del Trabajo.",
+      "Un contrato de reaseguro.",
+      "Un contrato de fianza."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Una relación de trabajo regida por la Ley Federal del Trabajo.",
+    "explanation": "Cuando hay subordinación y salario, el agente persona física está vinculado a la aseguradora por una relación laboral regida por la Ley Federal del Trabajo, que reconoce a los agentes de comercio y de seguros. Los agentes independientes tienen contrato mercantil, y el reaseguro, la fianza o la cooperativa no describen esa relación.",
+    "explicacion": "Cuando hay subordinación y salario, el agente persona física está vinculado a la aseguradora por una relación laboral regida por la Ley Federal del Trabajo, que reconoce a los agentes de comercio y de seguros. Los agentes independientes tienen contrato mercantil, y el reaseguro, la fianza o la cooperativa no describen esa relación."
+  },
+  {
+    "id": 539,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "¿Qué riesgo busca cubrir un seguro de responsabilidad civil profesional por errores u omisiones para agentes?",
+    "pregunta": "¿Qué riesgo busca cubrir un seguro de responsabilidad civil profesional por errores u omisiones para agentes?",
+    "options": [
+      "La pérdida de comisiones por cancelación de pólizas.",
+      "Los siniestros que la aseguradora se niega a pagar por fraude del asegurado.",
+      "Las primas no pagadas por los clientes.",
+      "Los daños que el agente cause a sus clientes por errores u omisiones en el ejercicio de su actividad."
+    ],
+    "opciones": [
+      "La pérdida de comisiones por cancelación de pólizas.",
+      "Los siniestros que la aseguradora se niega a pagar por fraude del asegurado.",
+      "Las primas no pagadas por los clientes.",
+      "Los daños que el agente cause a sus clientes por errores u omisiones en el ejercicio de su actividad."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Los daños que el agente cause a sus clientes por errores u omisiones en el ejercicio de su actividad.",
+    "explanation": "El seguro de errores y omisiones protege al agente frente a reclamaciones de clientes por daños causados por fallas profesionales, como no tramitar una cobertura solicitada. No cubre fraudes de asegurados, primas impagadas ni pérdidas de comisión, que son riesgos comerciales del agente.",
+    "explicacion": "El seguro de errores y omisiones protege al agente frente a reclamaciones de clientes por daños causados por fallas profesionales, como no tramitar una cobertura solicitada. No cubre fraudes de asegurados, primas impagadas ni pérdidas de comisión, que son riesgos comerciales del agente."
+  },
+  {
+    "id": 540,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Agentes de Seguros: Reglamento y Obligaciones",
+    "question": "Un agente recibe de un cliente documentos con datos falsos para obtener una póliza. ¿Qué debe hacer?",
+    "pregunta": "Un agente recibe de un cliente documentos con datos falsos para obtener una póliza. ¿Qué debe hacer?",
+    "options": [
+      "Tramitarla porque la responsabilidad es solo del cliente.",
+      "Cobrar una comisión adicional por el riesgo.",
+      "Corregir él mismo los datos para que coincidan.",
+      "Abstenerse de tramitarla y, en su caso, informar a la aseguradora conforme a sus políticas de prevención."
+    ],
+    "opciones": [
+      "Tramitarla porque la responsabilidad es solo del cliente.",
+      "Cobrar una comisión adicional por el riesgo.",
+      "Corregir él mismo los datos para que coincidan.",
+      "Abstenerse de tramitarla y, en su caso, informar a la aseguradora conforme a sus políticas de prevención."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Abstenerse de tramitarla y, en su caso, informar a la aseguradora conforme a sus políticas de prevención.",
+    "explanation": "El agente debe actuar con honestidad y no puede intermediar operaciones con información que sabe falsa; además, las políticas de prevención de lavado y fraude le obligan a informar a la institución. Alterar los datos lo haría partícipe del engaño, y cobrar comisiones adicionales no está permitido.",
+    "explicacion": "El agente debe actuar con honestidad y no puede intermediar operaciones con información que sabe falsa; además, las políticas de prevención de lavado y fraude le obligan a informar a la institución. Alterar los datos lo haría partícipe del engaño, y cobrar comisiones adicionales no está permitido."
+  },
+  {
+    "id": 541,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿Qué ley creó a la CONDUSEF?",
+    "pregunta": "¿Qué ley creó a la CONDUSEF?",
+    "options": [
+      "Ley Federal de Protección al Consumidor.",
+      "Ley de Instituciones de Seguros y de Fianzas.",
+      "Ley sobre el Contrato de Seguro.",
+      "Ley de Protección y Defensa al Usuario de Servicios Financieros (LPDUSF)."
+    ],
+    "opciones": [
+      "Ley Federal de Protección al Consumidor.",
+      "Ley de Instituciones de Seguros y de Fianzas.",
+      "Ley sobre el Contrato de Seguro.",
+      "Ley de Protección y Defensa al Usuario de Servicios Financieros (LPDUSF)."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Ley de Protección y Defensa al Usuario de Servicios Financieros (LPDUSF).",
+    "explanation": "La LPDUSF de 1999 creó la CONDUSEF como organismo encargado de proteger y defender los derechos de los usuarios de servicios financieros, incluidos los asegurados. La Ley Federal de Protección al Consumidor corresponde a PROFECO, y la LSCS y la LISF regulan el contrato y a las instituciones.",
+    "explicacion": "La LPDUSF de 1999 creó la CONDUSEF como organismo encargado de proteger y defender los derechos de los usuarios de servicios financieros, incluidos los asegurados. La Ley Federal de Protección al Consumidor corresponde a PROFECO, y la LSCS y la LISF regulan el contrato y a las instituciones."
+  },
+  {
+    "id": 542,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿Qué naturaleza jurídica tiene la CONDUSEF?",
+    "pregunta": "¿Qué naturaleza jurídica tiene la CONDUSEF?",
+    "options": [
+      "Organismo público descentralizado con personalidad jurídica y patrimonio propios.",
+      "Órgano desconcentrado de la CNSF.",
+      "Área de atención a clientes de la AMIS.",
+      "Asociación civil de usuarios."
+    ],
+    "opciones": [
+      "Organismo público descentralizado con personalidad jurídica y patrimonio propios.",
+      "Órgano desconcentrado de la CNSF.",
+      "Área de atención a clientes de la AMIS.",
+      "Asociación civil de usuarios."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Organismo público descentralizado con personalidad jurídica y patrimonio propios.",
+    "explanation": "La CONDUSEF es un organismo público descentralizado con personalidad jurídica y patrimonio propios, conforme a la LPDUSF. No depende de la CNSF, no es una asociación privada de usuarios y no pertenece al gremio asegurador.",
+    "explicacion": "La CONDUSEF es un organismo público descentralizado con personalidad jurídica y patrimonio propios, conforme a la LPDUSF. No depende de la CNSF, no es una asociación privada de usuarios y no pertenece al gremio asegurador."
+  },
+  {
+    "id": 543,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿Qué área deben tener todas las instituciones financieras para atender consultas y reclamaciones de los usuarios?",
+    "pregunta": "¿Qué área deben tener todas las instituciones financieras para atender consultas y reclamaciones de los usuarios?",
+    "options": [
+      "Comisión de Arbitraje Médico.",
+      "Unidad Especializada de Atención a Usuarios (UNE).",
+      "Contraloría Social.",
+      "Comité de Comunicación y Control."
+    ],
+    "opciones": [
+      "Comisión de Arbitraje Médico.",
+      "Unidad Especializada de Atención a Usuarios (UNE).",
+      "Contraloría Social.",
+      "Comité de Comunicación y Control."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Unidad Especializada de Atención a Usuarios (UNE).",
+    "explanation": "La LPDUSF obliga a cada institución financiera a contar con una Unidad Especializada para atender consultas y reclamaciones de sus usuarios. El Comité de Comunicación y Control atiende la prevención de lavado de dinero, y la contraloría social o la comisión de arbitraje médico no son áreas obligatorias de las aseguradoras.",
+    "explicacion": "La LPDUSF obliga a cada institución financiera a contar con una Unidad Especializada para atender consultas y reclamaciones de sus usuarios. El Comité de Comunicación y Control atiende la prevención de lavado de dinero, y la contraloría social o la comisión de arbitraje médico no son áreas obligatorias de las aseguradoras."
+  },
+  {
+    "id": 544,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿En qué plazo debe la Unidad Especializada responder por escrito una reclamación del usuario?",
+    "pregunta": "¿En qué plazo debe la Unidad Especializada responder por escrito una reclamación del usuario?",
+    "options": [
+      "Dentro de los 30 días hábiles siguientes a su recepción.",
+      "Dentro de las 24 horas siguientes.",
+      "Dentro de un año.",
+      "No tiene plazo establecido."
+    ],
+    "opciones": [
+      "Dentro de los 30 días hábiles siguientes a su recepción.",
+      "Dentro de las 24 horas siguientes.",
+      "Dentro de un año.",
+      "No tiene plazo establecido."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Dentro de los 30 días hábiles siguientes a su recepción.",
+    "explanation": "La LPDUSF establece que la Unidad Especializada debe responder por escrito dentro de los 30 días hábiles siguientes a la fecha de recepción de la reclamación. Un plazo de 24 horas no es el legal, un año dejaría al usuario sin respuesta oportuna y sí existe un plazo fijado por ley.",
+    "explicacion": "La LPDUSF establece que la Unidad Especializada debe responder por escrito dentro de los 30 días hábiles siguientes a la fecha de recepción de la reclamación. Un plazo de 24 horas no es el legal, un año dejaría al usuario sin respuesta oportuna y sí existe un plazo fijado por ley."
+  },
+  {
+    "id": 545,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿Qué servicio ofrece la CONDUSEF en el que busca un acuerdo entre el usuario y la aseguradora sin necesidad de un juicio?",
+    "pregunta": "¿Qué servicio ofrece la CONDUSEF en el que busca un acuerdo entre el usuario y la aseguradora sin necesidad de un juicio?",
+    "options": [
+      "El procedimiento de conciliación.",
+      "La revocación de la autorización de la aseguradora.",
+      "El juicio ejecutivo mercantil.",
+      "La auditoría de estados financieros."
+    ],
+    "opciones": [
+      "El procedimiento de conciliación.",
+      "La revocación de la autorización de la aseguradora.",
+      "El juicio ejecutivo mercantil.",
+      "La auditoría de estados financieros."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "El procedimiento de conciliación.",
+    "explanation": "La conciliación es el procedimiento en el que la CONDUSEF cita a las partes para buscar un arreglo voluntario a la reclamación del usuario. El juicio ejecutivo mercantil se tramita ante tribunales, la auditoría la realizan contadores externos y la revocación de autorizaciones corresponde a la CNSF.",
+    "explicacion": "La conciliación es el procedimiento en el que la CONDUSEF cita a las partes para buscar un arreglo voluntario a la reclamación del usuario. El juicio ejecutivo mercantil se tramita ante tribunales, la auditoría la realizan contadores externos y la revocación de autorizaciones corresponde a la CNSF."
+  },
+  {
+    "id": 546,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "Si la conciliación ante CONDUSEF no tiene éxito, ¿qué alternativa puede ofrecer la CONDUSEF a las partes?",
+    "pregunta": "Si la conciliación ante CONDUSEF no tiene éxito, ¿qué alternativa puede ofrecer la CONDUSEF a las partes?",
+    "options": [
+      "Imponer una pena de prisión a la aseguradora.",
+      "Cancelar la póliza del usuario.",
+      "Enviar el caso a la AMIS para que resuelva.",
+      "Someter la controversia a su arbitraje, en amigable composición o en estricto derecho."
+    ],
+    "opciones": [
+      "Imponer una pena de prisión a la aseguradora.",
+      "Cancelar la póliza del usuario.",
+      "Enviar el caso a la AMIS para que resuelva.",
+      "Someter la controversia a su arbitraje, en amigable composición o en estricto derecho."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Someter la controversia a su arbitraje, en amigable composición o en estricto derecho.",
+    "explanation": "La LPDUSF prevé que, si no hay arreglo, las partes pueden someterse al arbitraje de la CONDUSEF, en amigable composición o en estricto derecho, o acudir a tribunales. La CONDUSEF no impone penas de prisión, no cancela pólizas y la AMIS no resuelve controversias con efectos legales.",
+    "explicacion": "La LPDUSF prevé que, si no hay arreglo, las partes pueden someterse al arbitraje de la CONDUSEF, en amigable composición o en estricto derecho, o acudir a tribunales. La CONDUSEF no impone penas de prisión, no cancela pólizas y la AMIS no resuelve controversias con efectos legales."
+  },
+  {
+    "id": 547,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿Qué es el Registro Público de Usuarios (REUS) de la CONDUSEF?",
+    "pregunta": "¿Qué es el Registro Público de Usuarios (REUS) de la CONDUSEF?",
+    "options": [
+      "Una lista de deudores morosos.",
+      "Un padrón de aseguradoras sancionadas.",
+      "Un registro de agentes autorizados.",
+      "Un registro en el que los usuarios se inscriben para no recibir publicidad ni promociones de las instituciones financieras."
+    ],
+    "opciones": [
+      "Una lista de deudores morosos.",
+      "Un padrón de aseguradoras sancionadas.",
+      "Un registro de agentes autorizados.",
+      "Un registro en el que los usuarios se inscriben para no recibir publicidad ni promociones de las instituciones financieras."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Un registro en el que los usuarios se inscriben para no recibir publicidad ni promociones de las instituciones financieras.",
+    "explanation": "El REUS permite que los usuarios se inscriban para que las instituciones financieras no los contacten con fines de publicidad o promoción, conforme a la LPDUSF. El registro de agentes lo lleva la CNSF, los morosos se reportan en sociedades de información crediticia y las sanciones se publican por otros medios.",
+    "explicacion": "El REUS permite que los usuarios se inscriban para que las instituciones financieras no los contacten con fines de publicidad o promoción, conforme a la LPDUSF. El registro de agentes lo lleva la CNSF, los morosos se reportan en sociedades de información crediticia y las sanciones se publican por otros medios."
+  },
+  {
+    "id": 548,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿Qué herramienta pública de la CONDUSEF permite comparar el desempeño de las instituciones financieras en reclamaciones, sanciones y prácticas no sanas?",
+    "pregunta": "¿Qué herramienta pública de la CONDUSEF permite comparar el desempeño de las instituciones financieras en reclamaciones, sanciones y prácticas no sanas?",
+    "options": [
+      "El Registro Público de Comercio.",
+      "El Sistema de Ahorro para el Retiro.",
+      "El Buró de Crédito.",
+      "El Buró de Entidades Financieras."
+    ],
+    "opciones": [
+      "El Registro Público de Comercio.",
+      "El Sistema de Ahorro para el Retiro.",
+      "El Buró de Crédito.",
+      "El Buró de Entidades Financieras."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "El Buró de Entidades Financieras.",
+    "explanation": "El Buró de Entidades Financieras es una herramienta de la CONDUSEF que muestra información sobre reclamaciones, sanciones y cláusulas abusivas de las instituciones. El Buró de Crédito califica a personas deudoras, el Registro Público de Comercio inscribe actos mercantiles y el SAR administra ahorro para el retiro.",
+    "explicacion": "El Buró de Entidades Financieras es una herramienta de la CONDUSEF que muestra información sobre reclamaciones, sanciones y cláusulas abusivas de las instituciones. El Buró de Crédito califica a personas deudoras, el Registro Público de Comercio inscribe actos mercantiles y el SAR administra ahorro para el retiro."
+  },
+  {
+    "id": 549,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿Dentro de qué plazo puede un usuario presentar su reclamación ante la CONDUSEF?",
+    "pregunta": "¿Dentro de qué plazo puede un usuario presentar su reclamación ante la CONDUSEF?",
+    "options": [
+      "Solo durante la vigencia de la póliza.",
+      "En cualquier momento, sin límite.",
+      "Dentro de los 5 días siguientes al siniestro.",
+      "Dentro de los dos años siguientes al hecho que le dio origen."
+    ],
+    "opciones": [
+      "Solo durante la vigencia de la póliza.",
+      "En cualquier momento, sin límite.",
+      "Dentro de los 5 días siguientes al siniestro.",
+      "Dentro de los dos años siguientes al hecho que le dio origen."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Dentro de los dos años siguientes al hecho que le dio origen.",
+    "explanation": "La LPDUSF establece que la reclamación ante la CONDUSEF debe presentarse dentro de los dos años siguientes a la fecha en que se presentó el hecho que le dio origen o a la negativa de la institución. Los 5 días se refieren al aviso de siniestro a la aseguradora, y el derecho no es ilimitado ni se agota con la vigencia.",
+    "explicacion": "La LPDUSF establece que la reclamación ante la CONDUSEF debe presentarse dentro de los dos años siguientes a la fecha en que se presentó el hecho que le dio origen o a la negativa de la institución. Los 5 días se refieren al aviso de siniestro a la aseguradora, y el derecho no es ilimitado ni se agota con la vigencia."
+  },
+  {
+    "id": 550,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "Conforme a la Ley sobre el Contrato de Seguro, ¿en qué plazo prescriben las acciones derivadas del contrato de seguro, salvo la cobertura de fallecimiento en vida?",
+    "pregunta": "Conforme a la Ley sobre el Contrato de Seguro, ¿en qué plazo prescriben las acciones derivadas del contrato de seguro, salvo la cobertura de fallecimiento en vida?",
+    "options": [
+      "Cinco días.",
+      "Diez años.",
+      "Seis meses.",
+      "Dos años."
+    ],
+    "opciones": [
+      "Cinco días.",
+      "Diez años.",
+      "Seis meses.",
+      "Dos años."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Dos años.",
+    "explanation": "La Ley sobre el Contrato de Seguro establece que las acciones derivadas del contrato prescriben en dos años, y en cinco años cuando se trata de la cobertura de fallecimiento en los seguros de vida. Cinco días es el plazo de aviso de siniestro, y diez años o seis meses no son plazos de prescripción de esta ley.",
+    "explicacion": "La Ley sobre el Contrato de Seguro establece que las acciones derivadas del contrato prescriben en dos años, y en cinco años cuando se trata de la cobertura de fallecimiento en los seguros de vida. Cinco días es el plazo de aviso de siniestro, y diez años o seis meses no son plazos de prescripción de esta ley."
+  },
+  {
+    "id": 551,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿En qué plazo prescriben las acciones derivadas de la cobertura de fallecimiento en un seguro de vida?",
+    "pregunta": "¿En qué plazo prescriben las acciones derivadas de la cobertura de fallecimiento en un seguro de vida?",
+    "options": [
+      "Cinco años.",
+      "Treinta días.",
+      "Un año.",
+      "Dos años."
+    ],
+    "opciones": [
+      "Cinco años.",
+      "Treinta días.",
+      "Un año.",
+      "Dos años."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Cinco años.",
+    "explanation": "La Ley sobre el Contrato de Seguro fija en cinco años la prescripción para la cobertura de fallecimiento en seguros de vida, porque los beneficiarios a veces se enteran tarde de su derecho. El plazo general de dos años aplica a los demás casos, y un año o 30 días no son plazos legales de prescripción.",
+    "explicacion": "La Ley sobre el Contrato de Seguro fija en cinco años la prescripción para la cobertura de fallecimiento en seguros de vida, porque los beneficiarios a veces se enteran tarde de su derecho. El plazo general de dos años aplica a los demás casos, y un año o 30 días no son plazos legales de prescripción."
+  },
+  {
+    "id": 552,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿A partir de cuándo es exigible el pago de una indemnización conforme a la Ley sobre el Contrato de Seguro?",
+    "pregunta": "¿A partir de cuándo es exigible el pago de una indemnización conforme a la Ley sobre el Contrato de Seguro?",
+    "options": [
+      "Cuando el agente lo solicite.",
+      "Un año después del siniestro.",
+      "Al día siguiente del siniestro.",
+      "Treinta días después de que la aseguradora recibe los documentos e informaciones que le permitan conocer el fundamento de la reclamación."
+    ],
+    "opciones": [
+      "Cuando el agente lo solicite.",
+      "Un año después del siniestro.",
+      "Al día siguiente del siniestro.",
+      "Treinta días después de que la aseguradora recibe los documentos e informaciones que le permitan conocer el fundamento de la reclamación."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Treinta días después de que la aseguradora recibe los documentos e informaciones que le permitan conocer el fundamento de la reclamación.",
+    "explanation": "La Ley sobre el Contrato de Seguro establece que la obligación de pago es exigible 30 días después de que la aseguradora recibe la documentación que permite conocer el fundamento de la reclamación. Al día siguiente no hay información suficiente, un año sería excesivo y la solicitud del agente no determina la exigibilidad.",
+    "explicacion": "La Ley sobre el Contrato de Seguro establece que la obligación de pago es exigible 30 días después de que la aseguradora recibe la documentación que permite conocer el fundamento de la reclamación. Al día siguiente no hay información suficiente, un año sería excesivo y la solicitud del agente no determina la exigibilidad."
+  },
+  {
+    "id": 553,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "Si el contratante no paga la prima, ¿de qué plazo dispone en general, conforme a la Ley sobre el Contrato de Seguro, antes de que cesen los efectos del contrato?",
+    "pregunta": "Si el contratante no paga la prima, ¿de qué plazo dispone en general, conforme a la Ley sobre el Contrato de Seguro, antes de que cesen los efectos del contrato?",
+    "options": [
+      "No hay plazo; el contrato se cancela de inmediato.",
+      "Noventa días naturales siempre.",
+      "Treinta días naturales siguientes a la fecha de su vencimiento, salvo que se pacte un plazo distinto en los casos permitidos.",
+      "Cinco días hábiles."
+    ],
+    "opciones": [
+      "No hay plazo; el contrato se cancela de inmediato.",
+      "Noventa días naturales siempre.",
+      "Treinta días naturales siguientes a la fecha de su vencimiento, salvo que se pacte un plazo distinto en los casos permitidos.",
+      "Cinco días hábiles."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Treinta días naturales siguientes a la fecha de su vencimiento, salvo que se pacte un plazo distinto en los casos permitidos.",
+    "explanation": "La Ley sobre el Contrato de Seguro prevé que, si no se paga la prima o la fracción dentro de los 30 días naturales siguientes a su vencimiento, los efectos del contrato cesan automáticamente. Este periodo de gracia evita la cancelación inmediata, y los plazos de cinco o noventa días no son la regla general.",
+    "explicacion": "La Ley sobre el Contrato de Seguro prevé que, si no se paga la prima o la fracción dentro de los 30 días naturales siguientes a su vencimiento, los efectos del contrato cesan automáticamente. Este periodo de gracia evita la cancelación inmediata, y los plazos de cinco o noventa días no son la regla general."
+  },
+  {
+    "id": 554,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "Si el texto de la póliza no coincide con la oferta, ¿qué puede hacer el asegurado según la Ley sobre el Contrato de Seguro?",
+    "pregunta": "Si el texto de la póliza no coincide con la oferta, ¿qué puede hacer el asegurado según la Ley sobre el Contrato de Seguro?",
+    "options": [
+      "Pedir la rectificación dentro de los 30 días que sigan al día en que reciba la póliza.",
+      "Pedir la rectificación en cualquier momento de la vigencia.",
+      "Nada, porque la póliza siempre prevalece.",
+      "Solo puede demandar a su agente."
+    ],
+    "opciones": [
+      "Pedir la rectificación dentro de los 30 días que sigan al día en que reciba la póliza.",
+      "Pedir la rectificación en cualquier momento de la vigencia.",
+      "Nada, porque la póliza siempre prevalece.",
+      "Solo puede demandar a su agente."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Pedir la rectificación dentro de los 30 días que sigan al día en que reciba la póliza.",
+    "explanation": "La Ley sobre el Contrato de Seguro permite al asegurado solicitar la rectificación dentro de los 30 días siguientes a la recepción de la póliza; transcurrido ese plazo, se consideran aceptadas sus estipulaciones. No es un derecho ilimitado en el tiempo, y la responsabilidad principal es de la aseguradora, no solo del agente.",
+    "explicacion": "La Ley sobre el Contrato de Seguro permite al asegurado solicitar la rectificación dentro de los 30 días siguientes a la recepción de la póliza; transcurrido ese plazo, se consideran aceptadas sus estipulaciones. No es un derecho ilimitado en el tiempo, y la responsabilidad principal es de la aseguradora, no solo del agente."
+  },
+  {
+    "id": 555,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "Conforme a la Ley sobre el Contrato de Seguro, ¿en qué plazo debe el asegurado comunicar a la aseguradora una agravación esencial del riesgo?",
+    "pregunta": "Conforme a la Ley sobre el Contrato de Seguro, ¿en qué plazo debe el asegurado comunicar a la aseguradora una agravación esencial del riesgo?",
+    "options": [
+      "Dentro de las 24 horas siguientes al momento en que la conozca.",
+      "No tiene obligación de comunicarla.",
+      "Al renovar la póliza.",
+      "Dentro de los 30 días naturales siguientes."
+    ],
+    "opciones": [
+      "Dentro de las 24 horas siguientes al momento en que la conozca.",
+      "No tiene obligación de comunicarla.",
+      "Al renovar la póliza.",
+      "Dentro de los 30 días naturales siguientes."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Dentro de las 24 horas siguientes al momento en que la conozca.",
+    "explanation": "La Ley sobre el Contrato de Seguro obliga al asegurado a comunicar las agravaciones esenciales del riesgo dentro de las 24 horas siguientes a que las conozca, porque cambian las condiciones con que se aceptó el riesgo. Esperar 30 días o la renovación incumple la ley, y omitir el aviso puede liberar a la aseguradora.",
+    "explicacion": "La Ley sobre el Contrato de Seguro obliga al asegurado a comunicar las agravaciones esenciales del riesgo dentro de las 24 horas siguientes a que las conozca, porque cambian las condiciones con que se aceptó el riesgo. Esperar 30 días o la renovación incumple la ley, y omitir el aviso puede liberar a la aseguradora."
+  },
+  {
+    "id": 556,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿Qué consecuencia prevé la Ley sobre el Contrato de Seguro si el proponente omite o declara inexactamente un hecho importante para la apreciación del riesgo?",
+    "pregunta": "¿Qué consecuencia prevé la Ley sobre el Contrato de Seguro si el proponente omite o declara inexactamente un hecho importante para la apreciación del riesgo?",
+    "options": [
+      "El agente pierde su autorización automáticamente.",
+      "La aseguradora debe pagar el doble de la suma asegurada.",
+      "No tiene ninguna consecuencia.",
+      "La aseguradora puede considerar rescindido de pleno derecho el contrato, aunque no hayan influido en el siniestro."
+    ],
+    "opciones": [
+      "El agente pierde su autorización automáticamente.",
+      "La aseguradora debe pagar el doble de la suma asegurada.",
+      "No tiene ninguna consecuencia.",
+      "La aseguradora puede considerar rescindido de pleno derecho el contrato, aunque no hayan influido en el siniestro."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "La aseguradora puede considerar rescindido de pleno derecho el contrato, aunque no hayan influido en el siniestro.",
+    "explanation": "La Ley sobre el Contrato de Seguro faculta a la aseguradora para rescindir el contrato cuando el proponente omite o declara inexactamente hechos importantes del cuestionario, aun cuando no hayan influido en el siniestro, comunicándolo dentro del plazo legal. No implica pagar el doble ni sanciona automáticamente al agente.",
+    "explicacion": "La Ley sobre el Contrato de Seguro faculta a la aseguradora para rescindir el contrato cuando el proponente omite o declara inexactamente hechos importantes del cuestionario, aun cuando no hayan influido en el siniestro, comunicándolo dentro del plazo legal. No implica pagar el doble ni sanciona automáticamente al agente."
+  },
+  {
+    "id": 557,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿Qué obligación tiene el asegurado al llenar el cuestionario de la solicitud de seguro?",
+    "pregunta": "¿Qué obligación tiene el asegurado al llenar el cuestionario de la solicitud de seguro?",
+    "options": [
+      "Declarar por escrito todos los hechos importantes que conozca para la apreciación del riesgo.",
+      "Declarar solo los hechos que le favorezcan.",
+      "Dejar que el agente responda por él sin revisar.",
+      "Declarar únicamente su nombre y domicilio."
+    ],
+    "opciones": [
+      "Declarar por escrito todos los hechos importantes que conozca para la apreciación del riesgo.",
+      "Declarar solo los hechos que le favorezcan.",
+      "Dejar que el agente responda por él sin revisar.",
+      "Declarar únicamente su nombre y domicilio."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Declarar por escrito todos los hechos importantes que conozca para la apreciación del riesgo.",
+    "explanation": "La Ley sobre el Contrato de Seguro obliga al proponente a declarar por escrito, conforme al cuestionario, todos los hechos importantes que conozca o deba conocer al celebrar el contrato. Declarar solo lo favorable o dejar que otro responda sin revisar expone al asegurado a la rescisión, y los datos de identificación no bastan.",
+    "explicacion": "La Ley sobre el Contrato de Seguro obliga al proponente a declarar por escrito, conforme al cuestionario, todos los hechos importantes que conozca o deba conocer al celebrar el contrato. Declarar solo lo favorable o dejar que otro responda sin revisar expone al asegurado a la rescisión, y los datos de identificación no bastan."
+  },
+  {
+    "id": 558,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿Qué es un contrato de adhesión en materia de seguros?",
+    "pregunta": "¿Qué es un contrato de adhesión en materia de seguros?",
+    "options": [
+      "Un contrato cuyas cláusulas redacta la aseguradora en formatos uniformes y que el cliente acepta sin negociarlas.",
+      "Un contrato negociado cláusula por cláusula con cada cliente.",
+      "Un contrato verbal sin póliza.",
+      "Un contrato de reaseguro entre aseguradoras."
+    ],
+    "opciones": [
+      "Un contrato cuyas cláusulas redacta la aseguradora en formatos uniformes y que el cliente acepta sin negociarlas.",
+      "Un contrato negociado cláusula por cláusula con cada cliente.",
+      "Un contrato verbal sin póliza.",
+      "Un contrato de reaseguro entre aseguradoras."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Un contrato cuyas cláusulas redacta la aseguradora en formatos uniformes y que el cliente acepta sin negociarlas.",
+    "explanation": "La mayoría de las pólizas son contratos de adhesión, porque la aseguradora redacta las condiciones en formatos uniformes y el cliente solo decide si se adhiere, por lo que la regulación exige que sean claros y que se registren. Los contratos negociados son más comunes en grandes riesgos, y el reaseguro no es un contrato con el público.",
+    "explicacion": "La mayoría de las pólizas son contratos de adhesión, porque la aseguradora redacta las condiciones en formatos uniformes y el cliente solo decide si se adhiere, por lo que la regulación exige que sean claros y que se registren. Los contratos negociados son más comunes en grandes riesgos, y el reaseguro no es un contrato con el público."
+  },
+  {
+    "id": 559,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "Una aseguradora no cumple con el pago de una indemnización en el plazo legal. Además del capital, ¿qué debe pagar al asegurado?",
+    "pregunta": "Una aseguradora no cumple con el pago de una indemnización en el plazo legal. Además del capital, ¿qué debe pagar al asegurado?",
+    "options": [
+      "Únicamente el capital sin actualización.",
+      "Una multa al agente.",
+      "Una prima adicional de renovación.",
+      "Una indemnización por mora conforme a la LISF."
+    ],
+    "opciones": [
+      "Únicamente el capital sin actualización.",
+      "Una multa al agente.",
+      "Una prima adicional de renovación.",
+      "Una indemnización por mora conforme a la LISF."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Una indemnización por mora conforme a la LISF.",
+    "explanation": "La LISF establece que, si la aseguradora no paga en el plazo legal, debe cubrir una indemnización por mora que incluye la actualización de la obligación y los intereses moratorios correspondientes. No se trata de una multa al agente, no basta pagar el capital sin actualizar y la renovación no tiene relación con la mora.",
+    "explicacion": "La LISF establece que, si la aseguradora no paga en el plazo legal, debe cubrir una indemnización por mora que incluye la actualización de la obligación y los intereses moratorios correspondientes. No se trata de una multa al agente, no basta pagar el capital sin actualizar y la renovación no tiene relación con la mora."
+  },
+  {
+    "id": 560,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Protección al Usuario: CONDUSEF, LPDUSF y LSCS",
+    "question": "¿Qué documento técnico puede emitir la CONDUSEF, a solicitud del usuario, cuando no hay acuerdo en la conciliación, para que haga valer sus derechos ante los tribunales?",
+    "pregunta": "¿Qué documento técnico puede emitir la CONDUSEF, a solicitud del usuario, cuando no hay acuerdo en la conciliación, para que haga valer sus derechos ante los tribunales?",
+    "options": [
+      "Una cédula de agente.",
+      "Un certificado de no adeudo.",
+      "Una póliza de reemplazo.",
+      "Un dictamen técnico."
+    ],
+    "opciones": [
+      "Una cédula de agente.",
+      "Un certificado de no adeudo.",
+      "Una póliza de reemplazo.",
+      "Un dictamen técnico."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Un dictamen técnico.",
+    "explanation": "Cuando la conciliación no prospera, la CONDUSEF puede emitir un dictamen técnico con su opinión sobre la reclamación, que el usuario puede usar en un juicio. No emite pólizas ni certificados de no adeudo, y las cédulas de agente las otorga la CNSF.",
+    "explicacion": "Cuando la conciliación no prospera, la CONDUSEF puede emitir un dictamen técnico con su opinión sobre la reclamación, que el usuario puede usar en un juicio. No emite pólizas ni certificados de no adeudo, y las cédulas de agente las otorga la CNSF."
+  },
+  {
+    "id": 561,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Qué artículo de la LISF faculta a la SHCP para emitir las disposiciones de carácter general en materia de prevención de operaciones con recursos de procedencia ilícita y financiamiento al terrorismo para las aseguradoras?",
+    "pregunta": "¿Qué artículo de la LISF faculta a la SHCP para emitir las disposiciones de carácter general en materia de prevención de operaciones con recursos de procedencia ilícita y financiamiento al terrorismo para las aseguradoras?",
+    "options": [
+      "Artículo 492.",
+      "Artículo 276.",
+      "Artículo 91.",
+      "Artículo 1."
+    ],
+    "opciones": [
+      "Artículo 492.",
+      "Artículo 276.",
+      "Artículo 91.",
+      "Artículo 1."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Artículo 492.",
+    "explanation": "El artículo 492 de la LISF es el fundamento de las disposiciones de prevención de lavado de dinero y financiamiento al terrorismo aplicables a las aseguradoras, que emite la SHCP. El artículo 91 se refiere a los agentes y el 276 a la indemnización por mora.",
+    "explicacion": "El artículo 492 de la LISF es el fundamento de las disposiciones de prevención de lavado de dinero y financiamiento al terrorismo aplicables a las aseguradoras, que emite la SHCP. El artículo 91 se refiere a los agentes y el 276 a la indemnización por mora."
+  },
+  {
+    "id": 562,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Qué autoridad recibe y analiza los reportes de operaciones que envían las aseguradoras en materia de prevención de lavado de dinero?",
+    "pregunta": "¿Qué autoridad recibe y analiza los reportes de operaciones que envían las aseguradoras en materia de prevención de lavado de dinero?",
+    "options": [
+      "La Unidad de Inteligencia Financiera (UIF) de la SHCP, por conducto de la CNSF.",
+      "La AMIS.",
+      "El Servicio de Administración Tributaria exclusivamente.",
+      "La CONDUSEF."
+    ],
+    "opciones": [
+      "La Unidad de Inteligencia Financiera (UIF) de la SHCP, por conducto de la CNSF.",
+      "La AMIS.",
+      "El Servicio de Administración Tributaria exclusivamente.",
+      "La CONDUSEF."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "La Unidad de Inteligencia Financiera (UIF) de la SHCP, por conducto de la CNSF.",
+    "explanation": "Las aseguradoras envían sus reportes por conducto de la CNSF a la UIF de la SHCP, que los analiza para detectar posibles operaciones con recursos ilícitos. La CONDUSEF protege usuarios, la AMIS es gremial y el SAT tiene otras facultades fiscales.",
+    "explicacion": "Las aseguradoras envían sus reportes por conducto de la CNSF a la UIF de la SHCP, que los analiza para detectar posibles operaciones con recursos ilícitos. La CONDUSEF protege usuarios, la AMIS es gremial y el SAT tiene otras facultades fiscales."
+  },
+  {
+    "id": 563,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Qué es una operación inusual en materia de prevención de lavado de dinero?",
+    "pregunta": "¿Qué es una operación inusual en materia de prevención de lavado de dinero?",
+    "options": [
+      "Cualquier pago con tarjeta de crédito.",
+      "Toda operación mayor a un millón de pesos.",
+      "Una operación realizada fuera del horario de oficina.",
+      "Una operación que no concuerda con los antecedentes, la actividad o el perfil transaccional conocido del cliente, sin justificación razonable."
+    ],
+    "opciones": [
+      "Cualquier pago con tarjeta de crédito.",
+      "Toda operación mayor a un millón de pesos.",
+      "Una operación realizada fuera del horario de oficina.",
+      "Una operación que no concuerda con los antecedentes, la actividad o el perfil transaccional conocido del cliente, sin justificación razonable."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Una operación que no concuerda con los antecedentes, la actividad o el perfil transaccional conocido del cliente, sin justificación razonable.",
+    "explanation": "La operación inusual es la que no coincide con el perfil, los antecedentes o la actividad conocida del cliente y no tiene una justificación razonable, por lo que debe analizarse y, en su caso, reportarse. El monto por sí solo no la define, y la forma de pago o el horario no la determinan.",
+    "explicacion": "La operación inusual es la que no coincide con el perfil, los antecedentes o la actividad conocida del cliente y no tiene una justificación razonable, por lo que debe analizarse y, en su caso, reportarse. El monto por sí solo no la define, y la forma de pago o el horario no la determinan."
+  },
+  {
+    "id": 564,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Qué es una operación interna preocupante?",
+    "pregunta": "¿Qué es una operación interna preocupante?",
+    "options": [
+      "Una operación con un cliente extranjero.",
+      "Una reclamación de un asegurado ante CONDUSEF.",
+      "Un siniestro de monto elevado.",
+      "Una operación o conducta de directivos, empleados o agentes de la institución que podría contravenir las políticas de prevención de lavado de dinero."
+    ],
+    "opciones": [
+      "Una operación con un cliente extranjero.",
+      "Una reclamación de un asegurado ante CONDUSEF.",
+      "Un siniestro de monto elevado.",
+      "Una operación o conducta de directivos, empleados o agentes de la institución que podría contravenir las políticas de prevención de lavado de dinero."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Una operación o conducta de directivos, empleados o agentes de la institución que podría contravenir las políticas de prevención de lavado de dinero.",
+    "explanation": "La operación interna preocupante se refiere a conductas de los propios directivos, empleados o agentes que podrían contravenir la normativa o las políticas de prevención, y debe reportarse. Las reclamaciones, los siniestros grandes o los clientes extranjeros no son por sí mismos operaciones internas preocupantes.",
+    "explicacion": "La operación interna preocupante se refiere a conductas de los propios directivos, empleados o agentes que podrían contravenir la normativa o las políticas de prevención, y debe reportarse. Las reclamaciones, los siniestros grandes o los clientes extranjeros no son por sí mismos operaciones internas preocupantes."
+  },
+  {
+    "id": 565,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Qué órgano interno de la aseguradora dictamina las operaciones inusuales y aprueba las políticas de identificación del cliente?",
+    "pregunta": "¿Qué órgano interno de la aseguradora dictamina las operaciones inusuales y aprueba las políticas de identificación del cliente?",
+    "options": [
+      "El comité de suscripción.",
+      "El Comité de Comunicación y Control.",
+      "La Unidad Especializada de Atención a Usuarios.",
+      "La asamblea de agentes."
+    ],
+    "opciones": [
+      "El comité de suscripción.",
+      "El Comité de Comunicación y Control.",
+      "La Unidad Especializada de Atención a Usuarios.",
+      "La asamblea de agentes."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "El Comité de Comunicación y Control.",
+    "explanation": "El Comité de Comunicación y Control es el órgano que exigen las disposiciones de prevención para dictaminar operaciones inusuales y aprobar las políticas de conocimiento del cliente. La Unidad Especializada atiende reclamaciones, el comité de suscripción evalúa riesgos y la asamblea de agentes no existe como órgano legal.",
+    "explicacion": "El Comité de Comunicación y Control es el órgano que exigen las disposiciones de prevención para dictaminar operaciones inusuales y aprobar las políticas de conocimiento del cliente. La Unidad Especializada atiende reclamaciones, el comité de suscripción evalúa riesgos y la asamblea de agentes no existe como órgano legal."
+  },
+  {
+    "id": 566,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Qué figura designa la aseguradora como responsable de coordinar el cumplimiento de las disposiciones de prevención de lavado de dinero?",
+    "pregunta": "¿Qué figura designa la aseguradora como responsable de coordinar el cumplimiento de las disposiciones de prevención de lavado de dinero?",
+    "options": [
+      "El ajustador de siniestros.",
+      "El actuario responsable de reservas.",
+      "El agente con mayor antigüedad.",
+      "El oficial de cumplimiento."
+    ],
+    "opciones": [
+      "El ajustador de siniestros.",
+      "El actuario responsable de reservas.",
+      "El agente con mayor antigüedad.",
+      "El oficial de cumplimiento."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "El oficial de cumplimiento.",
+    "explanation": "Las disposiciones de prevención exigen designar un oficial de cumplimiento encargado de coordinar las políticas, los reportes y la capacitación en la materia. El ajustador valúa siniestros, el actuario calcula reservas y los agentes no pueden asumir esa función en nombre de la institución.",
+    "explicacion": "Las disposiciones de prevención exigen designar un oficial de cumplimiento encargado de coordinar las políticas, los reportes y la capacitación en la materia. El ajustador valúa siniestros, el actuario calcula reservas y los agentes no pueden asumir esa función en nombre de la institución."
+  },
+  {
+    "id": 567,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Qué significa la política de conocimiento del cliente?",
+    "pregunta": "¿Qué significa la política de conocimiento del cliente?",
+    "options": [
+      "Identificar al cliente, integrar su expediente y conocer su actividad y perfil transaccional para detectar operaciones anómalas.",
+      "Registrar únicamente el número de póliza.",
+      "Conocer solo el teléfono del cliente para cobrarle.",
+      "Preguntar al cliente su opinión sobre el servicio."
+    ],
+    "opciones": [
+      "Identificar al cliente, integrar su expediente y conocer su actividad y perfil transaccional para detectar operaciones anómalas.",
+      "Registrar únicamente el número de póliza.",
+      "Conocer solo el teléfono del cliente para cobrarle.",
+      "Preguntar al cliente su opinión sobre el servicio."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Identificar al cliente, integrar su expediente y conocer su actividad y perfil transaccional para detectar operaciones anómalas.",
+    "explanation": "La política de conocimiento del cliente obliga a identificarlo con documentos, integrar y actualizar su expediente y conocer su actividad para construir su perfil y detectar operaciones fuera de lo normal. Un teléfono, una encuesta o un número de póliza no cumplen esa finalidad.",
+    "explicacion": "La política de conocimiento del cliente obliga a identificarlo con documentos, integrar y actualizar su expediente y conocer su actividad para construir su perfil y detectar operaciones fuera de lo normal. Un teléfono, una encuesta o un número de póliza no cumplen esa finalidad."
+  },
+  {
+    "id": 568,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Qué es el beneficiario controlador en materia de prevención de lavado de dinero?",
+    "pregunta": "¿Qué es el beneficiario controlador en materia de prevención de lavado de dinero?",
+    "options": [
+      "El beneficiario designado en una póliza de vida.",
+      "La persona física que en última instancia obtiene el beneficio o ejerce el control de una operación o de una persona moral.",
+      "El representante legal que firma la solicitud.",
+      "El agente que recibe la comisión."
+    ],
+    "opciones": [
+      "El beneficiario designado en una póliza de vida.",
+      "La persona física que en última instancia obtiene el beneficio o ejerce el control de una operación o de una persona moral.",
+      "El representante legal que firma la solicitud.",
+      "El agente que recibe la comisión."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "La persona física que en última instancia obtiene el beneficio o ejerce el control de una operación o de una persona moral.",
+    "explanation": "El beneficiario controlador es la persona física que, directa o indirectamente, se beneficia de la operación o controla a la persona moral cliente, y la aseguradora debe identificarlo. No es lo mismo que el beneficiario de una póliza de vida, el agente o el representante que solo firma.",
+    "explicacion": "El beneficiario controlador es la persona física que, directa o indirectamente, se beneficia de la operación o controla a la persona moral cliente, y la aseguradora debe identificarlo. No es lo mismo que el beneficiario de una póliza de vida, el agente o el representante que solo firma."
+  },
+  {
+    "id": 569,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Por qué las aseguradoras deben aplicar medidas reforzadas a las Personas Políticamente Expuestas (PPE)?",
+    "pregunta": "¿Por qué las aseguradoras deben aplicar medidas reforzadas a las Personas Políticamente Expuestas (PPE)?",
+    "options": [
+      "Porque por su cargo público tienen mayor riesgo de estar vinculadas a actos de corrupción o lavado de dinero.",
+      "Porque son clientes con menor riesgo.",
+      "Porque pagan primas más bajas por ley.",
+      "Porque tienen prohibido contratar seguros."
+    ],
+    "opciones": [
+      "Porque por su cargo público tienen mayor riesgo de estar vinculadas a actos de corrupción o lavado de dinero.",
+      "Porque son clientes con menor riesgo.",
+      "Porque pagan primas más bajas por ley.",
+      "Porque tienen prohibido contratar seguros."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Porque por su cargo público tienen mayor riesgo de estar vinculadas a actos de corrupción o lavado de dinero.",
+    "explanation": "Las PPE ocupan o han ocupado funciones públicas destacadas, lo que aumenta el riesgo de corrupción, por lo que las disposiciones exigen identificación reforzada y monitoreo más estricto. No tienen prohibido contratar seguros, no tienen primas preferentes y no se consideran de menor riesgo.",
+    "explicacion": "Las PPE ocupan o han ocupado funciones públicas destacadas, lo que aumenta el riesgo de corrupción, por lo que las disposiciones exigen identificación reforzada y monitoreo más estricto. No tienen prohibido contratar seguros, no tienen primas preferentes y no se consideran de menor riesgo."
+  },
+  {
+    "id": 570,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "Si un cliente aparece en la Lista de Personas Bloqueadas que da a conocer la UIF, ¿qué debe hacer la aseguradora?",
+    "pregunta": "Si un cliente aparece en la Lista de Personas Bloqueadas que da a conocer la UIF, ¿qué debe hacer la aseguradora?",
+    "options": [
+      "Suspender de inmediato la operación o los servicios con esa persona y reportarlo conforme a las disposiciones.",
+      "Cancelar la póliza sin informar a la autoridad.",
+      "Continuar la operación y aplicar un recargo en la prima.",
+      "Pedir al agente que lo convenza de pagar en efectivo."
+    ],
+    "opciones": [
+      "Suspender de inmediato la operación o los servicios con esa persona y reportarlo conforme a las disposiciones.",
+      "Cancelar la póliza sin informar a la autoridad.",
+      "Continuar la operación y aplicar un recargo en la prima.",
+      "Pedir al agente que lo convenza de pagar en efectivo."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Suspender de inmediato la operación o los servicios con esa persona y reportarlo conforme a las disposiciones.",
+    "explanation": "Las disposiciones de prevención obligan a suspender de inmediato los actos y servicios con quien aparezca en la Lista de Personas Bloqueadas y a reportar la operación. Continuarla, recibir efectivo o cancelar sin informar contraviene la normativa y expone a sanciones.",
+    "explicacion": "Las disposiciones de prevención obligan a suspender de inmediato los actos y servicios con quien aparezca en la Lista de Personas Bloqueadas y a reportar la operación. Continuarla, recibir efectivo o cancelar sin informar contraviene la normativa y expone a sanciones."
+  },
+  {
+    "id": 571,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Con qué periodicidad deben las aseguradoras enviar los reportes de operaciones relevantes?",
+    "pregunta": "¿Con qué periodicidad deben las aseguradoras enviar los reportes de operaciones relevantes?",
+    "options": [
+      "Solo cuando lo pide la CONDUSEF.",
+      "Cada cinco años.",
+      "Diariamente.",
+      "Trimestralmente."
+    ],
+    "opciones": [
+      "Solo cuando lo pide la CONDUSEF.",
+      "Cada cinco años.",
+      "Diariamente.",
+      "Trimestralmente."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Trimestralmente.",
+    "explanation": "Las operaciones relevantes, ligadas a pagos en efectivo por encima del umbral establecido, se reportan de manera trimestral conforme a las disposiciones del artículo 492 de la LISF. No son reportes diarios ni quinquenales, y la CONDUSEF no interviene en la materia.",
+    "explicacion": "Las operaciones relevantes, ligadas a pagos en efectivo por encima del umbral establecido, se reportan de manera trimestral conforme a las disposiciones del artículo 492 de la LISF. No son reportes diarios ni quinquenales, y la CONDUSEF no interviene en la materia."
+  },
+  {
+    "id": 572,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "En las disposiciones de prevención de lavado aplicables a aseguradoras, ¿qué operaciones se consideran relevantes?",
+    "pregunta": "En las disposiciones de prevención de lavado aplicables a aseguradoras, ¿qué operaciones se consideran relevantes?",
+    "options": [
+      "Todas las operaciones con tarjeta de crédito.",
+      "Las primas pagadas por transferencia electrónica.",
+      "Las pólizas de vida con suma asegurada superior a un millón de pesos.",
+      "Las que se realizan en efectivo por un monto igual o superior al equivalente en moneda nacional a 7,500 dólares de los Estados Unidos."
+    ],
+    "opciones": [
+      "Todas las operaciones con tarjeta de crédito.",
+      "Las primas pagadas por transferencia electrónica.",
+      "Las pólizas de vida con suma asegurada superior a un millón de pesos.",
+      "Las que se realizan en efectivo por un monto igual o superior al equivalente en moneda nacional a 7,500 dólares de los Estados Unidos."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Las que se realizan en efectivo por un monto igual o superior al equivalente en moneda nacional a 7,500 dólares de los Estados Unidos.",
+    "explanation": "Las operaciones relevantes son las que se pagan en efectivo, billetes o monedas, por un monto igual o superior al equivalente a 7,500 dólares, y se reportan aunque no sean sospechosas. Las tarjetas y transferencias dejan rastro bancario, y la suma asegurada por sí sola no define una operación relevante.",
+    "explicacion": "Las operaciones relevantes son las que se pagan en efectivo, billetes o monedas, por un monto igual o superior al equivalente a 7,500 dólares, y se reportan aunque no sean sospechosas. Las tarjetas y transferencias dejan rastro bancario, y la suma asegurada por sí sola no define una operación relevante."
+  },
+  {
+    "id": 573,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Cuál es la obligación de un agente de seguros en materia de prevención de lavado de dinero?",
+    "pregunta": "¿Cuál es la obligación de un agente de seguros en materia de prevención de lavado de dinero?",
+    "options": [
+      "Reportar directamente a la UIF sin avisar a la aseguradora.",
+      "Investigar penalmente a sus clientes.",
+      "Ninguna, porque solo aplica a bancos.",
+      "Cumplir las políticas de identificación del cliente de la aseguradora y comunicarle las operaciones que le parezcan inusuales."
+    ],
+    "opciones": [
+      "Reportar directamente a la UIF sin avisar a la aseguradora.",
+      "Investigar penalmente a sus clientes.",
+      "Ninguna, porque solo aplica a bancos.",
+      "Cumplir las políticas de identificación del cliente de la aseguradora y comunicarle las operaciones que le parezcan inusuales."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Cumplir las políticas de identificación del cliente de la aseguradora y comunicarle las operaciones que le parezcan inusuales.",
+    "explanation": "El agente es el primer contacto con el cliente, por lo que debe aplicar las políticas de identificación de la aseguradora, recabar la documentación y comunicar a la institución las operaciones inusuales que detecte. La normativa sí aplica al sector asegurador, el reporte formal lo presenta la institución y la investigación penal corresponde a la autoridad.",
+    "explicacion": "El agente es el primer contacto con el cliente, por lo que debe aplicar las políticas de identificación de la aseguradora, recabar la documentación y comunicar a la institución las operaciones inusuales que detecte. La normativa sí aplica al sector asegurador, el reporte formal lo presenta la institución y la investigación penal corresponde a la autoridad."
+  },
+  {
+    "id": 574,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Qué debe hacer un agente si un cliente le pide pagar una prima elevada en efectivo y fraccionarla en varios recibos para no llamar la atención?",
+    "pregunta": "¿Qué debe hacer un agente si un cliente le pide pagar una prima elevada en efectivo y fraccionarla en varios recibos para no llamar la atención?",
+    "options": [
+      "Sugerirle pagar en dólares en efectivo.",
+      "Comunicarlo a la aseguradora, porque el fraccionamiento para evadir umbrales es una señal de alerta.",
+      "Depositar el dinero en su cuenta personal.",
+      "Aceptarlo, porque cada recibo es menor al umbral."
+    ],
+    "opciones": [
+      "Sugerirle pagar en dólares en efectivo.",
+      "Comunicarlo a la aseguradora, porque el fraccionamiento para evadir umbrales es una señal de alerta.",
+      "Depositar el dinero en su cuenta personal.",
+      "Aceptarlo, porque cada recibo es menor al umbral."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Comunicarlo a la aseguradora, porque el fraccionamiento para evadir umbrales es una señal de alerta.",
+    "explanation": "Fraccionar pagos para no rebasar los umbrales de reporte es una señal clásica de lavado de dinero, por lo que el agente debe informarlo a la institución para su análisis. Aceptarlo o sugerir efectivo en dólares facilita la conducta, y depositar en su cuenta personal está prohibido.",
+    "explicacion": "Fraccionar pagos para no rebasar los umbrales de reporte es una señal clásica de lavado de dinero, por lo que el agente debe informarlo a la institución para su análisis. Aceptarlo o sugerir efectivo en dólares facilita la conducta, y depositar en su cuenta personal está prohibido."
+  },
+  {
+    "id": 575,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Qué deben recibir anualmente los empleados y agentes de una aseguradora en materia de prevención de lavado de dinero?",
+    "pregunta": "¿Qué deben recibir anualmente los empleados y agentes de una aseguradora en materia de prevención de lavado de dinero?",
+    "options": [
+      "Una póliza de vida gratuita.",
+      "Una certificación de la CONDUSEF.",
+      "Un bono por cada operación reportada.",
+      "Capacitación sobre las políticas, señales de alerta y obligaciones de reporte."
+    ],
+    "opciones": [
+      "Una póliza de vida gratuita.",
+      "Una certificación de la CONDUSEF.",
+      "Un bono por cada operación reportada.",
+      "Capacitación sobre las políticas, señales de alerta y obligaciones de reporte."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Capacitación sobre las políticas, señales de alerta y obligaciones de reporte.",
+    "explanation": "Las disposiciones exigen programas de capacitación al menos anuales sobre las políticas de identificación, señales de alerta y reportes de operaciones. No se otorgan bonos por reporte, la CONDUSEF no certifica en la materia y una póliza gratuita no tiene relación con la obligación.",
+    "explicacion": "Las disposiciones exigen programas de capacitación al menos anuales sobre las políticas de identificación, señales de alerta y reportes de operaciones. No se otorgan bonos por reporte, la CONDUSEF no certifica en la materia y una póliza gratuita no tiene relación con la obligación."
+  },
+  {
+    "id": 576,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Qué característica de un producto de seguros eleva su riesgo de uso para lavar dinero?",
+    "pregunta": "¿Qué característica de un producto de seguros eleva su riesgo de uso para lavar dinero?",
+    "options": [
+      "Que solo cubra daños por granizo.",
+      "Que sea un seguro obligatorio de responsabilidad civil.",
+      "Que tenga suma asegurada baja y sin valor de rescate.",
+      "Que permita aportaciones elevadas y rescates anticipados con devolución de fondos."
+    ],
+    "opciones": [
+      "Que solo cubra daños por granizo.",
+      "Que sea un seguro obligatorio de responsabilidad civil.",
+      "Que tenga suma asegurada baja y sin valor de rescate.",
+      "Que permita aportaciones elevadas y rescates anticipados con devolución de fondos."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Que permita aportaciones elevadas y rescates anticipados con devolución de fondos.",
+    "explanation": "Los productos que admiten aportaciones grandes y rescates anticipados, como algunos seguros de vida con ahorro, permiten introducir y retirar dinero, por lo que se consideran de mayor riesgo. Los seguros sin valor de rescate o de daños puros ofrecen poca oportunidad de recuperar fondos.",
+    "explicacion": "Los productos que admiten aportaciones grandes y rescates anticipados, como algunos seguros de vida con ahorro, permiten introducir y retirar dinero, por lo que se consideran de mayor riesgo. Los seguros sin valor de rescate o de daños puros ofrecen poca oportunidad de recuperar fondos."
+  },
+  {
+    "id": 577,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "¿Qué deben hacer las aseguradoras con los expedientes de identificación de sus clientes?",
+    "pregunta": "¿Qué deben hacer las aseguradoras con los expedientes de identificación de sus clientes?",
+    "options": [
+      "Destruirlos al emitir la póliza.",
+      "Conservarlos durante el plazo mínimo que fijan las disposiciones, a partir de la terminación de la relación.",
+      "Entregarlos al agente para su archivo personal.",
+      "Publicarlos en su página de internet."
+    ],
+    "opciones": [
+      "Destruirlos al emitir la póliza.",
+      "Conservarlos durante el plazo mínimo que fijan las disposiciones, a partir de la terminación de la relación.",
+      "Entregarlos al agente para su archivo personal.",
+      "Publicarlos en su página de internet."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Conservarlos durante el plazo mínimo que fijan las disposiciones, a partir de la terminación de la relación.",
+    "explanation": "Las disposiciones exigen conservar los expedientes y la documentación de las operaciones por un plazo mínimo, contado desde la terminación de la relación, para ponerlos a disposición de la autoridad. Destruirlos o publicarlos viola la norma, y el agente no sustituye a la institución en su resguardo.",
+    "explicacion": "Las disposiciones exigen conservar los expedientes y la documentación de las operaciones por un plazo mínimo, contado desde la terminación de la relación, para ponerlos a disposición de la autoridad. Destruirlos o publicarlos viola la norma, y el agente no sustituye a la institución en su resguardo."
+  },
+  {
+    "id": 578,
+    "module": "Regulación CNSF, Marco Legal y PLD",
+    "modulo": "Regulación CNSF, Marco Legal y PLD",
+    "submodulo": "Prevención de Lavado de Dinero",
+    "question": "Dentro del enfoque basado en riesgo de las disposiciones de prevención, ¿qué se espera de la aseguradora?",
+    "pregunta": "Dentro del enfoque basado en riesgo de las disposiciones de prevención, ¿qué se espera de la aseguradora?",
+    "options": [
+      "Aplicar exactamente las mismas medidas a todos los clientes.",
+      "Eliminar la identificación en seguros empresariales.",
+      "Rechazar a todos los clientes extranjeros.",
+      "Clasificar a sus clientes y productos por grado de riesgo y aplicar medidas más estrictas a los de mayor riesgo."
+    ],
+    "opciones": [
+      "Aplicar exactamente las mismas medidas a todos los clientes.",
+      "Eliminar la identificación en seguros empresariales.",
+      "Rechazar a todos los clientes extranjeros.",
+      "Clasificar a sus clientes y productos por grado de riesgo y aplicar medidas más estrictas a los de mayor riesgo."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Clasificar a sus clientes y productos por grado de riesgo y aplicar medidas más estrictas a los de mayor riesgo.",
+    "explanation": "El enfoque basado en riesgo obliga a evaluar el riesgo de clientes, productos, canales y zonas, y a aplicar medidas reforzadas donde el riesgo es mayor y simplificadas donde es menor. Tratar igual a todos ignora el riesgo, rechazar extranjeros es discriminatorio y eliminar la identificación no está permitido.",
+    "explicacion": "El enfoque basado en riesgo obliga a evaluar el riesgo de clientes, productos, canales y zonas, y a aplicar medidas reforzadas donde el riesgo es mayor y simplificadas donde es menor. Tratar igual a todos ignora el riesgo, rechazar extranjeros es discriminatorio y eliminar la identificación no está permitido."
+  }
+]

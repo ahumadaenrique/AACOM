@@ -1,0 +1,1777 @@
+[
+  {
+    "id": 189,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Cubre la pérdida o daño que sufran los bienes asegurados por la acción accidental súbita e imprevista provocada por cualquier causa con excepción de los riesgos excluidos, este concepto se conoce como:",
+    "pregunta": "Cubre la pérdida o daño que sufran los bienes asegurados por la acción accidental súbita e imprevista provocada por cualquier causa con excepción de los riesgos excluidos, este concepto se conoce como:",
+    "options": [
+      "Incendio, Rayo y Explosión.",
+      "Extensión de Cubierta.",
+      "A Todo Riesgo de Incendio.",
+      "Riesgos Nombrados."
+    ],
+    "opciones": [
+      "Incendio, Rayo y Explosión.",
+      "Extensión de Cubierta.",
+      "A Todo Riesgo de Incendio.",
+      "Riesgos Nombrados."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "A Todo Riesgo de Incendio.",
+    "explanation": "La cobertura a todo riesgo de incendio ampara la pérdida o daño súbito e imprevisto por cualquier causa, salvo los riesgos expresamente excluidos. La de riesgos nombrados, incendio y rayo, y la extensión de cubierta solo amparan los riesgos enumerados.",
+    "explicacion": "La cobertura a todo riesgo de incendio ampara la pérdida o daño súbito e imprevisto por cualquier causa, salvo los riesgos expresamente excluidos. La de riesgos nombrados, incendio y rayo, y la extensión de cubierta solo amparan los riesgos enumerados."
+  },
+  {
+    "id": 190,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "La definición “es el medio de calefacción producido por fuego o flama que no sea precisamente el de sistemas eléctricos contenidos en cámaras cerradas, así como por vapor, aire o agua caliente”, corresponde a:",
+    "pregunta": "La definición “es el medio de calefacción producido por fuego o flama que no sea precisamente el de sistemas eléctricos contenidos en cámaras cerradas, así como por vapor, aire o agua caliente”, corresponde a:",
+    "options": [
+      "Vicio propio",
+      "Fuego directo",
+      "Corto circuito",
+      "Combustión espontánea"
+    ],
+    "opciones": [
+      "Vicio propio",
+      "Fuego directo",
+      "Corto circuito",
+      "Combustión espontánea"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Fuego directo",
+    "explanation": "El fuego directo es el medio de calefacción producido por fuego o flama, así como por vapor, aire o agua caliente, distinto de los sistemas eléctricos en cámaras cerradas. El vicio propio, el corto circuito y la combustión espontánea son otros conceptos.",
+    "explicacion": "El fuego directo es el medio de calefacción producido por fuego o flama, así como por vapor, aire o agua caliente, distinto de los sistemas eléctricos en cámaras cerradas. El vicio propio, el corto circuito y la combustión espontánea son otros conceptos."
+  },
+  {
+    "id": 191,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Es un ejemplo del tipo de daño que cubre principalmente el seguro de Incendio:",
+    "pregunta": "Es un ejemplo del tipo de daño que cubre principalmente el seguro de Incendio:",
+    "options": [
+      "Destrucción de una casa",
+      "Una pierna rota",
+      "Pérdida de utilidades",
+      "Responsabilidades a terceros"
+    ],
+    "opciones": [
+      "Destrucción de una casa",
+      "Una pierna rota",
+      "Pérdida de utilidades",
+      "Responsabilidades a terceros"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Destrucción de una casa",
+    "explanation": "El seguro de incendio cubre principalmente daños materiales a bienes, como la destrucción de una casa. Una lesión física corresponde a accidentes personales, la pérdida de utilidades a pérdidas consecuenciales y las responsabilidades a la RC.",
+    "explicacion": "El seguro de incendio cubre principalmente daños materiales a bienes, como la destrucción de una casa. Una lesión física corresponde a accidentes personales, la pérdida de utilidades a pérdidas consecuenciales y las responsabilidades a la RC."
+  },
+  {
+    "id": 192,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Cómo se llaman las construcciones macizas que están separadas entre sí por 15 metros, o las No macizas, separadas por 30 metros dentro de un mismo predio?",
+    "pregunta": "¿Cómo se llaman las construcciones macizas que están separadas entre sí por 15 metros, o las No macizas, separadas por 30 metros dentro de un mismo predio?",
+    "options": [
+      "Naves industriales",
+      "Colindantes",
+      "Construcción inferior",
+      "Áreas de fuego"
+    ],
+    "opciones": [
+      "Naves industriales",
+      "Colindantes",
+      "Construcción inferior",
+      "Áreas de fuego"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Áreas de fuego",
+    "explanation": "Las áreas de fuego son construcciones macizas separadas por 15 metros, o no macizas separadas por 30 metros, dentro de un mismo predio, y se tarifican de forma independiente. Las demás opciones no describen esa separación.",
+    "explicacion": "Las áreas de fuego son construcciones macizas separadas por 15 metros, o no macizas separadas por 30 metros, dentro de un mismo predio, y se tarifican de forma independiente. Las demás opciones no describen esa separación."
+  },
+  {
+    "id": 193,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Todas son partes asegurables de un edificio, EXCEPTO:",
+    "pregunta": "Todas son partes asegurables de un edificio, EXCEPTO:",
+    "options": [
+      "La instalación fija de agua y luz",
+      "La construcción",
+      "Los cimientos",
+      "La calefacción"
+    ],
+    "opciones": [
+      "La instalación fija de agua y luz",
+      "La construcción",
+      "Los cimientos",
+      "La calefacción"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Los cimientos",
+    "explanation": "De un edificio se aseguran la construcción, las instalaciones fijas de agua y luz y la calefacción. Los cimientos se excluyen porque, al estar bajo tierra, difícilmente se dañan por incendio.",
+    "explicacion": "De un edificio se aseguran la construcción, las instalaciones fijas de agua y luz y la calefacción. Los cimientos se excluyen porque, al estar bajo tierra, difícilmente se dañan por incendio."
+  },
+  {
+    "id": 194,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Cómo se consideran las bardas, muros independientes, construcciones exteriores que están en el mismo predio asegurado para la cobertura de Terremoto?",
+    "pregunta": "¿Cómo se consideran las bardas, muros independientes, construcciones exteriores que están en el mismo predio asegurado para la cobertura de Terremoto?",
+    "options": [
+      "Bienes cubiertos de manera automática",
+      "Bienes cubiertos por convenio expreso",
+      "Bienes excluidos",
+      "Riesgos amparados por convenio expreso"
+    ],
+    "opciones": [
+      "Bienes cubiertos de manera automática",
+      "Bienes cubiertos por convenio expreso",
+      "Bienes excluidos",
+      "Riesgos amparados por convenio expreso"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Bienes cubiertos por convenio expreso",
+    "explanation": "Las bardas, muros independientes y construcciones exteriores se cubren en terremoto solo por convenio expreso, por su mayor vulnerabilidad. No son bienes automáticos ni excluidos de manera absoluta.",
+    "explicacion": "Las bardas, muros independientes y construcciones exteriores se cubren en terremoto solo por convenio expreso, por su mayor vulnerabilidad. No son bienes automáticos ni excluidos de manera absoluta."
+  },
+  {
+    "id": 195,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Elige de la lista, los tipos de negocios de acuerdo a la AMIS: 1.- Ordinarios 2.- Monumentales 3.- Edificios 4.- Ornamentales 5.- Grandes Riesgos:",
+    "pregunta": "Elige de la lista, los tipos de negocios de acuerdo a la AMIS: 1.- Ordinarios 2.- Monumentales 3.- Edificios 4.- Ornamentales 5.- Grandes Riesgos:",
+    "options": [
+      "1, 3, 5",
+      "2, 4, 5",
+      "1, 2, 3",
+      "2, 3, 4"
+    ],
+    "opciones": [
+      "1, 3, 5",
+      "2, 4, 5",
+      "1, 2, 3",
+      "2, 3, 4"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "1, 3, 5",
+    "explanation": "Según la clave de la guía, la AMIS clasifica los negocios para incendio como ordinarios, edificios y grandes riesgos. Monumentales y ornamentales no son categorías de esa clasificación.",
+    "explicacion": "Según la clave de la guía, la AMIS clasifica los negocios para incendio como ordinarios, edificios y grandes riesgos. Monumentales y ornamentales no son categorías de esa clasificación."
+  },
+  {
+    "id": 196,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Cómo se llama a la persona que cuantifica, valora y determina el valor del siniestro?",
+    "pregunta": "¿Cómo se llama a la persona que cuantifica, valora y determina el valor del siniestro?",
+    "options": [
+      "Cotizador",
+      "Suscriptor",
+      "Ajustador",
+      "Inspector"
+    ],
+    "opciones": [
+      "Cotizador",
+      "Suscriptor",
+      "Ajustador",
+      "Inspector"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Ajustador",
+    "explanation": "El ajustador es quien cuantifica, valora y determina el monto del siniestro. El suscriptor evalúa y acepta riesgos, el cotizador calcula primas y el inspector revisa el riesgo antes de emitir.",
+    "explicacion": "El ajustador es quien cuantifica, valora y determina el monto del siniestro. El suscriptor evalúa y acepta riesgos, el cotizador calcula primas y el inspector revisa el riesgo antes de emitir."
+  },
+  {
+    "id": 197,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Un edificio que no ha sido terminado en su construcción se puede asegurar el valor:",
+    "pregunta": "Un edificio que no ha sido terminado en su construcción se puede asegurar el valor:",
+    "options": [
+      "Del avance que se tiene",
+      "De la obra terminada",
+      "Estimado de los materiales que se utilizan",
+      "De venta al público"
+    ],
+    "opciones": [
+      "Del avance que se tiene",
+      "De la obra terminada",
+      "Estimado de los materiales que se utilizan",
+      "De venta al público"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Del avance que se tiene",
+    "explanation": "Un edificio en construcción se asegura por el valor del avance que tenga la obra, porque es lo que está expuesto. Asegurar la obra terminada o un valor de venta generaría sobreseguro.",
+    "explicacion": "Un edificio en construcción se asegura por el valor del avance que tenga la obra, porque es lo que está expuesto. Asegurar la obra terminada o un valor de venta generaría sobreseguro."
+  },
+  {
+    "id": 198,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Si un negocio tiene una ubicación con una suma asegurada mayor o igual a 50 millones de dólares, sin importar la suma asegurada del conjunto, se clasifica como:",
+    "pregunta": "Si un negocio tiene una ubicación con una suma asegurada mayor o igual a 50 millones de dólares, sin importar la suma asegurada del conjunto, se clasifica como:",
+    "options": [
+      "Grandes riesgos",
+      "Comerciales e industriales",
+      "Edificios",
+      "Ordinarios"
+    ],
+    "opciones": [
+      "Grandes riesgos",
+      "Comerciales e industriales",
+      "Edificios",
+      "Ordinarios"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Grandes riesgos",
+    "explanation": "Según la clave de la guía, una ubicación con suma asegurada de 50 millones de dólares o más se clasifica como grandes riesgos, sin importar el conjunto. Las categorías comercial e industrial, edificios u ordinarios aplican a montos menores.",
+    "explicacion": "Según la clave de la guía, una ubicación con suma asegurada de 50 millones de dólares o más se clasifica como grandes riesgos, sin importar el conjunto. Las categorías comercial e industrial, edificios u ordinarios aplican a montos menores."
+  },
+  {
+    "id": 199,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Cuando un negocio tiene una suma asegurada inferior a 3.845 millones de pesos con un giro de hospital, se clasifica como:",
+    "pregunta": "Cuando un negocio tiene una suma asegurada inferior a 3.845 millones de pesos con un giro de hospital, se clasifica como:",
+    "options": [
+      "Grandes riesgos",
+      "Edificios",
+      "Ordinarios",
+      "Comerciales e industriales"
+    ],
+    "opciones": [
+      "Grandes riesgos",
+      "Edificios",
+      "Ordinarios",
+      "Comerciales e industriales"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Edificios",
+    "explanation": "Según la clave de la guía, un hospital con suma asegurada inferior al umbral de comerciales se clasifica como edificio. Grandes riesgos y comerciales e industriales requieren montos mayores, y los ordinarios corresponden a otros giros.",
+    "explicacion": "Según la clave de la guía, un hospital con suma asegurada inferior al umbral de comerciales se clasifica como edificio. Grandes riesgos y comerciales e industriales requieren montos mayores, y los ordinarios corresponden a otros giros."
+  },
+  {
+    "id": 200,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Los sótanos son considerados un nivel adicional cuando:",
+    "pregunta": "Los sótanos son considerados un nivel adicional cuando:",
+    "options": [
+      "Tienen por lo menos 50% de la superficie del nivel más bajo",
+      "Son ocupados para bodegas de materiales no flamables",
+      "Tienen puertas y muros corta fuego y construcción maciza",
+      "No tienen comunicación directa con los demás niveles"
+    ],
+    "opciones": [
+      "Tienen por lo menos 50% de la superficie del nivel más bajo",
+      "Son ocupados para bodegas de materiales no flamables",
+      "Tienen puertas y muros corta fuego y construcción maciza",
+      "No tienen comunicación directa con los demás niveles"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Tienen por lo menos 50% de la superficie del nivel más bajo",
+    "explanation": "Según la clave de la guía, el sótano se considera nivel adicional cuando tiene al menos el 50% de la superficie del nivel más bajo. Su uso como bodega, sus muros cortafuego o su falta de comunicación no lo definen.",
+    "explicacion": "Según la clave de la guía, el sótano se considera nivel adicional cuando tiene al menos el 50% de la superficie del nivel más bajo. Su uso como bodega, sus muros cortafuego o su falta de comunicación no lo definen."
+  },
+  {
+    "id": 201,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Es un riesgo que se ampara en la cobertura básica:",
+    "pregunta": "Es un riesgo que se ampara en la cobertura básica:",
+    "options": [
+      "Huelgas y alborotos populares",
+      "Huracán y granizo",
+      "Medidas de salvamento",
+      "Inundación"
+    ],
+    "opciones": [
+      "Huelgas y alborotos populares",
+      "Huracán y granizo",
+      "Medidas de salvamento",
+      "Inundación"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Medidas de salvamento",
+    "explanation": "Las medidas de salvamento se amparan en la cobertura básica de incendio, porque son gastos para evitar que el daño se extienda. Huelgas, huracán, granizo e inundación se contratan como coberturas adicionales.",
+    "explicacion": "Las medidas de salvamento se amparan en la cobertura básica de incendio, porque son gastos para evitar que el daño se extienda. Huelgas, huracán, granizo e inundación se contratan como coberturas adicionales."
+  },
+  {
+    "id": 202,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Para poder aplicar a dos construcciones que están en el mismo predio cuotas diferenciales, se necesita que:",
+    "pregunta": "Para poder aplicar a dos construcciones que están en el mismo predio cuotas diferenciales, se necesita que:",
+    "options": [
+      "Tengan la misma actividad",
+      "Sean áreas de fuego independientes",
+      "Su superficie sea la misma",
+      "Sean de construcción No macizas"
+    ],
+    "opciones": [
+      "Tengan la misma actividad",
+      "Sean áreas de fuego independientes",
+      "Su superficie sea la misma",
+      "Sean de construcción No macizas"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Sean áreas de fuego independientes",
+    "explanation": "Para aplicar cuotas diferenciales a dos construcciones del mismo predio se requiere que sean áreas de fuego independientes. Tener la misma actividad o superficie no justifica una tarificación separada.",
+    "explicacion": "Para aplicar cuotas diferenciales a dos construcciones del mismo predio se requiere que sean áreas de fuego independientes. Tener la misma actividad o superficie no justifica una tarificación separada."
+  },
+  {
+    "id": 203,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "La capacidad de un elemento de conservar durante un mínimo de 2 horas la estabilidad, el aislamiento térmico requerido y la no emisión de gases flamables, se conoce como:",
+    "pregunta": "La capacidad de un elemento de conservar durante un mínimo de 2 horas la estabilidad, el aislamiento térmico requerido y la no emisión de gases flamables, se conoce como:",
+    "options": [
+      "Resistencia térmica",
+      "Punto de inflamación",
+      "Resistencia al fuego",
+      "Punto de expansión"
+    ],
+    "opciones": [
+      "Resistencia térmica",
+      "Punto de inflamación",
+      "Resistencia al fuego",
+      "Punto de expansión"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Resistencia al fuego",
+    "explanation": "Según la clave de la guía, la resistencia al fuego es la capacidad de un elemento de conservar al menos 2 horas su estabilidad, aislamiento térmico y no emisión de gases flamables. El punto de inflamación es la temperatura a la que un material arde.",
+    "explicacion": "Según la clave de la guía, la resistencia al fuego es la capacidad de un elemento de conservar al menos 2 horas su estabilidad, aislamiento térmico y no emisión de gases flamables. El punto de inflamación es la temperatura a la que un material arde."
+  },
+  {
+    "id": 204,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "En la cobertura de “Combustión Espontánea” es condición básica para su otorgamiento que el Asegurado soporte por su propia cuenta un porcentaje de:",
+    "pregunta": "En la cobertura de “Combustión Espontánea” es condición básica para su otorgamiento que el Asegurado soporte por su propia cuenta un porcentaje de:",
+    "options": [
+      "Reaseguro",
+      "Proporción indemnizable",
+      "Toda pérdida",
+      "Suma asegurada"
+    ],
+    "opciones": [
+      "Reaseguro",
+      "Proporción indemnizable",
+      "Toda pérdida",
+      "Suma asegurada"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Toda pérdida",
+    "explanation": "En combustión espontánea es condición que el asegurado soporte un porcentaje de toda pérdida, como coaseguro, para que comparta el riesgo. No se trata de un porcentaje del reaseguro ni de la suma asegurada.",
+    "explicacion": "En combustión espontánea es condición que el asegurado soporte un porcentaje de toda pérdida, como coaseguro, para que comparta el riesgo. No se trata de un porcentaje del reaseguro ni de la suma asegurada."
+  },
+  {
+    "id": 205,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Elige la opción que quede amparada en la cobertura de Inundación del seguro de Incendio:",
+    "pregunta": "Elige la opción que quede amparada en la cobertura de Inundación del seguro de Incendio:",
+    "options": [
+      "Insuficiencia en los sistemas de drenaje",
+      "Desbordamiento de presas",
+      "Derrame de la cisterna",
+      "Rotura de tubería de la red pública"
+    ],
+    "opciones": [
+      "Insuficiencia en los sistemas de drenaje",
+      "Desbordamiento de presas",
+      "Derrame de la cisterna",
+      "Rotura de tubería de la red pública"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Desbordamiento de presas",
+    "explanation": "La inundación ampara el desbordamiento de presas, ríos o lagos que cubre el terreno con agua. La insuficiencia del drenaje, el derrame de la cisterna o la rotura de la red pública se excluyen o se cubren en otras secciones.",
+    "explicacion": "La inundación ampara el desbordamiento de presas, ríos o lagos que cubre el terreno con agua. La insuficiencia del drenaje, el derrame de la cisterna o la rotura de la red pública se excluyen o se cubren en otras secciones."
+  },
+  {
+    "id": 206,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Qué bienes se amparan mediante “Convenio expreso” en el endoso de Inundación?",
+    "pregunta": "¿Qué bienes se amparan mediante “Convenio expreso” en el endoso de Inundación?",
+    "options": [
+      "Siembras o cultivos en pie",
+      "Construcciones a la orilla de la playa",
+      "Sistemas de canales y desagües",
+      "Instalaciones fijas que se encuentren a la intemperie"
+    ],
+    "opciones": [
+      "Siembras o cultivos en pie",
+      "Construcciones a la orilla de la playa",
+      "Sistemas de canales y desagües",
+      "Instalaciones fijas que se encuentren a la intemperie"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Instalaciones fijas que se encuentren a la intemperie",
+    "explanation": "En el endoso de inundación, las instalaciones fijas a la intemperie se amparan por convenio expreso. Siembras, construcciones en la playa y canales suelen estar excluidos.",
+    "explicacion": "En el endoso de inundación, las instalaciones fijas a la intemperie se amparan por convenio expreso. Siembras, construcciones en la playa y canales suelen estar excluidos."
+  },
+  {
+    "id": 207,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "La pérdida real sufrida por el Asegurado a causa de la interrupción necesaria de sus actividades como consecuencia directa de la destrucción o daño de sus bienes, por los riesgos amparados por la póliza, se conoce como:",
+    "pregunta": "La pérdida real sufrida por el Asegurado a causa de la interrupción necesaria de sus actividades como consecuencia directa de la destrucción o daño de sus bienes, por los riesgos amparados por la póliza, se conoce como:",
+    "options": [
+      "Pérdidas consecuenciales",
+      "Pérdidas por daños directos",
+      "Pérdidas por incrementos de gastos",
+      "Pérdidas por los bienes amparados por convenio"
+    ],
+    "opciones": [
+      "Pérdidas consecuenciales",
+      "Pérdidas por daños directos",
+      "Pérdidas por incrementos de gastos",
+      "Pérdidas por los bienes amparados por convenio"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Pérdidas consecuenciales",
+    "explanation": "Las pérdidas consecuenciales son la pérdida real por la interrupción de actividades como consecuencia directa del daño a los bienes por un riesgo amparado. Los daños directos afectan los bienes mismos.",
+    "explicacion": "Las pérdidas consecuenciales son la pérdida real por la interrupción de actividades como consecuencia directa del daño a los bienes por un riesgo amparado. Los daños directos afectan los bienes mismos."
+  },
+  {
+    "id": 208,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Elige cuál factor sirve para otorgar un descuento en la prima del seguro de Incendio:",
+    "pregunta": "Elige cuál factor sirve para otorgar un descuento en la prima del seguro de Incendio:",
+    "options": [
+      "Hidrantes",
+      "Número de pisos",
+      "Comunicación",
+      "Protección Municipal"
+    ],
+    "opciones": [
+      "Hidrantes",
+      "Número de pisos",
+      "Comunicación",
+      "Protección Municipal"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Hidrantes",
+    "explanation": "Contar con hidrantes y otros sistemas de protección contra incendio da derecho a un descuento en la prima, porque reduce la severidad del siniestro. El número de pisos o la comunicación entre áreas suelen agravar el riesgo.",
+    "explicacion": "Contar con hidrantes y otros sistemas de protección contra incendio da derecho a un descuento en la prima, porque reduce la severidad del siniestro. El número de pisos o la comunicación entre áreas suelen agravar el riesgo."
+  },
+  {
+    "id": 209,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Qué es un seguro a Primer Riesgo?.",
+    "pregunta": "¿Qué es un seguro a Primer Riesgo?.",
+    "options": [
+      "El primer siniestro que ocurra.",
+      "Lo primero que ocurra.",
+      "Cuando no se aplica la cláusula de proporción indemnizable.",
+      "Todo lo que no esta excluido queda cubierto."
+    ],
+    "opciones": [
+      "El primer siniestro que ocurra.",
+      "Lo primero que ocurra.",
+      "Cuando no se aplica la cláusula de proporción indemnizable.",
+      "Todo lo que no esta excluido queda cubierto."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Cuando no se aplica la cláusula de proporción indemnizable.",
+    "explanation": "El seguro a primer riesgo es aquel en el que no se aplica la proporción indemnizable, de modo que las pérdidas se pagan hasta la suma asegurada sin considerar el infraseguro. No se refiere al primer siniestro ni a una cobertura todo riesgo.",
+    "explicacion": "El seguro a primer riesgo es aquel en el que no se aplica la proporción indemnizable, de modo que las pérdidas se pagan hasta la suma asegurada sin considerar el infraseguro. No se refiere al primer siniestro ni a una cobertura todo riesgo."
+  },
+  {
+    "id": 210,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Es el resultado de perder en un siniestro un objeto que vale $ 20,000.- y que se asegura únicamente por $ 10,000.-",
+    "pregunta": "Es el resultado de perder en un siniestro un objeto que vale $ 20,000.- y que se asegura únicamente por $ 10,000.-",
+    "options": [
+      "$ 10,000.-",
+      "$ 20,000.-",
+      "$ 5,000.-",
+      "Nada."
+    ],
+    "opciones": [
+      "$ 10,000.-",
+      "$ 20,000.-",
+      "$ 5,000.-",
+      "Nada."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "$ 10,000.-",
+    "explanation": "Si un bien de $20,000 se asegura por $10,000 y se pierde totalmente, la aseguradora paga como máximo la suma asegurada de $10,000. En pérdida total la proporción indemnizable da 10,000/20,000 × 20,000 = 10,000, sin pagar los $20,000 ni la mitad de la suma.",
+    "explicacion": "Si un bien de $20,000 se asegura por $10,000 y se pierde totalmente, la aseguradora paga como máximo la suma asegurada de $10,000. En pérdida total la proporción indemnizable da 10,000/20,000 × 20,000 = 10,000, sin pagar los $20,000 ni la mitad de la suma."
+  },
+  {
+    "id": 211,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿A quién protege la cláusula de venta de salvamento en el seguro de incendio?.",
+    "pregunta": "¿A quién protege la cláusula de venta de salvamento en el seguro de incendio?.",
+    "options": [
+      "A la compañía.",
+      "Al asegurado.",
+      "Al agente.",
+      "Al agente y al asegurado."
+    ],
+    "opciones": [
+      "A la compañía.",
+      "Al asegurado.",
+      "Al agente.",
+      "Al agente y al asegurado."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Al asegurado.",
+    "explanation": "La cláusula de venta de salvamento protege al asegurado, porque le permite participar en el valor del salvamento o impedir su venta en condiciones que le perjudiquen. No está pensada para beneficio del agente.",
+    "explicacion": "La cláusula de venta de salvamento protege al asegurado, porque le permite participar en el valor del salvamento o impedir su venta en condiciones que le perjudiquen. No está pensada para beneficio del agente."
+  },
+  {
+    "id": 212,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "En el seguro de incendio ¿qué nombre recibe el valor de reposición de los bienes, menos su depreciación por uso y el estado de conservación de acuerdo a su mantenimiento?.",
+    "pregunta": "En el seguro de incendio ¿qué nombre recibe el valor de reposición de los bienes, menos su depreciación por uso y el estado de conservación de acuerdo a su mantenimiento?.",
+    "options": [
+      "Valor fiscal.",
+      "Valor de reposición.",
+      "Valor real.",
+      "Valor comercial."
+    ],
+    "opciones": [
+      "Valor fiscal.",
+      "Valor de reposición.",
+      "Valor real.",
+      "Valor comercial."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Valor real.",
+    "explanation": "El valor real es el valor de reposición menos la depreciación por uso y el estado de conservación. El valor de reposición no descuenta depreciación, y el fiscal y el comercial son otros criterios.",
+    "explicacion": "El valor real es el valor de reposición menos la depreciación por uso y el estado de conservación. El valor de reposición no descuenta depreciación, y el fiscal y el comercial son otros criterios."
+  },
+  {
+    "id": 213,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "En la póliza de incendio ¿qué daños ampara la cobertura llamada daños por agua?.",
+    "pregunta": "En la póliza de incendio ¿qué daños ampara la cobertura llamada daños por agua?.",
+    "options": [
+      "Daños por derrame accidental de agua.",
+      "Daños por huracán y granizo.",
+      "Daños por rotura accidental de tuberías de agua o vapor.",
+      "Daños por deficiencia en el drenaje."
+    ],
+    "opciones": [
+      "Daños por derrame accidental de agua.",
+      "Daños por huracán y granizo.",
+      "Daños por rotura accidental de tuberías de agua o vapor.",
+      "Daños por deficiencia en el drenaje."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Daños por rotura accidental de tuberías de agua o vapor.",
+    "explanation": "La cobertura de daños por agua ampara los daños por rotura accidental de tuberías de agua o vapor. El huracán y el granizo son hidrometeorológicos, y la deficiencia del drenaje se excluye.",
+    "explicacion": "La cobertura de daños por agua ampara los daños por rotura accidental de tuberías de agua o vapor. El huracán y el granizo son hidrometeorológicos, y la deficiencia del drenaje se excluye."
+  },
+  {
+    "id": 214,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Señale un riesgo por convenio expreso de la póliza de incendio:",
+    "pregunta": "Señale un riesgo por convenio expreso de la póliza de incendio:",
+    "options": [
+      "Fermentación.",
+      "Inundación.",
+      "Medidas de salvamento.",
+      "Rayo."
+    ],
+    "opciones": [
+      "Fermentación.",
+      "Inundación.",
+      "Medidas de salvamento.",
+      "Rayo."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Inundación.",
+    "explanation": "La inundación es un riesgo por convenio expreso de la póliza de incendio. El rayo y las medidas de salvamento forman parte de la cobertura básica, y la fermentación es una exclusión.",
+    "explicacion": "La inundación es un riesgo por convenio expreso de la póliza de incendio. El rayo y las medidas de salvamento forman parte de la cobertura básica, y la fermentación es una exclusión."
+  },
+  {
+    "id": 215,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Qué se entiende por valor de reposición en el seguro de incendio?",
+    "pregunta": "¿Qué se entiende por valor de reposición en el seguro de incendio?",
+    "options": [
+      "Valor convenido.",
+      "Valor de mercado.",
+      "Valor factura.",
+      "Valor del bien sin depreciación."
+    ],
+    "opciones": [
+      "Valor convenido.",
+      "Valor de mercado.",
+      "Valor factura.",
+      "Valor del bien sin depreciación."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Valor del bien sin depreciación.",
+    "explanation": "El valor de reposición es el valor del bien sin depreciación, es decir, lo que cuesta reponerlo por uno nuevo de igual clase. El valor convenido, el de mercado y el factura son criterios distintos.",
+    "explicacion": "El valor de reposición es el valor del bien sin depreciación, es decir, lo que cuesta reponerlo por uno nuevo de igual clase. El valor convenido, el de mercado y el factura son criterios distintos."
+  },
+  {
+    "id": 216,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Dentro de la póliza de incendio ¿cuál es una exclusión de la cobertura de huelgas y alborotos populares?",
+    "pregunta": "Dentro de la póliza de incendio ¿cuál es una exclusión de la cobertura de huelgas y alborotos populares?",
+    "options": [
+      "Perjuicio.",
+      "Daños ocasionados por manifestantes.",
+      "Terrorismo.",
+      "Daños a edificios."
+    ],
+    "opciones": [
+      "Perjuicio.",
+      "Daños ocasionados por manifestantes.",
+      "Terrorismo.",
+      "Daños a edificios."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Perjuicio.",
+    "explanation": "En huelgas y alborotos populares se excluye el perjuicio o pérdida consecuencial, porque solo se cubre el daño material directo. Los daños por manifestantes a los edificios sí se cubren.",
+    "explicacion": "En huelgas y alborotos populares se excluye el perjuicio o pérdida consecuencial, porque solo se cubre el daño material directo. Los daños por manifestantes a los edificios sí se cubren."
+  },
+  {
+    "id": 217,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Qué se entiende por seguro a primer riesgo en la póliza de incendio?.",
+    "pregunta": "¿Qué se entiende por seguro a primer riesgo en la póliza de incendio?.",
+    "options": [
+      "Cuando se realiza el primer siniestro.",
+      "Cuando se paga en forma proporcional.",
+      "Cuando se anula la proporción indemnizable.",
+      "Cuando se aplica depreciación."
+    ],
+    "opciones": [
+      "Cuando se realiza el primer siniestro.",
+      "Cuando se paga en forma proporcional.",
+      "Cuando se anula la proporción indemnizable.",
+      "Cuando se aplica depreciación."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Cuando se anula la proporción indemnizable.",
+    "explanation": "El seguro a primer riesgo anula la proporción indemnizable, por lo que se paga la pérdida hasta la suma asegurada aunque haya infraseguro. Pagar en forma proporcional es precisamente lo contrario.",
+    "explicacion": "El seguro a primer riesgo anula la proporción indemnizable, por lo que se paga la pérdida hasta la suma asegurada aunque haya infraseguro. Pagar en forma proporcional es precisamente lo contrario."
+  },
+  {
+    "id": 218,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "En el contrato de seguro de incendio ¿cuál es una exclusión de la cobertura de remoción de escombros?",
+    "pregunta": "En el contrato de seguro de incendio ¿cuál es una exclusión de la cobertura de remoción de escombros?",
+    "options": [
+      "Los gastos para el desmontaje.",
+      "Daños ocasionados por terremoto.",
+      "Los gastos ocasionados por la limpieza del terreno.",
+      "Gastos por daños a consecuencia de riesgos no contratados."
+    ],
+    "opciones": [
+      "Los gastos para el desmontaje.",
+      "Daños ocasionados por terremoto.",
+      "Los gastos ocasionados por la limpieza del terreno.",
+      "Gastos por daños a consecuencia de riesgos no contratados."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Gastos por daños a consecuencia de riesgos no contratados.",
+    "explanation": "La remoción de escombros excluye los gastos derivados de riesgos no contratados, porque es accesoria a los riesgos amparados. El desmontaje y la limpieza del terreno son justamente lo que cubre.",
+    "explicacion": "La remoción de escombros excluye los gastos derivados de riesgos no contratados, porque es accesoria a los riesgos amparados. El desmontaje y la limpieza del terreno son justamente lo que cubre."
+  },
+  {
+    "id": 219,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Cuál es la suma asegurada mínima para otorgar la cláusula de existencias en declaración dentro del seguro de incendio?.",
+    "pregunta": "¿Cuál es la suma asegurada mínima para otorgar la cláusula de existencias en declaración dentro del seguro de incendio?.",
+    "options": [
+      "7,500 veces la UMA diaria.",
+      "75,000 veces la UMA diaria.",
+      "750 veces la UMA diaria.",
+      "55 veces la UMA diaria."
+    ],
+    "opciones": [
+      "7,500 veces la UMA diaria.",
+      "75,000 veces la UMA diaria.",
+      "750 veces la UMA diaria.",
+      "55 veces la UMA diaria."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "75,000 veces la UMA diaria.",
+    "explanation": "Según la clave de la guía, la cláusula de existencias en declaración requiere una suma asegurada mínima equivalente a 75,000 días de salario mínimo de 2011, hoy referida a UMA diaria. Los montos de 750, 7,500 o 55 días son menores al mínimo.",
+    "explicacion": "Según la clave de la guía, la cláusula de existencias en declaración requiere una suma asegurada mínima equivalente a 75,000 días de salario mínimo de 2011, hoy referida a UMA diaria. Los montos de 750, 7,500 o 55 días son menores al mínimo."
+  },
+  {
+    "id": 220,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Señala tres riesgos de extensión de cubierta en la póliza de incendio.",
+    "pregunta": "Señala tres riesgos de extensión de cubierta en la póliza de incendio.",
+    "options": [
+      "Inundación, terremoto y rayo.",
+      "Rayo, huracán y caída de árboles.",
+      "Granizo, humo y explosión.",
+      "Animales, vandalismo y derrame accidental de agua."
+    ],
+    "opciones": [
+      "Inundación, terremoto y rayo.",
+      "Rayo, huracán y caída de árboles.",
+      "Granizo, humo y explosión.",
+      "Animales, vandalismo y derrame accidental de agua."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Granizo, humo y explosión.",
+    "explanation": "Según la clave de la guía, granizo, humo y explosión forman parte de la extensión de cubierta del seguro de incendio. Inundación y terremoto son coberturas separadas, y el rayo es parte de la básica.",
+    "explicacion": "Según la clave de la guía, granizo, humo y explosión forman parte de la extensión de cubierta del seguro de incendio. Inundación y terremoto son coberturas separadas, y el rayo es parte de la básica."
+  },
+  {
+    "id": 221,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Cuál es la suma asegurada mínima a contratar en la cobertura automática de incisos nuevos o no conocidos en el seguro de incendio?.",
+    "pregunta": "¿Cuál es la suma asegurada mínima a contratar en la cobertura automática de incisos nuevos o no conocidos en el seguro de incendio?.",
+    "options": [
+      "5% de la suma asegurada con máximo de 10,000 veces la UMA diaria.",
+      "5% de la suma asegurada con mínimo de 10,000 veces la UMA diaria.",
+      "10% de la suma asegurada con máximo de 10,000 veces la UMA diaria.",
+      "10% de la suma asegurada con mínimo de 10,000 veces la UMA diaria."
+    ],
+    "opciones": [
+      "5% de la suma asegurada con máximo de 10,000 veces la UMA diaria.",
+      "5% de la suma asegurada con mínimo de 10,000 veces la UMA diaria.",
+      "10% de la suma asegurada con máximo de 10,000 veces la UMA diaria.",
+      "10% de la suma asegurada con mínimo de 10,000 veces la UMA diaria."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "5% de la suma asegurada con máximo de 10,000 veces la UMA diaria.",
+    "explanation": "Según la clave de la guía, la cobertura automática de incisos nuevos o no conocidos es del 5% de la suma asegurada con un máximo de 10,000 días de salario mínimo de 2011, hoy referido a UMA diaria. Los porcentajes de 10% o los límites mínimos no son los de la guía.",
+    "explicacion": "Según la clave de la guía, la cobertura automática de incisos nuevos o no conocidos es del 5% de la suma asegurada con un máximo de 10,000 días de salario mínimo de 2011, hoy referido a UMA diaria. Los porcentajes de 10% o los límites mínimos no son los de la guía."
+  },
+  {
+    "id": 222,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "En el contrato de incendio, para la aplicación de la cláusula de reinstalación automática de suma asegurada, el monto de la pérdida en un siniestro no debe rebasar el:",
+    "pregunta": "En el contrato de incendio, para la aplicación de la cláusula de reinstalación automática de suma asegurada, el monto de la pérdida en un siniestro no debe rebasar el:",
+    "options": [
+      "5% de la suma asegurada.",
+      "15% de la suma asegurada.",
+      "10% de la suma asegurada.",
+      "20% de la suma asegurada."
+    ],
+    "opciones": [
+      "5% de la suma asegurada.",
+      "15% de la suma asegurada.",
+      "10% de la suma asegurada.",
+      "20% de la suma asegurada."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "10% de la suma asegurada.",
+    "explanation": "Según la clave de la guía, la reinstalación automática de suma asegurada aplica si la pérdida no rebasa el 10% de la suma asegurada. Los porcentajes de 5%, 15% o 20% no corresponden a la guía.",
+    "explicacion": "Según la clave de la guía, la reinstalación automática de suma asegurada aplica si la pérdida no rebasa el 10% de la suma asegurada. Los porcentajes de 5%, 15% o 20% no corresponden a la guía."
+  },
+  {
+    "id": 223,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Señale una exclusión de la póliza de incendio:",
+    "pregunta": "Señale una exclusión de la póliza de incendio:",
+    "options": [
+      "Daños ocasionados por huelguistas.",
+      "Daños ocasionados por explosión.",
+      "Daños ocasionados por fermentación.",
+      "Daños ocasionados por incendio."
+    ],
+    "opciones": [
+      "Daños ocasionados por huelguistas.",
+      "Daños ocasionados por explosión.",
+      "Daños ocasionados por fermentación.",
+      "Daños ocasionados por incendio."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Daños ocasionados por fermentación.",
+    "explanation": "La fermentación es una exclusión de la póliza de incendio, porque es un proceso natural del bien y no un daño accidental. La explosión y el incendio se cubren, y los daños por huelguistas pueden contratarse.",
+    "explicacion": "La fermentación es una exclusión de la póliza de incendio, porque es un proceso natural del bien y no un daño accidental. La explosión y el incendio se cubren, y los daños por huelguistas pueden contratarse."
+  },
+  {
+    "id": 224,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Para incendio ¿cuál es la condición especial que habla de que sin previo aviso y sin limite de tiempo el asegurado podrá hacer en el local afectado en un siniestro, alteraciones y reparaciones para la normal prosecución de su negocio?.",
+    "pregunta": "Para incendio ¿cuál es la condición especial que habla de que sin previo aviso y sin limite de tiempo el asegurado podrá hacer en el local afectado en un siniestro, alteraciones y reparaciones para la normal prosecución de su negocio?.",
+    "options": [
+      "Gravámenes.",
+      "Autorización para reponer, reconstruir o reparar.",
+      "Pago de honorarios a profesionistas.",
+      "Permiso."
+    ],
+    "opciones": [
+      "Gravámenes.",
+      "Autorización para reponer, reconstruir o reparar.",
+      "Pago de honorarios a profesionistas.",
+      "Permiso."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Permiso.",
+    "explanation": "La cláusula de permiso autoriza al asegurado a hacer alteraciones y reparaciones en el local, sin previo aviso y sin límite de tiempo, para continuar su negocio. La autorización para reponer o reparar se refiere a la indemnización en especie.",
+    "explicacion": "La cláusula de permiso autoriza al asegurado a hacer alteraciones y reparaciones en el local, sin previo aviso y sin límite de tiempo, para continuar su negocio. La autorización para reponer o reparar se refiere a la indemnización en especie."
+  },
+  {
+    "id": 225,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "En la cláusula de coaseguro convenido dentro del seguro de incendio, es una obligación del asegurado el proporcionar a la compañía de seguros:",
+    "pregunta": "En la cláusula de coaseguro convenido dentro del seguro de incendio, es una obligación del asegurado el proporcionar a la compañía de seguros:",
+    "options": [
+      "La suma asegurada expresada en porcentaje.",
+      "El endoso inflacionario.",
+      "El valor de los bienes al 100%.",
+      "Inventarios."
+    ],
+    "opciones": [
+      "La suma asegurada expresada en porcentaje.",
+      "El endoso inflacionario.",
+      "El valor de los bienes al 100%.",
+      "Inventarios."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "El valor de los bienes al 100%.",
+    "explanation": "En el coaseguro convenido el asegurado debe declarar el valor de los bienes al 100%, porque sobre él se calcula la participación pactada. El endoso inflacionario o los inventarios no son la base de esta cláusula.",
+    "explicacion": "En el coaseguro convenido el asegurado debe declarar el valor de los bienes al 100%, porque sobre él se calcula la participación pactada. El endoso inflacionario o los inventarios no son la base de esta cláusula."
+  },
+  {
+    "id": 226,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "En la póliza de incendio ¿qué cubre el endoso de derrame de equipo de protección contra incendio?.",
+    "pregunta": "En la póliza de incendio ¿qué cubre el endoso de derrame de equipo de protección contra incendio?.",
+    "options": [
+      "Daños por vicio propio.",
+      "Daños por derrame durante la instalación del equipo.",
+      "Daños al agente extintor.",
+      "Daños por derrame accidental del equipo de protección."
+    ],
+    "opciones": [
+      "Daños por vicio propio.",
+      "Daños por derrame durante la instalación del equipo.",
+      "Daños al agente extintor.",
+      "Daños por derrame accidental del equipo de protección."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Daños por derrame accidental del equipo de protección.",
+    "explanation": "El endoso de derrame de equipo de protección contra incendio cubre los daños por derrame accidental de rociadores u otros equipos. El vicio propio y el derrame durante la instalación se excluyen.",
+    "explicacion": "El endoso de derrame de equipo de protección contra incendio cubre los daños por derrame accidental de rociadores u otros equipos. El vicio propio y el derrame durante la instalación se excluyen."
+  },
+  {
+    "id": 227,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Al enterarse el asegurado de la ocurrencia de un siniestro que ampare la póliza de Incendio, ¿de cuánto tiempo dispone éste para dar aviso por escrito a la compañía Aseguradora?",
+    "pregunta": "Al enterarse el asegurado de la ocurrencia de un siniestro que ampare la póliza de Incendio, ¿de cuánto tiempo dispone éste para dar aviso por escrito a la compañía Aseguradora?",
+    "options": [
+      "30 horas.",
+      "24 horas.",
+      "12 horas.",
+      "5 días."
+    ],
+    "opciones": [
+      "30 horas.",
+      "24 horas.",
+      "12 horas.",
+      "5 días."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "5 días.",
+    "explanation": "La Ley sobre el Contrato de Seguro establece que el asegurado debe avisar del siniestro tan pronto tenga conocimiento y a más tardar dentro de 5 días, salvo caso fortuito o fuerza mayor. Plazos de horas como 12, 24 o 30 no son el plazo legal.",
+    "explicacion": "La Ley sobre el Contrato de Seguro establece que el asegurado debe avisar del siniestro tan pronto tenga conocimiento y a más tardar dentro de 5 días, salvo caso fortuito o fuerza mayor. Plazos de horas como 12, 24 o 30 no son el plazo legal."
+  },
+  {
+    "id": 228,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Es una exclusión de la cláusula de valor de reposición en el seguro de incendio:",
+    "pregunta": "Es una exclusión de la cláusula de valor de reposición en el seguro de incendio:",
+    "options": [
+      "Gastos de flete y gastos aduanales.",
+      "Gastos de instalación y montaje.",
+      "Pérdidas que sufran objetos raros o de arte.",
+      "Pérdidas que sufran maquinaria y equipo."
+    ],
+    "opciones": [
+      "Gastos de flete y gastos aduanales.",
+      "Gastos de instalación y montaje.",
+      "Pérdidas que sufran objetos raros o de arte.",
+      "Pérdidas que sufran maquinaria y equipo."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Pérdidas que sufran objetos raros o de arte.",
+    "explanation": "La cláusula de valor de reposición excluye los objetos raros o de arte, porque no pueden reponerse por uno nuevo equivalente. Los fletes, aduanales, instalación y la maquinaria sí se consideran en el valor de reposición.",
+    "explicacion": "La cláusula de valor de reposición excluye los objetos raros o de arte, porque no pueden reponerse por uno nuevo equivalente. Los fletes, aduanales, instalación y la maquinaria sí se consideran en el valor de reposición."
+  },
+  {
+    "id": 229,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Qué riesgos se cubren en el endoso de protección múltiple dentro de la póliza de incendio?",
+    "pregunta": "¿Qué riesgos se cubren en el endoso de protección múltiple dentro de la póliza de incendio?",
+    "options": [
+      "Valor de reposición, valor real, incisos conocidos.",
+      "Renuncia de inventarios, 50 metros, valor real.",
+      "Seguro flotante, deducible convenido, permiso.",
+      "Incisos conocidos, incisos no conocidos, variación en el valor de los bienes."
+    ],
+    "opciones": [
+      "Valor de reposición, valor real, incisos conocidos.",
+      "Renuncia de inventarios, 50 metros, valor real.",
+      "Seguro flotante, deducible convenido, permiso.",
+      "Incisos conocidos, incisos no conocidos, variación en el valor de los bienes."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Incisos conocidos, incisos no conocidos, variación en el valor de los bienes.",
+    "explanation": "El endoso de protección múltiple ampara incisos conocidos, incisos no conocidos y variaciones en el valor de los bienes. Las demás combinaciones mezclan cláusulas independientes.",
+    "explicacion": "El endoso de protección múltiple ampara incisos conocidos, incisos no conocidos y variaciones en el valor de los bienes. Las demás combinaciones mezclan cláusulas independientes."
+  },
+  {
+    "id": 230,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "En el seguro de incendio la cobertura de remoción de escombros es un riesgo que se contrata:",
+    "pregunta": "En el seguro de incendio la cobertura de remoción de escombros es un riesgo que se contrata:",
+    "options": [
+      "En forma básica.",
+      "Exclusión Relativa.",
+      "En otra póliza.",
+      "No se puede contratar en esta póliza."
+    ],
+    "opciones": [
+      "En forma básica.",
+      "Exclusión Relativa.",
+      "En otra póliza.",
+      "No se puede contratar en esta póliza."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Exclusión Relativa.",
+    "explanation": "Según la clave de la guía, la remoción de escombros se considera una exclusión relativa, es decir, se cubre solo si se contrata expresamente. No forma parte de la cobertura básica ni requiere otra póliza.",
+    "explicacion": "Según la clave de la guía, la remoción de escombros se considera una exclusión relativa, es decir, se cubre solo si se contrata expresamente. No forma parte de la cobertura básica ni requiere otra póliza."
+  },
+  {
+    "id": 231,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Con qué otro nombre se conoce a la cobertura llamada primer riesgo relativo en la póliza de incendio?",
+    "pregunta": "¿Con qué otro nombre se conoce a la cobertura llamada primer riesgo relativo en la póliza de incendio?",
+    "options": [
+      "Valor de reposición.",
+      "Deducible convenido.",
+      "Valor real.",
+      "Coaseguro convenido."
+    ],
+    "opciones": [
+      "Valor de reposición.",
+      "Deducible convenido.",
+      "Valor real.",
+      "Coaseguro convenido."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Deducible convenido.",
+    "explanation": "Según la clave de la guía, el primer riesgo relativo también se conoce como deducible convenido. El valor real, el de reposición y el coaseguro convenido son conceptos distintos.",
+    "explicacion": "Según la clave de la guía, el primer riesgo relativo también se conoce como deducible convenido. El valor real, el de reposición y el coaseguro convenido son conceptos distintos."
+  },
+  {
+    "id": 232,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "En la póliza de incendio ¿cómo se le llama a la cantidad que seria necesaria para reparar o reponer el bien dañado, por otro de igual clase, calidad, tamaño o capacidad de producción sin considerar reducción alguna por depreciación física por uso?",
+    "pregunta": "En la póliza de incendio ¿cómo se le llama a la cantidad que seria necesaria para reparar o reponer el bien dañado, por otro de igual clase, calidad, tamaño o capacidad de producción sin considerar reducción alguna por depreciación física por uso?",
+    "options": [
+      "Valor real.",
+      "Valor comercial.",
+      "Valor de reposición.",
+      "Valor convenido."
+    ],
+    "opciones": [
+      "Valor real.",
+      "Valor comercial.",
+      "Valor de reposición.",
+      "Valor convenido."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Valor de reposición.",
+    "explanation": "El valor de reposición es la cantidad necesaria para reparar o reponer el bien por otro de igual clase, calidad y capacidad, sin descontar depreciación. El valor real sí descuenta depreciación.",
+    "explicacion": "El valor de reposición es la cantidad necesaria para reparar o reponer el bien por otro de igual clase, calidad y capacidad, sin descontar depreciación. El valor real sí descuenta depreciación."
+  },
+  {
+    "id": 233,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Cómo se llama la cláusula del seguro de incendio que cubre indistintamente mercancías contenidas en dos o más locales separados?",
+    "pregunta": "¿Cómo se llama la cláusula del seguro de incendio que cubre indistintamente mercancías contenidas en dos o más locales separados?",
+    "options": [
+      "Incisos no conocidos.",
+      "Seguro flotante.",
+      "50 metros.",
+      "Incisos conocidos."
+    ],
+    "opciones": [
+      "Incisos no conocidos.",
+      "Seguro flotante.",
+      "50 metros.",
+      "Incisos conocidos."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Seguro flotante.",
+    "explanation": "El seguro flotante cubre indistintamente mercancías contenidas en dos o más locales separados con una sola suma asegurada. Los incisos conocidos y no conocidos o la cláusula de 50 metros son otras cláusulas.",
+    "explicacion": "El seguro flotante cubre indistintamente mercancías contenidas en dos o más locales separados con una sola suma asegurada. Los incisos conocidos y no conocidos o la cláusula de 50 metros son otras cláusulas."
+  },
+  {
+    "id": 234,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "En caso de siniestro por incendio, la compañía pagará de acuerdo al interés asegurable que demuestre el asegurado, sin perjuicio de pagos que deban hacerse a terceros que acrediten tener algún interés asegurable conforme a la ley, esto lo determina la cláusula:",
+    "pregunta": "En caso de siniestro por incendio, la compañía pagará de acuerdo al interés asegurable que demuestre el asegurado, sin perjuicio de pagos que deban hacerse a terceros que acrediten tener algún interés asegurable conforme a la ley, esto lo determina la cláusula:",
+    "options": [
+      "Errores u omisiones.",
+      "Renuncia de inventarios.",
+      "Gravámenes.",
+      "Permiso."
+    ],
+    "opciones": [
+      "Errores u omisiones.",
+      "Renuncia de inventarios.",
+      "Gravámenes.",
+      "Permiso."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Gravámenes.",
+    "explanation": "La cláusula de gravámenes establece que se paga según el interés asegurable del asegurado, sin perjuicio de terceros que acrediten interés, como un acreedor hipotecario. Errores u omisiones y permiso regulan otras situaciones.",
+    "explicacion": "La cláusula de gravámenes establece que se paga según el interés asegurable del asegurado, sin perjuicio de terceros que acrediten interés, como un acreedor hipotecario. Errores u omisiones y permiso regulan otras situaciones."
+  },
+  {
+    "id": 235,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Para la interpretación legal de las condiciones impresas o escritas en la póliza de Incendio, en todo caso prevalecerá el texto en español, ¿esto lo dispone la cláusula llamada?",
+    "pregunta": "Para la interpretación legal de las condiciones impresas o escritas en la póliza de Incendio, en todo caso prevalecerá el texto en español, ¿esto lo dispone la cláusula llamada?",
+    "options": [
+      "Pago preferente.",
+      "Traducción.",
+      "Venta de salvamentos.",
+      "Seguro flotante."
+    ],
+    "opciones": [
+      "Pago preferente.",
+      "Traducción.",
+      "Venta de salvamentos.",
+      "Seguro flotante."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Traducción.",
+    "explanation": "La cláusula de traducción dispone que, para la interpretación legal, prevalece el texto en español de la póliza. El pago preferente, la venta de salvamentos y el seguro flotante regulan otros temas.",
+    "explicacion": "La cláusula de traducción dispone que, para la interpretación legal, prevalece el texto en español de la póliza. El pago preferente, la venta de salvamentos y el seguro flotante regulan otros temas."
+  },
+  {
+    "id": 236,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Cuál es el periodo de indemnización que se establece en el seguro de Ganancias Brutas?",
+    "pregunta": "¿Cuál es el periodo de indemnización que se establece en el seguro de Ganancias Brutas?",
+    "options": [
+      "De uno a doce meses.",
+      "De tres a seis meses.",
+      "Hasta agotar la suma asegurada.",
+      "De seis a nueve meses."
+    ],
+    "opciones": [
+      "De uno a doce meses.",
+      "De tres a seis meses.",
+      "Hasta agotar la suma asegurada.",
+      "De seis a nueve meses."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Hasta agotar la suma asegurada.",
+    "explanation": "Según la clave de la guía, en ganancias brutas la indemnización se paga hasta agotar la suma asegurada. En la práctica se pacta también un periodo de indemnización, por lo que la regla depende de la póliza.",
+    "explicacion": "Según la clave de la guía, en ganancias brutas la indemnización se paga hasta agotar la suma asegurada. En la práctica se pacta también un periodo de indemnización, por lo que la regla depende de la póliza."
+  },
+  {
+    "id": 237,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Es un requisito indispensable para la cobertura de seguro contingente:",
+    "pregunta": "Es un requisito indispensable para la cobertura de seguro contingente:",
+    "options": [
+      "Contratar la cobertura de ganancias brutas.",
+      "Tener amparada la cobertura de remoción de escombros.",
+      "Haber contratado la cobertura de terremoto.",
+      "Haber contratado la cobertura de gastos extra."
+    ],
+    "opciones": [
+      "Contratar la cobertura de ganancias brutas.",
+      "Tener amparada la cobertura de remoción de escombros.",
+      "Haber contratado la cobertura de terremoto.",
+      "Haber contratado la cobertura de gastos extra."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Contratar la cobertura de ganancias brutas.",
+    "explanation": "El seguro contingente protege contra la interrupción del negocio por daños en las instalaciones de proveedores o clientes, por lo que requiere haber contratado ganancias brutas. Remoción de escombros, terremoto o gastos extra no son el requisito.",
+    "explicacion": "El seguro contingente protege contra la interrupción del negocio por daños en las instalaciones de proveedores o clientes, por lo que requiere haber contratado ganancias brutas. Remoción de escombros, terremoto o gastos extra no son el requisito."
+  },
+  {
+    "id": 238,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Con la cobertura de seguro contingente, ¿qué pérdidas se amparan en forma básica?",
+    "pregunta": "Con la cobertura de seguro contingente, ¿qué pérdidas se amparan en forma básica?",
+    "options": [
+      "Las pérdidas de rentas.",
+      "Los gastos extraordinarios.",
+      "Las ganancias brutas.",
+      "La reducción de ingresos."
+    ],
+    "opciones": [
+      "Las pérdidas de rentas.",
+      "Los gastos extraordinarios.",
+      "Las ganancias brutas.",
+      "La reducción de ingresos."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Las ganancias brutas.",
+    "explanation": "Con el seguro contingente se amparan en forma básica las ganancias brutas que el asegurado deja de percibir por el daño en las instalaciones de un tercero del que depende. Las rentas, los gastos extraordinarios o la reducción de ingresos son otras coberturas.",
+    "explicacion": "Con el seguro contingente se amparan en forma básica las ganancias brutas que el asegurado deja de percibir por el daño en las instalaciones de un tercero del que depende. Las rentas, los gastos extraordinarios o la reducción de ingresos son otras coberturas."
+  },
+  {
+    "id": 239,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Cuál es el periodo máximo de indemnización en la cobertura de gastos extraordinarios?",
+    "pregunta": "¿Cuál es el periodo máximo de indemnización en la cobertura de gastos extraordinarios?",
+    "options": [
+      "Tres meses.",
+      "Doce meses.",
+      "Nueve meses.",
+      "Seis meses."
+    ],
+    "opciones": [
+      "Tres meses.",
+      "Doce meses.",
+      "Nueve meses.",
+      "Seis meses."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Seis meses.",
+    "explanation": "Según la clave de la guía, el periodo máximo de indemnización en gastos extraordinarios es de seis meses. Los periodos de tres, nueve o doce meses no corresponden a la guía.",
+    "explicacion": "Según la clave de la guía, el periodo máximo de indemnización en gastos extraordinarios es de seis meses. Los periodos de tres, nueve o doce meses no corresponden a la guía."
+  },
+  {
+    "id": 240,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Es una causa de rescisión de contrato en los seguros de pérdidas consecuenciales:",
+    "pregunta": "Es una causa de rescisión de contrato en los seguros de pérdidas consecuenciales:",
+    "options": [
+      "Haber contratado la cobertura de fenómenos meteorológicos.",
+      "Tener la cobertura de incendio a primer riesgo.",
+      "Suspender voluntariamente sus actividades después de un siniestro.",
+      "Dar acceso a la compañía de seguros a revisar los libros de contabilidad."
+    ],
+    "opciones": [
+      "Haber contratado la cobertura de fenómenos meteorológicos.",
+      "Tener la cobertura de incendio a primer riesgo.",
+      "Suspender voluntariamente sus actividades después de un siniestro.",
+      "Dar acceso a la compañía de seguros a revisar los libros de contabilidad."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Suspender voluntariamente sus actividades después de un siniestro.",
+    "explanation": "Si el asegurado suspende voluntariamente sus actividades después del siniestro, se rescinde el seguro de pérdidas consecuenciales, porque la pérdida ya no se debe al daño. Dar acceso a la contabilidad es una obligación, no una causa de rescisión.",
+    "explicacion": "Si el asegurado suspende voluntariamente sus actividades después del siniestro, se rescinde el seguro de pérdidas consecuenciales, porque la pérdida ya no se debe al daño. Dar acceso a la contabilidad es una obligación, no una causa de rescisión."
+  },
+  {
+    "id": 241,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "¿Cuál es el porcentaje mínimo de suma asegurada en el seguro de incendio para que operen las coberturas de pérdidas consecuenciales?.",
+    "pregunta": "¿Cuál es el porcentaje mínimo de suma asegurada en el seguro de incendio para que operen las coberturas de pérdidas consecuenciales?.",
+    "options": [
+      "70 %.",
+      "85 %.",
+      "75 %.",
+      "80 %."
+    ],
+    "opciones": [
+      "70 %.",
+      "85 %.",
+      "75 %.",
+      "80 %."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "80 %.",
+    "explanation": "Según la clave de la guía, para que operen las pérdidas consecuenciales el seguro de incendio debe tener al menos el 80% de la suma asegurada. Los porcentajes de 70%, 75% u 85% no corresponden a la guía.",
+    "explicacion": "Según la clave de la guía, para que operen las pérdidas consecuenciales el seguro de incendio debe tener al menos el 80% de la suma asegurada. Los porcentajes de 70%, 75% u 85% no corresponden a la guía."
+  },
+  {
+    "id": 242,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Incendio",
+    "question": "Es una condición particular en la cobertura de pérdida de utilidades, salarios y gastos fijos:",
+    "pregunta": "Es una condición particular en la cobertura de pérdida de utilidades, salarios y gastos fijos:",
+    "options": [
+      "Tener un inventario una vez al año.",
+      "Interrupción por autoridad civil.",
+      "Que sea clausurado el negocio.",
+      "Si existen discrepancias notorias en la contabilidad del asegurado."
+    ],
+    "opciones": [
+      "Tener un inventario una vez al año.",
+      "Interrupción por autoridad civil.",
+      "Que sea clausurado el negocio.",
+      "Si existen discrepancias notorias en la contabilidad del asegurado."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Tener un inventario una vez al año.",
+    "explanation": "Según la clave de la guía, en pérdida de utilidades, salarios y gastos fijos es condición particular levantar un inventario al menos una vez al año, para poder comprobar la pérdida. La interrupción por autoridad civil o la clausura son situaciones de siniestro, no condiciones.",
+    "explicacion": "Según la clave de la guía, en pérdida de utilidades, salarios y gastos fijos es condición particular levantar un inventario al menos una vez al año, para poder comprobar la pérdida. La interrupción por autoridad civil o la clausura son situaciones de siniestro, no condiciones."
+  },
+  {
+    "id": 579,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "¿Qué riesgos cubre típicamente la cobertura de fenómenos hidrometeorológicos en una póliza de daños empresarial?",
+    "pregunta": "¿Qué riesgos cubre típicamente la cobertura de fenómenos hidrometeorológicos en una póliza de daños empresarial?",
+    "options": [
+      "Huracán, granizo, inundación, inundación por lluvia, marejada, golpe de mar, helada, nevada y vientos tempestuosos.",
+      "Robo con violencia y asalto.",
+      "Terremoto, erupción volcánica y tsunami.",
+      "Incendio, rayo y explosión únicamente."
+    ],
+    "opciones": [
+      "Huracán, granizo, inundación, inundación por lluvia, marejada, golpe de mar, helada, nevada y vientos tempestuosos.",
+      "Robo con violencia y asalto.",
+      "Terremoto, erupción volcánica y tsunami.",
+      "Incendio, rayo y explosión únicamente."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Huracán, granizo, inundación, inundación por lluvia, marejada, golpe de mar, helada, nevada y vientos tempestuosos.",
+    "explanation": "La cobertura de hidrometeorológicos agrupa fenómenos derivados del clima, como huracán, granizo, inundación, marejada, golpe de mar, helada, nevada y vientos tempestuosos. El terremoto y la erupción volcánica tienen su propia cobertura, el robo es otro ramo e incendio, rayo y explosión forman la básica de incendio.",
+    "explicacion": "La cobertura de hidrometeorológicos agrupa fenómenos derivados del clima, como huracán, granizo, inundación, marejada, golpe de mar, helada, nevada y vientos tempestuosos. El terremoto y la erupción volcánica tienen su propia cobertura, el robo es otro ramo e incendio, rayo y explosión forman la básica de incendio."
+  },
+  {
+    "id": 580,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "Para efectos de deducible, ¿cómo se consideran los daños causados por un mismo terremoto en las 72 horas siguientes al primer movimiento?",
+    "pregunta": "Para efectos de deducible, ¿cómo se consideran los daños causados por un mismo terremoto en las 72 horas siguientes al primer movimiento?",
+    "options": [
+      "Como un siniestro por cada réplica.",
+      "Como un solo siniestro.",
+      "Como daños excluidos.",
+      "Como un siniestro por cada día."
+    ],
+    "opciones": [
+      "Como un siniestro por cada réplica.",
+      "Como un solo siniestro.",
+      "Como daños excluidos.",
+      "Como un siniestro por cada día."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Como un solo siniestro.",
+    "explanation": "Las pólizas establecen que los daños causados por un sismo y sus réplicas dentro de las 72 horas siguientes se consideran un solo siniestro, con un deducible y un coaseguro. Contar cada réplica o cada día como siniestro multiplicaría los deducibles, y estos daños no se excluyen.",
+    "explicacion": "Las pólizas establecen que los daños causados por un sismo y sus réplicas dentro de las 72 horas siguientes se consideran un solo siniestro, con un deducible y un coaseguro. Contar cada réplica o cada día como siniestro multiplicaría los deducibles, y estos daños no se excluyen."
+  },
+  {
+    "id": 581,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "¿Cómo se calcula normalmente el deducible de la cobertura de terremoto en daños empresariales?",
+    "pregunta": "¿Cómo se calcula normalmente el deducible de la cobertura de terremoto en daños empresariales?",
+    "options": [
+      "Como un porcentaje del valor real o de la suma asegurada de la ubicación afectada, según la zona sísmica.",
+      "Como el 100% de la pérdida.",
+      "Como una cantidad fija igual para todo el país.",
+      "No existe deducible en terremoto."
+    ],
+    "opciones": [
+      "Como un porcentaje del valor real o de la suma asegurada de la ubicación afectada, según la zona sísmica.",
+      "Como el 100% de la pérdida.",
+      "Como una cantidad fija igual para todo el país.",
+      "No existe deducible en terremoto."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Como un porcentaje del valor real o de la suma asegurada de la ubicación afectada, según la zona sísmica.",
+    "explanation": "En terremoto el deducible suele expresarse como un porcentaje del valor o de la suma asegurada de la ubicación, que varía según la zona sísmica y el tipo de construcción, y se acompaña de un coaseguro. Una cantidad fija no reflejaría el riesgo de cada zona, y el 100% eliminaría la cobertura.",
+    "explicacion": "En terremoto el deducible suele expresarse como un porcentaje del valor o de la suma asegurada de la ubicación, que varía según la zona sísmica y el tipo de construcción, y se acompaña de un coaseguro. Una cantidad fija no reflejaría el riesgo de cada zona, y el 100% eliminaría la cobertura."
+  },
+  {
+    "id": 582,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "¿Qué factores determinan principalmente la tarifa de terremoto de un inmueble?",
+    "pregunta": "¿Qué factores determinan principalmente la tarifa de terremoto de un inmueble?",
+    "options": [
+      "El color de la fachada y la marca del mobiliario.",
+      "La zona sísmica, el tipo de construcción, el número de pisos y el tipo de suelo.",
+      "La edad del propietario.",
+      "El número de agentes que lo visitaron."
+    ],
+    "opciones": [
+      "El color de la fachada y la marca del mobiliario.",
+      "La zona sísmica, el tipo de construcción, el número de pisos y el tipo de suelo.",
+      "La edad del propietario.",
+      "El número de agentes que lo visitaron."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "La zona sísmica, el tipo de construcción, el número de pisos y el tipo de suelo.",
+    "explanation": "La tarifa de terremoto depende de la peligrosidad sísmica de la zona, el sistema estructural, la altura y el tipo de suelo, porque determinan la vulnerabilidad del inmueble. El color, la marca del mobiliario, la edad del dueño o las visitas de agentes no influyen en el riesgo sísmico.",
+    "explicacion": "La tarifa de terremoto depende de la peligrosidad sísmica de la zona, el sistema estructural, la altura y el tipo de suelo, porque determinan la vulnerabilidad del inmueble. El color, la marca del mobiliario, la edad del dueño o las visitas de agentes no influyen en el riesgo sísmico."
+  },
+  {
+    "id": 583,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "¿Qué es el coaseguro en la cobertura de terremoto o hidrometeorológicos?",
+    "pregunta": "¿Qué es el coaseguro en la cobertura de terremoto o hidrometeorológicos?",
+    "options": [
+      "El seguro que contrata la aseguradora con un reasegurador.",
+      "El porcentaje de la pérdida, después del deducible, que queda a cargo del asegurado.",
+      "La participación de dos aseguradoras en el riesgo.",
+      "El pago adicional de prima por reinstalación."
+    ],
+    "opciones": [
+      "El seguro que contrata la aseguradora con un reasegurador.",
+      "El porcentaje de la pérdida, después del deducible, que queda a cargo del asegurado.",
+      "La participación de dos aseguradoras en el riesgo.",
+      "El pago adicional de prima por reinstalación."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "El porcentaje de la pérdida, después del deducible, que queda a cargo del asegurado.",
+    "explanation": "En estas coberturas el coaseguro es el porcentaje de la pérdida que, después de aplicar el deducible, absorbe el asegurado, para incentivar la prevención. La participación de dos aseguradoras es coaseguro entre aseguradoras, la reinstalación es otro concepto y la protección con un reasegurador es reaseguro.",
+    "explicacion": "En estas coberturas el coaseguro es el porcentaje de la pérdida que, después de aplicar el deducible, absorbe el asegurado, para incentivar la prevención. La participación de dos aseguradoras es coaseguro entre aseguradoras, la reinstalación es otro concepto y la protección con un reasegurador es reaseguro."
+  },
+  {
+    "id": 584,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "Una bodega sufre daños porque el agua de lluvias intensas se acumula en el terreno al rebasar la capacidad de los drenajes. ¿Qué cobertura aplica?",
+    "pregunta": "Una bodega sufre daños porque el agua de lluvias intensas se acumula en el terreno al rebasar la capacidad de los drenajes. ¿Qué cobertura aplica?",
+    "options": [
+      "Daños por agua por rotura de tuberías.",
+      "Terremoto.",
+      "Remoción de escombros únicamente.",
+      "Inundación por lluvia, dentro de hidrometeorológicos."
+    ],
+    "opciones": [
+      "Daños por agua por rotura de tuberías.",
+      "Terremoto.",
+      "Remoción de escombros únicamente.",
+      "Inundación por lluvia, dentro de hidrometeorológicos."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Inundación por lluvia, dentro de hidrometeorológicos.",
+    "explanation": "La inundación por lluvia ampara el daño por acumulación de agua de lluvia que rebasa la capacidad de drenaje natural o artificial, dentro de la cobertura de hidrometeorológicos. La rotura de tuberías es daños por agua, el terremoto es otro fenómeno y la remoción de escombros es solo un gasto accesorio.",
+    "explicacion": "La inundación por lluvia ampara el daño por acumulación de agua de lluvia que rebasa la capacidad de drenaje natural o artificial, dentro de la cobertura de hidrometeorológicos. La rotura de tuberías es daños por agua, el terremoto es otro fenómeno y la remoción de escombros es solo un gasto accesorio."
+  },
+  {
+    "id": 585,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "¿Qué es el golpe de mar en las coberturas de hidrometeorológicos?",
+    "pregunta": "¿Qué es el golpe de mar en las coberturas de hidrometeorológicos?",
+    "options": [
+      "La lluvia ácida en zonas industriales.",
+      "El hundimiento del terreno por extracción de agua.",
+      "El daño por oleaje dentro de una alberca.",
+      "La agitación violenta de las aguas del mar que penetra tierra adentro y daña los bienes."
+    ],
+    "opciones": [
+      "La lluvia ácida en zonas industriales.",
+      "El hundimiento del terreno por extracción de agua.",
+      "El daño por oleaje dentro de una alberca.",
+      "La agitación violenta de las aguas del mar que penetra tierra adentro y daña los bienes."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "La agitación violenta de las aguas del mar que penetra tierra adentro y daña los bienes.",
+    "explanation": "El golpe de mar es la agitación violenta del agua del mar, generalmente por fenómenos atmosféricos, que alcanza la costa y daña los bienes asegurados. La lluvia ácida no es un riesgo de esta cobertura, el hundimiento por extracción de agua se excluye y el oleaje en una alberca no es fenómeno marítimo.",
+    "explicacion": "El golpe de mar es la agitación violenta del agua del mar, generalmente por fenómenos atmosféricos, que alcanza la costa y daña los bienes asegurados. La lluvia ácida no es un riesgo de esta cobertura, el hundimiento por extracción de agua se excluye y el oleaje en una alberca no es fenómeno marítimo."
+  },
+  {
+    "id": 586,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "¿Qué bienes suelen requerir convenio expreso en las coberturas de terremoto e hidrometeorológicos?",
+    "pregunta": "¿Qué bienes suelen requerir convenio expreso en las coberturas de terremoto e hidrometeorológicos?",
+    "options": [
+      "Los bienes a la intemperie, como bardas, muelles, albercas y anuncios exteriores.",
+      "El edificio principal construido con concreto.",
+      "La maquinaria instalada dentro de la nave.",
+      "Los contenidos dentro de una bodega cerrada."
+    ],
+    "opciones": [
+      "Los bienes a la intemperie, como bardas, muelles, albercas y anuncios exteriores.",
+      "El edificio principal construido con concreto.",
+      "La maquinaria instalada dentro de la nave.",
+      "Los contenidos dentro de una bodega cerrada."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Los bienes a la intemperie, como bardas, muelles, albercas y anuncios exteriores.",
+    "explanation": "Los bienes a la intemperie, como bardas, muelles, albercas o anuncios, tienen mayor exposición al viento, al agua y al sismo, por lo que suelen ampararse solo por convenio expreso y con deducibles especiales. El edificio principal, los contenidos y la maquinaria bajo techo se cubren normalmente.",
+    "explicacion": "Los bienes a la intemperie, como bardas, muelles, albercas o anuncios, tienen mayor exposición al viento, al agua y al sismo, por lo que suelen ampararse solo por convenio expreso y con deducibles especiales. El edificio principal, los contenidos y la maquinaria bajo techo se cubren normalmente."
+  },
+  {
+    "id": 587,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "¿Qué riesgo se excluye habitualmente de la cobertura de terremoto?",
+    "pregunta": "¿Qué riesgo se excluye habitualmente de la cobertura de terremoto?",
+    "options": [
+      "Los daños por tsunami derivado de un sismo cubierto.",
+      "Los daños por hundimiento o asentamiento del terreno no causados por un sismo.",
+      "El derrumbe del edificio por un sismo.",
+      "Los daños por erupción volcánica cubierta."
+    ],
+    "opciones": [
+      "Los daños por tsunami derivado de un sismo cubierto.",
+      "Los daños por hundimiento o asentamiento del terreno no causados por un sismo.",
+      "El derrumbe del edificio por un sismo.",
+      "Los daños por erupción volcánica cubierta."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Los daños por hundimiento o asentamiento del terreno no causados por un sismo.",
+    "explanation": "La cobertura de terremoto ampara los daños causados por el sismo, mientras que el hundimiento o asentamiento del terreno por causas ajenas, como mala compactación o extracción de agua, se excluye. El derrumbe por sismo es la esencia de la cobertura, y la erupción y el tsunami suelen incluirse.",
+    "explicacion": "La cobertura de terremoto ampara los daños causados por el sismo, mientras que el hundimiento o asentamiento del terreno por causas ajenas, como mala compactación o extracción de agua, se excluye. El derrumbe por sismo es la esencia de la cobertura, y la erupción y el tsunami suelen incluirse."
+  },
+  {
+    "id": 588,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "¿Qué es la helada para efectos de la cobertura de hidrometeorológicos?",
+    "pregunta": "¿Qué es la helada para efectos de la cobertura de hidrometeorológicos?",
+    "options": [
+      "La caída de granizo de gran tamaño.",
+      "El fenómeno climático en el que la temperatura ambiente baja al punto de congelación del agua y daña los bienes asegurados.",
+      "La falla del sistema de refrigeración del asegurado.",
+      "El enfriamiento de mercancías por un apagón."
+    ],
+    "opciones": [
+      "La caída de granizo de gran tamaño.",
+      "El fenómeno climático en el que la temperatura ambiente baja al punto de congelación del agua y daña los bienes asegurados.",
+      "La falla del sistema de refrigeración del asegurado.",
+      "El enfriamiento de mercancías por un apagón."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "El fenómeno climático en el que la temperatura ambiente baja al punto de congelación del agua y daña los bienes asegurados.",
+    "explanation": "La helada es el descenso de la temperatura ambiente a niveles de congelación del agua que causa daños, y se cubre como fenómeno hidrometeorológico. El granizo es otro riesgo, y las fallas de refrigeración o los apagones son causas mecánicas o eléctricas ajenas al clima.",
+    "explicacion": "La helada es el descenso de la temperatura ambiente a niveles de congelación del agua que causa daños, y se cubre como fenómeno hidrometeorológico. El granizo es otro riesgo, y las fallas de refrigeración o los apagones son causas mecánicas o eléctricas ajenas al clima."
+  },
+  {
+    "id": 589,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "¿Por qué las aseguradoras usan modelos catastróficos para el ramo de terremoto e hidrometeorológicos?",
+    "pregunta": "¿Por qué las aseguradoras usan modelos catastróficos para el ramo de terremoto e hidrometeorológicos?",
+    "options": [
+      "Para predecir la fecha exacta de un sismo.",
+      "Para estimar la pérdida máxima probable de su cartera y determinar sus necesidades de reaseguro y reservas.",
+      "Para calcular el impuesto al valor agregado.",
+      "Para fijar la comisión del agente."
+    ],
+    "opciones": [
+      "Para predecir la fecha exacta de un sismo.",
+      "Para estimar la pérdida máxima probable de su cartera y determinar sus necesidades de reaseguro y reservas.",
+      "Para calcular el impuesto al valor agregado.",
+      "Para fijar la comisión del agente."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Para estimar la pérdida máxima probable de su cartera y determinar sus necesidades de reaseguro y reservas.",
+    "explanation": "Los modelos catastróficos simulan eventos para estimar la pérdida máxima probable de la cartera, lo que sirve para tarificar, contratar reaseguro y constituir reservas catastróficas. No determinan comisiones ni impuestos, y no pueden predecir la fecha exacta de un sismo.",
+    "explicacion": "Los modelos catastróficos simulan eventos para estimar la pérdida máxima probable de la cartera, lo que sirve para tarificar, contratar reaseguro y constituir reservas catastróficas. No determinan comisiones ni impuestos, y no pueden predecir la fecha exacta de un sismo."
+  },
+  {
+    "id": 590,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "Una empresa en la costa de Quintana Roo quiere protegerse contra huracanes. ¿Qué debe revisar especialmente al contratar la cobertura?",
+    "pregunta": "Una empresa en la costa de Quintana Roo quiere protegerse contra huracanes. ¿Qué debe revisar especialmente al contratar la cobertura?",
+    "options": [
+      "Solo el precio de la cobertura de robo.",
+      "El deducible y el coaseguro de la zona, los bienes a la intemperie y los límites de la cobertura.",
+      "La cobertura de responsabilidad civil de sus vehículos.",
+      "El periodo de espera de gastos médicos."
+    ],
+    "opciones": [
+      "Solo el precio de la cobertura de robo.",
+      "El deducible y el coaseguro de la zona, los bienes a la intemperie y los límites de la cobertura.",
+      "La cobertura de responsabilidad civil de sus vehículos.",
+      "El periodo de espera de gastos médicos."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "El deducible y el coaseguro de la zona, los bienes a la intemperie y los límites de la cobertura.",
+    "explanation": "En zonas costeras de alto riesgo, las coberturas de huracán suelen tener deducibles y coaseguros mayores, límites específicos y reglas para bienes a la intemperie, por lo que conviene revisarlos para evitar sorpresas. El robo, la RC de autos y los gastos médicos no protegen contra huracanes.",
+    "explicacion": "En zonas costeras de alto riesgo, las coberturas de huracán suelen tener deducibles y coaseguros mayores, límites específicos y reglas para bienes a la intemperie, por lo que conviene revisarlos para evitar sorpresas. El robo, la RC de autos y los gastos médicos no protegen contra huracanes."
+  },
+  {
+    "id": 591,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "¿Qué riesgo cubre la cobertura de erupción volcánica que suele venir junto con terremoto?",
+    "pregunta": "¿Qué riesgo cubre la cobertura de erupción volcánica que suele venir junto con terremoto?",
+    "options": [
+      "La contaminación de los cultivos por plaguicidas.",
+      "Los daños por hundimiento del terreno por fugas de agua.",
+      "Los daños por incendio forestal sin relación con un volcán.",
+      "Los daños causados por la lava, la caída de ceniza y otros materiales expulsados por un volcán."
+    ],
+    "opciones": [
+      "La contaminación de los cultivos por plaguicidas.",
+      "Los daños por hundimiento del terreno por fugas de agua.",
+      "Los daños por incendio forestal sin relación con un volcán.",
+      "Los daños causados por la lava, la caída de ceniza y otros materiales expulsados por un volcán."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Los daños causados por la lava, la caída de ceniza y otros materiales expulsados por un volcán.",
+    "explanation": "La erupción volcánica ampara los daños por lava, ceniza, piedras y otros materiales expulsados por el volcán, y suele contratarse junto con terremoto. Los hundimientos por fugas, los incendios forestales ajenos y la contaminación por plaguicidas no derivan de una erupción.",
+    "explicacion": "La erupción volcánica ampara los daños por lava, ceniza, piedras y otros materiales expulsados por el volcán, y suele contratarse junto con terremoto. Los hundimientos por fugas, los incendios forestales ajenos y la contaminación por plaguicidas no derivan de una erupción."
+  },
+  {
+    "id": 592,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "¿Qué es la reinstalación de suma asegurada después de un siniestro catastrófico?",
+    "pregunta": "¿Qué es la reinstalación de suma asegurada después de un siniestro catastrófico?",
+    "options": [
+      "La reconstrucción del inmueble por la aseguradora.",
+      "Restablecer la suma asegurada reducida por el pago de un siniestro, normalmente con el pago de la prima correspondiente.",
+      "La cancelación automática de la póliza.",
+      "La devolución de la prima al asegurado."
+    ],
+    "opciones": [
+      "La reconstrucción del inmueble por la aseguradora.",
+      "Restablecer la suma asegurada reducida por el pago de un siniestro, normalmente con el pago de la prima correspondiente.",
+      "La cancelación automática de la póliza.",
+      "La devolución de la prima al asegurado."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Restablecer la suma asegurada reducida por el pago de un siniestro, normalmente con el pago de la prima correspondiente.",
+    "explanation": "Al pagar un siniestro la suma asegurada se reduce en ese monto, y la reinstalación la restablece para el resto de la vigencia, normalmente con cobro de prima proporcional. No implica que la aseguradora reconstruya, no devuelve la prima y no cancela la póliza.",
+    "explicacion": "Al pagar un siniestro la suma asegurada se reduce en ese monto, y la reinstalación la restablece para el resto de la vigencia, normalmente con cobro de prima proporcional. No implica que la aseguradora reconstruya, no devuelve la prima y no cancela la póliza."
+  },
+  {
+    "id": 593,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "¿Qué diferencia hay entre la inundación y los daños por agua por rotura de tuberías?",
+    "pregunta": "¿Qué diferencia hay entre la inundación y los daños por agua por rotura de tuberías?",
+    "options": [
+      "Los daños por agua solo se cubren en terremoto.",
+      "La inundación se debe a desbordamientos o lluvias que cubren el terreno, y los daños por agua a la rotura accidental de instalaciones del inmueble.",
+      "Son exactamente el mismo riesgo.",
+      "La inundación solo ocurre dentro de los edificios."
+    ],
+    "opciones": [
+      "Los daños por agua solo se cubren en terremoto.",
+      "La inundación se debe a desbordamientos o lluvias que cubren el terreno, y los daños por agua a la rotura accidental de instalaciones del inmueble.",
+      "Son exactamente el mismo riesgo.",
+      "La inundación solo ocurre dentro de los edificios."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "La inundación se debe a desbordamientos o lluvias que cubren el terreno, y los daños por agua a la rotura accidental de instalaciones del inmueble.",
+    "explanation": "La inundación proviene de fenómenos naturales externos, como desbordamientos de ríos o lluvias que cubren el terreno, y forma parte de hidrometeorológicos. Los daños por agua derivan de la rotura accidental de tuberías o tanques del propio inmueble y son una cobertura distinta, sin relación con terremoto.",
+    "explicacion": "La inundación proviene de fenómenos naturales externos, como desbordamientos de ríos o lluvias que cubren el terreno, y forma parte de hidrometeorológicos. Los daños por agua derivan de la rotura accidental de tuberías o tanques del propio inmueble y son una cobertura distinta, sin relación con terremoto."
+  },
+  {
+    "id": 594,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "¿Para qué sirve el registro de ubicaciones con su información técnica, como coordenadas y tipo de construcción, en las coberturas catastróficas?",
+    "pregunta": "¿Para qué sirve el registro de ubicaciones con su información técnica, como coordenadas y tipo de construcción, en las coberturas catastróficas?",
+    "options": [
+      "Para evaluar la exposición de cada inmueble y calcular correctamente la prima, el deducible y la acumulación de riesgos.",
+      "Para enviar publicidad al asegurado.",
+      "Para determinar la comisión del agente.",
+      "Para calcular el impuesto predial."
+    ],
+    "opciones": [
+      "Para evaluar la exposición de cada inmueble y calcular correctamente la prima, el deducible y la acumulación de riesgos.",
+      "Para enviar publicidad al asegurado.",
+      "Para determinar la comisión del agente.",
+      "Para calcular el impuesto predial."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Para evaluar la exposición de cada inmueble y calcular correctamente la prima, el deducible y la acumulación de riesgos.",
+    "explanation": "La información técnica por ubicación permite medir la exposición a sismo y huracán, tarifar correctamente y controlar la acumulación de riesgos en una misma zona, lo que exige la regulación técnica del ramo. No tiene fines publicitarios ni de comisión, y el impuesto predial es municipal.",
+    "explicacion": "La información técnica por ubicación permite medir la exposición a sismo y huracán, tarifar correctamente y controlar la acumulación de riesgos en una misma zona, lo que exige la regulación técnica del ramo. No tiene fines publicitarios ni de comisión, y el impuesto predial es municipal."
+  },
+  {
+    "id": 595,
+    "module": "Seguro de Daños: Incendio y Catastróficos",
+    "modulo": "Seguro de Daños: Incendio y Catastróficos",
+    "submodulo": "Riesgos Catastróficos: Terremoto e Hidrometeorológicos",
+    "question": "Tras un huracán, un asegurado intenta reclamar daños por humedad acumulada durante meses en su bodega. ¿Cuál es la situación más probable?",
+    "pregunta": "Tras un huracán, un asegurado intenta reclamar daños por humedad acumulada durante meses en su bodega. ¿Cuál es la situación más probable?",
+    "options": [
+      "La humedad paulatina se excluye, porque no es un daño súbito causado por el fenómeno.",
+      "Se paga como terremoto.",
+      "Se paga sin deducible.",
+      "Se paga como golpe de mar."
+    ],
+    "opciones": [
+      "La humedad paulatina se excluye, porque no es un daño súbito causado por el fenómeno.",
+      "Se paga como terremoto.",
+      "Se paga sin deducible.",
+      "Se paga como golpe de mar."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "La humedad paulatina se excluye, porque no es un daño súbito causado por el fenómeno.",
+    "explanation": "Las coberturas de hidrometeorológicos amparan daños súbitos causados por el fenómeno, mientras que la humedad, el moho o el deterioro paulatino se excluyen. No corresponde a golpe de mar ni a terremoto, y cualquier pago cubierto aplicaría deducible.",
+    "explicacion": "Las coberturas de hidrometeorológicos amparan daños súbitos causados por el fenómeno, mientras que la humedad, el moho o el deterioro paulatino se excluyen. No corresponde a golpe de mar ni a terremoto, y cualquier pago cubierto aplicaría deducible."
+  }
+]

@@ -46,12 +46,48 @@ export async function POST(req: Request) {
         newEndDate.setDate(newEndDate.getDate() + daysToAdd);
       }
 
+      let subscriptionPlan = "QUARTERLY";
+      let studyTokens = 12;
+      if (monthsToAddStr) {
+        const months = parseInt(monthsToAddStr, 10);
+        if (months >= 12) {
+          subscriptionPlan = "ANNUAL";
+          studyTokens = 52;
+        } else if (months >= 6) {
+          subscriptionPlan = "SEMIANNUAL";
+          studyTokens = 25;
+        } else {
+          subscriptionPlan = "QUARTERLY";
+          studyTokens = 12;
+        }
+      } else if (daysToAddStr) {
+        const days = parseInt(daysToAddStr, 10);
+        if (days >= 300) {
+          subscriptionPlan = "ANNUAL";
+          studyTokens = 52;
+        } else if (days >= 150) {
+          subscriptionPlan = "SEMIANNUAL";
+          studyTokens = 25;
+        } else {
+          subscriptionPlan = "QUARTERLY";
+          studyTokens = 12;
+        }
+      }
+
       await prisma.agency.update({
         where: { id: agencyId },
         data: {
           subscriptionStatus: "active",
           subscriptionEndDate: newEndDate,
+          subscriptionPlan: subscriptionPlan,
         },
+      });
+
+      // Recarga / sincroniza el saldo de simuladores Cédula A y B de la agencia según su plan
+      await prisma.promotorSaldo.upsert({
+        where: { promotor_email: `agency_${agencyId}` },
+        update: { dias_disponibles: studyTokens, fecha_actualizacion: new Date() },
+        create: { promotor_email: `agency_${agencyId}`, dias_disponibles: studyTokens, fecha_actualizacion: new Date() }
       });
 
       // "Refiere y Gana" Logic: Add 60 days to the referrer if this is their first payment AND they paid for at least a quarter (90 days).

@@ -38,6 +38,7 @@ model Agency {
   stripeCustomerId      String?
   subscriptionStatus    String?              @default("active")
   subscriptionEndDate   DateTime?
+  subscriptionPlan      String?              @default("QUARTERLY")
   referredByAgencyId    String?
   active                Boolean              @default(true)
   createdAt             DateTime             @default(now())

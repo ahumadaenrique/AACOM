@@ -1,0 +1,1952 @@
+[
+  {
+    "id": 112,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "La identificación, evaluación, jerarquización, análisis de alternativas, establecimiento de programas y control, pertenecen al proceso de:",
+    "pregunta": "La identificación, evaluación, jerarquización, análisis de alternativas, establecimiento de programas y control, pertenecen al proceso de:",
+    "options": [
+      "Administración de pólizas.",
+      "Administración de Riesgos.",
+      "Estudio del riesgo.",
+      "Alternativas ante el riesgo."
+    ],
+    "opciones": [
+      "Administración de pólizas.",
+      "Administración de Riesgos.",
+      "Estudio del riesgo.",
+      "Alternativas ante el riesgo."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Administración de Riesgos.",
+    "explanation": "La identificación, evaluación, jerarquización, análisis de alternativas, establecimiento de programas y control son las etapas del proceso de administración de riesgos. La administración de pólizas es una función operativa, y el estudio del riesgo y las alternativas son solo partes del proceso.",
+    "explicacion": "La identificación, evaluación, jerarquización, análisis de alternativas, establecimiento de programas y control son las etapas del proceso de administración de riesgos. La administración de pólizas es una función operativa, y el estudio del riesgo y las alternativas son solo partes del proceso."
+  },
+  {
+    "id": 113,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "En el estudio de la Administración de Riesgos en el proceso de la jerarquización se deberán de tomar en cuenta 3 dimensiones que son:",
+    "pregunta": "En el estudio de la Administración de Riesgos en el proceso de la jerarquización se deberán de tomar en cuenta 3 dimensiones que son:",
+    "options": [
+      "Estudio, clasificación y tarificación.",
+      "Frecuencia, tarificacion y extraprima.",
+      "Frecuencia, severidad de la pérdida y la variación.",
+      "Frecuencia, clasificación y acercamiento."
+    ],
+    "opciones": [
+      "Estudio, clasificación y tarificación.",
+      "Frecuencia, tarificacion y extraprima.",
+      "Frecuencia, severidad de la pérdida y la variación.",
+      "Frecuencia, clasificación y acercamiento."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Frecuencia, severidad de la pérdida y la variación.",
+    "explanation": "En la jerarquización de riesgos se consideran la frecuencia, la severidad de la pérdida y la variación o variabilidad de los resultados. La tarificación, la extraprima o la clasificación son actividades de suscripción, no dimensiones de jerarquización.",
+    "explicacion": "En la jerarquización de riesgos se consideran la frecuencia, la severidad de la pérdida y la variación o variabilidad de los resultados. La tarificación, la extraprima o la clasificación son actividades de suscripción, no dimensiones de jerarquización."
+  },
+  {
+    "id": 114,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "Señala dos de las alternativas de solución ante el riesgo de acuerdo al proceso de Administración de Riesgos:",
+    "pregunta": "Señala dos de las alternativas de solución ante el riesgo de acuerdo al proceso de Administración de Riesgos:",
+    "options": [
+      "Proteger y eliminar.",
+      "Distribuir y conceder.",
+      "Minimizar y evadir.",
+      "Prevenir y distribuir."
+    ],
+    "opciones": [
+      "Proteger y eliminar.",
+      "Distribuir y conceder.",
+      "Minimizar y evadir.",
+      "Prevenir y distribuir."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Prevenir y distribuir.",
+    "explanation": "Prevenir y distribuir son alternativas de solución ante el riesgo dentro de la administración de riesgos, junto con retener, transferir o eliminar. Conceder, evadir o proteger no son las denominaciones técnicas de estas alternativas.",
+    "explicacion": "Prevenir y distribuir son alternativas de solución ante el riesgo dentro de la administración de riesgos, junto con retener, transferir o eliminar. Conceder, evadir o proteger no son las denominaciones técnicas de estas alternativas."
+  },
+  {
+    "id": 115,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "Ceder las consecuencias económicamente adversas a una Institución Aseguradora es una de las alternativas de solución ante el riesgo, ¿a cuál se refiere?",
+    "pregunta": "Ceder las consecuencias económicamente adversas a una Institución Aseguradora es una de las alternativas de solución ante el riesgo, ¿a cuál se refiere?",
+    "options": [
+      "Asumir.",
+      "Transferir.",
+      "Eliminar.",
+      "Reducir."
+    ],
+    "opciones": [
+      "Asumir.",
+      "Transferir.",
+      "Eliminar.",
+      "Reducir."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Transferir.",
+    "explanation": "Ceder las consecuencias económicas adversas a una aseguradora es transferir el riesgo, a cambio del pago de una prima. Asumir implica retenerlo, eliminar suprime la exposición y reducir disminuye su probabilidad o impacto.",
+    "explicacion": "Ceder las consecuencias económicas adversas a una aseguradora es transferir el riesgo, a cambio del pago de una prima. Asumir implica retenerlo, eliminar suprime la exposición y reducir disminuye su probabilidad o impacto."
+  },
+  {
+    "id": 116,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "Elige el ejemplo que corresponda a un Riesgo Financiero:",
+    "pregunta": "Elige el ejemplo que corresponda a un Riesgo Financiero:",
+    "options": [
+      "Un incendio",
+      "Una enfermedad",
+      "El robo de valores",
+      "Iniciar un negocio"
+    ],
+    "opciones": [
+      "Un incendio",
+      "Una enfermedad",
+      "El robo de valores",
+      "Iniciar un negocio"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Iniciar un negocio",
+    "explanation": "Iniciar un negocio es un riesgo financiero o especulativo, porque puede producir pérdidas o ganancias. Un incendio, una enfermedad o el robo son riesgos puros, que solo pueden causar pérdida y por eso son asegurables.",
+    "explicacion": "Iniciar un negocio es un riesgo financiero o especulativo, porque puede producir pérdidas o ganancias. Un incendio, una enfermedad o el robo son riesgos puros, que solo pueden causar pérdida y por eso son asegurables."
+  },
+  {
+    "id": 117,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "Si el negocio ya no está expuesto al riesgo. ¿Qué sucede con el Contrato de Seguro?",
+    "pregunta": "Si el negocio ya no está expuesto al riesgo. ¿Qué sucede con el Contrato de Seguro?",
+    "options": [
+      "Se nulifica",
+      "Se mantiene la póliza en reserva",
+      "Se cobra la mitad de la póliza",
+      "Sigue vigente"
+    ],
+    "opciones": [
+      "Se nulifica",
+      "Se mantiene la póliza en reserva",
+      "Se cobra la mitad de la póliza",
+      "Sigue vigente"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Se nulifica",
+    "explanation": "Si desaparece la exposición al riesgo, el contrato de seguro pierde su objeto y se extingue, por lo que se considera nulo o terminado conforme a la Ley sobre el Contrato de Seguro. No puede mantenerse vigente ni en reserva, porque ya no hay riesgo que cubrir.",
+    "explicacion": "Si desaparece la exposición al riesgo, el contrato de seguro pierde su objeto y se extingue, por lo que se considera nulo o terminado conforme a la Ley sobre el Contrato de Seguro. No puede mantenerse vigente ni en reserva, porque ya no hay riesgo que cubrir."
+  },
+  {
+    "id": 118,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "¿Cuál es la causa de que no se indemnice un siniestro aunque el riesgo esté asegurado?",
+    "pregunta": "¿Cuál es la causa de que no se indemnice un siniestro aunque el riesgo esté asegurado?",
+    "options": [
+      "Que no se pague el deducible",
+      "Que se impida la subrogación",
+      "Que la póliza se extravíe",
+      "Que el Asegurado se ampare"
+    ],
+    "opciones": [
+      "Que no se pague el deducible",
+      "Que se impida la subrogación",
+      "Que la póliza se extravíe",
+      "Que el Asegurado se ampare"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Que se impida la subrogación",
+    "explanation": "Si el asegurado impide la subrogación, por ejemplo al llegar a un arreglo con el responsable, la aseguradora queda liberada de sus obligaciones en la medida del perjuicio, conforme a la Ley sobre el Contrato de Seguro. No pagar el deducible, extraviar la póliza o ampararse no son causas de rechazo por sí mismas.",
+    "explicacion": "Si el asegurado impide la subrogación, por ejemplo al llegar a un arreglo con el responsable, la aseguradora queda liberada de sus obligaciones en la medida del perjuicio, conforme a la Ley sobre el Contrato de Seguro. No pagar el deducible, extraviar la póliza o ampararse no son causas de rechazo por sí mismas."
+  },
+  {
+    "id": 119,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "Todas son acciones que la Aseguradora puede tomar cuando se asegura un bien que no existe, EXCEPTO:",
+    "pregunta": "Todas son acciones que la Aseguradora puede tomar cuando se asegura un bien que no existe, EXCEPTO:",
+    "options": [
+      "Restituye las primas pagadas y se queda con el monto de los gastos que realizó",
+      "Nulifica el contrato",
+      "Demandar al Asegurado por perjuicio",
+      "Si existe dolo, cobra el doble de la prima anual"
+    ],
+    "opciones": [
+      "Restituye las primas pagadas y se queda con el monto de los gastos que realizó",
+      "Nulifica el contrato",
+      "Demandar al Asegurado por perjuicio",
+      "Si existe dolo, cobra el doble de la prima anual"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Si existe dolo, cobra el doble de la prima anual",
+    "explanation": "Si se asegura un bien que no existe, el contrato es nulo, y la aseguradora puede restituir las primas descontando sus gastos o, ante mala fe, ejercer acciones contra el asegurado. Cobrar el doble de la prima anual no es una consecuencia prevista en la ley.",
+    "explicacion": "Si se asegura un bien que no existe, el contrato es nulo, y la aseguradora puede restituir las primas descontando sus gastos o, ante mala fe, ejercer acciones contra el asegurado. Cobrar el doble de la prima anual no es una consecuencia prevista en la ley."
+  },
+  {
+    "id": 120,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "Se entiende por Subrogación de Derechos, cuando:",
+    "pregunta": "Se entiende por Subrogación de Derechos, cuando:",
+    "options": [
+      "El Asegurado realiza la reclamación sin permitir a la Aseguradora que haga nada contra quien causó el daño",
+      "El Asegurado realiza todos los trámites de recuperación ante el causante del daño",
+      "La Aseguradora paga el siniestro y exige al Asegurado recupere la pérdida al causante del daño",
+      "La Aseguradora sustituye en sus derechos al Asegurado contra quien le causó los daños"
+    ],
+    "opciones": [
+      "El Asegurado realiza la reclamación sin permitir a la Aseguradora que haga nada contra quien causó el daño",
+      "El Asegurado realiza todos los trámites de recuperación ante el causante del daño",
+      "La Aseguradora paga el siniestro y exige al Asegurado recupere la pérdida al causante del daño",
+      "La Aseguradora sustituye en sus derechos al Asegurado contra quien le causó los daños"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "La Aseguradora sustituye en sus derechos al Asegurado contra quien le causó los daños",
+    "explanation": "La subrogación de derechos ocurre cuando la aseguradora, después de pagar la indemnización, sustituye al asegurado en sus derechos contra el causante del daño, conforme a la Ley sobre el Contrato de Seguro. No obliga al asegurado a recuperar la pérdida ni se limita a sus trámites personales.",
+    "explicacion": "La subrogación de derechos ocurre cuando la aseguradora, después de pagar la indemnización, sustituye al asegurado en sus derechos contra el causante del daño, conforme a la Ley sobre el Contrato de Seguro. No obliga al asegurado a recuperar la pérdida ni se limita a sus trámites personales."
+  },
+  {
+    "id": 121,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "¿Cuál es el propósito de la Administración de Riesgos?",
+    "pregunta": "¿Cuál es el propósito de la Administración de Riesgos?",
+    "options": [
+      "Establecer prioridades de recursos para cada una de las áreas de una empresa",
+      "Determinar cada uno de los riesgos que puedan afectar la continuidad de un negocio",
+      "Determinar que riesgo conviene más que suceda porque causa menos pérdidas",
+      "Distribuir los recursos para poder pagar todos los siniestros que ocurran"
+    ],
+    "opciones": [
+      "Establecer prioridades de recursos para cada una de las áreas de una empresa",
+      "Determinar cada uno de los riesgos que puedan afectar la continuidad de un negocio",
+      "Determinar que riesgo conviene más que suceda porque causa menos pérdidas",
+      "Distribuir los recursos para poder pagar todos los siniestros que ocurran"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Determinar cada uno de los riesgos que puedan afectar la continuidad de un negocio",
+    "explanation": "El propósito de la administración de riesgos es identificar y determinar los riesgos que pueden afectar la continuidad del negocio para decidir cómo tratarlos. Asignar recursos o pagar siniestros son consecuencias del proceso, y no se busca que ocurra ningún riesgo.",
+    "explicacion": "El propósito de la administración de riesgos es identificar y determinar los riesgos que pueden afectar la continuidad del negocio para decidir cómo tratarlos. Asignar recursos o pagar siniestros son consecuencias del proceso, y no se busca que ocurra ningún riesgo."
+  },
+  {
+    "id": 122,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "¿Qué es un Riesgo Puro?",
+    "pregunta": "¿Qué es un Riesgo Puro?",
+    "options": [
+      "El que se presenta solo en una parte de una Sociedad",
+      "El que afecta únicamente la integridad de una persona",
+      "El que produce siempre una pérdida o una no pérdida",
+      "El que produce una ganancia o una pérdida"
+    ],
+    "opciones": [
+      "El que se presenta solo en una parte de una Sociedad",
+      "El que afecta únicamente la integridad de una persona",
+      "El que produce siempre una pérdida o una no pérdida",
+      "El que produce una ganancia o una pérdida"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "El que produce siempre una pérdida o una no pérdida",
+    "explanation": "El riesgo puro es el que solo puede producir una pérdida o ninguna, nunca una ganancia, y por eso es asegurable. El que puede producir ganancia o pérdida es el especulativo, y las demás opciones no definen esta clasificación.",
+    "explicacion": "El riesgo puro es el que solo puede producir una pérdida o ninguna, nunca una ganancia, y por eso es asegurable. El que puede producir ganancia o pérdida es el especulativo, y las demás opciones no definen esta clasificación."
+  },
+  {
+    "id": 123,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "Si el Asegurado compra varios seguros en diferentes Aseguradoras sobre el mismo bien y no avisa a ninguna Aseguradora. ¿Qué pasa cuando hay un siniestro?",
+    "pregunta": "Si el Asegurado compra varios seguros en diferentes Aseguradoras sobre el mismo bien y no avisa a ninguna Aseguradora. ¿Qué pasa cuando hay un siniestro?",
+    "options": [
+      "Ninguna Aseguradora le paga",
+      "Cada Aseguradora paga la suma asegurada estipulada en la póliza",
+      "Todas pagan el siniestro",
+      "Cobran doble deducible para pagar"
+    ],
+    "opciones": [
+      "Ninguna Aseguradora le paga",
+      "Cada Aseguradora paga la suma asegurada estipulada en la póliza",
+      "Todas pagan el siniestro",
+      "Cobran doble deducible para pagar"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Ninguna Aseguradora le paga",
+    "explanation": "Si el asegurado contrata varios seguros sobre el mismo bien y omite intencionalmente avisar a las aseguradoras, la Ley sobre el Contrato de Seguro libera a todas ellas de sus obligaciones. No se paga cada suma asegurada completa ni se cobra un doble deducible.",
+    "explicacion": "Si el asegurado contrata varios seguros sobre el mismo bien y omite intencionalmente avisar a las aseguradoras, la Ley sobre el Contrato de Seguro libera a todas ellas de sus obligaciones. No se paga cada suma asegurada completa ni se cobra un doble deducible."
+  },
+  {
+    "id": 124,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "A la incertidumbre que existe en cuanto a que ocurra o no un suceso, se le conoce en el ámbito de la Administración de Riesgos, como:",
+    "pregunta": "A la incertidumbre que existe en cuanto a que ocurra o no un suceso, se le conoce en el ámbito de la Administración de Riesgos, como:",
+    "options": [
+      "Riesgo",
+      "Probabilidad",
+      "Siniestro",
+      "Emergencia"
+    ],
+    "opciones": [
+      "Riesgo",
+      "Probabilidad",
+      "Siniestro",
+      "Emergencia"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Riesgo",
+    "explanation": "En administración de riesgos, el riesgo es la incertidumbre sobre si ocurrirá o no un suceso que cause pérdidas. La probabilidad lo mide, el siniestro es su realización y la emergencia es una situación concreta.",
+    "explicacion": "En administración de riesgos, el riesgo es la incertidumbre sobre si ocurrirá o no un suceso que cause pérdidas. La probabilidad lo mide, el siniestro es su realización y la emergencia es una situación concreta."
+  },
+  {
+    "id": 125,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "¿Cómo se llaman los riesgos materiales de acuerdo a la Administración de Riesgos?",
+    "pregunta": "¿Cómo se llaman los riesgos materiales de acuerdo a la Administración de Riesgos?",
+    "options": [
+      "Consecuenciales",
+      "Legales y contractuales",
+      "Criminales",
+      "De las propiedades físicas"
+    ],
+    "opciones": [
+      "Consecuenciales",
+      "Legales y contractuales",
+      "Criminales",
+      "De las propiedades físicas"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Legales y contractuales",
+    "explanation": "Según la clave de la guía, los riesgos materiales se clasifican como legales y contractuales dentro de la administración de riesgos. Las opciones consecuenciales, criminales o de propiedades físicas describen otras categorías.",
+    "explicacion": "Según la clave de la guía, los riesgos materiales se clasifican como legales y contractuales dentro de la administración de riesgos. Las opciones consecuenciales, criminales o de propiedades físicas describen otras categorías."
+  },
+  {
+    "id": 126,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "Elige de la lista, las acciones que impidan la SubrogacIón de la Aseguradora: 1.- El Asegurado da los datos del tercero 2.- El Asegurado proporciona la información que le pide la Aseguradora 3.- Omite algún dato del siniestro a la Aseguradora 4.- No se presenta cuando la Aseguradora lo necesita 5.- Se arregla con el tercero antes que llegue el ajustador:",
+    "pregunta": "Elige de la lista, las acciones que impidan la SubrogacIón de la Aseguradora: 1.- El Asegurado da los datos del tercero 2.- El Asegurado proporciona la información que le pide la Aseguradora 3.- Omite algún dato del siniestro a la Aseguradora 4.- No se presenta cuando la Aseguradora lo necesita 5.- Se arregla con el tercero antes que llegue el ajustador:",
+    "options": [
+      "3, 4, 5",
+      "1, 2, 3",
+      "1, 3, 4",
+      "2, 4, 5"
+    ],
+    "opciones": [
+      "3, 4, 5",
+      "1, 2, 3",
+      "1, 3, 4",
+      "2, 4, 5"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "3, 4, 5",
+    "explanation": "Omitir datos del siniestro, no presentarse cuando la aseguradora lo requiere y arreglarse con el tercero antes del ajustador impiden la subrogación. Proporcionar los datos del tercero o la información solicitada la facilitan.",
+    "explicacion": "Omitir datos del siniestro, no presentarse cuando la aseguradora lo requiere y arreglarse con el tercero antes del ajustador impiden la subrogación. Proporcionar los datos del tercero o la información solicitada la facilitan."
+  },
+  {
+    "id": 127,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "Cuando después de un siniestro, se comprueba que el bien no existía al ser asegurado. ¿Qué sanción se le impone al Asegurado?",
+    "pregunta": "Cuando después de un siniestro, se comprueba que el bien no existía al ser asegurado. ¿Qué sanción se le impone al Asegurado?",
+    "options": [
+      "No ser asegurable nuevamente",
+      "Pagará el doble de la prima anual",
+      "Una demanda contra judicial",
+      "Una multa en días del salario mínimo"
+    ],
+    "opciones": [
+      "No ser asegurable nuevamente",
+      "Pagará el doble de la prima anual",
+      "Una demanda contra judicial",
+      "Una multa en días del salario mínimo"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "No ser asegurable nuevamente",
+    "explanation": "Según la clave de la guía, si se comprueba que el bien no existía al asegurarse, el asegurado no podrá ser asegurado nuevamente. Conforme a la Ley sobre el Contrato de Seguro el efecto jurídico es la nulidad del contrato, sin una multa en salarios ni el cobro del doble de la prima.",
+    "explicacion": "Según la clave de la guía, si se comprueba que el bien no existía al asegurarse, el asegurado no podrá ser asegurado nuevamente. Conforme a la Ley sobre el Contrato de Seguro el efecto jurídico es la nulidad del contrato, sin una multa en salarios ni el cobro del doble de la prima."
+  },
+  {
+    "id": 128,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "A la posibilidad de que ocurra un acontecimiento a largo plazo o la frecuencia relativa de algún suceso, se le conoce como:",
+    "pregunta": "A la posibilidad de que ocurra un acontecimiento a largo plazo o la frecuencia relativa de algún suceso, se le conoce como:",
+    "options": [
+      "Seguro",
+      "Riesgo",
+      "Probabilidad",
+      "Incertidumbre"
+    ],
+    "opciones": [
+      "Seguro",
+      "Riesgo",
+      "Probabilidad",
+      "Incertidumbre"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Probabilidad",
+    "explanation": "La probabilidad es la posibilidad de que ocurra un acontecimiento medida a largo plazo, es decir, su frecuencia relativa. El riesgo es la incertidumbre sobre la ocurrencia del evento, el seguro es el mecanismo de transferencia y la incertidumbre es la falta de certeza.",
+    "explicacion": "La probabilidad es la posibilidad de que ocurra un acontecimiento medida a largo plazo, es decir, su frecuencia relativa. El riesgo es la incertidumbre sobre la ocurrencia del evento, el seguro es el mecanismo de transferencia y la incertidumbre es la falta de certeza."
+  },
+  {
+    "id": 129,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "¿A qué etapa de la Administración de Riesgos corresponden las actividades de buscar causas, efectos y clasificación de los riesgos?",
+    "pregunta": "¿A qué etapa de la Administración de Riesgos corresponden las actividades de buscar causas, efectos y clasificación de los riesgos?",
+    "options": [
+      "Identificación",
+      "Evaluación",
+      "Transferencia",
+      "Retención"
+    ],
+    "opciones": [
+      "Identificación",
+      "Evaluación",
+      "Transferencia",
+      "Retención"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Identificación",
+    "explanation": "La identificación es la etapa en la que se buscan las causas, los efectos y la clasificación de los riesgos. La evaluación mide frecuencia y severidad, y la transferencia y la retención son alternativas de tratamiento.",
+    "explicacion": "La identificación es la etapa en la que se buscan las causas, los efectos y la clasificación de los riesgos. La evaluación mide frecuencia y severidad, y la transferencia y la retención son alternativas de tratamiento."
+  },
+  {
+    "id": 130,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "Dentro de la Operación de Daños, si al momento de ocurrir un siniestro, los bienes tienen en conjunto un valor total superior a la cantidad asegurada, la Aseguradora responderá solamente de manera proporcional al daño causado; a esta afirmación se le conoce como:",
+    "pregunta": "Dentro de la Operación de Daños, si al momento de ocurrir un siniestro, los bienes tienen en conjunto un valor total superior a la cantidad asegurada, la Aseguradora responderá solamente de manera proporcional al daño causado; a esta afirmación se le conoce como:",
+    "options": [
+      "Valor de Reposición",
+      "Riesgos cubiertos por la póliza",
+      "Forma de indemnización (Proporción indemnizable)",
+      "Procedimientos de salvaguarda"
+    ],
+    "opciones": [
+      "Valor de Reposición",
+      "Riesgos cubiertos por la póliza",
+      "Forma de indemnización (Proporción indemnizable)",
+      "Procedimientos de salvaguarda"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Forma de indemnización (Proporción indemnizable)",
+    "explanation": "Cuando el valor total de los bienes supera la suma asegurada, la aseguradora responde de manera proporcional al daño, lo que se conoce como proporción indemnizable o regla proporcional, conforme a la Ley sobre el Contrato de Seguro. El valor de reposición es una base de valuación, no la forma de indemnizar.",
+    "explicacion": "Cuando el valor total de los bienes supera la suma asegurada, la aseguradora responde de manera proporcional al daño, lo que se conoce como proporción indemnizable o regla proporcional, conforme a la Ley sobre el Contrato de Seguro. El valor de reposición es una base de valuación, no la forma de indemnizar."
+  },
+  {
+    "id": 131,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "Dentro de la Administración de Riesgos, el Riesgo Financiero puede clasificarse en:",
+    "pregunta": "Dentro de la Administración de Riesgos, el Riesgo Financiero puede clasificarse en:",
+    "options": [
+      "Subjetivo y objetivo",
+      "Particular y general",
+      "Material y moral",
+      "Especulativo y puro"
+    ],
+    "opciones": [
+      "Subjetivo y objetivo",
+      "Particular y general",
+      "Material y moral",
+      "Especulativo y puro"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Particular y general",
+    "explanation": "Según la clave de la guía, el riesgo financiero se clasifica en particular y general, según afecte a un individuo o a la colectividad. Material y moral, subjetivo y objetivo, o puro y especulativo son otras clasificaciones del riesgo.",
+    "explicacion": "Según la clave de la guía, el riesgo financiero se clasifica en particular y general, según afecte a un individuo o a la colectividad. Material y moral, subjetivo y objetivo, o puro y especulativo son otras clasificaciones del riesgo."
+  },
+  {
+    "id": 132,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "¿Cómo se clasifican los riesgos que provienen de fenómenos naturales, como el Terremoto o el Huracán?",
+    "pregunta": "¿Cómo se clasifican los riesgos que provienen de fenómenos naturales, como el Terremoto o el Huracán?",
+    "options": [
+      "Particulares",
+      "Fundamentales",
+      "Objetivos",
+      "Subjetivos"
+    ],
+    "opciones": [
+      "Particulares",
+      "Fundamentales",
+      "Objetivos",
+      "Subjetivos"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Fundamentales",
+    "explanation": "Los riesgos que provienen de fenómenos naturales, como terremoto o huracán, son fundamentales, porque afectan a grandes grupos de personas y no dependen de una conducta individual. Los particulares se originan en acciones individuales.",
+    "explicacion": "Los riesgos que provienen de fenómenos naturales, como terremoto o huracán, son fundamentales, porque afectan a grandes grupos de personas y no dependen de una conducta individual. Los particulares se originan en acciones individuales."
+  },
+  {
+    "id": 133,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "En la Administración de Riesgos. ¿Cómo se clasifican los riesgos que un individuo causa por negligencia?",
+    "pregunta": "En la Administración de Riesgos. ¿Cómo se clasifican los riesgos que un individuo causa por negligencia?",
+    "options": [
+      "Objetivos",
+      "Dolosos",
+      "Fundamentales",
+      "Particulares"
+    ],
+    "opciones": [
+      "Objetivos",
+      "Dolosos",
+      "Fundamentales",
+      "Particulares"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Particulares",
+    "explanation": "Los riesgos que causa un individuo por negligencia son particulares, porque se originan en una persona concreta y afectan a pocos. Los fundamentales afectan a la colectividad, y doloso implica intención, no negligencia.",
+    "explicacion": "Los riesgos que causa un individuo por negligencia son particulares, porque se originan en una persona concreta y afectan a pocos. Los fundamentales afectan a la colectividad, y doloso implica intención, no negligencia."
+  },
+  {
+    "id": 134,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "¿Cómo se clasifica el riesgo que tiene una persona que asegura un vehículo en mal estado con la intención de que se lo roben?",
+    "pregunta": "¿Cómo se clasifica el riesgo que tiene una persona que asegura un vehículo en mal estado con la intención de que se lo roben?",
+    "options": [
+      "Moral",
+      "Físico",
+      "Consecuencial",
+      "Particular"
+    ],
+    "opciones": [
+      "Moral",
+      "Físico",
+      "Consecuencial",
+      "Particular"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Moral",
+    "explanation": "Asegurar un vehículo en mal estado con la intención de que lo roben es un riesgo moral, porque depende de la conducta deshonesta del asegurado. El riesgo físico se refiere a las características materiales del bien.",
+    "explicacion": "Asegurar un vehículo en mal estado con la intención de que lo roben es un riesgo moral, porque depende de la conducta deshonesta del asegurado. El riesgo físico se refiere a las características materiales del bien."
+  },
+  {
+    "id": 135,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Administración de Riesgos",
+    "question": "Elige de la siguiente lista, los factores que toma en cuenta un Administrador de Riesgos para determinar la Pérdida Máxima Probable: 1.- El número de veces que ocurre una pérdida 2.- El daño económico que ha ocurrido 3.- La actitud de los dueños con los riesgos 4.- La posibilidad que el ser humano o el equipo falle 5.- La situación financiera de la empresa 6.- La situación económica del país:",
+    "pregunta": "Elige de la siguiente lista, los factores que toma en cuenta un Administrador de Riesgos para determinar la Pérdida Máxima Probable: 1.- El número de veces que ocurre una pérdida 2.- El daño económico que ha ocurrido 3.- La actitud de los dueños con los riesgos 4.- La posibilidad que el ser humano o el equipo falle 5.- La situación financiera de la empresa 6.- La situación económica del país:",
+    "options": [
+      "4, 5, 6",
+      "2, 3, 5",
+      "1, 2, 4",
+      "1, 3, 6"
+    ],
+    "opciones": [
+      "4, 5, 6",
+      "2, 3, 5",
+      "1, 2, 4",
+      "1, 3, 6"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 2, 4",
+    "explanation": "Para estimar la pérdida máxima probable se consideran la frecuencia de las pérdidas, el daño económico ocurrido y la posibilidad de falla humana o del equipo. La actitud de los dueños, la situación financiera de la empresa o la economía del país no miden la exposición física.",
+    "explicacion": "Para estimar la pérdida máxima probable se consideran la frecuencia de las pérdidas, el daño económico ocurrido y la posibilidad de falla humana o del equipo. La actitud de los dueños, la situación financiera de la empresa o la economía del país no miden la exposición física."
+  },
+  {
+    "id": 293,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Es materia del seguro de responsabilidad civil general pagar en caso de siniestro:",
+    "pregunta": "Es materia del seguro de responsabilidad civil general pagar en caso de siniestro:",
+    "options": [
+      "Daños y perjuicios.",
+      "Daños y daño moral.",
+      "Daños y consecuencialmente los perjuicios y el daño moral.",
+      "Daño moral y perjuicio."
+    ],
+    "opciones": [
+      "Daños y perjuicios.",
+      "Daños y daño moral.",
+      "Daños y consecuencialmente los perjuicios y el daño moral.",
+      "Daño moral y perjuicio."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Daños y consecuencialmente los perjuicios y el daño moral.",
+    "explanation": "El seguro de responsabilidad civil general paga los daños y, como consecuencia de ellos, los perjuicios y el daño moral que el asegurado deba indemnizar. El perjuicio o el daño moral sin un daño previo no son materia de cobertura.",
+    "explicacion": "El seguro de responsabilidad civil general paga los daños y, como consecuencia de ellos, los perjuicios y el daño moral que el asegurado deba indemnizar. El perjuicio o el daño moral sin un daño previo no son materia de cobertura."
+  },
+  {
+    "id": 294,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Es una cobertura por convenio expreso en el seguro de responsabilidad civil general:",
+    "pregunta": "Es una cobertura por convenio expreso en el seguro de responsabilidad civil general:",
+    "options": [
+      "Daños ocasionados por vehículos del asegurado.",
+      "Responsabilidad civil asumida.",
+      "Responsabilidades por reacción nuclear.",
+      "Incumplimientos de convenios o contratos."
+    ],
+    "opciones": [
+      "Daños ocasionados por vehículos del asegurado.",
+      "Responsabilidad civil asumida.",
+      "Responsabilidades por reacción nuclear.",
+      "Incumplimientos de convenios o contratos."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Responsabilidad civil asumida.",
+    "explanation": "La responsabilidad civil asumida, es decir, la que el asegurado acepta por contrato, se cubre solo por convenio expreso. Los daños por vehículos, la reacción nuclear y el incumplimiento de contratos son exclusiones.",
+    "explicacion": "La responsabilidad civil asumida, es decir, la que el asegurado acepta por contrato, se cubre solo por convenio expreso. Los daños por vehículos, la reacción nuclear y el incumplimiento de contratos son exclusiones."
+  },
+  {
+    "id": 295,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Cuál es la territorialidad del seguro de responsabilidad civil general?",
+    "pregunta": "¿Cuál es la territorialidad del seguro de responsabilidad civil general?",
+    "options": [
+      "México y Estados Unidos.",
+      "México y Canadá.",
+      "La República Mexicana.",
+      "Todo el mundo."
+    ],
+    "opciones": [
+      "México y Estados Unidos.",
+      "México y Canadá.",
+      "La República Mexicana.",
+      "Todo el mundo."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "La República Mexicana.",
+    "explanation": "El seguro de responsabilidad civil general cubre responsabilidades dentro de la República Mexicana. Extenderla a Estados Unidos, Canadá o todo el mundo requiere convenio y prima adicional.",
+    "explicacion": "El seguro de responsabilidad civil general cubre responsabilidades dentro de la República Mexicana. Extenderla a Estados Unidos, Canadá o todo el mundo requiere convenio y prima adicional."
+  },
+  {
+    "id": 296,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Es un riesgo básico en la cobertura de responsabilidad civil para la industria:",
+    "pregunta": "Es un riesgo básico en la cobertura de responsabilidad civil para la industria:",
+    "options": [
+      "Falta de entrega de prendas por confusión de los empleados.",
+      "Daños a vehículos de los funcionarios del asegurado.",
+      "Derivada de su participación en ferias y exposiciones.",
+      "Por hundimiento o asentamiento del suelo o subsuelo."
+    ],
+    "opciones": [
+      "Falta de entrega de prendas por confusión de los empleados.",
+      "Daños a vehículos de los funcionarios del asegurado.",
+      "Derivada de su participación en ferias y exposiciones.",
+      "Por hundimiento o asentamiento del suelo o subsuelo."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Derivada de su participación en ferias y exposiciones.",
+    "explanation": "En la RC industrial, la responsabilidad derivada de participar en ferias y exposiciones forma parte del riesgo básico. La falta de entrega de prendas, los daños a vehículos de funcionarios y los hundimientos del suelo se excluyen o requieren convenio.",
+    "explicacion": "En la RC industrial, la responsabilidad derivada de participar en ferias y exposiciones forma parte del riesgo básico. La falta de entrega de prendas, los daños a vehículos de funcionarios y los hundimientos del suelo se excluyen o requieren convenio."
+  },
+  {
+    "id": 297,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Es una cobertura adicional en la póliza de responsabilidad civil para la industria:",
+    "pregunta": "Es una cobertura adicional en la póliza de responsabilidad civil para la industria:",
+    "options": [
+      "Responsabilidades profesionales.",
+      "Daños o perdida de equipaje.",
+      "Daños ocasionados en forma dolosa.",
+      "Fabricación, almacenamiento y uso de explosivos."
+    ],
+    "opciones": [
+      "Responsabilidades profesionales.",
+      "Daños o perdida de equipaje.",
+      "Daños ocasionados en forma dolosa.",
+      "Fabricación, almacenamiento y uso de explosivos."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Fabricación, almacenamiento y uso de explosivos.",
+    "explanation": "En la RC para la industria, la fabricación, almacenamiento y uso de explosivos se cubre como cobertura adicional por su alta peligrosidad. La responsabilidad profesional requiere otra póliza, el equipaje no es propio de la industria y los daños dolosos nunca se cubren.",
+    "explicacion": "En la RC para la industria, la fabricación, almacenamiento y uso de explosivos se cubre como cobertura adicional por su alta peligrosidad. La responsabilidad profesional requiere otra póliza, el equipaje no es propio de la industria y los daños dolosos nunca se cubren."
+  },
+  {
+    "id": 298,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Pérdida o menoscabo que sufra una persona en su integridad física o en su patrimonio familiar.",
+    "pregunta": "Pérdida o menoscabo que sufra una persona en su integridad física o en su patrimonio familiar.",
+    "options": [
+      "Daño.",
+      "Perjuicio.",
+      "Perjurio.",
+      "Daño moral."
+    ],
+    "opciones": [
+      "Daño.",
+      "Perjuicio.",
+      "Perjurio.",
+      "Daño moral."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Daño.",
+    "explanation": "El daño es la pérdida o menoscabo que sufre una persona en su integridad física o en su patrimonio, conforme al Código Civil Federal. El perjuicio es la ganancia lícita que se deja de obtener, el daño moral afecta sentimientos u honor y el perjurio es un delito.",
+    "explicacion": "El daño es la pérdida o menoscabo que sufre una persona en su integridad física o en su patrimonio, conforme al Código Civil Federal. El perjuicio es la ganancia lícita que se deja de obtener, el daño moral afecta sentimientos u honor y el perjurio es un delito."
+  },
+  {
+    "id": 299,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Pérdida o falta de ganancia lícita como consecuencia del daño.",
+    "pregunta": "Pérdida o falta de ganancia lícita como consecuencia del daño.",
+    "options": [
+      "Daño.",
+      "Perjuicio.",
+      "Perjurio.",
+      "Daño moral."
+    ],
+    "opciones": [
+      "Daño.",
+      "Perjuicio.",
+      "Perjurio.",
+      "Daño moral."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Perjuicio.",
+    "explanation": "El perjuicio es la privación de una ganancia lícita que debió obtenerse como consecuencia del daño, conforme al Código Civil Federal. El daño es la pérdida patrimonial directa, y el daño moral afecta bienes no económicos.",
+    "explicacion": "El perjuicio es la privación de una ganancia lícita que debió obtenerse como consecuencia del daño, conforme al Código Civil Federal. El daño es la pérdida patrimonial directa, y el daño moral afecta bienes no económicos."
+  },
+  {
+    "id": 300,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "La afectación que sufre una persona en sus sentimientos, decoro, honor, reputación, vida privada, configuración y aspecto físico y en la consideración que de sí mismo tienen los demás.",
+    "pregunta": "La afectación que sufre una persona en sus sentimientos, decoro, honor, reputación, vida privada, configuración y aspecto físico y en la consideración que de sí mismo tienen los demás.",
+    "options": [
+      "Daño.",
+      "Perjuicio.",
+      "Perjurio.",
+      "Daño moral."
+    ],
+    "opciones": [
+      "Daño.",
+      "Perjuicio.",
+      "Perjurio.",
+      "Daño moral."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Daño moral.",
+    "explanation": "El daño moral es la afectación en sentimientos, decoro, honor, reputación, vida privada y aspecto físico, como lo define el artículo 1916 del Código Civil Federal. El daño y el perjuicio son patrimoniales.",
+    "explicacion": "El daño moral es la afectación en sentimientos, decoro, honor, reputación, vida privada y aspecto físico, como lo define el artículo 1916 del Código Civil Federal. El daño y el perjuicio son patrimoniales."
+  },
+  {
+    "id": 301,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "El que obrando ilícitamente o contra las buenas costumbres si causa daño a alguien estará obligado a reparar el daño que hizo. A menos que dicho daño sea causado por culpa grave o negligencia inexcusable de la víctima.",
+    "pregunta": "El que obrando ilícitamente o contra las buenas costumbres si causa daño a alguien estará obligado a reparar el daño que hizo. A menos que dicho daño sea causado por culpa grave o negligencia inexcusable de la víctima.",
+    "options": [
+      "R.C. Contractual.",
+      "R.C. Objetiva.",
+      "R.C. Extracontractual.",
+      "R.C. Subjetiva."
+    ],
+    "opciones": [
+      "R.C. Contractual.",
+      "R.C. Objetiva.",
+      "R.C. Extracontractual.",
+      "R.C. Subjetiva."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "R.C. Subjetiva.",
+    "explanation": "La RC subjetiva se basa en la culpa: quien obra ilícitamente o contra las buenas costumbres y causa daño debe repararlo, salvo culpa o negligencia inexcusable de la víctima, como establece el artículo 1910 del Código Civil Federal. La RC objetiva no requiere ilicitud, y la contractual nace del incumplimiento de un contrato.",
+    "explicacion": "La RC subjetiva se basa en la culpa: quien obra ilícitamente o contra las buenas costumbres y causa daño debe repararlo, salvo culpa o negligencia inexcusable de la víctima, como establece el artículo 1910 del Código Civil Federal. La RC objetiva no requiere ilicitud, y la contractual nace del incumplimiento de un contrato."
+  },
+  {
+    "id": 302,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "El que haciendo uso de mecanismos, aparatos, sustancias e instrumentos por sí mismo peligrosos, por la velocidad que desarrollan, por su naturaleza inflamable y explosiva, por la energía eléctrica que conduzcan o por una causa análoga, si se causa daño a alguien estará obligado a reparar el daño que hizo; aunque no se obre ilícitamente. A menos que el daño haya sido causado por culpa grave o negligencia inexcusable de la víctima.",
+    "pregunta": "El que haciendo uso de mecanismos, aparatos, sustancias e instrumentos por sí mismo peligrosos, por la velocidad que desarrollan, por su naturaleza inflamable y explosiva, por la energía eléctrica que conduzcan o por una causa análoga, si se causa daño a alguien estará obligado a reparar el daño que hizo; aunque no se obre ilícitamente. A menos que el daño haya sido causado por culpa grave o negligencia inexcusable de la víctima.",
+    "options": [
+      "R.C. Contractual.",
+      "R.C. Objetiva.",
+      "R.C. Extracontractual.",
+      "R.C. Subjetiva."
+    ],
+    "opciones": [
+      "R.C. Contractual.",
+      "R.C. Objetiva.",
+      "R.C. Extracontractual.",
+      "R.C. Subjetiva."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "R.C. Objetiva.",
+    "explanation": "La RC objetiva o por riesgo creado obliga a reparar el daño causado con mecanismos o sustancias peligrosas aunque no se obre ilícitamente, como establece el artículo 1913 del Código Civil Federal. La subjetiva requiere culpa o ilicitud.",
+    "explicacion": "La RC objetiva o por riesgo creado obliga a reparar el daño causado con mecanismos o sustancias peligrosas aunque no se obre ilícitamente, como establece el artículo 1913 del Código Civil Federal. La subjetiva requiere culpa o ilicitud."
+  },
+  {
+    "id": 303,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Cuál es la suma asegurada para el pago del importe de las primas por fianzas judiciales que el asegurado deba otorgara en garantía del pago de las sumas que se le reclaman a título de responsabilidad civil?.",
+    "pregunta": "¿Cuál es la suma asegurada para el pago del importe de las primas por fianzas judiciales que el asegurado deba otorgara en garantía del pago de las sumas que se le reclaman a título de responsabilidad civil?.",
+    "options": [
+      "El 10% adicional de la suma asegurada.",
+      "El 25% adicional de la suma asegurada.",
+      "El 50% adicional de la suma asegurada.",
+      "El 100% adicional de la suma asegurada."
+    ],
+    "opciones": [
+      "El 10% adicional de la suma asegurada.",
+      "El 25% adicional de la suma asegurada.",
+      "El 50% adicional de la suma asegurada.",
+      "El 100% adicional de la suma asegurada."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "El 50% adicional de la suma asegurada.",
+    "explanation": "Según la clave de la guía, para las primas de fianzas judiciales que garantizan la responsabilidad reclamada se otorga un 50% adicional de la suma asegurada. Los porcentajes de 10%, 25% o 100% no son los de la guía.",
+    "explicacion": "Según la clave de la guía, para las primas de fianzas judiciales que garantizan la responsabilidad reclamada se otorga un 50% adicional de la suma asegurada. Los porcentajes de 10%, 25% o 100% no son los de la guía."
+  },
+  {
+    "id": 304,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Cómo es considerado el pago de fianzas o caución penal en la póliza de responsabilidad civil?",
+    "pregunta": "¿Cómo es considerado el pago de fianzas o caución penal en la póliza de responsabilidad civil?",
+    "options": [
+      "Cobertura básica.",
+      "Cobertura por convenio expreso.",
+      "Exclusión total.",
+      "No se menciona en la póliza."
+    ],
+    "opciones": [
+      "Cobertura básica.",
+      "Cobertura por convenio expreso.",
+      "Exclusión total.",
+      "No se menciona en la póliza."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Exclusión total.",
+    "explanation": "Según la clave de la guía, el pago de fianzas o cauciones penales para la libertad del asegurado es una exclusión total de la póliza de RC. La póliza sí cubre las primas de fianzas judiciales que garantizan la indemnización civil.",
+    "explicacion": "Según la clave de la guía, el pago de fianzas o cauciones penales para la libertad del asegurado es una exclusión total de la póliza de RC. La póliza sí cubre las primas de fianzas judiciales que garantizan la indemnización civil."
+  },
+  {
+    "id": 305,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Señala una exclusión total en responsabilidad civil general.",
+    "pregunta": "Señala una exclusión total en responsabilidad civil general.",
+    "options": [
+      "R.C. Daños en el extranjero.",
+      "R.C. Daños a bienes propiedad de terceros.",
+      "R.C. Asumida.",
+      "R.C. por prestaciones sustitutorias del incumpliendo de contrato."
+    ],
+    "opciones": [
+      "R.C. Daños en el extranjero.",
+      "R.C. Daños a bienes propiedad de terceros.",
+      "R.C. Asumida.",
+      "R.C. por prestaciones sustitutorias del incumpliendo de contrato."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "R.C. por prestaciones sustitutorias del incumpliendo de contrato.",
+    "explanation": "Las prestaciones sustitutorias del incumplimiento de contratos son una exclusión total, porque la RC general cubre responsabilidad extracontractual. Los daños en el extranjero y la RC asumida pueden contratarse por convenio, y los daños a bienes de terceros son materia de cobertura.",
+    "explicacion": "Las prestaciones sustitutorias del incumplimiento de contratos son una exclusión total, porque la RC general cubre responsabilidad extracontractual. Los daños en el extranjero y la RC asumida pueden contratarse por convenio, y los daños a bienes de terceros son materia de cobertura."
+  },
+  {
+    "id": 306,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Es un riesgo básico por la cobertura de R.C. Comercio.",
+    "pregunta": "Es un riesgo básico por la cobertura de R.C. Comercio.",
+    "options": [
+      "Derivada excursiones y/o actos festivos organizados para su personal.",
+      "Derivada de daños por contratistas independientes.",
+      "Derivada de daños a vehículos terrestres ajenos en operaciones de carga.",
+      "Derivada de daños ocasionados dolosamente."
+    ],
+    "opciones": [
+      "Derivada excursiones y/o actos festivos organizados para su personal.",
+      "Derivada de daños por contratistas independientes.",
+      "Derivada de daños a vehículos terrestres ajenos en operaciones de carga.",
+      "Derivada de daños ocasionados dolosamente."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Derivada excursiones y/o actos festivos organizados para su personal.",
+    "explanation": "Según la clave de la guía, la RC por excursiones o actos festivos organizados para el personal forma parte del riesgo básico de RC comercio. Los contratistas independientes y la carga y descarga se contratan aparte, y el dolo se excluye.",
+    "explicacion": "Según la clave de la guía, la RC por excursiones o actos festivos organizados para el personal forma parte del riesgo básico de RC comercio. Los contratistas independientes y la carga y descarga se contratan aparte, y el dolo se excluye."
+  },
+  {
+    "id": 307,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Cómo se llama la cobertura que indemniza por daños a causa de deterioro o destrucción de otros productos al ser unidos en la fabricación de un producto final?",
+    "pregunta": "¿Cómo se llama la cobertura que indemniza por daños a causa de deterioro o destrucción de otros productos al ser unidos en la fabricación de un producto final?",
+    "options": [
+      "R.C. Productos",
+      "R.C. Unión y mezcla.",
+      "R.C. Productos de exportación.",
+      "R.C. Asumida."
+    ],
+    "opciones": [
+      "R.C. Productos",
+      "R.C. Unión y mezcla.",
+      "R.C. Productos de exportación.",
+      "R.C. Asumida."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "R.C. Unión y mezcla.",
+    "explanation": "La cobertura de unión y mezcla indemniza los daños a otros productos que se deterioran o destruyen al unirse o mezclarse con el producto del asegurado en la fabricación del producto final. La RC productos cubre daños a terceros por el uso del producto.",
+    "explicacion": "La cobertura de unión y mezcla indemniza los daños a otros productos que se deterioran o destruyen al unirse o mezclarse con el producto del asegurado en la fabricación del producto final. La RC productos cubre daños a terceros por el uso del producto."
+  },
+  {
+    "id": 308,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "En las condiciones particulares de la R.C. Industria ¿cómo está considerado el pago de los daños a vehículos terrestres ajenos durante la operación de carga y descarga ocasionados por grúas, cabrias o montacargas?",
+    "pregunta": "En las condiciones particulares de la R.C. Industria ¿cómo está considerado el pago de los daños a vehículos terrestres ajenos durante la operación de carga y descarga ocasionados por grúas, cabrias o montacargas?",
+    "options": [
+      "Cobertura básica.",
+      "Cobertura excluida.",
+      "Convenio expreso.",
+      "Avería particular."
+    ],
+    "opciones": [
+      "Cobertura básica.",
+      "Cobertura excluida.",
+      "Convenio expreso.",
+      "Avería particular."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Convenio expreso.",
+    "explanation": "En la RC industria, los daños a vehículos ajenos durante la carga y descarga con grúas, cabrias o montacargas se cubren por convenio expreso. No son básicos, ni una exclusión absoluta, y la avería particular es un concepto marítimo.",
+    "explicacion": "En la RC industria, los daños a vehículos ajenos durante la carga y descarga con grúas, cabrias o montacargas se cubren por convenio expreso. No son básicos, ni una exclusión absoluta, y la avería particular es un concepto marítimo."
+  },
+  {
+    "id": 309,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Cuáles son los daños que indemniza la cobertura de R.C. Arrendatario?",
+    "pregunta": "¿Cuáles son los daños que indemniza la cobertura de R.C. Arrendatario?",
+    "options": [
+      "Incendio, rayo y explosión.",
+      "Incendio y explosión.",
+      "Extensión de cubierta.",
+      "Daños por actividades normales del giro del negocio."
+    ],
+    "opciones": [
+      "Incendio, rayo y explosión.",
+      "Incendio y explosión.",
+      "Extensión de cubierta.",
+      "Daños por actividades normales del giro del negocio."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Incendio y explosión.",
+    "explanation": "Según la clave de la guía, la RC arrendatario indemniza los daños al inmueble arrendado por incendio y explosión. No incluye el rayo ni la extensión de cubierta, y los daños propios del giro se cubren en la RC de actividades.",
+    "explicacion": "Según la clave de la guía, la RC arrendatario indemniza los daños al inmueble arrendado por incendio y explosión. No incluye el rayo ni la extensión de cubierta, y los daños propios del giro se cubren en la RC de actividades."
+  },
+  {
+    "id": 310,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Qué cobertura ampara los daños por fabricación de explosivos?",
+    "pregunta": "¿Qué cobertura ampara los daños por fabricación de explosivos?",
+    "options": [
+      "R.C. Industria.",
+      "R.C. Comercio.",
+      "R.C. Productos terminados",
+      "R.C. Contratistas independientes."
+    ],
+    "opciones": [
+      "R.C. Industria.",
+      "R.C. Comercio.",
+      "R.C. Productos terminados",
+      "R.C. Contratistas independientes."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "R.C. Industria.",
+    "explanation": "Los daños por fabricación de explosivos se amparan en la RC industria, mediante su cobertura adicional para explosivos. La RC comercio, la de productos terminados y la de contratistas no cubren esa actividad.",
+    "explicacion": "Los daños por fabricación de explosivos se amparan en la RC industria, mediante su cobertura adicional para explosivos. La RC comercio, la de productos terminados y la de contratistas no cubren esa actividad."
+  },
+  {
+    "id": 311,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "En la cobertura de R.C. Comercio, los daños causados por la propiedad o mantenimiento de instalaciones de propaganda, anuncios luminosos y/o carteles publicitarios. ¿En dónde quedan amparados?",
+    "pregunta": "En la cobertura de R.C. Comercio, los daños causados por la propiedad o mantenimiento de instalaciones de propaganda, anuncios luminosos y/o carteles publicitarios. ¿En dónde quedan amparados?",
+    "options": [
+      "Cobertura básica.",
+      "R.C. Anuncios luminosos.",
+      "R.C. Carga y descarga.",
+      "Riesgo excluido."
+    ],
+    "opciones": [
+      "Cobertura básica.",
+      "R.C. Anuncios luminosos.",
+      "R.C. Carga y descarga.",
+      "Riesgo excluido."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Cobertura básica.",
+    "explanation": "En la RC comercio, la propiedad o mantenimiento de anuncios luminosos y carteles publicitarios forma parte de la cobertura básica. No requiere una póliza separada ni es un riesgo excluido.",
+    "explicacion": "En la RC comercio, la propiedad o mantenimiento de anuncios luminosos y carteles publicitarios forma parte de la cobertura básica. No requiere una póliza separada ni es un riesgo excluido."
+  },
+  {
+    "id": 312,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿A quién se considera tercero en la póliza de Responsabilidad Civil General?.",
+    "pregunta": "¿A quién se considera tercero en la póliza de Responsabilidad Civil General?.",
+    "options": [
+      "Al asegurado.",
+      "La Compañía.",
+      "Al Agente.",
+      "A la víctima."
+    ],
+    "opciones": [
+      "Al asegurado.",
+      "La Compañía.",
+      "Al Agente.",
+      "A la víctima."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "A la víctima.",
+    "explanation": "En la RC general el tercero es la víctima, es decir, la persona que sufre el daño causado por el asegurado. El asegurado, la aseguradora y el agente son partes del contrato o intermediarios.",
+    "explicacion": "En la RC general el tercero es la víctima, es decir, la persona que sufre el daño causado por el asegurado. El asegurado, la aseguradora y el agente son partes del contrato o intermediarios."
+  },
+  {
+    "id": 313,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Son tipos de R.C. obligatorios por la Ley :",
+    "pregunta": "Son tipos de R.C. obligatorios por la Ley :",
+    "options": [
+      "R.C. Viajero, R.C. Errores y Omisiones Agentes de Seguros, R.C. Contaminación, R.C. Daños por la Carga, R.C. Hotelería, R.C. Comercio",
+      "R.C. Viajero, R.C. Errores y Omisiones Agentes de Seguros, R.C. Contaminación, R.C. Daños por la Carga, R.C. Hotelería",
+      "R.C. Viajero, R.C. Errores y Omisiones Agentes de Seguros, R.C. Contaminación, R.C. Daños por la Carga, R.C. Hotelería, R.C. Industria",
+      "R.C. Viajero, R.C. Errores y Omisiones Agentes de Seguros, R.C. Contaminación, R.C. Daños por la Carga, R.C. Hotelería, R.C. Farmacia"
+    ],
+    "opciones": [
+      "R.C. Viajero, R.C. Errores y Omisiones Agentes de Seguros, R.C. Contaminación, R.C. Daños por la Carga, R.C. Hotelería, R.C. Comercio",
+      "R.C. Viajero, R.C. Errores y Omisiones Agentes de Seguros, R.C. Contaminación, R.C. Daños por la Carga, R.C. Hotelería",
+      "R.C. Viajero, R.C. Errores y Omisiones Agentes de Seguros, R.C. Contaminación, R.C. Daños por la Carga, R.C. Hotelería, R.C. Industria",
+      "R.C. Viajero, R.C. Errores y Omisiones Agentes de Seguros, R.C. Contaminación, R.C. Daños por la Carga, R.C. Hotelería, R.C. Farmacia"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "R.C. Viajero, R.C. Errores y Omisiones Agentes de Seguros, R.C. Contaminación, R.C. Daños por la Carga, R.C. Hotelería",
+    "explanation": "Según la clave de la guía, son obligatorias por ley la RC del viajero, la de errores y omisiones de agentes, la de contaminación, la de daños por la carga y la de hotelería, sin incluir comercio, industria o farmacia. Actualmente también es obligatoria la RC de vehículos que circulan por vías federales.",
+    "explicacion": "Según la clave de la guía, son obligatorias por ley la RC del viajero, la de errores y omisiones de agentes, la de contaminación, la de daños por la carga y la de hotelería, sin incluir comercio, industria o farmacia. Actualmente también es obligatoria la RC de vehículos que circulan por vías federales."
+  },
+  {
+    "id": 314,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Cuando existe un daño moral consecuencial, lo que el juez toma como base para la indemnización, es:",
+    "pregunta": "Cuando existe un daño moral consecuencial, lo que el juez toma como base para la indemnización, es:",
+    "options": [
+      "Grado de alcohol de la victima",
+      "Grado de culpa y solvencia económica del causante del daño",
+      "Grado de culpa y responsabilidad de la victima",
+      "Grado de culpa y estado emocional de la victima"
+    ],
+    "opciones": [
+      "Grado de alcohol de la victima",
+      "Grado de culpa y solvencia económica del causante del daño",
+      "Grado de culpa y responsabilidad de la victima",
+      "Grado de culpa y estado emocional de la victima"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Grado de culpa y solvencia económica del causante del daño",
+    "explanation": "Para fijar la indemnización por daño moral el juez considera el grado de responsabilidad y la situación económica del responsable, entre otros elementos, conforme al artículo 1916 del Código Civil Federal. El alcohol o el estado emocional de la víctima no son la base legal.",
+    "explicacion": "Para fijar la indemnización por daño moral el juez considera el grado de responsabilidad y la situación económica del responsable, entre otros elementos, conforme al artículo 1916 del Código Civil Federal. El alcohol o el estado emocional de la víctima no son la base legal."
+  },
+  {
+    "id": 315,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "En qué momento debe dar aviso el Asegurado a la Compañía de Seguros cuando existe un daño a un tercero:",
+    "pregunta": "En qué momento debe dar aviso el Asegurado a la Compañía de Seguros cuando existe un daño a un tercero:",
+    "options": [
+      "Cuando tenga conocimiento del daño y carta o demanda del tercero",
+      "Cuando esté detenido",
+      "Cuando tenga la fianza",
+      "Cuando la Compañía de Seguros se lo informe"
+    ],
+    "opciones": [
+      "Cuando tenga conocimiento del daño y carta o demanda del tercero",
+      "Cuando esté detenido",
+      "Cuando tenga la fianza",
+      "Cuando la Compañía de Seguros se lo informe"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Cuando tenga conocimiento del daño y carta o demanda del tercero",
+    "explanation": "El asegurado debe avisar a la aseguradora en cuanto tenga conocimiento del daño o reciba la carta o demanda del tercero, para que esta asuma la defensa. Esperar a ser detenido o a que la aseguradora le informe incumple el aviso oportuno.",
+    "explicacion": "El asegurado debe avisar a la aseguradora en cuanto tenga conocimiento del daño o reciba la carta o demanda del tercero, para que esta asuma la defensa. Esperar a ser detenido o a que la aseguradora le informe incumple el aviso oportuno."
+  },
+  {
+    "id": 316,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Qué sucede con la indemnización correspondiente cuando el tercero afectado fallece?",
+    "pregunta": "¿Qué sucede con la indemnización correspondiente cuando el tercero afectado fallece?",
+    "options": [
+      "Corresponde pagar el 50% de la cobertura básica",
+      "Corresponde devolver las primas pagadas",
+      "Corresponde a la sucesión legítima y legal",
+      "Corresponde pagarle al Asegurado una fianza"
+    ],
+    "opciones": [
+      "Corresponde pagar el 50% de la cobertura básica",
+      "Corresponde devolver las primas pagadas",
+      "Corresponde a la sucesión legítima y legal",
+      "Corresponde pagarle al Asegurado una fianza"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Corresponde a la sucesión legítima y legal",
+    "explanation": "Si el tercero afectado fallece, la indemnización corresponde a su sucesión legítima o legal, es decir, a sus herederos. No se reduce al 50%, no se devuelven primas ni se paga al asegurado.",
+    "explicacion": "Si el tercero afectado fallece, la indemnización corresponde a su sucesión legítima o legal, es decir, a sus herederos. No se reduce al 50%, no se devuelven primas ni se paga al asegurado."
+  },
+  {
+    "id": 317,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Qué tipo de R.C. es cuando un juez considera que existe responsabilidad por el hecho de usar sustancias explosivas?",
+    "pregunta": "¿Qué tipo de R.C. es cuando un juez considera que existe responsabilidad por el hecho de usar sustancias explosivas?",
+    "options": [
+      "Objetiva",
+      "Subjetiva",
+      "Moral",
+      "Penal"
+    ],
+    "opciones": [
+      "Objetiva",
+      "Subjetiva",
+      "Moral",
+      "Penal"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Objetiva",
+    "explanation": "Cuando el juez considera que hay responsabilidad por usar sustancias explosivas, se trata de RC objetiva o por riesgo creado, que no exige culpa. La subjetiva requiere culpa, y la moral y la penal son otros ámbitos.",
+    "explicacion": "Cuando el juez considera que hay responsabilidad por usar sustancias explosivas, se trata de RC objetiva o por riesgo creado, que no exige culpa. La subjetiva requiere culpa, y la moral y la penal son otros ámbitos."
+  },
+  {
+    "id": 318,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "La pérdida de la ganancia lícita que un individuo podía tener de haberse presentado el daño sufrido se le conoce como:",
+    "pregunta": "La pérdida de la ganancia lícita que un individuo podía tener de haberse presentado el daño sufrido se le conoce como:",
+    "options": [
+      "Lesión",
+      "Daño moral",
+      "Pérdida de utilidades",
+      "Perjuicio"
+    ],
+    "opciones": [
+      "Lesión",
+      "Daño moral",
+      "Pérdida de utilidades",
+      "Perjuicio"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Perjuicio",
+    "explanation": "El perjuicio es la ganancia lícita que una persona deja de obtener por el daño sufrido. La lesión es un daño físico, el daño moral afecta bienes no económicos y la pérdida de utilidades es un término de seguros de interrupción.",
+    "explicacion": "El perjuicio es la ganancia lícita que una persona deja de obtener por el daño sufrido. La lesión es un daño físico, el daño moral afecta bienes no económicos y la pérdida de utilidades es un término de seguros de interrupción."
+  },
+  {
+    "id": 319,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Cuál es el monto de la suma asegurada adicional para gastos, costas y fianzas judiciales?",
+    "pregunta": "¿Cuál es el monto de la suma asegurada adicional para gastos, costas y fianzas judiciales?",
+    "options": [
+      "El doble de la principal",
+      "25% de la principal",
+      "50% de la principal",
+      "Igual a la principal"
+    ],
+    "opciones": [
+      "El doble de la principal",
+      "25% de la principal",
+      "50% de la principal",
+      "Igual a la principal"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "50% de la principal",
+    "explanation": "Según la clave de la guía, la suma adicional para gastos, costas y fianzas judiciales es el 50% de la suma principal. El 25%, el doble o una cantidad igual no corresponden a la guía.",
+    "explicacion": "Según la clave de la guía, la suma adicional para gastos, costas y fianzas judiciales es el 50% de la suma principal. El 25%, el doble o una cantidad igual no corresponden a la guía."
+  },
+  {
+    "id": 320,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "A qué conceptos se refiere la definición de “El que obrando ilícitamente o contra las buenas costumbres cause daño a otro, está obligado a repararlo, a menos que se demuestre que dicho daño fue como consecuencia de culpa o negligencia inexcusable de la victima:",
+    "pregunta": "A qué conceptos se refiere la definición de “El que obrando ilícitamente o contra las buenas costumbres cause daño a otro, está obligado a repararlo, a menos que se demuestre que dicho daño fue como consecuencia de culpa o negligencia inexcusable de la victima:",
+    "options": [
+      "Responsabilidad Civil",
+      "Negligencia",
+      "Daño moral",
+      "Daño penal"
+    ],
+    "opciones": [
+      "Responsabilidad Civil",
+      "Negligencia",
+      "Daño moral",
+      "Daño penal"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Responsabilidad Civil",
+    "explanation": "La definición de que quien obra ilícitamente o contra las buenas costumbres y causa daño debe repararlo describe la responsabilidad civil, como señala el artículo 1910 del Código Civil Federal. La negligencia es una forma de culpa, y el daño moral y el penal son conceptos distintos.",
+    "explicacion": "La definición de que quien obra ilícitamente o contra las buenas costumbres y causa daño debe repararlo describe la responsabilidad civil, como señala el artículo 1910 del Código Civil Federal. La negligencia es una forma de culpa, y el daño moral y el penal son conceptos distintos."
+  },
+  {
+    "id": 321,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Qué sucede cuando una persona causa daño a otra por no saber usar la podadora?",
+    "pregunta": "¿Qué sucede cuando una persona causa daño a otra por no saber usar la podadora?",
+    "options": [
+      "Se hace acreedora a una multa y no puede volver a usar la podadora",
+      "Está obligada a pagar los daños que causó",
+      "Es detenida por las autoridades sólo 72 horas",
+      "Esta obligada a leer el instructivo y a pedir disculpas"
+    ],
+    "opciones": [
+      "Se hace acreedora a una multa y no puede volver a usar la podadora",
+      "Está obligada a pagar los daños que causó",
+      "Es detenida por las autoridades sólo 72 horas",
+      "Esta obligada a leer el instructivo y a pedir disculpas"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Está obligada a pagar los daños que causó",
+    "explanation": "Quien causa daño a otro por no saber usar una podadora actúa con negligencia y está obligado a pagar los daños que causó. La responsabilidad civil se traduce en reparar el daño, no en multas, detención o disculpas.",
+    "explicacion": "Quien causa daño a otro por no saber usar una podadora actúa con negligencia y está obligado a pagar los daños que causó. La responsabilidad civil se traduce en reparar el daño, no en multas, detención o disculpas."
+  },
+  {
+    "id": 322,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Cómo se considera cuando existen varias reclamaciones motivadas por la misma causa?",
+    "pregunta": "¿Cómo se considera cuando existen varias reclamaciones motivadas por la misma causa?",
+    "options": [
+      "Depende el tiempo que exista entre una y otra, serán uno o varios siniestros",
+      "Se agrupan por gravedad en varios siniestros",
+      "Es un solo siniestro",
+      "Cada reclamación es un siniestro"
+    ],
+    "opciones": [
+      "Depende el tiempo que exista entre una y otra, serán uno o varios siniestros",
+      "Se agrupan por gravedad en varios siniestros",
+      "Es un solo siniestro",
+      "Cada reclamación es un siniestro"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Es un solo siniestro",
+    "explanation": "Las reclamaciones motivadas por una misma causa se consideran un solo siniestro, por lo que se aplican una suma asegurada y un deducible. No se separan por tiempo ni por gravedad.",
+    "explicacion": "Las reclamaciones motivadas por una misma causa se consideran un solo siniestro, por lo que se aplican una suma asegurada y un deducible. No se separan por tiempo ni por gravedad."
+  },
+  {
+    "id": 323,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Los daños que cause una persona y por los cuales sea legalmente responsable y que se derivan de las actividades propias de un negocio, son parte de:",
+    "pregunta": "Los daños que cause una persona y por los cuales sea legalmente responsable y que se derivan de las actividades propias de un negocio, son parte de:",
+    "options": [
+      "La cobertura adicional de R.C. Profesional",
+      "La cobertura básica de R.C. Viajero",
+      "La cobertura básica de R.C. Privada",
+      "La cobertura básica de R.C. General"
+    ],
+    "opciones": [
+      "La cobertura adicional de R.C. Profesional",
+      "La cobertura básica de R.C. Viajero",
+      "La cobertura básica de R.C. Privada",
+      "La cobertura básica de R.C. General"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "La cobertura básica de R.C. General",
+    "explanation": "Los daños derivados de las actividades propias de un negocio, por los que el asegurado sea legalmente responsable, son parte de la cobertura básica de RC general. La RC privada cubre la vida personal, la profesional el ejercicio de una profesión y la del viajero el transporte de pasajeros.",
+    "explicacion": "Los daños derivados de las actividades propias de un negocio, por los que el asegurado sea legalmente responsable, son parte de la cobertura básica de RC general. La RC privada cubre la vida personal, la profesional el ejercicio de una profesión y la del viajero el transporte de pasajeros."
+  },
+  {
+    "id": 324,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Todas son responsabilidades que se contratan por convenio expreso en R.C. General, EXCEPTO:",
+    "pregunta": "Todas son responsabilidades que se contratan por convenio expreso en R.C. General, EXCEPTO:",
+    "options": [
+      "Daños por trabajos realizados",
+      "Siniestros ocurridos en el extranjero",
+      "Daños por el uso de embarcaciones",
+      "Daños por remodelaciones"
+    ],
+    "opciones": [
+      "Daños por trabajos realizados",
+      "Siniestros ocurridos en el extranjero",
+      "Daños por el uso de embarcaciones",
+      "Daños por remodelaciones"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Daños por el uso de embarcaciones",
+    "explanation": "En la RC general, los trabajos realizados, los siniestros en el extranjero y las remodelaciones pueden contratarse por convenio expreso. Los daños por embarcaciones se excluyen, porque requieren un seguro marítimo.",
+    "explicacion": "En la RC general, los trabajos realizados, los siniestros en el extranjero y las remodelaciones pueden contratarse por convenio expreso. Los daños por embarcaciones se excluyen, porque requieren un seguro marítimo."
+  },
+  {
+    "id": 325,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Todas son exclusiones definitivas de R.C. General, EXCEPTO:",
+    "pregunta": "Todas son exclusiones definitivas de R.C. General, EXCEPTO:",
+    "options": [
+      "Daños por productos suministrados",
+      "Lesiones a los hijos del Asegurado",
+      "Lesiones a trabajadores del Asegurado",
+      "Demandas por incumplimiento de contratos"
+    ],
+    "opciones": [
+      "Daños por productos suministrados",
+      "Lesiones a los hijos del Asegurado",
+      "Lesiones a trabajadores del Asegurado",
+      "Demandas por incumplimiento de contratos"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Daños por productos suministrados",
+    "explanation": "Los daños por productos suministrados pueden cubrirse con la cobertura adicional de productos, por lo que no son una exclusión definitiva. Las lesiones a hijos y trabajadores del asegurado y el incumplimiento de contratos sí se excluyen.",
+    "explicacion": "Los daños por productos suministrados pueden cubrirse con la cobertura adicional de productos, por lo que no son una exclusión definitiva. Las lesiones a hijos y trabajadores del asegurado y el incumplimiento de contratos sí se excluyen."
+  },
+  {
+    "id": 326,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Todas son responsabilidades que se amparan en R.C. Comercio, EXCEPTO:",
+    "pregunta": "Todas son responsabilidades que se amparan en R.C. Comercio, EXCEPTO:",
+    "options": [
+      "Posesión de perros guardianes",
+      "Uso de escaleras eléctricas",
+      "Daños por posesión de carteles publicitarios",
+      "Daños a equipaje"
+    ],
+    "opciones": [
+      "Posesión de perros guardianes",
+      "Uso de escaleras eléctricas",
+      "Daños por posesión de carteles publicitarios",
+      "Daños a equipaje"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Daños a equipaje",
+    "explanation": "La RC comercio ampara perros guardianes, escaleras eléctricas y carteles publicitarios del negocio. Los daños a equipaje son propios de la RC hotelería o del viajero.",
+    "explicacion": "La RC comercio ampara perros guardianes, escaleras eléctricas y carteles publicitarios del negocio. Los daños a equipaje son propios de la RC hotelería o del viajero."
+  },
+  {
+    "id": 327,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Todas son coberturas adicionales de R.C. Hotelería, EXCEPTO:",
+    "pregunta": "Todas son coberturas adicionales de R.C. Hotelería, EXCEPTO:",
+    "options": [
+      "Guardarropa",
+      "Terremoto y erupción volcánica",
+      "Estacionamiento",
+      "Recepción de dinero y valores"
+    ],
+    "opciones": [
+      "Guardarropa",
+      "Terremoto y erupción volcánica",
+      "Estacionamiento",
+      "Recepción de dinero y valores"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Terremoto y erupción volcánica",
+    "explanation": "En la RC hotelería son coberturas adicionales el guardarropa, el estacionamiento y la recepción de dinero y valores. Terremoto y erupción volcánica son riesgos de daños materiales, no de responsabilidad civil.",
+    "explicacion": "En la RC hotelería son coberturas adicionales el guardarropa, el estacionamiento y la recepción de dinero y valores. Terremoto y erupción volcánica son riesgos de daños materiales, no de responsabilidad civil."
+  },
+  {
+    "id": 328,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Elige de la lista, cuáles son responsabilidades que se amparan en la cobertura básica de R.C. Industria: 1.- Uso de embarcaciones 2.- Uso de montacargas 3.- Daños al equipaje 4.- Uso de maquinaria:",
+    "pregunta": "Elige de la lista, cuáles son responsabilidades que se amparan en la cobertura básica de R.C. Industria: 1.- Uso de embarcaciones 2.- Uso de montacargas 3.- Daños al equipaje 4.- Uso de maquinaria:",
+    "options": [
+      "2, 4",
+      "1, 3",
+      "1, 4",
+      "2, 3"
+    ],
+    "opciones": [
+      "2, 4",
+      "1, 3",
+      "1, 4",
+      "2, 3"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "2, 4",
+    "explanation": "Según la clave de la guía, el uso de montacargas y de maquinaria forma parte de la cobertura básica de RC industria. Las embarcaciones se excluyen y los daños al equipaje son propios de la hotelería.",
+    "explicacion": "Según la clave de la guía, el uso de montacargas y de maquinaria forma parte de la cobertura básica de RC industria. Las embarcaciones se excluyen y los daños al equipaje son propios de la hotelería."
+  },
+  {
+    "id": 329,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Relaciona la columna de exclusiones con la de descripción: EXCLUSIONES DESCRIPCIÓN 1.- DEFINITIVAS A.- Daños por remodelación de la fábrica del Asegurado 2.- RELATIVAS B.- Productos fabricados por el Asegurado C.- Daños por guerra D.- Daños por hundimiento del subsuelo en propiedades vecinas:",
+    "pregunta": "Relaciona la columna de exclusiones con la de descripción: EXCLUSIONES DESCRIPCIÓN 1.- DEFINITIVAS A.- Daños por remodelación de la fábrica del Asegurado 2.- RELATIVAS B.- Productos fabricados por el Asegurado C.- Daños por guerra D.- Daños por hundimiento del subsuelo en propiedades vecinas:",
+    "options": [
+      "1- A, c 2- B, d",
+      "1- C, d 2- A, b",
+      "1- A, b 2- C, d",
+      "1-B, d 2- A, c"
+    ],
+    "opciones": [
+      "1- A, c 2- B, d",
+      "1- C, d 2- A, b",
+      "1- A, b 2- C, d",
+      "1-B, d 2- A, c"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "1- C, d 2- A, b",
+    "explanation": "Según la clave de la guía, son exclusiones definitivas los daños por guerra y por hundimiento del subsuelo en propiedades vecinas, y relativas los daños por remodelación y por productos fabricados, que pueden contratarse. La guerra siempre se excluye, mientras que productos y remodelaciones tienen cobertura adicional.",
+    "explicacion": "Según la clave de la guía, son exclusiones definitivas los daños por guerra y por hundimiento del subsuelo en propiedades vecinas, y relativas los daños por remodelación y por productos fabricados, que pueden contratarse. La guerra siempre se excluye, mientras que productos y remodelaciones tienen cobertura adicional."
+  },
+  {
+    "id": 330,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "El delito penal lleva una sanción pública y un castigo, el delito Civil genera la obligación de:",
+    "pregunta": "El delito penal lleva una sanción pública y un castigo, el delito Civil genera la obligación de:",
+    "options": [
+      "Resarcir el daño",
+      "Pedir disculpas públicamente",
+      "Prometer no volverlo a hacer",
+      "Pagar una multa en días de salario"
+    ],
+    "opciones": [
+      "Resarcir el daño",
+      "Pedir disculpas públicamente",
+      "Prometer no volverlo a hacer",
+      "Pagar una multa en días de salario"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Resarcir el daño",
+    "explanation": "El delito civil genera la obligación de resarcir el daño, es decir, reparar el perjuicio causado a la víctima. Las multas son sanciones públicas, y las disculpas o promesas no son consecuencias jurídicas.",
+    "explicacion": "El delito civil genera la obligación de resarcir el daño, es decir, reparar el perjuicio causado a la víctima. Las multas son sanciones públicas, y las disculpas o promesas no son consecuencias jurídicas."
+  },
+  {
+    "id": 331,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Todos los siguientes son gastos de defensa que se amparan en el seguro de R.C., EXCEPTO:",
+    "pregunta": "Todos los siguientes son gastos de defensa que se amparan en el seguro de R.C., EXCEPTO:",
+    "options": [
+      "Gastos por la tramitación y liquidación de la indemnización",
+      "Las costas y gastos legales por resolución judicial",
+      "Las primas por fianzas que garanticen la indemnización",
+      "Las cauciones para la libertad condicional del Asegurado"
+    ],
+    "opciones": [
+      "Gastos por la tramitación y liquidación de la indemnización",
+      "Las costas y gastos legales por resolución judicial",
+      "Las primas por fianzas que garanticen la indemnización",
+      "Las cauciones para la libertad condicional del Asegurado"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Las cauciones para la libertad condicional del Asegurado",
+    "explanation": "El seguro de RC ampara la tramitación de la indemnización, las costas judiciales y las primas de fianzas que garantizan la indemnización civil. Las cauciones para la libertad del asegurado son de materia penal y se excluyen.",
+    "explicacion": "El seguro de RC ampara la tramitación de la indemnización, las costas judiciales y las primas de fianzas que garantizan la indemnización civil. Las cauciones para la libertad del asegurado son de materia penal y se excluyen."
+  },
+  {
+    "id": 332,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Indica qué modalidad del Seguro de Responsabilidad Civil ampara las actividades atribuibles a la obra, entre otras como propietario, poseedor temporal o arrendatario de edificios o locales que sean utilizados como vivienda temporal para sus empleados:",
+    "pregunta": "Indica qué modalidad del Seguro de Responsabilidad Civil ampara las actividades atribuibles a la obra, entre otras como propietario, poseedor temporal o arrendatario de edificios o locales que sean utilizados como vivienda temporal para sus empleados:",
+    "options": [
+      "R.C. Industria",
+      "R.C. Hotelería",
+      "R.C. para Constructores",
+      "R.C. Comercio"
+    ],
+    "opciones": [
+      "R.C. Industria",
+      "R.C. Hotelería",
+      "R.C. para Constructores",
+      "R.C. Comercio"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "R.C. para Constructores",
+    "explanation": "La RC para constructores ampara las actividades de la obra, incluso como propietario, poseedor o arrendatario de locales usados como vivienda temporal para los empleados. La RC industria, hotelería y comercio cubren otros giros.",
+    "explicacion": "La RC para constructores ampara las actividades de la obra, incluso como propietario, poseedor o arrendatario de locales usados como vivienda temporal para los empleados. La RC industria, hotelería y comercio cubren otros giros."
+  },
+  {
+    "id": 333,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Indica qué ampara la cobertura adicional de Productos:",
+    "pregunta": "Indica qué ampara la cobertura adicional de Productos:",
+    "options": [
+      "Los daños que provoquen los productos suministrados",
+      "Los daños que sufran los productos fabricados",
+      "La pérdida por retiro de mercado del producto",
+      "La pérdida por daños ocasionados al producto por unión y mezcla"
+    ],
+    "opciones": [
+      "Los daños que provoquen los productos suministrados",
+      "Los daños que sufran los productos fabricados",
+      "La pérdida por retiro de mercado del producto",
+      "La pérdida por daños ocasionados al producto por unión y mezcla"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Los daños que provoquen los productos suministrados",
+    "explanation": "La cobertura adicional de productos ampara los daños que los productos suministrados por el asegurado causen a terceros. Los daños al propio producto, su retiro del mercado y la unión y mezcla son coberturas distintas o exclusiones.",
+    "explicacion": "La cobertura adicional de productos ampara los daños que los productos suministrados por el asegurado causen a terceros. Los daños al propio producto, su retiro del mercado y la unión y mezcla son coberturas distintas o exclusiones."
+  },
+  {
+    "id": 334,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Indica cuál es la combinación de coberturas que debe tener el Propietario de un supermercado para hacer frente a reclamaciones de Responsabilidad Civil:",
+    "pregunta": "Indica cuál es la combinación de coberturas que debe tener el Propietario de un supermercado para hacer frente a reclamaciones de Responsabilidad Civil:",
+    "options": [
+      "Productos en el Extranjero, Estacionamiento y Talleres, Explosivos (uso)",
+      "Actividades e Inmuebles, Carga y descarga, Productos y Trabajos Terminados",
+      "Actividades e Inmuebles, Instalaciones Subterráneas, Consorcios de Trabajo",
+      "Guardarropa, Estacionamiento, Asumida"
+    ],
+    "opciones": [
+      "Productos en el Extranjero, Estacionamiento y Talleres, Explosivos (uso)",
+      "Actividades e Inmuebles, Carga y descarga, Productos y Trabajos Terminados",
+      "Actividades e Inmuebles, Instalaciones Subterráneas, Consorcios de Trabajo",
+      "Guardarropa, Estacionamiento, Asumida"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Actividades e Inmuebles, Carga y descarga, Productos y Trabajos Terminados",
+    "explanation": "Un supermercado necesita actividades e inmuebles por la afluencia de clientes, carga y descarga por la recepción de mercancía, y productos y trabajos terminados por lo que vende. Explosivos, instalaciones subterráneas o guardarropa no son riesgos principales de este giro.",
+    "explicacion": "Un supermercado necesita actividades e inmuebles por la afluencia de clientes, carga y descarga por la recepción de mercancía, y productos y trabajos terminados por lo que vende. Explosivos, instalaciones subterráneas o guardarropa no son riesgos principales de este giro."
+  },
+  {
+    "id": 335,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Indica cuál es la cobertura que ampara los daños que el Asegurado tome como responsabilidad propia, por convenios o contratos, pero que fueron consecuencia de actos realizados por otra persona (Obligado original):",
+    "pregunta": "Indica cuál es la cobertura que ampara los daños que el Asegurado tome como responsabilidad propia, por convenios o contratos, pero que fueron consecuencia de actos realizados por otra persona (Obligado original):",
+    "options": [
+      "Consorcios de Trabajo",
+      "Contratistas independientes",
+      "Asumida",
+      "Contractual"
+    ],
+    "opciones": [
+      "Consorcios de Trabajo",
+      "Contratistas independientes",
+      "Asumida",
+      "Contractual"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Asumida",
+    "explanation": "La RC asumida cubre la responsabilidad que el asegurado acepta por convenio o contrato respecto de actos de otra persona, el obligado original. La de contratistas independientes cubre su vigilancia, y la contractual por incumplimiento se excluye.",
+    "explicacion": "La RC asumida cubre la responsabilidad que el asegurado acepta por convenio o contrato respecto de actos de otra persona, el obligado original. La de contratistas independientes cubre su vigilancia, y la contractual por incumplimiento se excluye."
+  },
+  {
+    "id": 336,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Todas son bases de cotización en el Seguro de Responsabilidad Civil, EXCEPTO:",
+    "pregunta": "Todas son bases de cotización en el Seguro de Responsabilidad Civil, EXCEPTO:",
+    "options": [
+      "Metros cuadrados",
+      "Volumen de ventas",
+      "Número de personas",
+      "Ubicación Diversos"
+    ],
+    "opciones": [
+      "Metros cuadrados",
+      "Volumen de ventas",
+      "Número de personas",
+      "Ubicación Diversos"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Ubicación Diversos",
+    "explanation": "El seguro de RC se cotiza con bases como metros cuadrados, volumen de ventas o número de personas, según el giro. La ubicación diversa no es una base de cotización.",
+    "explicacion": "El seguro de RC se cotiza con bases como metros cuadrados, volumen de ventas o número de personas, según el giro. La ubicación diversa no es una base de cotización."
+  },
+  {
+    "id": 607,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Qué ley regula la responsabilidad por daños ocasionados al ambiente y su reparación?",
+    "pregunta": "¿Qué ley regula la responsabilidad por daños ocasionados al ambiente y su reparación?",
+    "options": [
+      "Ley General de Salud.",
+      "Ley Federal de Responsabilidad Ambiental.",
+      "Ley Federal del Trabajo.",
+      "Ley sobre el Contrato de Seguro."
+    ],
+    "opciones": [
+      "Ley General de Salud.",
+      "Ley Federal de Responsabilidad Ambiental.",
+      "Ley Federal del Trabajo.",
+      "Ley sobre el Contrato de Seguro."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Ley Federal de Responsabilidad Ambiental.",
+    "explanation": "La Ley Federal de Responsabilidad Ambiental regula la responsabilidad que nace de los daños al ambiente y su reparación y compensación, lo que da origen a seguros de RC ambiental. La LSCS regula el contrato de seguro, la Ley General de Salud la salubridad y la Ley Federal del Trabajo las relaciones laborales.",
+    "explicacion": "La Ley Federal de Responsabilidad Ambiental regula la responsabilidad que nace de los daños al ambiente y su reparación y compensación, lo que da origen a seguros de RC ambiental. La LSCS regula el contrato de seguro, la Ley General de Salud la salubridad y la Ley Federal del Trabajo las relaciones laborales."
+  },
+  {
+    "id": 608,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Desde la reforma a la Ley de Caminos, Puentes y Autotransporte Federal, ¿qué seguro deben tener los vehículos que circulan por caminos y puentes federales?",
+    "pregunta": "Desde la reforma a la Ley de Caminos, Puentes y Autotransporte Federal, ¿qué seguro deben tener los vehículos que circulan por caminos y puentes federales?",
+    "options": [
+      "Un seguro de gastos médicos mayores del conductor.",
+      "Un seguro que garantice los daños a terceros en sus bienes y personas.",
+      "Un seguro de robo total del vehículo.",
+      "Un seguro de vida del propietario."
+    ],
+    "opciones": [
+      "Un seguro de gastos médicos mayores del conductor.",
+      "Un seguro que garantice los daños a terceros en sus bienes y personas.",
+      "Un seguro de robo total del vehículo.",
+      "Un seguro de vida del propietario."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Un seguro que garantice los daños a terceros en sus bienes y personas.",
+    "explanation": "La Ley de Caminos, Puentes y Autotransporte Federal exige que los vehículos que transitan por vías federales cuenten con un seguro que cubra al menos la responsabilidad civil por daños a terceros en sus bienes y personas. Robo, gastos médicos del conductor y vida son coberturas voluntarias.",
+    "explicacion": "La Ley de Caminos, Puentes y Autotransporte Federal exige que los vehículos que transitan por vías federales cuenten con un seguro que cubra al menos la responsabilidad civil por daños a terceros en sus bienes y personas. Robo, gastos médicos del conductor y vida son coberturas voluntarias."
+  },
+  {
+    "id": 609,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Qué es una póliza de responsabilidad civil con base en reclamaciones (claims made)?",
+    "pregunta": "¿Qué es una póliza de responsabilidad civil con base en reclamaciones (claims made)?",
+    "options": [
+      "La que cubre las reclamaciones presentadas durante la vigencia, por hechos ocurridos después de la fecha de retroactividad pactada.",
+      "La que solo cubre hechos ocurridos durante la vigencia, sin importar cuándo se reclamen.",
+      "La que cubre cualquier hecho sin límite de tiempo.",
+      "La que solo cubre reclamaciones verbales."
+    ],
+    "opciones": [
+      "La que cubre las reclamaciones presentadas durante la vigencia, por hechos ocurridos después de la fecha de retroactividad pactada.",
+      "La que solo cubre hechos ocurridos durante la vigencia, sin importar cuándo se reclamen.",
+      "La que cubre cualquier hecho sin límite de tiempo.",
+      "La que solo cubre reclamaciones verbales."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "La que cubre las reclamaciones presentadas durante la vigencia, por hechos ocurridos después de la fecha de retroactividad pactada.",
+    "explanation": "En la base de reclamaciones el elemento que activa la cobertura es la reclamación presentada durante la vigencia, siempre que el hecho haya ocurrido después de la fecha de retroactividad. La base de ocurrencia atiende la fecha del hecho, no existe cobertura sin límite de tiempo y la reclamación debe ser formal.",
+    "explicacion": "En la base de reclamaciones el elemento que activa la cobertura es la reclamación presentada durante la vigencia, siempre que el hecho haya ocurrido después de la fecha de retroactividad. La base de ocurrencia atiende la fecha del hecho, no existe cobertura sin límite de tiempo y la reclamación debe ser formal."
+  },
+  {
+    "id": 610,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Qué es la fecha de retroactividad en una póliza de RC con base en reclamaciones?",
+    "pregunta": "¿Qué es la fecha de retroactividad en una póliza de RC con base en reclamaciones?",
+    "options": [
+      "La fecha a partir de la cual deben haber ocurrido los hechos para que sus reclamaciones queden cubiertas.",
+      "La fecha en que el agente obtuvo su cédula.",
+      "La fecha en que se paga la prima.",
+      "La fecha en que vence la póliza."
+    ],
+    "opciones": [
+      "La fecha a partir de la cual deben haber ocurrido los hechos para que sus reclamaciones queden cubiertas.",
+      "La fecha en que el agente obtuvo su cédula.",
+      "La fecha en que se paga la prima.",
+      "La fecha en que vence la póliza."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "La fecha a partir de la cual deben haber ocurrido los hechos para que sus reclamaciones queden cubiertas.",
+    "explanation": "La fecha de retroactividad delimita hacia atrás la cobertura: solo se amparan reclamaciones por hechos ocurridos a partir de esa fecha. El pago de la prima, el vencimiento o la cédula del agente no determinan qué hechos quedan cubiertos.",
+    "explicacion": "La fecha de retroactividad delimita hacia atrás la cobertura: solo se amparan reclamaciones por hechos ocurridos a partir de esa fecha. El pago de la prima, el vencimiento o la cédula del agente no determinan qué hechos quedan cubiertos."
+  },
+  {
+    "id": 611,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Qué protege un seguro de responsabilidad civil para consejeros y funcionarios (D&O)?",
+    "pregunta": "¿Qué protege un seguro de responsabilidad civil para consejeros y funcionarios (D&O)?",
+    "options": [
+      "La salud de los consejeros.",
+      "Las mercancías en tránsito de la empresa.",
+      "Los bienes de la empresa contra incendio.",
+      "El patrimonio de consejeros y directivos frente a reclamaciones por actos u omisiones en el desempeño de su cargo."
+    ],
+    "opciones": [
+      "La salud de los consejeros.",
+      "Las mercancías en tránsito de la empresa.",
+      "Los bienes de la empresa contra incendio.",
+      "El patrimonio de consejeros y directivos frente a reclamaciones por actos u omisiones en el desempeño de su cargo."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "El patrimonio de consejeros y directivos frente a reclamaciones por actos u omisiones en el desempeño de su cargo.",
+    "explanation": "El seguro D&O cubre a consejeros y funcionarios frente a reclamaciones de terceros, accionistas o autoridades por decisiones u omisiones en su gestión, incluidos los gastos de defensa. Los bienes contra incendio, la salud y las mercancías en tránsito se aseguran en otros ramos.",
+    "explicacion": "El seguro D&O cubre a consejeros y funcionarios frente a reclamaciones de terceros, accionistas o autoridades por decisiones u omisiones en su gestión, incluidos los gastos de defensa. Los bienes contra incendio, la salud y las mercancías en tránsito se aseguran en otros ramos."
+  },
+  {
+    "id": 612,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Qué cubre el seguro de responsabilidad civil profesional para médicos?",
+    "pregunta": "¿Qué cubre el seguro de responsabilidad civil profesional para médicos?",
+    "options": [
+      "Las reclamaciones de pacientes por daños derivados de errores u omisiones en la práctica médica.",
+      "Las primas de su seguro de vida.",
+      "El robo del equipo del consultorio.",
+      "Los gastos médicos del propio médico."
+    ],
+    "opciones": [
+      "Las reclamaciones de pacientes por daños derivados de errores u omisiones en la práctica médica.",
+      "Las primas de su seguro de vida.",
+      "El robo del equipo del consultorio.",
+      "Los gastos médicos del propio médico."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Las reclamaciones de pacientes por daños derivados de errores u omisiones en la práctica médica.",
+    "explanation": "La RC profesional médica protege al médico frente a reclamaciones de pacientes por daños causados por errores, negligencia u omisiones en su práctica, incluidos los gastos de defensa. Sus propios gastos médicos, el robo de equipo o las primas de vida no son materia de responsabilidad civil.",
+    "explicacion": "La RC profesional médica protege al médico frente a reclamaciones de pacientes por daños causados por errores, negligencia u omisiones en su práctica, incluidos los gastos de defensa. Sus propios gastos médicos, el robo de equipo o las primas de vida no son materia de responsabilidad civil."
+  },
+  {
+    "id": 613,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Una empresa contrata a un contratista para remodelar su planta y este daña la propiedad de un vecino. ¿Qué cobertura de RC protege a la empresa contratante?",
+    "pregunta": "Una empresa contrata a un contratista para remodelar su planta y este daña la propiedad de un vecino. ¿Qué cobertura de RC protege a la empresa contratante?",
+    "options": [
+      "RC arrendatario.",
+      "RC productos.",
+      "RC hotelería.",
+      "RC por contratistas independientes."
+    ],
+    "opciones": [
+      "RC arrendatario.",
+      "RC productos.",
+      "RC hotelería.",
+      "RC por contratistas independientes."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "RC por contratistas independientes.",
+    "explanation": "La RC por contratistas independientes ampara a la empresa contratante cuando le reclaman daños causados por los contratistas que trabajan para ella. La RC arrendatario cubre el inmueble rentado, la de productos los daños por bienes vendidos y la de hotelería las actividades de hoteles.",
+    "explicacion": "La RC por contratistas independientes ampara a la empresa contratante cuando le reclaman daños causados por los contratistas que trabajan para ella. La RC arrendatario cubre el inmueble rentado, la de productos los daños por bienes vendidos y la de hotelería las actividades de hoteles."
+  },
+  {
+    "id": 614,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Qué es el periodo extendido de notificación en una póliza de RC con base en reclamaciones?",
+    "pregunta": "¿Qué es el periodo extendido de notificación en una póliza de RC con base en reclamaciones?",
+    "options": [
+      "Un periodo de gracia para pagar la prima.",
+      "Un plazo posterior al vencimiento durante el cual pueden presentarse reclamaciones por hechos ocurridos durante la vigencia.",
+      "Un plazo para aumentar la suma asegurada.",
+      "El tiempo que tiene el agente para entregar la póliza."
+    ],
+    "opciones": [
+      "Un periodo de gracia para pagar la prima.",
+      "Un plazo posterior al vencimiento durante el cual pueden presentarse reclamaciones por hechos ocurridos durante la vigencia.",
+      "Un plazo para aumentar la suma asegurada.",
+      "El tiempo que tiene el agente para entregar la póliza."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Un plazo posterior al vencimiento durante el cual pueden presentarse reclamaciones por hechos ocurridos durante la vigencia.",
+    "explanation": "El periodo extendido de notificación permite presentar, después de terminada la póliza, reclamaciones por hechos ocurridos durante su vigencia, normalmente con prima adicional. No es un periodo de gracia de la prima, no se relaciona con la entrega de la póliza ni con aumentos de suma asegurada.",
+    "explicacion": "El periodo extendido de notificación permite presentar, después de terminada la póliza, reclamaciones por hechos ocurridos durante su vigencia, normalmente con prima adicional. No es un periodo de gracia de la prima, no se relaciona con la entrega de la póliza ni con aumentos de suma asegurada."
+  },
+  {
+    "id": 615,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "Un cliente se resbala en el piso mojado de un centro comercial y se lesiona. ¿Qué cobertura del centro comercial responde?",
+    "pregunta": "Un cliente se resbala en el piso mojado de un centro comercial y se lesiona. ¿Qué cobertura del centro comercial responde?",
+    "options": [
+      "RC del viajero.",
+      "RC productos.",
+      "RC profesional.",
+      "RC por actividades e inmuebles."
+    ],
+    "opciones": [
+      "RC del viajero.",
+      "RC productos.",
+      "RC profesional.",
+      "RC por actividades e inmuebles."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "RC por actividades e inmuebles.",
+    "explanation": "La RC por actividades e inmuebles ampara los daños a terceros derivados de la propiedad o uso del inmueble y de las actividades del negocio, como una caída en el piso mojado. La RC productos cubre bienes vendidos, la profesional el ejercicio de una profesión y la del viajero el transporte de pasajeros.",
+    "explicacion": "La RC por actividades e inmuebles ampara los daños a terceros derivados de la propiedad o uso del inmueble y de las actividades del negocio, como una caída en el piso mojado. La RC productos cubre bienes vendidos, la profesional el ejercicio de una profesión y la del viajero el transporte de pasajeros."
+  },
+  {
+    "id": 616,
+    "module": "Responsabilidad Civil y Admón. de Riesgos",
+    "modulo": "Responsabilidad Civil y Admón. de Riesgos",
+    "submodulo": "Responsabilidad Civil",
+    "question": "¿Qué tipo de daño suele excluir la RC general y requiere un seguro específico?",
+    "pregunta": "¿Qué tipo de daño suele excluir la RC general y requiere un seguro específico?",
+    "options": [
+      "La contaminación gradual del ambiente.",
+      "Los daños a bienes de terceros por un incendio del negocio.",
+      "Las lesiones a terceros por caída en el local.",
+      "Los daños causados por anuncios del negocio."
+    ],
+    "opciones": [
+      "La contaminación gradual del ambiente.",
+      "Los daños a bienes de terceros por un incendio del negocio.",
+      "Las lesiones a terceros por caída en el local.",
+      "Los daños causados por anuncios del negocio."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "La contaminación gradual del ambiente.",
+    "explanation": "La RC general suele excluir la contaminación gradual o paulatina, que se cubre con un seguro de RC ambiental. Las lesiones por caídas, los daños por incendio a bienes de terceros y los daños por anuncios forman parte de la responsabilidad por actividades e inmuebles.",
+    "explicacion": "La RC general suele excluir la contaminación gradual o paulatina, que se cubre con un seguro de RC ambiental. Las lesiones por caídas, los daños por incendio a bienes de terceros y los daños por anuncios forman parte de la responsabilidad por actividades e inmuebles."
+  }
+]

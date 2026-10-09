@@ -19,8 +19,7 @@ export async function GET(req: NextRequest) {
 
   try {
     if (isPromoter(currentUserEmail, session.user.role)) {
-      // Get promoter balance
-      // Usar el ID de la agencia para compartir saldo entre todos los admins de la agencia
+      // Get promoter balance (compartido con Cédula A)
       const email = session.user.agencyId ? `agency_${session.user.agencyId}` : currentUserEmail.toLowerCase();
       let agencyRecord = null;
       if (session.user.agencyId) {
@@ -53,7 +52,7 @@ export async function GET(req: NextRequest) {
         licenses: licensesRows
       })
     } else {
-      // Get agent license details
+      // Get agent license details (compartido con Cédula A)
       const agentRows = await prisma.estudioLicencia.findMany({
         where: { agente_email: currentUserEmail.toLowerCase() },
         select: { dias_asignados: true, fecha_expiracion: true }
@@ -79,7 +78,7 @@ export async function GET(req: NextRequest) {
       })
     }
   } catch (err: any) {
-    console.error("Error in GET licencias:", err)
+    console.error("Error in GET cedula-b licencias:", err)
     return NextResponse.json({ error: "Database error", details: err.message }, { status: 500 })
   }
 }
@@ -104,7 +103,6 @@ export async function POST(req: NextRequest) {
 
     if (action === "buy") {
       const buyDays = days || 7
-      // Increment promoter tokens
       const result = await prisma.promotorSaldo.upsert({
         where: { promotor_email: email },
         update: { dias_disponibles: { increment: buyDays } },
@@ -131,7 +129,7 @@ export async function POST(req: NextRequest) {
       }
 
       await prisma.$transaction(async (tx) => {
-        // Decrease balance
+        // Decrease shared balance
         await tx.promotorSaldo.update({
           where: { promotor_email: email },
           data: { dias_disponibles: { decrement: days } }
@@ -172,7 +170,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 })
   } catch (err: any) {
-    console.error("Error in POST licencias:", err)
+    console.error("Error in POST cedula-b licencias:", err)
     return NextResponse.json({ error: "Database error", details: err.message }, { status: 500 })
   }
 }

@@ -1,0 +1,2252 @@
+[
+  {
+    "id": 405,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "Es un riesgo amparado en forma básica en la póliza de equipo electrónico:",
+    "pregunta": "Es un riesgo amparado en forma básica en la póliza de equipo electrónico:",
+    "options": [
+      "Robo sin violencia",
+      "Terremoto y/o erupción volcánica",
+      "Daños materiales por la introducción de cuerpos extraños",
+      "Daños materiales a equipos bajo tierra"
+    ],
+    "opciones": [
+      "Robo sin violencia",
+      "Terremoto y/o erupción volcánica",
+      "Daños materiales por la introducción de cuerpos extraños",
+      "Daños materiales a equipos bajo tierra"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Daños materiales por la introducción de cuerpos extraños",
+    "explanation": "La introducción de cuerpos extraños es un riesgo básico de la póliza de equipo electrónico. El robo sin violencia se contrata por convenio, y el terremoto y los equipos bajo tierra tienen tratamiento especial o se excluyen.",
+    "explicacion": "La introducción de cuerpos extraños es un riesgo básico de la póliza de equipo electrónico. El robo sin violencia se contrata por convenio, y el terremoto y los equipos bajo tierra tienen tratamiento especial o se excluyen."
+  },
+  {
+    "id": 406,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "Señala en la póliza de equipo electrónico un riesgo que se puede contratar mediante un convenio expreso:",
+    "pregunta": "Señala en la póliza de equipo electrónico un riesgo que se puede contratar mediante un convenio expreso:",
+    "options": [
+      "Daños por líquidos o polvos corrosivos.",
+      "Robo sin violencia.",
+      "Daños a equipos de climatización.",
+      "Daños a piezas de hule."
+    ],
+    "opciones": [
+      "Daños por líquidos o polvos corrosivos.",
+      "Robo sin violencia.",
+      "Daños a equipos de climatización.",
+      "Daños a piezas de hule."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Robo sin violencia.",
+    "explanation": "El robo sin violencia puede contratarse mediante convenio expreso en equipo electrónico. Los líquidos corrosivos y las piezas de hule se excluyen, y los equipos de climatización tienen reglas propias.",
+    "explicacion": "El robo sin violencia puede contratarse mediante convenio expreso en equipo electrónico. Los líquidos corrosivos y las piezas de hule se excluyen, y los equipos de climatización tienen reglas propias."
+  },
+  {
+    "id": 407,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "Dentro de la póliza de equipo electrónico en caso de siniestro que sea pérdida total la compañía de seguros pagará:",
+    "pregunta": "Dentro de la póliza de equipo electrónico en caso de siniestro que sea pérdida total la compañía de seguros pagará:",
+    "options": [
+      "A valor comercial.",
+      "A valor convenido",
+      "A valor de reposición.",
+      "A valor real."
+    ],
+    "opciones": [
+      "A valor comercial.",
+      "A valor convenido",
+      "A valor de reposición.",
+      "A valor real."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "A valor real.",
+    "explanation": "En pérdida total de equipo electrónico la aseguradora paga a valor real, es decir, descontando depreciación. El valor de reposición aplica a pérdidas parciales.",
+    "explicacion": "En pérdida total de equipo electrónico la aseguradora paga a valor real, es decir, descontando depreciación. El valor de reposición aplica a pérdidas parciales."
+  },
+  {
+    "id": 408,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "¿Qué cubre la sección de portadores externos de datos en forma básica dentro de la póliza de equipo electrónico?",
+    "pregunta": "¿Qué cubre la sección de portadores externos de datos en forma básica dentro de la póliza de equipo electrónico?",
+    "options": [
+      "Los gastos por reproducción y regrabación de la información.",
+      "Reposición de portadores obsoletos.",
+      "Mejoras de capacidad de los equipos.",
+      "Incremento en el costo de operación de los equipos."
+    ],
+    "opciones": [
+      "Los gastos por reproducción y regrabación de la información.",
+      "Reposición de portadores obsoletos.",
+      "Mejoras de capacidad de los equipos.",
+      "Incremento en el costo de operación de los equipos."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Los gastos por reproducción y regrabación de la información.",
+    "explanation": "La sección de portadores externos de datos cubre los gastos de reproducción y regrabación de la información perdida. No cubre reponer portadores obsoletos ni mejorar la capacidad de los equipos.",
+    "explicacion": "La sección de portadores externos de datos cubre los gastos de reproducción y regrabación de la información perdida. No cubre reponer portadores obsoletos ni mejorar la capacidad de los equipos."
+  },
+  {
+    "id": 409,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "Es un bien excluido que puede cubrirse mediante convenio expreso.",
+    "pregunta": "Es un bien excluido que puede cubrirse mediante convenio expreso.",
+    "options": [
+      "Equipos en arrendamiento.",
+      "Equipos que operen bajo tierra.",
+      "Equipos móviles y portátiles.",
+      "Equipos sin patentes o hechizos."
+    ],
+    "opciones": [
+      "Equipos en arrendamiento.",
+      "Equipos que operen bajo tierra.",
+      "Equipos móviles y portátiles.",
+      "Equipos sin patentes o hechizos."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Equipos móviles y portátiles.",
+    "explanation": "Los equipos móviles y portátiles se excluyen pero pueden cubrirse mediante convenio expreso. Los equipos bajo tierra o hechizos se excluyen sin posibilidad de convenio.",
+    "explicacion": "Los equipos móviles y portátiles se excluyen pero pueden cubrirse mediante convenio expreso. Los equipos bajo tierra o hechizos se excluyen sin posibilidad de convenio."
+  },
+  {
+    "id": 410,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "¿Cuál es el nombre de la sección II de la póliza de equipo electrónico?",
+    "pregunta": "¿Cuál es el nombre de la sección II de la póliza de equipo electrónico?",
+    "options": [
+      "Daños materiales.",
+      "Portadores externos de datos.",
+      "Incremento en el costo de operación.",
+      "Gastos extraordinarios."
+    ],
+    "opciones": [
+      "Daños materiales.",
+      "Portadores externos de datos.",
+      "Incremento en el costo de operación.",
+      "Gastos extraordinarios."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Portadores externos de datos.",
+    "explanation": "La sección II de la póliza de equipo electrónico es la de portadores externos de datos. La sección I es daños materiales y la sección III es incremento en el costo de operación.",
+    "explicacion": "La sección II de la póliza de equipo electrónico es la de portadores externos de datos. La sección I es daños materiales y la sección III es incremento en el costo de operación."
+  },
+  {
+    "id": 411,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "¿Cuál es el nombre de la sección III de la póliza de equipo electrónico?",
+    "pregunta": "¿Cuál es el nombre de la sección III de la póliza de equipo electrónico?",
+    "options": [
+      "Daños materiales.",
+      "Portadores externos de datos.",
+      "Incremento en el costo de operación.",
+      "Gastos extraordinarios."
+    ],
+    "opciones": [
+      "Daños materiales.",
+      "Portadores externos de datos.",
+      "Incremento en el costo de operación.",
+      "Gastos extraordinarios."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Incremento en el costo de operación.",
+    "explanation": "La sección III de la póliza de equipo electrónico es la de incremento en el costo de operación. La sección I es daños materiales y la II portadores externos de datos.",
+    "explicacion": "La sección III de la póliza de equipo electrónico es la de incremento en el costo de operación. La sección I es daños materiales y la II portadores externos de datos."
+  },
+  {
+    "id": 412,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "Los daños al equipo electrónico por vibraciones o choque sónico causado por aviones u otros mecanismos en la póliza son considerados como:",
+    "pregunta": "Los daños al equipo electrónico por vibraciones o choque sónico causado por aviones u otros mecanismos en la póliza son considerados como:",
+    "options": [
+      "Cobertura básica.",
+      "Cobertura por convenio expreso.",
+      "Riesgo excluido",
+      "No se menciona en la póliza."
+    ],
+    "opciones": [
+      "Cobertura básica.",
+      "Cobertura por convenio expreso.",
+      "Riesgo excluido",
+      "No se menciona en la póliza."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Riesgo excluido",
+    "explanation": "Según la clave de la guía, los daños por vibraciones o choque sónico de aviones son un riesgo excluido en la póliza de equipo electrónico. No forman parte de la básica ni del convenio expreso.",
+    "explicacion": "Según la clave de la guía, los daños por vibraciones o choque sónico de aviones son un riesgo excluido en la póliza de equipo electrónico. No forman parte de la básica ni del convenio expreso."
+  },
+  {
+    "id": 413,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "Elige los bienes que quedan amparados en la cobertura del seguro de equipo electrónico:",
+    "pregunta": "Elige los bienes que quedan amparados en la cobertura del seguro de equipo electrónico:",
+    "options": [
+      "Las instalaciones de procesamiento de datos arrendadas",
+      "Los portadores externos de datos",
+      "Las instalaciones de procesamiento electrónico de datos",
+      "Las instalaciones en mantenimiento"
+    ],
+    "opciones": [
+      "Las instalaciones de procesamiento de datos arrendadas",
+      "Los portadores externos de datos",
+      "Las instalaciones de procesamiento electrónico de datos",
+      "Las instalaciones en mantenimiento"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Las instalaciones de procesamiento electrónico de datos",
+    "explanation": "El seguro de equipo electrónico ampara las instalaciones de procesamiento electrónico de datos. Los portadores externos tienen su propia sección, y los equipos arrendados o en mantenimiento siguen reglas especiales.",
+    "explicacion": "El seguro de equipo electrónico ampara las instalaciones de procesamiento electrónico de datos. Los portadores externos tienen su propia sección, y los equipos arrendados o en mantenimiento siguen reglas especiales."
+  },
+  {
+    "id": 414,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "Las instalaciones de luz y navegación en embarcaciones de navegación interior son bienes que se consideran en el seguro de equipo electrónico como:",
+    "pregunta": "Las instalaciones de luz y navegación en embarcaciones de navegación interior son bienes que se consideran en el seguro de equipo electrónico como:",
+    "options": [
+      "Amparados por convenio expreso",
+      "Asegurables",
+      "Excluidos",
+      "No asegurables"
+    ],
+    "opciones": [
+      "Amparados por convenio expreso",
+      "Asegurables",
+      "Excluidos",
+      "No asegurables"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "No asegurables",
+    "explanation": "Las instalaciones de luz y navegación en embarcaciones de navegación interior no son asegurables en el seguro de equipo electrónico, porque pertenecen al ramo marítimo. No se cubren por convenio expreso.",
+    "explicacion": "Las instalaciones de luz y navegación en embarcaciones de navegación interior no son asegurables en el seguro de equipo electrónico, porque pertenecen al ramo marítimo. No se cubren por convenio expreso."
+  },
+  {
+    "id": 415,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "¿En cuáles secciones se divide el seguro de equipo electrónico?",
+    "pregunta": "¿En cuáles secciones se divide el seguro de equipo electrónico?",
+    "options": [
+      "Daños materiales, gastos adicionales y huelgas y alborotos populares",
+      "Daños materiales, equipos móviles y portátiles, y robo sin violencia",
+      "Daños materiales, portadores externos de datos e incremento en el costo de operación",
+      "Daños materiales, temblor y erupción volcánica, y huracán y granizo"
+    ],
+    "opciones": [
+      "Daños materiales, gastos adicionales y huelgas y alborotos populares",
+      "Daños materiales, equipos móviles y portátiles, y robo sin violencia",
+      "Daños materiales, portadores externos de datos e incremento en el costo de operación",
+      "Daños materiales, temblor y erupción volcánica, y huracán y granizo"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Daños materiales, portadores externos de datos e incremento en el costo de operación",
+    "explanation": "El seguro de equipo electrónico se divide en tres secciones: daños materiales, portadores externos de datos e incremento en el costo de operación. Las demás opciones mezclan coberturas adicionales con las secciones.",
+    "explicacion": "El seguro de equipo electrónico se divide en tres secciones: daños materiales, portadores externos de datos e incremento en el costo de operación. Las demás opciones mezclan coberturas adicionales con las secciones."
+  },
+  {
+    "id": 416,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "Un equipo electrónico está dañado por desgaste, causado por una corrosión ambiental ¿cómo indemniza la aseguradora?",
+    "pregunta": "Un equipo electrónico está dañado por desgaste, causado por una corrosión ambiental ¿cómo indemniza la aseguradora?",
+    "options": [
+      "No lo cubre, es una exclusión",
+      "En su totalidad",
+      "En forma proporcional",
+      "A valor de reposición"
+    ],
+    "opciones": [
+      "No lo cubre, es una exclusión",
+      "En su totalidad",
+      "En forma proporcional",
+      "A valor de reposición"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "No lo cubre, es una exclusión",
+    "explanation": "El desgaste por corrosión ambiental es una exclusión del seguro de equipo electrónico, porque es un deterioro gradual y no un daño súbito. Por eso no se indemniza de ninguna forma.",
+    "explicacion": "El desgaste por corrosión ambiental es una exclusión del seguro de equipo electrónico, porque es un deterioro gradual y no un daño súbito. Por eso no se indemniza de ninguna forma."
+  },
+  {
+    "id": 417,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "Una empresa tiene una planta de luz bajo un cobertizo que es dañada por el cubrimiento temporal del suelo por agua, causada por la rotura accidental de la cisterna. Estos daños afectan a la cobertura de la póliza del seguro de equipo electrónico:",
+    "pregunta": "Una empresa tiene una planta de luz bajo un cobertizo que es dañada por el cubrimiento temporal del suelo por agua, causada por la rotura accidental de la cisterna. Estos daños afectan a la cobertura de la póliza del seguro de equipo electrónico:",
+    "options": [
+      "De gastos consecuenciales",
+      "De huracán y granizo",
+      "Básica",
+      "De inundación"
+    ],
+    "opciones": [
+      "De gastos consecuenciales",
+      "De huracán y granizo",
+      "Básica",
+      "De inundación"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Básica",
+    "explanation": "El cubrimiento temporal del suelo por agua debido a la rotura accidental de la cisterna es un daño súbito interno que se ampara en la cobertura básica de equipo electrónico. La inundación por fenómenos naturales y el huracán son coberturas distintas.",
+    "explicacion": "El cubrimiento temporal del suelo por agua debido a la rotura accidental de la cisterna es un daño súbito interno que se ampara en la cobertura básica de equipo electrónico. La inundación por fenómenos naturales y el huracán son coberturas distintas."
+  },
+  {
+    "id": 418,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "Todos los siguientes riesgos se encuentran amparados dentro de la cobertura básica del seguro de equipo electrónico, excepto:",
+    "pregunta": "Todos los siguientes riesgos se encuentran amparados dentro de la cobertura básica del seguro de equipo electrónico, excepto:",
+    "options": [
+      "Incendio",
+      "Gastos de albañilería",
+      "Daños por defectos de fabricación",
+      "Robo"
+    ],
+    "opciones": [
+      "Incendio",
+      "Gastos de albañilería",
+      "Daños por defectos de fabricación",
+      "Robo"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Gastos de albañilería",
+    "explanation": "Según la clave de la guía, los gastos de albañilería no forman parte de la cobertura básica de equipo electrónico, mientras que incendio, robo y los defectos de fabricación sí. En algunos productos los defectos de fabricación quedan a cargo del fabricante por garantía.",
+    "explicacion": "Según la clave de la guía, los gastos de albañilería no forman parte de la cobertura básica de equipo electrónico, mientras que incendio, robo y los defectos de fabricación sí. En algunos productos los defectos de fabricación quedan a cargo del fabricante por garantía."
+  },
+  {
+    "id": 419,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "Todas son exclusiones de la sección de daños materiales, en el seguro de equipo electrónico, excepto, ¿cuál se puede asegurar bajo convenio expreso?:",
+    "pregunta": "Todas son exclusiones de la sección de daños materiales, en el seguro de equipo electrónico, excepto, ¿cuál se puede asegurar bajo convenio expreso?:",
+    "options": [
+      "Gastos por flete aéreo",
+      "Defectos estéticos preexistentes",
+      "Reducción de ingresos",
+      "Deficiencias de capacidad"
+    ],
+    "opciones": [
+      "Gastos por flete aéreo",
+      "Defectos estéticos preexistentes",
+      "Reducción de ingresos",
+      "Deficiencias de capacidad"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Gastos por flete aéreo",
+    "explanation": "Según la clave de la guía, los gastos por flete aéreo se excluyen de daños materiales pero pueden asegurarse por convenio expreso. Los defectos estéticos preexistentes, la reducción de ingresos y las deficiencias de capacidad no son asegurables en esta sección.",
+    "explicacion": "Según la clave de la guía, los gastos por flete aéreo se excluyen de daños materiales pero pueden asegurarse por convenio expreso. Los defectos estéticos preexistentes, la reducción de ingresos y las deficiencias de capacidad no son asegurables en esta sección."
+  },
+  {
+    "id": 420,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "De la siguiente lista, identifica 3 exclusiones para la sección de portadores externos de datos auxiliares del seguro de equipo electrónico: 1- Gastos por falsa programación 2- Gastos de reproducción 3- Daños por reducción de ingresos 4- Instalación de fotocompositores 5- Desgaste paulatino 6- Daños por humo o polvos corrosivos:",
+    "pregunta": "De la siguiente lista, identifica 3 exclusiones para la sección de portadores externos de datos auxiliares del seguro de equipo electrónico: 1- Gastos por falsa programación 2- Gastos de reproducción 3- Daños por reducción de ingresos 4- Instalación de fotocompositores 5- Desgaste paulatino 6- Daños por humo o polvos corrosivos:",
+    "options": [
+      "3, 4, 5",
+      "1, 5, 6",
+      "1, 3, 5",
+      "2, 4, 6"
+    ],
+    "opciones": [
+      "3, 4, 5",
+      "1, 5, 6",
+      "1, 3, 5",
+      "2, 4, 6"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 3, 5",
+    "explanation": "Según la clave de la guía, en portadores externos de datos se excluyen los gastos por falsa programación, la reducción de ingresos y el desgaste paulatino. Los gastos de reproducción son precisamente la cobertura.",
+    "explicacion": "Según la clave de la guía, en portadores externos de datos se excluyen los gastos por falsa programación, la reducción de ingresos y el desgaste paulatino. Los gastos de reproducción son precisamente la cobertura."
+  },
+  {
+    "id": 421,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "¿Cómo se determina la suma asegurada para el seguro de equipo electrónico?",
+    "pregunta": "¿Cómo se determina la suma asegurada para el seguro de equipo electrónico?",
+    "options": [
+      "A valor comercial",
+      "A valor de reposición más gastos",
+      "A valor de factura",
+      "A valor real más gastos de transporte"
+    ],
+    "opciones": [
+      "A valor comercial",
+      "A valor de reposición más gastos",
+      "A valor de factura",
+      "A valor real más gastos de transporte"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "A valor de reposición más gastos",
+    "explanation": "La suma asegurada de equipo electrónico se fija a valor de reposición más gastos como fletes, aduanas e instalación. El valor comercial, el de factura o el real subestimarían el costo de reponer el equipo.",
+    "explicacion": "La suma asegurada de equipo electrónico se fija a valor de reposición más gastos como fletes, aduanas e instalación. El valor comercial, el de factura o el real subestimarían el costo de reponer el equipo."
+  },
+  {
+    "id": 422,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "Todos son ejemplos de equipo electrónico, excepto:",
+    "pregunta": "Todos son ejemplos de equipo electrónico, excepto:",
+    "options": [
+      "Alternadores",
+      "Antenas parabólicas",
+      "Tornos",
+      "Simulador de vuelo"
+    ],
+    "opciones": [
+      "Alternadores",
+      "Antenas parabólicas",
+      "Tornos",
+      "Simulador de vuelo"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Tornos",
+    "explanation": "Los alternadores, las antenas parabólicas y los simuladores de vuelo pueden asegurarse como equipo electrónico. Un torno es maquinaria y se asegura en rotura de maquinaria.",
+    "explicacion": "Los alternadores, las antenas parabólicas y los simuladores de vuelo pueden asegurarse como equipo electrónico. Un torno es maquinaria y se asegura en rotura de maquinaria."
+  },
+  {
+    "id": 423,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "¿Cómo se consideran los daños ocasionados por corto circuito, arco voltaico y tostadura de aislamientos en equipo electrónico?",
+    "pregunta": "¿Cómo se consideran los daños ocasionados por corto circuito, arco voltaico y tostadura de aislamientos en equipo electrónico?",
+    "options": [
+      "Amparados sólo por convenio expreso de la sección I",
+      "Amparados en la cobertura básica de la sección I",
+      "Excluidos en la sección I",
+      "Excluidos en la sección II"
+    ],
+    "opciones": [
+      "Amparados sólo por convenio expreso de la sección I",
+      "Amparados en la cobertura básica de la sección I",
+      "Excluidos en la sección I",
+      "Excluidos en la sección II"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Amparados en la cobertura básica de la sección I",
+    "explanation": "Los daños por corto circuito, arco voltaico y tostadura de aislamientos se amparan en la cobertura básica de la sección I de equipo electrónico, por ser riesgos propios de estos equipos. No requieren convenio ni están excluidos.",
+    "explicacion": "Los daños por corto circuito, arco voltaico y tostadura de aislamientos se amparan en la cobertura básica de la sección I de equipo electrónico, por ser riesgos propios de estos equipos. No requieren convenio ni están excluidos."
+  },
+  {
+    "id": 424,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo Electrónico",
+    "question": "Indica un riesgo cubierto en el seguro de equipo electrónico:",
+    "pregunta": "Indica un riesgo cubierto en el seguro de equipo electrónico:",
+    "options": [
+      "Defectos estéticos",
+      "Derrame de protecciones contra incendio",
+      "Errores de manejo",
+      "Marejada o inundación"
+    ],
+    "opciones": [
+      "Defectos estéticos",
+      "Derrame de protecciones contra incendio",
+      "Errores de manejo",
+      "Marejada o inundación"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Errores de manejo",
+    "explanation": "Los errores de manejo, como impericia o descuido del operador, son un riesgo cubierto en equipo electrónico. Los defectos estéticos se excluyen, y la marejada o inundación tiene otro tratamiento.",
+    "explicacion": "Los errores de manejo, como impericia o descuido del operador, son un riesgo cubierto en equipo electrónico. Los defectos estéticos se excluyen, y la marejada o inundación tiene otro tratamiento."
+  },
+  {
+    "id": 425,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "¿Cuándo finaliza la cobertura del seguro de montaje?",
+    "pregunta": "¿Cuándo finaliza la cobertura del seguro de montaje?",
+    "options": [
+      "A la llegada de los bienes al predio.",
+      "Para equipos nuevos, después de acabado el montaje.",
+      "Para equipos nuevos, después del periodo de prueba.",
+      "Para objetos usados, después del periodo de prueba."
+    ],
+    "opciones": [
+      "A la llegada de los bienes al predio.",
+      "Para equipos nuevos, después de acabado el montaje.",
+      "Para equipos nuevos, después del periodo de prueba.",
+      "Para objetos usados, después del periodo de prueba."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Para equipos nuevos, después del periodo de prueba.",
+    "explanation": "Para equipos nuevos, la cobertura del seguro de montaje termina después del periodo de prueba. Para equipos usados termina al concluir el montaje, sin periodo de prueba.",
+    "explicacion": "Para equipos nuevos, la cobertura del seguro de montaje termina después del periodo de prueba. Para equipos usados termina al concluir el montaje, sin periodo de prueba."
+  },
+  {
+    "id": 426,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "En la póliza de montaje de maquinaria, estos son dos riesgos amparados en forma básica:",
+    "pregunta": "En la póliza de montaje de maquinaria, estos son dos riesgos amparados en forma básica:",
+    "options": [
+      "Terremoto y huracán.",
+      "Impericia y robo con violencia.",
+      "Inundación y enfangamiento.",
+      "Corrosión y raspaduras."
+    ],
+    "opciones": [
+      "Terremoto y huracán.",
+      "Impericia y robo con violencia.",
+      "Inundación y enfangamiento.",
+      "Corrosión y raspaduras."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Impericia y robo con violencia.",
+    "explanation": "La impericia y el robo con violencia son riesgos básicos de la póliza de montaje. Terremoto, huracán e inundación se contratan como adicionales, y la corrosión se excluye.",
+    "explicacion": "La impericia y el robo con violencia son riesgos básicos de la póliza de montaje. Terremoto, huracán e inundación se contratan como adicionales, y la corrosión se excluye."
+  },
+  {
+    "id": 427,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "Es un riesgo excluido totalmente en la póliza de montaje.",
+    "pregunta": "Es un riesgo excluido totalmente en la póliza de montaje.",
+    "options": [
+      "Caída de aviones.",
+      "Alza del nivel de aguas.",
+      "Faltante al efectuar inventarios.",
+      "Enfangamiento."
+    ],
+    "opciones": [
+      "Caída de aviones.",
+      "Alza del nivel de aguas.",
+      "Faltante al efectuar inventarios.",
+      "Enfangamiento."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Faltante al efectuar inventarios.",
+    "explanation": "Los faltantes al efectuar inventarios se excluyen totalmente de la póliza de montaje, porque no se deben a un siniestro identificable. La caída de aviones se cubre, y el alza de aguas o el enfangamiento pueden contratarse.",
+    "explicacion": "Los faltantes al efectuar inventarios se excluyen totalmente de la póliza de montaje, porque no se deben a un siniestro identificable. La caída de aviones se cubre, y el alza de aguas o el enfangamiento pueden contratarse."
+  },
+  {
+    "id": 428,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "¿Cómo se llama el endoso que cubre los daños causados a la maquinaria por errores en diseño, defectos de construcción, fundición, uso de materiales defectuosos y defectos en mano de obra?",
+    "pregunta": "¿Cómo se llama el endoso que cubre los daños causados a la maquinaria por errores en diseño, defectos de construcción, fundición, uso de materiales defectuosos y defectos en mano de obra?",
+    "options": [
+      "Riesgos del contratista.",
+      "Riesgos del subcontratista.",
+      "Riesgos del fabricante.",
+      "Riesgos del asegurado."
+    ],
+    "opciones": [
+      "Riesgos del contratista.",
+      "Riesgos del subcontratista.",
+      "Riesgos del fabricante.",
+      "Riesgos del asegurado."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Riesgos del fabricante.",
+    "explanation": "El endoso de riesgos del fabricante cubre los daños por errores de diseño, defectos de construcción, fundición, materiales defectuosos y mano de obra. Los riesgos del contratista y del subcontratista se refieren a otros actores.",
+    "explicacion": "El endoso de riesgos del fabricante cubre los daños por errores de diseño, defectos de construcción, fundición, materiales defectuosos y mano de obra. Los riesgos del contratista y del subcontratista se refieren a otros actores."
+  },
+  {
+    "id": 429,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "Señala una cobertura adicional que no implique aumento de suma asegurada en la póliza de montaje.",
+    "pregunta": "Señala una cobertura adicional que no implique aumento de suma asegurada en la póliza de montaje.",
+    "options": [
+      "Errores durante el montaje.",
+      "Hundimiento de tierra.",
+      "Explosiones nucleares y contaminación radioactiva.",
+      "Daños por terremoto, temblor y erupción volcánica."
+    ],
+    "opciones": [
+      "Errores durante el montaje.",
+      "Hundimiento de tierra.",
+      "Explosiones nucleares y contaminación radioactiva.",
+      "Daños por terremoto, temblor y erupción volcánica."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Daños por terremoto, temblor y erupción volcánica.",
+    "explanation": "Según la clave de la guía, la cobertura de terremoto, temblor y erupción volcánica puede agregarse al montaje sin aumentar la suma asegurada. Las explosiones nucleares se excluyen, y los errores de montaje y el hundimiento tienen otro tratamiento.",
+    "explicacion": "Según la clave de la guía, la cobertura de terremoto, temblor y erupción volcánica puede agregarse al montaje sin aumentar la suma asegurada. Las explosiones nucleares se excluyen, y los errores de montaje y el hundimiento tienen otro tratamiento."
+  },
+  {
+    "id": 430,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "Para la cobertura de responsabilidad civil, ¿cuál es la suma asegurada máxima por persona en la póliza de montaje?.",
+    "pregunta": "Para la cobertura de responsabilidad civil, ¿cuál es la suma asegurada máxima por persona en la póliza de montaje?.",
+    "options": [
+      "790 veces la UMA diaria",
+      "1,000 veces la UMA diaria",
+      "7,000 veces la UMA diaria",
+      "12,500 veces la UMA diaria"
+    ],
+    "opciones": [
+      "790 veces la UMA diaria",
+      "1,000 veces la UMA diaria",
+      "7,000 veces la UMA diaria",
+      "12,500 veces la UMA diaria"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "12,500 veces la UMA diaria",
+    "explanation": "Según la clave de la guía, la suma asegurada máxima por persona en la responsabilidad civil de montaje era de 12,500 días de salario mínimo de 2011, hoy referido a UMA diaria. Los montos de 790, 1,000 o 7,000 son menores al de la guía.",
+    "explicacion": "Según la clave de la guía, la suma asegurada máxima por persona en la responsabilidad civil de montaje era de 12,500 días de salario mínimo de 2011, hoy referido a UMA diaria. Los montos de 790, 1,000 o 7,000 son menores al de la guía."
+  },
+  {
+    "id": 431,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "Los gastos por concepto de desmontaje y remoción de escombros están considerados en la póliza como:",
+    "pregunta": "Los gastos por concepto de desmontaje y remoción de escombros están considerados en la póliza como:",
+    "options": [
+      "Cobertura básica.",
+      "Cobertura por convenio expreso.",
+      "Exclusión total.",
+      "No se menciona en la póliza."
+    ],
+    "opciones": [
+      "Cobertura básica.",
+      "Cobertura por convenio expreso.",
+      "Exclusión total.",
+      "No se menciona en la póliza."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Cobertura por convenio expreso.",
+    "explanation": "Los gastos de desmontaje y remoción de escombros se cubren por convenio expreso en la póliza de montaje. No forman parte de la básica ni están excluidos.",
+    "explicacion": "Los gastos de desmontaje y remoción de escombros se cubren por convenio expreso en la póliza de montaje. No forman parte de la básica ni están excluidos."
+  },
+  {
+    "id": 432,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "Para el montaje de equipo nuevo ¿de cuánto es el periodo de prueba de operación amparado en la póliza de montaje?.",
+    "pregunta": "Para el montaje de equipo nuevo ¿de cuánto es el periodo de prueba de operación amparado en la póliza de montaje?.",
+    "options": [
+      "Una semana.",
+      "Dos semanas.",
+      "Tres semanas.",
+      "Cuatro semanas."
+    ],
+    "opciones": [
+      "Una semana.",
+      "Dos semanas.",
+      "Tres semanas.",
+      "Cuatro semanas."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Cuatro semanas.",
+    "explanation": "Según la clave de la guía, el periodo de prueba de operación para equipo nuevo amparado en montaje es de cuatro semanas. Los periodos de una a tres semanas no corresponden a la guía.",
+    "explicacion": "Según la clave de la guía, el periodo de prueba de operación para equipo nuevo amparado en montaje es de cuatro semanas. Los periodos de una a tres semanas no corresponden a la guía."
+  },
+  {
+    "id": 433,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "A partir de que momento se inicia la vigencia de la póliza del Seguro de Montaje para un puente de acero que se armará sobre un río.",
+    "pregunta": "A partir de que momento se inicia la vigencia de la póliza del Seguro de Montaje para un puente de acero que se armará sobre un río.",
+    "options": [
+      "En el momento en que inicia el armado",
+      "Al descargar los materiales de construcción del montaje",
+      "Cuando el trabajo tiene un avance del 10%",
+      "Cuando se emite la póliza"
+    ],
+    "opciones": [
+      "En el momento en que inicia el armado",
+      "Al descargar los materiales de construcción del montaje",
+      "Cuando el trabajo tiene un avance del 10%",
+      "Cuando se emite la póliza"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Al descargar los materiales de construcción del montaje",
+    "explanation": "La vigencia del seguro de montaje inicia al descargar los materiales en el sitio, porque desde ese momento están expuestos al riesgo. No espera al armado, a un avance de obra ni a la emisión.",
+    "explicacion": "La vigencia del seguro de montaje inicia al descargar los materiales en el sitio, porque desde ese momento están expuestos al riesgo. No espera al armado, a un avance de obra ni a la emisión."
+  },
+  {
+    "id": 434,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "En el seguro de Montaje la vigencia no se ajusta de acuerdo con lo siguiente:",
+    "pregunta": "En el seguro de Montaje la vigencia no se ajusta de acuerdo con lo siguiente:",
+    "options": [
+      "Al concluir el montaje satisfactoriamente",
+      "Después de concluir el período de pruebas pactado cuando los bienes son nuevos",
+      "Al concluir la vigencia marcada en la carátula de la póliza",
+      "Al interrumpir el montaje y quedar los bienes asegurados abandonados"
+    ],
+    "opciones": [
+      "Al concluir el montaje satisfactoriamente",
+      "Después de concluir el período de pruebas pactado cuando los bienes son nuevos",
+      "Al concluir la vigencia marcada en la carátula de la póliza",
+      "Al interrumpir el montaje y quedar los bienes asegurados abandonados"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Al interrumpir el montaje y quedar los bienes asegurados abandonados",
+    "explanation": "La vigencia del montaje se ajusta al concluir el montaje, al terminar el periodo de pruebas para bienes nuevos o al vencer la carátula. Si el montaje se interrumpe y los bienes quedan abandonados, la cobertura no se ajusta ni continúa.",
+    "explicacion": "La vigencia del montaje se ajusta al concluir el montaje, al terminar el periodo de pruebas para bienes nuevos o al vencer la carátula. Si el montaje se interrumpe y los bienes quedan abandonados, la cobertura no se ajusta ni continúa."
+  },
+  {
+    "id": 435,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "En una industria se va a montar un alto horno; el fabricante será el encargado del montaje, supervisado por el dueño de la industria y por el reasegurador. ¿Quién sería el Asegurado en el Seguro de Montaje?",
+    "pregunta": "En una industria se va a montar un alto horno; el fabricante será el encargado del montaje, supervisado por el dueño de la industria y por el reasegurador. ¿Quién sería el Asegurado en el Seguro de Montaje?",
+    "options": [
+      "El vendedor del equipo",
+      "La empresa reaseguradora",
+      "El fabricante",
+      "El dueño de la industria"
+    ],
+    "opciones": [
+      "El vendedor del equipo",
+      "La empresa reaseguradora",
+      "El fabricante",
+      "El dueño de la industria"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "El dueño de la industria",
+    "explanation": "El asegurado en el seguro de montaje es el dueño de la industria, quien tiene el interés asegurable sobre el alto horno. El fabricante ejecuta el montaje, y el reasegurador solo respalda a la aseguradora.",
+    "explicacion": "El asegurado en el seguro de montaje es el dueño de la industria, quien tiene el interés asegurable sobre el alto horno. El fabricante ejecuta el montaje, y el reasegurador solo respalda a la aseguradora."
+  },
+  {
+    "id": 436,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "A la acción de ensamblar en un conjunto las distintas partes de una máquina, estructura, puente, etc. Se le conoce como:",
+    "pregunta": "A la acción de ensamblar en un conjunto las distintas partes de una máquina, estructura, puente, etc. Se le conoce como:",
+    "options": [
+      "Fabricación",
+      "Montaje",
+      "Diseño",
+      "Obra Civil"
+    ],
+    "opciones": [
+      "Fabricación",
+      "Montaje",
+      "Diseño",
+      "Obra Civil"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Montaje",
+    "explanation": "El montaje es la acción de ensamblar en un conjunto las partes de una máquina, estructura o puente. La fabricación produce las partes, el diseño las planea y la obra civil se refiere a construcción.",
+    "explicacion": "El montaje es la acción de ensamblar en un conjunto las partes de una máquina, estructura o puente. La fabricación produce las partes, el diseño las planea y la obra civil se refiere a construcción."
+  },
+  {
+    "id": 437,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "Identifica de la siguiente lista, 3 riesgos amparados en la cobertura básica del Seguro de Montaje: 1.- Explosión 2.- Daños por granizada 3.- Perjuicios por retrasos en el montaje 4.- Daños causados a empresas colindantes 5.- Desgajamiento de tierra o de rocas 6.- Limpieza de bienes dañados para reparación:",
+    "pregunta": "Identifica de la siguiente lista, 3 riesgos amparados en la cobertura básica del Seguro de Montaje: 1.- Explosión 2.- Daños por granizada 3.- Perjuicios por retrasos en el montaje 4.- Daños causados a empresas colindantes 5.- Desgajamiento de tierra o de rocas 6.- Limpieza de bienes dañados para reparación:",
+    "options": [
+      "1, 2, 5",
+      "2, 3, 6",
+      "2, 4, 6",
+      "1, 5, 6"
+    ],
+    "opciones": [
+      "1, 2, 5",
+      "2, 3, 6",
+      "2, 4, 6",
+      "1, 5, 6"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "1, 2, 5",
+    "explanation": "Explosión, granizada y desgajamiento de tierra o rocas son riesgos amparados en la cobertura básica del montaje. Los perjuicios por retraso se excluyen, y los daños a colindantes son materia de responsabilidad civil.",
+    "explicacion": "Explosión, granizada y desgajamiento de tierra o rocas son riesgos amparados en la cobertura básica del montaje. Los perjuicios por retraso se excluyen, y los daños a colindantes son materia de responsabilidad civil."
+  },
+  {
+    "id": 438,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "Cómo se considera en la Póliza de Montaje un daño causado al estar haciendo el montaje de una nave industrial y una lámina del techo cae sobre un predio vecino y causa daños económicos.",
+    "pregunta": "Cómo se considera en la Póliza de Montaje un daño causado al estar haciendo el montaje de una nave industrial y una lámina del techo cae sobre un predio vecino y causa daños económicos.",
+    "options": [
+      "No asegurable",
+      "Excluido",
+      "Adicional",
+      "Cubierto automáticamente"
+    ],
+    "opciones": [
+      "No asegurable",
+      "Excluido",
+      "Adicional",
+      "Cubierto automáticamente"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Adicional",
+    "explanation": "El daño a un predio vecino por una lámina que cae durante el montaje es responsabilidad civil y se cubre como cobertura adicional. No es automática ni está excluida de manera absoluta.",
+    "explicacion": "El daño a un predio vecino por una lámina que cae durante el montaje es responsabilidad civil y se cubre como cobertura adicional. No es automática ni está excluida de manera absoluta."
+  },
+  {
+    "id": 439,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Montaje",
+    "question": "Identifica de la siguiente lista, 2 bienes que se amparan en la cobertura básica del Seguro de Montaje: 1.- Partes eléctricas que se ensamblan 2.- Edificaciones menores de la maquinaria que se monta 3.- Maquinaria para armar una estructura 4.- Bienes en custodia del Asegurado:",
+    "pregunta": "Identifica de la siguiente lista, 2 bienes que se amparan en la cobertura básica del Seguro de Montaje: 1.- Partes eléctricas que se ensamblan 2.- Edificaciones menores de la maquinaria que se monta 3.- Maquinaria para armar una estructura 4.- Bienes en custodia del Asegurado:",
+    "options": [
+      "3, 4",
+      "2, 3",
+      "1, 3",
+      "1, 2"
+    ],
+    "opciones": [
+      "3, 4",
+      "2, 3",
+      "1, 3",
+      "1, 2"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "1, 2",
+    "explanation": "La cobertura básica del montaje ampara las partes eléctricas que se ensamblan y las edificaciones menores de la maquinaria montada. La maquinaria para armar es equipo de contratistas, y los bienes en custodia requieren otra cobertura.",
+    "explicacion": "La cobertura básica del montaje ampara las partes eléctricas que se ensamblan y las edificaciones menores de la maquinaria montada. La maquinaria para armar es equipo de contratistas, y los bienes en custodia requieren otra cobertura."
+  },
+  {
+    "id": 440,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Rotura de Maquinaria",
+    "question": "Identifica dos riesgos amparados en la póliza de rotura de maquinaria.",
+    "pregunta": "Identifica dos riesgos amparados en la póliza de rotura de maquinaria.",
+    "options": [
+      "Incendio y explosión.",
+      "Dolo y mala fe del asegurado.",
+      "Huracán e incendio.",
+      "Impericia y sabotaje."
+    ],
+    "opciones": [
+      "Incendio y explosión.",
+      "Dolo y mala fe del asegurado.",
+      "Huracán e incendio.",
+      "Impericia y sabotaje."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Impericia y sabotaje.",
+    "explanation": "La impericia y el sabotaje son riesgos amparados en rotura de maquinaria. El incendio y el huracán se cubren en la póliza de incendio, y el dolo del asegurado nunca se cubre.",
+    "explicacion": "La impericia y el sabotaje son riesgos amparados en rotura de maquinaria. El incendio y el huracán se cubren en la póliza de incendio, y el dolo del asegurado nunca se cubre."
+  },
+  {
+    "id": 441,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Rotura de Maquinaria",
+    "question": "Señala un riesgo por convenio expreso de rotura de maquinaria.",
+    "pregunta": "Señala un riesgo por convenio expreso de rotura de maquinaria.",
+    "options": [
+      "Fenómenos de la naturaleza.",
+      "Cambios estructurales y de diseño.",
+      "El periodo de inactividad.",
+      "Pérdidas consecuenciales."
+    ],
+    "opciones": [
+      "Fenómenos de la naturaleza.",
+      "Cambios estructurales y de diseño.",
+      "El periodo de inactividad.",
+      "Pérdidas consecuenciales."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "El periodo de inactividad.",
+    "explanation": "Según la clave de la guía, el periodo de inactividad es un riesgo por convenio expreso en rotura de maquinaria. Los fenómenos naturales se cubren en incendio, y los cambios estructurales y las pérdidas consecuenciales se excluyen.",
+    "explicacion": "Según la clave de la guía, el periodo de inactividad es un riesgo por convenio expreso en rotura de maquinaria. Los fenómenos naturales se cubren en incendio, y los cambios estructurales y las pérdidas consecuenciales se excluyen."
+  },
+  {
+    "id": 442,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Rotura de Maquinaria",
+    "question": "Suma asegurada máxima para la cobertura de tiempo extra y envíos por expreso en que incurra el asegurado para acelerar los trabajos de reparación por consecuencia de un riesgo cubierto en la póliza de rotura de maquinaria.",
+    "pregunta": "Suma asegurada máxima para la cobertura de tiempo extra y envíos por expreso en que incurra el asegurado para acelerar los trabajos de reparación por consecuencia de un riesgo cubierto en la póliza de rotura de maquinaria.",
+    "options": [
+      "20% del monto del daño directo.",
+      "25% del monto del daño directo.",
+      "30% del monto del daño directo.",
+      "50% del monto del daño directo."
+    ],
+    "opciones": [
+      "20% del monto del daño directo.",
+      "25% del monto del daño directo.",
+      "30% del monto del daño directo.",
+      "50% del monto del daño directo."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "30% del monto del daño directo.",
+    "explanation": "Según la clave de la guía, el tiempo extra y los envíos por expreso para acelerar la reparación se cubren hasta el 30% del daño directo. Los porcentajes de 20%, 25% o 50% no son los de la guía.",
+    "explicacion": "Según la clave de la guía, el tiempo extra y los envíos por expreso para acelerar la reparación se cubren hasta el 30% del daño directo. Los porcentajes de 20%, 25% o 50% no son los de la guía."
+  },
+  {
+    "id": 443,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Rotura de Maquinaria",
+    "question": "Suma asegurada máxima para amparar los gastos de flete aéreo que sea necesario para acelerar los trabajos de reparación por consecuencia de un riesgo cubierto en la póliza de seguro de Maquinaria:",
+    "pregunta": "Suma asegurada máxima para amparar los gastos de flete aéreo que sea necesario para acelerar los trabajos de reparación por consecuencia de un riesgo cubierto en la póliza de seguro de Maquinaria:",
+    "options": [
+      "1% de la suma asegurada total de la póliza.",
+      "2% de la suma asegurada total de la póliza.",
+      "3% de la suma asegurada total de la póliza.",
+      "5% de la suma asegurada total de la póliza"
+    ],
+    "opciones": [
+      "1% de la suma asegurada total de la póliza.",
+      "2% de la suma asegurada total de la póliza.",
+      "3% de la suma asegurada total de la póliza.",
+      "5% de la suma asegurada total de la póliza"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "1% de la suma asegurada total de la póliza.",
+    "explanation": "Según la clave de la guía, el flete aéreo para acelerar la reparación se cubre hasta el 1% de la suma asegurada total. Los límites de 2%, 3% o 5% no corresponden a la guía.",
+    "explicacion": "Según la clave de la guía, el flete aéreo para acelerar la reparación se cubre hasta el 1% de la suma asegurada total. Los límites de 2%, 3% o 5% no corresponden a la guía."
+  },
+  {
+    "id": 444,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Rotura de Maquinaria",
+    "question": "Es un bien excluido en la póliza de rotura de maquinaria.",
+    "pregunta": "Es un bien excluido en la póliza de rotura de maquinaria.",
+    "options": [
+      "D.O.P.A.",
+      "Envíos por expreso.",
+      "Discos de seguridad.",
+      "Defectos estéticos."
+    ],
+    "opciones": [
+      "D.O.P.A.",
+      "Envíos por expreso.",
+      "Discos de seguridad.",
+      "Defectos estéticos."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Discos de seguridad.",
+    "explanation": "Según la clave de la guía, los discos de seguridad son bienes excluidos en rotura de maquinaria, por ser piezas de desgaste o reemplazo frecuente. Los envíos por expreso son un gasto, y los defectos estéticos son un riesgo, no un bien.",
+    "explicacion": "Según la clave de la guía, los discos de seguridad son bienes excluidos en rotura de maquinaria, por ser piezas de desgaste o reemplazo frecuente. Los envíos por expreso son un gasto, y los defectos estéticos son un riesgo, no un bien."
+  },
+  {
+    "id": 445,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Rotura de Maquinaria",
+    "question": "Es un riesgo excluido en la póliza de rotura de maquinaria.",
+    "pregunta": "Es un riesgo excluido en la póliza de rotura de maquinaria.",
+    "options": [
+      "Sabotaje del personal.",
+      "Errores en diseño.",
+      "Combustibles y lubricantes.",
+      "Incendio, rayo y explosión."
+    ],
+    "opciones": [
+      "Sabotaje del personal.",
+      "Errores en diseño.",
+      "Combustibles y lubricantes.",
+      "Incendio, rayo y explosión."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Incendio, rayo y explosión.",
+    "explanation": "Incendio, rayo y explosión se excluyen de rotura de maquinaria porque se cubren en la póliza de incendio. El sabotaje y los errores de diseño son riesgos de rotura.",
+    "explicacion": "Incendio, rayo y explosión se excluyen de rotura de maquinaria porque se cubren en la póliza de incendio. El sabotaje y los errores de diseño son riesgos de rotura."
+  },
+  {
+    "id": 446,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Rotura de Maquinaria",
+    "question": "El daño a las máquinas como consecuencia de desgaste, corrosión, oxidación, están considerados en la póliza como:",
+    "pregunta": "El daño a las máquinas como consecuencia de desgaste, corrosión, oxidación, están considerados en la póliza como:",
+    "options": [
+      "Cobertura básica.",
+      "Cobertura por convenio expreso.",
+      "Exclusión total.",
+      "No se menciona en la póliza."
+    ],
+    "opciones": [
+      "Cobertura básica.",
+      "Cobertura por convenio expreso.",
+      "Exclusión total.",
+      "No se menciona en la póliza."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Exclusión total.",
+    "explanation": "El desgaste, la corrosión y la oxidación son exclusiones totales en rotura de maquinaria, porque son deterioros graduales. No se cubren por convenio.",
+    "explicacion": "El desgaste, la corrosión y la oxidación son exclusiones totales en rotura de maquinaria, porque son deterioros graduales. No se cubren por convenio."
+  },
+  {
+    "id": 447,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Rotura de Maquinaria",
+    "question": "De acuerdo a las condiciones generales de la póliza de Rotura de Maquinaria, no es obligación del Asegurado dar aviso de:",
+    "pregunta": "De acuerdo a las condiciones generales de la póliza de Rotura de Maquinaria, no es obligación del Asegurado dar aviso de:",
+    "options": [
+      "Cambio de localización de las máquinas.",
+      "Suspensión de operaciones por un plazo mayor a tres meses.",
+      "Cambio de materias primas y de procesos.",
+      "Exceder deliberadamente la capacidad de trabajo."
+    ],
+    "opciones": [
+      "Cambio de localización de las máquinas.",
+      "Suspensión de operaciones por un plazo mayor a tres meses.",
+      "Cambio de materias primas y de procesos.",
+      "Exceder deliberadamente la capacidad de trabajo."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Cambio de localización de las máquinas.",
+    "explanation": "En rotura de maquinaria el asegurado debe avisar la suspensión de operaciones por más de tres meses, el cambio de materias primas o procesos y el exceso deliberado de capacidad. El cambio de localización de las máquinas no se exige en las condiciones de la guía.",
+    "explicacion": "En rotura de maquinaria el asegurado debe avisar la suspensión de operaciones por más de tres meses, el cambio de materias primas o procesos y el exceso deliberado de capacidad. El cambio de localización de las máquinas no se exige en las condiciones de la guía."
+  },
+  {
+    "id": 448,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Rotura de Maquinaria",
+    "question": "Cuando la reparación de la maquinaria dañada se realice en los talleres del asegurado, aparte del importe del daño, ¿cuál es la cantidad máxima a pagar como gasto fijo de dicho taller?",
+    "pregunta": "Cuando la reparación de la maquinaria dañada se realice en los talleres del asegurado, aparte del importe del daño, ¿cuál es la cantidad máxima a pagar como gasto fijo de dicho taller?",
+    "options": [
+      "10% sobre el monto de la pérdida.",
+      "20% sobre el monto de la pérdida.",
+      "30% sobre el monto de la pérdida.",
+      "50% sobre el monto de la pérdida."
+    ],
+    "opciones": [
+      "10% sobre el monto de la pérdida.",
+      "20% sobre el monto de la pérdida.",
+      "30% sobre el monto de la pérdida.",
+      "50% sobre el monto de la pérdida."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "30% sobre el monto de la pérdida.",
+    "explanation": "Según la clave de la guía, si la reparación se realiza en talleres del asegurado se paga además hasta el 30% del daño como gasto fijo del taller. Los porcentajes de 10%, 20% o 50% no corresponden a la guía.",
+    "explicacion": "Según la clave de la guía, si la reparación se realiza en talleres del asegurado se paga además hasta el 30% del daño como gasto fijo del taller. Los porcentajes de 10%, 20% o 50% no corresponden a la guía."
+  },
+  {
+    "id": 449,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Rotura de Maquinaria",
+    "question": "¿A cargo de quién quedarán los gastos de cualquier reparación provisional en el Seguro de Rotura de Maquinaria?",
+    "pregunta": "¿A cargo de quién quedarán los gastos de cualquier reparación provisional en el Seguro de Rotura de Maquinaria?",
+    "options": [
+      "Una parte del Asegurado y otra de la Compañía Aseguradora",
+      "Del Reasegurador",
+      "De la Compañía Aseguradora",
+      "Del Asegurado"
+    ],
+    "opciones": [
+      "Una parte del Asegurado y otra de la Compañía Aseguradora",
+      "Del Reasegurador",
+      "De la Compañía Aseguradora",
+      "Del Asegurado"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Del Asegurado",
+    "explanation": "Los gastos de reparaciones provisionales quedan a cargo del asegurado, salvo que formen parte de la reparación definitiva. La aseguradora no los cubre ni se comparten con el reasegurador.",
+    "explicacion": "Los gastos de reparaciones provisionales quedan a cargo del asegurado, salvo que formen parte de la reparación definitiva. La aseguradora no los cubre ni se comparten con el reasegurador."
+  },
+  {
+    "id": 450,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Rotura de Maquinaria",
+    "question": "En la póliza de Rotura de Maquinaria, el Asegurado debe solicitar y mantener durante la vigencia de la póliza, como suma asegurada la que sea equivalente a:",
+    "pregunta": "En la póliza de Rotura de Maquinaria, el Asegurado debe solicitar y mantener durante la vigencia de la póliza, como suma asegurada la que sea equivalente a:",
+    "options": [
+      "Valor Estimado",
+      "Valor de Reposición",
+      "Valor Comercial",
+      "Valor Real"
+    ],
+    "opciones": [
+      "Valor Estimado",
+      "Valor de Reposición",
+      "Valor Comercial",
+      "Valor Real"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Valor de Reposición",
+    "explanation": "En rotura de maquinaria el asegurado debe mantener como suma asegurada el valor de reposición, es decir, el costo de un equipo nuevo equivalente. El valor real o comercial generaría infraseguro.",
+    "explicacion": "En rotura de maquinaria el asegurado debe mantener como suma asegurada el valor de reposición, es decir, el costo de un equipo nuevo equivalente. El valor real o comercial generaría infraseguro."
+  },
+  {
+    "id": 451,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Rotura de Maquinaria",
+    "question": "De la siguiente lista elige 3 obligaciones que tiene el Asegurado para que en caso de siniestro, la Aseguradora lo indemnice en el Seguro de Rotura de Maquinaria: 1.- Mantener en buen funcionamiento la maquinaria 2.- Que el mantenimiento sea efectuado por terceros 3.- No sobrecargarlos 4.- Parar el equipo 2 veces por semana 5.- Cumplir con disposiciones legales 6.- Mantener el equipo a 20 metros de otra máquina:",
+    "pregunta": "De la siguiente lista elige 3 obligaciones que tiene el Asegurado para que en caso de siniestro, la Aseguradora lo indemnice en el Seguro de Rotura de Maquinaria: 1.- Mantener en buen funcionamiento la maquinaria 2.- Que el mantenimiento sea efectuado por terceros 3.- No sobrecargarlos 4.- Parar el equipo 2 veces por semana 5.- Cumplir con disposiciones legales 6.- Mantener el equipo a 20 metros de otra máquina:",
+    "options": [
+      "1, 2, 3",
+      "3, 5, 6",
+      "1, 3, 5",
+      "2, 4, 6"
+    ],
+    "opciones": [
+      "1, 2, 3",
+      "3, 5, 6",
+      "1, 3, 5",
+      "2, 4, 6"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 3, 5",
+    "explanation": "Para ser indemnizado en rotura de maquinaria, el asegurado debe mantener la maquinaria en buen funcionamiento, no sobrecargarla y cumplir las disposiciones legales. Parar el equipo o mantener distancias fijas no son obligaciones de la póliza.",
+    "explicacion": "Para ser indemnizado en rotura de maquinaria, el asegurado debe mantener la maquinaria en buen funcionamiento, no sobrecargarla y cumplir las disposiciones legales. Parar el equipo o mantener distancias fijas no son obligaciones de la póliza."
+  },
+  {
+    "id": 452,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Rotura de Maquinaria",
+    "question": "¿Qué plazo tiene el Asegurado para reportar a la Aseguradora un siniestro que afecte su póliza de Rotura de Maquinaria?",
+    "pregunta": "¿Qué plazo tiene el Asegurado para reportar a la Aseguradora un siniestro que afecte su póliza de Rotura de Maquinaria?",
+    "options": [
+      "Dentro de los siguientes 15 días naturales",
+      "Notificarlo de inmediato o dentro de los 5 días siguientes",
+      "Dentro de los 4 días hábiles a partir de que ocurre el siniestro",
+      "Notificarlo de inmediato o dentro de los 10 días hábiles siguientes"
+    ],
+    "opciones": [
+      "Dentro de los siguientes 15 días naturales",
+      "Notificarlo de inmediato o dentro de los 5 días siguientes",
+      "Dentro de los 4 días hábiles a partir de que ocurre el siniestro",
+      "Notificarlo de inmediato o dentro de los 10 días hábiles siguientes"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Notificarlo de inmediato o dentro de los 5 días siguientes",
+    "explanation": "El siniestro de rotura de maquinaria debe notificarse de inmediato o dentro de los 5 días siguientes, como establece la Ley sobre el Contrato de Seguro. Los plazos de 10 o 15 días o en días hábiles no son los legales.",
+    "explicacion": "El siniestro de rotura de maquinaria debe notificarse de inmediato o dentro de los 5 días siguientes, como establece la Ley sobre el Contrato de Seguro. Los plazos de 10 o 15 días o en días hábiles no son los legales."
+  },
+  {
+    "id": 453,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "Es aquél que trabaje normalmente a presión o al vacío, pero que no es calentado directamente por fuego o con gases provenientes de combustión.",
+    "pregunta": "Es aquél que trabaje normalmente a presión o al vacío, pero que no es calentado directamente por fuego o con gases provenientes de combustión.",
+    "options": [
+      "Recipientes sujetos a presión con fogón.",
+      "Recipientes sujetos a presión sin fogón.",
+      "Calderas.",
+      "Maquinarias."
+    ],
+    "opciones": [
+      "Recipientes sujetos a presión con fogón.",
+      "Recipientes sujetos a presión sin fogón.",
+      "Calderas.",
+      "Maquinarias."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Recipientes sujetos a presión sin fogón.",
+    "explanation": "El recipiente sujeto a presión sin fogón es el que trabaja a presión o al vacío sin calentarse directamente por fuego o gases de combustión. El recipiente con fogón y la caldera sí se calientan directamente.",
+    "explicacion": "El recipiente sujeto a presión sin fogón es el que trabaja a presión o al vacío sin calentarse directamente por fuego o gases de combustión. El recipiente con fogón y la caldera sí se calientan directamente."
+  },
+  {
+    "id": 454,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "Riesgo cubierto en forma básica de la póliza de calderas.",
+    "pregunta": "Riesgo cubierto en forma básica de la póliza de calderas.",
+    "options": [
+      "Fenómenos de la naturaleza.",
+      "Desgaste o deterioro paulatino.",
+      "Quemadura por insuficiencia de agua.",
+      "Explosión ocurrida fuera de la caldera."
+    ],
+    "opciones": [
+      "Fenómenos de la naturaleza.",
+      "Desgaste o deterioro paulatino.",
+      "Quemadura por insuficiencia de agua.",
+      "Explosión ocurrida fuera de la caldera."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Quemadura por insuficiencia de agua.",
+    "explanation": "La quemadura por insuficiencia de agua es un riesgo básico en calderas. Los fenómenos naturales y las explosiones externas se cubren en incendio, y el desgaste se excluye.",
+    "explicacion": "La quemadura por insuficiencia de agua es un riesgo básico en calderas. Los fenómenos naturales y las explosiones externas se cubren en incendio, y el desgaste se excluye."
+  },
+  {
+    "id": 455,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "Es un riesgo que se puede amparar por convenio expreso en la póliza de calderas.",
+    "pregunta": "Es un riesgo que se puede amparar por convenio expreso en la póliza de calderas.",
+    "options": [
+      "Daño directo por rayo.",
+      "Reparaciones provisionales.",
+      "Gastos extraordinarios.",
+      "Deformación súbita de la caldera."
+    ],
+    "opciones": [
+      "Daño directo por rayo.",
+      "Reparaciones provisionales.",
+      "Gastos extraordinarios.",
+      "Deformación súbita de la caldera."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Gastos extraordinarios.",
+    "explanation": "Los gastos extraordinarios pueden ampararse por convenio expreso en calderas. El rayo se cubre en incendio, las reparaciones provisionales se excluyen y la deformación súbita es parte de la básica.",
+    "explicacion": "Los gastos extraordinarios pueden ampararse por convenio expreso en calderas. El rayo se cubre en incendio, las reparaciones provisionales se excluyen y la deformación súbita es parte de la básica."
+  },
+  {
+    "id": 456,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "¿De cuánto es la participación del asegurado, además del deducible, en caso de quedar amparado el escape de, o daños a, los fluidos o sustancias contenidas en cualquiera de los bienes asegurados que resulten de haberse realizado un siniestro indemnizable?.",
+    "pregunta": "¿De cuánto es la participación del asegurado, además del deducible, en caso de quedar amparado el escape de, o daños a, los fluidos o sustancias contenidas en cualquiera de los bienes asegurados que resulten de haberse realizado un siniestro indemnizable?.",
+    "options": [
+      "10% sobre la pérdida.",
+      "15% sobre la pérdida.",
+      "20% sobre la pérdida.",
+      "25% sobre la pérdida."
+    ],
+    "opciones": [
+      "10% sobre la pérdida.",
+      "15% sobre la pérdida.",
+      "20% sobre la pérdida.",
+      "25% sobre la pérdida."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "25% sobre la pérdida.",
+    "explanation": "Según la clave de la guía, el asegurado participa con el 25% de la pérdida, además del deducible, cuando se ampara el escape de los fluidos contenidos. Los porcentajes de 10%, 15% o 20% no son los de la guía.",
+    "explicacion": "Según la clave de la guía, el asegurado participa con el 25% de la pérdida, además del deducible, cuando se ampara el escape de los fluidos contenidos. Los porcentajes de 10%, 15% o 20% no son los de la guía."
+  },
+  {
+    "id": 457,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "Es un bien excluido en la póliza de calderas.",
+    "pregunta": "Es un bien excluido en la póliza de calderas.",
+    "options": [
+      "Pulverizadores de carbón.",
+      "Huelgas y alborotos populares.",
+      "Agrietamiento de cualquier parte de fierro.",
+      "Pérdidas consecuenciales."
+    ],
+    "opciones": [
+      "Pulverizadores de carbón.",
+      "Huelgas y alborotos populares.",
+      "Agrietamiento de cualquier parte de fierro.",
+      "Pérdidas consecuenciales."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Pulverizadores de carbón.",
+    "explanation": "Los pulverizadores de carbón son bienes excluidos en la póliza de calderas. Las huelgas, el agrietamiento y las pérdidas consecuenciales son riesgos, no bienes.",
+    "explicacion": "Los pulverizadores de carbón son bienes excluidos en la póliza de calderas. Las huelgas, el agrietamiento y las pérdidas consecuenciales son riesgos, no bienes."
+  },
+  {
+    "id": 458,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "Si el monto de la pérdida es igual o mayor al valor real, la Aseguradora la considera pérdida total; en éste caso. ¿La Aseguradora pagará a?",
+    "pregunta": "Si el monto de la pérdida es igual o mayor al valor real, la Aseguradora la considera pérdida total; en éste caso. ¿La Aseguradora pagará a?",
+    "options": [
+      "Valor de reposición.",
+      "Valor real.",
+      "Valor convenido.",
+      "Valor comercial."
+    ],
+    "opciones": [
+      "Valor de reposición.",
+      "Valor real.",
+      "Valor convenido.",
+      "Valor comercial."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Valor real.",
+    "explanation": "Si la pérdida iguala o supera el valor real, se considera pérdida total y se paga a valor real, descontando depreciación. El valor de reposición aplica a pérdidas parciales.",
+    "explicacion": "Si la pérdida iguala o supera el valor real, se considera pérdida total y se paga a valor real, descontando depreciación. El valor de reposición aplica a pérdidas parciales."
+  },
+  {
+    "id": 459,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "En caso de agrietamiento de cualquier parte de fierro, cobre o bronce en calderas, necesariamente quedará cubierta siempre que:",
+    "pregunta": "En caso de agrietamiento de cualquier parte de fierro, cobre o bronce en calderas, necesariamente quedará cubierta siempre que:",
+    "options": [
+      "Esté a la intemperie.",
+      "Esté bajo tierra.",
+      "Permita la fuga del fluido contenido",
+      "No permita la fuga del fluido contenido."
+    ],
+    "opciones": [
+      "Esté a la intemperie.",
+      "Esté bajo tierra.",
+      "Permita la fuga del fluido contenido",
+      "No permita la fuga del fluido contenido."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Permita la fuga del fluido contenido",
+    "explanation": "El agrietamiento de partes de fierro, cobre o bronce en calderas se cubre cuando permite la fuga del fluido contenido. La ubicación a la intemperie o bajo tierra no es el criterio.",
+    "explicacion": "El agrietamiento de partes de fierro, cobre o bronce en calderas se cubre cuando permite la fuga del fluido contenido. La ubicación a la intemperie o bajo tierra no es el criterio."
+  },
+  {
+    "id": 460,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "Es obligación del asegurado solicitar y mantener durante la vigencia de la póliza como suma asegurada:",
+    "pregunta": "Es obligación del asegurado solicitar y mantener durante la vigencia de la póliza como suma asegurada:",
+    "options": [
+      "Valor real.",
+      "Valor comercial.",
+      "Valor convenido.",
+      "Valor de reposición."
+    ],
+    "opciones": [
+      "Valor real.",
+      "Valor comercial.",
+      "Valor convenido.",
+      "Valor de reposición."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Valor de reposición.",
+    "explanation": "En calderas el asegurado debe mantener como suma asegurada el valor de reposición. El valor real, comercial o convenido no reflejan el costo de reponer el equipo.",
+    "explicacion": "En calderas el asegurado debe mantener como suma asegurada el valor de reposición. El valor real, comercial o convenido no reflejan el costo de reponer el equipo."
+  },
+  {
+    "id": 461,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "Identifica los bienes NO asegurables dentro del seguro de Calderas y Recipientes Sujetos a Presión: 1.- Tuberías 2.- Contenidos en la caldera 3.- Equipo de control 4.- Parrillas 5.- Bombas alimentadoras de agua 6.- Pulverizadores de carbón 7.- Tapones, fusibles 8.- Redes de vapor:",
+    "pregunta": "Identifica los bienes NO asegurables dentro del seguro de Calderas y Recipientes Sujetos a Presión: 1.- Tuberías 2.- Contenidos en la caldera 3.- Equipo de control 4.- Parrillas 5.- Bombas alimentadoras de agua 6.- Pulverizadores de carbón 7.- Tapones, fusibles 8.- Redes de vapor:",
+    "options": [
+      "4, 5, 8",
+      "2, 3, 8",
+      "1, 2, 4",
+      "5, 6, 7"
+    ],
+    "opciones": [
+      "4, 5, 8",
+      "2, 3, 8",
+      "1, 2, 4",
+      "5, 6, 7"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "5, 6, 7",
+    "explanation": "Según la clave de la guía, no son asegurables en calderas las bombas alimentadoras de agua, los pulverizadores de carbón y los tapones fusibles. Las tuberías y el equipo de control se consideran parte asegurable.",
+    "explicacion": "Según la clave de la guía, no son asegurables en calderas las bombas alimentadoras de agua, los pulverizadores de carbón y los tapones fusibles. Las tuberías y el equipo de control se consideran parte asegurable."
+  },
+  {
+    "id": 462,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "En una fábrica de embutidos hay un equipo que trabaja a presión y que sus líquidos no son calentados directamente por gases provenientes de combustión; dicho equipo se considera:",
+    "pregunta": "En una fábrica de embutidos hay un equipo que trabaja a presión y que sus líquidos no son calentados directamente por gases provenientes de combustión; dicho equipo se considera:",
+    "options": [
+      "Un recipiente sujeto a presión sin fogón",
+      "Una caldera",
+      "Un recipiente sujeto a presión con fogón",
+      "Un motor de combustión interna"
+    ],
+    "opciones": [
+      "Un recipiente sujeto a presión sin fogón",
+      "Una caldera",
+      "Un recipiente sujeto a presión con fogón",
+      "Un motor de combustión interna"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Un recipiente sujeto a presión sin fogón",
+    "explanation": "Un equipo que trabaja a presión y cuyos líquidos no se calientan directamente por gases de combustión es un recipiente sujeto a presión sin fogón. La caldera y el recipiente con fogón sí reciben calor directo.",
+    "explicacion": "Un equipo que trabaja a presión y cuyos líquidos no se calientan directamente por gases de combustión es un recipiente sujeto a presión sin fogón. La caldera y el recipiente con fogón sí reciben calor directo."
+  },
+  {
+    "id": 463,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "De los siguientes bienes, identifica 3 que se amparan en la cobertura básica del seguro de Calderas: 1.- Quemadores de combustible 2.- Equipo no metálico 3.- Discos de seguridad 4.- Ventiladores de tiro forzado 5.- Inyectores 6.- Compresores:",
+    "pregunta": "De los siguientes bienes, identifica 3 que se amparan en la cobertura básica del seguro de Calderas: 1.- Quemadores de combustible 2.- Equipo no metálico 3.- Discos de seguridad 4.- Ventiladores de tiro forzado 5.- Inyectores 6.- Compresores:",
+    "options": [
+      "2, 3, 6",
+      "1, 4, 5",
+      "1, 3, 5",
+      "3, 5, 6"
+    ],
+    "opciones": [
+      "2, 3, 6",
+      "1, 4, 5",
+      "1, 3, 5",
+      "3, 5, 6"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "1, 4, 5",
+    "explanation": "Según la clave de la guía, los quemadores de combustible, los ventiladores de tiro forzado y los inyectores se amparan en la básica de calderas. El equipo no metálico y los discos de seguridad se excluyen.",
+    "explicacion": "Según la clave de la guía, los quemadores de combustible, los ventiladores de tiro forzado y los inyectores se amparan en la básica de calderas. El equipo no metálico y los discos de seguridad se excluyen."
+  },
+  {
+    "id": 464,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "Dentro de un seguro de Calderas, el recipiente cerrado en el cual se caliente o se convierte el agua u otro líquido en vapor por medio de calor generado por combustible o electricidad, se llama:",
+    "pregunta": "Dentro de un seguro de Calderas, el recipiente cerrado en el cual se caliente o se convierte el agua u otro líquido en vapor por medio de calor generado por combustible o electricidad, se llama:",
+    "options": [
+      "Recipiente al vacío",
+      "Equipos auxiliares",
+      "Calderas",
+      "Recipiente sujeto a presión sin fogón"
+    ],
+    "opciones": [
+      "Recipiente al vacío",
+      "Equipos auxiliares",
+      "Calderas",
+      "Recipiente sujeto a presión sin fogón"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Calderas",
+    "explanation": "La caldera es el recipiente cerrado en el que se calienta o convierte en vapor el agua u otro líquido mediante calor de combustible o electricidad. El recipiente sin fogón no se calienta directamente.",
+    "explicacion": "La caldera es el recipiente cerrado en el que se calienta o convierte en vapor el agua u otro líquido mediante calor de combustible o electricidad. El recipiente sin fogón no se calienta directamente."
+  },
+  {
+    "id": 465,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "De la siguiente lista, elige las 3 secciones de la póliza de Calderas y Recipientes Sujetos a Presión: 1.- Daños materiales a calderas y recipientes sujetos a presión con fogón 2.- Gastos extraordinarios 3.- Daños a compresores 4.- Daños materiales a recipientes sujetos a presión sin fogón 5.- Motores de combustión interna:",
+    "pregunta": "De la siguiente lista, elige las 3 secciones de la póliza de Calderas y Recipientes Sujetos a Presión: 1.- Daños materiales a calderas y recipientes sujetos a presión con fogón 2.- Gastos extraordinarios 3.- Daños a compresores 4.- Daños materiales a recipientes sujetos a presión sin fogón 5.- Motores de combustión interna:",
+    "options": [
+      "1, 3, 4",
+      "2, 5, 3",
+      "1, 3, 5",
+      "1, 2, 4"
+    ],
+    "opciones": [
+      "1, 3, 4",
+      "2, 5, 3",
+      "1, 3, 5",
+      "1, 2, 4"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "1, 2, 4",
+    "explanation": "Según la clave de la guía, la póliza se divide en daños materiales a calderas y recipientes con fogón, gastos extraordinarios y daños materiales a recipientes sujetos a presión sin fogón. Compresores y motores de combustión interna no son secciones de esta póliza.",
+    "explicacion": "Según la clave de la guía, la póliza se divide en daños materiales a calderas y recipientes con fogón, gastos extraordinarios y daños materiales a recipientes sujetos a presión sin fogón. Compresores y motores de combustión interna no son secciones de esta póliza."
+  },
+  {
+    "id": 466,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "Todos son bienes NO cubiertos en el seguro de Calderas, EXCEPTO:",
+    "pregunta": "Todos son bienes NO cubiertos en el seguro de Calderas, EXCEPTO:",
+    "options": [
+      "Equipos no metálicos",
+      "Discos de seguridad",
+      "Equipos auxiliares",
+      "Pulverizadores de carbón"
+    ],
+    "opciones": [
+      "Equipos no metálicos",
+      "Discos de seguridad",
+      "Equipos auxiliares",
+      "Pulverizadores de carbón"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Equipos auxiliares",
+    "explanation": "Los equipos auxiliares de la caldera sí se cubren. Los equipos no metálicos, los discos de seguridad y los pulverizadores de carbón son bienes no cubiertos.",
+    "explicacion": "Los equipos auxiliares de la caldera sí se cubren. Los equipos no metálicos, los discos de seguridad y los pulverizadores de carbón son bienes no cubiertos."
+  },
+  {
+    "id": 467,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "En un club, la caldera sufre daños por el gas no quemado dentro del horno. ¿Qué cobertura del seguro de Calderas se afecta?",
+    "pregunta": "En un club, la caldera sufre daños por el gas no quemado dentro del horno. ¿Qué cobertura del seguro de Calderas se afecta?",
+    "options": [
+      "Cobertura básica",
+      "Coberturas adicionales",
+      "Cobertura de contenidos",
+      "Cobertura de tuberías"
+    ],
+    "opciones": [
+      "Cobertura básica",
+      "Coberturas adicionales",
+      "Cobertura de contenidos",
+      "Cobertura de tuberías"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Cobertura básica",
+    "explanation": "El daño a la caldera por explosión del gas no quemado en el horno se ampara en la cobertura básica. No requiere coberturas adicionales.",
+    "explicacion": "El daño a la caldera por explosión del gas no quemado en el horno se ampara en la cobertura básica. No requiere coberturas adicionales."
+  },
+  {
+    "id": 468,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Calderas",
+    "question": "Todas son exclusiones del seguro de Calderas, EXCEPTO:",
+    "pregunta": "Todas son exclusiones del seguro de Calderas, EXCEPTO:",
+    "options": [
+      "La deformación súbita y violenta de cualquier parte de la Caldera",
+      "Reparaciones efectuadas a los equipos en forma provisional",
+      "Falta de fuerza motriz, electricidad, calor, vapor o refrigeración",
+      "Terremoto, temblor, erupción volcánica, huracán, ciclón, tempestad"
+    ],
+    "opciones": [
+      "La deformación súbita y violenta de cualquier parte de la Caldera",
+      "Reparaciones efectuadas a los equipos en forma provisional",
+      "Falta de fuerza motriz, electricidad, calor, vapor o refrigeración",
+      "Terremoto, temblor, erupción volcánica, huracán, ciclón, tempestad"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "La deformación súbita y violenta de cualquier parte de la Caldera",
+    "explanation": "La deformación súbita y violenta de cualquier parte de la caldera es un riesgo cubierto, no una exclusión. Las reparaciones provisionales, la falta de fuerza motriz y los fenómenos naturales se excluyen.",
+    "explicacion": "La deformación súbita y violenta de cualquier parte de la caldera es un riesgo cubierto, no una exclusión. Las reparaciones provisionales, la falta de fuerza motriz y los fenómenos naturales se excluyen."
+  },
+  {
+    "id": 469,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo de Contratistas",
+    "question": "En la póliza de maquinaria pesada móvil mencione dos riesgos amparados en forma básica:",
+    "pregunta": "En la póliza de maquinaria pesada móvil mencione dos riesgos amparados en forma básica:",
+    "options": [
+      "Daños por sobre carga o tracción.",
+      "Inundación y terremoto.",
+      "Daños por terrorismo y guerra.",
+      "Daños por preexistencias y falta de resistencia mecánica."
+    ],
+    "opciones": [
+      "Daños por sobre carga o tracción.",
+      "Inundación y terremoto.",
+      "Daños por terrorismo y guerra.",
+      "Daños por preexistencias y falta de resistencia mecánica."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Inundación y terremoto.",
+    "explanation": "En la póliza de maquinaria pesada móvil, la inundación y el terremoto se amparan en forma básica. La sobrecarga y las preexistencias se excluyen, y el terrorismo y la guerra nunca se cubren.",
+    "explicacion": "En la póliza de maquinaria pesada móvil, la inundación y el terremoto se amparan en forma básica. La sobrecarga y las preexistencias se excluyen, y el terrorismo y la guerra nunca se cubren."
+  },
+  {
+    "id": 470,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo de Contratistas",
+    "question": "Mencione dos riesgos excluidos dentro de la póliza de maquinaria pesada móvil:",
+    "pregunta": "Mencione dos riesgos excluidos dentro de la póliza de maquinaria pesada móvil:",
+    "options": [
+      "Incendio y/o explosión.",
+      "Hundimiento y rotura de puentes para vehículos.",
+      "Volcadura y colisiones con objetos en movimiento.",
+      "Daños existentes y exceder la capacidad de operación de la maquina."
+    ],
+    "opciones": [
+      "Incendio y/o explosión.",
+      "Hundimiento y rotura de puentes para vehículos.",
+      "Volcadura y colisiones con objetos en movimiento.",
+      "Daños existentes y exceder la capacidad de operación de la maquina."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Daños existentes y exceder la capacidad de operación de la maquina.",
+    "explanation": "Los daños preexistentes y exceder la capacidad de operación de la máquina son riesgos excluidos en maquinaria pesada móvil. Incendio, volcadura y hundimiento de puentes son riesgos cubiertos.",
+    "explicacion": "Los daños preexistentes y exceder la capacidad de operación de la máquina son riesgos excluidos en maquinaria pesada móvil. Incendio, volcadura y hundimiento de puentes son riesgos cubiertos."
+  },
+  {
+    "id": 471,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo de Contratistas",
+    "question": "Los daños o pérdidas causados por huelguistas en la póliza de equipo de contratistas son considerados como:",
+    "pregunta": "Los daños o pérdidas causados por huelguistas en la póliza de equipo de contratistas son considerados como:",
+    "options": [
+      "Cobertura básica.",
+      "Cobertura por convenio.",
+      "Riesgo excluido.",
+      "No se menciona en la póliza."
+    ],
+    "opciones": [
+      "Cobertura básica.",
+      "Cobertura por convenio.",
+      "Riesgo excluido.",
+      "No se menciona en la póliza."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Cobertura por convenio.",
+    "explanation": "Los daños por huelguistas se cubren por convenio en la póliza de equipo de contratistas. No forman parte de la básica ni están excluidos.",
+    "explicacion": "Los daños por huelguistas se cubren por convenio en la póliza de equipo de contratistas. No forman parte de la básica ni están excluidos."
+  },
+  {
+    "id": 472,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo de Contratistas",
+    "question": "En la póliza de equipo de contratistas, si el costo de reparación es igual o mayor al valor real, la compañía considera pérdida total, en este caso se indemnizará:",
+    "pregunta": "En la póliza de equipo de contratistas, si el costo de reparación es igual o mayor al valor real, la compañía considera pérdida total, en este caso se indemnizará:",
+    "options": [
+      "Valor real.",
+      "Valor de reposición.",
+      "Valor comercial.",
+      "Valor convenido."
+    ],
+    "opciones": [
+      "Valor real.",
+      "Valor de reposición.",
+      "Valor comercial.",
+      "Valor convenido."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Valor real.",
+    "explanation": "Si la reparación iguala o supera el valor real, se considera pérdida total y se indemniza a valor real. El valor de reposición aplica a pérdidas parciales.",
+    "explicacion": "Si la reparación iguala o supera el valor real, se considera pérdida total y se indemniza a valor real. El valor de reposición aplica a pérdidas parciales."
+  },
+  {
+    "id": 473,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo de Contratistas",
+    "question": "¿Cuál es la responsabilidad de la compañía en caso de que el monto de la pérdida sea menor al valor real de los bienes amparados?",
+    "pregunta": "¿Cuál es la responsabilidad de la compañía en caso de que el monto de la pérdida sea menor al valor real de los bienes amparados?",
+    "options": [
+      "Valor real.",
+      "Valor comercial.",
+      "Valor de reposición.",
+      "Valor convenido."
+    ],
+    "opciones": [
+      "Valor real.",
+      "Valor comercial.",
+      "Valor de reposición.",
+      "Valor convenido."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Valor de reposición.",
+    "explanation": "Si la pérdida es menor al valor real, la aseguradora responde por el costo de reparación a valor de reposición, sin descontar depreciación de las partes. El valor real se aplica en pérdida total.",
+    "explicacion": "Si la pérdida es menor al valor real, la aseguradora responde por el costo de reparación a valor de reposición, sin descontar depreciación de las partes. El valor real se aplica en pérdida total."
+  },
+  {
+    "id": 474,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo de Contratistas",
+    "question": "En la póliza de equipo de contratistas y maquinaria pesada móvil, ¿cuál es el plazo máximo para dar aviso por escrito en caso de siniestro?",
+    "pregunta": "En la póliza de equipo de contratistas y maquinaria pesada móvil, ¿cuál es el plazo máximo para dar aviso por escrito en caso de siniestro?",
+    "options": [
+      "24 hrs.",
+      "5 días.",
+      "30 días.",
+      "2 años."
+    ],
+    "opciones": [
+      "24 hrs.",
+      "5 días.",
+      "30 días.",
+      "2 años."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "5 días.",
+    "explanation": "En equipo de contratistas el aviso de siniestro debe darse por escrito en un máximo de 5 días, como establece la Ley sobre el Contrato de Seguro. Plazos de 24 horas, 30 días o 2 años no son el plazo legal.",
+    "explicacion": "En equipo de contratistas el aviso de siniestro debe darse por escrito en un máximo de 5 días, como establece la Ley sobre el Contrato de Seguro. Plazos de 24 horas, 30 días o 2 años no son el plazo legal."
+  },
+  {
+    "id": 475,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo de Contratistas",
+    "question": "Para la determinación de la suma asegurada el asegurado deberá solicitar y mantener una cantidad igual al:",
+    "pregunta": "Para la determinación de la suma asegurada el asegurado deberá solicitar y mantener una cantidad igual al:",
+    "options": [
+      "Valor real.",
+      "Valor convenido.",
+      "Valor de reposición.",
+      "Valor comercial."
+    ],
+    "opciones": [
+      "Valor real.",
+      "Valor convenido.",
+      "Valor de reposición.",
+      "Valor comercial."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Valor de reposición.",
+    "explanation": "La suma asegurada de equipo de contratistas debe ser igual al valor de reposición de los equipos. El valor real o comercial generaría infraseguro.",
+    "explicacion": "La suma asegurada de equipo de contratistas debe ser igual al valor de reposición de los equipos. El valor real o comercial generaría infraseguro."
+  },
+  {
+    "id": 476,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo de Contratistas",
+    "question": "La cobertura contra toda pérdida o daño físico ocurrido a los equipos de contratistas y maquinaria pesada móvil, se considera como:",
+    "pregunta": "La cobertura contra toda pérdida o daño físico ocurrido a los equipos de contratistas y maquinaria pesada móvil, se considera como:",
+    "options": [
+      "Cobertura básica.",
+      "Cobertura por convenio.",
+      "Riesgo excluido.",
+      "No se menciona en la póliza."
+    ],
+    "opciones": [
+      "Cobertura básica.",
+      "Cobertura por convenio.",
+      "Riesgo excluido.",
+      "No se menciona en la póliza."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Cobertura por convenio.",
+    "explanation": "Según la clave de la guía, la cobertura contra toda pérdida o daño físico en equipo de contratistas se considera cobertura por convenio. En muchos productos actuales la modalidad todo riesgo es la cobertura básica.",
+    "explicacion": "Según la clave de la guía, la cobertura contra toda pérdida o daño físico en equipo de contratistas se considera cobertura por convenio. En muchos productos actuales la modalidad todo riesgo es la cobertura básica."
+  },
+  {
+    "id": 477,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo de Contratistas",
+    "question": "De los siguientes bienes, elige 3 que se cubren en el seguro de Equipo de Contratistas: 1.- Pala mecánica 2.- Conmutador telefónico 3.- Mezcladora de concreto 4.- Planta de fuerza 5.- Aire acondicionado:",
+    "pregunta": "De los siguientes bienes, elige 3 que se cubren en el seguro de Equipo de Contratistas: 1.- Pala mecánica 2.- Conmutador telefónico 3.- Mezcladora de concreto 4.- Planta de fuerza 5.- Aire acondicionado:",
+    "options": [
+      "1, 3, 4",
+      "1, 3, 5",
+      "1, 2, 4",
+      "2, 3, 5"
+    ],
+    "opciones": [
+      "1, 3, 4",
+      "1, 3, 5",
+      "1, 2, 4",
+      "2, 3, 5"
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "1, 3, 4",
+    "explanation": "El seguro de equipo de contratistas cubre la pala mecánica, la mezcladora de concreto y la planta de fuerza usadas en obra. El conmutador y el aire acondicionado son equipo electrónico o de oficina.",
+    "explicacion": "El seguro de equipo de contratistas cubre la pala mecánica, la mezcladora de concreto y la planta de fuerza usadas en obra. El conmutador y el aire acondicionado son equipo electrónico o de oficina."
+  },
+  {
+    "id": 478,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo de Contratistas",
+    "question": "En el seguro de Equipo de Contratistas existen bienes excluidos. Identifica 2 de esos bienes de la siguiente lista: 1.- Equipos que trabajan sobre el agua 2.- Equipos para nivelación 3.- Equipos de compactación 4.- Equipos para perforación:",
+    "pregunta": "En el seguro de Equipo de Contratistas existen bienes excluidos. Identifica 2 de esos bienes de la siguiente lista: 1.- Equipos que trabajan sobre el agua 2.- Equipos para nivelación 3.- Equipos de compactación 4.- Equipos para perforación:",
+    "options": [
+      "2, 3",
+      "2, 4",
+      "1, 4",
+      "1, 3"
+    ],
+    "opciones": [
+      "2, 3",
+      "2, 4",
+      "1, 4",
+      "1, 3"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 4",
+    "explanation": "Según la clave de la guía, se excluyen los equipos que trabajan sobre el agua y los de perforación. Los equipos de nivelación y compactación son típicos de contratistas y se cubren.",
+    "explicacion": "Según la clave de la guía, se excluyen los equipos que trabajan sobre el agua y los de perforación. Los equipos de nivelación y compactación son típicos de contratistas y se cubren."
+  },
+  {
+    "id": 479,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Equipo de Contratistas",
+    "question": "De la siguiente lista de riesgos que pueden ser cubiertos mediante convenio expreso, elige 3 que correspondan al seguro de Equipo de Contratistas: 1.- Daños a bienes por encontrarse en operación bajo tierra 2.- Gastos extraordinarios 3.- Daños ocasionados por sobrecargar 4.- Daños causados por congelación del medio refrigerante 5.- Daños por inmersión total o parcial en el agua 6.- Pérdidas causadas directamente por actos de huelguistas:",
+    "pregunta": "De la siguiente lista de riesgos que pueden ser cubiertos mediante convenio expreso, elige 3 que correspondan al seguro de Equipo de Contratistas: 1.- Daños a bienes por encontrarse en operación bajo tierra 2.- Gastos extraordinarios 3.- Daños ocasionados por sobrecargar 4.- Daños causados por congelación del medio refrigerante 5.- Daños por inmersión total o parcial en el agua 6.- Pérdidas causadas directamente por actos de huelguistas:",
+    "options": [
+      "2, 4, 5",
+      "1, 3, 6",
+      "1, 2, 6",
+      "3, 4, 5"
+    ],
+    "opciones": [
+      "2, 4, 5",
+      "1, 3, 6",
+      "1, 2, 6",
+      "3, 4, 5"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "1, 2, 6",
+    "explanation": "Según la clave de la guía, pueden cubrirse por convenio expreso los bienes en operación bajo tierra, los gastos extraordinarios y los actos de huelguistas. La sobrecarga y la congelación se excluyen.",
+    "explicacion": "Según la clave de la guía, pueden cubrirse por convenio expreso los bienes en operación bajo tierra, los gastos extraordinarios y los actos de huelguistas. La sobrecarga y la congelación se excluyen."
+  },
+  {
+    "id": 480,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "En el seguro de Obra Civil los daños materiales a consecuencia de granizo, ciclón y huracán son coberturas:",
+    "pregunta": "En el seguro de Obra Civil los daños materiales a consecuencia de granizo, ciclón y huracán son coberturas:",
+    "options": [
+      "En forma básica.",
+      "A todo riesgo.",
+      "Por convenio expreso.",
+      "Excluidas en forma total."
+    ],
+    "opciones": [
+      "En forma básica.",
+      "A todo riesgo.",
+      "Por convenio expreso.",
+      "Excluidas en forma total."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Por convenio expreso.",
+    "explanation": "Según la clave de la guía, en obra civil los daños por granizo, ciclón y huracán se cubren por convenio expreso. No forman parte de la cobertura básica ni están excluidos.",
+    "explicacion": "Según la clave de la guía, en obra civil los daños por granizo, ciclón y huracán se cubren por convenio expreso. No forman parte de la cobertura básica ni están excluidos."
+  },
+  {
+    "id": 481,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "Identifica un bien que se puede contratar por convenio expreso en la póliza de Obra Civil:",
+    "pregunta": "Identifica un bien que se puede contratar por convenio expreso en la póliza de Obra Civil:",
+    "options": [
+      "Embarcaciones.",
+      "Planos.",
+      "Instalaciones subterráneas.",
+      "Montaje de maquinaria y equipo."
+    ],
+    "opciones": [
+      "Embarcaciones.",
+      "Planos.",
+      "Instalaciones subterráneas.",
+      "Montaje de maquinaria y equipo."
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Montaje de maquinaria y equipo.",
+    "explanation": "En obra civil puede contratarse por convenio expreso el montaje de maquinaria y equipo. Las embarcaciones y los planos se excluyen, y las instalaciones subterráneas son materia de responsabilidad civil.",
+    "explicacion": "En obra civil puede contratarse por convenio expreso el montaje de maquinaria y equipo. Las embarcaciones y los planos se excluyen, y las instalaciones subterráneas son materia de responsabilidad civil."
+  },
+  {
+    "id": 482,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "En la póliza de Obra Civil menciona un bien excluido en forma total por la compañía de seguros:",
+    "pregunta": "En la póliza de Obra Civil menciona un bien excluido en forma total por la compañía de seguros:",
+    "options": [
+      "Equipo de contratistas.",
+      "Instalaciones provisionales.",
+      "Planos.",
+      "Equipo menor."
+    ],
+    "opciones": [
+      "Equipo de contratistas.",
+      "Instalaciones provisionales.",
+      "Planos.",
+      "Equipo menor."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Planos.",
+    "explanation": "Los planos se excluyen totalmente de la póliza de obra civil, porque no son bienes de la obra física. El equipo de contratistas y las instalaciones provisionales pueden asegurarse.",
+    "explicacion": "Los planos se excluyen totalmente de la póliza de obra civil, porque no son bienes de la obra física. El equipo de contratistas y las instalaciones provisionales pueden asegurarse."
+  },
+  {
+    "id": 483,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "Dentro del seguro de Obra Civil, la sección III ampara la responsabilidad civil del asegurado, mencione dos coberturas por convenio expreso de este endoso:",
+    "pregunta": "Dentro del seguro de Obra Civil, la sección III ampara la responsabilidad civil del asegurado, mencione dos coberturas por convenio expreso de este endoso:",
+    "options": [
+      "Instalaciones subterráneas y trabajos de soldadura.",
+      "Los gastos de defensa y fianzas.",
+      "Los daños y consecuencialmente el perjuicio.",
+      "La muerte o el deterioro de la salud de terceros."
+    ],
+    "opciones": [
+      "Instalaciones subterráneas y trabajos de soldadura.",
+      "Los gastos de defensa y fianzas.",
+      "Los daños y consecuencialmente el perjuicio.",
+      "La muerte o el deterioro de la salud de terceros."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Instalaciones subterráneas y trabajos de soldadura.",
+    "explanation": "Según la clave de la guía, en la sección III de responsabilidad civil de obra civil se contratan por convenio expreso las instalaciones subterráneas y los trabajos de soldadura. Los gastos de defensa y los daños con sus perjuicios son parte de la cobertura básica de RC.",
+    "explicacion": "Según la clave de la guía, en la sección III de responsabilidad civil de obra civil se contratan por convenio expreso las instalaciones subterráneas y los trabajos de soldadura. Los gastos de defensa y los daños con sus perjuicios son parte de la cobertura básica de RC."
+  },
+  {
+    "id": 484,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "¿Cuál es el nombre de la sección I de la póliza de Obra Civil?",
+    "pregunta": "¿Cuál es el nombre de la sección I de la póliza de Obra Civil?",
+    "options": [
+      "Gastos extraordinarios.",
+      "Daños materiales.",
+      "Responsabilidad civil.",
+      "Remoción de escombros."
+    ],
+    "opciones": [
+      "Gastos extraordinarios.",
+      "Daños materiales.",
+      "Responsabilidad civil.",
+      "Remoción de escombros."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Daños materiales.",
+    "explanation": "La sección I de la póliza de obra civil es la de daños materiales a la obra. Los gastos extraordinarios, la responsabilidad civil y la remoción de escombros corresponden a otras secciones o coberturas.",
+    "explicacion": "La sección I de la póliza de obra civil es la de daños materiales a la obra. Los gastos extraordinarios, la responsabilidad civil y la remoción de escombros corresponden a otras secciones o coberturas."
+  },
+  {
+    "id": 485,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "Son coberturas básicas de la sección I de la póliza de Obra Civil.",
+    "pregunta": "Son coberturas básicas de la sección I de la póliza de Obra Civil.",
+    "options": [
+      "Equipo de contratista.",
+      "Daños por errores de cálculo o diseño.",
+      "Actos mal intencionados y falla humana.",
+      "Remoción de escombros."
+    ],
+    "opciones": [
+      "Equipo de contratista.",
+      "Daños por errores de cálculo o diseño.",
+      "Actos mal intencionados y falla humana.",
+      "Remoción de escombros."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Actos mal intencionados y falla humana.",
+    "explanation": "Los actos malintencionados y la falla humana son coberturas básicas de la sección I de obra civil. Los errores de diseño se excluyen, y el equipo de contratistas y la remoción de escombros se contratan aparte.",
+    "explicacion": "Los actos malintencionados y la falla humana son coberturas básicas de la sección I de obra civil. Los errores de diseño se excluyen, y el equipo de contratistas y la remoción de escombros se contratan aparte."
+  },
+  {
+    "id": 486,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "¿Cuál es la suma asegurada para cubrir el pago de los gastos, costas e intereses legales que deba pagar el asegurado por resolución judicial o arbitral ejecutoriadas, tramitación y liquidación de las reclamaciones, dentro de la sección III de la póliza de obra civil?",
+    "pregunta": "¿Cuál es la suma asegurada para cubrir el pago de los gastos, costas e intereses legales que deba pagar el asegurado por resolución judicial o arbitral ejecutoriadas, tramitación y liquidación de las reclamaciones, dentro de la sección III de la póliza de obra civil?",
+    "options": [
+      "25% de la suma base.",
+      "50% de la suma base.",
+      "75% de la suma base.",
+      "100% de la suma base."
+    ],
+    "opciones": [
+      "25% de la suma base.",
+      "50% de la suma base.",
+      "75% de la suma base.",
+      "100% de la suma base."
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "50% de la suma base.",
+    "explanation": "Según la clave de la guía, los gastos, costas e intereses legales de la sección III de obra civil se cubren hasta el 50% de la suma base. Los porcentajes de 25%, 75% o 100% no son los de la guía.",
+    "explicacion": "Según la clave de la guía, los gastos, costas e intereses legales de la sección III de obra civil se cubren hasta el 50% de la suma base. Los porcentajes de 25%, 75% o 100% no son los de la guía."
+  },
+  {
+    "id": 487,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "La cobertura de apuntalamiento y demolición son coberturas adicionales de:",
+    "pregunta": "La cobertura de apuntalamiento y demolición son coberturas adicionales de:",
+    "options": [
+      "Sección I.",
+      "Sección II.",
+      "Sección III",
+      "Riesgo excluido."
+    ],
+    "opciones": [
+      "Sección I.",
+      "Sección II.",
+      "Sección III",
+      "Riesgo excluido."
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Sección III",
+    "explanation": "Según la clave de la guía, el apuntalamiento y la demolición son coberturas adicionales de la sección III, por los daños que pueden causar a terceros. No son exclusiones.",
+    "explicacion": "Según la clave de la guía, el apuntalamiento y la demolición son coberturas adicionales de la sección III, por los daños que pueden causar a terceros. No son exclusiones."
+  },
+  {
+    "id": 488,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "Cobertura básica de la sección II de la póliza de obra civil.",
+    "pregunta": "Cobertura básica de la sección II de la póliza de obra civil.",
+    "options": [
+      "Gastos extraordinarios y remoción de escombros.",
+      "Costas e intereses legales.",
+      "Gastos por tramitación de reclamaciones.",
+      "Gastos por daños punitivos."
+    ],
+    "opciones": [
+      "Gastos extraordinarios y remoción de escombros.",
+      "Costas e intereses legales.",
+      "Gastos por tramitación de reclamaciones.",
+      "Gastos por daños punitivos."
+    ],
+    "correct": 0,
+    "indice_correcto": 0,
+    "respuesta_correcta": "Gastos extraordinarios y remoción de escombros.",
+    "explanation": "Según la clave de la guía, la sección II de obra civil cubre gastos extraordinarios y remoción de escombros. Las costas y gastos de reclamaciones corresponden a la sección de RC, y los daños punitivos se excluyen.",
+    "explicacion": "Según la clave de la guía, la sección II de obra civil cubre gastos extraordinarios y remoción de escombros. Las costas y gastos de reclamaciones corresponden a la sección de RC, y los daños punitivos se excluyen."
+  },
+  {
+    "id": 489,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "¿Cuál será la vigencia de un seguro de Obra Civil que se contrata para ampara la construcción de un edificio de oficinas, si se estima terminar la obre en 7 meses?",
+    "pregunta": "¿Cuál será la vigencia de un seguro de Obra Civil que se contrata para ampara la construcción de un edificio de oficinas, si se estima terminar la obre en 7 meses?",
+    "options": [
+      "Abierta",
+      "Cada mes se renueva",
+      "7 meses",
+      "9 meses"
+    ],
+    "opciones": [
+      "Abierta",
+      "Cada mes se renueva",
+      "7 meses",
+      "9 meses"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "7 meses",
+    "explanation": "La vigencia del seguro de obra civil corresponde al periodo estimado de construcción, en este caso 7 meses. No es abierta ni se renueva mensualmente.",
+    "explicacion": "La vigencia del seguro de obra civil corresponde al periodo estimado de construcción, en este caso 7 meses. No es abierta ni se renueva mensualmente."
+  },
+  {
+    "id": 490,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "Escoge de la siguiente lista, 3 obras que se pueden amparar en el seguro de Obra Civil: 1.- Montaje de turbinas 2.- Aeropuertos 3.- Instalación de elevadores 4.- Presas 5.- Construcción de oleoductos 6.- Túneles:",
+    "pregunta": "Escoge de la siguiente lista, 3 obras que se pueden amparar en el seguro de Obra Civil: 1.- Montaje de turbinas 2.- Aeropuertos 3.- Instalación de elevadores 4.- Presas 5.- Construcción de oleoductos 6.- Túneles:",
+    "options": [
+      "1, 3, 5",
+      "2, 4, 6",
+      "1, 2, 3",
+      "4, 5, 6"
+    ],
+    "opciones": [
+      "1, 3, 5",
+      "2, 4, 6",
+      "1, 2, 3",
+      "4, 5, 6"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "2, 4, 6",
+    "explanation": "Aeropuertos, presas y túneles son obras civiles que se amparan en este seguro. El montaje de turbinas y la instalación de elevadores son montaje, y los oleoductos tienen tratamiento especial.",
+    "explicacion": "Aeropuertos, presas y túneles son obras civiles que se amparan en este seguro. El montaje de turbinas y la instalación de elevadores son montaje, y los oleoductos tienen tratamiento especial."
+  },
+  {
+    "id": 491,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "Todos son eventos que se pueden cubrir en forma adicional a la cobertura básica en el seguro de Obra Civil, EXCEPTO:",
+    "pregunta": "Todos son eventos que se pueden cubrir en forma adicional a la cobertura básica en el seguro de Obra Civil, EXCEPTO:",
+    "options": [
+      "Terremoto",
+      "Hundimiento del terreno, enfangamiento",
+      "Ciclón, huracán, granizo",
+      "Reemplazo del material defectuoso"
+    ],
+    "opciones": [
+      "Terremoto",
+      "Hundimiento del terreno, enfangamiento",
+      "Ciclón, huracán, granizo",
+      "Reemplazo del material defectuoso"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Reemplazo del material defectuoso",
+    "explanation": "Terremoto, hundimiento, enfangamiento, ciclón, huracán y granizo pueden cubrirse como adicionales en obra civil. El reemplazo de material defectuoso se excluye siempre.",
+    "explicacion": "Terremoto, hundimiento, enfangamiento, ciclón, huracán y granizo pueden cubrirse como adicionales en obra civil. El reemplazo de material defectuoso se excluye siempre."
+  },
+  {
+    "id": 492,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "Del siguiente listado, selecciona dos bienes cubiertos bajo convenio expreso en el seguro de Obra Civil Todo Riesgo de Contratistas: 1.- Bienes propiedad de obreros 2.- Construcciones provisionales 3.- Calderas 4.- Equipo de construcción:",
+    "pregunta": "Del siguiente listado, selecciona dos bienes cubiertos bajo convenio expreso en el seguro de Obra Civil Todo Riesgo de Contratistas: 1.- Bienes propiedad de obreros 2.- Construcciones provisionales 3.- Calderas 4.- Equipo de construcción:",
+    "options": [
+      "1, 4",
+      "1, 2",
+      "2, 3",
+      "2, 4"
+    ],
+    "opciones": [
+      "1, 4",
+      "1, 2",
+      "2, 3",
+      "2, 4"
+    ],
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "2, 4",
+    "explanation": "En obra civil todo riesgo de contratistas, las construcciones provisionales y el equipo de construcción se cubren bajo convenio expreso. Los bienes de obreros y las calderas no forman parte de esta póliza.",
+    "explicacion": "En obra civil todo riesgo de contratistas, las construcciones provisionales y el equipo de construcción se cubren bajo convenio expreso. Los bienes de obreros y las calderas no forman parte de esta póliza."
+  },
+  {
+    "id": 493,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "Identifique dos riesgos excluidos de la cobertura básica del seguro de Obra Civil:",
+    "pregunta": "Identifique dos riesgos excluidos de la cobertura básica del seguro de Obra Civil:",
+    "options": [
+      "Impericia y descuido de empleados",
+      "Daños por errores de diseño y daños por interrupción de la obra",
+      "Inundación y huracán",
+      "Incendio y explosión"
+    ],
+    "opciones": [
+      "Impericia y descuido de empleados",
+      "Daños por errores de diseño y daños por interrupción de la obra",
+      "Inundación y huracán",
+      "Incendio y explosión"
+    ],
+    "correct": 1,
+    "indice_correcto": 1,
+    "respuesta_correcta": "Daños por errores de diseño y daños por interrupción de la obra",
+    "explanation": "Los errores de diseño y los daños por interrupción de la obra se excluyen de la cobertura básica de obra civil. La impericia se cubre, y la inundación, el huracán, el incendio y la explosión pueden ampararse.",
+    "explicacion": "Los errores de diseño y los daños por interrupción de la obra se excluyen de la cobertura básica de obra civil. La impericia se cubre, y la inundación, el huracán, el incendio y la explosión pueden ampararse."
+  },
+  {
+    "id": 494,
+    "module": "Ramos Técnicos de Daños",
+    "modulo": "Ramos Técnicos de Daños",
+    "submodulo": "Técnicos: Obra Civil",
+    "question": "Todos son riesgos excluidos del seguro de Obra Civil, EXCEPTO:",
+    "pregunta": "Todos son riesgos excluidos del seguro de Obra Civil, EXCEPTO:",
+    "options": [
+      "Lucha armada entre países",
+      "Apropiación por gobiernos",
+      "Olas causadas por sismos en el mar",
+      "Pérdida de utilidades por daños directos"
+    ],
+    "opciones": [
+      "Lucha armada entre países",
+      "Apropiación por gobiernos",
+      "Olas causadas por sismos en el mar",
+      "Pérdida de utilidades por daños directos"
+    ],
+    "correct": 2,
+    "indice_correcto": 2,
+    "respuesta_correcta": "Olas causadas por sismos en el mar",
+    "explanation": "Las olas causadas por sismos en el mar, como un tsunami, pueden cubrirse con el riesgo de terremoto, por lo que no son una exclusión. La guerra, la apropiación por gobiernos y la pérdida de utilidades sí se excluyen.",
+    "explicacion": "Las olas causadas por sismos en el mar, como un tsunami, pueden cubrirse con el riesgo de terremoto, por lo que no son una exclusión. La guerra, la apropiación por gobiernos y la pérdida de utilidades sí se excluyen."
+  }
+]

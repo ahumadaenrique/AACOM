@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { getAgencyStudyDaysLimit } from "@/lib/cedula/studyLimits"
 import fs from "fs"
 import path from "path"
 
@@ -49,8 +50,9 @@ export async function GET(req: NextRequest) {
     const lastReplenishDate = new Date(nextReplenishDate);
     lastReplenishDate.setMonth(lastReplenishDate.getMonth() - 3);
 
-    // 1. Get promoter balance
-    let tokens = 7;
+    // 1. Get promoter balance based on subscription plan (52 Anual, 25 Semestral, 12 Trimestral)
+    const planLimit = getAgencyStudyDaysLimit(dbUser?.agency);
+    let tokens = planLimit;
     const promotorEmailLow = session.user.agencyId ? `agency_${session.user.agencyId}` : promoterEmail.toLowerCase();
     
     const saldo = await prisma.promotorSaldo.findUnique({
@@ -58,11 +60,11 @@ export async function GET(req: NextRequest) {
     });
 
     if (saldo) {
-      tokens = saldo.dias_disponibles || 0;
+      tokens = saldo.dias_disponibles !== null && saldo.dias_disponibles !== undefined ? saldo.dias_disponibles : planLimit;
       const lastUpdate = saldo.fecha_actualizacion ? new Date(saldo.fecha_actualizacion) : new Date(0);
       if (lastUpdate.getTime() < lastReplenishDate.getTime()) {
-        // Trimestral reset: not cumulative, resets to 7 (or stays current tokens if they have more than 7 due to purchases)
-        tokens = Math.max(7, tokens);
+        // Ciclo de renovación: resetea al límite del plan (o conserva saldo si adquirió paquetes adicionales)
+        tokens = Math.max(planLimit, tokens);
         await prisma.promotorSaldo.update({
           where: { promotor_email: promotorEmailLow },
           data: {
@@ -72,11 +74,11 @@ export async function GET(req: NextRequest) {
         });
       }
     } else {
-      // Initialize welcome balance in database
+      // Initialize welcome balance in database according to plan
       await prisma.promotorSaldo.create({
         data: {
           promotor_email: promotorEmailLow,
-          dias_disponibles: 7,
+          dias_disponibles: planLimit,
           fecha_actualizacion: new Date()
         }
       });

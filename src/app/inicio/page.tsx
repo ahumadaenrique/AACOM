@@ -732,7 +732,7 @@ export default function InicioPage() {
                 <ul className="space-y-3.5 text-xs text-slate-300">
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
-                    <span><strong>Hasta 10 usuarios</strong> (agentes y administradores incluidos)</span>
+                    <span><strong>Hasta 20 usuarios</strong> (agentes y administradores incluidos)</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
@@ -744,7 +744,7 @@ export default function InicioPage() {
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
-                    <span><strong>Plan de Arranque</strong> y simulador de Cédula A</span>
+                    <span><strong>Plan de Arranque</strong> y simulador de Cédula A y Cédula B</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
@@ -765,7 +765,7 @@ export default function InicioPage() {
               <div className="space-y-4">
                 <h3 className="text-2xl font-black text-white">Usuario adicional</h3>
                 <p className="text-xs text-slate-400 leading-relaxed">
-                  Para equipos de más de 10 usuarios. Crece tu fuerza de ventas a demanda según tus reclutas.
+                  Para equipos de más de 20 usuarios. Crece tu fuerza de ventas a demanda según tus reclutas.
                 </p>
 
                 <div className="flex items-baseline gap-2 pt-2 pb-4 border-b border-slate-800">
@@ -776,7 +776,7 @@ export default function InicioPage() {
                 <ul className="space-y-3.5 text-xs text-slate-300">
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
-                    <span>Para equipos de más de 10 usuarios</span>
+                    <span>Para equipos de más de 20 usuarios</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
@@ -858,7 +858,7 @@ export default function InicioPage() {
                 ¿Cuánto cuesta?
               </AccordionTrigger>
               <AccordionContent className="text-xs sm:text-sm text-slate-400 leading-relaxed pb-5">
-                El plan Agencia cuesta $2,499 MXN al mes e incluye hasta 10 usuarios; cada usuario adicional cuesta $299 MXN al mes.
+                El plan Agencia cuesta $2,499 MXN al mes e incluye hasta 20 usuarios; cada usuario adicional cuesta $299 MXN al mes.
               </AccordionContent>
             </AccordionItem>
 
@@ -885,7 +885,7 @@ export default function InicioPage() {
                 ¿Sirve para preparar a mis agentes para la cédula?
               </AccordionTrigger>
               <AccordionContent className="text-xs sm:text-sm text-slate-400 leading-relaxed pb-5">
-                Sí. La Academia incluye un simulador para la Cédula A de la CNSF con 6 módulos y exámenes de 40 preguntas. El simulador para la Cédula B está en desarrollo.
+                Sí. La Academia incluye simuladores oficiales de la CNSF tanto para Cédula A como para Cédula B, con módulos interactivos de estudio, explicaciones por voz y exámenes de práctica balanceados.
               </AccordionContent>
             </AccordionItem>
 
