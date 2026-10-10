@@ -140,7 +140,7 @@ export async function POST(req: Request) {
       aciertos: z.array(z.string()).describe('Lista de 1 a 3 cosas que el asesor hizo muy bien.'),
       errores: z.array(z.string()).describe('Lista de errores cometidos por el asesor. OBLIGATORIO: Debes incluir una cita textual (entre comillas) de la transcripción para demostrar exactamente en qué momento cometió el error.'),
       cometioErrorFatal: z.boolean().describe('Verdadero si el asesor cometió un error crítico según las instrucciones del módulo.'),
-      appointmentClosed: z.boolean().describe('Verdadero SOLAMENTE si el asesor logró concretar explícitamente la agenda de la cita o el cierre (trámite/pago). No debe ser verdadero si el prospecto dijo "yo te aviso".'),
+      appointmentClosed: z.boolean().describe('Verdadero SOLAMENTE si el asesor logró concretar explícitamente la agenda de la cita o el cierre mediante técnica profesional (ej. doble alternativa de horario). Debe ser FALSO si el prospecto sugirió la cita o el horario por su cuenta sin que el asesor lo propusiera, si el asesor rogó/titubeó, o si el prospecto dijo "yo te aviso".'),
       coachTip: z.string().describe('Un consejo breve y técnico.'),
       insigniasGanadas: z.array(z.string()).describe('Lista de IDs de insignias desbloqueadas. COMO MÁXIMO 1 insignia por llamada, y SOLAMENTE si score >= 85 y la cita cerró con éxito. Si no califica o no cerró la cita, devuelve []')
     });
@@ -169,7 +169,7 @@ Catálogo disponible:
 ${badgesText}`;
 
     const { object } = await generateObject({
-      model: google('gemini-3.5-flash-lite'),
+      model: google('gemini-3.8-flash'),
       schema: EvaluationSchema,
       prompt: promptText
     });
@@ -250,6 +250,7 @@ ${badgesText}`;
         streak,
         todayXp,
         todayCallsCount,
+        totalCalls: { increment: 1 },
         closedCalls,
         lastActiveDate: todayStr
       },

@@ -1,25 +1,27 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { ShieldCheck, Volume2, Award, Users, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, RefreshCw, Sparkles } from 'lucide-react';
+import { ShieldCheck, Volume2, Award, Users, CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, RefreshCw, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 
 export function SupervisionPanel() {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedCallId, setExpandedCallId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
 
-  const loadData = async () => {
+  const loadData = async (page = 1) => {
     try {
       setLoading(true);
       setError(null);
-      const res = await fetch('/api/roleplay/admin');
+      const res = await fetch(`/api/roleplay/admin?page=${page}&pageSize=30`);
       if (!res.ok) {
         const text = await res.text();
         throw new Error(text || 'No tienes permisos de supervisor/admin.');
       }
       const json = await res.json();
       setData(json);
+      setCurrentPage(page);
     } catch (err: any) {
       setError(err.message || 'Error cargando auditoría');
     } finally {
@@ -28,7 +30,7 @@ export function SupervisionPanel() {
   };
 
   useEffect(() => {
-    loadData();
+    loadData(1);
   }, []);
 
   if (loading) {
@@ -52,6 +54,7 @@ export function SupervisionPanel() {
   const agentStats = data?.agentStats || [];
   const levelsConfig = data?.levelsConfig || {};
   const defaultBenefits = data?.defaultBenefits || {};
+  const pagination = data?.pagination || null;
 
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
@@ -68,7 +71,7 @@ export function SupervisionPanel() {
           </p>
         </div>
         <button
-          onClick={loadData}
+          onClick={() => loadData(currentPage)}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold transition-colors"
         >
           <RefreshCw className="h-3.5 w-3.5" />
@@ -159,7 +162,7 @@ export function SupervisionPanel() {
           <h3 className="text-sm font-bold text-slate-200 flex items-center gap-2">
             <Volume2 className="h-4 w-4 text-emerald-400" /> Bitácora Reciente de Llamadas y Grabaciones
           </h3>
-          <span className="text-xs text-slate-500">{calls.length} llamadas registradas</span>
+          <span className="text-xs text-slate-500">{pagination?.totalCalls ?? calls.length} llamadas registradas</span>
         </div>
 
         {calls.length === 0 ? (
@@ -268,6 +271,34 @@ export function SupervisionPanel() {
                 </div>
               );
             })}
+          </div>
+        )}
+
+        {/* Barra de Paginación */}
+        {pagination && pagination.totalPages > 1 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-slate-800 text-xs">
+            <span className="text-slate-400">
+              Mostrando <strong className="text-slate-200">{((pagination.page - 1) * pagination.pageSize) + 1}</strong> a <strong className="text-slate-200">{Math.min(pagination.page * pagination.pageSize, pagination.totalCalls)}</strong> de <strong className="text-slate-200">{pagination.totalCalls}</strong> llamadas grabadas
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => loadData(pagination.page - 1)}
+                disabled={pagination.page <= 1 || loading}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 font-medium transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" /> Anterior
+              </button>
+              <span className="px-3 py-1 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-semibold">
+                Página {pagination.page} de {pagination.totalPages}
+              </span>
+              <button
+                onClick={() => loadData(pagination.page + 1)}
+                disabled={pagination.page >= pagination.totalPages || loading}
+                className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed text-slate-300 font-medium transition-colors"
+              >
+                Siguiente <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
           </div>
         )}
       </div>
