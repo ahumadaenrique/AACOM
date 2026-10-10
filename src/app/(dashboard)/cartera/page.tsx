@@ -4,7 +4,7 @@ import { format, addDays, isBefore, isAfter } from "date-fns";
 import { es } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, Wallet, Clock, FileText, Upload, Plus } from "lucide-react";
+import { Building2, Users, Wallet, Clock, FileText, Upload, Plus, User } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import CarteraTableClient from "./CarteraTableClient";
@@ -189,7 +189,15 @@ export default async function CarteraDashboard({
                     className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 hover:bg-muted/50 transition-colors"
                   >
                     <div className="flex flex-col">
-                      <span className="font-semibold text-lg">{policy.contractor}</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-semibold text-lg">{policy.contractor}</span>
+                        {policy.user?.name && (
+                          <Badge variant="outline" className="text-xs font-normal gap-1 text-muted-foreground border-slate-200 dark:border-slate-800">
+                            <User className="w-3 h-3 text-indigo-500" />
+                            Agente: <span className="font-medium text-foreground">{policy.user.name}</span>
+                          </Badge>
+                        )}
+                      </div>
                       <span className="text-sm text-muted-foreground">
                         {policy.product || "Producto no especificado"} • {policy.insuranceCompany}
                       </span>
