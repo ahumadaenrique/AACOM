@@ -190,7 +190,13 @@ async function injectColumns() {
       `CREATE INDEX IF NOT EXISTS "Lead_email_idx" ON "Lead"("email");`,
       `ALTER TABLE "preguntas" ADD COLUMN IF NOT EXISTS "explanation" TEXT;`,
       `ALTER TABLE "preguntas" ADD COLUMN IF NOT EXISTS "explicacion" TEXT;`,
-      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "subscriptionPlan" TEXT DEFAULT 'QUARTERLY';`
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "subscriptionPlan" TEXT DEFAULT 'QUARTERLY';`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "voiceEngine" TEXT DEFAULT 'GEMINI_LIVE';`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "byokActive" BOOLEAN DEFAULT true;`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "voiceSecondsBalance" INTEGER DEFAULT 0;`,
+      `ALTER TABLE "RoleplayCall" ADD COLUMN IF NOT EXISTS "agencyId" TEXT;`,
+      `ALTER TABLE "RoleplayCall" ADD COLUMN IF NOT EXISTS "engine" TEXT DEFAULT 'GEMINI_LIVE';`,
+      `CREATE INDEX IF NOT EXISTS "RoleplayCall_agencyId_idx" ON "RoleplayCall"("agencyId");`
     ];
 
     for (const q of queries) {
