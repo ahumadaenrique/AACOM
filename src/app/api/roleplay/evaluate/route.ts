@@ -39,8 +39,15 @@ export async function POST(req: Request) {
       durationSeconds = 0,
       scenario = null,
       conversationId = null,
-      moduleId = 'prospeccion'
+      moduleId = 'prospeccion',
+      engine = 'GEMINI_LIVE'
     } = body;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, agencyId: true, voiceSecondsBalance: true }
+    });
+    const agencyId = user?.agencyId || null;
 
     const userTurns = transcript.filter((m: any) => m.source === 'user');
     const agentMessages = userTurns.map((m: any) => (m.message || '').toLowerCase()).join(' ');
@@ -52,6 +59,8 @@ export async function POST(req: Request) {
       const emptyCall = await prisma.roleplayCall.create({
         data: {
           userId,
+          agencyId,
+          engine,
           scenarioId: scenario?.origen?.tipo || 'frio_total',
           prospectName: scenario?.prospecto?.nombre || 'Prospecto',
           scenarioTitle: scenario?.origen?.titulo || 'Llamada',
@@ -271,6 +280,8 @@ ${badgesText}`;
     const roleplayCall = await prisma.roleplayCall.create({
       data: {
         userId,
+        agencyId,
+        engine,
         scenarioId: scenario?.origen?.tipo || 'general',
         prospectName: scenario?.prospecto?.nombre || 'Prospecto',
         scenarioTitle: scenario?.origen?.titulo || 'Módulo de Práctica',
@@ -288,6 +299,33 @@ ${badgesText}`;
         appointmentClosed
       }
     });
+
+    // Descontar segundos consumidos si corrió bajo bolsa de AACOM (no BYOK)
+    if (durationSeconds > 0 && agencyId) {
+      try {
+        const agency = await prisma.agency.findUnique({
+          where: { id: agencyId },
+          select: { id: true, voiceSecondsBalance: true, byokActive: true, elevenLabsApiKey: true }
+        });
+        const isUsingByok = engine === 'ELEVENLABS' && (agency?.byokActive ?? true) && agency?.elevenLabsApiKey;
+        
+        if (!isUsingByok) {
+          if (agency && agency.voiceSecondsBalance > 0) {
+            await prisma.agency.update({
+              where: { id: agency.id },
+              data: { voiceSecondsBalance: { decrement: Math.min(agency.voiceSecondsBalance, durationSeconds) } }
+            });
+          } else if (user && user.voiceSecondsBalance > 0) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { voiceSecondsBalance: { decrement: Math.min(user.voiceSecondsBalance, durationSeconds) } }
+            });
+          }
+        }
+      } catch (e) {
+        console.error("Error decrementing voiceSecondsBalance:", e);
+      }
+    }
 
     return NextResponse.json({
       success: true,

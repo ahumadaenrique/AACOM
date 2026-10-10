@@ -108,46 +108,78 @@ export async function POST(req: Request) {
     // Generate scenario tailored to current level, selected module, and dynamic white-label agency
     const scenario = generarEscenarioAleatorio(stats.level, moduleId, agencyName);
 
-    // Get signed WebSocket URL from ElevenLabs using the Agency's BYOK
-    let agentId = process.env.ELEVENLABS_AGENT_ID;
-    let apiKey = process.env.ELEVENLABS_API_KEY; // Fallback for SUPER_ADMIN or global testing
+    // 1. Determinar motor de voz (Gemini Live vs ElevenLabs)
+    const configuredEngine = userWithAgency?.agency?.voiceEngine || 'GEMINI_LIVE';
+    const isByokActive = userWithAgency?.agency?.byokActive ?? true;
+    const hasAgencyByokKey = !!userWithAgency?.agency?.elevenLabsApiKey && isByokActive;
     
-    // Check for Agency BYOK
-    if (userWithAgency?.agency?.elevenLabsApiKey) {
-      try {
-        const { decrypt } = await import('@/lib/encryption');
-        apiKey = decrypt(userWithAgency.agency.elevenLabsApiKey);
-
-        if (apiKey) {
-          // Si la agencia ya tiene un agente aprovisionado en su cuenta de ElevenLabs, usarlo
-          if (userWithAgency.agency.elevenLabsVoiceId) {
-            agentId = userWithAgency.agency.elevenLabsVoiceId;
-          } else {
-            // Auto-aprovisionamiento transparente en tiempo real con marca blanca
-            const { getOrProvisionAgencyAgent } = await import('@/lib/roleplay/elevenlabsProvisioning');
-            const provisioned = await getOrProvisionAgencyAgent(userWithAgency.agency.id, apiKey, agencyName);
-            if (provisioned) {
-              agentId = provisioned;
-            }
-          }
-        }
-      } catch (e) {
-        console.error("Error decrypting agency BYOK:", e);
-      }
+    let effectiveEngine: 'GEMINI_LIVE' | 'ELEVENLABS' = 'GEMINI_LIVE';
+    if (configuredEngine === 'ELEVENLABS' || (hasAgencyByokKey && configuredEngine !== 'GEMINI_LIVE')) {
+      effectiveEngine = 'ELEVENLABS';
+    } else {
+      effectiveEngine = 'GEMINI_LIVE';
     }
 
-    if (!apiKey) {
-      return NextResponse.json({ error: 'Configuración de IA incompleta. Pide a tu promotor que configure su API Key en el panel de Agencias.' }, { status: 403 });
-    }
+    // 2. Control de saldo de minutos para llamadas con bolsa de AACOM
+    const agencyBalance = userWithAgency?.agency?.voiceSecondsBalance || 0;
+    const userBalance = userWithAgency?.voiceSecondsBalance || 0;
+    const isSuperAdmin = userWithAgency?.role === 'SUPER_ADMIN';
 
-    if (!agentId) {
-      return NextResponse.json({ error: 'No se pudo aprovisionar el agente conversacional en tu cuenta de ElevenLabs. Verifica los permisos de tu API Key.' }, { status: 500 });
+    if (effectiveEngine === 'GEMINI_LIVE' && !isSuperAdmin && agencyBalance <= 0 && userBalance <= 0) {
+      return NextResponse.json({
+        error: 'No cuentas con minutos disponibles en la bolsa de Academia PRO. Pide a tu promotor que active minutos o adquiera un paquete.'
+      }, { status: 403 });
     }
 
     let signedUrl = null;
-    if (apiKey && agentId) {
+    let wsUrl = null;
+    let voiceName = null;
+
+    if (effectiveEngine === 'GEMINI_LIVE') {
+      const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+      if (!geminiApiKey) {
+        return NextResponse.json({ error: 'Configuración de Gemini incompleta en el servidor.' }, { status: 500 });
+      }
+
+      wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${geminiApiKey}`;
+      const isFemale = scenario.prospecto.genero === 'F';
+      voiceName = isFemale ? 'Aoede' : 'Puck';
+    } else {
+      // ELEVENLABS ENGINE
+      let agentId = process.env.ELEVENLABS_AGENT_ID;
+      let apiKey = process.env.ELEVENLABS_API_KEY; // Fallback for SUPER_ADMIN or global testing
+      
+      // Check for Agency BYOK
+      if (userWithAgency?.agency?.elevenLabsApiKey && isByokActive) {
+        try {
+          const { decrypt } = await import('@/lib/encryption');
+          apiKey = decrypt(userWithAgency.agency.elevenLabsApiKey);
+
+          if (apiKey) {
+            if (userWithAgency.agency.elevenLabsVoiceId) {
+              agentId = userWithAgency.agency.elevenLabsVoiceId;
+            } else {
+              const { getOrProvisionAgencyAgent } = await import('@/lib/roleplay/elevenlabsProvisioning');
+              const provisioned = await getOrProvisionAgencyAgent(userWithAgency.agency.id, apiKey, agencyName);
+              if (provisioned) {
+                agentId = provisioned;
+              }
+            }
+          }
+        } catch (e) {
+          console.error("Error decrypting agency BYOK:", e);
+        }
+      }
+
+      if (!apiKey) {
+        return NextResponse.json({ error: 'Configuración de IA incompleta. Tu API Key de ElevenLabs no está configurada o está inactiva.' }, { status: 403 });
+      }
+
+      if (!agentId) {
+        return NextResponse.json({ error: 'No se pudo aprovisionar el agente conversacional en tu cuenta de ElevenLabs. Verifica los permisos de tu API Key.' }, { status: 500 });
+      }
+
       try {
-        // 1. Configure agent personality, greeting and Mexican voice for this specific scenario
         await fetch(`https://api.elevenlabs.io/v1/convai/agents/${agentId}`, {
           method: 'PATCH',
           headers: {
@@ -179,14 +211,9 @@ export async function POST(req: Request) {
           })
         });
 
-        // 2. Obtain fresh signed URL
         const resp = await fetch(
           `https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${agentId}`,
-          {
-            headers: {
-              'xi-api-key': apiKey
-            }
-          }
+          { headers: { 'xi-api-key': apiKey } }
         );
         if (resp.ok) {
           const data = await resp.json();
@@ -201,8 +228,11 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
+      engine: effectiveEngine,
       scenario,
       signedUrl,
+      wsUrl: effectiveEngine === 'GEMINI_LIVE' ? wsUrl : null,
+      voiceName: effectiveEngine === 'GEMINI_LIVE' ? voiceName : null,
       stats: {
         xp: stats.xp,
         level: stats.level,

@@ -40,12 +40,27 @@ export default async function AgencySettingsPage() {
         );
     }
 
+    // Estadísticas de uso de IA de la agencia este mes
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const monthlyCalls = await prisma.roleplayCall.findMany({
+        where: {
+            agencyId: agency.id,
+            createdAt: { gte: startOfMonth }
+        },
+        select: { durationSeconds: true }
+    });
+    const monthlySeconds = monthlyCalls.reduce((acc, c) => acc + (c.durationSeconds || 0), 0);
+    const monthlyMinutes = Math.round(monthlySeconds / 60);
+
     return (
         <div className="flex flex-col gap-6 w-full max-w-4xl mx-auto py-4 animate-in fade-in duration-300">
             <div>
                 <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-slate-100">Mi Agencia SaaS</h1>
                 <p className="text-sm text-muted-foreground mt-1">
-                    Personaliza la marca, el logotipo y la paleta de colores de tu plataforma. Estos cambios se reflejarán para todos los agentes.
+                    Personaliza la marca, el logotipo, la paleta de colores y la conexión de IA de tu plataforma.
                 </p>
             </div>
             
@@ -55,6 +70,8 @@ export default async function AgencySettingsPage() {
                 initialName={agency.name} 
                 initialColor={agency.primaryColor || "#4f46e5"} 
                 initialLogo={agency.logoUrl} 
+                voiceSecondsBalance={agency.voiceSecondsBalance || 0}
+                monthlyMinutes={monthlyMinutes}
             />
         </div>
     );

@@ -22,12 +22,16 @@ export default async function SimuladorHubPage() {
     select: {
       id: true,
       role: true,
+      voiceSecondsBalance: true,
       agency: {
         select: {
           id: true,
           name: true,
           allowRoleplaySimulator: true,
-          elevenLabsApiKey: true
+          elevenLabsApiKey: true,
+          byokActive: true,
+          voiceEngine: true,
+          voiceSecondsBalance: true
         }
       }
     }
@@ -61,21 +65,32 @@ export default async function SimuladorHubPage() {
     );
   }
 
-  // BYOK Bloqueo Comercial
-  const hasByokKey = !!dbUser.agency?.elevenLabsApiKey || !!process.env.ELEVENLABS_API_KEY;
-  if (!hasByokKey && !isSuperAdmin) {
+  // Validación de BYOK y Minutos Disponibles
+  const agencyByokActive = dbUser.agency?.byokActive ?? true;
+  const hasByokKey = !!dbUser.agency?.elevenLabsApiKey && agencyByokActive;
+  const hasAgencyMinutes = (dbUser.agency?.voiceSecondsBalance || 0) > 0;
+  const hasUserMinutes = (dbUser.voiceSecondsBalance || 0) > 0;
+  const hasAccess = isSuperAdmin || hasByokKey || hasAgencyMinutes || hasUserMinutes;
+
+  if (!hasAccess) {
+    const isByokTurnedOff = !!dbUser.agency?.elevenLabsApiKey && !agencyByokActive;
+
     return (
       <div className="max-w-xl mx-auto my-16 p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-5 shadow-2xl">
-        <div className="h-16 w-16 mx-auto rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+        <div className="h-16 w-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
           <Bot className="w-8 h-8" />
         </div>
         <div className="space-y-2">
-          <h2 className="text-xl font-bold text-white">Falta Configuración IA</h2>
+          <h2 className="text-xl font-bold text-white">
+            {isByokTurnedOff ? "Conexión IA Desactivada" : "Falta Conexión de IA o Saldo"}
+          </h2>
           <p className="text-sm text-slate-400 leading-relaxed">
-            Tu Promotoría ({dbUser.agency?.name}) aún no ha configurado su Llave de Inteligencia Artificial (API Key).
+            {isByokTurnedOff 
+              ? `Tu Promotoría (${dbUser.agency?.name}) tiene su conexión de ElevenLabs apagada y no cuenta con minutos disponibles de Academia PRO.`
+              : `Tu Promotoría (${dbUser.agency?.name}) no ha conectado su API Key de ElevenLabs ni cuenta con saldo de minutos activos.`}
           </p>
           <p className="text-xs text-slate-500 mt-2">
-            Pide a tu Promotor que acceda al panel de <strong>Agencias &gt; Configuración IA</strong> para conectar ElevenLabs y activar tu entrenamiento.
+            Pide a tu Promotor que acceda a <strong>Mi Agencia SaaS &gt; Inteligencia Artificial</strong> para encender su conexión o adquirir un paquete de minutos.
           </p>
         </div>
         <div className="pt-2">

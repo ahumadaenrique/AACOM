@@ -16,9 +16,19 @@ interface Props {
   initialName: string;
   initialColor: string;
   initialLogo: string | null;
+  voiceSecondsBalance?: number;
+  monthlyMinutes?: number;
 }
 
-export default function AgencySettingsForm({ id, slug, initialName, initialColor, initialLogo }: Props) {
+export default function AgencySettingsForm({ 
+  id, 
+  slug, 
+  initialName, 
+  initialColor, 
+  initialLogo,
+  voiceSecondsBalance = 0,
+  monthlyMinutes = 0
+}: Props) {
   const { toast } = useToast();
   
   const [name, setName] = useState(initialName);
@@ -169,16 +179,30 @@ export default function AgencySettingsForm({ id, slug, initialName, initialColor
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bot className="w-5 h-5 text-indigo-600" />
-            Inteligencia Artificial (BYOK)
+            Inteligencia Artificial y Simulador (Academia PRO)
           </CardTitle>
           <CardDescription>
-            Conecta tu propia API Key de ElevenLabs para habilitar los simuladores de ventas gamificados para tus agentes.
+            Administra la conexión de IA de tu agencia y monitorea los minutos de entrenamiento consumidos por tu equipo.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+              <span className="text-xs text-slate-500 font-medium">Uso de tu Equipo Este Mes</span>
+              <p className="text-2xl font-black text-slate-800 mt-1">{monthlyMinutes} <span className="text-sm font-semibold text-slate-500">min</span></p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Tiempo total practicado por tus agentes.</p>
+            </div>
+
+            <div className="p-4 bg-purple-50/50 border border-purple-100 rounded-xl">
+              <span className="text-xs text-purple-700 font-medium">Bolsa de Minutos AACOM</span>
+              <p className="text-2xl font-black text-purple-900 mt-1">{Math.floor(voiceSecondsBalance / 60)} <span className="text-sm font-semibold text-purple-600">min</span></p>
+              <p className="text-[11px] text-purple-600 mt-0.5">Saldo prepagado o de cortesía disponible.</p>
+            </div>
+          </div>
+
           <Button onClick={() => setIsAiModalOpen(true)} variant="outline" className="text-indigo-600 border-indigo-200 hover:bg-indigo-50">
             <Bot className="w-4 h-4 mr-2" />
-            Configurar API Key de ElevenLabs
+            Gestionar Conexión de IA (BYOK y Motor)
           </Button>
         </CardContent>
       </Card>

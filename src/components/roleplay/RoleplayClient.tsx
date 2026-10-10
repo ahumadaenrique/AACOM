@@ -32,6 +32,7 @@ import { MasterTacticsModal } from './MasterTacticsModal';
 import { EvaluationModal } from './EvaluationModal';
 import { SupervisionPanel } from './SupervisionPanel';
 import { AudioSettingsModal } from './AudioSettingsModal';
+import { GeminiLiveSession } from '@/lib/roleplay/geminiLiveClient';
 
 interface RoleplayClientProps {
   user: {
@@ -105,8 +106,14 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   // Scenario & Session
   const [scenario, setScenario] = useState<any>(null);
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
+  const [wsUrl, setWsUrl] = useState<string | null>(null);
+  const [voiceName, setVoiceName] = useState<string | null>(null);
+  const [engine, setEngine] = useState<'GEMINI_LIVE' | 'ELEVENLABS'>('GEMINI_LIVE');
   const [stats, setStats] = useState<any>(null);
   const [loadingScenario, setLoadingScenario] = useState(true);
+
+  // References
+  const geminiSessionRef = useRef<GeminiLiveSession | null>(null);
 
   // Call State
   const [isCalling, setIsCalling] = useState(false);
@@ -229,9 +236,13 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       if (!res.ok) throw new Error('Error al cargar sesión');
       const data = await res.json();
       setScenario(data.scenario);
+      setEngine(data.engine || 'GEMINI_LIVE');
       setSignedUrl(data.signedUrl);
+      setWsUrl(data.wsUrl);
+      setVoiceName(data.voiceName);
       setStats(data.stats);
-      setCallStatusText(`Expediente asignado. Listo para marcar a ${data.scenario.prospecto.nombre}.`);
+      const engineLabel = (data.engine || 'GEMINI_LIVE') === 'GEMINI_LIVE' ? 'Gemini Live' : 'ElevenLabs';
+      setCallStatusText(`Expediente listo (${engineLabel}). Listo para marcar a ${data.scenario.prospecto.nombre}.`);
     } catch (err: any) {
       console.error(err);
       setCallStatusText('⚠️ Error conectando con el servicio de prospección.');
@@ -316,8 +327,9 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   };
 
   // 3. Start call
+  // 3. Start call
   const startCall = async () => {
-    if (isCalling || isConnecting || !signedUrl) return;
+    if (isCalling || isConnecting || (!signedUrl && !wsUrl)) return;
 
     try {
       setIsConnecting(true);
@@ -332,98 +344,157 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
         playRing();
       }
 
-      const conv = await Conversation.startSession({
-        signedUrl,
-        inputDeviceId: selectedInputId || undefined,
-        outputDeviceId: selectedOutputId || undefined,
-        workletPaths: {
-          rawAudioProcessor: '/worklets/rawAudioProcessor.js?v=2',
-          audioConcatProcessor: '/worklets/audioConcatProcessor.js?v=2'
-        },
-        libsampleratePath: '/worklets/libsamplerate.worklet.js?v=2',
-        overrides: {
-          agent: {
-            prompt: {
-              prompt: scenario.systemPrompt
-            },
-            firstMessage: scenario.firstMessage,
-            language: 'es'
+      if (engine === 'GEMINI_LIVE' && wsUrl) {
+        // --- GOOGLE GEMINI LIVE API ENGINE ---
+        const geminiSession = new GeminiLiveSession({
+          wsUrl,
+          systemPrompt: scenario.systemPrompt,
+          firstMessage: scenario.firstMessage,
+          voiceName: voiceName || (scenario.prospecto.genero === 'F' ? 'Aoede' : 'Puck'),
+          onConnect: ({ conversationId }) => {
+            stopRing();
+            playChime('pickup');
+            setIsConnecting(false);
+            setIsCalling(true);
+            conversationIdRef.current = conversationId || null;
+            startTimeRef.current = Date.now();
+            if (isADN) {
+              setCallStatusText(`En reunión de diagnóstico ADN con ${scenario.prospecto.nombre} (Gemini Live)`);
+            } else if (isObjeciones) {
+              setCallStatusText(`En sesión de cierre con ${scenario.prospecto.nombre} (Gemini Live)`);
+            } else {
+              setCallStatusText(`🟢 En llamada con ${scenario.prospecto.nombre} (Gemini Live)`);
+            }
+
+            timerRef.current = setInterval(() => {
+              const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+              setCallDuration(elapsed);
+              const maxDuration = isADN ? 1800 : isObjeciones ? 1200 : 300;
+              if (elapsed >= maxDuration) {
+                hangupCall();
+              }
+            }, 1000);
           },
-          tts: {
-            voiceId: scenario.prospecto.voiceId,
-            stability: 0.75,
-            similarityBoost: 0.85,
-            speed: 1.0
-          }
-        },
-        onConnect: ({ conversationId }) => {
-          stopRing();
-          playChime('pickup');
-          setIsConnecting(false);
-          setIsCalling(true);
-          conversationIdRef.current = conversationId || null;
-          startTimeRef.current = Date.now();
-          if (isADN) {
-            setCallStatusText(`En reunión de diagnóstico ADN con ${scenario.prospecto.nombre}`);
-          } else if (isObjeciones) {
-            setCallStatusText(`En sesión de cierre con ${scenario.prospecto.nombre}`);
-          } else {
-            setCallStatusText(`🟢 En llamada con ${scenario.prospecto.nombre}`);
-          }
-
-          // Timer
-          timerRef.current = setInterval(() => {
-            const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
-            setCallDuration(elapsed);
-            // Limit: 30 min (1800s) para ADN, 20 min (1200s) para Cierre, 5 min (300s) para Prospección
-            const maxDuration = isADN ? 1800 : isObjeciones ? 1200 : 300;
-            if (elapsed >= maxDuration) {
-              hangupCall();
+          onDisconnect: () => {
+            hangupCall();
+          },
+          onError: (err) => {
+            console.error("Gemini Live Error:", err);
+            hangupCall();
+          },
+          onMessage: ({ source, message }) => {
+            setTranscript(prev => [...prev, { source, message }]);
+          },
+          onUserSpeaking: (speaking, vol) => {
+            setUserSpeaking(speaking);
+            setUserMicVolume(vol);
+          },
+          onAiSpeaking: (speaking) => {
+            setProspectSpeaking(speaking);
+            if (speaking) {
+              setCallStatusText(`🗣️ ${scenario.prospecto.nombre.split(' ')[0]} está hablando...`);
+            } else {
+              setCallStatusText(`👂 ${scenario.prospecto.nombre.split(' ')[0]} te está escuchando...`);
             }
-          }, 1000);
+          }
+        });
 
-          // Monitor User Mic in real-time
-          if (micIntervalRef.current) clearInterval(micIntervalRef.current);
-          micIntervalRef.current = setInterval(() => {
-            if (conversationRef.current && typeof conversationRef.current.getInputVolume === 'function') {
-              const vol = conversationRef.current.getInputVolume();
-              setUserMicVolume(vol);
-              setUserSpeaking(vol > 0.04);
+        geminiSessionRef.current = geminiSession;
+        await geminiSession.start();
+      } else if (signedUrl) {
+        // --- ELEVENLABS CONVAI ENGINE ---
+        const conv = await Conversation.startSession({
+          signedUrl,
+          inputDeviceId: selectedInputId || undefined,
+          outputDeviceId: selectedOutputId || undefined,
+          workletPaths: {
+            rawAudioProcessor: '/worklets/rawAudioProcessor.js?v=2',
+            audioConcatProcessor: '/worklets/audioConcatProcessor.js?v=2'
+          },
+          libsampleratePath: '/worklets/libsamplerate.worklet.js?v=2',
+          overrides: {
+            agent: {
+              prompt: {
+                prompt: scenario.systemPrompt
+              },
+              firstMessage: scenario.firstMessage,
+              language: 'es'
+            },
+            tts: {
+              voiceId: scenario.prospecto.voiceId,
+              stability: 0.75,
+              similarityBoost: 0.85,
+              speed: 1.0
             }
-          }, 120);
-        },
-        onDisconnect: () => {
-          stopRing();
-          playChime('hangup');
-          if (micIntervalRef.current) {
-            clearInterval(micIntervalRef.current);
-            micIntervalRef.current = null;
-          }
-          setUserSpeaking(false);
-          setUserMicVolume(0);
-          handleCallEnded();
-        },
-        onError: (err) => {
-          stopRing();
-          console.error("Conversation error:", err);
-          setCallStatusText('⚠️ Detalle en conexión de audio.');
-        },
-        onModeChange: ({ mode }) => {
-          setProspectSpeaking(mode === 'speaking');
-          if (mode === 'speaking') {
-            setCallStatusText(`🗣️ ${scenario.prospecto.nombre.split(' ')[0]} está hablando...`);
-          } else {
-            setCallStatusText(`👂 ${scenario.prospecto.nombre.split(' ')[0]} te está escuchando...`);
-          }
-        },
-        onMessage: ({ message, source }) => {
-          if (message) {
-            setTranscript(prev => [...prev, { source: source === 'ai' ? 'ai' : 'user', message }]);
-          }
-        }
-      });
+          },
+          onConnect: ({ conversationId }) => {
+            stopRing();
+            playChime('pickup');
+            setIsConnecting(false);
+            setIsCalling(true);
+            conversationIdRef.current = conversationId || null;
+            startTimeRef.current = Date.now();
+            if (isADN) {
+              setCallStatusText(`En reunión de diagnóstico ADN con ${scenario.prospecto.nombre}`);
+            } else if (isObjeciones) {
+              setCallStatusText(`En sesión de cierre con ${scenario.prospecto.nombre}`);
+            } else {
+              setCallStatusText(`🟢 En llamada con ${scenario.prospecto.nombre}`);
+            }
 
-      conversationRef.current = conv;
+            // Timer
+            timerRef.current = setInterval(() => {
+              const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
+              setCallDuration(elapsed);
+              const maxDuration = isADN ? 1800 : isObjeciones ? 1200 : 300;
+              if (elapsed >= maxDuration) {
+                hangupCall();
+              }
+            }, 1000);
+
+            // Monitor User Mic in real-time
+            if (micIntervalRef.current) clearInterval(micIntervalRef.current);
+            micIntervalRef.current = setInterval(() => {
+              if (conversationRef.current && typeof conversationRef.current.getInputVolume === 'function') {
+                const vol = conversationRef.current.getInputVolume();
+                setUserMicVolume(vol);
+                setUserSpeaking(vol > 0.04);
+              }
+            }, 120);
+          },
+          onDisconnect: () => {
+            stopRing();
+            playChime('hangup');
+            if (micIntervalRef.current) {
+              clearInterval(micIntervalRef.current);
+              micIntervalRef.current = null;
+            }
+            setUserSpeaking(false);
+            setUserMicVolume(0);
+            handleCallEnded();
+          },
+          onError: (err) => {
+            stopRing();
+            console.error("Conversation error:", err);
+            setCallStatusText('⚠️ Detalle en conexión de audio.');
+          },
+          onModeChange: ({ mode }) => {
+            setProspectSpeaking(mode === 'speaking');
+            if (mode === 'speaking') {
+              setCallStatusText(`🗣️ ${scenario.prospecto.nombre.split(' ')[0]} está hablando...`);
+            } else {
+              setCallStatusText(`👂 ${scenario.prospecto.nombre.split(' ')[0]} te está escuchando...`);
+            }
+          },
+          onMessage: ({ message, source }) => {
+            if (message) {
+              setTranscript(prev => [...prev, { source: source === 'ai' ? 'ai' : 'user', message }]);
+            }
+          }
+        });
+
+        conversationRef.current = conv;
+      }
     } catch (err: any) {
       stopRing();
       setIsConnecting(false);
@@ -453,11 +524,20 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     setUserSpeaking(false);
     setUserMicVolume(0);
 
+    if (geminiSessionRef.current) {
+      try {
+        geminiSessionRef.current.end();
+      } catch (e) {
+        console.warn('Error ending Gemini Live session:', e);
+      }
+      geminiSessionRef.current = null;
+    }
+
     if (conversationRef.current) {
       try {
         await conversationRef.current.endSession();
       } catch (e) {
-        console.warn('Error ending session:', e);
+        console.warn('Error ending ElevenLabs session:', e);
       }
       conversationRef.current = null;
     }
@@ -491,7 +571,8 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           durationSeconds: elapsed,
           scenario,
           conversationId: conversationIdRef.current,
-          moduleId
+          moduleId,
+          engine
         })
       });
 
@@ -854,9 +935,12 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                   <div className="text-4xl font-mono font-black text-slate-100 tracking-wider">
                     {formatTime(callDuration)}
                   </div>
-                  <div className="text-xs text-slate-400 flex items-center gap-2">
+                  <div className="text-xs text-slate-400 flex items-center justify-center gap-2 flex-wrap">
                     <span className={`w-2 h-2 rounded-full ${isCalling ? 'bg-emerald-500 animate-pulse' : 'bg-slate-600'}`} />
                     <span>{callStatusText}</span>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 font-medium">
+                      {engine === 'GEMINI_LIVE' ? '⚡ Google Gemini Live' : '🎙️ ElevenLabs BYOK'}
+                    </span>
                   </div>
 
                   {/* Real-time Voice Activity Indicator (Confirming mic is picking up user voice) */}

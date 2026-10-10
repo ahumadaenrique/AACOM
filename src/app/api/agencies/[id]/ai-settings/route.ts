@@ -42,7 +42,11 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
 
     return NextResponse.json({
       elevenLabsApiKey: maskedKey,
-      elevenLabsVoiceId: agency.elevenLabsVoiceId || ''
+      elevenLabsVoiceId: agency.elevenLabsVoiceId || '',
+      voiceEngine: agency.voiceEngine || 'GEMINI_LIVE',
+      byokActive: agency.byokActive ?? true,
+      voiceSecondsBalance: agency.voiceSecondsBalance || 0,
+      isSuperAdmin
     });
 
   } catch (error: any) {
@@ -60,7 +64,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     const { id } = params;
     const body = await req.json();
-    const { elevenLabsApiKey, elevenLabsVoiceId } = body;
+    const { elevenLabsApiKey, elevenLabsVoiceId, voiceEngine, byokActive } = body;
 
     // Verify permissions
     const user = await prisma.user.findUnique({ where: { email: session.user.email! } });
@@ -72,6 +76,16 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     }
 
     const updateData: any = {};
+
+    // SuperAdmin can configure voice engine (GEMINI_LIVE vs ELEVENLABS)
+    if (voiceEngine !== undefined && (isSuperAdmin || user.agencyId === id)) {
+      updateData.voiceEngine = voiceEngine === 'ELEVENLABS' ? 'ELEVENLABS' : 'GEMINI_LIVE';
+    }
+
+    // Agency admin or SuperAdmin can toggle BYOK active state
+    if (byokActive !== undefined) {
+      updateData.byokActive = Boolean(byokActive);
+    }
 
     // Only update API Key if a new non-masked value is provided
     if (elevenLabsApiKey !== undefined) {

@@ -7,17 +7,17 @@ const PACKAGES: Record<string, { name: string; seconds: number; basePrice: numbe
   basic: {
     name: "Paquete Básico - 30 Minutos",
     seconds: 30 * 60,
-    basePrice: 19900, // $199.00 MXN in cents
+    basePrice: 14900, // $149.00 MXN in cents (25% off)
   },
   standard: {
     name: "Paquete Estándar - 60 Minutos",
     seconds: 60 * 60,
-    basePrice: 29900, // $299.00 MXN in cents
+    basePrice: 22400, // $224.00 MXN in cents (25% off)
   },
   pro: {
     name: "Paquete Pro - 100 Minutos",
     seconds: 100 * 60,
-    basePrice: 34900, // $349.00 MXN in cents
+    basePrice: 26100, // $261.00 MXN in cents (25% off)
   },
 };
 

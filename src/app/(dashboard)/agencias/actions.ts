@@ -417,3 +417,134 @@ export async function toggleAgencyRoleplay(agencyId: string, allow: boolean) {
   revalidatePath("/academia");
   return { success: true, allowRoleplaySimulator: updated.allowRoleplaySimulator };
 }
+
+export async function giftAcademiaMinutes(agencyId: string, minutes: number, userEmail?: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+  if (!minutes || minutes <= 0) throw new Error("La cantidad de minutos debe ser mayor a 0");
+
+  const seconds = minutes * 60;
+
+  if (userEmail && userEmail.trim()) {
+    const targetUser = await prisma.user.findUnique({ where: { email: userEmail.trim() } });
+    if (!targetUser) throw new Error("Usuario destino no encontrado");
+
+    await prisma.user.update({
+      where: { id: targetUser.id },
+      data: { voiceSecondsBalance: { increment: seconds } }
+    });
+
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+    await prisma.voiceMinutesPurchase.create({
+      data: {
+        userId: targetUser.id,
+        seconds,
+        secondsRemaining: seconds,
+        expiresAt
+      }
+    });
+
+    revalidatePath("/agencias");
+    revalidatePath("/academia");
+    return { success: true, message: `Se otorgaron ${minutes} minutos de cortesía a ${targetUser.name || targetUser.email}.` };
+  } else {
+    const agency = await prisma.agency.update({
+      where: { id: agencyId },
+      data: { voiceSecondsBalance: { increment: seconds } }
+    });
+
+    revalidatePath("/agencias");
+    revalidatePath("/academia");
+    return { success: true, message: `Se añadieron ${minutes} minutos de cortesía a la bolsa de ${agency.name}.` };
+  }
+}
+
+export async function updateAgencyAiEngine(agencyId: string, engine: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+  const validEngine = engine === "ELEVENLABS" ? "ELEVENLABS" : "GEMINI_LIVE";
+
+  const updated = await prisma.agency.update({
+    where: { id: agencyId },
+    data: { voiceEngine: validEngine }
+  });
+
+  revalidatePath("/agencias");
+  revalidatePath("/academia");
+  return { success: true, voiceEngine: updated.voiceEngine };
+}
+
+export async function toggleAgencyByok(agencyId: string, active: boolean) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN" && (user?.agencyId !== agencyId || user?.role !== "ADMIN")) {
+    throw new Error("Permisos insuficientes");
+  }
+
+  const updated = await prisma.agency.update({
+    where: { id: agencyId },
+    data: { byokActive: active }
+  });
+
+  revalidatePath("/agencias");
+  revalidatePath("/academia");
+  revalidatePath("/admin/agencia");
+  return { success: true, byokActive: updated.byokActive };
+}
+
+export async function getAgencyUsageStats(agencyId?: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  
+  const isSuperAdmin = user?.role === "SUPER_ADMIN";
+  const effectiveAgencyId = agencyId || user?.agencyId;
+
+  const whereClause: any = {};
+  if (!isSuperAdmin) {
+    if (!effectiveAgencyId) return null;
+    whereClause.agencyId = effectiveAgencyId;
+  } else if (agencyId) {
+    whereClause.agencyId = agencyId;
+  }
+
+  const calls = await prisma.roleplayCall.findMany({
+    where: whereClause,
+    select: {
+      id: true,
+      durationSeconds: true,
+      engine: true,
+      agencyId: true,
+      createdAt: true
+    }
+  });
+
+  let totalCalls = calls.length;
+  let totalSeconds = calls.reduce((acc, c) => acc + (c.durationSeconds || 0), 0);
+  let totalMinutes = Math.round((totalSeconds / 60) * 10) / 10;
+
+  let geminiSeconds = calls.filter(c => c.engine !== "ELEVENLABS").reduce((acc, c) => acc + (c.durationSeconds || 0), 0);
+  let geminiMinutes = Math.round((geminiSeconds / 60) * 10) / 10;
+
+  let elevenSeconds = calls.filter(c => c.engine === "ELEVENLABS").reduce((acc, c) => acc + (c.durationSeconds || 0), 0);
+  let elevenMinutes = Math.round((elevenSeconds / 60) * 10) / 10;
+
+  // Gemini Live ~$0.46 MXN/min, ElevenLabs ~$1.60 MXN/min
+  let estimatedCostMxn = Math.round((geminiMinutes * 0.46 + elevenMinutes * 1.60) * 100) / 100;
+
+  return {
+    totalCalls,
+    totalMinutes,
+    geminiMinutes,
+    elevenMinutes,
+    estimatedCostMxn
+  };
+}

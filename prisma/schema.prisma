@@ -52,6 +52,9 @@ model Agency {
   whatsAppPlannerPhones String?
   allowReferidores      Boolean              @default(false)
   allowRoleplaySimulator Boolean?            @default(false)
+  voiceEngine           String?              @default("GEMINI_LIVE")
+  byokActive            Boolean?             @default(true)
+  voiceSecondsBalance   Int                  @default(0)
   elevenLabsApiKey      String?
   elevenLabsVoiceId     String?
 
@@ -833,6 +836,8 @@ model RoleplayCall {
   xpEarned          Int      @default(0)
   callAudioUrl      String?
   conversationId    String?
+  agencyId          String?
+  engine            String?  @default("GEMINI_LIVE")
   transcript        Json?
   evaluation        Json?
   aciertos          String[] @default([])
@@ -844,6 +849,7 @@ model RoleplayCall {
   user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
+  @@index([agencyId])
   @@index([createdAt])
 }
 

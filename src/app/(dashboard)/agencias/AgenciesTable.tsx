@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { differenceInCalendarDays, format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ShieldAlert, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff, Bot } from "lucide-react";
+import { ShieldAlert, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff, Bot, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteAgency, getAgencyUsers, toggleAgencyRoleplay } from "./actions";
 import { useState } from "react";
@@ -107,6 +107,30 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                       {!agency.active && <Badge variant="destructive" className="ml-2 text-[10px] px-1.5 py-0">Inactiva</Badge>}
                     </div>
                     <div className="text-xs text-slate-400 mt-0.5">{agency.slug}.aacomsoft.com</div>
+                    <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 border gap-1 font-medium ${
+                        (agency.voiceEngine || 'GEMINI_LIVE') === 'GEMINI_LIVE' 
+                          ? 'border-indigo-200 text-indigo-700 bg-indigo-50/50' 
+                          : 'border-purple-200 text-purple-700 bg-purple-50/50'
+                      }`}>
+                        <Sparkles className="w-2.5 h-2.5" />
+                        {(agency.voiceEngine || 'GEMINI_LIVE') === 'GEMINI_LIVE' ? 'Gemini Live' : 'ElevenLabs'}
+                      </Badge>
+                      {agency.elevenLabsApiKey && (
+                        <Badge variant="outline" className={`text-[10px] px-1.5 py-0 border font-medium ${
+                          (agency.byokActive ?? true) 
+                            ? 'border-emerald-200 text-emerald-700 bg-emerald-50/50' 
+                            : 'border-amber-200 text-amber-700 bg-amber-50/50'
+                        }`}>
+                          {(agency.byokActive ?? true) ? 'BYOK Activa' : 'BYOK Apagada'}
+                        </Badge>
+                      )}
+                      {(agency.voiceSecondsBalance > 0) && (
+                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 border border-slate-200 text-slate-600 bg-slate-50 font-medium">
+                          Saldo: {Math.floor(agency.voiceSecondsBalance / 60)}m
+                        </Badge>
+                      )}
+                    </div>
                   </TableCell>
                   
                   <TableCell>
