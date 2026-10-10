@@ -378,8 +378,13 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           onDisconnect: () => {
             hangupCall();
           },
-          onError: (err) => {
+          onError: (err: any) => {
             console.error("Gemini Live Error:", err);
+            stopRing();
+            setIsConnecting(false);
+            setIsCalling(false);
+            setCallStatusText('⚠️ Error de conexión con el prospecto.');
+            alert('No se pudo establecer la llamada: ' + (err?.message || 'Error de conexión'));
             hangupCall();
           },
           onMessage: ({ source, message }) => {
@@ -512,6 +517,8 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   // 4. Hang up
   const hangupCall = async () => {
     stopRing();
+    setIsConnecting(false);
+    setIsCalling(false);
     playChime('hangup');
     if (timerRef.current) {
       clearInterval(timerRef.current);

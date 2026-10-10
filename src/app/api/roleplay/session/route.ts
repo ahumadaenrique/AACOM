@@ -110,15 +110,17 @@ export async function POST(req: Request) {
     const scenario = generarEscenarioAleatorio(stats.level, moduleId, agencyName);
 
     // 1. Determinar motor de voz (Gemini Live vs ElevenLabs)
-    const configuredEngine = userWithAgency?.agency?.voiceEngine || 'GEMINI_LIVE';
+    const configuredEngine = userWithAgency?.agency?.voiceEngine;
     const isByokActive = userWithAgency?.agency?.byokActive ?? true;
     const hasAgencyByokKey = !!userWithAgency?.agency?.elevenLabsApiKey && isByokActive;
     
-    let effectiveEngine: 'GEMINI_LIVE' | 'ELEVENLABS' = 'GEMINI_LIVE';
-    if (configuredEngine === 'ELEVENLABS' || (hasAgencyByokKey && configuredEngine !== 'GEMINI_LIVE')) {
+    let effectiveEngine: 'GEMINI_LIVE' | 'ELEVENLABS' = 'ELEVENLABS';
+    if (configuredEngine === 'GEMINI_LIVE') {
+      effectiveEngine = 'GEMINI_LIVE';
+    } else if (configuredEngine === 'ELEVENLABS') {
       effectiveEngine = 'ELEVENLABS';
     } else {
-      effectiveEngine = 'GEMINI_LIVE';
+      effectiveEngine = (hasAgencyByokKey || userWithAgency?.agency?.id === 'aacom' || userWithAgency?.agency?.slug === 'aacom') ? 'ELEVENLABS' : 'GEMINI_LIVE';
     }
 
     // 2. Control de saldo de minutos para llamadas con bolsa de AACOM

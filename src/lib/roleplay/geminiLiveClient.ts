@@ -80,9 +80,16 @@ export class GeminiLiveSession {
 
       this.ws.onclose = (ev) => {
         console.log('[Gemini Live WS Closed]', ev.code, ev.reason);
+        const wasReady = this.isSetupComplete;
         this.isConnected = false;
         this.isSetupComplete = false;
-        if (this.config.onDisconnect) this.config.onDisconnect();
+
+        if (!wasReady) {
+          const msg = ev.reason || (ev.code === 1007 || ev.code === 1008 ? 'API Key de Gemini no válida o rechazada por Google (Código ' + ev.code + ')' : 'La conexión con Gemini se cerró antes de iniciar (Código ' + ev.code + ')');
+          if (this.config.onError) this.config.onError(new Error(msg));
+        } else {
+          if (this.config.onDisconnect) this.config.onDisconnect();
+        }
       };
 
     } catch (err) {
