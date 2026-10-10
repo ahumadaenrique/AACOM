@@ -349,28 +349,40 @@ export async function POST(req: Request) {
         const discountCodeStr = session.metadata?.discountCodeStr;
         const sellerId = session.metadata?.sellerId || null;
         const agencyId = session.metadata?.agencyId || null;
+        const target = session.metadata?.target;
 
-        if (userId && secondsToAdd > 0) {
-          await prisma.user.update({
-            where: { id: userId },
-            data: { voiceSecondsBalance: { increment: secondsToAdd } }
-          });
+        if (secondsToAdd > 0) {
+          if (target === 'agency' && agencyId) {
+            // Recarga para la bolsa de la Agencia (Academia PRO)
+            await prisma.agency.update({
+              where: { id: agencyId },
+              data: { voiceSecondsBalance: { increment: secondsToAdd } }
+            });
+          } else if (userId) {
+            // Recarga para el agente individual
+            await prisma.user.update({
+              where: { id: userId },
+              data: { voiceSecondsBalance: { increment: secondsToAdd } }
+            });
+          }
 
-          const now = new Date();
-          const expiresAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000); // 90 días
-          await prisma.voiceMinutesPurchase.create({
-            data: {
-              userId,
-              seconds: secondsToAdd,
-              secondsRemaining: secondsToAdd,
-              expiresAt
-            }
-          });
+          if (userId) {
+            const now = new Date();
+            const expiresAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000); // 90 días
+            await prisma.voiceMinutesPurchase.create({
+              data: {
+                userId,
+                seconds: secondsToAdd,
+                secondsRemaining: secondsToAdd,
+                expiresAt
+              }
+            });
+          }
 
           await logCommission(
             sellerId,
             agencyId,
-            `Compra de ${Math.round(secondsToAdd / 60)} Minutos de Voz`,
+            `Compra de ${Math.round(secondsToAdd / 60)} Minutos de Voz${target === 'agency' ? ' (Bolsa de Agencia)' : ''}`,
             (session.amount_total || 0) / 100,
             session.payment_intent as string,
             discountCodeStr

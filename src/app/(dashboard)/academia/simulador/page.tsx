@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { PhoneCall, FileText, ShieldAlert, Bot, Lock, ArrowRight, Star, Trophy, Zap, Award, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { LEVELS_CONFIG, DEFAULT_BENEFITS } from "@/lib/roleplay/gamification";
+import { BuySimulatorMinutesButton } from "@/components/roleplay/BuySimulatorMinutesButton";
 
 export const metadata = {
   title: "Hub del Simulador IA | AACOM Seguros",
@@ -93,10 +94,15 @@ export default async function SimuladorHubPage() {
             Pide a tu Promotor que acceda a <strong>Mi Agencia SaaS &gt; Inteligencia Artificial</strong> para encender su conexión o adquirir un paquete de minutos.
           </p>
         </div>
-        <div className="pt-2">
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
           <Link href="/academia" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors">
             ← Volver a Academia
           </Link>
+          <BuySimulatorMinutesButton
+            variant="banner"
+            forAgency={dbUser.role === 'ADMIN' || isSuperAdmin}
+            label="Comprar Paquete de Minutos"
+          />
         </div>
       </div>
     );
@@ -171,9 +177,22 @@ export default async function SimuladorHubPage() {
     <div className="max-w-7xl mx-auto space-y-8 py-6">
       
       {/* HEADER SECTION */}
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight text-slate-900">Hub de Entrenamiento IA</h1>
-        <p className="text-sm text-slate-500">Selecciona la disciplina de ventas, compite con tu agencia y sube de nivel.</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Hub de Entrenamiento IA</h1>
+          <p className="text-sm text-slate-500">Selecciona la disciplina de ventas, compite con tu agencia y sube de nivel.</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="px-3.5 py-1.5 rounded-xl bg-purple-50 border border-purple-200 text-xs text-purple-900 font-medium flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-purple-600 animate-pulse"></span>
+            <span>Bolsa Agencia: <strong>{Math.floor((dbUser.agency?.voiceSecondsBalance || 0) / 60)} min</strong></span>
+          </div>
+          <BuySimulatorMinutesButton 
+            variant="compact"
+            forAgency={dbUser.role === 'ADMIN' || isSuperAdmin}
+            label="Recargar Minutos"
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">

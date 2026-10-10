@@ -7,8 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Upload, Image as ImageIcon, Bot } from "lucide-react";
+import { Loader2, Upload, Image as ImageIcon, Bot, CreditCard } from "lucide-react";
 import { AgencyAiSettingsModal } from "@/app/(dashboard)/agencias/AgencyAiSettingsModal";
+import { BuyMinutesModal } from "@/components/BuyMinutesModal";
 
 interface Props {
   id: string;
@@ -38,6 +39,7 @@ export default function AgencySettingsForm({
   const [isSaving, setIsSaving] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+  const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
 
   const handleSaveSettings = async () => {
     try {
@@ -193,17 +195,33 @@ export default function AgencySettingsForm({
               <p className="text-[11px] text-slate-400 mt-0.5">Tiempo total practicado por tus agentes.</p>
             </div>
 
-            <div className="p-4 bg-purple-50/50 border border-purple-100 rounded-xl">
-              <span className="text-xs text-purple-700 font-medium">Bolsa de Minutos AACOM</span>
-              <p className="text-2xl font-black text-purple-900 mt-1">{Math.floor(voiceSecondsBalance / 60)} <span className="text-sm font-semibold text-purple-600">min</span></p>
-              <p className="text-[11px] text-purple-600 mt-0.5">Saldo prepagado o de cortesía disponible.</p>
+            <div className="p-4 bg-purple-50/50 border border-purple-100 rounded-xl flex flex-col justify-between">
+              <div>
+                <span className="text-xs text-purple-700 font-medium">Bolsa de Minutos AACOM</span>
+                <p className="text-2xl font-black text-purple-900 mt-1">{Math.floor(voiceSecondsBalance / 60)} <span className="text-sm font-semibold text-purple-600">min</span></p>
+                <p className="text-[11px] text-purple-600 mt-0.5">Saldo prepagado o de cortesía disponible.</p>
+              </div>
+              <Button 
+                type="button"
+                onClick={() => setIsBuyModalOpen(true)}
+                className="mt-3 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold h-8 rounded-lg shadow-sm w-full"
+              >
+                <CreditCard className="w-3.5 h-3.5 mr-1.5" />
+                Comprar Minutos para el Equipo
+              </Button>
             </div>
           </div>
 
-          <Button onClick={() => setIsAiModalOpen(true)} variant="outline" className="text-indigo-600 border-indigo-200 hover:bg-indigo-50">
-            <Bot className="w-4 h-4 mr-2" />
-            Gestionar Conexión de IA (BYOK y Motor)
-          </Button>
+          <div className="flex flex-wrap items-center gap-3 pt-2">
+            <Button onClick={() => setIsAiModalOpen(true)} variant="outline" className="text-indigo-600 border-indigo-200 hover:bg-indigo-50">
+              <Bot className="w-4 h-4 mr-2" />
+              Gestionar Conexión de IA (BYOK y Motor)
+            </Button>
+            <Button onClick={() => setIsBuyModalOpen(true)} className="bg-purple-600 hover:bg-purple-700 text-white">
+              <CreditCard className="w-4 h-4 mr-2" />
+              Comprar Paquete de Minutos
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -212,6 +230,12 @@ export default function AgencySettingsForm({
         onClose={() => setIsAiModalOpen(false)}
         agencyId={id}
         agencyName={name}
+      />
+
+      <BuyMinutesModal
+        isOpen={isBuyModalOpen}
+        onClose={() => setIsBuyModalOpen(false)}
+        forAgency={true}
       />
     </div>
   );

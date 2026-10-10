@@ -38,12 +38,14 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json().catch(() => ({}));
-    const { packageId, promoCode } = body;
+    const { packageId, promoCode, forAgency } = body;
 
     const pkg = PACKAGES[packageId];
     if (!pkg) {
       return NextResponse.json({ error: "Paquete no válido." }, { status: 400 });
     }
+
+    const isAgencyPurchase = Boolean(forAgency || user.role === 'ADMIN') && Boolean(user.agencyId);
 
     let unitAmount = pkg.basePrice;
     let stripeCoupon = null;
@@ -74,15 +76,30 @@ export async function POST(req: Request) {
     }
 
     const origin = process.env.NEXT_PUBLIC_APP_URL || 'https://aacomsoft.com';
+    const successUrl = isAgencyPurchase
+      ? `${origin}/admin/agencia?purchase_voice_success=true`
+      : `${origin}/academia/simulador?purchase_voice_success=true`;
+    const cancelUrl = isAgencyPurchase
+      ? `${origin}/admin/agencia`
+      : `${origin}/academia/simulador`;
 
     // If discount brings the price to 0, credit minutes immediately
     if (unitAmount === 0) {
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          voiceSecondsBalance: { increment: pkg.seconds },
-        },
-      });
+      if (isAgencyPurchase && user.agencyId) {
+        await prisma.agency.update({
+          where: { id: user.agencyId },
+          data: {
+            voiceSecondsBalance: { increment: pkg.seconds },
+          },
+        });
+      } else {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            voiceSecondsBalance: { increment: pkg.seconds },
+          },
+        });
+      }
 
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000); // 90 días
@@ -106,7 +123,7 @@ export async function POST(req: Request) {
         }
       }
 
-      return NextResponse.json({ url: `${origin}/agents?purchase_voice_success=true` });
+      return NextResponse.json({ url: successUrl });
     }
 
     // Enforce Stripe minimum payment limit for MXN ($10.00 MXN = 1000 cents)
@@ -122,8 +139,10 @@ export async function POST(req: Request) {
           price_data: {
             currency: 'mxn',
             product_data: {
-              name: pkg.name,
-              description: `Añade ${pkg.seconds / 60} minutos de saldo para realizar llamadas de voz con tu Asistente Inteligente.`,
+              name: isAgencyPurchase ? `${pkg.name} (Bolsa de Promotoría)` : pkg.name,
+              description: isAgencyPurchase
+                ? `Añade ${pkg.seconds / 60} minutos a la bolsa compartida de tu promotoría para Academia PRO.`
+                : `Añade ${pkg.seconds / 60} minutos de saldo para realizar llamadas de voz con tu Asistente Inteligente.`,
             },
             unit_amount: unitAmount,
           },
@@ -131,13 +150,14 @@ export async function POST(req: Request) {
         },
       ],
       mode: "payment",
-      success_url: `${origin}/agents?purchase_voice_success=true`,
-      cancel_url: `${origin}/agents`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
       metadata: {
         isVoiceMinutesPackage: 'true',
         userId: user.id,
-        secondsToAdd: pkg.seconds.toString(),
+        target: isAgencyPurchase && user.agencyId ? 'agency' : 'user',
         agencyId: user.agencyId || "",
+        secondsToAdd: pkg.seconds.toString(),
         ...(stripeCoupon ? { discountCodeStr: stripeCoupon } : {}),
         ...(sellerId ? { sellerId } : {}),
       },

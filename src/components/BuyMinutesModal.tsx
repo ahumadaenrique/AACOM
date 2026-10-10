@@ -6,6 +6,7 @@ import { X, Check, Loader2, CreditCard, Sparkles, Clock } from "lucide-react"
 interface BuyMinutesModalProps {
   isOpen: boolean
   onClose: () => void
+  forAgency?: boolean
 }
 
 interface Package {
@@ -38,7 +39,7 @@ const PACKAGES: Package[] = [
   },
 ]
 
-export function BuyMinutesModal({ isOpen, onClose }: BuyMinutesModalProps) {
+export function BuyMinutesModal({ isOpen, onClose, forAgency = false }: BuyMinutesModalProps) {
   const [selectedPkg, setSelectedPkg] = useState<string>("standard")
   const [promoCode, setPromoCode] = useState<string>("")
   const [isValidating, setIsValidating] = useState<boolean>(false)
@@ -86,6 +87,7 @@ export function BuyMinutesModal({ isOpen, onClose }: BuyMinutesModalProps) {
         body: JSON.stringify({
           packageId: selectedPkg,
           promoCode: appliedDiscount?.code || null,
+          forAgency: Boolean(forAgency),
         }),
       })
       const data = await res.json()
@@ -109,12 +111,16 @@ export function BuyMinutesModal({ isOpen, onClose }: BuyMinutesModalProps) {
         {/* Header */}
         <div className="p-6 pb-4 border-b border-neutral-900 flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-indigo-500/10 rounded-xl">
-              <Sparkles className="w-5 h-5 text-indigo-400" />
+            <div className={`p-2 rounded-xl ${forAgency ? "bg-purple-500/10 text-purple-400" : "bg-indigo-500/10 text-indigo-400"}`}>
+              <Sparkles className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">Cargar Minutos de Voz</h3>
-              <p className="text-xs text-neutral-500">Elige un paquete para tu Asistente</p>
+              <h3 className="text-lg font-bold text-white">
+                {forAgency ? "Cargar Minutos para la Agencia" : "Cargar Minutos de Voz"}
+              </h3>
+              <p className="text-xs text-neutral-500">
+                {forAgency ? "Bolsa compartida para el equipo en Academia PRO" : "Elige un paquete para tu Asistente y Simulador"}
+              </p>
             </div>
           </div>
           <button 
@@ -236,6 +242,14 @@ export function BuyMinutesModal({ isOpen, onClose }: BuyMinutesModalProps) {
               <span>${finalPrice}.00 MXN</span>
             </div>
           </div>
+
+          {forAgency && (
+            <div className="p-3.5 rounded-2xl bg-purple-950/40 border border-purple-800/40 text-center">
+              <p className="text-[11px] text-purple-200">
+                💡 Los minutos se sumarán al <strong>saldo de tu Promotoría</strong> para que todos tus agentes puedan practicar en el Simulador de Academia PRO.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Footer Actions */}
