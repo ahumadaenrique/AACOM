@@ -140,7 +140,7 @@ export default async function HomePage() {
                 <div className="self-start sm:self-center">
                     <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-50/80 dark:bg-indigo-950/40 border border-indigo-200/60 dark:border-indigo-800/40 text-[11px] font-medium text-indigo-700 dark:text-indigo-300 shadow-2xs">
                         <Sparkles className="w-3.5 h-3.5 text-indigo-500" />
-                        <span>Motor de IA: <strong className="font-bold text-indigo-900 dark:text-indigo-200">Google Gemini 3.7</strong></span>
+                        <span>Motor de IA: <strong className="font-bold text-indigo-900 dark:text-indigo-200">Google Gemini 3.8</strong></span>
                     </div>
                 </div>
             </div>
