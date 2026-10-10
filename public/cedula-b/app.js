@@ -1,4 +1,4 @@
-// app.js: Cédula A Simulator & E-Learning Platform Lógica
+// app.js: Cédula B Simulator & E-Learning Platform Lógica
 
 window.onerror = function(message, source, lineno, colno, error) {
     alert("Runtime Error: " + message + "\nLine: " + lineno + "\nSource: " + source);
@@ -683,8 +683,9 @@ function updateAgentDashboard() {
         container.appendChild(card);
     });
 
-    const overallCompletionPct = Math.round((totalCompletedModules / 6) * 100);
-    const overallText = `${totalCompletedModules} de 6 Módulos completados`;
+    const totalModulesCount = modulesData.length || 7;
+    const overallCompletionPct = Math.round((totalCompletedModules / totalModulesCount) * 100);
+    const overallText = `${totalCompletedModules} de ${totalModulesCount} Módulos completados`;
     
     const progressPercentEl = document.getElementById("agent-curriculum-progress");
     if (progressPercentEl) {
@@ -898,8 +899,13 @@ function loadAgentReport() {
                     const colorClass = modPct >= 70 ? "#2dd4bf" : "#f87171";
                     
                     let shortMod = mod;
-                    if (mod === "Sistema y Mercados Financieros") shortMod = "Finanzas";
-                    else if (mod === "Accidentes y Enfermedades") shortMod = "Accidentes";
+                    if (mod === "Seguro de Personas (Grupo y Colectivo)") shortMod = "Personas Col.";
+                    else if (mod === "Seguro de Daños: Incendio y Catastróficos") shortMod = "Incendio/Cat.";
+                    else if (mod === "Marítimo, Transportes y Automóviles Flotillas") shortMod = "Transportes/Autos";
+                    else if (mod === "Responsabilidad Civil y Admón. de Riesgos") shortMod = "Resp. Civil";
+                    else if (mod === "Ramos Técnicos de Daños") shortMod = "Ramos Técnicos";
+                    else if (mod === "Ramos Diversos y Misceláneos") shortMod = "Diversos";
+                    else if (mod === "Regulación CNSF, Marco Legal y PLD") shortMod = "Regulación/PLD";
                     
                     detailsHTML += `<span style="background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); padding: 2px 6px; border-radius: 4px; display: inline-flex; align-items: center; gap: 4px;">
                         ${shortMod}: <strong style="color: ${colorClass}">${score.correct}/${score.total} (${modPct}%)</strong>
@@ -1910,115 +1916,135 @@ function renderContextAnimation(questionText) {
     }
     // 20. MODULE-SPECIFIC FALLBACKS
     else {
-        if (studyModule === "Aspectos Generales") {
+        if (studyModule === "Seguro de Personas (Grupo y Colectivo)") {
             descEl.innerHTML = `
-                <strong>Fundamentos y Aspectos Generales:</strong><br>
-                La Ley sobre el Contrato de Seguro regula los derechos y deberes mutuos (buena fe, interés asegurable, solicitudes).
+                <strong>Seguro de Personas (Grupo y Colectivo):</strong><br>
+                Regulación y administración de seguros colectivos de Vida y Gastos Médicos Mayores para empresas y organizaciones.
             `;
             container.innerHTML = `
                 <svg class="concept-svg" viewBox="0 0 400 200">
                     <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
                     <g transform="translate(160, 20)">
-                        <rect width="80" height="100" rx="6" fill="rgba(139, 92, 246, 0.15)" stroke="#8b5cf6" stroke-width="2"/>
-                        <line x1="15" y1="30" x2="65" y2="30" stroke="#8b5cf6" stroke-width="2"/>
-                        <line x1="15" y1="50" x2="65" y2="50" stroke="#8b5cf6" stroke-width="2"/>
-                        <line x1="15" y1="70" x2="55" y2="70" stroke="#8b5cf6" stroke-width="2"/>
+                        <circle cx="20" cy="30" r="14" fill="rgba(20, 184, 166, 0.25)" stroke="#14b8a6" stroke-width="2"/>
+                        <circle cx="60" cy="30" r="14" fill="rgba(139, 92, 246, 0.25)" stroke="#8b5cf6" stroke-width="2"/>
+                        <circle cx="40" cy="65" r="16" fill="rgba(16, 185, 129, 0.25)" stroke="#10b981" stroke-width="2"/>
                     </g>
-                    <text x="200" y="150" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Aspectos Generales y Contrato</text>
-                    <text x="200" y="175" font-size="11" fill="#9ca3af" text-anchor="middle">Bases de la Ley sobre el Contrato de Seguro</text>
+                    <text x="200" y="145" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Grupo y Colectivo</text>
+                    <text x="200" y="170" font-size="11" fill="#9ca3af" text-anchor="middle">Vida Colectivo • Gastos Médicos Grupales • Administración de Certificados</text>
                 </svg>
             `;
         }
-        else if (studyModule === "Regulación CNSF") {
+        else if (studyModule === "Seguro de Daños: Incendio y Catastróficos") {
             descEl.innerHTML = `
-                <strong>Regulación y Supervisión CNSF:</strong><br>
-                La **CNSF** se encarga de supervisar que la operación de las instituciones de seguros y fianzas se apegue a la ley, protegiendo al usuario.
+                <strong>Seguro de Daños: Incendio y Catastróficos:</strong><br>
+                Protección patrimonial de bienes inmuebles y contenidos frente a riesgos ordinarios (incendio, rayo, explosión) y eventos hidrometeorológicos y sísmicos.
             `;
             container.innerHTML = `
                 <svg class="concept-svg" viewBox="0 0 400 200">
                     <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
-                    <g class="pulse-shield" transform="translate(150, 15)">
-                        <polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill="none" stroke="#14b8a6" stroke-width="2"/>
-                        <path d="M25,30 L50,15 L75,30 V60 C75,75 50,85 50,85 C50,85 25,75 25,60 V30 Z" fill="rgba(20, 184, 166, 0.2)" stroke="#14b8a6" stroke-width="3"/>
+                    <g transform="translate(160, 20)">
+                        <polygon points="40,15 70,75 10,75" fill="rgba(239, 68, 68, 0.2)" stroke="#ef4444" stroke-width="2"/>
+                        <path d="M40,35 Q48,50 40,65 Q32,50 40,35 Z" fill="#f59e0b"/>
                     </g>
-                    <text x="200" y="145" font-size="15" fill="#fff" font-weight="700" text-anchor="middle">Regulación Oficial CNSF</text>
-                    <text x="200" y="170" font-size="11" fill="#9ca3af" text-anchor="middle">Inspección de solvencia y sanas prácticas</text>
+                    <text x="200" y="145" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Incendio y Riesgos Catastróficos</text>
+                    <text x="200" y="170" font-size="11" fill="#9ca3af" text-anchor="middle">Bienes Muebles e Inmuebles • Pérdidas Consecuenciales</text>
                 </svg>
             `;
         }
-        else if (studyModule === "Vida Individual") {
+        else if (studyModule === "Marítimo, Transportes y Automóviles Flotillas") {
             descEl.innerHTML = `
-                <strong>Seguro de Vida Individual:</strong><br>
-                El ramo de **Vida** protege la estabilidad económica familiar ante el deceso, invalidez o supervivencia del asegurado.
+                <strong>Transportes, Marítimo y Automóviles (Flotillas):</strong><br>
+                Aseguramiento de mercancías en tránsito terrestre, marítimo o aéreo, y esquemas de cobertura y deducibles para flotillas vehiculares empresariales.
             `;
             container.innerHTML = `
                 <svg class="concept-svg" viewBox="0 0 400 200">
                     <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
-                    <line x1="50" y1="130" x2="350" y2="130" stroke="#6b7280" stroke-width="2" class="timeline-line"/>
-                    <circle cx="60" cy="130" r="5" fill="#14b8a6"/>
-                    <circle cx="300" cy="130" r="6" fill="#10b981"/>
-                    <text x="200" y="90" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Protección y Ahorro en Vida</text>
-                    <text x="200" y="165" font-size="11" fill="#9ca3af" text-anchor="middle">Ordinario de Vida • Temporales • Dotales</text>
-                </svg>
-            `;
-        }
-        else if (studyModule === "Accidentes y Enfermedades") {
-            descEl.innerHTML = `
-                <strong>Gastos Médicos y Accidentes:</strong><br>
-                Las coberturas de **Gastos Médicos Mayores** e indemnizaciones por accidentes resarcen gastos hospitalarios ante imprevistos de salud.
-            `;
-            container.innerHTML = `
-                <svg class="concept-svg" viewBox="0 0 400 200">
-                    <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
-                    <circle cx="200" cy="70" r="30" fill="rgba(20, 184, 166, 0.15)" stroke="#14b8a6" stroke-width="2.5"/>
-                    <path d="M190,70 h20 M200,60 v20" stroke="#14b8a6" stroke-width="3"/>
-                    <text x="200" y="135" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Accidentes y Enfermedades</text>
-                    <text x="200" y="160" font-size="11" fill="#9ca3af" text-anchor="middle">Deducibles, coaseguros y periodos de espera</text>
-                </svg>
-            `;
-        }
-        else if (studyModule === "Seguros de Daños") {
-            descEl.innerHTML = `
-                <strong>Riesgos Individuales de Daños:</strong><br>
-                Los seguros de **Daños** (autos, incendio, embarcaciones) resarcen el valor real o reposición de bienes materiales tras un siniestro fortuito.
-            `;
-            container.innerHTML = `
-                <svg class="concept-svg" viewBox="0 0 400 200">
-                    <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
-                    <g transform="translate(160, 30)">
-                        <path d="M12,15 L20,11 L28,15 V22 C28,26 20,29 20,29 C20,29 12,26 12,22 V15 Z" fill="rgba(139, 92, 246, 0.15)" stroke="#8b5cf6" stroke-width="2.5"/>
+                    <g transform="translate(150, 30)">
+                        <rect x="10" y="20" width="80" height="35" rx="5" fill="rgba(56, 189, 248, 0.2)" stroke="#38bdf8" stroke-width="2"/>
+                        <circle cx="28" cy="55" r="8" fill="#38bdf8"/>
+                        <circle cx="72" cy="55" r="8" fill="#38bdf8"/>
                     </g>
-                    <text x="200" y="135" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Seguros de Daños</text>
-                    <text x="200" y="160" font-size="11" fill="#9ca3af" text-anchor="middle">Principio indemnizatorio y valuación de bienes</text>
+                    <text x="200" y="145" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Transportes y Flotillas</text>
+                    <text x="200" y="170" font-size="11" fill="#9ca3af" text-anchor="middle">Carga en Tránsito • Embarcaciones • Flotillas Comerciales</text>
                 </svg>
             `;
         }
-        else if (studyModule === "Sistema y Mercados Financieros") {
+        else if (studyModule === "Responsabilidad Civil y Admón. de Riesgos") {
             descEl.innerHTML = `
-                <strong>Sistema y Mercados Financieros:</strong><br>
-                Estructura regulatoria y entidades operativas (bancos, aseguradoras, afores) coordinadas bajo la SHCP, Banxico y comisiones.
+                <strong>Responsabilidad Civil y Administración de Riesgos:</strong><br>
+                Resarcimiento de daños y perjuicios a terceros ocasionados por hechos u omisiones culposas en actividades comerciales, industriales o profesionales.
+            `;
+            container.innerHTML = `
+                <svg class="concept-svg" viewBox="0 0 400 200">
+                    <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
+                    <g class="pulse-shield" transform="translate(160, 20)">
+                        <polygon points="40,5 75,22 75,60 40,80 5,60 5,22" fill="rgba(168, 85, 247, 0.2)" stroke="#a855f7" stroke-width="2"/>
+                        <text x="40" y="50" font-size="20" fill="#fff" text-anchor="middle" font-weight="bold">⚖</text>
+                    </g>
+                    <text x="200" y="145" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Responsabilidad Civil</text>
+                    <text x="200" y="170" font-size="11" fill="#9ca3af" text-anchor="middle">Daños a Terceros • Actividades Comerciales e Industriales</text>
+                </svg>
+            `;
+        }
+        else if (studyModule === "Ramos Técnicos de Daños") {
+            descEl.innerHTML = `
+                <strong>Ramos Técnicos de Daños:</strong><br>
+                Protección especializada para rotura de maquinaria, equipo electrónico, calderas, montaje y obra civil durante su operación o construcción.
+            `;
+            container.innerHTML = `
+                <svg class="concept-svg" viewBox="0 0 400 200">
+                    <rect width="400" height="200" rx="10" fill="rgba(245, 158, 11, 0.2)" stroke="#f59e0b" stroke-width="2"/>
+                    <circle cx="200" cy="70" r="28" fill="rgba(245, 158, 11, 0.2)" stroke="#f59e0b" stroke-width="2"/>
+                    <circle cx="200" cy="70" r="12" fill="none" stroke="#f59e0b" stroke-width="2"/>
+                    <text x="200" y="145" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Ramos Técnicos de Daños</text>
+                    <text x="200" y="170" font-size="11" fill="#9ca3af" text-anchor="middle">Rotura de Maquinaria • Equipo Electrónico • Montaje y Calderas</text>
+                </svg>
+            `;
+        }
+        else if (studyModule === "Ramos Diversos y Misceláneos") {
+            descEl.innerHTML = `
+                <strong>Ramos Diversos y Misceláneos:</strong><br>
+                Coberturas empresariales para robo con violencia, dinero y valores en tránsito o caja fuerte, cristales y riesgos complementarios.
+            `;
+            container.innerHTML = `
+                <svg class="concept-svg" viewBox="0 0 400 200">
+                    <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
+                    <g transform="translate(160, 25)">
+                        <rect x="15" y="10" width="50" height="60" rx="4" fill="rgba(16, 185, 129, 0.2)" stroke="#10b981" stroke-width="2"/>
+                        <circle cx="40" cy="35" r="8" fill="none" stroke="#10b981" stroke-width="2"/>
+                        <line x1="40" y1="43" x2="40" y2="55" stroke="#10b981" stroke-width="2"/>
+                    </g>
+                    <text x="200" y="145" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Diversos y Misceláneos</text>
+                    <text x="200" y="170" font-size="11" fill="#9ca3af" text-anchor="middle">Robo • Dinero y Valores • Cristales • Objetos Valiosos</text>
+                </svg>
+            `;
+        }
+        else if (studyModule === "Regulación CNSF, Marco Legal y PLD") {
+            descEl.innerHTML = `
+                <strong>Regulación CNSF, Marco Legal y PLD:</strong><br>
+                Supervisión prudencial de la CNSF, cumplimiento de la Ley de Instituciones de Seguros y de Fianzas, y prevención de operaciones con recursos de procedencia ilícita.
             `;
             container.innerHTML = `
                 <svg class="concept-svg" viewBox="0 0 400 200">
                     <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
                     <rect x="150" y="20" width="100" height="30" rx="4" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="1.5"/>
-                    <text x="200" y="39" font-size="10" fill="#fff" font-weight="bold" text-anchor="middle">SHCP / BANXICO</text>
+                    <text x="200" y="39" font-size="10" fill="#fff" font-weight="bold" text-anchor="middle">CNSF / SHCP</text>
                     <line x1="200" y1="50" x2="200" y2="80" stroke="#8b5cf6" stroke-width="1.5"/>
                     <line x1="100" y1="80" x2="300" y2="80" stroke="#8b5cf6" stroke-width="1.5"/>
                     <line x1="100" y1="80" x2="100" y2="110" stroke="#14b8a6" stroke-width="1.5"/>
                     <line x1="300" y1="80" x2="300" y2="110" stroke="#10b981" stroke-width="1.5"/>
                     <rect x="50" y="110" width="100" height="30" rx="4" fill="rgba(20, 184, 166, 0.2)" stroke="#14b8a6" stroke-width="1.5"/>
-                    <text x="100" y="129" font-size="9" fill="#fff" text-anchor="middle">CNSF / CNBV</text>
+                    <text x="100" y="129" font-size="9" fill="#fff" text-anchor="middle">LISF & CIRCULARES</text>
                     <rect x="250" y="110" width="100" height="30" rx="4" fill="rgba(16, 185, 129, 0.2)" stroke="#10b981" stroke-width="1.5"/>
-                    <text x="300" y="129" font-size="9" fill="#fff" text-anchor="middle">CONDUSEF</text>
-                    <text x="200" y="175" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">Sistema Financiero Mexicano</text>
+                    <text x="300" y="129" font-size="9" fill="#fff" text-anchor="middle">PLD / FT</text>
+                    <text x="200" y="175" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">Marco Normativo Cédula B</text>
                 </svg>
             `;
         }
         else {
             descEl.innerHTML = `
-                <strong>Seguro de Cédula A - CNSF:</strong><br>
-                El análisis del riesgo es la piedra angular del seguro. Esta sección abarca los fundamentos de la transferencia del riesgo, coaseguro y mutualidad.
+                <strong>Certificación Cédula B - CNSF:</strong><br>
+                Riesgos Empresariales, Daños y Seguros Colectivos. Selecciona una opción o presiona <strong>Explicar</strong> para ver el desglose legal y técnico de este reactivo.
             `;
             container.innerHTML = `
                 <svg class="concept-svg" viewBox="0 0 400 200">
@@ -2028,9 +2054,9 @@ function renderContextAnimation(questionText) {
                         <path d="M25,30 L50,15 L75,30 V60 C75,75 50,85 50,85 C50,85 25,75 25,60 V30 Z" fill="rgba(20, 184, 166, 0.2)" stroke="var(--accent-teal)" stroke-width="3"/>
                         <path d="M50,30 L53,40 L63,40 L55,46 L58,56 L50,50 L42,56 L45,46 L37,40 L47,40 Z" fill="#fff"/>
                     </g>
-                    <text x="130" y="145" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Mutualidad</text>
-                    <text x="270" y="145" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Previsión</text>
-                    <text x="200" y="175" font-size="12" fill="var(--text-secondary)" text-anchor="middle">Evaluación del Riesgo e Intermediación Comercial</text>
+                    <text x="130" y="145" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Riesgos Empresariales</text>
+                    <text x="270" y="145" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Daños y Colectivos</text>
+                    <text x="200" y="175" font-size="12" fill="var(--text-secondary)" text-anchor="middle">Certificación Oficial CNSF Cédula B</text>
                 </svg>
             `;
         }
@@ -2313,7 +2339,7 @@ function showTrialBlockedScreen() {
                 <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
             </svg>
             <h2 style="font-size: 24px; font-weight: 800; margin-bottom: 12px; color: #fff;">Módulo Bloqueado</h2>
-            <p style="font-size: 14px; color: #94a3b8; margin-bottom: 24px; line-height: 1.5;">El simulador y academia de Cédula A no está disponible en período de pruebas.</p>
+            <p style="font-size: 14px; color: #94a3b8; margin-bottom: 24px; line-height: 1.5;">El simulador y academia de Cédula B no está disponible en período de pruebas.</p>
             <div style="font-size: 13px; font-weight: 700; color: #f59e0b; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); padding: 10px 16px; border-radius: 12px; margin-bottom: 24px;">
                 Módulo se desbloquea con cuentas permanentes.
             </div>

@@ -540,7 +540,7 @@ export default function InicioPage() {
               </div>
               <h3 className="text-lg font-bold text-white">Inteligencia artificial</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Asistente con IA que responde con base en los documentos de tu promotoría, más agentes de IA de asistente ejecutiva y de marketing.
+                Asistente con IA inteligente que responde y resuelve dudas técnicas con base en los reglamentos y documentos de tu promotoría.
               </p>
             </div>
 
@@ -560,7 +560,7 @@ export default function InicioPage() {
               </div>
               <h3 className="text-lg font-bold text-white">Academia CNSF</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Simulador para la Cédula A con exámenes de práctica y voz, más simulador de prospección con IA.
+                Simuladores oficiales para Cédula A y Cédula B con exámenes de práctica y voz, más simulador de prospección con IA.
               </p>
             </div>
 
