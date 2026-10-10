@@ -235,13 +235,25 @@ ${badgesText}`;
       todayCallsCount = 0;
     }
 
-    let actualXpToAdd = xpEarned;
-    if (todayXp + xpEarned > DAILY_XP_CAP) {
-      actualXpToAdd = Math.max(0, DAILY_XP_CAP - todayXp);
-    }
+    // CONTROL ESTRICTO: Límite de 500 XP diaria verificado contra llamadas reales del día
+    const recentCalls = await prisma.roleplayCall.findMany({
+      where: {
+        userId,
+        createdAt: { gte: new Date(Date.now() - 36 * 60 * 60 * 1000) }
+      },
+      select: { xpEarned: true, createdAt: true }
+    });
+
+    const xpEarnedTodayFromCalls = recentCalls
+      .filter(c => getLocalDateString(c.createdAt) === todayStr)
+      .reduce((sum, c) => sum + (c.xpEarned || 0), 0);
+
+    const effectiveTodayXp = Math.max(todayXp, xpEarnedTodayFromCalls);
+    const remainingDailyXp = Math.max(0, DAILY_XP_CAP - effectiveTodayXp);
+    const actualXpToAdd = Math.min(xpEarned, remainingDailyXp);
 
     currentXp += actualXpToAdd;
-    todayXp += actualXpToAdd;
+    todayXp = Math.min(DAILY_XP_CAP, effectiveTodayXp + actualXpToAdd);
     todayCallsCount += 1;
 
     if (appointmentClosed) {
@@ -258,6 +270,7 @@ ${badgesText}`;
         badges: mergedBadges,
         streak,
         todayXp,
+        todayDate: todayStr,
         todayCallsCount,
         totalCalls: { increment: 1 },
         closedCalls,
@@ -270,6 +283,7 @@ ${badgesText}`;
         badges: mergedBadges,
         streak: score > 30 ? 1 : 0,
         todayXp,
+        todayDate: todayStr,
         todayCallsCount: 1,
         totalCalls: 1,
         closedCalls: appointmentClosed ? 1 : 0,

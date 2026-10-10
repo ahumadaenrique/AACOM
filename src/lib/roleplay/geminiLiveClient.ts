@@ -30,10 +30,10 @@ export class GeminiLiveSession {
   private isAiSpeaking: boolean = false;
   private currentTranscript: { source: 'ai' | 'user'; message: string }[] = [];
   private currentAiTextBuffer: string = '';
-  private currentUserTextBuffer: string = '';
 
   private config: GeminiLiveSessionConfig;
   private isConnected: boolean = false;
+  private isSetupComplete: boolean = false;
   private sessionId: string;
 
   constructor(config: GeminiLiveSessionConfig) {
@@ -45,7 +45,7 @@ export class GeminiLiveSession {
     try {
       // 1. Initialize Web Audio Context
       const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
-      this.audioCtx = new AudioCtxClass({ sampleRate: 24000 });
+      this.audioCtx = new AudioCtxClass();
       if (this.audioCtx.state === 'suspended') {
         await this.audioCtx.resume();
       }
@@ -54,7 +54,6 @@ export class GeminiLiveSession {
       this.mediaStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           channelCount: 1,
-          sampleRate: 16000,
           echoCancellation: true,
           noiseSuppression: true,
           autoGainControl: true
@@ -66,11 +65,8 @@ export class GeminiLiveSession {
 
       this.ws.onopen = () => {
         this.isConnected = true;
+        // Step 1: Send setup frame FIRST, then wait for setupComplete before sending audio/input
         this.sendSetupFrame();
-        this.startMicRecording();
-        if (this.config.onConnect) {
-          this.config.onConnect({ conversationId: this.sessionId });
-        }
       };
 
       this.ws.onmessage = (event) => {
@@ -82,8 +78,10 @@ export class GeminiLiveSession {
         if (this.config.onError) this.config.onError(err);
       };
 
-      this.ws.onclose = () => {
+      this.ws.onclose = (ev) => {
+        console.log('[Gemini Live WS Closed]', ev.code, ev.reason);
         this.isConnected = false;
+        this.isSetupComplete = false;
         if (this.config.onDisconnect) this.config.onDisconnect();
       };
 
@@ -102,7 +100,7 @@ export class GeminiLiveSession {
 
     const setupPayload = {
       setup: {
-        model: 'models/gemini-2.0-flash-exp',
+        model: 'models/gemini-2.0-flash',
         generationConfig: {
           responseModalities: ['AUDIO'],
           speechConfig: {
@@ -117,7 +115,7 @@ export class GeminiLiveSession {
           parts: [
             {
               text: `${this.config.systemPrompt}
-IMPORTANTE: Habla en español mexicano con tono y modismos ejecutivos de negocios reales. Sé conciso y directo en tus respuestas por teléfono. Si es el primer mensaje, di exactamente: "${this.config.firstMessage || '¿Bueno? ¿Quién habla?'}"`
+IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en español mexicano con tono y modismos ejecutivos realistas. Sé conciso y directo en tus respuestas telefónicas (1 a 3 oraciones como en una llamada real). NUNCA rompas el personaje ni digas que eres una IA.`
             }
           ]
         }
@@ -125,31 +123,51 @@ IMPORTANTE: Habla en español mexicano con tono y modismos ejecutivos de negocio
     };
 
     this.ws.send(JSON.stringify(setupPayload));
+  }
 
-    // Si hay un mensaje inicial predeterminado, simular el turno inicial de la IA
-    if (this.config.firstMessage) {
-      setTimeout(() => {
-        if (this.config.onMessage) {
-          this.config.onMessage({ source: 'ai', message: this.config.firstMessage! });
-        }
-      }, 800);
+  private sendInitialTriggerTurn(greeting: string): void {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+
+    // Trigger the model to speak the greeting aloud upon connection
+    const triggerTurn = {
+      clientContent: {
+        turns: [
+          {
+            role: 'user',
+            parts: [
+              {
+                text: `[El teléfono acaba de sonar y has descolgado. Contesta la llamada en voz alta de inmediato diciendo exactamente tu saludo inicial: "${greeting}"]`
+              }
+            ]
+          }
+        ],
+        turnComplete: true
+      }
+    };
+
+    try {
+      this.ws.send(JSON.stringify(triggerTurn));
+    } catch (err) {
+      console.error('[Gemini Live trigger turn error]', err);
     }
   }
 
   private startMicRecording(): void {
     if (!this.audioCtx || !this.mediaStream) return;
 
-    // Use a separate 16kHz context or downsample
     this.micSource = this.audioCtx.createMediaStreamSource(this.mediaStream);
-    // Buffer size 2048, 1 input channel, 1 output channel
+    // 2048 buffer size = ~42ms at 48kHz, responsive and stable
     this.processor = this.audioCtx.createScriptProcessor(2048, 1, 1);
 
     this.processor.onaudioprocess = (e) => {
-      if (!this.isConnected || !this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+      if (!this.isConnected || !this.isSetupComplete || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        return;
+      }
 
       const inputBuffer = e.inputBuffer.getChannelData(0);
+      const inputRate = this.audioCtx?.sampleRate || 48000;
 
-      // Calculate volume for meter
+      // Calculate volume for UI visualizer
       let sum = 0;
       for (let i = 0; i < inputBuffer.length; i++) {
         sum += inputBuffer[i] * inputBuffer[i];
@@ -161,17 +179,14 @@ IMPORTANTE: Habla en español mexicano con tono y modismos ejecutivos de negocio
         this.config.onUserSpeaking(isSpeaking, Math.min(1, rms * 5));
       }
 
-      // Convert Float32 to 16-bit PCM
-      const pcm16 = new Int16Array(inputBuffer.length);
-      for (let i = 0; i < inputBuffer.length; i++) {
-        const s = Math.max(-1, Math.min(1, inputBuffer[i]));
-        pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
-      }
+      // Downsample input from browser native rate (44.1k/48k) to exactly 16kHz PCM
+      const pcm16 = this.downsampleTo16k(inputBuffer, inputRate);
 
       // Base64 encode PCM bytes
       const bytes = new Uint8Array(pcm16.buffer);
       let binary = '';
-      for (let i = 0; i < bytes.byteLength; i++) {
+      const len = bytes.byteLength;
+      for (let i = 0; i < len; i++) {
         binary += String.fromCharCode(bytes[i]);
       }
       const base64Audio = btoa(binary);
@@ -197,6 +212,33 @@ IMPORTANTE: Habla en español mexicano con tono y modismos ejecutivos de negocio
     this.processor.connect(this.audioCtx.destination);
   }
 
+  private downsampleTo16k(input: Float32Array, inputRate: number): Int16Array {
+    if (inputRate === 16000) {
+      const pcm16 = new Int16Array(input.length);
+      for (let i = 0; i < input.length; i++) {
+        const s = Math.max(-1, Math.min(1, input[i]));
+        pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+      }
+      return pcm16;
+    }
+
+    const ratio = inputRate / 16000;
+    const newLength = Math.round(input.length / ratio);
+    const pcm16 = new Int16Array(newLength);
+
+    for (let i = 0; i < newLength; i++) {
+      const originIndex = i * ratio;
+      const indexFloor = Math.floor(originIndex);
+      const indexCeil = Math.min(input.length - 1, indexFloor + 1);
+      const fraction = originIndex - indexFloor;
+      const sample = input[indexFloor] * (1 - fraction) + input[indexCeil] * fraction;
+      const s = Math.max(-1, Math.min(1, sample));
+      pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+    }
+
+    return pcm16;
+  }
+
   private handleServerMessage(data: any): void {
     try {
       let json: any;
@@ -206,14 +248,39 @@ IMPORTANTE: Habla en español mexicano con tono y modismos ejecutivos de negocio
         return;
       }
 
-      // 1. Interruption detection (barge-in): Gemini detected user speaking
+      // Check for errors
+      if (json.error) {
+        console.error('[Gemini Live Server Error]', json.error);
+        if (this.config.onError) this.config.onError(json.error);
+        return;
+      }
+
+      // 1. Setup complete handshake acknowledgment
+      if (json.setupComplete) {
+        console.log('[Gemini Live] Setup complete acknowledged by server.');
+        this.isSetupComplete = true;
+
+        if (this.config.onConnect) {
+          this.config.onConnect({ conversationId: this.sessionId });
+        }
+
+        // Start mic recording now that setup is complete
+        this.startMicRecording();
+
+        // Trigger prospect's spoken greeting aloud
+        const greeting = this.config.firstMessage || '¿Bueno? ¿Quién habla?';
+        this.sendInitialTriggerTurn(greeting);
+        return;
+      }
+
+      // 2. Interruption detection (barge-in): Gemini detected user speaking
       if (json.serverContent?.interrupted) {
         this.stopAiAudioPlayback();
         if (this.config.onAiSpeaking) this.config.onAiSpeaking(false);
         return;
       }
 
-      // 2. Model Turn: Audio output & text transcripts
+      // 3. Model Turn: Audio output & text transcripts
       const modelTurn = json.serverContent?.modelTurn;
       if (modelTurn?.parts) {
         for (const part of modelTurn.parts) {
@@ -230,16 +297,22 @@ IMPORTANTE: Habla en español mexicano con tono y modismos ejecutivos de negocio
         }
       }
 
-      // 3. Turn complete
+      // 4. Turn complete
       if (json.serverContent?.turnComplete) {
-        if (this.currentAiTextBuffer.trim()) {
-          const aiText = this.currentAiTextBuffer.trim();
+        let aiText = this.currentAiTextBuffer.trim();
+
+        // If turn ended without explicit text part (native audio mode), fallback to firstMessage or recorded prompt
+        if (!aiText && this.currentTranscript.length === 0) {
+          aiText = this.config.firstMessage || '¿Bueno? ¿Quién habla?';
+        }
+
+        if (aiText) {
           this.currentTranscript.push({ source: 'ai', message: aiText });
           if (this.config.onMessage) {
             this.config.onMessage({ source: 'ai', message: aiText });
           }
-          this.currentAiTextBuffer = '';
         }
+        this.currentAiTextBuffer = '';
       }
 
     } catch (err) {
@@ -257,7 +330,7 @@ IMPORTANTE: Habla en español mexicano con tono y modismos ejecutivos de negocio
         bytes[i] = binaryStr.charCodeAt(i);
       }
 
-      // 16-bit PCM samples at 24kHz
+      // Gemini Live outputs 16-bit PCM at 24kHz
       const pcm16 = new Int16Array(bytes.buffer);
       const audioBuffer = this.audioCtx.createBuffer(1, pcm16.length, 24000);
       const channelData = audioBuffer.getChannelData(0);
@@ -339,6 +412,7 @@ IMPORTANTE: Habla en español mexicano con tono y modismos ejecutivos de negocio
     }
 
     this.isConnected = false;
+    this.isSetupComplete = false;
   }
 
   public getTranscript(): { source: 'ai' | 'user'; message: string }[] {

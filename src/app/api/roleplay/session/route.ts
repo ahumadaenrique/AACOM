@@ -8,7 +8,8 @@ import {
   DAILY_XP_CAP,
   LEVELS_CONFIG,
   BADGES_CATALOG,
-  DEFAULT_BENEFITS
+  DEFAULT_BENEFITS,
+  getLocalDateString
 } from '@/lib/roleplay/gamification';
 
 export async function POST(req: Request) {
@@ -42,7 +43,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'El simulador de prospección telefónica no está habilitado para tu agencia.' }, { status: 403 });
     }
 
-    const todayStr = new Date().toISOString().split('T')[0];
+    const todayStr = getLocalDateString();
 
     // Load or create RoleplayStats
     let stats = await prisma.roleplayStats.findUnique({
@@ -141,7 +142,7 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Configuración de Gemini incompleta en el servidor.' }, { status: 500 });
       }
 
-      wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContent?key=${geminiApiKey}`;
+      wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${geminiApiKey}`;
       const isFemale = scenario.prospecto.genero === 'F';
       voiceName = isFemale ? 'Aoede' : 'Puck';
     } else {

@@ -54,8 +54,7 @@ export function isBusinessDay(date: Date): boolean {
 /**
  * Revisa si el agente faltó días hábiles y aplica penalización de -700 XP por día hábil omitido
  */
-export function getLocalDateString(): string {
-  const date = new Date();
+export function getLocalDateString(date: Date = new Date()): string {
   const formatter = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'America/Mexico_City',
     year: 'numeric',
