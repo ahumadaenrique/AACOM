@@ -140,6 +140,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   const audioCtxRef = useRef<AudioContext | null>(null);
   const conversationIdRef = useRef<string | null>(null);
   const startTimeRef = useRef<number>(0);
+  const connectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // 1. Audio FX Generator
   const initAudioCtx = () => {
@@ -344,6 +345,20 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
         playRing();
       }
 
+      // Safeguard: nunca dejar la UI colgada en "Conectando..." si el WebSocket o red tarda de más
+      if (connectTimeoutRef.current) clearTimeout(connectTimeoutRef.current);
+      connectTimeoutRef.current = setTimeout(() => {
+        setIsConnecting(prev => {
+          if (prev) {
+            stopRing();
+            setIsCalling(false);
+            setCallStatusText('⚠️ Tiempo de espera agotado al conectar. Revisa tu micrófono e intenta de nuevo.');
+            return false;
+          }
+          return prev;
+        });
+      }, 12000);
+
       if (engine === 'GEMINI_LIVE' && wsUrl) {
         // --- GOOGLE GEMINI LIVE API ENGINE ---
         const geminiSession = new GeminiLiveSession({
@@ -352,6 +367,10 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           firstMessage: scenario.firstMessage,
           voiceName: voiceName || (scenario.prospecto.genero === 'F' ? 'Aoede' : 'Puck'),
           onConnect: ({ conversationId }) => {
+            if (connectTimeoutRef.current) {
+              clearTimeout(connectTimeoutRef.current);
+              connectTimeoutRef.current = null;
+            }
             stopRing();
             playChime('pickup');
             setIsConnecting(false);
@@ -433,6 +452,10 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
             }
           },
           onConnect: ({ conversationId }) => {
+            if (connectTimeoutRef.current) {
+              clearTimeout(connectTimeoutRef.current);
+              connectTimeoutRef.current = null;
+            }
             stopRing();
             playChime('pickup');
             setIsConnecting(false);
@@ -518,6 +541,10 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
 
   // 4. Hang up
   const hangupCall = async () => {
+    if (connectTimeoutRef.current) {
+      clearTimeout(connectTimeoutRef.current);
+      connectTimeoutRef.current = null;
+    }
     stopRing();
     setIsConnecting(false);
     setIsCalling(false);
@@ -948,7 +975,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                     <span className={`w-2 h-2 rounded-full ${isCalling ? 'bg-emerald-500 animate-pulse' : 'bg-slate-600'}`} />
                     <span>{callStatusText}</span>
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 font-medium">
-                      {engine === 'GEMINI_LIVE' ? '⚡ Google Gemini Live' : '🎙️ ElevenLabs BYOK'}
+                      {engine === 'GEMINI_LIVE' ? '⚡ Google Gemini Live' : '🎙️ ElevenLabs ConvAI'}
                     </span>
                   </div>
 

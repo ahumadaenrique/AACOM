@@ -107,7 +107,7 @@ export class GeminiLiveSession {
 
     const setupPayload = {
       setup: {
-        model: 'models/gemini-2.0-flash',
+        model: 'models/gemini-3.8-live',
         generationConfig: {
           responseModalities: ['AUDIO'],
           speechConfig: {

@@ -117,14 +117,14 @@ export async function POST(req: Request) {
     
     let effectiveEngine: 'GEMINI_LIVE' | 'ELEVENLABS' = 'ELEVENLABS';
     if (isAacom) {
-      // AACOM: el motor principal es ElevenLabs (cuenta oficial con saldo activo)
-      effectiveEngine = configuredEngine === 'GEMINI_LIVE' ? 'GEMINI_LIVE' : 'ELEVENLABS';
-    } else if (configuredEngine === 'GEMINI_LIVE') {
-      effectiveEngine = 'GEMINI_LIVE';
+      // AACOM: el motor oficial e indiscutible es ElevenLabs con la cuenta activa de Enrique
+      effectiveEngine = 'ELEVENLABS';
     } else if (configuredEngine === 'ELEVENLABS' || hasAgencyByokKey) {
       effectiveEngine = 'ELEVENLABS';
-    } else {
+    } else if (configuredEngine === 'GEMINI_LIVE') {
       effectiveEngine = 'GEMINI_LIVE';
+    } else {
+      effectiveEngine = 'ELEVENLABS';
     }
 
     // Safety fallback: si se seleccionó Gemini Live pero no hay API Key en servidor, usar ElevenLabs
