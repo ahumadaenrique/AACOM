@@ -110,17 +110,27 @@ export async function POST(req: Request) {
     const scenario = generarEscenarioAleatorio(stats.level, moduleId, agencyName);
 
     // 1. Determinar motor de voz (Gemini Live vs ElevenLabs)
+    const isAacom = userWithAgency?.agency?.id === 'aacom' || userWithAgency?.agency?.slug === 'aacom';
     const configuredEngine = userWithAgency?.agency?.voiceEngine;
     const isByokActive = userWithAgency?.agency?.byokActive ?? true;
     const hasAgencyByokKey = !!userWithAgency?.agency?.elevenLabsApiKey && isByokActive;
     
     let effectiveEngine: 'GEMINI_LIVE' | 'ELEVENLABS' = 'ELEVENLABS';
-    if (configuredEngine === 'GEMINI_LIVE') {
+    if (isAacom) {
+      // AACOM: el motor principal es ElevenLabs (cuenta oficial con saldo activo)
+      effectiveEngine = configuredEngine === 'GEMINI_LIVE' ? 'GEMINI_LIVE' : 'ELEVENLABS';
+    } else if (configuredEngine === 'GEMINI_LIVE') {
       effectiveEngine = 'GEMINI_LIVE';
-    } else if (configuredEngine === 'ELEVENLABS') {
+    } else if (configuredEngine === 'ELEVENLABS' || hasAgencyByokKey) {
       effectiveEngine = 'ELEVENLABS';
     } else {
-      effectiveEngine = (hasAgencyByokKey || userWithAgency?.agency?.id === 'aacom' || userWithAgency?.agency?.slug === 'aacom') ? 'ELEVENLABS' : 'GEMINI_LIVE';
+      effectiveEngine = 'GEMINI_LIVE';
+    }
+
+    // Safety fallback: si se seleccionó Gemini Live pero no hay API Key en servidor, usar ElevenLabs
+    const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
+    if (effectiveEngine === 'GEMINI_LIVE' && !geminiApiKey) {
+      effectiveEngine = 'ELEVENLABS';
     }
 
     // 2. Control de saldo de minutos para llamadas con bolsa de AACOM

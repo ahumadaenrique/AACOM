@@ -480,8 +480,10 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           },
           onError: (err) => {
             stopRing();
+            setIsConnecting(false);
+            setIsCalling(false);
             console.error("Conversation error:", err);
-            setCallStatusText('⚠️ Detalle en conexión de audio.');
+            setCallStatusText('⚠️ Detalle en conexión de audio con el prospecto.');
           },
           onModeChange: ({ mode }) => {
             setProspectSpeaking(mode === 'speaking');
