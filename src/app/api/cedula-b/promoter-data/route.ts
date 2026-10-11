@@ -62,33 +62,41 @@ export async function GET(req: NextRequest) {
     // 1. Get promoter balance (compartido con Cédula A)
     const planLimit = getAgencyStudyDaysLimit(dbUser?.agency);
     let tokens = planLimit;
-    const promotorEmailLow = session.user.agencyId ? `agency_${session.user.agencyId}` : promoterEmail.toLowerCase();
+    const agencyKey = session.user.agencyId ? `agency_${session.user.agencyId}` : promoterEmail.toLowerCase();
     
-    const saldo = await prisma.promotorSaldo.findUnique({
-      where: { promotor_email: promotorEmailLow }
+    // Buscar primero por agencyKey y luego por email para no perder saldos históricos
+    let saldo = await prisma.promotorSaldo.findUnique({
+      where: { promotor_email: agencyKey }
     });
+    if (!saldo && session.user.agencyId) {
+      saldo = await prisma.promotorSaldo.findUnique({
+        where: { promotor_email: promoterEmail.toLowerCase() }
+      });
+    }
 
-    if (saldo) {
-      tokens = saldo.dias_disponibles !== null && saldo.dias_disponibles !== undefined ? saldo.dias_disponibles : planLimit;
-      const lastUpdate = saldo.fecha_actualizacion ? new Date(saldo.fecha_actualizacion) : new Date(0);
-      if (lastUpdate.getTime() < lastReplenishDate.getTime()) {
-        tokens = Math.max(planLimit, tokens);
-        await prisma.promotorSaldo.update({
-          where: { promotor_email: promotorEmailLow },
-          data: {
-            dias_disponibles: tokens,
-            fecha_actualizacion: new Date()
-          }
-        });
-      }
-    } else {
-      await prisma.promotorSaldo.create({
-        data: {
-          promotor_email: promotorEmailLow,
-          dias_disponibles: planLimit,
+    const currentDays = saldo?.dias_disponibles ?? 0;
+    const lastUpdate = saldo?.fecha_actualizacion ? new Date(saldo.fecha_actualizacion) : new Date(0);
+    const isQuarterlyReplenishDue = lastUpdate.getTime() < lastReplenishDate.getTime();
+
+    // Auto-sincronización y garantía de plan:
+    // Si no tiene saldo, o si su saldo es inferior a la cuota mínima garantizada por su suscripción (ej. tenía el default de 7 días y su plan es Anual de 52),
+    // o si venció su ciclo trimestral, elevamos su saldo a planLimit.
+    if (!saldo || currentDays < planLimit || isQuarterlyReplenishDue) {
+      tokens = Math.max(planLimit, currentDays);
+      await prisma.promotorSaldo.upsert({
+        where: { promotor_email: agencyKey },
+        update: {
+          dias_disponibles: tokens,
+          fecha_actualizacion: new Date()
+        },
+        create: {
+          promotor_email: agencyKey,
+          dias_disponibles: tokens,
           fecha_actualizacion: new Date()
         }
       });
+    } else {
+      tokens = currentDays;
     }
     
     const agencyId = dbUser?.agencyId

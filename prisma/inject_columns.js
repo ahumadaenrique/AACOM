@@ -199,7 +199,45 @@ async function injectColumns() {
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "voiceSecondsBalance" INTEGER DEFAULT 0;`,
       `ALTER TABLE "RoleplayCall" ADD COLUMN IF NOT EXISTS "agencyId" TEXT;`,
       `ALTER TABLE "RoleplayCall" ADD COLUMN IF NOT EXISTS "engine" TEXT DEFAULT 'GEMINI_LIVE';`,
-      `CREATE INDEX IF NOT EXISTS "RoleplayCall_agencyId_idx" ON "RoleplayCall"("agencyId");`
+      `CREATE INDEX IF NOT EXISTS "RoleplayCall_agencyId_idx" ON "RoleplayCall"("agencyId");`,
+      `INSERT INTO "promotor_saldos" ("promotor_email", "dias_disponibles", "fecha_actualizacion")
+       SELECT 'agency_' || a."id", 52, NOW()
+       FROM "Agency" a
+       WHERE (
+         UPPER(COALESCE(a."subscriptionPlan", '')) IN ('ANNUAL', 'ANUAL', '12M', 'YEARLY')
+         OR (a."subscriptionEndDate" IS NOT NULL AND a."subscriptionEndDate" > NOW() + INTERVAL '200 days')
+       )
+       ON CONFLICT ("promotor_email") DO UPDATE
+       SET "dias_disponibles" = GREATEST(COALESCE("promotor_saldos"."dias_disponibles", 0), 52),
+           "fecha_actualizacion" = NOW()
+       WHERE COALESCE("promotor_saldos"."dias_disponibles", 0) < 52;`,
+      `UPDATE "promotor_saldos" ps
+       SET "dias_disponibles" = GREATEST(COALESCE(ps."dias_disponibles", 0), 52),
+           "fecha_actualizacion" = NOW()
+       FROM "User" u
+       JOIN "Agency" a ON u."agencyId" = a."id"
+       WHERE ps."promotor_email" = LOWER(u."email")
+         AND (
+           UPPER(COALESCE(a."subscriptionPlan", '')) IN ('ANNUAL', 'ANUAL', '12M', 'YEARLY')
+           OR (a."subscriptionEndDate" IS NOT NULL AND a."subscriptionEndDate" > NOW() + INTERVAL '200 days')
+         )
+         AND COALESCE(ps."dias_disponibles", 0) < 52;`,
+      `INSERT INTO "promotor_saldos" ("promotor_email", "dias_disponibles", "fecha_actualizacion")
+       SELECT 'agency_' || a."id", 25, NOW()
+       FROM "Agency" a
+       WHERE UPPER(COALESCE(a."subscriptionPlan", '')) IN ('SEMIANNUAL', 'SEMESTRAL', '6M')
+       ON CONFLICT ("promotor_email") DO UPDATE
+       SET "dias_disponibles" = GREATEST(COALESCE("promotor_saldos"."dias_disponibles", 0), 25),
+           "fecha_actualizacion" = NOW()
+       WHERE COALESCE("promotor_saldos"."dias_disponibles", 0) < 25;`,
+      `INSERT INTO "promotor_saldos" ("promotor_email", "dias_disponibles", "fecha_actualizacion")
+       SELECT 'agency_' || a."id", 12, NOW()
+       FROM "Agency" a
+       WHERE UPPER(COALESCE(a."subscriptionPlan", '')) IN ('QUARTERLY', 'TRIMESTRAL', '3M')
+       ON CONFLICT ("promotor_email") DO UPDATE
+       SET "dias_disponibles" = GREATEST(COALESCE("promotor_saldos"."dias_disponibles", 0), 12),
+           "fecha_actualizacion" = NOW()
+       WHERE COALESCE("promotor_saldos"."dias_disponibles", 0) < 12;`
     ];
 
     for (const q of queries) {

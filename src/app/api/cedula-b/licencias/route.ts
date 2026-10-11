@@ -20,24 +20,33 @@ export async function GET(req: NextRequest) {
   try {
     if (isPromoter(currentUserEmail, session.user.role)) {
       // Get promoter balance (compartido con Cédula A)
-      const email = session.user.agencyId ? `agency_${session.user.agencyId}` : currentUserEmail.toLowerCase();
+      const agencyKey = session.user.agencyId ? `agency_${session.user.agencyId}` : currentUserEmail.toLowerCase();
+      const email = agencyKey;
       let agencyRecord = null;
       if (session.user.agencyId) {
         agencyRecord = await prisma.agency.findUnique({ where: { id: session.user.agencyId } });
       }
       const planDefault = getAgencyStudyDaysLimit(agencyRecord);
       let promoterBalance = planDefault;
-      const saldo = await prisma.promotorSaldo.findUnique({
-        where: { promotor_email: email }
+      let saldo = await prisma.promotorSaldo.findUnique({
+        where: { promotor_email: agencyKey }
       });
-      
-      if (saldo) {
-        promoterBalance = saldo.dias_disponibles !== null && saldo.dias_disponibles !== undefined ? saldo.dias_disponibles : planDefault;
-      } else {
-        // Initialize balance with plan quota
-        await prisma.promotorSaldo.create({
-          data: { promotor_email: email, dias_disponibles: planDefault }
+      if (!saldo && session.user.agencyId) {
+        saldo = await prisma.promotorSaldo.findUnique({
+          where: { promotor_email: currentUserEmail.toLowerCase() }
         });
+      }
+      
+      const currentVal = saldo?.dias_disponibles ?? 0;
+      if (!saldo || currentVal < planDefault) {
+        promoterBalance = Math.max(planDefault, currentVal);
+        await prisma.promotorSaldo.upsert({
+          where: { promotor_email: agencyKey },
+          update: { dias_disponibles: promoterBalance, fecha_actualizacion: new Date() },
+          create: { promotor_email: agencyKey, dias_disponibles: promoterBalance, fecha_actualizacion: new Date() }
+        });
+      } else {
+        promoterBalance = currentVal;
       }
 
       // Get assigned licenses list

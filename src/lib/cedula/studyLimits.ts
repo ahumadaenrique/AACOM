@@ -16,10 +16,10 @@ export function getAgencyStudyDaysLimit(agency?: {
     return 52;
   }
 
-  const plan = agency.subscriptionPlan?.toUpperCase();
-  if (plan === 'ANNUAL' || plan === '12M') return 52;
-  if (plan === 'SEMIANNUAL' || plan === '6M') return 25;
-  if (plan === 'QUARTERLY' || plan === '3M') return 12;
+  const plan = agency.subscriptionPlan?.toUpperCase()?.trim();
+  if (plan && ['ANNUAL', 'ANUAL', '12M', 'YEARLY', 'ANUAL_12M'].includes(plan)) return 52;
+  if (plan && ['SEMIANNUAL', 'SEMESTRAL', '6M', 'SEMESTRAL_6M'].includes(plan)) return 25;
+  if (plan && ['QUARTERLY', 'TRIMESTRAL', '3M', 'TRIMESTRAL_3M'].includes(plan)) return 12;
 
   // Si no tiene plan explícito pero tiene fecha de fin de suscripción:
   if (agency.subscriptionEndDate) {

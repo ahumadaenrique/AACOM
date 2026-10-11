@@ -336,8 +336,48 @@ export async function addAcademiaDaysToPromoter(agencyId: string, days: number) 
     create: { promotor_email: promoterId, dias_disponibles: days, fecha_actualizacion: new Date() }
   });
 
+  if (agencyAdmin?.email) {
+    await prisma.promotorSaldo.updateMany({
+      where: { promotor_email: agencyAdmin.email.toLowerCase() },
+      data: { dias_disponibles: saldo.dias_disponibles, fecha_actualizacion: new Date() }
+    }).catch(() => {});
+  }
+
   revalidatePath("/agencias");
   return { success: true, message: `Se añadieron ${days} días al saldo de la Agencia.` };
+}
+
+export async function resetAgencyStudyDays(agencyId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+  const agency = await prisma.agency.findUnique({ where: { id: agencyId } });
+  if (!agency) throw new Error("Agencia no encontrada");
+
+  const { getAgencyStudyDaysLimit } = await import("@/lib/cedula/studyLimits");
+  const limit = getAgencyStudyDaysLimit(agency);
+  const promoterId = `agency_${agencyId}`;
+
+  await prisma.promotorSaldo.upsert({
+    where: { promotor_email: promoterId },
+    update: { dias_disponibles: limit, fecha_actualizacion: new Date() },
+    create: { promotor_email: promoterId, dias_disponibles: limit, fecha_actualizacion: new Date() }
+  });
+
+  const agencyAdmin = await prisma.user.findFirst({
+    where: { agencyId, role: "ADMIN" }
+  });
+  if (agencyAdmin?.email) {
+    await prisma.promotorSaldo.updateMany({
+      where: { promotor_email: agencyAdmin.email.toLowerCase() },
+      data: { dias_disponibles: limit, fecha_actualizacion: new Date() }
+    }).catch(() => {});
+  }
+
+  revalidatePath("/agencias");
+  return { success: true, message: `Saldo de la agencia ${agency.name} reseteado a ${limit} días según su plan.` };
 }
 
 export async function addAcademiaDaysToUser(agentEmail: string, agencyId: string, days: number) {

@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { addAgencySaaSDays, addAcademiaDaysToPromoter, addAcademiaDaysToUser, giftAcademiaMinutes } from "./actions";
-import { Gift, BookOpen, Monitor, Users, PhoneCall, Sparkles } from "lucide-react";
+import { addAgencySaaSDays, addAcademiaDaysToPromoter, addAcademiaDaysToUser, giftAcademiaMinutes, resetAgencyStudyDays } from "./actions";
+import { Gift, BookOpen, Monitor, Users, PhoneCall, Sparkles, RefreshCw } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type GiftModalProps = {
@@ -38,6 +38,21 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
     setLoading(true);
     try {
       const res = await addAgencySaaSDays(agency.id, saasDays);
+      if (res.success) {
+        alert(res.message);
+        onClose();
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    }
+    setLoading(false);
+  };
+
+  const handleResetToPlanQuota = async () => {
+    if (!confirm(`¿Restablecer el saldo de Cédula de ${agency.name} a su cuota garantizada por plan (ej. 52 días para Anual)?`)) return;
+    setLoading(true);
+    try {
+      const res = await resetAgencyStudyDays(agency.id);
       if (res.success) {
         alert(res.message);
         onClose();
@@ -186,6 +201,18 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
                   className="border-indigo-200 text-indigo-700 hover:bg-indigo-100"
                 >
                   Regalar a Agencia
+                </Button>
+              </div>
+              <div className="pt-2 border-t border-indigo-100/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <span className="text-[11px] text-slate-500">¿Requiere sincronizar a su plan? (52 anual / 25 semestral / 12 trimestral)</span>
+                <Button
+                  onClick={handleResetToPlanQuota}
+                  disabled={loading}
+                  size="sm"
+                  variant="ghost"
+                  className="text-xs text-indigo-700 hover:text-indigo-900 hover:bg-indigo-100 font-semibold flex items-center gap-1.5 h-8 shrink-0"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" /> Restablecer a cuota de plan
                 </Button>
               </div>
             </div>
