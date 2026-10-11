@@ -92,9 +92,20 @@ export async function GET(req: Request) {
         ws.send(JSON.stringify(setupPayload));
       };
 
-      ws.onmessage = (event: any) => {
+      ws.onmessage = async (event: any) => {
         try {
-          const raw = typeof event.data === 'string' ? event.data : event.data.toString();
+          let raw = '';
+          if (typeof event.data === 'string') {
+            raw = event.data;
+          } else if (event.data && typeof event.data.text === 'function') {
+            raw = await event.data.text();
+          } else if (event.data instanceof ArrayBuffer) {
+            raw = new TextDecoder().decode(event.data);
+          } else if (typeof Buffer !== 'undefined' && Buffer.isBuffer(event.data)) {
+            raw = event.data.toString('utf8');
+          } else {
+            raw = String(event.data);
+          }
           const json = JSON.parse(raw);
 
           if (json.error) {
