@@ -1,7 +1,7 @@
 /**
  * Client-side adapter for Google Gemini Multimodal Live API (Bidirectional WebSocket)
- * Handles PCM 16kHz mic audio streaming, 24kHz PCM audio buffer playback,
- * bidirectional speech recognition, turn-taking, and realtime transcripts.
+ * Handles PCM 24kHz audio playback, native speech-to-text recognition (es-MX),
+ * realtime turn synchronization, and live conversational transcripts.
  */
 
 export interface GeminiLiveSessionConfig {
@@ -17,17 +17,17 @@ export interface GeminiLiveSessionConfig {
   onMessage?: (msg: { source: 'ai' | 'user'; message: string }) => void;
   onUserSpeaking?: (speaking: boolean, volume: number) => void;
   onAiSpeaking?: (speaking: boolean) => void;
+  onInterimSpeech?: (interimText: string) => void;
+  onMicStatus?: (status: 'listening' | 'speaking' | 'idle' | 'error', details?: string) => void;
 }
 
 export class GeminiLiveSession {
   private ws: WebSocket | null = null;
   private audioCtx: AudioContext | null = null;
   private masterGain: GainNode | null = null;
-  private muteGain: GainNode | null = null;
-  private mediaStream: MediaStream | null = null;
-  private micSource: MediaStreamAudioSourceNode | null = null;
-  private processor: ScriptProcessorNode | null = null;
   private recognition: any = null;
+  private silenceTimer: any = null;
+  private pendingInterimText: string = '';
   
   // Audio playback state
   private audioQueue: AudioBufferSourceNode[] = [];
@@ -36,11 +36,17 @@ export class GeminiLiveSession {
   private currentTranscript: { source: 'ai' | 'user'; message: string }[] = [];
   private currentAiTextBuffer: string = '';
 
+  // Fallback raw mic streaming (only used if SpeechRecognition is not supported)
+  private mediaStream: MediaStream | null = null;
+  private micSource: MediaStreamAudioSourceNode | null = null;
+  private processor: ScriptProcessorNode | null = null;
+  private muteGain: GainNode | null = null;
+
   private config: GeminiLiveSessionConfig;
   private isConnected: boolean = false;
   private isSetupComplete: boolean = false;
   private isIntentionallyClosed: boolean = false;
-  private micStarted: boolean = false;
+  private isListeningActive: boolean = false;
   private sessionId: string;
 
   constructor(config: GeminiLiveSessionConfig) {
@@ -51,9 +57,9 @@ export class GeminiLiveSession {
   public async start(): Promise<void> {
     try {
       this.isIntentionallyClosed = false;
-      this.micStarted = false;
+      this.isListeningActive = false;
 
-      // 1. Initialize Web Audio Context
+      // 1. Initialize Web Audio Context for output playback
       const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
       this.audioCtx = new AudioCtxClass();
       if (this.audioCtx.state === 'suspended') {
@@ -74,24 +80,12 @@ export class GeminiLiveSession {
         }
       }
 
-      // 2. Request user microphone
-      const micConstraints: MediaStreamConstraints = {
-        audio: {
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          ...(this.config.inputDeviceId ? { deviceId: { exact: this.config.inputDeviceId } } : {})
-        }
-      };
-      this.mediaStream = await navigator.mediaDevices.getUserMedia(micConstraints);
-
-      // 3. Connect to Gemini Live WebSocket
+      // 2. Connect to Gemini Live WebSocket
       this.ws = new WebSocket(this.config.wsUrl);
 
       this.ws.onopen = () => {
         this.isConnected = true;
-        // Send setup frame FIRST, then wait for setupComplete before sending audio/input
+        // Step 1: Send setup frame FIRST, then wait for setupComplete before sending audio/input
         this.sendSetupFrame();
       };
 
@@ -160,8 +154,6 @@ export class GeminiLiveSession {
             }
           }
         },
-        inputAudioTranscription: {},
-        outputAudioTranscription: {},
         systemInstruction: {
           parts: [
             {
@@ -203,17 +195,51 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
     }
   }
 
+  /**
+   * Public method to send a user utterance (voice transcript or typed test message)
+   * into the active Gemini Live session with turnComplete: true.
+   */
+  /**
+   * Public method to send a user utterance (voice transcript or typed test message)
+   * into the active Gemini Live session with turnComplete: true.
+   */
   public sendUserTurn(text: string): void {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      console.warn('[Gemini Live] Cannot send user turn, WebSocket is not open.');
+      return;
+    }
 
-    console.log('[Gemini Live] Sending User Turn to Model:', text);
+    const trimmed = text.trim();
+    if (!trimmed) return;
 
+    console.log('[Gemini Live] Sending User Turn to Model:', trimmed);
+
+    // 1. Clear any pending interim speech display
+    if (this.silenceTimer) {
+      clearTimeout(this.silenceTimer);
+      this.silenceTimer = null;
+    }
+    this.pendingInterimText = '';
+    if (this.config.onInterimSpeech) {
+      this.config.onInterimSpeech('');
+    }
+
+    // 2. Add message to local transcript and trigger onMessage callback
+    const lastMsg = this.currentTranscript[this.currentTranscript.length - 1];
+    if (!lastMsg || lastMsg.source !== 'user' || lastMsg.message !== trimmed) {
+      this.currentTranscript.push({ source: 'user', message: trimmed });
+      if (this.config.onMessage) {
+        this.config.onMessage({ source: 'user', message: trimmed });
+      }
+    }
+
+    // 3. Send turn over WebSocket
     const userTurn = {
       clientContent: {
         turns: [
           {
             role: 'user',
-            parts: [{ text }]
+            parts: [{ text: trimmed }]
           }
         ],
         turnComplete: true
@@ -227,39 +253,112 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
     }
   }
 
-  private startSpeechRecognition(): void {
-    if (typeof window === 'undefined') return;
+  /**
+   * Starts user voice listening after Alfonso finishes greeting.
+   * Uses Web Speech API for zero-collision native speech recognition (es-MX)
+   * with fallback to raw PCM getUserMedia if SpeechRecognition is unavailable.
+   */
+  private startVoiceListening(): void {
+    if (this.isListeningActive || this.isIntentionallyClosed) return;
+    this.isListeningActive = true;
 
-    const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    if (!SpeechRecognitionClass) {
-      console.warn('[Gemini Live] Web Speech API not supported on this browser, relying solely on PCM streaming.');
-      return;
+    const SpeechRecClass = typeof window !== 'undefined' && 
+      ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+
+    if (SpeechRecClass) {
+      this.startNativeSpeechRecognition(SpeechRecClass);
+    } else {
+      console.log('[Gemini Live] SpeechRecognition not supported on this browser, using raw PCM audio stream.');
+      this.startRawPcmMicStream();
     }
+  }
 
+  private startNativeSpeechRecognition(SpeechRecClass: any): void {
     try {
-      this.recognition = new SpeechRecognitionClass();
+      this.recognition = new SpeechRecClass();
       this.recognition.continuous = true;
-      this.recognition.interimResults = false;
+      this.recognition.interimResults = true;
       this.recognition.lang = 'es-MX';
+      this.recognition.maxAlternatives = 1;
+
+      this.recognition.onstart = () => {
+        console.log('[Gemini Live] Native Speech Recognition is listening (es-MX)...');
+        if (this.config.onMicStatus) {
+          this.config.onMicStatus('listening');
+        }
+      };
+
+      this.recognition.onspeechstart = () => {
+        if (this.config.onUserSpeaking) this.config.onUserSpeaking(true, 0.7);
+        if (this.config.onMicStatus) this.config.onMicStatus('speaking');
+      };
+
+      this.recognition.onspeechend = () => {
+        if (this.config.onUserSpeaking) this.config.onUserSpeaking(false, 0);
+        if (this.config.onMicStatus) this.config.onMicStatus('listening');
+
+        // If the user stopped speaking and we have a pending utterance, commit it now!
+        if (this.pendingInterimText) {
+          const toSend = this.pendingInterimText;
+          this.pendingInterimText = '';
+          if (this.silenceTimer) {
+            clearTimeout(this.silenceTimer);
+            this.silenceTimer = null;
+          }
+          this.sendUserTurn(toSend);
+        }
+      };
 
       this.recognition.onresult = (event: any) => {
+        let interimText = '';
+        let finalUtterance = '';
+
         for (let i = event.resultIndex; i < event.results.length; i++) {
-          const result = event.results[i];
-          if (result && result.isFinal) {
-            const userText = result[0]?.transcript?.trim();
-            if (userText) {
-              console.log('[Gemini Live Transcribed User Speech]:', userText);
-
-              // 1. Add to live transcript UI
-              this.currentTranscript.push({ source: 'user', message: userText });
-              if (this.config.onMessage) {
-                this.config.onMessage({ source: 'user', message: userText });
-              }
-
-              // 2. Transmit user turn explicitly to model so it generates an immediate voice response
-              this.sendUserTurn(userText);
-            }
+          const item = event.results[i];
+          if (item.isFinal) {
+            finalUtterance += item[0].transcript;
+          } else {
+            interimText += item[0].transcript;
           }
+        }
+
+        const currentText = (finalUtterance || interimText).trim();
+
+        // Broadcast interim speech to UI for real-time visualization as user speaks
+        if (currentText && this.config.onInterimSpeech) {
+          this.config.onInterimSpeech(currentText);
+        }
+
+        if (interimText || finalUtterance) {
+          if (this.config.onUserSpeaking) this.config.onUserSpeaking(true, 0.8);
+        }
+
+        // Barge-in: if prospect is speaking and user starts talking, interrupt prospect
+        if (this.isAiSpeaking && currentText.length > 4) {
+          console.log('[Gemini Live] User interrupted AI speech, stopping playback.');
+          this.stopAiAudioPlayback();
+          if (this.config.onAiSpeaking) this.config.onAiSpeaking(false);
+        }
+
+        // If recognizer gave a final utterance, commit immediately
+        if (finalUtterance.trim()) {
+          this.pendingInterimText = '';
+          if (this.silenceTimer) {
+            clearTimeout(this.silenceTimer);
+            this.silenceTimer = null;
+          }
+          this.sendUserTurn(finalUtterance.trim());
+        } else if (interimText.trim()) {
+          // If only interim text, store it and set silence debounce timer (1100ms)
+          this.pendingInterimText = interimText.trim();
+          if (this.silenceTimer) clearTimeout(this.silenceTimer);
+          this.silenceTimer = setTimeout(() => {
+            if (this.pendingInterimText) {
+              const toSend = this.pendingInterimText;
+              this.pendingInterimText = '';
+              this.sendUserTurn(toSend);
+            }
+          }, 1100);
         }
       };
 
@@ -267,87 +366,119 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
         if (err.error !== 'no-speech' && err.error !== 'aborted') {
           console.warn('[Gemini Live SpeechRecognition Error]:', err.error);
         }
+        if (err.error === 'not-allowed') {
+          if (this.config.onMicStatus) {
+            this.config.onMicStatus('error', 'Permiso de micrófono no otorgado en el navegador.');
+          }
+        } else if (err.error === 'audio-capture') {
+          if (this.config.onMicStatus) {
+            this.config.onMicStatus('error', 'No se detecta señal en tu micrófono. Revisa tu dispositivo.');
+          }
+        }
       };
 
       this.recognition.onend = () => {
+        if (this.config.onUserSpeaking) this.config.onUserSpeaking(false, 0);
+
+        // If there was any pending uncommitted speech, commit it
+        if (this.pendingInterimText) {
+          const toSend = this.pendingInterimText;
+          this.pendingInterimText = '';
+          if (this.silenceTimer) {
+            clearTimeout(this.silenceTimer);
+            this.silenceTimer = null;
+          }
+          this.sendUserTurn(toSend);
+        }
+
         // Automatically restart speech recognition while call is active
-        if (this.isConnected && !this.isIntentionallyClosed && this.micStarted) {
+        if (this.isConnected && !this.isIntentionallyClosed && this.isListeningActive) {
           try {
-            this.recognition?.start();
+            setTimeout(() => {
+              if (this.isConnected && !this.isIntentionallyClosed && this.isListeningActive) {
+                this.recognition?.start();
+              }
+            }, 120);
           } catch (_) {}
         }
       };
 
       this.recognition.start();
-      console.log('[Gemini Live] Speech Recognition started successfully (es-MX).');
     } catch (e) {
-      console.warn('[Gemini Live] Failed to start SpeechRecognition:', e);
+      console.warn('[Gemini Live] Failed to start native SpeechRecognition, falling back to raw PCM:', e);
+      this.startRawPcmMicStream();
     }
   }
 
-  private startMicRecording(): void {
-    if (!this.audioCtx || !this.mediaStream) return;
+  private async startRawPcmMicStream(): Promise<void> {
+    if (!this.audioCtx) return;
 
-    this.micSource = this.audioCtx.createMediaStreamSource(this.mediaStream);
-    // 2048 buffer size = ~42ms at 48kHz, responsive and stable
-    this.processor = this.audioCtx.createScriptProcessor(2048, 1, 1);
-
-    this.processor.onaudioprocess = (e) => {
-      if (!this.isConnected || !this.isSetupComplete || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
-        return;
-      }
-
-      const inputBuffer = e.inputBuffer.getChannelData(0);
-      const inputRate = this.audioCtx?.sampleRate || 48000;
-
-      // Calculate volume for UI visualizer
-      let sum = 0;
-      for (let i = 0; i < inputBuffer.length; i++) {
-        sum += inputBuffer[i] * inputBuffer[i];
-      }
-      const rms = Math.sqrt(sum / inputBuffer.length);
-      const isSpeaking = rms > 0.02;
-
-      if (this.config.onUserSpeaking) {
-        this.config.onUserSpeaking(isSpeaking, Math.min(1, rms * 5));
-      }
-
-      // Continuous audio streaming: stream 16kHz PCM frames to Google without interruption
-      const pcm16 = this.downsampleTo16k(inputBuffer, inputRate);
-
-      // Base64 encode PCM bytes
-      const bytes = new Uint8Array(pcm16.buffer, pcm16.byteOffset, pcm16.byteLength);
-      let binary = '';
-      const len = bytes.byteLength;
-      for (let i = 0; i < len; i++) {
-        binary += String.fromCharCode(bytes[i]);
-      }
-      const base64Audio = btoa(binary);
-
-      // Send realtimeInput chunk
-      const mediaChunk = {
-        realtimeInput: {
-          mediaChunks: [
-            {
-              mimeType: 'audio/pcm;rate=16000',
-              data: base64Audio
-            }
-          ]
+    try {
+      const micConstraints: MediaStreamConstraints = {
+        audio: {
+          channelCount: 1,
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true,
+          ...(this.config.inputDeviceId ? { deviceId: { exact: this.config.inputDeviceId } } : {})
         }
       };
+      this.mediaStream = await navigator.mediaDevices.getUserMedia(micConstraints);
+      this.micSource = this.audioCtx.createMediaStreamSource(this.mediaStream);
+      this.processor = this.audioCtx.createScriptProcessor(2048, 1, 1);
 
-      try {
-        this.ws.send(JSON.stringify(mediaChunk));
-      } catch (_) {}
-    };
+      this.processor.onaudioprocess = (e) => {
+        if (!this.isConnected || !this.isSetupComplete || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+          return;
+        }
 
-    // Connect processor to gain 0 to avoid microphone echo in speakers
-    this.muteGain = this.audioCtx.createGain();
-    this.muteGain.gain.setValueAtTime(0, this.audioCtx.currentTime);
+        const inputBuffer = e.inputBuffer.getChannelData(0);
+        const inputRate = this.audioCtx?.sampleRate || 48000;
 
-    this.micSource.connect(this.processor);
-    this.processor.connect(this.muteGain);
-    this.muteGain.connect(this.audioCtx.destination);
+        let sum = 0;
+        for (let i = 0; i < inputBuffer.length; i++) {
+          sum += inputBuffer[i] * inputBuffer[i];
+        }
+        const rms = Math.sqrt(sum / inputBuffer.length);
+        const isSpeaking = rms > 0.02;
+
+        if (this.config.onUserSpeaking) {
+          this.config.onUserSpeaking(isSpeaking, Math.min(1, rms * 5));
+        }
+
+        const pcm16 = this.downsampleTo16k(inputBuffer, inputRate);
+        const bytes = new Uint8Array(pcm16.buffer, pcm16.byteOffset, pcm16.byteLength);
+        let binary = '';
+        for (let i = 0; i < bytes.byteLength; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+        const base64Audio = btoa(binary);
+
+        const mediaChunk = {
+          realtimeInput: {
+            mediaChunks: [
+              {
+                mimeType: 'audio/pcm;rate=16000',
+                data: base64Audio
+              }
+            ]
+          }
+        };
+
+        try {
+          this.ws?.send(JSON.stringify(mediaChunk));
+        } catch (_) {}
+      };
+
+      this.muteGain = this.audioCtx.createGain();
+      this.muteGain.gain.setValueAtTime(0, this.audioCtx.currentTime);
+
+      this.micSource.connect(this.processor);
+      this.processor.connect(this.muteGain);
+      this.muteGain.connect(this.audioCtx.destination);
+    } catch (err) {
+      console.error('[Gemini Live startRawPcmMicStream error]', err);
+    }
   }
 
   private downsampleTo16k(input: Float32Array, inputRate: number): Int16Array {
@@ -417,7 +548,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
         }
 
         // Trigger prospect's spoken greeting FIRST.
-        // Mic recording will start only after greeting turn completes to prevent state conflict.
+        // Voice listening starts cleanly after Alfonso finishes greeting.
         const greeting = this.config.firstMessage || '¿Bueno? ¿Quién habla?';
         this.sendInitialTriggerTurn(greeting);
         return;
@@ -431,20 +562,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
         return;
       }
 
-      // 3. User Speech Transcript from Google (if emitted)
-      const inputTranscript = json.serverContent?.inputTranscription?.text || json.serverContent?.interimInputTranscription?.text;
-      if (inputTranscript && inputTranscript.trim()) {
-        const text = inputTranscript.trim();
-        const lastMsg = this.currentTranscript[this.currentTranscript.length - 1];
-        if (!lastMsg || lastMsg.source !== 'user' || lastMsg.message !== text) {
-          this.currentTranscript.push({ source: 'user', message: text });
-          if (this.config.onMessage) {
-            this.config.onMessage({ source: 'user', message: text });
-          }
-        }
-      }
-
-      // 4. Model Turn: Audio output & text transcripts
+      // 3. Model Turn: Audio output & text transcripts
       const modelTurn = json.serverContent?.modelTurn;
       if (modelTurn?.parts) {
         for (const part of modelTurn.parts) {
@@ -461,7 +579,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
         }
       }
 
-      // 5. Turn complete
+      // 4. Turn complete
       if (json.serverContent?.turnComplete) {
         console.log('[Gemini Live] Model turn complete.');
         let aiText = this.currentAiTextBuffer.trim();
@@ -479,12 +597,9 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
         }
         this.currentAiTextBuffer = '';
 
-        // Start mic recording and speech recognition once initial greeting turn has completed!
-        // This ensures the WebSocket protocol cleanly transitions from Seeding to Live mode.
-        if (!this.micStarted) {
-          this.micStarted = true;
-          this.startMicRecording();
-          this.startSpeechRecognition();
+        // Start listening to user voice once initial greeting turn has completed!
+        if (!this.isListeningActive) {
+          this.startVoiceListening();
         }
       }
 
@@ -567,8 +682,14 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
 
   public end(): void {
     this.isIntentionallyClosed = true;
-    this.micStarted = false;
+    this.isListeningActive = false;
     this.stopAiAudioPlayback();
+
+    if (this.silenceTimer) {
+      clearTimeout(this.silenceTimer);
+      this.silenceTimer = null;
+    }
+    this.pendingInterimText = '';
 
     if (this.recognition) {
       try { this.recognition.stop(); } catch (_) {}

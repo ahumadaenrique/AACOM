@@ -36,6 +36,7 @@ export async function GET(req: Request) {
       greetingModelText: string;
       userTurnResponseAudioBytes: number;
       userTurnResponseText: string;
+      sampleAudioBase64?: string;
       error?: string;
     }>((resolve) => {
       const ws = new WebSocketClass(wsUrl);
@@ -45,6 +46,7 @@ export async function GET(req: Request) {
       let greetingText = '';
       let userTurnAudioBytes = 0;
       let userTurnText = '';
+      let sampleAudioBase64 = '';
       let initialTurnDone = false;
       let userTurnDone = false;
 
@@ -156,6 +158,9 @@ export async function GET(req: Request) {
                 const chunkLen = part.inlineData.data.length;
                 if (!initialTurnDone) {
                   greetingAudioBytes += chunkLen;
+                  if (sampleAudioBase64.length < 160000) {
+                    sampleAudioBase64 += part.inlineData.data;
+                  }
                 } else {
                   userTurnAudioBytes += chunkLen;
                 }
@@ -210,7 +215,8 @@ export async function GET(req: Request) {
                 greetingModelAudioBytes: greetingAudioBytes,
                 greetingModelText: greetingText,
                 userTurnResponseAudioBytes: userTurnAudioBytes,
-                userTurnResponseText: userTurnText
+                userTurnResponseText: userTurnText,
+                sampleAudioBase64
               });
             }
           }

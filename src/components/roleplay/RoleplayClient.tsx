@@ -26,12 +26,15 @@ import {
   VideoOff,
   LogOut,
   Users,
-  PieChart
+  PieChart,
+  Send,
+  Activity
 } from 'lucide-react';
 import { MasterTacticsModal } from './MasterTacticsModal';
 import { EvaluationModal } from './EvaluationModal';
 import { SupervisionPanel } from './SupervisionPanel';
 import { AudioSettingsModal } from './AudioSettingsModal';
+import { GeminiDiagnosticModal } from './GeminiDiagnosticModal';
 import { GeminiLiveSession } from '@/lib/roleplay/geminiLiveClient';
 
 interface RoleplayClientProps {
@@ -129,6 +132,24 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   );
   const [transcript, setTranscript] = useState<{ source: 'ai' | 'user'; message: string }[]>([]);
   const [currentEval, setCurrentEval] = useState<any>(null);
+
+  // Live Testing & Speech Diagnostic State
+  const [interimSpeech, setInterimSpeech] = useState<string>('');
+  const [micStatus, setMicStatus] = useState<{ status: string; details?: string }>({ status: 'idle' });
+  const [customTestText, setCustomTestText] = useState<string>('');
+  const [showDiagnosticModal, setShowDiagnosticModal] = useState<boolean>(false);
+
+  const handleSendTestMessage = (text: string) => {
+    if (!text.trim() || !geminiSessionRef.current) return;
+    geminiSessionRef.current.sendUserTurn(text.trim());
+  };
+
+  const handleCustomTestSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customTestText.trim()) return;
+    handleSendTestMessage(customTestText);
+    setCustomTestText('');
+  };
 
   // History
   const [historyCalls, setHistoryCalls] = useState<any[]>([]);
@@ -437,6 +458,12 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
             } else {
               setCallStatusText(`👂 ${scenario.prospecto.nombre.split(' ')[0]} te está escuchando...`);
             }
+          },
+          onInterimSpeech: (interim) => {
+            setInterimSpeech(interim);
+          },
+          onMicStatus: (status, details) => {
+            setMicStatus({ status, details });
           }
         });
 
@@ -576,6 +603,8 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     }
     setUserSpeaking(false);
     setUserMicVolume(0);
+    setInterimSpeech('');
+    setCustomTestText('');
 
     if (geminiSessionRef.current) {
       try {
@@ -994,21 +1023,42 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 font-medium">
                       {engine === 'GEMINI_LIVE' ? '⚡ Google Gemini Live' : '🎙️ ElevenLabs ConvAI'}
                     </span>
+                    {engine === 'GEMINI_LIVE' && (
+                      <button
+                        onClick={() => setShowDiagnosticModal(true)}
+                        className="text-[10px] px-2.5 py-0.5 rounded-full bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/40 text-indigo-300 hover:text-white font-semibold transition-all flex items-center gap-1 shadow-sm"
+                        title="Probar conexión y latencia de voz con Google Gemini Live"
+                      >
+                        <Activity className="w-3 h-3 text-indigo-400" />
+                        <span>🔬 Diagnóstico Gemini Live</span>
+                      </button>
+                    )}
                   </div>
 
                   {/* Real-time Voice Activity Indicator (Confirming mic is picking up user voice) */}
                   {isCalling && (
-                    <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-950/90 border border-slate-800 text-[11px] mt-1 shadow-inner animate-in fade-in">
-                      <span className={`w-2 h-2 rounded-full ${userSpeaking ? 'bg-emerald-400 animate-ping' : 'bg-slate-600'}`} />
-                      <Mic className={`h-3 w-3 ${userSpeaking ? 'text-emerald-400' : 'text-slate-400'}`} />
-                      <span className={userSpeaking ? 'text-emerald-300 font-bold' : 'text-slate-400'}>
-                        {userSpeaking ? 'Tu voz: Transmitiendo en vivo' : 'Micrófono activo (listo)'}
-                      </span>
-                      {userSpeaking && (
-                        <div className="flex items-center gap-0.5 ml-1">
-                          <span className="w-1 h-2.5 bg-emerald-400 rounded-full animate-bounce" />
-                          <span className="w-1 h-3.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:0.15s]" />
-                          <span className="w-1 h-2 bg-emerald-400 rounded-full animate-bounce [animation-delay:0.3s]" />
+                    <div className="flex flex-col items-center gap-2 mt-1">
+                      <div className="flex items-center gap-2 px-3.5 py-1 rounded-full bg-slate-950/90 border border-slate-800 text-[11px] shadow-inner animate-in fade-in">
+                        <span className={`w-2 h-2 rounded-full ${userSpeaking ? 'bg-emerald-400 animate-ping' : 'bg-slate-600'}`} />
+                        <Mic className={`h-3 w-3 ${userSpeaking ? 'text-emerald-400' : 'text-slate-400'}`} />
+                        <span className={userSpeaking ? 'text-emerald-300 font-bold' : 'text-slate-400'}>
+                          {userSpeaking ? 'Tu voz: Transmitiendo en vivo' : 'Micrófono activo (listo)'}
+                        </span>
+                        {userSpeaking && (
+                          <div className="flex items-center gap-0.5 ml-1">
+                            <span className="w-1 h-2.5 bg-emerald-400 rounded-full animate-bounce" />
+                            <span className="w-1 h-3.5 bg-emerald-400 rounded-full animate-bounce [animation-delay:0.15s]" />
+                            <span className="w-1 h-2 bg-emerald-400 rounded-full animate-bounce [animation-delay:0.3s]" />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Live Interim Speech Preview (User sees words as they speak!) */}
+                      {interimSpeech && (
+                        <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-indigo-950/70 border border-indigo-500/40 text-xs text-indigo-200 shadow-lg animate-pulse">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+                          <span className="text-[11px] text-slate-400 font-medium">Captando tu voz:</span>
+                          <span className="italic font-bold text-white">"{interimSpeech}..."</span>
                         </div>
                       )}
                     </div>
@@ -1054,6 +1104,62 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                     </button>
                   )}
                 </div>
+
+                {/* Consola de Pruebas en Vivo para Gemini Live durante la llamada */}
+                {isCalling && engine === 'GEMINI_LIVE' && (
+                  <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5 animate-in fade-in">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                        Pruebas de Voz en Vivo
+                      </span>
+                      <span className="text-[10px] text-slate-400">
+                        Habla por micro o presiona un botón para que Alfonso te responda en voz alta:
+                      </span>
+                    </div>
+
+                    {/* Botones de prueba rápida */}
+                    <div className="flex flex-wrap gap-1.5">
+                      <button
+                        onClick={() => handleSendTestMessage('Hola, buenas tardes, soy tu asesor de AACOM Seguros')}
+                        className="px-2.5 py-1 rounded-lg text-xs bg-slate-800 hover:bg-indigo-900/60 border border-slate-700 hover:border-indigo-500/50 text-slate-200 transition-colors"
+                      >
+                        🗣️ "Hola, buenas tardes..."
+                      </button>
+                      <button
+                        onClick={() => handleSendTestMessage('¿Cómo te encuentras el día de hoy Alfonso?')}
+                        className="px-2.5 py-1 rounded-lg text-xs bg-slate-800 hover:bg-indigo-900/60 border border-slate-700 hover:border-indigo-500/50 text-slate-200 transition-colors"
+                      >
+                        🗣️ "¿Cómo te encuentras hoy?"
+                      </button>
+                      <button
+                        onClick={() => handleSendTestMessage('Te contacto para revisar tu estrategia de ahorro y retiro.')}
+                        className="px-2.5 py-1 rounded-lg text-xs bg-slate-800 hover:bg-indigo-900/60 border border-slate-700 hover:border-indigo-500/50 text-slate-200 transition-colors"
+                      >
+                        🗣️ "Revisar ahorro y retiro"
+                      </button>
+                    </div>
+
+                    {/* Input libre para escribir cualquier mensaje */}
+                    <form onSubmit={handleCustomTestSubmit} className="flex gap-2">
+                      <input
+                        type="text"
+                        value={customTestText}
+                        onChange={(e) => setCustomTestText(e.target.value)}
+                        placeholder={`Escribe un mensaje de prueba para ${scenario?.prospecto?.nombre?.split(' ')[0]}...`}
+                        className="flex-1 px-3 py-1.5 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+                      />
+                      <button
+                        type="submit"
+                        disabled={!customTestText.trim()}
+                        className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-xs font-semibold text-white transition-all flex items-center gap-1.5 flex-shrink-0"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                        <span>Enviar</span>
+                      </button>
+                    </form>
+                  </div>
+                )}
 
                 {/* Live Transcript Box */}
                 <div className="space-y-2 pt-4 border-t border-slate-800">
@@ -1306,6 +1412,11 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           setCallDuration(0);
           initSession();
         }}
+      />
+
+      <GeminiDiagnosticModal
+        isOpen={showDiagnosticModal}
+        onClose={() => setShowDiagnosticModal(false)}
       />
 
     </div>
