@@ -42,6 +42,13 @@ export class GeminiLiveSession {
   private processor: ScriptProcessorNode | null = null;
   private muteGain: GainNode | null = null;
 
+  // Call Recording state (MediaRecorder on mixed destination)
+  private recordingDest: MediaStreamAudioDestinationNode | null = null;
+  private recordingMicStream: MediaStream | null = null;
+  private recordingMicSource: MediaStreamAudioSourceNode | null = null;
+  private mediaRecorder: any = null;
+  private recordedBlobs: Blob[] = [];
+
   private config: GeminiLiveSessionConfig;
   private isConnected: boolean = false;
   private isSetupComplete: boolean = false;
@@ -70,6 +77,52 @@ export class GeminiLiveSession {
       this.masterGain = this.audioCtx.createGain();
       this.masterGain.gain.setValueAtTime(1.0, this.audioCtx.currentTime);
       this.masterGain.connect(this.audioCtx.destination);
+
+      // Initialize Call Recording (Mix AI audio + User mic into MediaRecorder)
+      if (typeof (this.audioCtx as any).createMediaStreamDestination === 'function' && typeof window !== 'undefined' && (window as any).MediaRecorder) {
+        try {
+          this.recordingDest = this.audioCtx.createMediaStreamDestination();
+          this.masterGain.connect(this.recordingDest);
+
+          if (navigator.mediaDevices?.getUserMedia) {
+            try {
+              this.recordingMicStream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                  echoCancellation: true,
+                  noiseSuppression: true,
+                  autoGainControl: true,
+                  ...(this.config.inputDeviceId ? { deviceId: { exact: this.config.inputDeviceId } } : {})
+                }
+              });
+              this.recordingMicSource = this.audioCtx.createMediaStreamSource(this.recordingMicStream);
+              this.recordingMicSource.connect(this.recordingDest);
+            } catch (micErr) {
+              console.warn('[Gemini Live Recorder] Mic not attached to recorder:', micErr);
+            }
+          }
+
+          const MediaRec = (window as any).MediaRecorder;
+          const mimeType = MediaRec.isTypeSupported?.('audio/webm;codecs=opus')
+            ? 'audio/webm;codecs=opus'
+            : MediaRec.isTypeSupported?.('audio/mp4')
+              ? 'audio/mp4'
+              : 'audio/webm';
+
+          this.mediaRecorder = new MediaRec(this.recordingDest.stream, { mimeType });
+          this.recordedBlobs = [];
+
+          this.mediaRecorder.ondataavailable = (e: any) => {
+            if (e.data && e.data.size > 0) {
+              this.recordedBlobs.push(e.data);
+            }
+          };
+
+          this.mediaRecorder.start(1000);
+          console.log('[Gemini Live Recorder] Call recording started (' + mimeType + ')');
+        } catch (recErr) {
+          console.warn('[Gemini Live Recorder] Failed to start recorder:', recErr);
+        }
+      }
 
       // Support specific output device if requested and supported
       if (this.config.outputDeviceId && typeof (this.audioCtx as any).setSinkId === 'function') {
@@ -693,10 +746,88 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
     this.isAiSpeaking = false;
   }
 
+  /**
+   * Finalizes call recording and returns the full mixed WebM audio Blob
+   */
+  public async stopRecording(): Promise<Blob | null> {
+    return new Promise<Blob | null>((resolve) => {
+      if (!this.mediaRecorder || this.mediaRecorder.state === 'inactive') {
+        if (this.recordedBlobs.length > 0) {
+          const type = this.recordedBlobs[0].type || 'audio/webm';
+          resolve(new Blob(this.recordedBlobs, { type }));
+        } else {
+          resolve(null);
+        }
+        return;
+      }
+
+      let resolved = false;
+      const timeout = setTimeout(() => {
+        if (resolved) return;
+        resolved = true;
+        if (this.recordedBlobs.length > 0) {
+          const type = this.recordedBlobs[0].type || 'audio/webm';
+          resolve(new Blob(this.recordedBlobs, { type }));
+        } else {
+          resolve(null);
+        }
+      }, 1500);
+
+      this.mediaRecorder.onstop = () => {
+        if (resolved) return;
+        resolved = true;
+        clearTimeout(timeout);
+        if (this.recordedBlobs.length > 0) {
+          const type = this.recordedBlobs[0].type || 'audio/webm';
+          const finalBlob = new Blob(this.recordedBlobs, { type });
+          console.log('[Gemini Live Recorder] Call recording finalized, size:', finalBlob.size, 'bytes');
+          resolve(finalBlob);
+        } else {
+          resolve(null);
+        }
+      };
+
+      try {
+        this.mediaRecorder.stop();
+      } catch (err) {
+        console.warn('[Gemini Live Recorder] Error stopping recorder:', err);
+        if (!resolved) {
+          resolved = true;
+          clearTimeout(timeout);
+          if (this.recordedBlobs.length > 0) {
+            const type = this.recordedBlobs[0].type || 'audio/webm';
+            resolve(new Blob(this.recordedBlobs, { type }));
+          } else {
+            resolve(null);
+          }
+        }
+      }
+    });
+  }
+
   public end(): void {
     this.isIntentionallyClosed = true;
     this.isListeningActive = false;
     this.stopAiAudioPlayback();
+
+    // Clean up Call Recording resources
+    if (this.mediaRecorder && this.mediaRecorder.state !== 'inactive') {
+      try { this.mediaRecorder.stop(); } catch (_) {}
+    }
+    this.mediaRecorder = null;
+
+    if (this.recordingMicStream) {
+      this.recordingMicStream.getTracks().forEach((t) => t.stop());
+      this.recordingMicStream = null;
+    }
+    if (this.recordingMicSource) {
+      try { this.recordingMicSource.disconnect(); } catch (_) {}
+      this.recordingMicSource = null;
+    }
+    if (this.recordingDest) {
+      try { this.recordingDest.disconnect(); } catch (_) {}
+      this.recordingDest = null;
+    }
 
     if (this.silenceTimer) {
       clearTimeout(this.silenceTimer);

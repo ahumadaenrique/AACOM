@@ -51,6 +51,8 @@ export async function GET(request: NextRequest) {
           score: true,
           xpEarned: true,
           conversationId: true,
+          engine: true,
+          callAudioUrl: true,
           appointmentClosed: true,
           coachTip: true,
           aciertos: true,

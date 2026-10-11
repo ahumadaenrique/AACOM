@@ -163,6 +163,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   const startTimeRef = useRef<number>(0);
   const connectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const currentOscillatorsRef = useRef<{ osc1: OscillatorNode; osc2: OscillatorNode } | null>(null);
+  const isEvaluatingRef = useRef<boolean>(false);
 
   // 1. Audio FX Generator
   const initAudioCtx = () => {
@@ -270,6 +271,9 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       setWsUrl(data.wsUrl);
       setVoiceName(data.voiceName);
       setStats(data.stats);
+      if (Array.isArray(data.historyCalls)) {
+        setHistoryCalls(data.historyCalls);
+      }
       const engineLabel = (data.engine || 'GEMINI_LIVE') === 'GEMINI_LIVE' ? 'Gemini Live' : 'ElevenLabs';
       setCallStatusText(`Expediente listo (${engineLabel}). Listo para marcar a ${data.scenario.prospecto.nombre}.`);
     } catch (err: any) {
@@ -361,6 +365,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     if (isCalling || isConnecting || (!signedUrl && !wsUrl)) return;
 
     try {
+      isEvaluatingRef.current = false;
       setIsConnecting(true);
       setTranscript([]);
       setCallDuration(0);
@@ -606,7 +611,13 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     setInterimSpeech('');
     setCustomTestText('');
 
+    let recordingBlob: Blob | null = null;
     if (geminiSessionRef.current) {
+      try {
+        recordingBlob = await geminiSessionRef.current.stopRecording();
+      } catch (e) {
+        console.warn('Error stopping Gemini Live recording:', e);
+      }
       try {
         geminiSessionRef.current.end();
       } catch (e) {
@@ -624,16 +635,20 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       conversationRef.current = null;
     }
 
-    handleCallEnded();
+    await handleCallEnded(recordingBlob);
   };
 
   // 5. Evaluate Call
-  const handleCallEnded = async () => {
-    if (!isCalling && !isConnecting) return;
+  const handleCallEnded = async (recordingBlob?: Blob | null) => {
+    if (isEvaluatingRef.current) return;
+    isEvaluatingRef.current = true;
     setIsCalling(false);
     setIsConnecting(false);
     setProspectSpeaking(false);
-    if (timerRef.current) clearInterval(timerRef.current);
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
 
     const elapsed = Math.max(callDuration, Math.floor((Date.now() - (startTimeRef.current || Date.now())) / 1000));
     setCallStatusText(
@@ -643,6 +658,29 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           ? 'Evaluando manejo de objeciones y técnicas de cierre...' 
           : 'Evaluando desempeño y técnica de prospección...'
     );
+
+    // Upload call recording to Vercel Blob if available
+    let uploadedAudioUrl: string | null = null;
+    if (recordingBlob && recordingBlob.size > 0 && conversationIdRef.current) {
+      try {
+        setCallStatusText('Guardando grabación de audio y evaluando...');
+        const formData = new FormData();
+        formData.append('file', recordingBlob, `${conversationIdRef.current}.webm`);
+        formData.append('conversationId', conversationIdRef.current);
+
+        const upRes = await fetch('/api/roleplay/upload-recording', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (upRes.ok) {
+          const upJson = await upRes.json();
+          uploadedAudioUrl = upJson.url || null;
+        }
+      } catch (recUploadErr) {
+        console.warn('Error subiendo grabación de llamada:', recUploadErr);
+      }
+    }
 
     try {
       const res = await fetch('/api/roleplay/evaluate', {
@@ -654,7 +692,8 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           scenario,
           conversationId: conversationIdRef.current,
           moduleId,
-          engine
+          engine,
+          callAudioUrl: uploadedAudioUrl
         })
       });
 
@@ -675,6 +714,8 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           appointmentClosed: evalData.appointmentClosed,
           durationSeconds: elapsed,
           conversationId: conversationIdRef.current,
+          callAudioUrl: uploadedAudioUrl || evalData.callAudioUrl || null,
+          engine: engine,
           createdAt: new Date().toISOString()
         },
         ...prev
@@ -1367,11 +1408,17 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                   </div>
 
                   {h.conversationId && (
-                    <audio
-                      controls
-                      className="h-8 max-w-[220px]"
-                      src={`/api/roleplay/audio/${h.conversationId}`}
-                    />
+                    (h.callAudioUrl || h.engine !== 'GEMINI_LIVE') ? (
+                      <audio
+                        controls
+                        className="h-8 max-w-[220px]"
+                        src={h.callAudioUrl || `/api/roleplay/audio/${h.conversationId}`}
+                      />
+                    ) : (
+                      <span className="text-[10px] text-slate-500 italic px-2.5 py-1 rounded-lg bg-slate-800/40 border border-slate-700/30">
+                        Sin grabación
+                      </span>
+                    )
                   )}
                 </div>
               ))}

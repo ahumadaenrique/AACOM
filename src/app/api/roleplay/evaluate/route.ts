@@ -40,7 +40,8 @@ export async function POST(req: Request) {
       scenario = null,
       conversationId = null,
       moduleId = 'prospeccion',
-      engine = 'GEMINI_LIVE'
+      engine = 'GEMINI_LIVE',
+      callAudioUrl = null
     } = body;
 
     const user = await prisma.user.findUnique({
@@ -69,6 +70,7 @@ export async function POST(req: Request) {
           score: 0,
           xpEarned: 0,
           conversationId,
+          callAudioUrl: callAudioUrl || null,
           transcript,
           aciertos: [],
           errores: ['Llamada colgada sin interactuar o menor a 6 segundos.'],
@@ -83,6 +85,7 @@ export async function POST(req: Request) {
       return NextResponse.json({
         success: true,
         callId: emptyCall.id,
+        callAudioUrl: emptyCall.callAudioUrl || callAudioUrl || null,
         score: 0,
         xpEarned: 0,
         appointmentClosed: false,
@@ -304,6 +307,7 @@ ${badgesText}`;
         score,
         xpEarned: actualXpToAdd,
         conversationId,
+        callAudioUrl: callAudioUrl || null,
         transcript,
         evaluation: { rawScore: score, cometioErrorFatal },
         aciertos,
@@ -344,6 +348,7 @@ ${badgesText}`;
     return NextResponse.json({
       success: true,
       callId: roleplayCall.id,
+      callAudioUrl: roleplayCall.callAudioUrl || callAudioUrl || null,
       score,
       xpEarned: actualXpToAdd,
       appointmentClosed,

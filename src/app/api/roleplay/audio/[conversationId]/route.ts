@@ -48,6 +48,16 @@ export async function GET(
       return new NextResponse('Acceso denegado: solo administradores o el autor de la llamada pueden escuchar esta grabación', { status: 403 });
     }
 
+    // 1. If audio was recorded and uploaded to Vercel Blob (Gemini Live or uploaded audio)
+    if (call.callAudioUrl) {
+      return NextResponse.redirect(call.callAudioUrl, 307);
+    }
+
+    // 2. If it is a Gemini Live call with no audio uploaded
+    if (call.engine === 'GEMINI_LIVE') {
+      return new NextResponse('Grabación no disponible para esta llamada.', { status: 404 });
+    }
+
     const apiKey = process.env.ELEVENLABS_API_KEY;
     if (!apiKey) {
       return new NextResponse('ELEVENLABS_API_KEY no configurada', { status: 500 });

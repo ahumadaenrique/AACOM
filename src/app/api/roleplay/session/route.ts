@@ -274,6 +274,24 @@ export async function POST(req: Request) {
       }
     }
 
+    const recentUserCalls = await prisma.roleplayCall.findMany({
+      where: { userId },
+      take: 25,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        prospectName: true,
+        score: true,
+        xpEarned: true,
+        appointmentClosed: true,
+        durationSeconds: true,
+        conversationId: true,
+        callAudioUrl: true,
+        engine: true,
+        createdAt: true
+      }
+    });
+
     return NextResponse.json({
       success: true,
       engine: effectiveEngine,
@@ -281,6 +299,7 @@ export async function POST(req: Request) {
       signedUrl,
       wsUrl: effectiveEngine === 'GEMINI_LIVE' ? wsUrl : null,
       voiceName: effectiveEngine === 'GEMINI_LIVE' ? voiceName : null,
+      historyCalls: recentUserCalls,
       stats: {
         xp: stats.xp,
         level: stats.level,
