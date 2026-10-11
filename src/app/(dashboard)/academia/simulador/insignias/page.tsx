@@ -11,30 +11,32 @@ export const metadata = {
 };
 
 export default async function InsigniasPage() {
-  const session = await auth();
-  if (!session?.user?.id) redirect('/login');
+  try {
+    const session = await auth();
+    if (!session?.user?.email && !session?.user?.id) redirect('/login');
 
-  const [stats, user] = await Promise.all([
-    prisma.roleplayStats.findUnique({
-      where: { userId: session.user.id }
-    }),
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { agency: true }
-    })
-  ]);
+    const user = await prisma.user.findFirst({
+      where: session.user.id ? { id: session.user.id } : { email: session.user.email! },
+      select: { id: true, agency: true }
+    });
 
-  const agency = user?.agency;
-  const rewardActive = agency?.roleplayRewardActive ?? true;
-  const rewardAmount = agency?.roleplayRewardAmount ?? 1500;
-  const rewardTitle = agency?.roleplayRewardTitle || 'Bono por Álbum Completo';
+    if (!user) redirect('/login');
 
-  const unlockedIds = stats?.badges || [];
-  const totalBadges = BADGES.length;
-  const unlockedCount = unlockedIds.length;
-  const isMaster = unlockedCount >= 34; // Needs all except the final one to get it (or all 35)
+    const stats = await prisma.roleplayStats.findUnique({
+      where: { userId: user.id }
+    });
 
-  const progressPct = Math.round((unlockedCount / totalBadges) * 100);
+    const agency = user.agency;
+    const rewardActive = agency?.roleplayRewardActive ?? true;
+    const rewardAmount = agency?.roleplayRewardAmount ?? 1500;
+    const rewardTitle = agency?.roleplayRewardTitle || 'Bono por Álbum Completo';
+
+    const unlockedIds = stats?.badges || [];
+    const totalBadges = BADGES.length;
+    const unlockedCount = unlockedIds.length;
+    const isMaster = unlockedCount >= 34; // Needs all except the final one to get it (or all 35)
+
+    const progressPct = Math.round((unlockedCount / totalBadges) * 100);
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 py-6">
@@ -142,4 +144,29 @@ export default async function InsigniasPage() {
       </div>
     </div>
   );
+  } catch (error: any) {
+    if (error?.digest?.startsWith('NEXT_REDIRECT') || error?.message === 'NEXT_REDIRECT') {
+      throw error;
+    }
+    console.error("Error en insignias/page.tsx:", error);
+    return (
+      <div className="max-w-xl mx-auto my-16 p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-4 text-white shadow-xl">
+        <div className="h-14 w-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
+          ⚠️
+        </div>
+        <h2 className="text-xl font-bold">Detalle al cargar las Insignias</h2>
+        <p className="text-xs text-slate-400 leading-relaxed">
+          {error?.message || "Ocurrió un problema temporal al sincronizar el catálogo de insignias."}
+        </p>
+        <div className="pt-2 flex justify-center gap-3">
+          <Link href="/academia/simulador" className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300">
+            ← Volver al Hub
+          </Link>
+          <a href="/academia/simulador/insignias" className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white">
+            Recargar
+          </a>
+        </div>
+      </div>
+    );
+  }
 }

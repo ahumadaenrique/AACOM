@@ -27,13 +27,14 @@ const LEVELS = Object.values(LEVELS_CONFIG).map((levelInfo) => {
 });
 
 export async function GamificationProgressWidget({ userId }: { userId: string }) {
-  if (!userId) return null;
+  try {
+    if (!userId) return null;
 
-  const stats = await prisma.roleplayStats.findUnique({
-    where: { userId },
-  });
+    const stats = await prisma.roleplayStats.findUnique({
+      where: { userId },
+    });
 
-  if (!stats) return null;
+    if (!stats) return null;
 
   const currentLevel = stats.level;
   const currentXP = stats.xp;
@@ -114,4 +115,8 @@ export async function GamificationProgressWidget({ userId }: { userId: string })
       </DropdownMenuContent>
     </DropdownMenu>
   );
+  } catch (err) {
+    console.error("GamificationProgressWidget error:", err);
+    return null;
+  }
 }

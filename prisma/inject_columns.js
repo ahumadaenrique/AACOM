@@ -23,6 +23,9 @@ async function injectColumns() {
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "allowRoleplaySimulator" BOOLEAN DEFAULT false;`,
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "elevenLabsApiKey" TEXT;`,
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "elevenLabsVoiceId" TEXT;`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "roleplayRewardActive" BOOLEAN DEFAULT true;`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "roleplayRewardAmount" INTEGER DEFAULT 1500;`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "roleplayRewardTitle" TEXT DEFAULT 'Bono por Álbum Completo';`,
       `CREATE TABLE IF NOT EXISTS "RoleplayCall" (
         "id" TEXT PRIMARY KEY,
         "userId" TEXT NOT NULL,
@@ -196,8 +199,7 @@ async function injectColumns() {
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "voiceSecondsBalance" INTEGER DEFAULT 0;`,
       `ALTER TABLE "RoleplayCall" ADD COLUMN IF NOT EXISTS "agencyId" TEXT;`,
       `ALTER TABLE "RoleplayCall" ADD COLUMN IF NOT EXISTS "engine" TEXT DEFAULT 'GEMINI_LIVE';`,
-      `CREATE INDEX IF NOT EXISTS "RoleplayCall_agencyId_idx" ON "RoleplayCall"("agencyId");`,
-      `UPDATE "Agency" SET "voiceEngine" = 'ELEVENLABS' WHERE "id" = 'aacom' OR "slug" = 'aacom';`
+      `CREATE INDEX IF NOT EXISTS "RoleplayCall_agencyId_idx" ON "RoleplayCall"("agencyId");`
     ];
 
     for (const q of queries) {

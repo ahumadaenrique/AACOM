@@ -12,11 +12,12 @@ export const metadata = {
 };
 
 export default async function SimuladorHubPage() {
-  const session = await auth();
+  try {
+    const session = await auth();
 
-  if (!session?.user?.email) {
-    redirect("/login");
-  }
+    if (!session?.user?.email) {
+      redirect("/login");
+    }
 
   const dbUser = await prisma.user.findUnique({
     where: { email: session.user.email },
@@ -129,10 +130,11 @@ export default async function SimuladorHubPage() {
   }
 
   // Cargar Leaderboard (Top 10 de la Agencia)
+  const agencyId = dbUser.agency?.id || 'aacom';
   const leaderboard = await prisma.roleplayStats.findMany({
     where: {
       user: {
-        agencyId: dbUser.agency?.id,
+        agencyId,
         active: true
       }
     },
@@ -405,6 +407,31 @@ export default async function SimuladorHubPage() {
       </div>
     </div>
   );
+  } catch (error: any) {
+    if (error?.digest?.startsWith('NEXT_REDIRECT') || error?.message === 'NEXT_REDIRECT') {
+      throw error;
+    }
+    console.error("Error en SimuladorHubPage:", error);
+    return (
+      <div className="max-w-xl mx-auto my-16 p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-4 text-white shadow-xl">
+        <div className="h-14 w-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
+          ⚠️
+        </div>
+        <h2 className="text-xl font-bold">Detalle al cargar el Hub del Simulador</h2>
+        <p className="text-xs text-slate-400 leading-relaxed">
+          {error?.message || "Ocurrió un problema temporal al sincronizar la información del simulador."}
+        </p>
+        <div className="pt-2 flex justify-center gap-3">
+          <Link href="/academia" className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300">
+            ← Volver a Academia
+          </Link>
+          <a href="/academia/simulador" className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white">
+            Recargar
+          </a>
+        </div>
+      </div>
+    );
+  }
 }
 
 function SparklesIcon(props: React.ComponentProps<"svg">) {

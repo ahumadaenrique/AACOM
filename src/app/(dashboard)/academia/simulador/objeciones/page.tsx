@@ -9,75 +9,101 @@ export const metadata = {
 };
 
 export default async function SimuladorObjecionesPage() {
-  const session = await auth();
+  try {
+    const session = await auth();
 
-  if (!session?.user?.email) {
-    redirect("/login");
-  }
+    if (!session?.user?.email) {
+      redirect("/login");
+    }
 
-  const dbUser = await prisma.user.findUnique({
-    where: { email: session.user.email },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      role: true,
-      image: true,
-      agency: {
-        select: {
-          id: true,
-          name: true,
-          allowRoleplaySimulator: true
+    const dbUser = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        image: true,
+        agency: {
+          select: {
+            id: true,
+            name: true,
+            allowRoleplaySimulator: true
+          }
         }
       }
+    });
+
+    if (!dbUser) {
+      redirect("/login");
     }
-  });
 
-  if (!dbUser) {
-    redirect("/login");
-  }
+    // Block access if the agency does not have the simulator enabled (SUPER_ADMIN always has access)
+    if (dbUser.role !== 'SUPER_ADMIN' && dbUser.agency && dbUser.agency.allowRoleplaySimulator === false) {
+      return (
+        <div className="max-w-xl mx-auto my-16 p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-5 shadow-2xl">
+          <div className="h-16 w-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
+            📵
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-bold text-white">Módulo Desactivado para tu Agencia</h2>
+            <p className="text-xs text-slate-400 leading-relaxed">
+              El acceso al <strong>Simulador de Ventas con IA</strong> ha sido desactivado para tu agencia ({dbUser.agency.name}) por la administración central de AACOM.
+            </p>
+          </div>
+          <div className="pt-2">
+            <a
+              href="/academia/simulador"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors"
+            >
+              ← Volver al Hub de Simulador
+            </a>
+          </div>
+        </div>
+      );
+    }
 
-  // Block access if the agency does not have the simulator enabled (SUPER_ADMIN always has access)
-  if (dbUser.role !== 'SUPER_ADMIN' && dbUser.agency && dbUser.agency.allowRoleplaySimulator === false) {
+    const isAdmin =
+      dbUser.role === 'ADMIN' ||
+      dbUser.role === 'SUPER_ADMIN';
+
     return (
-      <div className="max-w-xl mx-auto my-16 p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-5 shadow-2xl">
-        <div className="h-16 w-16 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
-          📵
+      <div className="py-2">
+        <RoleplayClient
+          user={{
+            id: dbUser.id,
+            name: dbUser.name,
+            email: dbUser.email,
+            role: dbUser.role
+          }}
+          isAdmin={isAdmin}
+          moduleId="objeciones"
+        />
+      </div>
+    );
+  } catch (error: any) {
+    if (error?.digest?.startsWith('NEXT_REDIRECT') || error?.message === 'NEXT_REDIRECT') {
+      throw error;
+    }
+    console.error("Error en objeciones/page.tsx:", error);
+    return (
+      <div className="max-w-xl mx-auto my-16 p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-4 text-white shadow-xl">
+        <div className="h-14 w-14 mx-auto rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 text-2xl">
+          ⚠️
         </div>
-        <div className="space-y-2">
-          <h2 className="text-xl font-bold text-white">Módulo Desactivado para tu Agencia</h2>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            El acceso al <strong>Simulador de Ventas con IA</strong> ha sido desactivado para tu agencia ({dbUser.agency.name}) por la administración central de AACOM.
-          </p>
-        </div>
-        <div className="pt-2">
-          <a
-            href="/academia/simulador"
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-colors"
-          >
-            ← Volver al Hub de Simulador
+        <h2 className="text-xl font-bold">Detalle al cargar el Módulo de Objeciones</h2>
+        <p className="text-xs text-slate-400 leading-relaxed">
+          {error?.message || "Ocurrió un problema temporal al sincronizar la información del módulo."}
+        </p>
+        <div className="pt-2 flex justify-center gap-3">
+          <a href="/academia/simulador" className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-300">
+            ← Volver al Hub
+          </a>
+          <a href="/academia/simulador/objeciones" className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white">
+            Recargar
           </a>
         </div>
       </div>
     );
   }
-
-  const isAdmin =
-    dbUser.role === 'ADMIN' ||
-    dbUser.role === 'SUPER_ADMIN';
-
-  return (
-    <div className="py-2">
-      <RoleplayClient
-        user={{
-          id: dbUser.id,
-          name: dbUser.name,
-          email: dbUser.email,
-          role: dbUser.role
-        }}
-        isAdmin={isAdmin}
-        moduleId="objeciones"
-      />
-    </div>
-  );
 }
