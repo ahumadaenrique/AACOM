@@ -2,6 +2,9 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
+import { BADGES } from '@/lib/roleplay/badges';
+import { BADGES_CATALOG } from '@/lib/roleplay/gamification';
 import { Conversation } from '@elevenlabs/react';
 import {
   Phone,
@@ -44,6 +47,36 @@ interface RoleplayClientProps {
   };
   isAdmin: boolean;
   moduleId?: 'prospeccion' | 'adn' | 'objeciones';
+}
+
+function getBadgeDetails(badgeId: string) {
+  const found = BADGES.find(b => b.id === badgeId);
+  if (found) {
+    return {
+      id: found.id,
+      name: found.name,
+      description: found.description,
+      icon: found.icon,
+      moduleId: found.moduleId
+    };
+  }
+  const legacy = BADGES_CATALOG.find(b => b.id === badgeId);
+  if (legacy) {
+    return {
+      id: legacy.id,
+      name: legacy.name,
+      description: legacy.desc,
+      icon: legacy.icon,
+      moduleId: 'general'
+    };
+  }
+  return {
+    id: badgeId,
+    name: badgeId,
+    description: 'Insignia por desempeño y técnica en el simulador.',
+    icon: '🏅',
+    moduleId: 'general'
+  };
 }
 
 // Safari / iOS WebKit AudioWorklet Patch & Resilience
@@ -135,6 +168,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   // Live Speech State
   const [interimSpeech, setInterimSpeech] = useState<string>('');
   const [micStatus, setMicStatus] = useState<{ status: string; details?: string }>({ status: 'idle' });
+  const [hoveredBadge, setHoveredBadge] = useState<{ id: string; name: string; description: string; icon: string; moduleId?: string } | null>(null);
 
   // History
   const [historyCalls, setHistoryCalls] = useState<any[]>([]);
@@ -1238,7 +1272,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                   />
                 </div>
                 <p className="text-[11px] text-slate-400 leading-relaxed pt-1">
-                  💡 Mantén tu racha diaria activa para evitar la penalización de <strong className="text-rose-400">-700 XP</strong> por día hábil omitido.
+                  💡 Mantén tu racha diaria activa para evitar la penalización de <strong className="text-rose-400">-300 XP</strong> por día hábil omitido.
                 </p>
               </div>
 
@@ -1254,40 +1288,114 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                 </div>
                 <div className="flex items-center justify-between">
                   <span>Meta a Nivel 6:</span>
-                  <span className="font-bold text-amber-400">6,500 XP (min 15 días)</span>
+                  <span className="font-bold text-amber-400">6,500 XP</span>
                 </div>
               </div>
             </div>
 
-            {/* Vitrina de Insignias */}
-            <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4 shadow-lg">
-              <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                <Award className="h-4 w-4 text-amber-400" /> Insignias Desbloqueadas
-              </h3>
+            {/* Vitrina de Insignias - Últimas 5 obtenidas */}
+            {(() => {
+              const userBadgeIds: string[] = Array.isArray(stats?.badges) ? stats.badges : [];
+              const recentBadges = userBadgeIds.slice(-5).reverse().map(id => getBadgeDetails(id));
 
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: 'primera_cita', name: 'Primer Cierre', icon: '🎯' },
-                  { id: 'racha_3_dias', name: 'Constancia', icon: '🔥' },
-                  { id: 'maestro_objecion', name: 'Escudo', icon: '🛡️' },
-                  { id: 'experto_frio', name: 'Frío Total', icon: '❄️' },
-                  { id: 'dia_perfecto', name: '500 XP', icon: '⚡' },
-                  { id: 'lobo_aacom', name: 'Nivel 6', icon: '👑' }
-                ].map(badge => {
-                  const unlocked = stats?.badges?.includes(badge.id);
-                  return (
-                    <div
-                      key={badge.id}
-                      className={`p-3 rounded-2xl border text-center transition-all ${unlocked ? 'bg-amber-500/10 border-amber-500/30 text-amber-300' : 'bg-slate-950/40 border-slate-800/80 text-slate-600 opacity-60'}`}
-                      title={badge.name}
-                    >
-                      <div className="text-2xl">{badge.icon}</div>
-                      <div className="text-[10px] font-bold mt-1 truncate">{badge.name}</div>
+              return (
+                <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4 shadow-lg">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                      <Award className="h-4 w-4 text-amber-400" /> Insignias Desbloqueadas
+                    </h3>
+                    {userBadgeIds.length > 0 ? (
+                      <Link
+                        href="/academia/simulador/insignias"
+                        className="text-[11px] font-semibold text-amber-400 hover:text-amber-300 transition-colors flex items-center gap-1"
+                        title="Ver álbum completo de insignias"
+                      >
+                        <span>Ver Álbum ({userBadgeIds.length})</span>
+                        <span>→</span>
+                      </Link>
+                    ) : (
+                      <span className="text-[10px] text-slate-500 font-medium">0 obtenidas</span>
+                    )}
+                  </div>
+
+                  {recentBadges.length === 0 ? (
+                    <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800/80 text-center space-y-2">
+                      <div className="text-3xl opacity-60">🎯</div>
+                      <p className="text-xs font-bold text-slate-300">Aún no tienes insignias desbloqueadas</p>
+                      <p className="text-[11px] text-slate-500 leading-relaxed">
+                        Completa llamadas exitosas (cita lograda y calificación 85+) para ganar tus primeras insignias.
+                      </p>
+                      <Link
+                        href="/academia/simulador/insignias"
+                        className="inline-block text-[11px] font-semibold text-amber-400 hover:underline pt-1"
+                      >
+                        Ver catálogo del álbum →
+                      </Link>
                     </div>
-                  );
-                })}
-              </div>
-            </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="text-[11px] text-slate-400 flex items-center justify-between">
+                        <span>Últimas {recentBadges.length} obtenidas:</span>
+                        <span className="text-[10px] text-slate-500">Pasa el mouse para ver el logro</span>
+                      </div>
+
+                      <div className={`grid gap-2 ${recentBadges.length <= 3 ? 'grid-cols-3' : recentBadges.length === 4 ? 'grid-cols-4' : 'grid-cols-5'}`}>
+                        {recentBadges.map((badge, idx) => (
+                          <div
+                            key={`${badge.id}-${idx}`}
+                            onMouseEnter={() => setHoveredBadge(badge)}
+                            onMouseLeave={() => setHoveredBadge(null)}
+                            className="group relative p-2.5 rounded-2xl border border-amber-500/30 bg-amber-500/10 hover:bg-amber-500/20 hover:border-amber-400/60 text-amber-300 text-center transition-all cursor-pointer flex flex-col items-center justify-center shadow-sm"
+                            title={`${badge.name}: ${badge.description}`}
+                          >
+                            <div className="text-2xl group-hover:scale-110 transition-transform">
+                              {badge.icon}
+                            </div>
+                            <div className="text-[10px] font-bold mt-1 truncate w-full text-amber-200">
+                              {badge.name}
+                            </div>
+
+                            {/* Tooltip flotante al pasar el mouse */}
+                            <div className={`opacity-0 group-hover:opacity-100 pointer-events-none transition-all duration-200 absolute bottom-full mb-2.5 z-40 w-52 p-3 rounded-2xl bg-slate-950/95 border border-amber-500/40 text-left shadow-2xl backdrop-blur-md ${idx === 0 ? 'left-0' : idx === recentBadges.length - 1 ? 'right-0' : 'left-1/2 -translate-x-1/2'}`}>
+                              <div className="flex items-center gap-2 mb-1.5 border-b border-slate-800 pb-1">
+                                <span className="text-lg">{badge.icon}</span>
+                                <span className="text-xs font-bold text-white">{badge.name}</span>
+                              </div>
+                              <div className="text-[11px] text-slate-300 leading-snug">
+                                <span className="text-amber-400 font-semibold block text-[10px] uppercase tracking-wider mb-0.5">
+                                  ¿Cómo te la ganaste?
+                                </span>
+                                {badge.description}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Panel explicativo interactivo al pasar el mouse */}
+                      <div className="p-3 rounded-2xl bg-slate-950/60 border border-slate-800/80 text-xs transition-all">
+                        {hoveredBadge ? (
+                          <div className="space-y-1 animate-in fade-in duration-150">
+                            <div className="flex items-center gap-1.5 font-bold text-amber-300 text-xs">
+                              <span>{hoveredBadge.icon}</span>
+                              <span>{hoveredBadge.name}</span>
+                            </div>
+                            <p className="text-[11px] text-slate-300 leading-relaxed">
+                              <strong className="text-amber-400 font-medium">¿Cómo te la ganaste?: </strong>
+                              {hoveredBadge.description}
+                            </p>
+                          </div>
+                        ) : (
+                          <p className="text-[11px] text-slate-500 italic text-center">
+                            💡 Pasa el cursor por encima de cualquier insignia para saber exactamente cómo la ganaste.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
           </div>
 
