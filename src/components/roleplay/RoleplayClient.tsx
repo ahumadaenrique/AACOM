@@ -373,6 +373,8 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           systemPrompt: scenario.systemPrompt,
           firstMessage: scenario.firstMessage,
           voiceName: voiceName || (scenario.prospecto.genero === 'F' ? 'Aoede' : 'Puck'),
+          inputDeviceId: selectedInputId || undefined,
+          outputDeviceId: selectedOutputId || undefined,
           onConnect: ({ conversationId }) => {
             if (connectTimeoutRef.current) {
               clearTimeout(connectTimeoutRef.current);
@@ -413,11 +415,11 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
               clearTimeout(connectTimeoutRef.current);
               connectTimeoutRef.current = null;
             }
-            setCallStatusText('⚠️ Error en Google Gemini Live (API Key rechazada).');
+            setCallStatusText('⚠️ Error en Google Gemini Live.');
             alert(
               'No se pudo conectar con Google Gemini Live:\n\n' +
               (err?.message || 'Error de conexión') +
-              '\n\nLa API Key de Gemini en el servidor no es válida o fue rechazada por Google (Código 1007).\n\nPuedes cambiar el motor de esta agencia a "ElevenLabs ConvAI" en el menú de Agencias para que funcione de inmediato.'
+              '\n\nPor favor intenta marcar nuevamente.'
             );
             hangupCall();
           },

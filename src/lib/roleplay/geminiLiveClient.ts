@@ -1,7 +1,7 @@
 /**
  * Client-side adapter for Google Gemini Multimodal Live API (Bidirectional WebSocket)
  * Handles PCM 16kHz mic audio streaming, 24kHz PCM audio buffer playback,
- * turn-taking, interruption handling (barge-in), and realtime transcripts.
+ * turn-taking, barge-in echo suppression, and realtime transcripts.
  */
 
 export interface GeminiLiveSessionConfig {
@@ -9,6 +9,8 @@ export interface GeminiLiveSessionConfig {
   systemPrompt: string;
   firstMessage?: string;
   voiceName?: string; // 'Puck' | 'Charon' | 'Aoede' | 'Fenrir' | 'Kore'
+  inputDeviceId?: string;
+  outputDeviceId?: string;
   onConnect?: (info: { conversationId: string }) => void;
   onDisconnect?: () => void;
   onError?: (error: any) => void;
@@ -20,6 +22,8 @@ export interface GeminiLiveSessionConfig {
 export class GeminiLiveSession {
   private ws: WebSocket | null = null;
   private audioCtx: AudioContext | null = null;
+  private masterGain: GainNode | null = null;
+  private muteGain: GainNode | null = null;
   private mediaStream: MediaStream | null = null;
   private micSource: MediaStreamAudioSourceNode | null = null;
   private processor: ScriptProcessorNode | null = null;
@@ -34,6 +38,7 @@ export class GeminiLiveSession {
   private config: GeminiLiveSessionConfig;
   private isConnected: boolean = false;
   private isSetupComplete: boolean = false;
+  private isIntentionallyClosed: boolean = false;
   private sessionId: string;
 
   constructor(config: GeminiLiveSessionConfig) {
@@ -43,6 +48,8 @@ export class GeminiLiveSession {
 
   public async start(): Promise<void> {
     try {
+      this.isIntentionallyClosed = false;
+
       // 1. Initialize Web Audio Context
       const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
       this.audioCtx = new AudioCtxClass();
@@ -50,22 +57,38 @@ export class GeminiLiveSession {
         await this.audioCtx.resume();
       }
 
+      // Master output gain for AI playback
+      this.masterGain = this.audioCtx.createGain();
+      this.masterGain.gain.setValueAtTime(1.0, this.audioCtx.currentTime);
+      this.masterGain.connect(this.audioCtx.destination);
+
+      // Support specific output device if requested and supported
+      if (this.config.outputDeviceId && typeof (this.audioCtx as any).setSinkId === 'function') {
+        try {
+          await (this.audioCtx as any).setSinkId(this.config.outputDeviceId);
+        } catch (sinkErr) {
+          console.warn('[Gemini Live] setSinkId not applied:', sinkErr);
+        }
+      }
+
       // 2. Request user microphone
-      this.mediaStream = await navigator.mediaDevices.getUserMedia({
+      const micConstraints: MediaStreamConstraints = {
         audio: {
           channelCount: 1,
           echoCancellation: true,
           noiseSuppression: true,
-          autoGainControl: true
+          autoGainControl: true,
+          ...(this.config.inputDeviceId ? { deviceId: { exact: this.config.inputDeviceId } } : {})
         }
-      });
+      };
+      this.mediaStream = await navigator.mediaDevices.getUserMedia(micConstraints);
 
       // 3. Connect to Gemini Live WebSocket
       this.ws = new WebSocket(this.config.wsUrl);
 
       this.ws.onopen = () => {
         this.isConnected = true;
-        // Step 1: Send setup frame FIRST, then wait for setupComplete before sending audio/input
+        // Send setup frame FIRST, then wait for setupComplete before sending audio/input
         this.sendSetupFrame();
       };
 
@@ -75,7 +98,9 @@ export class GeminiLiveSession {
 
       this.ws.onerror = (err) => {
         console.error('[Gemini Live WS Error]', err);
-        if (this.config.onError) this.config.onError(err);
+        if (this.config.onError && !this.isIntentionallyClosed) {
+          this.config.onError(err);
+        }
       };
 
       this.ws.onclose = (ev) => {
@@ -84,11 +109,25 @@ export class GeminiLiveSession {
         this.isConnected = false;
         this.isSetupComplete = false;
 
-        if (!wasReady) {
-          const msg = ev.reason || (ev.code === 1007 || ev.code === 1008 ? 'API Key de Gemini no válida o rechazada por Google (Código ' + ev.code + ')' : 'La conexión con Gemini se cerró antes de iniciar (Código ' + ev.code + ')');
-          if (this.config.onError) this.config.onError(new Error(msg));
-        } else {
+        // Clean close or intentional user hangup
+        if (this.isIntentionallyClosed || ev.code === 1000) {
           if (this.config.onDisconnect) this.config.onDisconnect();
+          return;
+        }
+
+        // If the call was already established and running, treat as disconnect
+        if (wasReady) {
+          if (this.config.onDisconnect) this.config.onDisconnect();
+          return;
+        }
+
+        // Only report an error if it closed prematurely before setupComplete
+        const msg = ev.reason || (ev.code === 1007 || ev.code === 1008
+          ? `API Key o permisos de Gemini no válidos (Código ${ev.code})`
+          : `La conexión con Gemini se cerró antes de iniciar (Código ${ev.code})`);
+
+        if (this.config.onError) {
+          this.config.onError(new Error(msg));
         }
       };
 
@@ -122,7 +161,7 @@ export class GeminiLiveSession {
           parts: [
             {
               text: `${this.config.systemPrompt}
-IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en español mexicano con tono y modismos ejecutivos realistas. Sé conciso y directo en tus respuestas telefónicas (1 a 3 oraciones como en una llamada real). NUNCA rompas el personaje ni digas que eres una IA.`
+IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en español de México con tono y modismos ejecutivos realistas. Sé conciso y directo en tus respuestas telefónicas (1 a 3 oraciones como en una llamada real). NUNCA rompas el personaje ni digas que eres una IA.`
             }
           ]
         }
@@ -186,6 +225,12 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
         this.config.onUserSpeaking(isSpeaking, Math.min(1, rms * 5));
       }
 
+      // If the AI is actively speaking, filter out ambient speaker feedback
+      // Only stream to Google if user speaks assertively (barge-in intentional)
+      if (this.isAiSpeaking && rms < 0.05) {
+        return;
+      }
+
       // Downsample input from browser native rate (44.1k/48k) to exactly 16kHz PCM
       const pcm16 = this.downsampleTo16k(inputBuffer, inputRate);
 
@@ -215,8 +260,15 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
       } catch (_) {}
     };
 
+    // CRITICAL FIX: To prevent microphone feedback loop into the user's speakers
+    // (which immediately triggers Google's barge-in and cuts off the prospect's voice),
+    // connect the processor to a gain node of value 0 before connecting to destination.
+    this.muteGain = this.audioCtx.createGain();
+    this.muteGain.gain.setValueAtTime(0, this.audioCtx.currentTime);
+
     this.micSource.connect(this.processor);
-    this.processor.connect(this.audioCtx.destination);
+    this.processor.connect(this.muteGain);
+    this.muteGain.connect(this.audioCtx.destination);
   }
 
   private downsampleTo16k(input: Float32Array, inputRate: number): Int16Array {
@@ -267,12 +319,12 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
         return;
       }
 
-      console.log('[Gemini Live Frame Received]:', Object.keys(json));
-
       // Check for errors
       if (json.error) {
         console.error('[Gemini Live Server Error]', json.error);
-        if (this.config.onError) this.config.onError(json.error);
+        if (this.config.onError && !this.isIntentionallyClosed) {
+          this.config.onError(json.error);
+        }
         return;
       }
 
@@ -345,24 +397,34 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
     if (!this.audioCtx) return;
 
     try {
+      if (this.audioCtx.state === 'suspended') {
+        this.audioCtx.resume().catch(() => {});
+      }
+
       const binaryStr = atob(base64Pcm);
-      const bytes = new Uint8Array(binaryStr.length);
-      for (let i = 0; i < binaryStr.length; i++) {
+      const byteLen = binaryStr.length;
+      if (byteLen < 2) return;
+
+      const bytes = new Uint8Array(byteLen);
+      for (let i = 0; i < byteLen; i++) {
         bytes[i] = binaryStr.charCodeAt(i);
       }
 
-      // Gemini Live outputs 16-bit PCM at 24kHz
-      const pcm16 = new Int16Array(bytes.buffer);
-      const audioBuffer = this.audioCtx.createBuffer(1, pcm16.length, 24000);
+      // Safe 16-bit PCM little-endian conversion using DataView
+      // Prevents RangeError when chunk length is odd
+      const sampleCount = Math.floor(byteLen / 2);
+      const dataView = new DataView(bytes.buffer, bytes.byteOffset, sampleCount * 2);
+      const audioBuffer = this.audioCtx.createBuffer(1, sampleCount, 24000);
       const channelData = audioBuffer.getChannelData(0);
 
-      for (let i = 0; i < pcm16.length; i++) {
-        channelData[i] = pcm16[i] / 32768.0;
+      for (let i = 0; i < sampleCount; i++) {
+        const int16 = dataView.getInt16(i * 2, true);
+        channelData[i] = int16 / 32768.0;
       }
 
       const sourceNode = this.audioCtx.createBufferSource();
       sourceNode.buffer = audioBuffer;
-      sourceNode.connect(this.audioCtx.destination);
+      sourceNode.connect(this.masterGain || this.audioCtx.destination);
 
       const currentTime = this.audioCtx.currentTime;
       if (this.nextPlayTime < currentTime) {
@@ -405,6 +467,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
   }
 
   public end(): void {
+    this.isIntentionallyClosed = true;
     this.stopAiAudioPlayback();
 
     if (this.processor) {
@@ -412,9 +475,19 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
       this.processor = null;
     }
 
+    if (this.muteGain) {
+      try { this.muteGain.disconnect(); } catch (_) {}
+      this.muteGain = null;
+    }
+
     if (this.micSource) {
       try { this.micSource.disconnect(); } catch (_) {}
       this.micSource = null;
+    }
+
+    if (this.masterGain) {
+      try { this.masterGain.disconnect(); } catch (_) {}
+      this.masterGain = null;
     }
 
     if (this.mediaStream) {
