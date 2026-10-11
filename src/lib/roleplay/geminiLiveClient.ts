@@ -225,17 +225,12 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
         this.config.onUserSpeaking(isSpeaking, Math.min(1, rms * 5));
       }
 
-      // If the AI is actively speaking, filter out ambient speaker feedback
-      // Only stream to Google if user speaks assertively (barge-in intentional)
-      if (this.isAiSpeaking && rms < 0.05) {
-        return;
-      }
-
-      // Downsample input from browser native rate (44.1k/48k) to exactly 16kHz PCM
+      // Continuous audio streaming: stream all 16kHz PCM frames to Google without interruption
+      // Google server-side Voice Activity Detection (VAD) requires continuous baseline audio to accurately detect speech onset and offset
       const pcm16 = this.downsampleTo16k(inputBuffer, inputRate);
 
       // Base64 encode PCM bytes
-      const bytes = new Uint8Array(pcm16.buffer);
+      const bytes = new Uint8Array(pcm16.buffer, pcm16.byteOffset, pcm16.byteLength);
       let binary = '';
       const len = bytes.byteLength;
       for (let i = 0; i < len; i++) {
@@ -282,7 +277,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
     }
 
     const ratio = inputRate / 16000;
-    const newLength = Math.round(input.length / ratio);
+    const newLength = Math.floor(input.length / ratio);
     const pcm16 = new Int16Array(newLength);
 
     for (let i = 0; i < newLength; i++) {
@@ -290,7 +285,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
       const indexFloor = Math.floor(originIndex);
       const indexCeil = Math.min(input.length - 1, indexFloor + 1);
       const fraction = originIndex - indexFloor;
-      const sample = input[indexFloor] * (1 - fraction) + input[indexCeil] * fraction;
+      const sample = (input[indexFloor] || 0) * (1 - fraction) + (input[indexCeil] || 0) * fraction;
       const s = Math.max(-1, Math.min(1, sample));
       pcm16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
     }
