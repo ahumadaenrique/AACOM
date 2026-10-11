@@ -1,7 +1,7 @@
 /**
  * Client-side adapter for Google Gemini Multimodal Live API (Bidirectional WebSocket)
  * Handles PCM 16kHz mic audio streaming, 24kHz PCM audio buffer playback,
- * turn-taking, barge-in echo suppression, and realtime transcripts.
+ * bidirectional speech recognition, turn-taking, and realtime transcripts.
  */
 
 export interface GeminiLiveSessionConfig {
@@ -27,6 +27,7 @@ export class GeminiLiveSession {
   private mediaStream: MediaStream | null = null;
   private micSource: MediaStreamAudioSourceNode | null = null;
   private processor: ScriptProcessorNode | null = null;
+  private recognition: any = null;
   
   // Audio playback state
   private audioQueue: AudioBufferSourceNode[] = [];
@@ -39,6 +40,7 @@ export class GeminiLiveSession {
   private isConnected: boolean = false;
   private isSetupComplete: boolean = false;
   private isIntentionallyClosed: boolean = false;
+  private micStarted: boolean = false;
   private sessionId: string;
 
   constructor(config: GeminiLiveSessionConfig) {
@@ -49,6 +51,7 @@ export class GeminiLiveSession {
   public async start(): Promise<void> {
     try {
       this.isIntentionallyClosed = false;
+      this.micStarted = false;
 
       // 1. Initialize Web Audio Context
       const AudioCtxClass = window.AudioContext || (window as any).webkitAudioContext;
@@ -157,6 +160,8 @@ export class GeminiLiveSession {
             }
           }
         },
+        inputAudioTranscription: {},
+        outputAudioTranscription: {},
         systemInstruction: {
           parts: [
             {
@@ -198,6 +203,88 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
     }
   }
 
+  public sendUserTurn(text: string): void {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+
+    console.log('[Gemini Live] Sending User Turn to Model:', text);
+
+    const userTurn = {
+      clientContent: {
+        turns: [
+          {
+            role: 'user',
+            parts: [{ text }]
+          }
+        ],
+        turnComplete: true
+      }
+    };
+
+    try {
+      this.ws.send(JSON.stringify(userTurn));
+    } catch (err) {
+      console.error('[Gemini Live sendUserTurn error]', err);
+    }
+  }
+
+  private startSpeechRecognition(): void {
+    if (typeof window === 'undefined') return;
+
+    const SpeechRecognitionClass = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SpeechRecognitionClass) {
+      console.warn('[Gemini Live] Web Speech API not supported on this browser, relying solely on PCM streaming.');
+      return;
+    }
+
+    try {
+      this.recognition = new SpeechRecognitionClass();
+      this.recognition.continuous = true;
+      this.recognition.interimResults = false;
+      this.recognition.lang = 'es-MX';
+
+      this.recognition.onresult = (event: any) => {
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          const result = event.results[i];
+          if (result && result.isFinal) {
+            const userText = result[0]?.transcript?.trim();
+            if (userText) {
+              console.log('[Gemini Live Transcribed User Speech]:', userText);
+
+              // 1. Add to live transcript UI
+              this.currentTranscript.push({ source: 'user', message: userText });
+              if (this.config.onMessage) {
+                this.config.onMessage({ source: 'user', message: userText });
+              }
+
+              // 2. Transmit user turn explicitly to model so it generates an immediate voice response
+              this.sendUserTurn(userText);
+            }
+          }
+        }
+      };
+
+      this.recognition.onerror = (err: any) => {
+        if (err.error !== 'no-speech' && err.error !== 'aborted') {
+          console.warn('[Gemini Live SpeechRecognition Error]:', err.error);
+        }
+      };
+
+      this.recognition.onend = () => {
+        // Automatically restart speech recognition while call is active
+        if (this.isConnected && !this.isIntentionallyClosed && this.micStarted) {
+          try {
+            this.recognition?.start();
+          } catch (_) {}
+        }
+      };
+
+      this.recognition.start();
+      console.log('[Gemini Live] Speech Recognition started successfully (es-MX).');
+    } catch (e) {
+      console.warn('[Gemini Live] Failed to start SpeechRecognition:', e);
+    }
+  }
+
   private startMicRecording(): void {
     if (!this.audioCtx || !this.mediaStream) return;
 
@@ -225,8 +312,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
         this.config.onUserSpeaking(isSpeaking, Math.min(1, rms * 5));
       }
 
-      // Continuous audio streaming: stream all 16kHz PCM frames to Google without interruption
-      // Google server-side Voice Activity Detection (VAD) requires continuous baseline audio to accurately detect speech onset and offset
+      // Continuous audio streaming: stream 16kHz PCM frames to Google without interruption
       const pcm16 = this.downsampleTo16k(inputBuffer, inputRate);
 
       // Base64 encode PCM bytes
@@ -255,9 +341,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
       } catch (_) {}
     };
 
-    // CRITICAL FIX: To prevent microphone feedback loop into the user's speakers
-    // (which immediately triggers Google's barge-in and cuts off the prospect's voice),
-    // connect the processor to a gain node of value 0 before connecting to destination.
+    // Connect processor to gain 0 to avoid microphone echo in speakers
     this.muteGain = this.audioCtx.createGain();
     this.muteGain.gain.setValueAtTime(0, this.audioCtx.currentTime);
 
@@ -332,10 +416,8 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
           this.config.onConnect({ conversationId: this.sessionId });
         }
 
-        // Start mic recording now that setup is complete
-        this.startMicRecording();
-
-        // Trigger prospect's spoken greeting aloud
+        // Trigger prospect's spoken greeting FIRST.
+        // Mic recording will start only after greeting turn completes to prevent state conflict.
         const greeting = this.config.firstMessage || '¿Bueno? ¿Quién habla?';
         this.sendInitialTriggerTurn(greeting);
         return;
@@ -343,12 +425,26 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
 
       // 2. Interruption detection (barge-in): Gemini detected user speaking
       if (json.serverContent?.interrupted) {
+        console.log('[Gemini Live] Interruption detected (barge-in)!');
         this.stopAiAudioPlayback();
         if (this.config.onAiSpeaking) this.config.onAiSpeaking(false);
         return;
       }
 
-      // 3. Model Turn: Audio output & text transcripts
+      // 3. User Speech Transcript from Google (if emitted)
+      const inputTranscript = json.serverContent?.inputTranscription?.text || json.serverContent?.interimInputTranscription?.text;
+      if (inputTranscript && inputTranscript.trim()) {
+        const text = inputTranscript.trim();
+        const lastMsg = this.currentTranscript[this.currentTranscript.length - 1];
+        if (!lastMsg || lastMsg.source !== 'user' || lastMsg.message !== text) {
+          this.currentTranscript.push({ source: 'user', message: text });
+          if (this.config.onMessage) {
+            this.config.onMessage({ source: 'user', message: text });
+          }
+        }
+      }
+
+      // 4. Model Turn: Audio output & text transcripts
       const modelTurn = json.serverContent?.modelTurn;
       if (modelTurn?.parts) {
         for (const part of modelTurn.parts) {
@@ -365,8 +461,9 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
         }
       }
 
-      // 4. Turn complete
+      // 5. Turn complete
       if (json.serverContent?.turnComplete) {
+        console.log('[Gemini Live] Model turn complete.');
         let aiText = this.currentAiTextBuffer.trim();
 
         // If turn ended without explicit text part (native audio mode), fallback to firstMessage or recorded prompt
@@ -381,6 +478,14 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
           }
         }
         this.currentAiTextBuffer = '';
+
+        // Start mic recording and speech recognition once initial greeting turn has completed!
+        // This ensures the WebSocket protocol cleanly transitions from Seeding to Live mode.
+        if (!this.micStarted) {
+          this.micStarted = true;
+          this.startMicRecording();
+          this.startSpeechRecognition();
+        }
       }
 
     } catch (err) {
@@ -406,7 +511,6 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
       }
 
       // Safe 16-bit PCM little-endian conversion using DataView
-      // Prevents RangeError when chunk length is odd
       const sampleCount = Math.floor(byteLen / 2);
       const dataView = new DataView(bytes.buffer, bytes.byteOffset, sampleCount * 2);
       const audioBuffer = this.audioCtx.createBuffer(1, sampleCount, 24000);
@@ -463,7 +567,13 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
 
   public end(): void {
     this.isIntentionallyClosed = true;
+    this.micStarted = false;
     this.stopAiAudioPlayback();
+
+    if (this.recognition) {
+      try { this.recognition.stop(); } catch (_) {}
+      this.recognition = null;
+    }
 
     if (this.processor) {
       try { this.processor.disconnect(); } catch (_) {}
