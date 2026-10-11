@@ -48,6 +48,9 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
       voiceEngine: agency.voiceEngine || 'GEMINI_LIVE',
       byokActive: agency.byokActive ?? true,
       voiceSecondsBalance: agency.voiceSecondsBalance || 0,
+      roleplayRewardActive: agency.roleplayRewardActive ?? true,
+      roleplayRewardAmount: agency.roleplayRewardAmount ?? 1500,
+      roleplayRewardTitle: agency.roleplayRewardTitle || 'Bono por Álbum Completo',
       isSuperAdmin
     });
 
@@ -66,7 +69,15 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     const { id } = params;
     const body = await req.json();
-    const { elevenLabsApiKey, elevenLabsVoiceId, voiceEngine, byokActive } = body;
+    const {
+      elevenLabsApiKey,
+      elevenLabsVoiceId,
+      voiceEngine,
+      byokActive,
+      roleplayRewardActive,
+      roleplayRewardAmount,
+      roleplayRewardTitle
+    } = body;
 
     // Verify permissions
     const user = await prisma.user.findUnique({ where: { email: session.user.email! } });
@@ -87,6 +98,17 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     // Agency admin or SuperAdmin can toggle BYOK active state
     if (byokActive !== undefined) {
       updateData.byokActive = Boolean(byokActive);
+    }
+
+    // Agency admin or SuperAdmin can configure Roleplay Insignias Reward
+    if (roleplayRewardActive !== undefined) {
+      updateData.roleplayRewardActive = Boolean(roleplayRewardActive);
+    }
+    if (roleplayRewardAmount !== undefined) {
+      updateData.roleplayRewardAmount = Math.max(0, parseInt(roleplayRewardAmount) || 0);
+    }
+    if (roleplayRewardTitle !== undefined) {
+      updateData.roleplayRewardTitle = String(roleplayRewardTitle).trim() || 'Bono por Álbum Completo';
     }
 
     // Only update API Key if a new non-masked value is provided

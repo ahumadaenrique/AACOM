@@ -26,16 +26,13 @@ import {
   VideoOff,
   LogOut,
   Users,
-  PieChart,
-  Send,
-  Activity
+  PieChart
 } from 'lucide-react';
 import { MasterTacticsModal } from './MasterTacticsModal';
 import { EvaluationModal } from './EvaluationModal';
 import { EvaluatingModal } from './EvaluatingModal';
 import { SupervisionPanel } from './SupervisionPanel';
 import { AudioSettingsModal } from './AudioSettingsModal';
-import { GeminiDiagnosticModal } from './GeminiDiagnosticModal';
 import { GeminiLiveSession } from '@/lib/roleplay/geminiLiveClient';
 
 interface RoleplayClientProps {
@@ -135,23 +132,9 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   const [transcript, setTranscript] = useState<{ source: 'ai' | 'user'; message: string }[]>([]);
   const [currentEval, setCurrentEval] = useState<any>(null);
 
-  // Live Testing & Speech Diagnostic State
+  // Live Speech State
   const [interimSpeech, setInterimSpeech] = useState<string>('');
   const [micStatus, setMicStatus] = useState<{ status: string; details?: string }>({ status: 'idle' });
-  const [customTestText, setCustomTestText] = useState<string>('');
-  const [showDiagnosticModal, setShowDiagnosticModal] = useState<boolean>(false);
-
-  const handleSendTestMessage = (text: string) => {
-    if (!text.trim() || !geminiSessionRef.current) return;
-    geminiSessionRef.current.sendUserTurn(text.trim());
-  };
-
-  const handleCustomTestSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customTestText.trim()) return;
-    handleSendTestMessage(customTestText);
-    setCustomTestText('');
-  };
 
   // History
   const [historyCalls, setHistoryCalls] = useState<any[]>([]);
@@ -611,7 +594,6 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     setUserSpeaking(false);
     setUserMicVolume(0);
     setInterimSpeech('');
-    setCustomTestText('');
 
     let recordingBlob: Blob | null = null;
     if (geminiSessionRef.current) {
@@ -1069,16 +1051,6 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                     <span className="text-[10px] px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300 font-medium">
                       {engine === 'GEMINI_LIVE' ? '⚡ Google Gemini Live' : '🎙️ ElevenLabs ConvAI'}
                     </span>
-                    {engine === 'GEMINI_LIVE' && (
-                      <button
-                        onClick={() => setShowDiagnosticModal(true)}
-                        className="text-[10px] px-2.5 py-0.5 rounded-full bg-indigo-950/80 hover:bg-indigo-900 border border-indigo-500/40 text-indigo-300 hover:text-white font-semibold transition-all flex items-center gap-1 shadow-sm"
-                        title="Probar conexión y latencia de voz con Google Gemini Live"
-                      >
-                        <Activity className="w-3 h-3 text-indigo-400" />
-                        <span>🔬 Diagnóstico Gemini Live</span>
-                      </button>
-                    )}
                   </div>
 
                   {/* Real-time Voice Activity Indicator (Confirming mic is picking up user voice) */}
@@ -1150,62 +1122,6 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                     </button>
                   )}
                 </div>
-
-                {/* Consola de Pruebas en Vivo para Gemini Live durante la llamada */}
-                {isCalling && engine === 'GEMINI_LIVE' && (
-                  <div className="p-3.5 rounded-2xl bg-slate-900/90 border border-slate-800 space-y-2.5 animate-in fade-in">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-400 flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-                        Pruebas de Voz en Vivo
-                      </span>
-                      <span className="text-[10px] text-slate-400">
-                        Habla por micro o presiona un botón para que Alfonso te responda en voz alta:
-                      </span>
-                    </div>
-
-                    {/* Botones de prueba rápida */}
-                    <div className="flex flex-wrap gap-1.5">
-                      <button
-                        onClick={() => handleSendTestMessage('Hola, buenas tardes, soy tu asesor de AACOM Seguros')}
-                        className="px-2.5 py-1 rounded-lg text-xs bg-slate-800 hover:bg-indigo-900/60 border border-slate-700 hover:border-indigo-500/50 text-slate-200 transition-colors"
-                      >
-                        🗣️ "Hola, buenas tardes..."
-                      </button>
-                      <button
-                        onClick={() => handleSendTestMessage('¿Cómo te encuentras el día de hoy Alfonso?')}
-                        className="px-2.5 py-1 rounded-lg text-xs bg-slate-800 hover:bg-indigo-900/60 border border-slate-700 hover:border-indigo-500/50 text-slate-200 transition-colors"
-                      >
-                        🗣️ "¿Cómo te encuentras hoy?"
-                      </button>
-                      <button
-                        onClick={() => handleSendTestMessage('Te contacto para revisar tu estrategia de ahorro y retiro.')}
-                        className="px-2.5 py-1 rounded-lg text-xs bg-slate-800 hover:bg-indigo-900/60 border border-slate-700 hover:border-indigo-500/50 text-slate-200 transition-colors"
-                      >
-                        🗣️ "Revisar ahorro y retiro"
-                      </button>
-                    </div>
-
-                    {/* Input libre para escribir cualquier mensaje */}
-                    <form onSubmit={handleCustomTestSubmit} className="flex gap-2">
-                      <input
-                        type="text"
-                        value={customTestText}
-                        onChange={(e) => setCustomTestText(e.target.value)}
-                        placeholder={`Escribe un mensaje de prueba para ${scenario?.prospecto?.nombre?.split(' ')[0]}...`}
-                        className="flex-1 px-3 py-1.5 text-xs rounded-xl bg-slate-950 border border-slate-800 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
-                      />
-                      <button
-                        type="submit"
-                        disabled={!customTestText.trim()}
-                        className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-40 text-xs font-semibold text-white transition-all flex items-center gap-1.5 flex-shrink-0"
-                      >
-                        <Send className="w-3.5 h-3.5" />
-                        <span>Enviar</span>
-                      </button>
-                    </form>
-                  </div>
-                )}
 
                 {/* Live Transcript Box */}
                 <div className="space-y-2 pt-4 border-t border-slate-800">
@@ -1470,11 +1386,6 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           setCallDuration(0);
           initSession();
         }}
-      />
-
-      <GeminiDiagnosticModal
-        isOpen={showDiagnosticModal}
-        onClose={() => setShowDiagnosticModal(false)}
       />
 
     </div>

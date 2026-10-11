@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Bot, Key, KeyRound, Loader2, Save, ExternalLink, Sparkles, Cpu, PhoneCall } from "lucide-react";
+import { Bot, Key, KeyRound, Loader2, Save, ExternalLink, Sparkles, Cpu, PhoneCall, Award } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 interface AgencyAiSettingsModalProps {
@@ -23,6 +23,9 @@ export function AgencyAiSettingsModal({ isOpen, onClose, agencyId, agencyName }:
   const [voiceEngine, setVoiceEngine] = useState("GEMINI_LIVE");
   const [byokActive, setByokActive] = useState(true);
   const [voiceSecondsBalance, setVoiceSecondsBalance] = useState(0);
+  const [roleplayRewardActive, setRoleplayRewardActive] = useState(true);
+  const [roleplayRewardAmount, setRoleplayRewardAmount] = useState(1500);
+  const [roleplayRewardTitle, setRoleplayRewardTitle] = useState("Bono por Álbum Completo");
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
@@ -36,6 +39,9 @@ export function AgencyAiSettingsModal({ isOpen, onClose, agencyId, agencyName }:
       setVoiceEngine("GEMINI_LIVE");
       setByokActive(true);
       setVoiceSecondsBalance(0);
+      setRoleplayRewardActive(true);
+      setRoleplayRewardAmount(1500);
+      setRoleplayRewardTitle("Bono por Álbum Completo");
       setIsSuperAdmin(false);
       setSuccessMsg("");
       setErrorMsg("");
@@ -55,6 +61,9 @@ export function AgencyAiSettingsModal({ isOpen, onClose, agencyId, agencyName }:
       setVoiceEngine(data.voiceEngine || "GEMINI_LIVE");
       setByokActive(data.byokActive ?? true);
       setVoiceSecondsBalance(data.voiceSecondsBalance || 0);
+      setRoleplayRewardActive(data.roleplayRewardActive ?? true);
+      setRoleplayRewardAmount(data.roleplayRewardAmount ?? 1500);
+      setRoleplayRewardTitle(data.roleplayRewardTitle || "Bono por Álbum Completo");
       setIsSuperAdmin(Boolean(data.isSuperAdmin));
     } catch (err: any) {
       setErrorMsg(err.message || "Error al cargar configuración");
@@ -76,7 +85,10 @@ export function AgencyAiSettingsModal({ isOpen, onClose, agencyId, agencyName }:
           elevenLabsApiKey: apiKey,
           elevenLabsVoiceId: voiceId,
           voiceEngine,
-          byokActive
+          byokActive,
+          roleplayRewardActive,
+          roleplayRewardAmount,
+          roleplayRewardTitle
         }),
       });
 
@@ -218,6 +230,58 @@ export function AgencyAiSettingsModal({ isOpen, onClose, agencyId, agencyName }:
                       Cifrado AES-256 en la bóveda de la base de datos.
                     </p>
                   </div>
+                </div>
+              )}
+            </div>
+
+            {/* Premio por Álbum de Insignias Parametrizable */}
+            <div className="p-4 border border-amber-200 rounded-xl space-y-3 bg-amber-50/40">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label htmlFor="roleplayRewardActive" className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                    <Award className="w-4 h-4 text-amber-600" /> Premio por Coleccionar Insignias
+                  </Label>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Define si tu promotoría ofrece un bono o premio monetario a los asesores que completen el álbum.
+                  </p>
+                </div>
+                <Switch
+                  id="roleplayRewardActive"
+                  checked={roleplayRewardActive}
+                  onCheckedChange={setRoleplayRewardActive}
+                />
+              </div>
+
+              {roleplayRewardActive ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-amber-200/60">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="roleplayRewardAmount" className="text-xs font-semibold text-slate-700">Monto del Bono (MXN)</Label>
+                    <Input
+                      id="roleplayRewardAmount"
+                      type="number"
+                      min={0}
+                      step={100}
+                      value={roleplayRewardAmount}
+                      onChange={(e) => setRoleplayRewardAmount(Number(e.target.value))}
+                      className="text-xs h-9 bg-white"
+                      placeholder="1500"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="roleplayRewardTitle" className="text-xs font-semibold text-slate-700">Concepto / Nombre del Premio</Label>
+                    <Input
+                      id="roleplayRewardTitle"
+                      type="text"
+                      value={roleplayRewardTitle}
+                      onChange={(e) => setRoleplayRewardTitle(e.target.value)}
+                      className="text-xs h-9 bg-white"
+                      placeholder="Bono por Álbum Completo"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="p-2.5 bg-slate-100/80 rounded-lg text-xs text-slate-600">
+                  ℹ️ <strong>Sin bono monetario:</strong> Los asesores coleccionarán las insignias únicamente por reconocimiento pedagógico, estatus y experiencia, sin mostrar promesa de bono en efectivo.
                 </div>
               )}
             </div>

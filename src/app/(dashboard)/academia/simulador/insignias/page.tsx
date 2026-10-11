@@ -14,9 +14,20 @@ export default async function InsigniasPage() {
   const session = await auth();
   if (!session?.user?.id) redirect('/login');
 
-  const stats = await prisma.roleplayStats.findUnique({
-    where: { userId: session.user.id }
-  });
+  const [stats, user] = await Promise.all([
+    prisma.roleplayStats.findUnique({
+      where: { userId: session.user.id }
+    }),
+    prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { agency: true }
+    })
+  ]);
+
+  const agency = user?.agency;
+  const rewardActive = agency?.roleplayRewardActive ?? true;
+  const rewardAmount = agency?.roleplayRewardAmount ?? 1500;
+  const rewardTitle = agency?.roleplayRewardTitle || 'Bono por Álbum Completo';
 
   const unlockedIds = stats?.badges || [];
   const totalBadges = BADGES.length;
@@ -35,7 +46,11 @@ export default async function InsigniasPage() {
         </Link>
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900">Trofeos e Insignias</h1>
-          <p className="text-sm text-slate-500">Colecciona las {totalBadges} insignias para desbloquear tu bono especial.</p>
+          <p className="text-sm text-slate-500">
+            {rewardActive
+              ? `Colecciona las ${totalBadges} insignias para desbloquear tu bono de $${rewardAmount.toLocaleString('es-MX')} MXN.`
+              : `Colecciona las ${totalBadges} insignias para alcanzar la Maestría Patrimonial de élite.`}
+          </p>
         </div>
       </div>
 
@@ -53,8 +68,12 @@ export default async function InsigniasPage() {
               </h2>
               <p className="text-slate-400 text-sm mt-1">
                 {unlockedCount === totalBadges 
-                  ? '¡Felicidades! Has completado el Álbum y desbloqueado tu premio.'
-                  : `Te faltan ${totalBadges - unlockedCount} insignias para el bono de $1,500 MXN.`}
+                  ? (rewardActive 
+                      ? `¡Felicidades! Has completado el Álbum y desbloqueado tu ${rewardTitle} de $${rewardAmount.toLocaleString('es-MX')} MXN.`
+                      : '¡Felicidades! Has completado el Álbum y alcanzado la Maestría de Élite.')
+                  : (rewardActive
+                      ? `Te faltan ${totalBadges - unlockedCount} insignias para el bono de $${rewardAmount.toLocaleString('es-MX')} MXN.`
+                      : `Te faltan ${totalBadges - unlockedCount} insignias para completar el Álbum.`)}
               </p>
             </div>
             <span className="text-3xl font-black text-slate-700">{progressPct}%</span>

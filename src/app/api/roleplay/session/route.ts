@@ -110,21 +110,20 @@ export async function POST(req: Request) {
     const scenario = generarEscenarioAleatorio(stats.level, moduleId, agencyName);
 
     // 1. Determinar motor de voz (Gemini Live vs ElevenLabs)
-    const isAacom = userWithAgency?.agency?.id === 'aacom' || userWithAgency?.agency?.slug === 'aacom';
+    // Respetar estrictamente la configuración elegida por el administrador de la agencia
     const configuredEngine = userWithAgency?.agency?.voiceEngine;
     const isByokActive = userWithAgency?.agency?.byokActive ?? true;
     const hasAgencyByokKey = !!userWithAgency?.agency?.elevenLabsApiKey && isByokActive;
     
-    let effectiveEngine: 'GEMINI_LIVE' | 'ELEVENLABS' = 'ELEVENLABS';
-    if (isAacom) {
-      // AACOM: el motor oficial e indiscutible es ElevenLabs con la cuenta activa de Enrique
-      effectiveEngine = 'ELEVENLABS';
-    } else if (configuredEngine === 'ELEVENLABS' || hasAgencyByokKey) {
-      effectiveEngine = 'ELEVENLABS';
-    } else if (configuredEngine === 'GEMINI_LIVE') {
+    let effectiveEngine: 'GEMINI_LIVE' | 'ELEVENLABS' = 'GEMINI_LIVE';
+    if (configuredEngine === 'GEMINI_LIVE') {
       effectiveEngine = 'GEMINI_LIVE';
-    } else {
+    } else if (configuredEngine === 'ELEVENLABS') {
       effectiveEngine = 'ELEVENLABS';
+    } else if (hasAgencyByokKey) {
+      effectiveEngine = 'ELEVENLABS';
+    } else {
+      effectiveEngine = 'GEMINI_LIVE';
     }
 
     // Safety fallback: si se seleccionó Gemini Live pero no hay API Key en servidor, usar ElevenLabs
@@ -313,6 +312,11 @@ export async function POST(req: Request) {
         badges: stats.badges,
         unlockedBenefits: stats.unlockedBenefits,
         penaltyApplied: penaltyCheck.penaltyXp > 0 ? penaltyCheck.penaltyXp : null
+      },
+      rewardConfig: {
+        active: userWithAgency?.agency?.roleplayRewardActive ?? true,
+        amount: userWithAgency?.agency?.roleplayRewardAmount ?? 1500,
+        title: userWithAgency?.agency?.roleplayRewardTitle || 'Bono por Álbum Completo'
       },
       badgesCatalog: BADGES_CATALOG
     });

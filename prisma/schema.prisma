@@ -57,6 +57,9 @@ model Agency {
   voiceSecondsBalance   Int                  @default(0)
   elevenLabsApiKey      String?
   elevenLabsVoiceId     String?
+  roleplayRewardActive  Boolean?             @default(true)
+  roleplayRewardAmount  Int?                 @default(1500)
+  roleplayRewardTitle   String?              @default("Bono por Álbum Completo")
 
   // Configuraciones del Cotizador Modular
   quoterLifeCompany            String?              @default("Insignia Life")
