@@ -81,6 +81,7 @@ export async function GET(req: Request) {
                 }
               }
             },
+            outputAudioTranscription: {},
             systemInstruction: {
               parts: [
                 {
@@ -148,6 +149,21 @@ export async function GET(req: Request) {
 
             ws.send(JSON.stringify(triggerTurn));
             return;
+          }
+
+          // Extract output audio transcription if sent by Gemini
+          const transcriptionText = 
+            json.serverContent?.outputTranscription?.text ||
+            json.serverContent?.outputAudioTranscription?.text ||
+            json.outputTranscription?.text ||
+            json.outputAudioTranscription?.text;
+
+          if (transcriptionText) {
+            if (!initialTurnDone) {
+              greetingText += transcriptionText;
+            } else {
+              userTurnText += transcriptionText;
+            }
           }
 
           // Model turn parts (audio or text)

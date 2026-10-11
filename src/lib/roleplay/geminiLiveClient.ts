@@ -154,6 +154,7 @@ export class GeminiLiveSession {
             }
           }
         },
+        outputAudioTranscription: {},
         systemInstruction: {
           parts: [
             {
@@ -562,6 +563,17 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
         return;
       }
 
+      // Extract output audio transcription if sent by Gemini
+      const outputTranscriptionText =
+        json.serverContent?.outputTranscription?.text ||
+        json.serverContent?.outputAudioTranscription?.text ||
+        json.outputTranscription?.text ||
+        json.outputAudioTranscription?.text;
+
+      if (outputTranscriptionText) {
+        this.currentAiTextBuffer += outputTranscriptionText;
+      }
+
       // 3. Model Turn: Audio output & text transcripts
       const modelTurn = json.serverContent?.modelTurn;
       if (modelTurn?.parts) {
@@ -590,6 +602,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
         }
 
         if (aiText) {
+          console.log('[Gemini Live AI Turn Transcript]:', aiText);
           this.currentTranscript.push({ source: 'ai', message: aiText });
           if (this.config.onMessage) {
             this.config.onMessage({ source: 'ai', message: aiText });
