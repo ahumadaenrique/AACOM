@@ -246,14 +246,28 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
     return pcm16;
   }
 
-  private handleServerMessage(data: any): void {
+  private async handleServerMessage(data: any): Promise<void> {
     try {
-      let json: any;
+      let rawText = '';
       if (typeof data === 'string') {
-        json = JSON.parse(data);
+        rawText = data;
+      } else if (data instanceof Blob) {
+        rawText = await data.text();
+      } else if (data instanceof ArrayBuffer) {
+        rawText = new TextDecoder().decode(data);
       } else {
         return;
       }
+
+      let json: any;
+      try {
+        json = JSON.parse(rawText);
+      } catch (parseErr) {
+        console.warn('[Gemini Live] Message parse error, rawText:', rawText, parseErr);
+        return;
+      }
+
+      console.log('[Gemini Live Frame Received]:', Object.keys(json));
 
       // Check for errors
       if (json.error) {
@@ -264,7 +278,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
 
       // 1. Setup complete handshake acknowledgment
       if (json.setupComplete) {
-        console.log('[Gemini Live] Setup complete acknowledged by server.');
+        console.log('[Gemini Live] Setup complete acknowledged by server! Answering call...');
         this.isSetupComplete = true;
 
         if (this.config.onConnect) {
