@@ -32,6 +32,7 @@ import {
 } from 'lucide-react';
 import { MasterTacticsModal } from './MasterTacticsModal';
 import { EvaluationModal } from './EvaluationModal';
+import { EvaluatingModal } from './EvaluatingModal';
 import { SupervisionPanel } from './SupervisionPanel';
 import { AudioSettingsModal } from './AudioSettingsModal';
 import { GeminiDiagnosticModal } from './GeminiDiagnosticModal';
@@ -92,6 +93,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   const [activeTab, setActiveTab] = useState<'simulador' | 'historial' | 'admin'>('simulador');
   const [isTacticsOpen, setIsTacticsOpen] = useState(false);
   const [isEvalOpen, setIsEvalOpen] = useState(false);
+  const [isEvaluating, setIsEvaluating] = useState(false);
 
   // Sound Mute
   const [isMuted, setIsMuted] = useState(false);
@@ -645,6 +647,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     setIsCalling(false);
     setIsConnecting(false);
     setProspectSpeaking(false);
+    setIsEvaluating(true);
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
@@ -721,9 +724,11 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
         ...prev
       ]);
 
+      setIsEvaluating(false);
       setIsEvalOpen(true);
     } catch (e) {
       console.error("Error evaluating call:", e);
+      setIsEvaluating(false);
       setCallStatusText('La llamada terminó.');
     }
   };
@@ -1446,6 +1451,12 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
         isOpen={isTacticsOpen}
         onClose={() => setIsTacticsOpen(false)}
         moduleId={moduleId}
+      />
+
+      <EvaluatingModal
+        isOpen={isEvaluating}
+        moduleId={moduleId}
+        prospectName={scenario?.prospecto?.nombre}
       />
 
       <EvaluationModal
