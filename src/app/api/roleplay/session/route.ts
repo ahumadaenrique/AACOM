@@ -154,9 +154,44 @@ export async function POST(req: Request) {
         return NextResponse.json({ error: 'Configuración de Gemini incompleta en el servidor.' }, { status: 500 });
       }
 
-      wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${geminiApiKey}`;
       const isFemale = scenario.prospecto.genero === 'F';
       voiceName = isFemale ? 'Aoede' : 'Puck';
+
+      // Solicitar Token Efímero a Google (short-lived auth token)
+      // Esto permite que el navegador se conecte por WebSocket seguro sin exponer la API key
+      try {
+        const tokenResp = await fetch('https://generativelanguage.googleapis.com/v1beta/auth_tokens', {
+          method: 'POST',
+          headers: {
+            'x-goog-api-key': geminiApiKey,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            uses: 1,
+            expireTime: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutos de vigencia
+          })
+        });
+
+        if (tokenResp.ok) {
+          const tokenData = await tokenResp.json();
+          const ephemeralToken = tokenData.token;
+          if (ephemeralToken) {
+            // Conectar al endpoint protegido con el token efímero
+            wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=${ephemeralToken}`;
+          } else {
+            console.warn('[Gemini Live] Token response did not contain token field:', tokenData);
+            wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${geminiApiKey}`;
+          }
+        } else {
+          const errText = await tokenResp.text();
+          console.error('[Gemini Live] Error generating ephemeral token:', tokenResp.status, errText);
+          // Fallback a URL con key por si acaso
+          wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${geminiApiKey}`;
+        }
+      } catch (tokenErr) {
+        console.error('[Gemini Live] Failed to create auth token:', tokenErr);
+        wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${geminiApiKey}`;
+      }
     } else {
       // ELEVENLABS ENGINE
       let agentId = process.env.ELEVENLABS_AGENT_ID;
