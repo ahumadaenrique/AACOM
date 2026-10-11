@@ -110,6 +110,15 @@ export async function GET(req: Request) {
             raw = String(event.data);
           }
           const json = JSON.parse(raw);
+          if (json.serverContent) {
+            const sc = json.serverContent;
+            log(`SC keys: [${Object.keys(sc).join(', ')}]` + 
+              (sc.modelTurn ? ` | parts: ${sc.modelTurn.parts?.map((p: any) => Object.keys(p).join('+')).join(', ')}` : '') +
+              (sc.outputTranscription ? ` | outTranscript: ${JSON.stringify(sc.outputTranscription)}` : '') +
+              (sc.outputAudioTranscription ? ` | outAudioTranscript: ${JSON.stringify(sc.outputAudioTranscription)}` : ''));
+          } else {
+            log(`WS Msg keys: [${Object.keys(json).join(', ')}]`);
+          }
 
           if (json.error) {
             log(`ERROR from server: ${JSON.stringify(json.error)}`);
