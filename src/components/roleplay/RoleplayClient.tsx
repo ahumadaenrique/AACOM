@@ -141,6 +141,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   const conversationIdRef = useRef<string | null>(null);
   const startTimeRef = useRef<number>(0);
   const connectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const currentOscillatorsRef = useRef<{ osc1: OscillatorNode; osc2: OscillatorNode } | null>(null);
 
   // 1. Audio FX Generator
   const initAudioCtx = () => {
@@ -180,6 +181,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       osc2.start(now);
       osc1.stop(now + 1.3);
       osc2.stop(now + 1.3);
+      currentOscillatorsRef.current = { osc1, osc2 };
     };
 
     ring();
@@ -190,6 +192,11 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     if (ringRef.current) {
       clearInterval(ringRef.current);
       ringRef.current = null;
+    }
+    if (currentOscillatorsRef.current) {
+      try { currentOscillatorsRef.current.osc1.stop(); } catch (_) {}
+      try { currentOscillatorsRef.current.osc2.stop(); } catch (_) {}
+      currentOscillatorsRef.current = null;
     }
   };
 
@@ -402,8 +409,16 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
             stopRing();
             setIsConnecting(false);
             setIsCalling(false);
-            setCallStatusText('⚠️ Error de conexión con el prospecto.');
-            alert('No se pudo establecer la llamada: ' + (err?.message || 'Error de conexión'));
+            if (connectTimeoutRef.current) {
+              clearTimeout(connectTimeoutRef.current);
+              connectTimeoutRef.current = null;
+            }
+            setCallStatusText('⚠️ Error en Google Gemini Live (API Key rechazada).');
+            alert(
+              'No se pudo conectar con Google Gemini Live:\n\n' +
+              (err?.message || 'Error de conexión') +
+              '\n\nLa API Key de Gemini en el servidor no es válida o fue rechazada por Google (Código 1007).\n\nPuedes cambiar el motor de esta agencia a "ElevenLabs ConvAI" en el menú de Agencias para que funcione de inmediato.'
+            );
             hangupCall();
           },
           onMessage: ({ source, message }) => {
