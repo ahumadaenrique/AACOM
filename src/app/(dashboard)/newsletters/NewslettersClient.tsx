@@ -13,6 +13,7 @@ interface NewsArticle {
   sourceName: string | null
   category: string
   tags: string[]
+  advisorImpact?: string | null
   publishedAt: Date | string
 }
 
@@ -22,6 +23,14 @@ interface FinancialIndicators {
   eur: string | null
   gbp: string | null
 }
+
+const CATEGORIES = [
+  "Todos",
+  "Seguros y Fianzas",
+  "Macroeconomía y Tasas",
+  "Retiro e Inversiones",
+  "Insurtech e Innovación"
+]
 
 export default function NewslettersClient({ 
   initialArticles, 
@@ -47,7 +56,6 @@ export default function NewslettersClient({
       if (res.ok) {
         const data = await res.json()
         if (data.success) {
-          // Fetch updated list from a temporary getter or refresh the page
           window.location.reload()
         }
       }
@@ -64,6 +72,7 @@ export default function NewslettersClient({
     const matchesSearch = 
       art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (art.description && art.description.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (art.advisorImpact && art.advisorImpact.toLowerCase().includes(searchQuery.toLowerCase())) ||
       art.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
     
     return matchesCategory && matchesSearch
@@ -114,10 +123,10 @@ export default function NewslettersClient({
                     onClick={handleRefresh}
                     disabled={isRefreshing}
                     className="flex items-center gap-2 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 text-xs font-bold px-4 py-2 rounded-lg transition-colors shadow-sm disabled:opacity-50"
-                    title="Actualizar feed de noticias"
+                    title="Actualizar feed de noticias con IA"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    {isRefreshing ? 'Actualizando...' : 'Actualizar'}
+                    {isRefreshing ? 'Curando noticias...' : 'Actualizar con IA'}
                   </button>
                 )}
               </div>
@@ -157,29 +166,29 @@ export default function NewslettersClient({
             
             {/* Top Meta Line */}
             <div className="flex flex-col md:flex-row justify-between items-center border-t border-zinc-300 dark:border-zinc-800 mt-4 pt-3 text-[11px] font-mono tracking-wider text-zinc-500 uppercase gap-2">
-              <div>Edición Financiera Diaria</div>
+              <div>Edición Financiera Especializada</div>
               <div className="flex items-center gap-2">
                 <Calendar className="w-3 h-3" />
                 {new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </div>
-              <div>Curación Automatizada</div>
+              <div>Curación con Inteligencia Artificial</div>
             </div>
           </header>
 
           {/* Filtering & Search panel */}
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8 border-b border-zinc-200 dark:border-zinc-800 pb-4">
-            <div className="flex flex-wrap gap-1">
-              {["Todos", "Mexico", "Global"].map((cat) => (
+            <div className="flex flex-wrap gap-1.5">
+              {CATEGORIES.map((cat) => (
                 <button
                   key={cat}
                   onClick={() => setSelectedCategory(cat)}
-                  className={`text-xs font-mono tracking-widest uppercase px-4 py-2 rounded transition-colors ${
+                  className={`text-xs font-mono tracking-wide px-3.5 py-1.5 rounded-lg transition-all ${
                     selectedCategory === cat
-                      ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 font-black"
-                      : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900"
+                      ? "bg-zinc-950 text-white dark:bg-white dark:text-zinc-950 font-bold shadow-sm"
+                      : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200/70 dark:hover:bg-zinc-900 bg-zinc-100/60 dark:bg-zinc-900/40"
                   }`}
                 >
-                  {cat === "Mexico" ? "México" : cat}
+                  {cat}
                 </button>
               ))}
             </div>
@@ -205,7 +214,7 @@ export default function NewslettersClient({
               <BookOpen className="w-10 h-10 text-zinc-400 mx-auto mb-4" />
               <h3 className="whitepaper-title font-bold text-lg text-zinc-800 dark:text-zinc-200">No se encontraron noticias</h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto font-sans leading-relaxed">
-                Prueba buscando otro término o haz clic en "Actualizar" para traer las últimas novedades de finanzas y seguros.
+                Prueba buscando otro término o haz clic en "Actualizar con IA" para curar las últimas novedades financieras y del sector asegurador.
               </p>
             </div>
           ) : (
@@ -236,12 +245,22 @@ export default function NewslettersClient({
                     </p>
                   )}
 
+                  {/* Executive Advisor Impact Box */}
+                  {art.advisorImpact && (
+                    <div className="mb-4 p-3 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-300 text-xs leading-relaxed font-sans">
+                      <span className="font-semibold flex items-center gap-1.5 text-[11px] uppercase tracking-wider mb-1 font-mono text-emerald-700 dark:text-emerald-400">
+                        💡 Impacto para el Asesor
+                      </span>
+                      {art.advisorImpact}
+                    </div>
+                  )}
+
                   {/* Bottom Tags and Category Line */}
                   <div className="mt-auto pt-2 flex flex-wrap items-center justify-between gap-3">
                     {/* Tags */}
                     <div className="flex flex-wrap gap-1.5">
-                      <span className="font-mono text-[9px] font-black uppercase bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-1.5 py-0.5 rounded">
-                        {art.category === "Mexico" ? "MÉX" : "GLOB"}
+                      <span className="font-mono text-[9px] font-black uppercase bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-2 py-0.5 rounded">
+                        {art.category}
                       </span>
                       {art.tags.map((tag, idx) => (
                         <span 

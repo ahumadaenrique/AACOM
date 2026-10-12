@@ -796,9 +796,10 @@ model NewsArticle {
   sourceName  String?
   category    String
   tags        String[]
-  publishedAt DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  publishedAt   DateTime
+  advisorImpact String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model AppErrorLog {
