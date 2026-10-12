@@ -1873,7 +1873,7 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
         const targetUser = await prisma.user.findUnique({ where: { id: userId } });
         if (!targetUser) return { success: false, message: "Usuario a editar no encontrado" };
 
-        if (currentUser.id !== userId && targetUser.isSelfPaid) {
+        if (currentUser.id !== userId && targetUser.isSelfPaid && targetUser.role !== 'REFERIDOR') {
             // Un administrador no puede modificar el rol o suspender a un usuario que paga su propia cuenta
             if (data.role !== undefined && data.role !== targetUser.role) {
                 return { success: false, message: "No puedes modificar el rol de un agente que paga su propia suscripciÃ³n." };
@@ -1892,9 +1892,12 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
         
         if (data.role !== undefined && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) {
             if (data.role === 'AGENTE_LITE' && currentUser.agency && !currentUser.agency.allowLiteAgents) {
-                return { success: false, message: "Tu agencia no tiene habilitada la funciÃ³n de Agentes Limitados." };
+                return { success: false, message: "Tu agencia no tiene habilitada la función de Agentes Limitados." };
             }
             updateData.role = data.role;
+            if (data.role !== 'REFERIDOR') {
+                updateData.linkedAgentId = null;
+            }
         }
 
         if (data.birthDate !== undefined) {
@@ -1906,25 +1909,29 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
             data: updateData
         });
 
-        // Also sync name to Agent table if agent exists
-        if (data.name && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) {
-            const trimmedName = data.name.trim();
-            const existingAgent = await prisma.agent.findUnique({
-                where: { name_agencyId: { name: trimmedName, agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) || '' } }
-            });
-            if (!existingAgent) {
-                // Find if there is an agent with old name and update or create
-                // Simply create if not found, as we don't have secondary relation
-                await prisma.agent.upsert({
-                    where: { name_agencyId: { name: trimmedName, agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) || '' } },
-                    update: {},
-                    create: { name: trimmedName, agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) || null }
+        // Also sync name to Agent table if agent exists or is promoted to AGENTE
+        const effectiveName = (data.name || targetUser.name || '').trim();
+        const effectiveRole = data.role !== undefined ? data.role : targetUser.role;
+        if ((data.name || effectiveRole === 'AGENTE') && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) {
+            const agencyId = ((session?.user?.agencyId || currentUser?.agencyId || targetUser.agencyId) as string) || '';
+            if (effectiveName && agencyId) {
+                const existingAgent = await prisma.agent.findUnique({
+                    where: { name_agencyId: { name: effectiveName, agencyId } }
                 });
+                if (!existingAgent) {
+                    await prisma.agent.upsert({
+                        where: { name_agencyId: { name: effectiveName, agencyId } },
+                        update: {},
+                        create: { name: effectiveName, agencyId }
+                    });
+                }
             }
         }
 
         revalidatePath('/admin');
+        revalidatePath('/admin/referidores');
         revalidatePath('/ranking');
+        revalidatePath('/activity');
         revalidatePath('/');
         return { success: true, message: "Perfil actualizado correctamente", user: updated };
     } catch (error: any) {

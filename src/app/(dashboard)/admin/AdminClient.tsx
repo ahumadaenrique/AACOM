@@ -933,7 +933,7 @@ export default function AdminClient() {
     setEditName(user.name || "")
     setEditPhone(user.phone || "")
     setEditImage(user.image || "")
-    setEditRole(user.role || "")
+    setEditRole(user.role || "AGENTE")
     if (user.birthDate) {
       const d = new Date(user.birthDate)
       const year = d.getUTCFullYear()
@@ -2121,9 +2121,11 @@ export default function AdminClient() {
                                     ? "bg-purple-50 text-purple-700 border-purple-200" 
                                     : user.role === 'AGENTE_LITE'
                                     ? "bg-amber-50 text-amber-700 border-amber-200"
+                                    : user.role === 'REFERIDOR'
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                     : "bg-blue-50 text-blue-700 border-blue-200"
                                 }`}>
-                                  {user.role === 'AGENTE_LITE' ? "Agente Limitado" : user.role}
+                                  {user.role === 'AGENTE_LITE' ? "Agente Limitado" : user.role === 'REFERIDOR' ? "Referidor" : user.role === 'ADMIN' ? "Administrador" : user.role}
                                 </span>
                               </TableCell>
                               
@@ -5039,6 +5041,7 @@ export default function AdminClient() {
                   <option value="AGENTE">Agente de Seguros (Premium)</option>
                   <option value="AGENTE_LITE">Agente Limitado (Lite)</option>
                   <option value="ADMIN">Administrador General</option>
+                  <option value="REFERIDOR">Referidor</option>
                 </select>
               </div>
 

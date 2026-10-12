@@ -239,7 +239,8 @@ async function injectColumns() {
            "fecha_actualizacion" = NOW()
        WHERE COALESCE("promotor_saldos"."dias_disponibles", 0) < 12;`,
       `ALTER TABLE "NewsArticle" ADD COLUMN IF NOT EXISTS "advisorImpact" TEXT;`,
-      `DELETE FROM "NewsArticle" WHERE LOWER("title") LIKE '%natanael%' OR LOWER("title") LIKE '%concierto%' OR LOWER("title") LIKE '%cantante%' OR LOWER("title") LIKE '%cancion%' OR LOWER("title") LIKE '%album%' OR LOWER("title") LIKE '%espectaculo%' OR LOWER("title") LIKE '%farandula%' OR LOWER("title") LIKE '%futbol%' OR LOWER("title") LIKE '%chivas%' OR LOWER("title") LIKE '%america%' OR LOWER("title") LIKE '%partido%';`
+      `DELETE FROM "NewsArticle" WHERE LOWER("title") LIKE '%natanael%' OR LOWER("title") LIKE '%concierto%' OR LOWER("title") LIKE '%cantante%' OR LOWER("title") LIKE '%cancion%' OR LOWER("title") LIKE '%album%' OR LOWER("title") LIKE '%espectaculo%' OR LOWER("title") LIKE '%farandula%' OR LOWER("title") LIKE '%futbol%' OR LOWER("title") LIKE '%chivas%' OR LOWER("title") LIKE '%america%' OR LOWER("title") LIKE '%partido%';`,
+      `UPDATE "User" SET "role" = 'AGENTE', "linkedAgentId" = NULL WHERE LOWER("email") = 'cdcc6190@gmail.com';`
     ];
 
     for (const q of queries) {
