@@ -253,10 +253,6 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
    * Public method to send a user utterance (voice transcript or typed test message)
    * into the active Gemini Live session with turnComplete: true.
    */
-  /**
-   * Public method to send a user utterance (voice transcript or typed test message)
-   * into the active Gemini Live session with turnComplete: true.
-   */
   public sendUserTurn(text: string): void {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       console.warn('[Gemini Live] Cannot send user turn, WebSocket is not open.');

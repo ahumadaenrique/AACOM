@@ -163,6 +163,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
         : 'Listo para iniciar llamada'
   );
   const [transcript, setTranscript] = useState<{ source: 'ai' | 'user'; message: string }[]>([]);
+  const transcriptRef = useRef<{ source: 'ai' | 'user'; message: string }[]>([]);
   const [currentEval, setCurrentEval] = useState<any>(null);
 
   // Live Speech State
@@ -386,6 +387,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     try {
       isEvaluatingRef.current = false;
       setIsConnecting(true);
+      transcriptRef.current = [];
       setTranscript([]);
       setCallDuration(0);
       if (isADN) {
@@ -469,6 +471,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
             hangupCall();
           },
           onMessage: ({ source, message }) => {
+            transcriptRef.current = [...transcriptRef.current, { source, message }];
             setTranscript(prev => [...prev, { source, message }]);
           },
           onUserSpeaking: (speaking, vol) => {
@@ -586,7 +589,9 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           },
           onMessage: ({ message, source }) => {
             if (message) {
-              setTranscript(prev => [...prev, { source: source === 'ai' ? 'ai' : 'user', message }]);
+              const item: { source: 'ai' | 'user'; message: string } = { source: source === 'ai' ? 'ai' : 'user', message };
+              transcriptRef.current = [...transcriptRef.current, item];
+              setTranscript(prev => [...prev, item]);
             }
           }
         });
@@ -702,11 +707,16 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     }
 
     try {
+      const geminiTurns = geminiSessionRef.current ? geminiSessionRef.current.getTranscript() : [];
+      const effectiveTranscript = (transcriptRef.current && transcriptRef.current.length > 0)
+        ? transcriptRef.current
+        : (geminiTurns && geminiTurns.length > 0 ? geminiTurns : transcript);
+
       const res = await fetch('/api/roleplay/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          transcript,
+          transcript: effectiveTranscript,
           durationSeconds: elapsed,
           scenario,
           conversationId: conversationIdRef.current,

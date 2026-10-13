@@ -29,7 +29,7 @@ export async function GET(
     // Verify call record in database
     const call = await prisma.roleplayCall.findFirst({
       where: { conversationId },
-      include: { user: { select: { id: true, agencyId: true } } }
+      include: { user: { select: { id: true, agencyId: true, agency: { select: { elevenLabsApiKey: true } } } } }
     });
 
     if (!call) {
@@ -53,14 +53,10 @@ export async function GET(
       return NextResponse.redirect(call.callAudioUrl, 307);
     }
 
-    // 2. If it is a Gemini Live call with no audio uploaded
-    if (call.engine === 'GEMINI_LIVE') {
-      return new NextResponse('Grabación no disponible para esta llamada.', { status: 404 });
-    }
-
-    const apiKey = process.env.ELEVENLABS_API_KEY;
+    // 2. Fetch audio from ElevenLabs (checking agency BYOK key or fallback env key)
+    const apiKey = call.user?.agency?.elevenLabsApiKey || process.env.ELEVENLABS_API_KEY;
     if (!apiKey) {
-      return new NextResponse('ELEVENLABS_API_KEY no configurada', { status: 500 });
+      return new NextResponse('Grabación no disponible.', { status: 404 });
     }
 
     // Call ElevenLabs endpoint for conversation audio

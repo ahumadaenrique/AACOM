@@ -210,18 +210,16 @@ export function SupervisionPanel() {
                     </div>
 
                     <div className="flex items-center gap-3 ml-auto">
-                      {call.conversationId && (
-                        (call.callAudioUrl || call.engine !== 'GEMINI_LIVE') ? (
-                          <audio
-                            controls
-                            className="h-8 max-w-[200px]"
-                            src={call.callAudioUrl || `/api/roleplay/audio/${call.conversationId}`}
-                          />
-                        ) : (
-                          <span className="text-[10px] text-slate-500 italic px-2.5 py-1 rounded-lg bg-slate-800/40 border border-slate-700/30">
-                            Sin grabación
-                          </span>
-                        )
+                      {(call.callAudioUrl || call.conversationId) ? (
+                        <audio
+                          controls
+                          className="h-8 max-w-[200px]"
+                          src={call.callAudioUrl || `/api/roleplay/audio/${call.conversationId}`}
+                        />
+                      ) : (
+                        <span className="text-[10px] text-slate-500 italic px-2.5 py-1 rounded-lg bg-slate-800/40 border border-slate-700/30">
+                          Sin grabación
+                        </span>
                       )}
 
                       <button

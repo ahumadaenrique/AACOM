@@ -63,6 +63,11 @@ export function getLocalDateString(date: Date = new Date()): string {
   });
   return formatter.format(date);
 }
+export function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day, 12, 0, 0);
+}
+
 export function checkAndApplyInactivityPenalty(stats: {
   xp: number;
   lastActiveDate: string | null;
@@ -77,11 +82,10 @@ export function checkAndApplyInactivityPenalty(stats: {
     return { newXp: stats.xp, newStreak: stats.streak, penalizedDays: 0, penaltyXp: 0 };
   }
 
-  const lastDate = new Date(stats.lastActiveDate);
-  const today = new Date(todayStr);
+  const cur = parseLocalDate(stats.lastActiveDate);
+  const today = parseLocalDate(todayStr);
 
   let missedBusinessDays = 0;
-  const cur = new Date(lastDate);
   cur.setDate(cur.getDate() + 1);
 
   while (cur < today) {

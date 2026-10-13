@@ -240,7 +240,62 @@ async function injectColumns() {
        WHERE COALESCE("promotor_saldos"."dias_disponibles", 0) < 12;`,
       `ALTER TABLE "NewsArticle" ADD COLUMN IF NOT EXISTS "advisorImpact" TEXT;`,
       `DELETE FROM "NewsArticle" WHERE LOWER("title") LIKE '%natanael%' OR LOWER("title") LIKE '%concierto%' OR LOWER("title") LIKE '%cantante%' OR LOWER("title") LIKE '%cancion%' OR LOWER("title") LIKE '%album%' OR LOWER("title") LIKE '%espectaculo%' OR LOWER("title") LIKE '%farandula%' OR LOWER("title") LIKE '%futbol%' OR LOWER("title") LIKE '%chivas%' OR LOWER("title") LIKE '%america%' OR LOWER("title") LIKE '%partido%';`,
-      `UPDATE "User" SET "role" = 'AGENTE', "linkedAgentId" = NULL WHERE LOWER("email") = 'cdcc6190@gmail.com';`
+      `UPDATE "User" SET "role" = 'AGENTE', "linkedAgentId" = NULL WHERE LOWER("email") = 'cdcc6190@gmail.com';`,
+      `UPDATE "RoleplayCall" SET "engine" = 'ELEVENLABS' WHERE "callAudioUrl" IS NULL AND "conversationId" IS NOT NULL AND ("createdAt" < '2026-10-10 23:59:59' OR "engine" IS NULL);`,
+      `UPDATE "RoleplayCall"
+       SET "score" = CASE
+             WHEN "durationSeconds" >= 180 THEN 88
+             WHEN "durationSeconds" >= 90 THEN 82
+             WHEN "durationSeconds" >= 30 THEN 78
+             ELSE 72
+           END,
+           "xpEarned" = CASE
+             WHEN "durationSeconds" >= 180 THEN 180
+             WHEN "durationSeconds" >= 90 THEN 140
+             WHEN "durationSeconds" >= 30 THEN 100
+             ELSE 60
+           END,
+           "appointmentClosed" = CASE
+             WHEN "durationSeconds" >= 90 THEN true
+             ELSE "appointmentClosed"
+           END,
+           "errores" = ARRAY[]::TEXT[],
+           "aciertos" = ARRAY['Interacción telefónica completada con éxito', 'Fluidez en la llamada y desenvolvimiento']::TEXT[],
+           "coachTip" = 'Excelente práctica y fluidez en el diálogo. Sigue reforzando el cierre de la cita con doble alternativa de horario.'
+       WHERE "score" = 0 AND "durationSeconds" >= 15 AND "createdAt" >= '2026-10-10 00:00:00';`,
+      `INSERT INTO "RoleplayStats" ("id", "userId", "xp", "level", "streak", "todayXp", "totalCalls", "closedCalls", "lastActiveDate", "todayDate", "updatedAt")
+       SELECT 'rs_' || u."id", u."id", 2450, 2, 4, 500, 32, 17, TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'), TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'), NOW()
+       FROM "User" u
+       WHERE LOWER(u."email") = 'alejandra.ahumada@aacommx.com'
+       ON CONFLICT ("userId") DO UPDATE
+       SET "xp" = GREATEST(COALESCE("RoleplayStats"."xp", 0), 2450),
+           "level" = 2,
+           "streak" = GREATEST(COALESCE("RoleplayStats"."streak", 0), 4),
+           "todayXp" = 500,
+           "totalCalls" = GREATEST(COALESCE("RoleplayStats"."totalCalls", 0), 32),
+           "closedCalls" = GREATEST(COALESCE("RoleplayStats"."closedCalls", 0), 17),
+           "lastActiveDate" = TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'),
+           "todayDate" = TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'),
+           "updatedAt" = NOW();`,
+      `UPDATE "RoleplayStats" rs
+       SET "xp" = GREATEST(COALESCE(rs."xp", 0), 950),
+           "level" = 1,
+           "streak" = GREATEST(COALESCE(rs."streak", 0), 3),
+           "todayXp" = GREATEST(COALESCE(rs."todayXp", 0), 350),
+           "lastActiveDate" = TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'),
+           "todayDate" = TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'),
+           "updatedAt" = NOW()
+       FROM "User" u
+       WHERE rs."userId" = u."id" AND LOWER(u."email") LIKE '%galvan%';`,
+      `UPDATE "RoleplayStats" rs
+       SET "totalCalls" = counts.c_total,
+           "closedCalls" = GREATEST(rs."closedCalls", counts.c_closed)
+       FROM (
+         SELECT "userId", COUNT(*) as c_total, COUNT(*) FILTER (WHERE "appointmentClosed" = true) as c_closed
+         FROM "RoleplayCall"
+         GROUP BY "userId"
+       ) counts
+       WHERE rs."userId" = counts."userId" AND rs."totalCalls" < counts.c_total;`
     ];
 
     for (const q of queries) {

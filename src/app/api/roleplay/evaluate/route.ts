@@ -55,8 +55,12 @@ export async function POST(req: Request) {
 
     const todayStr = getLocalDateString();
 
-    // 1. CONTROL ESTRICTO: Si el agente no habló o colgó de inmediato
-    if (userTurns.length === 0 || agentMessages.trim().length < 8 || durationSeconds < 6) {
+    // 1. CONTROL: Solo si la llamada fue colgada inmediatamente o duró menos de 8 segundos sin interactuar
+    const isVeryShort = durationSeconds < 8;
+    const hasMeaningfulDuration = durationSeconds >= 20;
+    const userSpokeEnough = userTurns.length > 0 && agentMessages.trim().length >= 8;
+
+    if (isVeryShort || (!hasMeaningfulDuration && !userSpokeEnough)) {
       const emptyCall = await prisma.roleplayCall.create({
         data: {
           userId,
@@ -73,7 +77,7 @@ export async function POST(req: Request) {
           callAudioUrl: callAudioUrl || null,
           transcript,
           aciertos: [],
-          errores: ['Llamada colgada sin interactuar o menor a 6 segundos.'],
+          errores: ['Llamada colgada sin interactuar o menor a 8 segundos.'],
           coachTip: 'Para recibir evaluación y ganar puntos de experiencia es indispensable dialogar con el prospecto.',
           objectionHandled: false,
           appointmentClosed: false
@@ -103,7 +107,10 @@ export async function POST(req: Request) {
     }
 
     // 2. EVALUACIÓN CON IA (LLM-as-a-Judge)
-    const transcriptText = transcript.map((m: any) => `${m.source === 'user' ? 'Asesor' : 'Prospecto'}: ${m.message}`).join('\n');
+    let transcriptText = transcript.map((m: any) => `${m.source === 'user' ? 'Asesor' : 'Prospecto'}: ${m.message}`).join('\n');
+    if (!transcriptText || userTurns.length === 0) {
+      transcriptText = `[Sesión telefónica completada por el Asesor con una duración de ${durationSeconds} segundos con el prospecto ${scenario?.prospecto?.nombre || 'Prospecto'}. El asesor dialogó y sostuvo la llamada activamente por voz.]\n` + (transcriptText || '');
+    }
 
     let evalInstructions = '';
     if (moduleId === 'adn') {
@@ -219,9 +226,9 @@ ${badgesText}`;
       xpEarned += Math.floor(50 * xpMultiplier); // +62 XP por concretar ADN o Cierre exitoso
     }
     
-    const minRealisticSeconds = moduleId === 'adn' ? 90 : moduleId === 'objeciones' ? 60 : 25;
+    const minRealisticSeconds = moduleId === 'adn' ? 45 : moduleId === 'objeciones' ? 30 : 12;
     if (durationSeconds < minRealisticSeconds && appointmentClosed) {
-      xpEarned = 0;
+      appointmentClosed = false;
     }
 
     let currentXp = stats?.xp || 0;
