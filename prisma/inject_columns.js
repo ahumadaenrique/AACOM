@@ -286,7 +286,7 @@ async function injectColumns() {
            "todayDate" = TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'),
            "updatedAt" = NOW()
        FROM "User" u
-       WHERE rs."userId" = u."id" AND LOWER(u."email") LIKE '%galvan%';`,
+       WHERE rs."userId" = u."id" AND (LOWER(u."email") LIKE '%galvan%' OR LOWER(u."email") LIKE '%ricgaljua%');`,
       `UPDATE "RoleplayStats" rs
        SET "totalCalls" = counts.c_total,
            "closedCalls" = GREATEST(rs."closedCalls", counts.c_closed)
