@@ -115,16 +115,16 @@ export async function POST(req: Request) {
     let evalInstructions = '';
     if (moduleId === 'adn') {
       evalInstructions = `
-      Módulo: Análisis de Necesidades (ADN) - Metodología Patrimonial Consultiva.
+      Módulo: Análisis de Necesidades (ADN) - Metodología Consultiva (Apertura Estratégica, Avance Temporal y Cierre).
+      La llamada consta de Fase 1 (Apertura y F.O.R.D.), Transición Narrativa en Off, y Fase 2 (Conclusión y Cierre de 2da Cita).
       El asesor DEBE:
-      1. POSICIONAMIENTO & REGLA 50-30-20: Explicar que actúa como Asesor Patrimonial y fundamentar el análisis en la Regla 50-30-20 de Elizabeth Warren (50% Necesidades y fijos, 30% Deseos y estilo de vida, 20% Ahorro y protección futura) como estándar de oro mundial.
-      2. PERMISO DIAGNÓSTICO: Pedir permiso formal y explícito para realizar las preguntas del cuestionario financiero.
-      3. FLEXIBILIDAD EN GASTOS: Preguntar a detalle si el cliente lo permite, o tener la habilidad de resumir en bloques grandes (Vivienda, Transporte, Educación, Estilo de vida) si el prospecto se resiste al desglose de centavos.
-      4. MANEJO DE RESISTENCIA Y CONFIDENCIALIDAD: Si el cliente duda en revelar sus finanzas, garantizar confidencialidad y usar la analogía médica ("somos médicos patrimoniales, no podemos recetar una solución sin un análisis previo").
-      5. DETECCIÓN DEL DOLOR: Indagar y escuchar profundamente para descubrir la necesidad prioritaria del prospecto (Retiro/PPR, Blindaje familiar por fallecimiento/invalidez, Fondo universitario para hijos, o Desorden de deudas).
-      6. CAPACIDAD DE AHORRO: Calcular o consensuar el monto real que el cliente puede comprometer al ahorro mensual para su futuro.
-      7. CIERRE DE LA REUNIÓN DE ADN: Indicar que se llevará la información a su despacho para diseñar una estrategia personalizada y agendar la Cita de Presentación/Cierre con doble alternativa de horario.
-      ERRORES FATALES: Vender pólizas, dar costos o cotizar aseguradoras durante el diagnóstico, o discutir con el cliente si este prefiere resumir gastos en lugar de dar centavos.`;
+      1. PRESENTACIÓN FORMAL & CONFIDENCIALIDAD: Saludar con profesionalismo, presentarse formalmente y garantizar que la sesión y sus datos son estrictamente confidenciales.
+      2. PROPÓSITO DEL DIAGNÓSTICO A LA MEDIDA: Explicar con claridad que la reunión es para realizar un diagnóstico de su situación actual para diseñar una propuesta a su medida (cero productos de catálogo hoy).
+      3. TÉCNICA F.O.R.D. (Familia, Ocupación, Recreación y Sueños / Dinero): Indagar quién depende de él, su trabajo o negocio, proyectos de vida y metas patrimoniales.
+      4. PRIORIZACIÓN DE METAS: Pedirle explícitamente al prospecto que jerarquice u ordene cuál de sus metas o inquietudes es su PRIORIDAD #1 hoy en día.
+      5. ESCUCHA ACTIVA: Demostrar escucha activa y respeto, guardando silencio para dejar reflexionar y expresarse al prospecto sin interrumpir ni encimarse.
+      6. CIERRE DE LA REUNIÓN DE ADN CON DOBLE ALTERNATIVA: Tras la transición narrativa de números, indicar que se llevará los datos a su despacho para armar la propuesta personalizada y agendar la Cita de Presentación / Cierre con técnica de doble alternativa (día y hora concretos).
+      ERRORES FATALES: Vender pólizas, cotizar seguros o aseguradoras durante el diagnóstico, no garantizar confidencialidad o interrumpir constantemente al prospecto.`;
     } else if (moduleId === 'objeciones') {
       evalInstructions = `
       Módulo: Cierre de Ventas y Manejo de Objeciones - Metodología Consultiva.
@@ -160,6 +160,8 @@ export async function POST(req: Request) {
       errores: z.array(z.string()).describe('Lista de errores cometidos por el asesor. OBLIGATORIO: Debes incluir una cita textual (entre comillas) de la transcripción para demostrar exactamente en qué momento cometió el error.'),
       cometioErrorFatal: z.boolean().describe('Verdadero si el asesor cometió un error crítico según las instrucciones del módulo.'),
       appointmentClosed: z.boolean().describe('Verdadero SOLAMENTE si el asesor logró concretar explícitamente la agenda de la cita o el cierre mediante técnica profesional (ej. doble alternativa de horario). Debe ser FALSO si el prospecto sugirió la cita o el horario por su cuenta sin que el asesor lo propusiera, si el asesor rogó/titubeó, o si el prospecto dijo "yo te aviso".'),
+      aplicoTecnicaFord: z.boolean().describe('Verdadero si el asesor exploró activamente dimensiones de la vida del prospecto: Familia, Ocupación, Recreación o Sueños/Dinero (F.O.R.D.).').default(false),
+      priorizoMetas: z.boolean().describe('Verdadero si el asesor le pidió explícitamente al prospecto ordenar o priorizar cuál es su meta o preocupación #1 en la vida.').default(false),
       coachTip: z.string().describe('Un consejo breve y técnico.'),
       insigniasGanadas: z.array(z.string()).describe('Lista de IDs de insignias desbloqueadas. COMO MÁXIMO 1 insignia por llamada, y SOLAMENTE si score >= 85 y la cita cerró con éxito. Si no califica o no cerró la cita, devuelve []')
     });
@@ -193,7 +195,32 @@ ${badgesText}`;
       prompt: promptText
     });
 
-    let { score, aciertos, errores, cometioErrorFatal, appointmentClosed, coachTip, insigniasGanadas = [] } = object;
+    const rawObject = object as any;
+    let score: number = rawObject.score;
+    let aciertos: string[] = rawObject.aciertos || [];
+    let errores: string[] = rawObject.errores || [];
+    let cometioErrorFatal: boolean = rawObject.cometioErrorFatal || false;
+    let appointmentClosed: boolean = rawObject.appointmentClosed || false;
+    let coachTip: string = rawObject.coachTip || '';
+    let insigniasGanadas: string[] = rawObject.insigniasGanadas || [];
+    const aplicoTecnicaFord: boolean = rawObject.aplicoTecnicaFord || false;
+    const priorizoMetas: boolean = rawObject.priorizoMetas || false;
+
+    let bonusXp = 0;
+    if (moduleId === 'adn') {
+      if (aplicoTecnicaFord) {
+        bonusXp += 35;
+        if (!aciertos.some((a: string) => a.toLowerCase().includes('ford'))) {
+          aciertos.push('Excelente aplicación de la técnica F.O.R.D. para descubrir el entorno y prioridades del cliente (+35 XP).');
+        }
+      }
+      if (priorizoMetas) {
+        bonusXp += 35;
+        if (!aciertos.some((a: string) => a.toLowerCase().includes('priorid') || a.toLowerCase().includes('jerarqu'))) {
+          aciertos.push('Excelente jerarquización de metas al pedir al prospecto definir su prioridad #1 (+35 XP).');
+        }
+      }
+    }
 
     if (cometioErrorFatal) {
       score = Math.max(0, score - 50);
@@ -214,14 +241,14 @@ ${badgesText}`;
     const stats = await prisma.roleplayStats.findUnique({ where: { userId } });
     // Deduplicar insignias
     const currentBadges = stats?.badges || [];
-    const uniqueNewBadges = insigniasGanadas.filter(b => !currentBadges.includes(b));
+    const uniqueNewBadges = insigniasGanadas.filter((b: string) => !currentBadges.includes(b));
     const mergedBadges = [...currentBadges, ...uniqueNewBadges];
 
     // Ponderación de XP por módulo: ADN y Cierre reciben +25% por mayor duración y profundidad (15-20 min vs 3 min)
     const isHighDurationModule = moduleId === 'adn' || moduleId === 'objeciones';
     const xpMultiplier = isHighDurationModule ? 1.25 : 1.0;
 
-    let xpEarned = Math.floor(score * 1.5 * xpMultiplier);
+    let xpEarned = Math.floor(score * 1.5 * xpMultiplier) + bonusXp;
     if (appointmentClosed) {
       xpEarned += Math.floor(50 * xpMultiplier); // +62 XP por concretar ADN o Cierre exitoso
     }

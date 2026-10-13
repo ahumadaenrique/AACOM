@@ -23,7 +23,7 @@ export const BADGES: Badge[] = [
 
   // ADN (12)
   { id: 'a_escucha', moduleId: 'adn', name: 'Escucha Activa', description: 'El prospecto habló la mayor parte del tiempo, guiado por buenas preguntas.', icon: '👂' },
-  { id: 'a_ford', moduleId: 'adn', name: 'Familia Primero', description: 'Indagó exitosamente la técnica F.O.R.D.', icon: '👨‍👩‍👧‍👦' },
+  { id: 'a_ford', moduleId: 'adn', name: 'Estratega F.O.R.D.', description: 'Indagó exitosamente la técnica F.O.R.D. (Familia, Ocupación, Recreación y Sueños/Dinero).', icon: '👨‍👩‍👧‍👦' },
   { id: 'a_dedo_llaga', moduleId: 'adn', name: 'El Dedo en la Llaga', description: 'Preguntó sobre el impacto de faltar mañana o en el retiro.', icon: '💥' },
   { id: 'a_arquitecto', moduleId: 'adn', name: 'Arquitecto del Futuro', description: 'Ayudó al cliente a visualizar su retiro y necesidades.', icon: '🏗️' },
   { id: 'a_presupuesto', moduleId: 'adn', name: 'Buscador de Presupuesto', description: 'Averiguó la capacidad real de ahorro mensual del cliente.', icon: '💰' },
@@ -31,7 +31,7 @@ export const BADGES: Badge[] = [
   { id: 'a_medico', moduleId: 'adn', name: 'El Médico Diagnóstica', description: 'Calmó a un cliente ansioso por precios para terminar el análisis.', icon: '🩺' },
   { id: 'a_deudas', moduleId: 'adn', name: 'Descubridor de Deudas', description: 'Indagó exitosamente pasivos, hipotecas y créditos.', icon: '💳' },
   { id: 'a_compromiso', moduleId: 'adn', name: 'Compromiso Siguiente Cita', description: 'Fijó la Cita de Cierre con fecha y hora explícita.', icon: '🤝' },
-  { id: 'a_prioridades', moduleId: 'adn', name: 'Experto en Prioridades', description: 'Consiguió que el cliente ordenara sus metas de mayor a menor.', icon: '📋' },
+  { id: 'a_prioridades', moduleId: 'adn', name: 'Experto en Prioridades', description: 'Consiguió que el cliente ordenara y jerarquizara sus metas financieras de mayor a menor prioridad.', icon: '📋' },
   { id: 'a_rompemuros', moduleId: 'adn', name: 'Rompe-Muros', description: 'Relajó a un prospecto inicialmente a la defensiva o apático.', icon: '🧱' },
   { id: 'a_perfecto', moduleId: 'adn', name: 'Diagnóstico Perfecto', description: 'Obtuvo 100/100 en un diagnóstico de Nivel 5 o superior.', icon: '💎' },
 

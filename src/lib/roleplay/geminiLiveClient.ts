@@ -55,6 +55,7 @@ export class GeminiLiveSession {
   private isIntentionallyClosed: boolean = false;
   private isListeningActive: boolean = false;
   private sessionId: string;
+  private isMuted: boolean = false;
 
   constructor(config: GeminiLiveSessionConfig) {
     this.config = config;
@@ -253,6 +254,26 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
    * Public method to send a user utterance (voice transcript or typed test message)
    * into the active Gemini Live session with turnComplete: true.
    */
+  public setMuted(muted: boolean): void {
+    this.isMuted = muted;
+    if (muted) {
+      if (this.silenceTimer) {
+        clearTimeout(this.silenceTimer);
+        this.silenceTimer = null;
+      }
+      this.pendingInterimText = '';
+      if (this.config.onInterimSpeech) this.config.onInterimSpeech('');
+      if (this.config.onUserSpeaking) this.config.onUserSpeaking(false, 0);
+    }
+    if (this.config.onMicStatus) {
+      this.config.onMicStatus(muted ? 'idle' : 'listening', muted ? 'Micrófono en pausa' : undefined);
+    }
+  }
+
+  public isUserMuted(): boolean {
+    return this.isMuted;
+  }
+
   public sendUserTurn(text: string): void {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       console.warn('[Gemini Live] Cannot send user turn, WebSocket is not open.');

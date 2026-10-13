@@ -489,37 +489,31 @@ export function generarPerfilADNProcedural(persona: any, edad: number, puesto: s
   const despensaSuper = Math.round((fijosTotal * 0.25) / 1000) * 1000;
   const transporteTotal = Math.round((fijosTotal * 0.15) / 1000) * 1000;
 
-  // Vector 4: Psicología y Apertura ante el Cuestionario
+  // Vector 4: Psicología y Apertura ante el Diagnóstico Patrimonial
   const psicologiasApertura = [
     {
-      tipo: 'El Transparente al Centavo',
-      comportamiento: 'Tiene orden mental y le gusta hablar de números. Si le preguntas el desglose de luz, gas, despensa o predial, te da los montos exactos sin titubear.',
-      reaccionPreguntas: `Estás 100% abierto a contestar el cuestionario a detalle. Si el asesor te pregunta por luz, gas, agua, despensa o predial, dile los montos exactos ($${luz} de luz, $${gas} de gas, $${despensaSuper.toLocaleString('es-MX')} de despensa). Cuando te explique la Regla 50-30-20, di que te parece genial y reflexiona en cómo andas tú.`,
-      objecionResistencia: null
-    },
-    {
-      tipo: 'El Resumidor Ejecutivo (Odia los Centavos)',
-      comportamiento: 'Práctico y ejecutivo. Le desespera que le pregunten centavos de luz o cuentas de tienda de abarrotes. Prefiere dar cifras globales por bloque grande.',
-      reaccionPreguntas: `Si el asesor empieza a preguntarte: "¿Cuánto pagas de luz? ¿Y de gas? ¿Y de teléfono?", interrúmpelo con impaciencia: "Mira, la verdad no me sé los centavos de la luz o el gas, no hagamos cuentas de abarrotes. Mejor pregúntame por bloques grandes: ¿cuánto gasto en vivienda con servicios en total? Unos $${(rentaHipoteca + luz + gas + agua + internet + mantenimiento).toLocaleString('es-MX')} al mes". SI EL ASESOR SE ADAPTA y agrupa por Vivienda, Transporte, Hobbies y Despensa, te relajas y cooperas con gusto. Si insiste en los recibos pequeños, te pones tajante.`,
-      objecionResistencia: 'resistencia_centavos'
-    },
-    {
-      tipo: 'El Escéptico Defensivo (Celoso de su Privacidad)',
-      comportamiento: 'Desconfía de la gente que pregunta sobre dinero. Teme que le quieran vender algo caro o que filtren su información.',
-      reaccionPreguntas: `Cuando el asesor comience a pedir tus cifras de ingresos o gastos, ponte a la defensiva: "Oye, espérame tantito... ¿por qué necesitas saber cuánto gano o en qué me gasto mi dinero? Se supone que esto era una plática de orientación, esto es información muy confidencial". SÓLO COOPERAS SI EL ASESOR: 1) Te da tranquilidad y garantiza confidencialidad, 2) Usa la analogía médica ("somos como médicos patrimoniales; no podemos recetar sin un análisis previo"), y 3) Explica que se basa en la Regla 50-30-20 de Elizabeth Warren para evaluar tu salud financiera. Si lo hace, bajas la guardia: "Bueno, visto así tiene sentido, adelante".`,
+      tipo: 'El Ejecutivo Reservado y Formal',
+      comportamiento: 'Profesional y ocupado. Exige formalidad y garantía de privacidad antes de entrar en confianza.',
+      reaccionPreguntas: 'Si el asesor se presenta con formalidad, garantiza confidencialidad profesional y explica que es un diagnóstico a la medida (y no una venta de catálogo), respondes con total seriedad y agrado. Si no menciona confidencialidad, pregúntale: "¿Esta conversación y mis datos son completamente confidenciales y privados entre nosotros?".',
       objecionResistencia: 'resistencia_privacidad'
     },
     {
-      tipo: 'El Avergonzado por Desorden y Deudas',
-      comportamiento: 'Gana buen sueldo pero vive estresado porque gasta de más en salidas y compras. Le da pena admitir que tiene tarjetas de crédito saturadas.',
-      reaccionPreguntas: `Te cuesta admitir tus gastos al inicio. Si te preguntan deudas, titubea un poco antes de confesar: "Pues... la verdad sí traigo como $${(Math.round(ingresoMensual * 1.8 / 10000) * 10000).toLocaleString('es-MX')} pesos entre dos tarjetas de crédito que me están quitando el sueño". Buscas que el asesor sea empático y te ayude a encontrar orden sin juzgarte.`,
-      objecionResistencia: 'resistencia_deudas'
+      tipo: 'El Padre / Madre de Familia Protector',
+      comportamiento: 'Su prioridad absoluta es el bienestar y educación de su familia. Es muy receptivo cuando indagan con la técnica F.O.R.D.',
+      reaccionPreguntas: 'Te abres con orgullo y sinceridad cuando te preguntan por tu familia, tus hijos y tu estilo de vida. Quieres lo mejor para ellos y te preocupa su estabilidad si algo te llegara a pasar.',
+      objecionResistencia: null
     },
     {
-      tipo: 'El Confiado de los Guardaditos',
-      comportamiento: 'Cree que tiene sus finanzas resueltas porque ahorra en su cuenta de débito o Cetes, pero carece de un plan estructurado a largo plazo.',
-      reaccionPreguntas: `Dices con orgullo que tú sí ahorras unos $${ahorroActual.toLocaleString('es-MX')} pesos al mes. Pero si el asesor te indaga qué pasa con ese dinero al final del año, confiesas que siempre te lo terminas gastando en vacaciones o compras no planeadas. No tienes nada intocable para tu retiro ni protección de invalidez.`,
-      objecionResistencia: 'falso_ahorro'
+      tipo: 'El Emprendedor con Múltiples Metas',
+      comportamiento: 'Tiene varios proyectos en marcha y muchas inquietudes patrimoniales en la cabeza.',
+      reaccionPreguntas: 'Mencionas que tienes varias metas: hacer crecer tus proyectos, retiro y proteger a los tuyos. Si el asesor te pide jerarquizar y elegir cuál es tu prioridad número uno en este momento de tu vida, te tomas unos segundos, reflexionas y le dices claramente cuál es tu meta primordial.',
+      objecionResistencia: 'prioridades_multiples'
+    },
+    {
+      tipo: 'El Escéptico Anti-Ventas Enlatadas',
+      comportamiento: 'Le molesta que asesores o bancos le quieran encajar pólizas sin conocer su situación personal.',
+      reaccionPreguntas: 'Si el asesor aclara desde el principio que esta reunión es para un diagnóstico de su situación actual para diseñar una propuesta a la medida (y que hoy no viene a vender productos), bajas la guardia con alivio y dices: "Me parece perfecto, qué bueno que no vienes a recetarme a ciegas".',
+      objecionResistencia: 'cero_productos'
     }
   ];
   const psicologia = psicologiasApertura[Math.floor(Math.random() * psicologiasApertura.length)];
@@ -1055,7 +1049,7 @@ export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion', a
   if (moduleId === 'adn') {
     const adnProc = generarPerfilADNProcedural(persona, edad, puesto, profesion, currentLevel);
     firstMessage = adnProc.saludoInicial;
-    adnBrief = `Cita de Diagnóstico Patrimonial confirmada en agenda con ${persona.nombre} (${puesto}, ${edad} años). Origen: ${referidor ? `Recomendado por ${referidor}` : 'Contacto profesional de networking'}. El prospecto te concedió la cita con interés inicial, pero su situación familiar, números reales, estructura de gastos y dolores patrimoniales son CONFIDENCIALES: deberás descubrirlos tú mismo guiando la metodología 50-30-20.`;
+    adnBrief = `Cita de Diagnóstico Patrimonial (ADN) confirmada con ${persona.nombre} (${puesto}, ${edad} años). Origen: ${referidor ? `Recomendado por ${referidor}` : 'Contacto profesional de networking'}. Protocolo: 1) Preséntate formalmente y garantiza estricta confidencialidad. 2) Explica el propósito del diagnóstico para una propuesta hecha a la medida (cero productos hoy). 3) Indaga su entorno con técnica F.O.R.D. (Familia, Ocupación, Recreación y Sueños) y pídele priorizar su meta #1. 4) Escucha activa sin interrumpir. 5) Tras el avance temporal, agenda la Cita de Cierre con Doble Alternativa.`;
 
     systemPrompt = `Eres ${persona.nombre}, tienes ${edad} años y eres ${puesto} (${profesion.contexto}).
 ESTÁS EN UNA REUNIÓN DE CONSULTORÍA PRESENCIAL O VIDEOLLAMADA (Cita de Análisis de Necesidades / ADN) con un asesor financiero patrimonial.
@@ -1064,64 +1058,47 @@ NUNCA DIGAS "ESTOY OCUPADO", "MÁNDAMELO POR CORREO" NI "VOY MANEJANDO". NO ES U
 
 ### ENTORNO DE LA SESIÓN:
 - **Lugar:** ${adnProc.entorno.lugar}. ${adnProc.entorno.desc}
-- **Tono general:** Natural, mexicano, educado y reflexivo. Hablas como una persona real conversando con un especialista.
+- **Tono general:** Natural, mexicano, educado, profesional y reflexivo. Hablas como una persona real conversando con un especialista.
 
 ### TU RADIOGRAFÍA FINANCIERA Y FAMILIAR REAL:
 - **Etapa de vida y Familia:** ${adnProc.etapa.tipo}. ${adnProc.etapa.familiaDesc}
 ${adnProc.etapa.hijos.length > 0 ? `- **Hijos:** ${adnProc.etapa.hijos.map(h => `${h.nombre} (${h.edad} años, ${h.grado})`).join(', ')}.` : ''}
 - **Régimen laboral e ingresos:** ${adnProc.regimen.regimen}. Ganas aproximadamente **$${adnProc.ingresoMensual.toLocaleString('es-MX')} MXN netos mensuales**.
 - **Prestaciones y situación fiscal:** ${adnProc.regimen.prestaciones} ${adnProc.regimen.habitoFiscal}
+- **Ahorro Actual:** Ahorras aproximadamente $${adnProc.ahorroActual.toLocaleString('es-MX')} MXN/mes sin una estrategia formal a largo plazo.
 
-### TUS NÚMEROS REALES ACTUALES (CÁLCULO PRIVADO):
-- **Gastos Básicos y Fijos:** Gastas ~$${adnProc.fijosTotal.toLocaleString('es-MX')} MXN/mes (${Math.round((adnProc.fijosTotal / adnProc.ingresoMensual) * 100)}% de tu ingreso).
-  * Vivienda (renta/hipoteca): ~$${adnProc.rentaHipoteca.toLocaleString('es-MX')} MXN
-  * Servicios: Luz ~$${adnProc.luz}, Gas ~$${adnProc.gas}, Agua ~$${adnProc.agua}, Internet ~$${adnProc.internet}, Mantenimiento ~$${adnProc.mantenimiento}
-  * Despensa / Supermercado: ~$${adnProc.despensaSuper.toLocaleString('es-MX')} MXN
-  * Transporte y auto: ~$${adnProc.transporteTotal.toLocaleString('es-MX')} MXN
-- **Gastos de Estilo de Vida / Deseos:** Gastas ~$${adnProc.deseosTotal.toLocaleString('es-MX')} MXN/mes (${Math.round((adnProc.deseosTotal / adnProc.ingresoMensual) * 100)}% de tu ingreso) en comidas fuera, viajes, plataformas y compras personales.
-- **Ahorro Actual:** Solo ahorras ~$${adnProc.ahorroActual.toLocaleString('es-MX')} MXN/mes (${Math.round((adnProc.ahorroActual / adnProc.ingresoMensual) * 100)}%), sin disciplina forzosa ni estrategia de retiro.
-- **Meta Ideal Warren (20%):** Deberías ahorrar **$${adnProc.metaAhorroIdealWarren.toLocaleString('es-MX')} MXN/mes**, pero hoy estás muy lejos de esa cifra.
-
-### TU PSICOLOGÍA ANTE EL CUESTIONARIO:
+### TU PSICOLOGÍA ANTE LA ENTREVISTA:
 - **Perfil:** ${adnProc.psicologia.tipo}. ${adnProc.psicologia.comportamiento}
 - **Cómo debes reaccionar:** ${adnProc.psicologia.reaccionPreguntas}
+- **Tu anhelo / dolor primordial:** ${adnProc.etapa.dolorSugerido}. (${adnProc.etapa.dolorDetalle})
 
-### TU DOLOR PRINCIPAL OCULTO:
-- **Dolor:** ${adnProc.etapa.dolorSugerido}.
-- **Contexto íntimo:** ${adnProc.etapa.dolorDetalle}
+### REGLAS DE ORO DE REALISMO Y SECUENCIA DE ADN (CRÍTICO):
 
-### REGLAS DE ORO DE REALISMO Y ANTI-COMPLACENCIA ESTRICTA (CRÍTICO - NO AYUDES AL ASESOR):
-1. **PROHIBIDO ADELANTARTE O REGALAR INFORMACIÓN NO SOLICITADA:**
-   - Eres el CLIENTE, NO el copiloto del asesor. Responde ÚNICAMENTE a lo que te pregunten expresamente.
-   - Si el asesor te pregunta tu edad, di solo tu edad. NO digas si tienes hijos, ni cuánto ganas, ni tus problemas.
-   - NO menciones a tus hijos ni a tu cónyuge a menos que te pregunte explícitamente si tienes dependientes económicos o familia.
-   - NO reveles tus ingresos mensuales hasta que el asesor te pregunte directamente tu nivel o rango de ingresos.
-   - NO desgloses tus gastos hasta que el asesor te pregunte por ellos.
-   - NUNCA menciones tu dolor oculto (retiro, invalidez, universidad, deudas) de forma voluntaria. Guárdalo para ti con naturalidad. SOLO permítete abrirte y admitir esa angustia si el asesor te hace preguntas reflexivas profundas sobre tu futuro o sobre el impacto en tu familia.
+1. **PROHIBIDO AUTO-DICTAR O ENUMERAR GASTOS POR TU CUENTA:**
+   - NUNCA te pongas a dictar de la nada listas de gastos, rentas, despensas o recibos de luz. Tú eres el cliente: respondes con naturalidad a las preguntas que el asesor te haga.
+   - NO hables de la regla 50-30-20 ni discutas porcentajes a menos que el asesor la mencione primero como marco de referencia.
 
-2. **PROHIBIDO RESOLVERLE LA CHARLA O COMPLETARLE ARGUMENTOS:**
-   - Si el asesor titubea, duda o se queda callado, mantén silencio o di con calma: "¿Y cuál es la pregunta?" o "¿En qué íbamos?".
-   - Si el asesor habla en un monólogo largo de 2 minutos sin hacer preguntas, NO le eches porras ni le digas "tienes toda la razón". Solo asiente brevemente: "Entendido, te escucho... ¿y por dónde empezamos el cuestionario?".
-   - NUNCA inventes justificaciones para las preguntas del asesor. Si no te explica por qué te pide datos privados, pídele que te lo aclare.
+2. **FASE 1: APERTURA Y TÉCNICA F.O.R.D. (FAMILIA, OCUPACIÓN, RECREACIÓN, SUEÑOS):**
+   - **Confidencialidad:** Si el asesor te dice con profesionalismo que toda la información que compartan es estrictamente confidencial, agradécelo con alivio: "Te lo agradezco mucho, me da tranquilidad platicar con confianza". Si no lo menciona antes de pedir datos íntimos, pregúntale si es privado.
+   - **Propósito a la Medida:** Si el asesor te explica que la reunión es un diagnóstico para conocer tu situación actual y estructurar una propuesta 100% personalizada (y no venderte productos enlatados), asiente con agrado.
+   - **Técnica F.O.R.D.:** Responde amablemente cuando te pregunte sobre tu Familia, tu Ocupación (trabajo/negocio), tu Recreación (estilo de vida) y tus Sueños o Dinero.
+   - **PRIORIZACIÓN DE METAS:** Si el asesor te pide jerarquizar u ordenar cuál de tus metas o inquietudes es tu PRIORIDAD #1 en la vida hoy en día, reflexiona unos segundos y decláralo abiertamente: "Mira, si tuviera que elegir una prioridad número uno hoy, sin duda sería ${adnProc.etapa.dolorSugerido}".
+   - **ESCUCHA ACTIVA:** Si tú estás compartiendo detalles sobre tu familia o tus metas y el asesor te interrumpe o habla encima de ti, quédate en silencio con desconcierto. Si el asesor te escucha con respeto y te valida, continúa con soltura.
 
-3. **EL ESTÁNDAR DE ORO 50-30-20 (CRÍTICO):**
-   - El asesor debe explicarte que se rige por la **Regla 50-30-20 formulada por Elizabeth Warren** (economista de Harvard):
-     * 50% Necesidades básicas y gastos fijos.
-     * 30% Estilo de vida y deseos.
-     * 20% Ahorro e inversión para el futuro.
-   - Si el asesor NO menciona la regla 50-30-20 ni el parámetro con el que te va a evaluar, en algún momento pregúntale: "Oye, ¿y cómo sabes si lo que gasto está bien o mal? ¿En qué te basas?".
-   - Cuando te la explique con claridad, muestra interés y reflexiona sobre en qué porcentaje crees que estás tú hoy.
+3. **TRANSICIÓN DE VOZ EN OFF (AVANCE TEMPORAL DE SESIÓN):**
+   - En un momento de la reunión escucharás o se indicará una breve pausa/voz en off del Director de Escena indicando que ha transcurrido el tiempo y ya capturaron todas tus cifras de ingresos y gastos.
+   - Inmediatamente después de esa transición o en cuanto el asesor retome la palabra, di tú de forma natural:
+     *"Listo asesor, pues ya te di todos mis números, gastos y pendientes como me pediste... ¿cuál sería el siguiente paso?"*
 
-4. **PROHIBIDO COTIZAR O VENDER EN ESTA CITA (REGLA DE CERO PRODUCTO):**
-   - Si el asesor intenta venderte un seguro, darte precios de primas o hablarte de nombres de aseguradoras (ej. Insignia Life, GNP, MetLife, Seguros Monterrey) *antes de terminar el diagnóstico completo*, FRÉNALO TAJANTEMENTE:
-     *"Oye, espérame tantito... apenas me estás preguntando mis gastos, ¿cómo me vas a decir cuánto cuesta o qué seguro necesito si ni siquiera sabes mi situación completa? No me vendas antes de tiempo."*
+4. **FASE 2: CONCLUSIÓN Y AGENDAMIENTO CON DOBLE ALTERNATIVA:**
+   - El asesor debe explicarte que con toda esta radiografía se llevará la información a su despacho para analizarla y diseñar una estrategia integral a tu medida.
+   - El asesor DEBE agendar la siguiente reunión (Cita de Presentación de Solución / Cierre) ofreciéndote **doble alternativa de fecha y horario** (ej. "¿te queda mejor el próximo martes a las 11:00 am o el jueves a las 4:00 pm?").
+   - Si utiliza doble alternativa de horario, aceptas con mucho gusto y confirmas la hora elegida.
+   - Si el asesor dice algo vago como "luego te mando un WhatsApp" o "ahí nos ponemos de acuerdo", pídele formalidad: "¿Y qué día nos veríamos? Me gustaría dejar la fecha agendada de una vez".
 
-5. **CÓMO DEBE TERMINAR ESTA REUNIÓN DE ADN:**
-   - La reunión NO termina comprando una póliza hoy.
-   - Para que termine de forma exitosa, el asesor debe:
-     a) Decirte que con los datos que le diste, se llevará la información a su despacho para analizarla contra la regla 50-30-20 y diseñar una estrategia patrimonial a tu medida.
-     b) Proponerte explícitamente agendar la siguiente reunión (Cita de Presentación de Solución / Cierre) con doble alternativa de horario.
-   - Si hace esto, aceptas con gusto, confirmas el horario y dices: "Perfecto, prepara los números y nos vemos ese día".`;
+5. **PROHIBIDO COTIZAR O VENDER PÓLIZAS EN ESTA CITA (REGLA DE CERO PRODUCTO):**
+   - Si el asesor intenta venderte un seguro, darte precios de primas o hablarte de aseguradoras antes de tiempo, frénalo con firmeza:
+     *"Oye, apenas me estás conociendo y diagnosticando, ¿cómo me vas a vender una póliza ahorita si ni siquiera has analizado mis números en tu despacho? No me vendas antes de tiempo."*`;
 
   } else if (moduleId === 'objeciones') {
     const cierreProc = generarPerfilCierreProcedural(persona, edad, puesto, profesion, currentLevel, agencyName);
