@@ -56,6 +56,7 @@ export class GeminiLiveSession {
   private isListeningActive: boolean = false;
   private sessionId: string;
   private isMuted: boolean = false;
+  private isAiSuppressed: boolean = false;
 
   constructor(config: GeminiLiveSessionConfig) {
     this.config = config;
@@ -272,6 +273,19 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
 
   public isUserMuted(): boolean {
     return this.isMuted;
+  }
+
+  public suppressAiOutput(suppress: boolean): void {
+    this.isAiSuppressed = suppress;
+    if (suppress) {
+      this.stopAiAudioPlayback();
+      this.currentAiTextBuffer = '';
+      if (this.config.onAiSpeaking) this.config.onAiSpeaking(false);
+    }
+  }
+
+  public stopAiPlayback(): void {
+    this.stopAiAudioPlayback();
   }
 
   public sendUserTurn(text: string): void {
@@ -647,6 +661,9 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
       // 3. Model Turn: Audio output & text transcripts
       const modelTurn = json.serverContent?.modelTurn;
       if (modelTurn?.parts) {
+        if (this.isAiSuppressed) {
+          return;
+        }
         for (const part of modelTurn.parts) {
           // A. Audio Chunk
           if (part.inlineData && part.inlineData.mimeType?.includes('audio/pcm')) {
@@ -692,7 +709,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
   }
 
   private playPcmAudioChunk(base64Pcm: string): void {
-    if (!this.audioCtx) return;
+    if (this.isAiSuppressed || !this.audioCtx) return;
 
     try {
       if (this.audioCtx.state === 'suspended') {

@@ -173,6 +173,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   const [adnTransitioning, setAdnTransitioning] = useState<boolean>(false);
   const [adnTransitionProgress, setAdnTransitionProgress] = useState<number>(0);
   const adnTransitionTriggeredRef = useRef<boolean>(false);
+  const phase2StartTimeRef = useRef<number>(0);
 
   // Live Speech State
   const [interimSpeech, setInterimSpeech] = useState<string>('');
@@ -301,10 +302,14 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     setAdnTransitioning(true);
     setAdnTransitionProgress(0);
 
-    // 1. Mute user microphone so user does not talk over the voiceover
+    // 1. Silenciar inmediatamente el audio de la IA y el micrófono del asesor para que NO se encimen voces
     if (geminiSessionRef.current) {
+      geminiSessionRef.current.suppressAiOutput(true);
       geminiSessionRef.current.setMuted(true);
     }
+    setProspectSpeaking(false);
+    setUserSpeaking(false);
+    setInterimSpeech('');
 
     playTransitionChime();
 
@@ -326,13 +331,15 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       setAdnTransitionProgress(100);
       setAdnTransitioning(false);
       setAdnPhase(2);
+      phase2StartTimeRef.current = Date.now();
 
-      // Unmute user mic
+      // Permitir salida de IA y desmutear micrófono del asesor
       if (geminiSessionRef.current) {
+        geminiSessionRef.current.suppressAiOutput(false);
         geminiSessionRef.current.setMuted(false);
       }
 
-      // Add messages to transcript
+      // Agregar mensajes a la bitácora
       const narratorMsg = {
         source: 'ai' as const,
         message: '🎙️ [Director de Escena]: Han pasado las preguntas del cuestionario financiero y capturado todos los números. Es momento de concluir la reunión.'
@@ -344,12 +351,14 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       transcriptRef.current = [...transcriptRef.current, narratorMsg, prospectMsg];
       setTranscript(prev => [...prev, narratorMsg, prospectMsg]);
 
-      // Instruct Gemini Live to resume speech naturally as prospect
-      if (geminiSessionRef.current) {
-        geminiSessionRef.current.sendUserTurn(
-          "[Aviso de Director de Escena: La sesión avanzó 30 minutos. Ya capturaron todos tus gastos y números en la libreta. Habla tú de inmediato como prospecto diciendo: 'Listo asesor, pues ya te di todos mis números y gastos como me pediste... ¿cuál sería el siguiente paso?']"
-        );
-      }
+      // Dar una pausa breve de 400ms para asegurar silencio total y luego disparar la respuesta de la IA
+      setTimeout(() => {
+        if (geminiSessionRef.current) {
+          geminiSessionRef.current.sendUserTurn(
+            "[Aviso de Director de Escena: La sesión avanzó 30 minutos. Ya capturaron todos tus gastos y números en la libreta. Habla tú de inmediato como prospecto diciendo: 'Listo asesor, pues ya te di todos mis números y gastos como me pediste... ¿cuál sería el siguiente paso?']"
+          );
+        }
+      }, 400);
     };
 
     let finished = false;
@@ -391,6 +400,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       setAdnTransitioning(false);
       setAdnTransitionProgress(0);
       adnTransitionTriggeredRef.current = false;
+      phase2StartTimeRef.current = 0;
       setProspectSpeaking(false);
       setUserSpeaking(false);
       setUserMicVolume(0);
@@ -561,12 +571,33 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
             timerRef.current = setInterval(() => {
               const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
               setCallDuration(elapsed);
-              if (isADN && elapsed >= 165 && !adnTransitionTriggeredRef.current) {
-                triggerAdnFastForward();
-              }
-              const maxDuration = isADN ? 420 : isObjeciones ? 1200 : 300;
-              if (elapsed >= maxDuration) {
-                hangupCall();
+
+              if (isADN) {
+                // Auto-trigger transición a los 5 minutos (300 segundos) de Fase 1
+                if (elapsed >= 300 && !adnTransitionTriggeredRef.current) {
+                  triggerAdnFastForward();
+                }
+
+                // Límite de Fase 2 (3 minutos desde que terminó la transición) o 8 minutos totales (480s)
+                const phase2Secs = phase2StartTimeRef.current 
+                  ? Math.floor((Date.now() - phase2StartTimeRef.current) / 1000) 
+                  : 0;
+
+                if (phase2StartTimeRef.current && phase2Secs >= 180) {
+                  hangupCall();
+                  return;
+                }
+
+                if (elapsed >= 480) {
+                  hangupCall();
+                  return;
+                }
+              } else {
+                const maxDuration = isObjeciones ? 1200 : 300;
+                if (elapsed >= maxDuration) {
+                  hangupCall();
+                  return;
+                }
               }
             }, 1000);
           },
@@ -665,12 +696,33 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
             timerRef.current = setInterval(() => {
               const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
               setCallDuration(elapsed);
-              if (isADN && elapsed >= 165 && !adnTransitionTriggeredRef.current) {
-                triggerAdnFastForward();
-              }
-              const maxDuration = isADN ? 420 : isObjeciones ? 1200 : 300;
-              if (elapsed >= maxDuration) {
-                hangupCall();
+
+              if (isADN) {
+                // Auto-trigger transición a los 5 minutos (300 segundos) de Fase 1
+                if (elapsed >= 300 && !adnTransitionTriggeredRef.current) {
+                  triggerAdnFastForward();
+                }
+
+                // Límite de Fase 2 (3 minutos desde que terminó la transición) o 8 minutos totales (480s)
+                const phase2Secs = phase2StartTimeRef.current 
+                  ? Math.floor((Date.now() - phase2StartTimeRef.current) / 1000) 
+                  : 0;
+
+                if (phase2StartTimeRef.current && phase2Secs >= 180) {
+                  hangupCall();
+                  return;
+                }
+
+                if (elapsed >= 480) {
+                  hangupCall();
+                  return;
+                }
+              } else {
+                const maxDuration = isObjeciones ? 1200 : 300;
+                if (elapsed >= maxDuration) {
+                  hangupCall();
+                  return;
+                }
               }
             }, 1000);
 
@@ -1250,35 +1302,59 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                   )}
                 </div>
 
-                {/* ADN Active Phase & Fast-Forward Controls */}
+                {/* ADN Active Phase, Countdown Timer & Fast-Forward Controls */}
                 {isCalling && isADN && (
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-3.5 rounded-2xl bg-indigo-950/40 border border-indigo-500/30 text-xs">
-                    <div className="flex items-center gap-2.5">
-                      <span className={`px-2.5 py-1 rounded-xl font-bold uppercase tracking-wider text-[10px] ${
-                        adnPhase === 1 
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' 
-                          : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                      }`}>
-                        {adnPhase === 1 ? 'Fase 1: Apertura & Metas' : 'Fase 2: Cierre de Cita'}
-                      </span>
-                      <span className="text-slate-300">
-                        {adnPhase === 1 
-                          ? 'Garantiza confidencialidad, explica diagnóstico y detecta prioridades F.O.R.D.'
-                          : 'Explica que diseñarás la solución en despacho y agenda con Doble Alternativa.'}
-                      </span>
+                  <div className="p-4 rounded-3xl bg-slate-950/80 border border-indigo-500/30 space-y-3 shadow-xl">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`px-3 py-1 rounded-xl font-black uppercase tracking-wider text-xs ${
+                          adnPhase === 1 
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' 
+                            : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                        }`}>
+                          {adnPhase === 1 ? 'Fase 1 de 2: Apertura & Metas' : 'Fase 2 de 2: Cierre de Cita'}
+                        </span>
+                        
+                        {/* Countdown Timers */}
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono font-bold">
+                          <Clock className={`h-3.5 w-3.5 ${adnPhase === 1 ? 'text-amber-400' : 'text-emerald-400'}`} />
+                          <span className="text-slate-400">
+                            {adnPhase === 1 ? 'Te quedan:' : 'Restante Cierre:'}
+                          </span>
+                          <span className={`text-sm font-black ${adnPhase === 1 ? 'text-amber-300' : 'text-emerald-300'}`}>
+                            {adnPhase === 1 
+                              ? formatTime(Math.max(0, 300 - callDuration)) 
+                              : formatTime(Math.max(0, Math.min(180 - (phase2StartTimeRef.current ? Math.floor((Date.now() - phase2StartTimeRef.current) / 1000) : 0), 480 - callDuration)))}
+                          </span>
+                        </div>
+                      </div>
+
+                      {adnPhase === 1 && !adnTransitioning && (
+                        <button
+                          type="button"
+                          onClick={triggerAdnFastForward}
+                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition-all hover:scale-105"
+                          title="Avanzar automáticamente los 30 minutos de desglose financiero y pasar al cierre"
+                        >
+                          <FastForward className="h-4 w-4" />
+                          <span>Completar preguntas y pasar al Cierre de Sesión</span>
+                        </button>
+                      )}
                     </div>
 
-                    {adnPhase === 1 && !adnTransitioning && (
-                      <button
-                        type="button"
-                        onClick={triggerAdnFastForward}
-                        className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-lg transition-transform hover:scale-105"
-                        title="Avanzar automáticamente los 30 minutos de desglose financiero y pasar al cierre"
-                      >
-                        <FastForward className="h-3.5 w-3.5" />
-                        <span>Avanzar al Cierre (Voz en Off)</span>
-                      </button>
-                    )}
+                    <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 leading-relaxed">
+                      {adnPhase === 1 ? (
+                        <>
+                          <strong className="text-amber-300 font-bold block sm:inline">📌 Instrucciones Fase 1: </strong>
+                          Tienes <strong>hasta 5 minutos</strong> para explicar la intención de la sesión, marco de confidencialidad y explorar prioridades de vida (F.O.R.D.). Cuando vayas a pasar al cuestionario detallado y cierre, da clic en el botón amarillo o espera a que concluya el tiempo para la transición automática.
+                        </>
+                      ) : (
+                        <>
+                          <strong className="text-emerald-300 font-bold block sm:inline">🎯 Instrucciones Fase 2: </strong>
+                          Tienes <strong>hasta 3 minutos</strong> para explicar que te llevarás los números a tu despacho para estructurar la solución y agendar la <strong>Cita de Cierre con Doble Alternativa</strong> de fecha y horario.
+                        </>
+                      )}
+                    </div>
                   </div>
                 )}
 
@@ -1343,7 +1419,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                           className={`p-2.5 rounded-xl ${t.source === 'ai' ? 'bg-slate-900 border border-slate-800 text-indigo-300' : 'bg-indigo-950/30 border border-indigo-500/20 text-slate-100 ml-6'}`}
                         >
                           <strong className="block text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">
-                            {t.source === 'ai' ? scenario?.prospecto?.nombre?.split(' ')[0] : 'Tú'}:
+                            {t.message.startsWith('🎙️') ? '🎙️ Director de Escena:' : (t.source === 'ai' ? scenario?.prospecto?.nombre?.split(' ')[0] : 'Tú') + ':'}
                           </strong>
                           <span>{t.message}</span>
                         </div>
