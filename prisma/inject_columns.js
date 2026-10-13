@@ -279,7 +279,7 @@ async function injectColumns() {
            "updatedAt" = NOW();`,
       `UPDATE "RoleplayStats" rs
        SET "xp" = GREATEST(COALESCE(rs."xp", 0), 950),
-           "level" = 1,
+           "level" = 2,
            "streak" = GREATEST(COALESCE(rs."streak", 0), 3),
            "todayXp" = GREATEST(COALESCE(rs."todayXp", 0), 350),
            "lastActiveDate" = TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'),
