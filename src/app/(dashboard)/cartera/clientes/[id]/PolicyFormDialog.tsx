@@ -1,10 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { policySchema, PolicyFormValues } from "../../schema";
-import { createPolicy, updatePolicy } from "../../actions";
+import {
+  createPolicy,
+  updatePolicy,
+  extractPolicyFromPdfAction,
+} from "../../actions";
 import {
   toDateInputValue,
   RAMO_LABELS,
@@ -24,7 +28,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Loader2 } from "lucide-react";
+import { FileText, Loader2, Sparkles, CheckCircle2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function PolicyFormDialog({
@@ -37,6 +41,10 @@ export default function PolicyFormDialog({
   triggerButton?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [isExtractingPdf, setIsExtractingPdf] = useState(false);
+  const [extractedFileName, setExtractedFileName] = useState<string | null>(null);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
+
   const { toast } = useToast();
   const router = useRouter();
 
@@ -62,6 +70,7 @@ export default function PolicyFormDialog({
     approximateCommission: policy?.approximateCommission || 0,
     approximateBonus: policy?.approximateBonus || 0,
     observations: policy?.observations || "",
+    pdfUrl: policy?.pdfUrl || null,
   });
 
   const form = useForm<PolicyFormValues>({
@@ -69,10 +78,10 @@ export default function PolicyFormDialog({
     defaultValues: getInitialValues(),
   });
 
-  // Asegurar que al abrir el modal de edición siempre se carguen las fechas y valores exactos (corrige BUG-04)
   useEffect(() => {
     if (open) {
       form.reset(getInitialValues());
+      setExtractedFileName(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, policy]);
@@ -88,6 +97,65 @@ export default function PolicyFormDialog({
       form.setValue("tipoVigencia", "ANUAL_RENOVABLE");
     } else {
       form.setValue("tipoVigencia", "LARGO_PLAZO");
+    }
+  };
+
+  const handlePdfAiUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.type !== "application/pdf") {
+      toast({
+        title: "Archivo inválido",
+        description: "Selecciona un archivo PDF de carátula de póliza.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsExtractingPdf(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await extractPolicyFromPdfAction(formData);
+      if (res.error || !res.extracted) {
+        throw new Error(res.error || "No se pudo leer la carátula PDF");
+      }
+
+      const ext = res.extracted;
+      if (ext.policyNumber) form.setValue("policyNumber", ext.policyNumber);
+      if (ext.insuranceCompany) form.setValue("insuranceCompany", ext.insuranceCompany);
+      if (ext.product) form.setValue("product", ext.product);
+      if (ext.ramo) form.setValue("ramo", ext.ramo);
+      if (ext.tipoVigencia) form.setValue("tipoVigencia", ext.tipoVigencia);
+      if (ext.contractor) form.setValue("contractor", ext.contractor);
+      if (ext.insured) form.setValue("insured", ext.insured);
+      if (ext.effectiveDate) form.setValue("effectiveDate", ext.effectiveDate);
+      if (ext.renewalDate) form.setValue("renewalDate", ext.renewalDate);
+      if (ext.paymentMethod) form.setValue("paymentMethod", ext.paymentMethod);
+      if (ext.currency) form.setValue("currency", ext.currency);
+      if (ext.annualPremium > 0) form.setValue("annualPremium", ext.annualPremium);
+      if (ext.originalPremium) form.setValue("originalPremium", ext.originalPremium);
+      if (ext.observations) form.setValue("observations", ext.observations);
+      if (res.pdfUrl) form.setValue("pdfUrl", res.pdfUrl);
+
+      setExtractedFileName(file.name);
+      toast({
+        title: "✨ Carátula leída con IA exitosamente",
+        description: `Se autocompletaron los datos de la póliza ${ext.policyNumber || ""}${
+          res.pdfUrl ? " y se adjuntó el PDF." : "."
+        }`,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Error al analizar PDF con IA",
+        description: err.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsExtractingPdf(false);
+      if (pdfInputRef.current) pdfInputRef.current.value = "";
     }
   };
 
@@ -132,6 +200,56 @@ export default function PolicyFormDialog({
             {isEditing ? `Editar Póliza ${policy.policyNumber}` : "Agregar Nueva Póliza"}
           </DialogTitle>
         </DialogHeader>
+
+        {/* ETAPA 3: Lector Inteligente de Carátula PDF con Gemini */}
+        <div className="p-3 rounded-lg border border-indigo-500/30 bg-indigo-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="space-y-0.5">
+            <div className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-indigo-500" />
+              Lector Inteligente de Carátulas PDF (Gemini IA)
+            </div>
+            <p className="text-[11px] text-muted-foreground">
+              {extractedFileName ? (
+                <span className="text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  Datos extraídos de: {extractedFileName}
+                </span>
+              ) : (
+                "Sube el PDF de la póliza y la IA llenará automáticamente vigencia, prima, moneda y aseguradora."
+              )}
+            </p>
+          </div>
+          <div>
+            <input
+              ref={pdfInputRef}
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              onChange={handlePdfAiUpload}
+            />
+            <Button
+              type="button"
+              size="sm"
+              variant="secondary"
+              disabled={isExtractingPdf}
+              onClick={() => pdfInputRef.current?.click()}
+              className="w-full sm:w-auto border border-indigo-500/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/15"
+            >
+              {isExtractingPdf ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+                  Leyendo PDF...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                  Autocompletar con PDF
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+
         <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 md:grid-cols-2">
           <div className="space-y-1.5">
             <Label>Número de Póliza *</Label>
@@ -222,10 +340,7 @@ export default function PolicyFormDialog({
 
           <div className="space-y-1.5">
             <Label>Inicio de Vigencia (Emisión)</Label>
-            <Input
-              type="date"
-              {...form.register("effectiveDate")}
-            />
+            <Input type="date" {...form.register("effectiveDate")} />
           </div>
 
           <div className="space-y-1.5">
@@ -234,10 +349,7 @@ export default function PolicyFormDialog({
                 ? "Próximo Aniversario / Fin de Plazo"
                 : "Fecha de Renovación Anual"}
             </Label>
-            <Input
-              type="date"
-              {...form.register("renewalDate")}
-            />
+            <Input type="date" {...form.register("renewalDate")} />
           </div>
 
           <div className="space-y-1.5">
@@ -301,10 +413,10 @@ export default function PolicyFormDialog({
           </div>
 
           <div className="space-y-1.5 md:col-span-2">
-            <Label>Observaciones / Notas de Póliza</Label>
+            <Label>Observaciones / Suma Asegurada / Notas</Label>
             <Input
               {...form.register("observations")}
-              placeholder="Ej. Domiciliada a tarjeta BBVA, beneficiario hijo..."
+              placeholder="Ej. Suma Asegurada $5,000,000 MXN, domiciliada a BBVA..."
             />
           </div>
 

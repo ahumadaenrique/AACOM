@@ -922,3 +922,122 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
     return { error: String(e.message || e) };
   }
 }
+
+/**
+ * ETAPA 3: Extrae automáticamente los datos de una carátula PDF usando Gemini 3.5/3.8
+ * y sube el archivo a Vercel Blob si está configurado.
+ */
+export async function extractPolicyFromPdfAction(formData: FormData) {
+  try {
+    const ctx = await getSessionContext();
+    const file = formData.get("file") as File;
+    if (!file) {
+      return { error: "No se proporcionó ningún archivo PDF." };
+    }
+
+    const arrayBuffer = await file.arrayBuffer();
+    const base64Pdf = Buffer.from(arrayBuffer).toString("base64");
+
+    // 1. Subir en paralelo a Vercel Blob si existe token
+    let pdfUrl: string | null = null;
+    const blobToken = process.env.BLOB_READ_WRITE_TOKEN;
+    if (blobToken) {
+      try {
+        const blob = await put(
+          `policies/${ctx.userId}/${Date.now()}-${file.name}`,
+          file,
+          { access: "public", token: blobToken }
+        );
+        pdfUrl = blob.url;
+      } catch (blobErr) {
+        console.warn("Advertencia: no se pudo subir a Vercel Blob durante extracción IA:", blobErr);
+      }
+    }
+
+    // 2. Extraer campos con Gemini
+    const { extractPolicyWithGeminiFromPdfBase64 } = await import("./pdfExtractorAi");
+    const extracted = await extractPolicyWithGeminiFromPdfBase64(base64Pdf, file.name);
+
+    return {
+      success: true,
+      extracted,
+      pdfUrl,
+    };
+  } catch (error: any) {
+    console.error("extractPolicyFromPdfAction error:", error);
+    return {
+      error: error.message || "Error al analizar la carátula PDF con IA.",
+    };
+  }
+}
+
+/**
+ * ETAPA 3: Crea (o vincula) el Cliente + crea la Póliza + genera sus Recibos en 1 solo paso
+ * a partir de la lectura inteligente de una carátula PDF.
+ */
+export async function createClientAndPolicyFromAi(payload: {
+  existingClientId?: string | null;
+  clientName: string;
+  clientRfc?: string | null;
+  clientEmail?: string | null;
+  clientPhone?: string | null;
+  clientBirthDate?: string | null;
+  policyData: z.infer<typeof policySchema>;
+}) {
+  const ctx = await getSessionContext();
+
+  let targetClientId = payload.existingClientId || null;
+
+  if (!targetClientId) {
+    const cleanName = (payload.clientName || payload.policyData.contractor || "Cliente").trim();
+    // Buscar si ya existe un cliente con ese nombre exacto para este agente/agencia
+    const existingClient = await prisma.client.findFirst({
+      where: ctx.isAdmin
+        ? { agencyId: ctx.agencyId, name: { equals: cleanName, mode: "insensitive" }, isArchived: false }
+        : { userId: ctx.userId, name: { equals: cleanName, mode: "insensitive" }, isArchived: false },
+    });
+
+    if (existingClient) {
+      targetClientId = existingClient.id;
+      // Enriquecer datos del cliente si estaban vacíos
+      await prisma.client.update({
+        where: { id: existingClient.id },
+        data: {
+          rfc: existingClient.rfc || payload.clientRfc?.trim().toUpperCase() || null,
+          email: existingClient.email || payload.clientEmail?.trim() || null,
+          phone: existingClient.phone || payload.clientPhone?.trim() || null,
+          birthDate: existingClient.birthDate || toUTCNoonDate(payload.clientBirthDate),
+        },
+      });
+    } else {
+      const createdClient = await prisma.client.create({
+        data: {
+          agencyId: ctx.agencyId,
+          userId: ctx.userId,
+          name: cleanName,
+          rfc: payload.clientRfc?.trim().toUpperCase() || null,
+          email: payload.clientEmail?.trim() || null,
+          phone: payload.clientPhone?.trim() || null,
+          birthDate: toUTCNoonDate(payload.clientBirthDate),
+        },
+      });
+      targetClientId = createdClient.id;
+    }
+  }
+
+  const createdPolicy = await createPolicy({
+    ...payload.policyData,
+    clientId: targetClientId,
+  });
+
+  revalidatePath("/cartera");
+  revalidatePath("/cartera/clientes");
+  if (targetClientId) revalidatePath(`/cartera/clientes/${targetClientId}`);
+
+  return {
+    success: true,
+    clientId: targetClientId,
+    policy: createdPolicy,
+  };
+}
+

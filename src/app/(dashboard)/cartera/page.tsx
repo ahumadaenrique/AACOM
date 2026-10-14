@@ -19,6 +19,8 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import CarteraTableClient from "./CarteraTableClient";
 import CobranzaReceiptsClient from "./CobranzaReceiptsClient";
+import QuickPdfAiPolicyDialog from "./QuickPdfAiPolicyDialog";
+import CrossSellRadarClient from "./CrossSellRadarClient";
 import PremiumGuard from "@/components/PremiumGuard";
 import {
   computePolicyCycleInfo,
@@ -83,9 +85,24 @@ export default async function CarteraDashboard({
     });
   }
 
-  const clientsCount = await prisma.client.count({
-    where: clientsWhereClause,
-  });
+  const [clientsWithPolicies, adnDiagnostics] = await Promise.all([
+    prisma.client.findMany({
+      where: clientsWhereClause,
+      include: {
+        policies: { where: { isArchived: false } },
+      },
+      orderBy: { name: "asc" },
+    }),
+    prisma.adnDiagnostic.findMany({
+      where: isAdmin
+        ? { agencyId: currentAgencyId }
+        : { userId: session.user.id },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    }),
+  ]);
+
+  const clientsCount = clientsWithPolicies.length;
 
   // Enriquecer cada póliza con su ciclo real (Aniversario vs Renovación) y estatus
   const enrichedPolicies = policies.map((p) => {
@@ -144,10 +161,11 @@ export default async function CarteraDashboard({
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Mi Cartera y Conservación</h1>
             <p className="text-muted-foreground">
-              Control de pólizas vigentes, cobranza de recibos en periodo de gracia y radar de aniversarios.
+              Control de pólizas vigentes, cobranza de recibos, lector PDF con IA y radar de venta cruzada.
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <QuickPdfAiPolicyDialog />
             <Link href="/cartera/clientes">
               <Button variant="outline">
                 <Users className="mr-2 h-4 w-4" />
@@ -252,6 +270,12 @@ export default async function CarteraDashboard({
 
         {/* ETAPA 2: BANDEJA DE COBRANZA Y CONTROL DE RECIBOS */}
         <CobranzaReceiptsClient policies={policies} isAdmin={isAdmin} />
+
+        {/* ETAPA 3: RADAR DE VENTA CRUZADA Y BRECHAS DE BLINDAJE */}
+        <CrossSellRadarClient
+          clients={clientsWithPolicies}
+          adnDiagnostics={adnDiagnostics}
+        />
 
         {/* RADAR DE ANIVERSARIOS Y RENOVACIONES */}
         <div className="mt-2">
