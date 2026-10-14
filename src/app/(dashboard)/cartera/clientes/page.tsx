@@ -1,6 +1,12 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { User, ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -13,16 +19,26 @@ export default async function DirectorioClientes() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  const dbUser = await prisma.user.findUnique({where: {id: session.user.id}, select: {role: true, agencyId: true}});
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true, agencyId: true },
+  });
 
-  let clientsWhereClause: any = { userId: session.user.id };
-  if ((dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN') && dbUser?.agencyId) {
-     clientsWhereClause = { agencyId: dbUser.agencyId };
-  }
+  const isAdmin = dbUser?.role === "ADMIN" || dbUser?.role === "SUPER_ADMIN";
+  const effectiveAgencyId = (session.user.agencyId ||
+    dbUser?.agencyId ||
+    "aacom") as string;
+
+  const clientsWhereClause: any = isAdmin
+    ? { agencyId: effectiveAgencyId, isArchived: false }
+    : { userId: session.user.id, isArchived: false };
 
   const clients = await prisma.client.findMany({
     where: clientsWhereClause,
-    include: { policies: true },
+    include: {
+      policies: { where: { isArchived: false } },
+      user: { select: { name: true } },
+    },
     orderBy: { name: "asc" },
   });
 
@@ -36,10 +52,12 @@ export default async function DirectorioClientes() {
                 <ArrowLeft className="h-4 w-4" />
               </Button>
             </Link>
-            <h1 className="text-3xl font-bold tracking-tight">Directorio de Clientes</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Directorio de Clientes
+            </h1>
           </div>
           <p className="text-muted-foreground pl-10">
-            Administra a tus clientes y visualiza sus pólizas asociadas.
+            Administra tu cartera de asegurados, fechas de cumpleaños y nivel de blindaje.
           </p>
         </div>
         <div className="flex gap-2">
@@ -49,9 +67,9 @@ export default async function DirectorioClientes() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Todos tus Clientes ({clients.length})</CardTitle>
+          <CardTitle>Clientes Activos ({clients.length})</CardTitle>
           <CardDescription>
-            Lista de clientes dados de alta manual o mediante la importación de tu Layout.
+            Lista de clientes dados de alta manualmente o mediante la importación de tu Layout.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -64,7 +82,7 @@ export default async function DirectorioClientes() {
               </Link>
             </div>
           ) : (
-            <ClientListTable clients={clients} />
+            <ClientListTable clients={clients} isAdmin={isAdmin} />
           )}
         </CardContent>
       </Card>

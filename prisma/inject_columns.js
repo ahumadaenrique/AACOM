@@ -295,7 +295,41 @@ async function injectColumns() {
          FROM "RoleplayCall"
          GROUP BY "userId"
        ) counts
-       WHERE rs."userId" = counts."userId" AND rs."totalCalls" < counts.c_total;`
+       WHERE rs."userId" = counts."userId" AND rs."totalCalls" < counts.c_total;`,
+      `ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "rfc" TEXT;`,
+      `ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "curp" TEXT;`,
+      `ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "notes" TEXT;`,
+      `ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "isArchived" BOOLEAN NOT NULL DEFAULT false;`,
+      `ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMP(3);`,
+      `CREATE INDEX IF NOT EXISTS "Client_isArchived_idx" ON "Client"("isArchived");`,
+      `ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "originalPremium" DOUBLE PRECISION;`,
+      `ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "currency" TEXT DEFAULT 'MXN';`,
+      `ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "ramo" TEXT DEFAULT 'VIDA_INDIVIDUAL';`,
+      `ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "tipoVigencia" TEXT DEFAULT 'LARGO_PLAZO';`,
+      `ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "status" TEXT NOT NULL DEFAULT 'VIGENTE';`,
+      `ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "subStatus" TEXT;`,
+      `ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "isArchived" BOOLEAN NOT NULL DEFAULT false;`,
+      `ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "deletedAt" TIMESTAMP(3);`,
+      `CREATE INDEX IF NOT EXISTS "Policy_status_idx" ON "Policy"("status");`,
+      `CREATE INDEX IF NOT EXISTS "Policy_isArchived_idx" ON "Policy"("isArchived");`,
+      `UPDATE "Policy"
+       SET "anniversaryDay" = EXTRACT(DAY FROM ("effectiveDate" AT TIME ZONE 'UTC'))::INTEGER,
+           "anniversaryMonth" = EXTRACT(MONTH FROM ("effectiveDate" AT TIME ZONE 'UTC'))::INTEGER
+       WHERE "effectiveDate" IS NOT NULL AND ("anniversaryDay" IS NULL OR "anniversaryMonth" IS NULL);`,
+      `UPDATE "Policy"
+       SET "ramo" = CASE
+             WHEN LOWER(COALESCE("product", '')) LIKE '%gmm%' OR LOWER(COALESCE("product", '')) LIKE '%gastos med%' OR LOWER(COALESCE("product", '')) LIKE '%salud%' THEN 'GMM'
+             WHEN LOWER(COALESCE("product", '')) LIKE '%auto%' THEN 'AUTOS'
+             WHEN LOWER(COALESCE("product", '')) LIKE '%grupo%' OR LOWER(COALESCE("product", '')) LIKE '%colectiv%' THEN 'VIDA_GRUPO'
+             WHEN LOWER(COALESCE("product", '')) LIKE '%hogar%' OR LOWER(COALESCE("product", '')) LIKE '%daño%' OR LOWER(COALESCE("product", '')) LIKE '%pyme%' THEN 'DANOS'
+             WHEN LOWER(COALESCE("product", '')) LIKE '%ppr%' OR LOWER(COALESCE("product", '')) LIKE '%retiro%' OR LOWER(COALESCE("product", '')) LIKE '%dotal%' THEN 'AHORRO_RETIRO'
+             ELSE 'VIDA_INDIVIDUAL'
+           END,
+           "tipoVigencia" = CASE
+             WHEN LOWER(COALESCE("product", '')) LIKE '%gmm%' OR LOWER(COALESCE("product", '')) LIKE '%gastos med%' OR LOWER(COALESCE("product", '')) LIKE '%auto%' OR LOWER(COALESCE("product", '')) LIKE '%grupo%' OR LOWER(COALESCE("product", '')) LIKE '%daño%' THEN 'ANUAL_RENOVABLE'
+             ELSE 'LARGO_PLAZO'
+           END
+       WHERE "ramo" IS NULL OR "tipoVigencia" IS NULL;`
     ];
 
     for (const q of queries) {

@@ -1,14 +1,30 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { format, addDays, isBefore, isAfter } from "date-fns";
-import { es } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, Wallet, Clock, FileText, Upload, Plus, User } from "lucide-react";
+import {
+  Building2,
+  Users,
+  Wallet,
+  Clock,
+  FileText,
+  Upload,
+  User,
+  Sparkles,
+  CalendarClock,
+  MessageCircle,
+  AlertTriangle,
+} from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import CarteraTableClient from "./CarteraTableClient";
 import PremiumGuard from "@/components/PremiumGuard";
+import {
+  computePolicyCycleInfo,
+  formatDateSafe,
+  RAMO_LABELS,
+  STATUS_CONFIG,
+} from "./dateUtils";
 
 export const dynamic = "force-dynamic";
 
@@ -20,69 +36,76 @@ export default async function CarteraDashboard({
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  const daysFilter = parseInt(searchParams.days || "30");
-  const today = new Date();
-  const futureDate = addDays(today, daysFilter);
+  const daysFilter = parseInt(searchParams.days || "30", 10);
 
-  const dbUser = await prisma.user.findUnique({where: {id: session.user.id}, select: {role: true, agencyId: true}});
-  const currentAgencyId = session.user.agencyId || dbUser?.agencyId;
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true, agencyId: true },
+  });
+  const currentAgencyId = (session.user.agencyId || dbUser?.agencyId || "aacom") as string;
+  const isAdmin = dbUser?.role === "ADMIN" || dbUser?.role === "SUPER_ADMIN";
 
-  let policiesWhereClause: any = { userId: session.user.id };
-  let clientsWhereClause: any = { userId: session.user.id };
+  const policiesWhereClause: any = isAdmin
+    ? { agencyId: currentAgencyId, isArchived: false }
+    : { userId: session.user.id, isArchived: false };
 
-  if ((dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN') && currentAgencyId) {
-     policiesWhereClause = { agencyId: currentAgencyId };
-     clientsWhereClause = { agencyId: currentAgencyId };
-  }
+  const clientsWhereClause: any = isAdmin
+    ? { agencyId: currentAgencyId, isArchived: false }
+    : { userId: session.user.id, isArchived: false };
 
-  // --- MIGRACIÓN MASIVA DE RESCATE (Pólizas, Clientes y Registros huérfanos) ---
-  // NOTA: Estas migraciones fueron movidas a scripts/migrateData.ts por razones de rendimiento.
-  // ----------------------------------------------------------------------------
-
-  // Obtener todas las pólizas del agente o de la agencia (si es admin)
   const policies = await prisma.policy.findMany({
     where: policiesWhereClause,
-    include: { client: true, user: { select: { name: true } } },
-    orderBy: { renewalDate: "asc" },
+    include: {
+      client: true,
+      user: { select: { name: true } },
+    },
+    orderBy: { effectiveDate: "desc" },
   });
 
   const clientsCount = await prisma.client.count({
     where: clientsWhereClause,
   });
 
-  const totalPremium = policies.reduce((acc, curr) => acc + (curr.annualPremium || 0), 0);
+  // Enriquecer cada póliza con su ciclo real (Aniversario vs Renovación) y estatus
+  const enrichedPolicies = policies.map((p) => {
+    const cycle = computePolicyCycleInfo(p);
+    return {
+      ...p,
+      cycle,
+    };
+  });
 
-  // Filtrar las que están por vencer o cumplen aniversario en los próximos X días
-  const getNextAnniversary = (effectiveDate: Date | null, renewalDate: Date | null) => {
-    if (!effectiveDate) return null;
-    const todayZero = new Date();
-    todayZero.setHours(0, 0, 0, 0); // Para evitar problemas de horas
-    const anniv = new Date(effectiveDate);
-    anniv.setFullYear(todayZero.getFullYear());
-    
-    // Si el aniversario de este año ya pasó, el próximo es el año que viene
-    if (isBefore(anniv, todayZero)) {
-      anniv.setFullYear(todayZero.getFullYear() + 1);
-    }
-    
-    // Si el próximo aniversario es después de la fecha de vencimiento real, usamos el vencimiento
-    if (renewalDate && isAfter(anniv, new Date(renewalDate))) {
-      return new Date(renewalDate);
-    }
-    
-    return anniv;
-  };
+  // Pólizas activas (excluyendo Canceladas y Terminadas para los KPIs de Cartera Viva)
+  const activePolicies = enrichedPolicies.filter(
+    (p) => p.cycle.computedStatus !== "CANCELADA" && p.cycle.computedStatus !== "TERMINADA"
+  );
 
-  const upcomingRenewals = policies.map(p => {
-    const nextAnniv = getNextAnniversary(p.effectiveDate ? new Date(p.effectiveDate) : null, p.renewalDate ? new Date(p.renewalDate) : null);
-    const dateToCheck = nextAnniv || (p.renewalDate ? new Date(p.renewalDate) : null);
-    return { ...p, dateToCheck };
-  }).filter(
-    (p) =>
-      p.dateToCheck &&
-      isAfter(new Date(p.dateToCheck), today) &&
-      isBefore(new Date(p.dateToCheck), futureDate)
-  ).sort((a, b) => (a.dateToCheck as Date).getTime() - (b.dateToCheck as Date).getTime());
+  const atRiskPolicies = activePolicies.filter(
+    (p) => p.cycle.computedStatus === "EN_RIESGO" || p.cycle.computedStatus === "POR_CONFIRMAR"
+  );
+
+  const totalActivePremium = activePolicies.reduce(
+    (acc, curr) => acc + (curr.annualPremium || 0),
+    0
+  );
+
+  const atRiskPremium = atRiskPolicies.reduce(
+    (acc, curr) => acc + (curr.annualPremium || 0),
+    0
+  );
+
+  const avgPoliciesPerClient =
+    clientsCount > 0 ? (activePolicies.length / clientsCount).toFixed(1) : "0.0";
+
+  // Filtrar las que cumplen aniversario o renuevan en los próximos X días (0 <= días <= daysFilter)
+  const upcomingRenewals = activePolicies
+    .filter(
+      (p) =>
+        p.cycle.daysUntilNextEvent !== null &&
+        p.cycle.daysUntilNextEvent >= 0 &&
+        p.cycle.daysUntilNextEvent <= daysFilter
+    )
+    .sort((a, b) => (a.cycle.daysUntilNextEvent ?? 999) - (b.cycle.daysUntilNextEvent ?? 999));
 
   const userRole = dbUser?.role ?? null;
 
@@ -91,149 +114,287 @@ export default async function CarteraDashboard({
       <div className="flex flex-col gap-6 p-4 md:p-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
-          <h1 className="text-3xl font-bold tracking-tight">Mi Cartera</h1>
-          <p className="text-muted-foreground">
-            Resumen de tu cartera de seguros y próximas renovaciones.
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Link href="/cartera/clientes">
-            <Button variant="outline">
-              <Users className="mr-2 h-4 w-4" />
-              Directorio
-            </Button>
-          </Link>
-          <Link href="/cartera/importar">
-            <Button>
-              <Upload className="mr-2 h-4 w-4" />
-              Cargar Layout
-            </Button>
-          </Link>
-        </div>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card className="bg-gradient-to-br from-primary/10 via-background to-background">
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Prima Anualizada Total</CardTitle>
-            <Wallet className="h-4 w-4 text-primary" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">
-              {new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN" }).format(
-                totalPremium
-              )}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Suma de tu cartera viva</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Clientes Activos</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{clientsCount}</div>
-            <p className="text-xs text-muted-foreground mt-1">Registrados en la plataforma</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-            <CardTitle className="text-sm font-medium">Pólizas Vigentes</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{policies.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">Pólizas individuales</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="mt-4">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold flex items-center gap-2">
-            <Clock className="w-5 h-5 text-orange-500" />
-            Línea de tiempo de Renovaciones
-          </h2>
-          <div className="flex space-x-1 border rounded-md p-1 bg-muted/20">
-            <Link href="?days=30">
-              <Badge variant={daysFilter === 30 ? "default" : "outline"} className="cursor-pointer">
-                30 días
-              </Badge>
+            <h1 className="text-3xl font-bold tracking-tight">Mi Cartera y Conservación</h1>
+            <p className="text-muted-foreground">
+              Control de pólizas vigentes, radar de aniversarios de Vida y renovaciones anuales.
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <Link href="/cartera/clientes">
+              <Button variant="outline">
+                <Users className="mr-2 h-4 w-4" />
+                Directorio ({clientsCount})
+              </Button>
             </Link>
-            <Link href="?days=45">
-              <Badge variant={daysFilter === 45 ? "default" : "outline"} className="cursor-pointer">
-                45 días
-              </Badge>
-            </Link>
-            <Link href="?days=60">
-              <Badge variant={daysFilter === 60 ? "default" : "outline"} className="cursor-pointer">
-                60 días
-              </Badge>
+            <Link href="/cartera/importar">
+              <Button>
+                <Upload className="mr-2 h-4 w-4" />
+                Cargar Layout
+              </Button>
             </Link>
           </div>
         </div>
 
-        <Card>
-          <CardContent className="p-0">
-            {upcomingRenewals.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground flex flex-col items-center">
-                <Building2 className="w-12 h-12 mb-3 text-muted/30" />
-                <p>No tienes pólizas por vencer en los próximos {daysFilter} días.</p>
+        {/* KPI CARDS */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card className="bg-gradient-to-br from-primary/10 via-background to-background border-primary/20">
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium">Prima Anualizada Viva</CardTitle>
+              <Wallet className="h-4 w-4 text-primary" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-primary">
+                {new Intl.NumberFormat("es-MX", {
+                  style: "currency",
+                  currency: "MXN",
+                  maximumFractionDigits: 0,
+                }).format(totalActivePremium)}
               </div>
-            ) : (
-              <div className="divide-y">
-                {upcomingRenewals.map((policy) => (
-                  <div
-                    key={policy.id}
-                    className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 hover:bg-muted/50 transition-colors"
-                  >
-                    <div className="flex flex-col">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-lg">{policy.contractor}</span>
-                        {policy.user?.name && (
-                          <Badge variant="outline" className="text-xs font-normal gap-1 text-muted-foreground border-slate-200 dark:border-slate-800">
-                            <User className="w-3 h-3 text-indigo-500" />
-                            Agente: <span className="font-medium text-foreground">{policy.user.name}</span>
-                          </Badge>
-                        )}
-                      </div>
-                      <span className="text-sm text-muted-foreground">
-                        {policy.product || "Producto no especificado"} • {policy.insuranceCompany}
-                      </span>
-                    </div>
-                    <div className="flex flex-col items-end mt-2 md:mt-0 text-right">
-                      <span className="font-bold text-orange-600">
-                        Vence/Aniv: {policy.dateToCheck ? format(new Date(policy.dateToCheck), "dd MMM yyyy", { locale: es }) : "N/A"}
-                      </span>
-                      <span className="text-sm">
-                        Prima:{" "}
-                        {new Intl.NumberFormat("es-MX", {
-                          style: "currency",
-                          currency: "MXN",
-                        }).format(policy.annualPremium || 0)}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Suma homologada en MXN de pólizas activas
+              </p>
+            </CardContent>
+          </Card>
 
-      {/* FULL POLICIES TABLE (CLIENT COMPONENT) */}
-      <div className="mt-8">
-        <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
-          <FileText className="w-5 h-5 text-blue-500" />
-          Detalle Completo de Pólizas
-        </h2>
-        <CarteraTableClient policies={policies} isAdmin={dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN'} />
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium">Pólizas Vigentes</CardTitle>
+              <FileText className="h-4 w-4 text-emerald-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold">{activePolicies.length}</span>
+                {enrichedPolicies.length > activePolicies.length && (
+                  <span className="text-xs text-muted-foreground">
+                    de {enrichedPolicies.length} registradas
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {activePolicies.filter((p) => p.cycle.isLongTerm).length} Largo Plazo •{" "}
+                {activePolicies.filter((p) => !p.cycle.isLongTerm).length} Anuales
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium">Clientes y Profundización</CardTitle>
+              <Users className="h-4 w-4 text-indigo-500" />
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold">{clientsCount}</span>
+                <Badge variant="secondary" className="text-xs font-normal">
+                  {avgPoliciesPerClient} pólizas / cliente
+                </Badge>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                Meta ideal de blindaje: ≥ 2.0 pólizas por cliente
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className={atRiskPolicies.length > 0 ? "border-amber-500/40 bg-amber-500/5" : ""}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+              <CardTitle className="text-sm font-medium">Radar de Conservación</CardTitle>
+              {atRiskPolicies.length > 0 ? (
+                <AlertTriangle className="h-4 w-4 text-amber-500" />
+              ) : (
+                <CalendarClock className="h-4 w-4 text-orange-500" />
+              )}
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-orange-600 dark:text-orange-400">
+                  {upcomingRenewals.length}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  en los próximos {daysFilter} días
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {atRiskPolicies.length > 0
+                  ? `${atRiskPolicies.length} en riesgo (${new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(atRiskPremium)})`
+                  : "100% de cartera activa al corriente"}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* RADAR DE ANIVERSARIOS Y RENOVACIONES */}
+        <div className="mt-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <div>
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <Clock className="w-5 h-5 text-orange-500" />
+                Radar de Próximos Aniversarios y Renovaciones
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                En Vida Individual se monitorea el aniversario anual de la póliza; en GMM, Autos y Daños su renovación de contrato.
+              </p>
+            </div>
+            <div className="flex space-x-1 border rounded-md p-1 bg-muted/20 w-fit">
+              {[30, 45, 60, 90].map((d) => (
+                <Link key={d} href={`?days=${d}`}>
+                  <Badge
+                    variant={daysFilter === d ? "default" : "outline"}
+                    className="cursor-pointer"
+                  >
+                    {d} días
+                  </Badge>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <Card>
+            <CardContent className="p-0">
+              {upcomingRenewals.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground flex flex-col items-center">
+                  <Building2 className="w-12 h-12 mb-3 text-muted/30" />
+                  <p>
+                    No tienes pólizas con aniversario o renovación en los próximos {daysFilter} días.
+                  </p>
+                  <p className="text-xs mt-1">
+                    Prueba ampliando el horizonte a 60 o 90 días con los botones superiores.
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {upcomingRenewals.map((policy) => {
+                    const isAnniv = policy.cycle.eventType === "ANIVERSARIO";
+                    const daysLeft = policy.cycle.daysUntilNextEvent ?? 0;
+                    const cleanPhone = (policy.client?.phone || "").replace(/\D/g, "");
+                    const clientName = policy.contractor || policy.client?.name || "Cliente";
+                    const eventDateFormatted = formatDateSafe(
+                      policy.cycle.nextEventDate,
+                      "dd 'de' MMM yyyy"
+                    );
+                    const waMessage = isAnniv
+                      ? `Hola ${clientName}, te saludo con gusto. Te escribo porque el próximo ${eventDateFormatted} tu póliza ${policy.product || ""} (${policy.insuranceCompany || ""}) cumple su Aniversario Año ${policy.cycle.policyYear || ""}. ¿Tienes 5 minutos esta semana para revisar tu blindaje y beneficiarios?`
+                      : `Hola ${clientName}, te saludo con gusto. El próximo ${eventDateFormatted} se renueva tu póliza ${policy.product || ""} (${policy.insuranceCompany || ""}). Te contacto con anticipación para revisar condiciones de renovación.`;
+
+                    return (
+                      <div
+                        key={policy.id}
+                        className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 hover:bg-muted/50 transition-colors gap-3"
+                      >
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Link
+                              href={
+                                policy.clientId
+                                  ? `/cartera/clientes/${policy.clientId}`
+                                  : "/cartera/clientes"
+                              }
+                              className="font-semibold text-base hover:underline text-primary"
+                            >
+                              {clientName}
+                            </Link>
+                            <Badge
+                              variant="outline"
+                              className={
+                                isAnniv
+                                  ? "bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30 text-xs"
+                                  : "bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30 text-xs"
+                              }
+                            >
+                              {isAnniv ? (
+                                <span className="flex items-center gap-1">
+                                  <Sparkles className="w-3 h-3" />
+                                  Aniversario {policy.cycle.policyYear ? `Año ${policy.cycle.policyYear}` : "Anual"}
+                                </span>
+                              ) : (
+                                "Renovación de Contrato"
+                              )}
+                            </Badge>
+                            {isAdmin && policy.user?.name && (
+                              <Badge
+                                variant="outline"
+                                className="text-xs font-normal gap-1 text-muted-foreground"
+                              >
+                                <User className="w-3 h-3 text-indigo-500" />
+                                {policy.user.name}
+                              </Badge>
+                            )}
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            Póliza <strong className="text-foreground">{policy.policyNumber}</strong> •{" "}
+                            {policy.product || "Producto no especificado"} •{" "}
+                            {policy.insuranceCompany || "Aseguradora"} •{" "}
+                            {RAMO_LABELS[policy.ramo || "VIDA_INDIVIDUAL"] || policy.ramo}
+                          </span>
+                        </div>
+
+                        <div className="flex items-center gap-4 self-end md:self-center">
+                          <div className="flex flex-col items-end text-right">
+                            <div className="flex items-center gap-2">
+                              <Badge
+                                variant={daysLeft <= 15 ? "destructive" : "secondary"}
+                                className="text-xs"
+                              >
+                                {daysLeft === 0
+                                  ? "¡Hoy!"
+                                  : daysLeft === 1
+                                  ? "Mañana"
+                                  : `En ${daysLeft} días`}
+                              </Badge>
+                              <span className="font-bold text-sm text-orange-600 dark:text-orange-400">
+                                {formatDateSafe(policy.cycle.nextEventDate, "dd MMM yyyy")}
+                              </span>
+                            </div>
+                            <span className="text-xs text-muted-foreground mt-0.5">
+                              Prima:{" "}
+                              <strong className="text-foreground">
+                                {new Intl.NumberFormat("es-MX", {
+                                  style: "currency",
+                                  currency: "MXN",
+                                }).format(policy.annualPremium || 0)}
+                              </strong>{" "}
+                              {policy.paymentMethod ? `(${policy.paymentMethod})` : ""}
+                            </span>
+                          </div>
+
+                          {cleanPhone.length >= 10 && (
+                            <a
+                              href={`https://wa.me/${cleanPhone.length === 10 ? "52" + cleanPhone : cleanPhone}?text=${encodeURIComponent(waMessage)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title="Enviar recordatorio por WhatsApp"
+                            >
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10"
+                              >
+                                <MessageCircle className="w-4 h-4 mr-1.5" />
+                                WhatsApp
+                              </Button>
+                            </a>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* FULL POLICIES TABLE (CLIENT COMPONENT) */}
+        <div className="mt-4">
+          <h2 className="text-xl font-semibold flex items-center gap-2 mb-4">
+            <FileText className="w-5 h-5 text-blue-500" />
+            Detalle Completo de Pólizas
+          </h2>
+          <CarteraTableClient
+            policies={policies}
+            isAdmin={isAdmin}
+          />
+        </div>
       </div>
-    </div>
     </PremiumGuard>
   );
 }
-
-
-

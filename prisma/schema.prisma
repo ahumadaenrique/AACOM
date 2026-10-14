@@ -227,21 +227,27 @@ model DailyRecord {
 }
 
 model Client {
-  id        String    @id @default(cuid())
-  name      String
-  email     String?
-  phone     String?
-  birthDate DateTime?
-  userId    String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  agencyId  String?
-  agency    Agency?   @relation(fields: [agencyId], references: [id])
-  user      User      @relation(fields: [userId], references: [id])
-  policies  Policy[]
+  id         String    @id @default(cuid())
+  name       String
+  email      String?
+  phone      String?
+  birthDate  DateTime?
+  rfc        String?
+  curp       String?
+  notes      String?
+  isArchived Boolean   @default(false)
+  deletedAt  DateTime?
+  userId     String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  agencyId   String?
+  agency     Agency?   @relation(fields: [agencyId], references: [id])
+  user       User      @relation(fields: [userId], references: [id])
+  policies   Policy[]
 
   @@index([agencyId])
   @@index([userId])
+  @@index([isArchived])
 }
 
 model Policy {
@@ -258,6 +264,14 @@ model Policy {
   anniversaryDay        Int?
   anniversaryMonth      Int?
   annualPremium         Float?    @default(0)
+  originalPremium       Float?
+  currency              String?   @default("MXN")
+  ramo                  String?   @default("VIDA_INDIVIDUAL")
+  tipoVigencia          String?   @default("LARGO_PLAZO")
+  status                String    @default("VIGENTE")
+  subStatus             String?
+  isArchived            Boolean   @default(false)
+  deletedAt             DateTime?
   approximateBonus      Float?    @default(0)
   approximateCommission Float?    @default(0)
   clientId              String?
@@ -267,12 +281,14 @@ model Policy {
   product               String?
   agencyId              String?
   agency                Agency?   @relation(fields: [agencyId], references: [id])
-  client                Client?   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  client                Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
   user                  User      @relation(fields: [userId], references: [id])
 
   @@index([agencyId])
   @@index([clientId])
   @@index([userId])
+  @@index([status])
+  @@index([isArchived])
 }
 
 model Content {
