@@ -40,6 +40,7 @@ import {
   STATUS_CONFIG,
   SUB_STATUS_LABELS,
 } from "../../dateUtils";
+import { ensurePoliciesHaveReceipts } from "../../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -61,14 +62,18 @@ export default async function ClienteDetalle({
     currentUser?.agencyId ||
     "aacom") as string;
 
-  // Aislamiento estricto por agencyId para Admin y por userId para Agente
-  const client = await prisma.client.findFirst({
+  let client = await prisma.client.findFirst({
     where: isAdmin
       ? { id: params.id, agencyId: effectiveAgencyId, isArchived: false }
       : { id: params.id, userId: session.user.id, isArchived: false },
     include: {
       policies: {
         where: { isArchived: false },
+        include: {
+          receipts: {
+            orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
+          },
+        },
         orderBy: { effectiveDate: "desc" },
       },
       user: { select: { name: true } },
@@ -77,6 +82,27 @@ export default async function ClienteDetalle({
 
   if (!client) {
     notFound();
+  }
+
+  // Asegurar que las pólizas activas del cliente tengan sus recibos generados
+  const generated = await ensurePoliciesHaveReceipts(client.policies);
+  if (generated) {
+    const refreshed = await prisma.client.findFirst({
+      where: { id: client.id },
+      include: {
+        policies: {
+          where: { isArchived: false },
+          include: {
+            receipts: {
+              orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
+            },
+          },
+          orderBy: { effectiveDate: "desc" },
+        },
+        user: { select: { name: true } },
+      },
+    });
+    if (refreshed) client = refreshed;
   }
 
   const enrichedPolicies = client.policies.map((p) => ({
@@ -109,7 +135,7 @@ export default async function ClienteDetalle({
           <div>
             <h1 className="text-3xl font-bold tracking-tight">{client.name}</h1>
             <p className="text-muted-foreground">
-              Expediente de cliente y blindaje patrimonial contratado.
+              Expediente de cliente, recibos y blindaje patrimonial contratado.
             </p>
           </div>
         </div>
@@ -205,7 +231,7 @@ export default async function ClienteDetalle({
                 Pólizas Contratadas ({enrichedPolicies.length})
               </CardTitle>
               <CardDescription>
-                Detalle de coberturas, aniversarios, documentos y estatus de conservación.
+                Detalle de coberturas, recibos, aniversarios, documentos y estatus de conservación.
               </CardDescription>
             </div>
             <PolicyFormDialog clientId={client.id} />

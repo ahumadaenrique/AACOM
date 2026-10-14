@@ -1,4 +1,4 @@
-import { format, differenceInCalendarDays } from "date-fns";
+import { format, differenceInCalendarDays, addMonths, addDays } from "date-fns";
 import { es } from "date-fns/locale";
 
 /**
@@ -91,6 +91,8 @@ export interface PolicyCycleInfo {
   nextEventDate: Date | null;
   daysUntilNextEvent: number | null;
   policyYear: number | null;
+  currentPolicyYear: number;
+  currentCycleStartDate: Date | null;
   effectiveCalDate: Date | null;
   renewalCalDate: Date | null;
   maturityDate: Date | null;
@@ -120,7 +122,6 @@ export function computePolicyCycleInfo(policy: any, referenceDate: Date = new Da
   const rawProduct = (policy?.product || "").toLowerCase();
   const rawCompany = (policy?.insuranceCompany || "").toLowerCase();
 
-  // Determinar si es póliza de largo plazo (Vida Individual / Ahorro / Retiro)
   let isLongTerm = true;
   if (rawTipo === "ANUAL_RENOVABLE") {
     isLongTerm = false;
@@ -140,9 +141,6 @@ export function computePolicyCycleInfo(policy: any, referenceDate: Date = new Da
     isLongTerm = true;
   }
 
-  // En pólizas de Vida de largo plazo, cuando el usuario importó el layout de Insignia,
-  // la columna "Fin de Vigencia" (renewalDate) solía traer el aniversario del Año 1 (ej. 1 año después de effectiveDate).
-  // Solo consideramos renewalDate como "Fin de Cobertura Definitivo (Maturity)" en largo plazo si está a >= 5 años del inicio.
   let maturityDate: Date | null = null;
   if (isLongTerm && effectiveCalDate && renewalCalDate) {
     const yearsSpan = renewalCalDate.getFullYear() - effectiveCalDate.getFullYear();
@@ -153,8 +151,9 @@ export function computePolicyCycleInfo(policy: any, referenceDate: Date = new Da
     maturityDate = renewalCalDate;
   }
 
-  // Calcular próximo aniversario o renovación
   let nextEventDate: Date | null = null;
+  let currentCycleStartDate: Date | null = null;
+
   const annivMonth =
     policy?.anniversaryMonth != null
       ? Number(policy.anniversaryMonth) - 1
@@ -174,15 +173,20 @@ export function computePolicyCycleInfo(policy: any, referenceDate: Date = new Da
       : null;
 
   if (annivMonth !== null && annivDay !== null) {
-    // Construir fecha de aniversario/renovación en el año actual
-    let candidate = new Date(todayCal.getFullYear(), annivMonth, annivDay, 12, 0, 0);
-    // Si ya pasó hoy (hace más de 0 días), proyectar al siguiente año
-    if (differenceInCalendarDays(candidate, todayCal) < 0) {
-      candidate = new Date(todayCal.getFullYear() + 1, annivMonth, annivDay, 12, 0, 0);
+    const annivThisYear = new Date(todayCal.getFullYear(), annivMonth, annivDay, 12, 0, 0);
+    if (differenceInCalendarDays(annivThisYear, todayCal) < 0) {
+      currentCycleStartDate = annivThisYear;
+      nextEventDate = new Date(todayCal.getFullYear() + 1, annivMonth, annivDay, 12, 0, 0);
+    } else {
+      currentCycleStartDate = new Date(todayCal.getFullYear() - 1, annivMonth, annivDay, 12, 0, 0);
+      if (effectiveCalDate && differenceInCalendarDays(currentCycleStartDate, effectiveCalDate) < 0) {
+        currentCycleStartDate = effectiveCalDate;
+      }
+      nextEventDate = annivThisYear;
     }
-    nextEventDate = candidate;
   } else if (renewalCalDate) {
     nextEventDate = renewalCalDate;
+    currentCycleStartDate = effectiveCalDate;
   }
 
   const daysUntilNextEvent = nextEventDate
@@ -190,11 +194,17 @@ export function computePolicyCycleInfo(policy: any, referenceDate: Date = new Da
     : null;
 
   let policyYear: number | null = null;
+  let currentPolicyYear = 1;
   if (effectiveCalDate && nextEventDate) {
     policyYear = Math.max(1, nextEventDate.getFullYear() - effectiveCalDate.getFullYear());
   }
+  if (effectiveCalDate && currentCycleStartDate) {
+    currentPolicyYear = Math.max(
+      1,
+      currentCycleStartDate.getFullYear() - effectiveCalDate.getFullYear() + 1
+    );
+  }
 
-  // Estatus de conservación limpio (5 estados principales)
   const rawStatus = (policy?.status || "VIGENTE").toUpperCase();
   let computedStatus: PolicyCycleInfo["computedStatus"] = "VIGENTE";
   if (
@@ -207,7 +217,6 @@ export function computePolicyCycleInfo(policy: any, referenceDate: Date = new Da
     computedStatus = rawStatus as PolicyCycleInfo["computedStatus"];
   }
 
-  // Si tiene fecha fin de cobertura definitiva (maturityDate en largo plazo >=5 años) y ya pasó, sugerir TERMINADA/POR_CONFIRMAR
   if (
     isLongTerm &&
     maturityDate &&
@@ -223,10 +232,242 @@ export function computePolicyCycleInfo(policy: any, referenceDate: Date = new Da
     nextEventDate,
     daysUntilNextEvent,
     policyYear,
+    currentPolicyYear,
+    currentCycleStartDate,
     effectiveCalDate,
     renewalCalDate,
     maturityDate,
     computedStatus,
+  };
+}
+
+/**
+ * Determina cuántos recibos al año genera una forma de pago.
+ */
+export function getInstallmentsForPaymentMethod(paymentMethod?: string | null): number {
+  const pm = (paymentMethod || "").toLowerCase().trim();
+  if (pm.includes("mensual") || pm === "12") return 12;
+  if (pm.includes("trimestral") || pm === "4") return 4;
+  if (pm.includes("semestral") || pm === "2") return 2;
+  return 1; // Anual o Pago Único
+}
+
+export interface GeneratedReceiptDraft {
+  policyId: string;
+  agencyId: string | null;
+  userId: string;
+  receiptNumber: number;
+  totalInstallments: number;
+  policyYear: number;
+  dueDate: Date;
+  graceEndDate: Date;
+  amount: number;
+  status: string;
+  paidAt: Date | null;
+}
+
+/**
+ * Construye el calendario de recibos del año póliza en curso para una póliza.
+ * Si `autoMarkHistoricalPaid` es true (ej. al inicializar recibos de pólizas históricas ya vigentes),
+ * los recibos cuya fecha límite de gracia venció hace más de 35 días se marcan como PAGADO
+ * para no inundar la bandeja del agente con recibos antiguos de principios de año.
+ */
+export function buildPolicyReceiptsDrafts(
+  policy: any,
+  options: { autoMarkHistoricalPaid?: boolean; referenceDate?: Date } = {}
+): GeneratedReceiptDraft[] {
+  const referenceDate = options.referenceDate || new Date();
+  const autoMarkHistoricalPaid = options.autoMarkHistoricalPaid ?? true;
+
+  const todayCal = new Date(
+    referenceDate.getFullYear(),
+    referenceDate.getMonth(),
+    referenceDate.getDate(),
+    12,
+    0,
+    0
+  );
+
+  const cycle = computePolicyCycleInfo(policy, referenceDate);
+  const startCal = cycle.currentCycleStartDate || cycle.effectiveCalDate || todayCal;
+  const policyYear = cycle.currentPolicyYear || 1;
+  const totalInstallments = getInstallmentsForPaymentMethod(policy?.paymentMethod);
+  const monthsStep = 12 / totalInstallments;
+  const installmentAmount = Number(
+    ((Number(policy?.annualPremium) || 0) / totalInstallments).toFixed(2)
+  );
+
+  const drafts: GeneratedReceiptDraft[] = [];
+
+  for (let i = 1; i <= totalInstallments; i++) {
+    const dueLocal = addMonths(startCal, (i - 1) * monthsStep);
+    const graceEndLocal = addDays(dueLocal, 30);
+
+    const dueUTC = toUTCNoonDate(dueLocal) || dueLocal;
+    const graceUTC = toUTCNoonDate(graceEndLocal) || graceEndLocal;
+
+    const daysSinceDue = differenceInCalendarDays(todayCal, dueLocal);
+
+    let status = "PENDIENTE";
+    let paidAt: Date | null = null;
+
+    if (autoMarkHistoricalPaid && daysSinceDue > 40) {
+      // Recibo histórico anterior al mes actual en póliza vigente
+      status = "PAGADO";
+      paidAt = dueUTC;
+    } else if (daysSinceDue >= 0 && daysSinceDue <= 30) {
+      status = "EN_GRACIA";
+    } else if (daysSinceDue > 30) {
+      status = "POR_CONFIRMAR";
+    }
+
+    drafts.push({
+      policyId: policy.id,
+      agencyId: policy.agencyId || null,
+      userId: policy.userId,
+      receiptNumber: i,
+      totalInstallments,
+      policyYear,
+      dueDate: dueUTC,
+      graceEndDate: graceUTC,
+      amount: installmentAmount,
+      status,
+      paidAt,
+    });
+  }
+
+  // Además, si el próximo aniversario/renovación está a <= 45 días, pre-generar el Recibo 1 del nuevo año póliza
+  if (
+    cycle.nextEventDate &&
+    cycle.daysUntilNextEvent !== null &&
+    cycle.daysUntilNextEvent >= 0 &&
+    cycle.daysUntilNextEvent <= 45 &&
+    cycle.policyYear &&
+    cycle.policyYear > policyYear
+  ) {
+    const nextDueLocal = cycle.nextEventDate;
+    const nextGraceLocal = addDays(nextDueLocal, 30);
+    drafts.push({
+      policyId: policy.id,
+      agencyId: policy.agencyId || null,
+      userId: policy.userId,
+      receiptNumber: 1,
+      totalInstallments,
+      policyYear: cycle.policyYear,
+      dueDate: toUTCNoonDate(nextDueLocal) || nextDueLocal,
+      graceEndDate: toUTCNoonDate(nextGraceLocal) || nextGraceLocal,
+      amount: installmentAmount,
+      status: "PENDIENTE",
+      paidAt: null,
+    });
+  }
+
+  return drafts;
+}
+
+export interface ReceiptLiveInfo {
+  liveStatus: "PAGADO" | "EN_GRACIA" | "POR_CONFIRMAR" | "PROXIMO" | "PENDIENTE" | "NO_PAGADO";
+  label: string;
+  badgeClass: string;
+  daysSinceDue: number;
+  daysUntilDue: number;
+  graceDay: number | null;
+  daysLeftInGrace: number | null;
+}
+
+/**
+ * Calcula en tiempo real el estado de cobranza y días de gracia de un recibo.
+ */
+export function computeReceiptLiveStatus(
+  receipt: any,
+  referenceDate: Date = new Date()
+): ReceiptLiveInfo {
+  const todayCal = new Date(
+    referenceDate.getFullYear(),
+    referenceDate.getMonth(),
+    referenceDate.getDate(),
+    12,
+    0,
+    0
+  );
+
+  const dueCal = toCalendarDateLocal(receipt?.dueDate) || todayCal;
+  const daysSinceDue = differenceInCalendarDays(todayCal, dueCal);
+  const daysUntilDue = differenceInCalendarDays(dueCal, todayCal);
+
+  if (receipt?.status === "PAGADO") {
+    return {
+      liveStatus: "PAGADO",
+      label: "Pagado",
+      badgeClass: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 border-emerald-500/30",
+      daysSinceDue,
+      daysUntilDue,
+      graceDay: null,
+      daysLeftInGrace: null,
+    };
+  }
+
+  if (receipt?.status === "NO_PAGADO") {
+    return {
+      liveStatus: "NO_PAGADO",
+      label: "No Pagado",
+      badgeClass: "bg-rose-500/15 text-rose-700 dark:text-rose-400 border-rose-500/30",
+      daysSinceDue,
+      daysUntilDue,
+      graceDay: null,
+      daysLeftInGrace: null,
+    };
+  }
+
+  // Si está en sus 30 días naturales de periodo de gracia (0 <= daysSinceDue <= 30)
+  if (daysSinceDue >= 0 && daysSinceDue <= 30) {
+    const graceDay = Math.max(1, daysSinceDue);
+    const daysLeftInGrace = Math.max(0, 30 - daysSinceDue);
+    return {
+      liveStatus: "EN_GRACIA",
+      label: `En Gracia (Día ${graceDay}/30 • Quedan ${daysLeftInGrace}d)`,
+      badgeClass: "bg-amber-500/15 text-amber-700 dark:text-amber-400 border-amber-500/40",
+      daysSinceDue,
+      daysUntilDue,
+      graceDay,
+      daysLeftInGrace,
+    };
+  }
+
+  // Si ya pasaron los 30 días de gracia sin confirmación de pago (Gracia Presunta -> Por Confirmar)
+  if (daysSinceDue > 30) {
+    return {
+      liveStatus: "POR_CONFIRMAR",
+      label: `Por Confirmar (+${daysSinceDue}d desde inicio)`,
+      badgeClass: "bg-orange-500/15 text-orange-700 dark:text-orange-400 border-orange-500/40",
+      daysSinceDue,
+      daysUntilDue,
+      graceDay: 30,
+      daysLeftInGrace: 0,
+    };
+  }
+
+  // Si vence en los próximos 30 días
+  if (daysUntilDue >= 0 && daysUntilDue <= 30) {
+    return {
+      liveStatus: "PROXIMO",
+      label: daysUntilDue === 0 ? "Vence Hoy" : `Vence en ${daysUntilDue}d`,
+      badgeClass: "bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30",
+      daysSinceDue,
+      daysUntilDue,
+      graceDay: null,
+      daysLeftInGrace: null,
+    };
+  }
+
+  return {
+    liveStatus: "PENDIENTE",
+    label: `Programado (${formatDateSafe(dueCal, "dd MMM yyyy")})`,
+    badgeClass: "bg-slate-500/10 text-slate-600 dark:text-slate-400 border-slate-500/20",
+    daysSinceDue,
+    daysUntilDue,
+    graceDay: null,
+    daysLeftInGrace: null,
   };
 }
 

@@ -7,6 +7,7 @@ import { deletePolicy } from "../../actions";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
 import PolicyFormDialog from "./PolicyFormDialog";
+import PolicyReceiptsDialog from "./PolicyReceiptsDialog";
 import {
   Dialog,
   DialogContent,
@@ -51,7 +52,9 @@ export default function PolicyActions({
   };
 
   return (
-    <div className="flex items-center justify-center gap-1">
+    <div className="flex items-center justify-center gap-0.5">
+      <PolicyReceiptsDialog policy={policy} />
+
       <PolicyFormDialog
         clientId={clientId || policy.clientId || ""}
         policy={policy}

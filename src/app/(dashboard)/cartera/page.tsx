@@ -18,13 +18,15 @@ import {
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import CarteraTableClient from "./CarteraTableClient";
+import CobranzaReceiptsClient from "./CobranzaReceiptsClient";
 import PremiumGuard from "@/components/PremiumGuard";
 import {
   computePolicyCycleInfo,
+  computeReceiptLiveStatus,
   formatDateSafe,
   RAMO_LABELS,
-  STATUS_CONFIG,
 } from "./dateUtils";
+import { ensurePoliciesHaveReceipts } from "./actions";
 
 export const dynamic = "force-dynamic";
 
@@ -53,14 +55,33 @@ export default async function CarteraDashboard({
     ? { agencyId: currentAgencyId, isArchived: false }
     : { userId: session.user.id, isArchived: false };
 
-  const policies = await prisma.policy.findMany({
+  let policies = await prisma.policy.findMany({
     where: policiesWhereClause,
     include: {
       client: true,
       user: { select: { name: true } },
+      receipts: {
+        orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
+      },
     },
     orderBy: { effectiveDate: "desc" },
   });
+
+  // Inicializar recibos automáticamente para las pólizas activas que aún no tengan recibos
+  const generatedAny = await ensurePoliciesHaveReceipts(policies);
+  if (generatedAny) {
+    policies = await prisma.policy.findMany({
+      where: policiesWhereClause,
+      include: {
+        client: true,
+        user: { select: { name: true } },
+        receipts: {
+          orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
+        },
+      },
+      orderBy: { effectiveDate: "desc" },
+    });
+  }
 
   const clientsCount = await prisma.client.count({
     where: clientsWhereClause,
@@ -69,19 +90,26 @@ export default async function CarteraDashboard({
   // Enriquecer cada póliza con su ciclo real (Aniversario vs Renovación) y estatus
   const enrichedPolicies = policies.map((p) => {
     const cycle = computePolicyCycleInfo(p);
+    const hasReceiptInGrace = (p.receipts || []).some((r) => {
+      const live = computeReceiptLiveStatus(r);
+      return live.liveStatus === "EN_GRACIA" || live.liveStatus === "POR_CONFIRMAR";
+    });
     return {
       ...p,
       cycle,
+      hasReceiptInGrace,
     };
   });
 
-  // Pólizas activas (excluyendo Canceladas y Terminadas para los KPIs de Cartera Viva)
   const activePolicies = enrichedPolicies.filter(
     (p) => p.cycle.computedStatus !== "CANCELADA" && p.cycle.computedStatus !== "TERMINADA"
   );
 
   const atRiskPolicies = activePolicies.filter(
-    (p) => p.cycle.computedStatus === "EN_RIESGO" || p.cycle.computedStatus === "POR_CONFIRMAR"
+    (p) =>
+      p.cycle.computedStatus === "EN_RIESGO" ||
+      p.cycle.computedStatus === "POR_CONFIRMAR" ||
+      p.hasReceiptInGrace
   );
 
   const totalActivePremium = activePolicies.reduce(
@@ -116,7 +144,7 @@ export default async function CarteraDashboard({
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Mi Cartera y Conservación</h1>
             <p className="text-muted-foreground">
-              Control de pólizas vigentes, radar de aniversarios de Vida y renovaciones anuales.
+              Control de pólizas vigentes, cobranza de recibos en periodo de gracia y radar de aniversarios.
             </p>
           </div>
           <div className="flex gap-2">
@@ -210,17 +238,20 @@ export default async function CarteraDashboard({
                   {upcomingRenewals.length}
                 </span>
                 <span className="text-xs text-muted-foreground">
-                  en los próximos {daysFilter} días
+                  aniversarios en {daysFilter} días
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-1">
                 {atRiskPolicies.length > 0
-                  ? `${atRiskPolicies.length} en riesgo (${new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(atRiskPremium)})`
+                  ? `${atRiskPolicies.length} póliza(s) con recibo en gracia (${new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(atRiskPremium)})`
                   : "100% de cartera activa al corriente"}
               </p>
             </CardContent>
           </Card>
         </div>
+
+        {/* ETAPA 2: BANDEJA DE COBRANZA Y CONTROL DE RECIBOS */}
+        <CobranzaReceiptsClient policies={policies} isAdmin={isAdmin} />
 
         {/* RADAR DE ANIVERSARIOS Y RENOVACIONES */}
         <div className="mt-2">
@@ -228,7 +259,7 @@ export default async function CarteraDashboard({
             <div>
               <h2 className="text-xl font-semibold flex items-center gap-2">
                 <Clock className="w-5 h-5 text-orange-500" />
-                Radar de Próximos Aniversarios y Renovaciones
+                Radar de Próximos Aniversarios y Renovaciones Anuales
               </h2>
               <p className="text-xs text-muted-foreground">
                 En Vida Individual se monitorea el aniversario anual de la póliza; en GMM, Autos y Daños su renovación de contrato.

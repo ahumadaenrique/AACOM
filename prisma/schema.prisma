@@ -280,15 +280,43 @@ model Policy {
   observations          String?
   product               String?
   agencyId              String?
-  agency                Agency?   @relation(fields: [agencyId], references: [id])
-  client                Client?   @relation(fields: [clientId], references: [id], onDelete: SetNull)
-  user                  User      @relation(fields: [userId], references: [id])
+  agency                Agency?         @relation(fields: [agencyId], references: [id])
+  client                Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
+  user                  User            @relation(fields: [userId], references: [id])
+  receipts              PolicyReceipt[]
 
   @@index([agencyId])
   @@index([clientId])
   @@index([userId])
   @@index([status])
   @@index([isArchived])
+}
+
+model PolicyReceipt {
+  id                String    @id @default(cuid())
+  policyId          String
+  agencyId          String?
+  userId            String
+  receiptNumber     Int       @default(1)
+  totalInstallments Int       @default(1)
+  policyYear        Int       @default(1)
+  dueDate           DateTime
+  graceEndDate      DateTime
+  amount            Float     @default(0)
+  status            String    @default("PENDIENTE")
+  paidAt            DateTime?
+  paymentNotes      String?
+  syncedEmissionId  String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  policy            Policy    @relation(fields: [policyId], references: [id], onDelete: Cascade)
+
+  @@unique([policyId, policyYear, receiptNumber])
+  @@index([policyId])
+  @@index([agencyId])
+  @@index([userId])
+  @@index([dueDate])
+  @@index([status])
 }
 
 model Content {

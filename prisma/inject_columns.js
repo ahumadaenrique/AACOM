@@ -329,7 +329,32 @@ async function injectColumns() {
              WHEN LOWER(COALESCE("product", '')) LIKE '%gmm%' OR LOWER(COALESCE("product", '')) LIKE '%gastos med%' OR LOWER(COALESCE("product", '')) LIKE '%auto%' OR LOWER(COALESCE("product", '')) LIKE '%grupo%' OR LOWER(COALESCE("product", '')) LIKE '%daño%' THEN 'ANUAL_RENOVABLE'
              ELSE 'LARGO_PLAZO'
            END
-       WHERE "ramo" IS NULL OR "tipoVigencia" IS NULL;`
+       WHERE "ramo" IS NULL OR "tipoVigencia" IS NULL;`,
+      `CREATE TABLE IF NOT EXISTS "PolicyReceipt" (
+        "id" TEXT PRIMARY KEY,
+        "policyId" TEXT NOT NULL,
+        "agencyId" TEXT,
+        "userId" TEXT NOT NULL,
+        "receiptNumber" INTEGER NOT NULL DEFAULT 1,
+        "totalInstallments" INTEGER NOT NULL DEFAULT 1,
+        "policyYear" INTEGER NOT NULL DEFAULT 1,
+        "dueDate" TIMESTAMP(3) NOT NULL,
+        "graceEndDate" TIMESTAMP(3) NOT NULL,
+        "amount" DOUBLE PRECISION NOT NULL DEFAULT 0,
+        "status" TEXT NOT NULL DEFAULT 'PENDIENTE',
+        "paidAt" TIMESTAMP(3),
+        "paymentNotes" TEXT,
+        "syncedEmissionId" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "PolicyReceipt_policyId_fkey" FOREIGN KEY ("policyId") REFERENCES "Policy"("id") ON DELETE CASCADE ON UPDATE CASCADE
+      );`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "PolicyReceipt_policyId_policyYear_receiptNumber_key" ON "PolicyReceipt"("policyId", "policyYear", "receiptNumber");`,
+      `CREATE INDEX IF NOT EXISTS "PolicyReceipt_policyId_idx" ON "PolicyReceipt"("policyId");`,
+      `CREATE INDEX IF NOT EXISTS "PolicyReceipt_agencyId_idx" ON "PolicyReceipt"("agencyId");`,
+      `CREATE INDEX IF NOT EXISTS "PolicyReceipt_userId_idx" ON "PolicyReceipt"("userId");`,
+      `CREATE INDEX IF NOT EXISTS "PolicyReceipt_dueDate_idx" ON "PolicyReceipt"("dueDate");`,
+      `CREATE INDEX IF NOT EXISTS "PolicyReceipt_status_idx" ON "PolicyReceipt"("status");`
     ];
 
     for (const q of queries) {
