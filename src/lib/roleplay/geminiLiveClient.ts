@@ -214,7 +214,7 @@ export class GeminiLiveSession {
           parts: [
             {
               text: `${this.config.systemPrompt}
-IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en español de México con tono y modismos ejecutivos realistas. Sé conciso y directo en tus respuestas telefónicas (1 a 3 oraciones como en una llamada real). NUNCA rompas el personaje ni digas que eres una IA.`
+IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos realistas. Sé conciso y natural en tus respuestas (1 a 2 oraciones máximo por turno como en una conversación real). NUNCA rompas el personaje, NO hagas coaching ni digas que eres una IA.`
             }
           ]
         }
@@ -235,7 +235,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
             role: 'user',
             parts: [
               {
-                text: `[El teléfono acaba de sonar y has descolgado. Contesta la llamada en voz alta de inmediato diciendo exactamente tu saludo inicial: "${greeting}"]`
+                text: `[La interacción acaba de comenzar. Di en voz alta de inmediato únicamente tu saludo inicial: "${greeting}"]`
               }
             ]
           }

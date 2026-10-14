@@ -109,6 +109,22 @@ export async function POST(req: Request) {
     // Generate scenario tailored to current level, selected module, and dynamic white-label agency
     const scenario = generarEscenarioAleatorio(stats.level, moduleId, agencyName);
 
+    // Optimizar y blindar la psicología del prospecto con Gemini Prompt Architect (Gemini 3.8 Flash)
+    try {
+      const { enhanceScenarioPromptWithGemini } = await import('@/lib/roleplay/geminiPromptArchitect');
+      const enhancedPrompt = await enhanceScenarioPromptWithGemini({
+        scenario,
+        moduleId,
+        agencyName,
+        currentLevel: stats.level
+      });
+      if (enhancedPrompt) {
+        scenario.systemPrompt = enhancedPrompt;
+      }
+    } catch (enhancerErr) {
+      console.warn('[Session] Fallback a motor procedural local:', enhancerErr);
+    }
+
     // 1. Determinar motor de voz (Gemini Live vs ElevenLabs)
     // Respetar estrictamente la configuración elegida por el administrador de la agencia
     const configuredEngine = userWithAgency?.agency?.voiceEngine;

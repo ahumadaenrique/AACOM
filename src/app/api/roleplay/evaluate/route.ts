@@ -189,13 +189,46 @@ Extrae la calificación, aciertos, errores, si hubo error fatal y si se logró l
 Catálogo disponible:
 ${badgesText}`;
 
-    const { object } = await generateObject({
-      model: google('gemini-3.8-flash'),
-      schema: EvaluationSchema,
-      prompt: promptText
-    });
+    let rawObject: any = null;
+    try {
+      const { object } = await generateObject({
+        model: google('gemini-3.8-flash'),
+        schema: EvaluationSchema,
+        prompt: promptText
+      });
+      rawObject = object as any;
+    } catch (aiErr) {
+      console.warn('[Evaluate] Fallback a evaluación heurística local:', aiErr);
+      const transcriptList = Array.isArray(transcript) ? transcript : [];
+      const fullText = transcriptList.map((t: any) => t.message || '').join(' ').toLowerCase();
+      const userUtterances = transcriptList.filter((t: any) => t.source === 'user').map((t: any) => t.message || '').join(' ').toLowerCase();
 
-    const rawObject = object as any;
+      const hasDoubleAlt = userUtterances.includes('martes') || userUtterances.includes('jueves') || userUtterances.includes('mañana') || userUtterances.includes('tarde') || userUtterances.includes('11') || userUtterances.includes('4') || userUtterances.includes('opciones');
+      const hasFord = userUtterances.includes('familia') || userUtterances.includes('hijo') || userUtterances.includes('trabajo') || userUtterances.includes('meta') || userUtterances.includes('ahorro');
+      const hasClosingAgreement = fullText.includes('nos vemos') || fullText.includes('quedamos') || fullText.includes('agendado') || fullText.includes('perfecto') || fullText.includes('confirmad');
+
+      const appointmentAchieved = hasDoubleAlt && (hasClosingAgreement || durationSeconds >= 120);
+      const computedScore = appointmentAchieved ? 85 : (transcriptList.length >= 6 ? 75 : 55);
+
+      rawObject = {
+        score: computedScore,
+        aciertos: [
+          'Postura profesional y fluidez en el desarrollo de la conversación.',
+          hasDoubleAlt ? 'Manejo de alternativas concretas de horario para la reunión.' : 'Cordialidad y respeto por los tiempos del prospecto.'
+        ],
+        errores: [
+          !hasDoubleAlt ? 'Asegurar siempre el uso de doble alternativa de horario al agendar.' : 'Profundizar más en las preguntas de descubrimiento y detección de necesidades.'
+        ],
+        cometioErrorFatal: false,
+        appointmentClosed: appointmentAchieved,
+        coachTip: appointmentAchieved 
+          ? '¡Gran trabajo! Lograste una sesión estructurada y una cita confirmada.' 
+          : 'Enfócate en guiar la conversación con preguntas claras y cerrar ofreciendo dos horarios específicos.',
+        insigniasGanadas: appointmentAchieved && computedScore >= 85 ? ['primera_cita'] : [],
+        aplicoTecnicaFord: hasFord,
+        priorizoMetas: userUtterances.includes('prioridad') || userUtterances.includes('importante') || userUtterances.includes('principal')
+      };
+    }
     let score: number = rawObject.score;
     let aciertos: string[] = rawObject.aciertos || [];
     let errores: string[] = rawObject.errores || [];

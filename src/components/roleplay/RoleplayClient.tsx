@@ -302,7 +302,10 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     setAdnTransitioning(true);
     setAdnTransitionProgress(0);
 
-    // 1. Silenciar inmediatamente el audio de la IA y el micrófono del asesor para que NO se encimen voces
+    // 1. Silenciar inmediatamente el audio de ambos motores (ElevenLabs y Gemini Live) y micrófonos
+    if (conversationRef.current && typeof conversationRef.current.setVolume === 'function') {
+      try { conversationRef.current.setVolume({ volume: 0 }); } catch (_) {}
+    }
     if (geminiSessionRef.current) {
       geminiSessionRef.current.suppressAiOutput(true);
       geminiSessionRef.current.setMuted(true);
@@ -313,7 +316,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
 
     playTransitionChime();
 
-    // 2. Animate progress bar over 6 seconds
+    // 2. Animar barra de progreso durante 5 segundos
     const interval = setInterval(() => {
       setAdnTransitionProgress(prev => {
         if (prev >= 100) {
@@ -322,9 +325,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
         }
         return prev + 5;
       });
-    }, 300);
-
-    const voiceoverText = "Después de realizar las preguntas pertinentes y capturar en el cuestionario todos los ingresos y gastos del cliente, es momento de concluir la reunión.";
+    }, 250);
 
     const finalize = () => {
       clearInterval(interval);
@@ -333,60 +334,38 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       setAdnPhase(2);
       phase2StartTimeRef.current = Date.now();
 
-      // Permitir salida de IA y desmutear micrófono del asesor
+      // Restaurar volumen y desmutear micrófono del asesor
+      if (conversationRef.current && typeof conversationRef.current.setVolume === 'function') {
+        try { conversationRef.current.setVolume({ volume: 1 }); } catch (_) {}
+        // Enviar actualización de contexto silenciosa a ElevenLabs sin forzar voz prematura
+        try {
+          if (typeof conversationRef.current.sendContextualUpdate === 'function') {
+            conversationRef.current.sendContextualUpdate(
+              "[Aviso de tiempo: Han transcurrido 30 minutos de sesión. Ya capturaron todos los números del cuestionario en la libreta. Ahora el asesor tomará la palabra para agendar la siguiente reunión. Espera a que el asesor hable para responderle con naturalidad.]"
+            );
+          }
+        } catch (_) {}
+      }
+
       if (geminiSessionRef.current) {
         geminiSessionRef.current.suppressAiOutput(false);
         geminiSessionRef.current.setMuted(false);
       }
 
-      // Agregar mensajes a la bitácora
-      const narratorMsg = {
+      // Agregar marcador de sistema a la bitácora (NO como diálogo inventado de Karla)
+      const transitionMarker = {
         source: 'ai' as const,
-        message: '🎙️ [Director de Escena]: Han pasado las preguntas del cuestionario financiero y capturado todos los números. Es momento de concluir la reunión.'
+        message: '⏩ [30 minutos después]: Se han capturado todos los números del cuestionario financiero en la libreta. Es momento de concluir la reunión.'
       };
-      const prospectMsg = {
-        source: 'ai' as const,
-        message: 'Listo asesor, pues ya te di todos mis números, gastos y pendientes como me pediste... ¿cuál sería el siguiente paso?'
-      };
-      transcriptRef.current = [...transcriptRef.current, narratorMsg, prospectMsg];
-      setTranscript(prev => [...prev, narratorMsg, prospectMsg]);
+      transcriptRef.current = [...transcriptRef.current, transitionMarker];
+      setTranscript(prev => [...prev, transitionMarker]);
 
-      // Dar una pausa breve de 400ms para asegurar silencio total y luego disparar la respuesta de la IA
-      setTimeout(() => {
-        if (geminiSessionRef.current) {
-          geminiSessionRef.current.sendUserTurn(
-            "[Aviso de Director de Escena: La sesión avanzó 30 minutos. Ya capturaron todos tus gastos y números en la libreta. Habla tú de inmediato como prospecto diciendo: 'Listo asesor, pues ya te di todos mis números y gastos como me pediste... ¿cuál sería el siguiente paso?']"
-          );
-        }
-      }, 400);
+      setCallStatusText('⏩ Fase 2 iniciada: Toma la palabra para explicar los siguientes pasos y agendar la Cita de Cierre con Doble Alternativa.');
     };
 
-    let finished = false;
-    const safeEnd = () => {
-      if (!finished) {
-        finished = true;
-        finalize();
-      }
-    };
-
-    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
-      try {
-        window.speechSynthesis.cancel();
-        const utterance = new SpeechSynthesisUtterance(voiceoverText);
-        utterance.lang = 'es-MX';
-        utterance.rate = 1.05;
-        const voices = window.speechSynthesis.getVoices();
-        const esVoice = voices.find(v => v.lang.includes('es-MX') || v.lang.includes('es'));
-        if (esVoice) utterance.voice = esVoice;
-        utterance.onend = safeEnd;
-        utterance.onerror = safeEnd;
-        window.speechSynthesis.speak(utterance);
-        setTimeout(safeEnd, 7000);
-        return;
-      } catch (_) {}
-    }
-
-    setTimeout(safeEnd, 6000);
+    setTimeout(() => {
+      finalize();
+    }, 5000);
   };
 
   // 2. Fetch or load session
@@ -812,6 +791,11 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     let recordingBlob: Blob | null = null;
     if (geminiSessionRef.current) {
       try {
+        const geminiTurns = geminiSessionRef.current.getTranscript();
+        if (geminiTurns && geminiTurns.length > transcriptRef.current.length) {
+          transcriptRef.current = geminiTurns;
+          setTranscript(geminiTurns);
+        }
         recordingBlob = await geminiSessionRef.current.stopRecording();
       } catch (e) {
         console.warn('Error stopping Gemini Live recording:', e);
@@ -1342,6 +1326,43 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                       )}
                     </div>
 
+                    {/* Barra Visual de Transición Cinemática */}
+                    {adnTransitioning && (
+                      <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/40 space-y-2.5 animate-in fade-in zoom-in-95">
+                        <div className="flex items-center justify-between text-xs font-bold text-amber-300">
+                          <span className="flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-amber-400 animate-spin" />
+                            <span>Avance temporal: 30 minutos de sesión...</span>
+                          </span>
+                          <span className="font-mono">{adnTransitionProgress}%</span>
+                        </div>
+                        <div className="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-700">
+                          <div 
+                            className="bg-gradient-to-r from-amber-500 to-amber-300 h-full rounded-full transition-all duration-300"
+                            style={{ width: `${adnTransitionProgress}%` }}
+                          />
+                        </div>
+                        <p className="text-[11px] text-slate-300 text-center italic">
+                          "Se concluye la captura de cifras financieras en la libreta. Preparando cierre de reunión..."
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Banner de Acción Inmediata para el Asesor al entrar a Fase 2 */}
+                    {adnPhase === 2 && !adnTransitioning && (
+                      <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3 shadow-lg shadow-emerald-950/30 animate-in fade-in">
+                        <Sparkles className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                        <div className="text-xs space-y-1">
+                          <strong className="text-emerald-300 font-bold block text-sm">
+                            👉 Es tu turno: Toma la palabra por el micrófono
+                          </strong>
+                          <p className="text-slate-200 leading-relaxed">
+                            Explícale al cliente que te llevarás su radiografía a tu despacho para diseñar la propuesta y <strong>agenda la Cita de Presentación con Doble Alternativa</strong> (ej: <em>"¿Te queda mejor vernos el martes a las 11:00 am o el jueves a las 4:00 pm?"</em>).
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
                     <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 leading-relaxed">
                       {adnPhase === 1 ? (
                         <>
@@ -1413,17 +1434,34 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                           : 'Presiona "Iniciar Llamada" para hablar con el prospecto por tu micrófono...'}
                       </div>
                     ) : (
-                      transcript.map((t, idx) => (
-                        <div
-                          key={idx}
-                          className={`p-2.5 rounded-xl ${t.source === 'ai' ? 'bg-slate-900 border border-slate-800 text-indigo-300' : 'bg-indigo-950/30 border border-indigo-500/20 text-slate-100 ml-6'}`}
-                        >
-                          <strong className="block text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">
-                            {t.message.startsWith('🎙️') ? '🎙️ Director de Escena:' : (t.source === 'ai' ? scenario?.prospecto?.nombre?.split(' ')[0] : 'Tú') + ':'}
-                          </strong>
-                          <span>{t.message}</span>
-                        </div>
-                      ))
+                      transcript.map((t, idx) => {
+                        const isSystemMarker = t.message.startsWith('⏩') || t.message.startsWith('🎙️') || (t.source as any) === 'system';
+                        if (isSystemMarker) {
+                          return (
+                            <div 
+                              key={idx} 
+                              className="my-3 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-center justify-center gap-2 text-center shadow-inner animate-in fade-in"
+                            >
+                              <Sparkles className="h-4 w-4 text-amber-400 shrink-0" />
+                              <span className="font-medium leading-relaxed">
+                                {t.message.replace(/^🎙️\s*(\[Director de Escena\]:?)?\s*/i, '').replace(/^⏩\s*/, '')}
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={idx}
+                            className={`p-2.5 rounded-xl ${t.source === 'ai' ? 'bg-slate-900 border border-slate-800 text-indigo-300' : 'bg-indigo-950/30 border border-indigo-500/20 text-slate-100 ml-6'}`}
+                          >
+                            <strong className="block text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">
+                              {(t.source === 'ai' ? scenario?.prospecto?.nombre?.split(' ')[0] : 'Tú') + ':'}
+                            </strong>
+                            <span>{t.message}</span>
+                          </div>
+                        );
+                      })
                     )}
                   </div>
                 </div>
