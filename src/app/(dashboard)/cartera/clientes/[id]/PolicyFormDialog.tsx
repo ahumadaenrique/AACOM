@@ -133,9 +133,19 @@ export default function PolicyFormDialog({
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await extractPolicyFromPdfAction(formData);
-      if (res.error || !res.extracted) {
-        throw new Error(res.error || "No se pudo leer la carátula PDF");
+      const response = await fetch("/api/cartera/extract-pdf", {
+        method: "POST",
+        body: formData,
+      });
+      const res = await response.json().catch(() => null);
+
+      if (!response.ok || !res || res.error || !res.extracted) {
+        throw new Error(
+          res?.error ||
+            (response.status === 413
+              ? "El archivo PDF supera el límite permitido (4.5 MB)."
+              : "No se pudo leer la carátula PDF.")
+        );
       }
 
       const ext = res.extracted;

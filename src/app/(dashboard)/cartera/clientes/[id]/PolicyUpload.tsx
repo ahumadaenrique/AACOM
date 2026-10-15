@@ -42,12 +42,22 @@ export default function PolicyUpload({ policy }: { policy: any }) {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const res = await uploadPolicyPdf(formData);
-      if (res.error) throw new Error(res.error);
-      if (!res.url) throw new Error("No se obtuvo la URL del archivo");
+      formData.append("policyId", policy.id);
 
-      const updateRes = await updatePolicyPdfUrl(policy.id, res.url);
-      if (updateRes?.error) throw new Error(updateRes.error);
+      const response = await fetch("/api/cartera/upload-pdf", {
+        method: "POST",
+        body: formData,
+      });
+      const res = await response.json().catch(() => null);
+
+      if (!response.ok || !res || res.error || !res.url) {
+        throw new Error(
+          res?.error ||
+            (response.status === 413
+              ? "El archivo PDF supera el límite permitido (4.5 MB)."
+              : "No se pudo subir el archivo PDF")
+        );
+      }
 
       toast({ title: "Carátula PDF guardada correctamente" });
       router.refresh();

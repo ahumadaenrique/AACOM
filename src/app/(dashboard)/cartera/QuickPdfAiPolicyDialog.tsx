@@ -100,9 +100,19 @@ export default function QuickPdfAiPolicyDialog({
       const fd = new FormData();
       fd.append("file", file);
 
-      const res = await extractPolicyFromPdfAction(fd);
-      if (res.error || !res.extracted) {
-        throw new Error(res.error || "No se pudo analizar el PDF");
+      const response = await fetch("/api/cartera/extract-pdf", {
+        method: "POST",
+        body: fd,
+      });
+      const res = await response.json().catch(() => null);
+
+      if (!response.ok || !res || res.error || !res.extracted) {
+        throw new Error(
+          res?.error ||
+            (response.status === 413
+              ? "El archivo PDF supera el límite permitido (4.5 MB)."
+              : "No se pudo analizar el PDF. Intenta de nuevo.")
+        );
       }
 
       const ext = res.extracted;
@@ -113,29 +123,29 @@ export default function QuickPdfAiPolicyDialog({
         setShowAdvanced(true);
       }
 
-      setFormState({
-        clientName: ext.contractor || ext.insured || "",
-        clientRfc: ext.contractorRfc || "",
-        clientPhone: ext.contractorPhone || "",
-        clientEmail: ext.contractorEmail || "",
-        clientBirthDate: ext.insuredBirthDate || "",
-        policyNumber: ext.policyNumber || "",
+      setFormState((prev) => ({
+        clientName: ext.contractor || ext.insured || prev.clientName || "",
+        clientRfc: ext.contractorRfc || prev.clientRfc || "",
+        clientPhone: ext.contractorPhone || prev.clientPhone || "",
+        clientEmail: ext.contractorEmail || prev.clientEmail || "",
+        clientBirthDate: ext.insuredBirthDate || prev.clientBirthDate || "",
+        policyNumber: ext.policyNumber || prev.policyNumber || "",
         insuranceCompany: ext.insuranceCompany || "Insignia Life",
-        product: ext.product || "",
+        product: ext.product || prev.product || "",
         ramo: ext.ramo || "VIDA_INDIVIDUAL",
         tipoVigencia: ext.tipoVigencia || "LARGO_PLAZO",
-        effectiveDate: ext.effectiveDate || "",
-        renewalDate: ext.renewalDate || "",
+        effectiveDate: ext.effectiveDate || prev.effectiveDate || "",
+        renewalDate: ext.renewalDate || prev.renewalDate || "",
         paymentMethod: ext.paymentMethod || "Anual",
         currency: ext.currency || "MXN",
-        annualPremium: ext.annualPremium || 0,
+        annualPremium: ext.annualPremium || prev.annualPremium || 0,
         originalPremium: ext.originalPremium ?? "",
-        observations: ext.observations || "",
-      });
+        observations: ext.observations || prev.observations || "",
+      }));
 
       toast({
-        title: "✨ Carátula leída con IA",
-        description: "Revisa los datos y haz clic en Guardar Póliza.",
+        title: "✨ Carátula PDF cargada y analizada",
+        description: "Verifica los datos y haz clic en Guardar Póliza.",
       });
     } catch (err: any) {
       toast({
