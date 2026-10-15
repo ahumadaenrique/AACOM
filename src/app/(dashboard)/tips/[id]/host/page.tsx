@@ -100,6 +100,10 @@ export default function TipsHostConsolePage() {
   const [showQrModal, setShowQrModal] = useState(false);
   const [closeSummary, setCloseSummary] = useState<any>(null);
   const [copied, setCopied] = useState(false);
+  const [filterMode, setFilterMode] = useState<
+    'all' | 'appointments' | 'hot' | 'gaps' | 'lagging'
+  >('all');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchHostState = useCallback(async () => {
     if (!sessionId) return;
@@ -180,6 +184,36 @@ export default function TipsHostConsolePage() {
   const projectorUrl = `${originUrl}/tips/proyector/${sess.projectorToken}`;
 
   const currentStepDef = STEP_DEFINITIONS.find((d) => d.step === sess.unlockedStep);
+
+  const alreadyBilledCount = participants.filter((p) => p.creditConsumed).length;
+  const remainingExpectedSeats = Math.max(0, (sess.expectedCapacity || 30) - alreadyBilledCount);
+  const hasCreditShortfall =
+    sess.status !== 'CLOSED' && (credits.totalAvailableForHost || 0) < remainingExpectedSeats;
+
+  const appointmentCount = participants.filter(
+    (p) => p.calculatedResults?.appointmentRequested
+  ).length;
+  const hotLeadsCount = participants.filter((p) => p.leadTier === 'HOT').length;
+  const withGapsCount = participants.filter(
+    (p) => (p.calculatedResults?.detectedGaps || []).length > 0
+  ).length;
+
+  const filteredParticipants = participants.filter((p) => {
+    if (filterMode === 'appointments' && !p.calculatedResults?.appointmentRequested) return false;
+    if (filterMode === 'hot' && p.leadTier !== 'HOT') return false;
+    if (filterMode === 'gaps' && (p.calculatedResults?.detectedGaps || []).length === 0)
+      return false;
+    if (filterMode === 'lagging' && !p.isLagging) return false;
+
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const nameMatch = (p.fullName || '').toLowerCase().includes(q);
+      const nickMatch = (p.nickname || '').toLowerCase().includes(q);
+      const phoneMatch = (p.phone || '').toLowerCase().includes(q);
+      if (!nameMatch && !nickMatch && !phoneMatch) return false;
+    }
+    return true;
+  });
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
@@ -337,6 +371,34 @@ export default function TipsHostConsolePage() {
           )}
         </div>
       </div>
+
+      {/* Alerta Preventiva de Créditos vs. Aforo Esperado */}
+      {hasCreditShortfall && (
+        <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <span className="text-xs font-extrabold uppercase tracking-wider text-amber-900 block">
+                Aviso Preventivo de Capacidad de Créditos
+              </span>
+              <p className="text-xs text-amber-800 mt-0.5">
+                Tu sesión tiene un cupo esperado de <strong>{sess.expectedCapacity} asistentes</strong>{' '}
+                (faltan por ingresar hasta {remainingExpectedSeats}), pero actualmente cuentas con{' '}
+                <strong>{credits.totalAvailableForHost} créditos disponibles</strong> (Personales +
+                Bolsa de Promotoría). Si ingresan más asistentes que tu saldo, verán un aviso de cupo
+                agotado al aceptar el aviso de privacidad.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/tips"
+            className="px-4 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shrink-0 inline-flex items-center gap-1.5"
+          >
+            <Coins className="w-3.5 h-3.5" />
+            Recargar Créditos →
+          </Link>
+        </div>
+      )}
 
       {/* Teleprompter / Guion del Expositor en Vivo */}
       <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -558,6 +620,46 @@ export default function TipsHostConsolePage() {
           </span>
         </div>
 
+        {/* Barra de Filtros Rápidos 1-Click y Buscador en Vivo */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pt-1">
+          <div className="flex flex-wrap items-center gap-1.5">
+            {[
+              { id: 'all', label: `Todos (${participants.length})` },
+              {
+                id: 'appointments',
+                label: `📅 Pidieron Cita (${appointmentCount})`,
+              },
+              { id: 'hot', label: `🔥 Calientes 70+ (${hotLeadsCount})` },
+              { id: 'gaps', label: `⚠️ Con Brecha de Seguro (${withGapsCount})` },
+              {
+                id: 'lagging',
+                label: `⏳ Rezagados (${laggingParticipants.length})`,
+              },
+            ].map((pill) => (
+              <button
+                key={pill.id}
+                type="button"
+                onClick={() => setFilterMode(pill.id as any)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition ${
+                  filterMode === pill.id
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
+                }`}
+              >
+                {pill.label}
+              </button>
+            ))}
+          </div>
+
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Buscar por nombre, apodo o WhatsApp..."
+            className="w-full md:w-64 rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500"
+          />
+        </div>
+
         <div className="overflow-x-auto border border-slate-200 rounded-2xl">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
@@ -572,14 +674,16 @@ export default function TipsHostConsolePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {participants.length === 0 ? (
+              {filteredParticipants.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="py-10 text-center text-slate-400">
-                    Esperando a que los asistentes escaneen el código QR ({sess.code})...
+                    {participants.length === 0
+                      ? `Esperando a que los asistentes escaneen el código QR (${sess.code})...`
+                      : 'Ningún participante coincide con el filtro seleccionado.'}
                   </td>
                 </tr>
               ) : (
-                participants.map((p) => {
+                filteredParticipants.map((p) => {
                   const calc = p.calculatedResults || {};
                   const gaps = Array.isArray(calc.detectedGaps) ? calc.detectedGaps : [];
                   return (

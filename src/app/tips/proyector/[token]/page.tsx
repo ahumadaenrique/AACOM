@@ -26,6 +26,60 @@ const STEP_NAMES: Record<number, string> = {
   8: 'Bloque 8: Diagnóstico Patrimonial Preliminar',
 };
 
+const STEP_SPOTLIGHTS: Record<
+  number,
+  { badge: string; headline: string; formulaOrRule: string; prompt: string }
+> = {
+  1: {
+    badge: 'PASO 1 EN VIVO · PUNTO DE PARTIDA',
+    headline: 'Tu Horizonte de Vida y Dependientes Económicos',
+    formulaOrRule: '🔒 Tus datos están cifrados en tu celular (Protección LFPDPPP)',
+    prompt: 'Acepta el aviso de privacidad en tu teléfono y registra tu fecha de nacimiento.',
+  },
+  2: {
+    badge: 'PASO 2 EN VIVO · ARQUITECTURA PATRIMONIAL',
+    headline: 'Activos, Diversificación (HHI) y Deuda Buena vs. Deuda Mala',
+    formulaOrRule: '📊 Tasa Real Integrada vs. Inflación · Índice Herfindahl-Hirschman',
+    prompt: 'Captura tus inmuebles, inversiones y pasivos para descubrir si tu dinero vence a la inflación.',
+  },
+  3: {
+    badge: 'PASO 3 EN VIVO · EL NÚMERO MÁGICO',
+    headline: '¿Cuánto patrimonio deberías tener acumulado hoy según tu edad?',
+    formulaOrRule: '✨ Fórmula: ((Edad² × 0.05) − (Edad × 1.1)) × Ingreso Mensual',
+    prompt: 'Ingresa tu sueldo mensual promedio en tu celular y descubre tu Número Mágico.',
+  },
+  4: {
+    badge: 'PASO 4 EN VIVO · LA CINTA MÉTRICA DE TU VIDA',
+    headline: 'Años Vividos vs. Años Productivos Restantes',
+    formulaOrRule: '⏳ Esperanza de Vida: 82.3 Años · ¿Cuántos veranos productivos te quedan?',
+    prompt: 'Elige a qué edad deseas retirarte y con qué ingreso mensual quieres vivir.',
+  },
+  5: {
+    badge: 'PASO 5 EN VIVO · MAPA DE SUEÑOS Y PRIORIDADES',
+    headline: 'Un sueño sin fecha ni monto mensual es sólo una ilusión',
+    formulaOrRule: '🎯 Cálculo Actuarial PMT (Ahorro Mensual Indexado a Rendimiento Real)',
+    prompt: 'Selecciona o agrega tus metas (Universidad, Casa, Negocio, Legado) en tu celular.',
+  },
+  6: {
+    badge: 'PASO 6 EN VIVO · REGLA DE ORO DEL AHORRO (16%)',
+    headline: '1% Corto Plazo · 5% Mediano Plazo · 10% Largo Plazo (Retiro)',
+    formulaOrRule: '💡 Ahorrar el 16% de tu ingreso financia tus sueños sin sacrificar tu estilo de vida',
+    prompt: 'Mueve el deslizador en tu celular y comprueba qué metas se vuelven alcanzables hoy.',
+  },
+  7: {
+    badge: 'PASO 7 EN VIVO · BLINDAJE DE CAPITAL HUMANO',
+    headline: 'La máquina de hacer dinero más valiosa eres tú',
+    formulaOrRule: '🛡️ Regla Internacional: Proteger de 7 a 10 años de ingreso ante Vida e Invalidez',
+    prompt: 'Verifica en tu pantalla el valor total de tu Capital Humano y tus coberturas actuales.',
+  },
+  8: {
+    badge: 'PASO 8 EN VIVO · DIAGNÓSTICO PERSONALIZADO LISTO',
+    headline: 'Tu Semáforo Patrimonial ya está disponible en tu celular',
+    formulaOrRule: '📅 Solicita tu sesión privada 1 a 1 (30 min) directamente desde tu pantalla',
+    prompt: 'Elige tu horario preferido (Mañana, Tarde o Noche) y descarga tu reporte en PDF.',
+  },
+};
+
 export default function TipsProjectorBoardPage() {
   const params = useParams();
   const token = String(params?.token || '');
@@ -180,15 +234,48 @@ export default function TipsProjectorBoardPage() {
           </p>
         </div>
       ) : !sess.showBoardOnProjector ? (
-        <div className="my-auto text-center space-y-4 py-16">
-          <Sparkles className="w-16 h-16 text-indigo-400 mx-auto" />
-          <h2 className="text-3xl font-black">{STEP_NAMES[sess.unlockedStep]}</h2>
-          <p className="text-base text-indigo-200">
-            Escanea el código QR superior con tu celular para participar en vivo.
+        <div className="my-auto max-w-4xl mx-auto text-center space-y-5 py-12 px-6 bg-white/5 border border-white/10 rounded-3xl">
+          <Sparkles className="w-16 h-16 text-amber-400 mx-auto" />
+          <span className="inline-block text-xs font-black uppercase tracking-widest bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 px-3.5 py-1 rounded-full">
+            {STEP_SPOTLIGHTS[sess.unlockedStep]?.badge || STEP_NAMES[sess.unlockedStep]}
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-black leading-tight">
+            {STEP_SPOTLIGHTS[sess.unlockedStep]?.headline || STEP_NAMES[sess.unlockedStep]}
+          </h2>
+          {STEP_SPOTLIGHTS[sess.unlockedStep]?.formulaOrRule && (
+            <div className="inline-block bg-indigo-950/80 border border-indigo-400/40 text-amber-300 font-bold text-base sm:text-lg px-5 py-2.5 rounded-2xl">
+              {STEP_SPOTLIGHTS[sess.unlockedStep].formulaOrRule}
+            </div>
+          )}
+          <p className="text-base sm:text-lg text-indigo-200 max-w-2xl mx-auto">
+            {STEP_SPOTLIGHTS[sess.unlockedStep]?.prompt ||
+              'Escanea el código QR superior con tu celular para participar en vivo.'}
           </p>
         </div>
       ) : (
         <div className="flex-1 flex flex-col justify-between gap-4 my-4">
+          {/* SPOTLIGHT ESCÉNICO CONTEXTUAL POR PASO (PASOS 1 A 8) */}
+          {sess.unlockedStep >= 1 && STEP_SPOTLIGHTS[sess.unlockedStep] && (
+            <div className="bg-gradient-to-r from-indigo-900/60 via-indigo-950/70 to-slate-900/60 border border-indigo-400/30 rounded-2xl p-4 sm:px-6 flex flex-col lg:flex-row lg:items-center justify-between gap-3 shadow-lg">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] font-black uppercase tracking-widest bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-md">
+                    {STEP_SPOTLIGHTS[sess.unlockedStep].badge}
+                  </span>
+                  <span className="text-xs font-bold text-indigo-200">
+                    {STEP_SPOTLIGHTS[sess.unlockedStep].prompt}
+                  </span>
+                </div>
+                <h2 className="text-lg sm:text-xl font-black text-white">
+                  {STEP_SPOTLIGHTS[sess.unlockedStep].headline}
+                </h2>
+              </div>
+              <div className="bg-slate-950/60 border border-indigo-400/30 rounded-xl px-4 py-2 text-xs sm:text-sm font-extrabold text-amber-300 shrink-0">
+                {STEP_SPOTLIGHTS[sess.unlockedStep].formulaOrRule}
+              </div>
+            </div>
+          )}
+
           {/* SECCIÓN DE PRESIÓN DE GRUPO: "FALTAN:" */}
           {sess.unlockedStep > 0 && laggingList.length > 0 && (
             <div className="bg-amber-500/15 border-2 border-amber-400/60 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3 shadow-lg">

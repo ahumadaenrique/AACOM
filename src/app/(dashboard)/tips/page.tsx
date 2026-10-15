@@ -27,6 +27,7 @@ import {
   BarChart3,
   ExternalLink,
   RefreshCw,
+  MessageCircle,
 } from 'lucide-react';
 
 interface TipsPackage {
@@ -583,6 +584,24 @@ export default function TipsDashboardPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <a
+                      href={`https://wa.me/?text=${encodeURIComponent(
+                        `✨ *Invitación al Taller Interactivo TIPS: ${sess.title}*\n📍 Sede: ${
+                          sess.location || 'Presencial'
+                        }\n🔑 Código de sala: *${
+                          sess.code
+                        }*\n\nConéctate desde tu celular sin instalar nada para descubrir tu Número Mágico y tu Diagnóstico Patrimonial en vivo:\n👉 ${originUrl}/tips/sala/${
+                          sess.code
+                        }`
+                      )}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold transition"
+                      title="Enviar invitación ejecutiva por WhatsApp"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                      Invitar
+                    </a>
                     <button
                       onClick={() => setSelectedReportSession(sess)}
                       className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold"
@@ -891,6 +910,26 @@ export default function TipsDashboardPage() {
             </div>
 
             <div className="space-y-2 text-left">
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(
+                  `✨ *Invitación al Taller Interactivo TIPS: ${qrModalSession.title}*\n📍 Sede: ${
+                    qrModalSession.location || 'Presencial'
+                  }\n🔑 Código de sala: *${
+                    qrModalSession.code
+                  }*\n\nConéctate desde tu celular sin instalar nada para descubrir tu Número Mágico y tu Diagnóstico Patrimonial en vivo:\n👉 ${originUrl}/tips/sala/${
+                    qrModalSession.code
+                  }`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-xs font-extrabold text-emerald-900"
+              >
+                <span className="flex items-center gap-1.5">
+                  <MessageCircle className="w-4 h-4 text-emerald-600" />
+                  Compartir invitación ejecutiva por WhatsApp
+                </span>
+                <ExternalLink className="w-3.5 h-3.5 text-emerald-600" />
+              </a>
               <button
                 onClick={() =>
                   handleCopy(`${originUrl}/tips/sala/${qrModalSession.code}`, 'link_movil')
