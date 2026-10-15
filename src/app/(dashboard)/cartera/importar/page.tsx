@@ -44,9 +44,9 @@ export default function ImportarCartera() {
     return str || null;
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const uploadedFile = e.target.files?.[0];
-    if (!uploadedFile) return;
+  const [isDragging, setIsDragging] = useState(false);
+
+  const processExcelFile = (uploadedFile: File) => {
     setFile(uploadedFile);
 
     const reader = new FileReader();
@@ -82,7 +82,11 @@ export default function ImportarCartera() {
                 : `POL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
             };
           })
-          .filter((r) => r.clientName);
+          .filter(
+            (r) =>
+              r.clientName &&
+              !r.clientName.toLowerCase().includes("ejemplo:")
+          );
 
         setParsedData(parsed);
       } catch {
@@ -94,6 +98,21 @@ export default function ImportarCartera() {
       }
     };
     reader.readAsBinaryString(uploadedFile);
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const uploadedFile = e.target.files?.[0];
+    if (!uploadedFile) return;
+    processExcelFile(uploadedFile);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const droppedFile = e.dataTransfer.files?.[0];
+    if (droppedFile) {
+      processExcelFile(droppedFile);
+    }
   };
 
   const handleConfirm = async () => {
@@ -139,10 +158,27 @@ export default function ImportarCartera() {
         "Correo Electrónico",
         "Número de Póliza",
       ],
+      [
+        "Ejemplo: Juan Pérez García",
+        "1985-05-15",
+        "Temporal 20",
+        "Insignia Life",
+        "2024-03-01",
+        "2044-03-01",
+        "Marzo",
+        24500,
+        "Suma Asegurada $3,000,000 MXN",
+        "Anual",
+        0,
+        0,
+        "5512345678",
+        "juan.perez@ejemplo.com",
+        "308299",
+      ],
     ];
     const ws = xlsx.utils.aoa_to_sheet(ws_data);
 
-    const wscols = ws_data[0].map((h) => ({ wch: h.length + 5 }));
+    const wscols = ws_data[0].map((h) => ({ wch: h.length + 6 }));
     ws["!cols"] = wscols;
 
     xlsx.utils.book_append_sheet(wb, ws, "Layout Cartera");
@@ -170,7 +206,7 @@ export default function ImportarCartera() {
           <CardHeader className="text-center">
             <CardTitle>Paso 1: Descarga la Plantilla</CardTitle>
             <CardDescription>
-              Usa este archivo modelo para estructurar correctamente tu información antes de subirla.
+              Incluye una fila de ejemplo guía (se ignora automáticamente al importar si la dejas).
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center flex-1">
@@ -189,7 +225,7 @@ export default function ImportarCartera() {
           <CardHeader className="text-center">
             <CardTitle>Paso 2: Sube tu Archivo</CardTitle>
             <CardDescription>
-              Selecciona el archivo Excel ya lleno con tu cartera.
+              Arrastra tu Excel aquí o haz clic para seleccionarlo.
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center flex-1">
@@ -218,14 +254,24 @@ export default function ImportarCartera() {
               <>
                 <label
                   htmlFor="file-upload"
-                  className="cursor-pointer flex flex-col items-center gap-2 w-full max-w-xs p-6 border rounded-lg hover:bg-muted/50 transition-colors"
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDragging(true);
+                  }}
+                  onDragLeave={() => setIsDragging(false)}
+                  onDrop={handleDrop}
+                  className={`cursor-pointer flex flex-col items-center gap-2 w-full max-w-xs p-6 border-2 border-dashed rounded-lg transition-colors ${
+                    isDragging
+                      ? "border-primary bg-primary/10"
+                      : "hover:bg-muted/50"
+                  }`}
                 >
                   <UploadCloud className="w-12 h-12 text-muted-foreground" />
                   <span className="text-sm font-medium">
-                    Click para seleccionar
+                    Arrastra tu Excel o haz clic aquí
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    Solo archivos .xlsx o .xls
+                    Formatos .xlsx o .xls
                   </span>
                 </label>
                 <input

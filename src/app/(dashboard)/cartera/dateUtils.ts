@@ -85,6 +85,55 @@ export function toDateInputValue(input: Date | string | number | null | undefine
   return `${yyyy}-${mm}-${dd}`;
 }
 
+/**
+ * Calcula la edad actual exacta del cliente y cuántos días faltan para su próximo cumpleaños.
+ */
+export function calculateClientAgeInfo(
+  birthDate: Date | string | number | null | undefined,
+  referenceDate: Date = new Date()
+): { age: number; daysUntilBirthday: number } | null {
+  const birthCal = toCalendarDateLocal(birthDate);
+  if (!birthCal) return null;
+
+  const todayCal = new Date(
+    referenceDate.getFullYear(),
+    referenceDate.getMonth(),
+    referenceDate.getDate(),
+    12,
+    0,
+    0
+  );
+
+  let age = todayCal.getFullYear() - birthCal.getFullYear();
+  const monthDiff = todayCal.getMonth() - birthCal.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && todayCal.getDate() < birthCal.getDate())) {
+    age--;
+  }
+  if (age < 0 || age > 120) return null;
+
+  let nextBirthday = new Date(
+    todayCal.getFullYear(),
+    birthCal.getMonth(),
+    birthCal.getDate(),
+    12,
+    0,
+    0
+  );
+  if (nextBirthday.getTime() < todayCal.getTime()) {
+    nextBirthday = new Date(
+      todayCal.getFullYear() + 1,
+      birthCal.getMonth(),
+      birthCal.getDate(),
+      12,
+      0,
+      0
+    );
+  }
+  const daysUntilBirthday = differenceInCalendarDays(nextBirthday, todayCal);
+
+  return { age, daysUntilBirthday };
+}
+
 export interface PolicyCycleInfo {
   isLongTerm: boolean;
   eventType: "ANIVERSARIO" | "RENOVACION";

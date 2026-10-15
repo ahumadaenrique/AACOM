@@ -27,11 +27,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Search, FileText, Archive, Edit, Loader2 } from "lucide-react";
+import { Search, FileText, Archive, Edit, Loader2, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/hooks/use-toast";
-import { computePolicyCycleInfo, formatDateSafe } from "../dateUtils";
+import {
+  computePolicyCycleInfo,
+  formatDateSafe,
+  calculateClientAgeInfo,
+} from "../dateUtils";
 import { deleteClient } from "../actions";
 import ClientFormDialog from "./[id]/ClientFormDialog";
 
@@ -86,11 +90,14 @@ export default function ClientListTable({
         0
       );
 
+      const ageInfo = calculateClientAgeInfo(c.birthDate);
+
       return {
         ...c,
         activePoliciesCount: activePols.length,
         closestRenewal,
         totalPremium,
+        ageInfo,
       };
     });
 
@@ -168,7 +175,7 @@ export default function ClientListTable({
             <TableRow>
               <TableHead>Nombre / Contacto</TableHead>
               {isAdmin && <TableHead>Agente</TableHead>}
-              <TableHead>Fecha de Nacimiento</TableHead>
+              <TableHead>Cumpleaños / Edad</TableHead>
               <TableHead className="text-center">Pólizas Activas</TableHead>
               <TableHead>Próx. Aniversario</TableHead>
               <TableHead className="text-right">Prima Activa</TableHead>
@@ -186,82 +193,129 @@ export default function ClientListTable({
                 </TableCell>
               </TableRow>
             ) : (
-              sortedAndFiltered.map((client: any) => (
-                <TableRow key={client.id} className="hover:bg-muted/50">
-                  <TableCell>
-                    <Link
-                      href={`/cartera/clientes/${client.id}`}
-                      className="font-semibold text-primary hover:underline"
-                    >
-                      {client.name}
-                    </Link>
-                    <div className="text-xs text-muted-foreground flex flex-col mt-0.5">
-                      {client.email && <span>{client.email}</span>}
-                      {client.phone && <span>{client.phone}</span>}
-                    </div>
-                  </TableCell>
-
-                  {isAdmin && (
-                    <TableCell className="text-xs font-medium text-indigo-600 dark:text-indigo-400">
-                      {client.user?.name || "Sin asignar"}
-                    </TableCell>
-                  )}
-
-                  <TableCell className="text-xs whitespace-nowrap">
-                    {formatDateSafe(client.birthDate, "dd MMM yyyy", "No registrada")}
-                  </TableCell>
-
-                  <TableCell className="text-center">
-                    <Badge
-                      variant="secondary"
-                      className="flex items-center w-fit mx-auto gap-1"
-                    >
-                      <FileText className="w-3 h-3" />
-                      {client.activePoliciesCount}
-                    </Badge>
-                  </TableCell>
-
-                  <TableCell className="text-xs whitespace-nowrap">
-                    {client.closestRenewal < Infinity
-                      ? formatDateSafe(new Date(client.closestRenewal), "dd/MM/yyyy")
-                      : "-"}
-                  </TableCell>
-
-                  <TableCell className="text-right font-medium whitespace-nowrap">
-                    {new Intl.NumberFormat("es-MX", {
-                      style: "currency",
-                      currency: "MXN",
-                    }).format(client.totalPremium)}
-                  </TableCell>
-
-                  <TableCell className="text-center">
-                    <div className="flex items-center justify-center gap-1">
-                      <ClientFormDialog
-                        client={client}
-                        triggerButton={
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-blue-600 hover:text-blue-700"
-                            title="Editar cliente"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                        }
-                      />
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-rose-600 hover:text-rose-700"
-                        title="Archivar cliente"
-                        onClick={() => setClientToArchive(client)}
+              sortedAndFiltered.map((client: any) => {
+                const cleanPhone = (client.phone || "").replace(/\D/g, "");
+                return (
+                  <TableRow key={client.id} className="hover:bg-muted/50">
+                    <TableCell>
+                      <Link
+                        href={`/cartera/clientes/${client.id}`}
+                        className="font-semibold text-primary hover:underline"
                       >
-                        <Archive className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
+                        {client.name}
+                      </Link>
+                      <div className="text-xs text-muted-foreground flex flex-col mt-0.5">
+                        {client.email && <span>{client.email}</span>}
+                        {client.phone && <span>{client.phone}</span>}
+                      </div>
+                    </TableCell>
+
+                    {isAdmin && (
+                      <TableCell className="text-xs font-medium text-indigo-600 dark:text-indigo-400">
+                        {client.user?.name || "Sin asignar"}
+                      </TableCell>
+                    )}
+
+                    <TableCell className="text-xs whitespace-nowrap">
+                      <div>
+                        {formatDateSafe(
+                          client.birthDate,
+                          "dd MMM yyyy",
+                          "No registrada"
+                        )}
+                      </div>
+                      {client.ageInfo && (
+                        <div className="text-[11px] text-muted-foreground">
+                          {client.ageInfo.age} años
+                          {client.ageInfo.daysUntilBirthday <= 30 && (
+                            <span className="ml-1 text-pink-600 dark:text-pink-400 font-medium">
+                              • 🎂{" "}
+                              {client.ageInfo.daysUntilBirthday === 0
+                                ? "¡Hoy!"
+                                : `en ${client.ageInfo.daysUntilBirthday}d`}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </TableCell>
+
+                    <TableCell className="text-center">
+                      <Badge
+                        variant="secondary"
+                        className="flex items-center w-fit mx-auto gap-1"
+                      >
+                        <FileText className="w-3 h-3" />
+                        {client.activePoliciesCount}
+                      </Badge>
+                    </TableCell>
+
+                    <TableCell className="text-xs whitespace-nowrap">
+                      {client.closestRenewal < Infinity
+                        ? formatDateSafe(
+                            new Date(client.closestRenewal),
+                            "dd/MM/yyyy"
+                          )
+                        : "-"}
+                    </TableCell>
+
+                    <TableCell className="text-right font-medium whitespace-nowrap">
+                      {new Intl.NumberFormat("es-MX", {
+                        style: "currency",
+                        currency: "MXN",
+                      }).format(client.totalPremium)}
+                    </TableCell>
+
+                    <TableCell className="text-center">
+                      <div className="flex items-center justify-center gap-1">
+                        {cleanPhone.length >= 10 && (
+                          <a
+                            href={`https://wa.me/${
+                              cleanPhone.length === 10
+                                ? "52" + cleanPhone
+                                : cleanPhone
+                            }?text=${encodeURIComponent(
+                              `Hola ${client.name}, te saludo con gusto para revisar tus pólizas.`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="Enviar mensaje por WhatsApp"
+                          >
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-emerald-600 hover:text-emerald-700"
+                            >
+                              <MessageCircle className="w-4 h-4" />
+                            </Button>
+                          </a>
+                        )}
+                        <ClientFormDialog
+                          client={client}
+                          triggerButton={
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-blue-600 hover:text-blue-700"
+                              title="Editar cliente"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                          }
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-rose-600 hover:text-rose-700"
+                          title="Archivar cliente"
+                          onClick={() => setClientToArchive(client)}
+                        >
+                          <Archive className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
             )}
           </TableBody>
         </Table>

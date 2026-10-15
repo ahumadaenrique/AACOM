@@ -32,6 +32,7 @@ import { markReceiptAsPaid, updateReceiptStatus } from "../../actions";
 export default function PolicyReceiptsDialog({ policy }: { policy: any }) {
   const [open, setOpen] = useState(false);
   const [loadingId, setLoadingId] = useState<string | null>(null);
+  const [paidDate, setPaidDate] = useState<string>(() => toDateInputValue(new Date()));
   const router = useRouter();
   const { toast } = useToast();
 
@@ -42,7 +43,7 @@ export default function PolicyReceiptsDialog({ policy }: { policy: any }) {
     try {
       const res = await markReceiptAsPaid({
         receiptId,
-        paidDate: toDateInputValue(new Date()),
+        paidDate: paidDate || toDateInputValue(new Date()),
       });
       toast({
         title: "Recibo marcado como pagado",
@@ -107,6 +108,18 @@ export default function PolicyReceiptsDialog({ policy }: { policy: any }) {
           </DialogDescription>
         </DialogHeader>
 
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-2.5 rounded-md border bg-muted/30 text-xs">
+          <span className="text-muted-foreground">
+            Fecha de pago que se registrará al marcar un recibo como pagado:
+          </span>
+          <input
+            type="date"
+            value={paidDate}
+            onChange={(e) => setPaidDate(e.target.value)}
+            className="h-8 rounded border border-input bg-background px-2.5 text-xs"
+          />
+        </div>
+
         {receipts.length === 0 ? (
           <div className="p-6 text-center text-muted-foreground text-sm">
             Esta póliza no tiene recibos activos generados.
@@ -118,8 +131,8 @@ export default function PolicyReceiptsDialog({ policy }: { policy: any }) {
                 <TableRow>
                   <TableHead>Recibo</TableHead>
                   <TableHead>Año Póliza</TableHead>
-                  <TableHead>Exigibilidad</TableHead>
-                  <TableHead>Fin de Gracia (30d)</TableHead>
+                  <TableHead>Fecha de pago</TableHead>
+                  <TableHead>Fecha límite (Gracia)</TableHead>
                   <TableHead>Estatus</TableHead>
                   <TableHead className="text-right">Monto</TableHead>
                   <TableHead className="text-center">Acción</TableHead>

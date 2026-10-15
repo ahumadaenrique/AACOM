@@ -41,6 +41,7 @@ import PolicyActions from "./PolicyActions";
 import {
   computePolicyCycleInfo,
   formatDateSafe,
+  calculateClientAgeInfo,
   RAMO_LABELS,
   STATUS_CONFIG,
   SUB_STATUS_LABELS,
@@ -129,6 +130,7 @@ export default async function ClienteDetalle({
   ]);
 
   const blindaje = analyzeClientBlindaje(client, adnDiagnostics, cotizaciones);
+  const ageInfo = calculateClientAgeInfo(client.birthDate);
 
   const enrichedPolicies = client.policies.map((p) => ({
     ...p,
@@ -151,15 +153,23 @@ export default async function ClienteDetalle({
   return (
     <div className="flex flex-col gap-6 p-4 md:p-8 max-w-6xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Link href="/cartera/clientes">
-            <Button variant="outline" size="icon">
+        <div className="flex items-center gap-3">
+          <Link href="/cartera" title="Volver a Mi Cartera">
+            <Button variant="outline" size="sm" className="gap-1.5">
               <ArrowLeft className="w-4 h-4" />
+              Mi Cartera
             </Button>
           </Link>
           <div>
             <div className="flex items-center gap-2.5 flex-wrap">
-              <h1 className="text-3xl font-bold tracking-tight">{client.name}</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">
+                {client.name}
+              </h1>
+              {ageInfo && (
+                <Badge variant="secondary" className="text-xs font-medium">
+                  {ageInfo.age} años
+                </Badge>
+              )}
               <Badge
                 variant="outline"
                 className={
@@ -173,12 +183,17 @@ export default async function ClienteDetalle({
                 Blindaje {blindaje.shieldPercentage}% ({blindaje.coveredCount}/4 pilares)
               </Badge>
             </div>
-            <p className="text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Expediente 360°, recibos, diagnóstico de brechas y pólizas contratadas.
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link href="/cartera/clientes">
+            <Button variant="ghost" size="sm" className="text-xs">
+              Ver Directorio
+            </Button>
+          </Link>
           {cleanPhone.length >= 10 && (
             <a
               href={`https://wa.me/${cleanPhone.length === 10 ? "52" + cleanPhone : cleanPhone}`}
@@ -407,13 +422,27 @@ export default async function ClienteDetalle({
               <Phone className="w-4 h-4 text-muted-foreground shrink-0" />
               <span>{client.phone || "Sin teléfono registrado"}</span>
             </div>
-            <div className="flex items-center gap-3">
-              <Calendar className="w-4 h-4 text-muted-foreground shrink-0" />
-              <span>
-                {client.birthDate
-                  ? formatDateSafe(client.birthDate, "dd 'de' MMMM 'de' yyyy")
-                  : "Fecha de nacimiento no registrada"}
-              </span>
+            <div className="flex items-start gap-3">
+              <Calendar className="w-4 h-4 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="flex flex-col gap-1">
+                <span>
+                  {client.birthDate
+                    ? formatDateSafe(client.birthDate, "dd 'de' MMMM 'de' yyyy")
+                    : "Fecha de nacimiento no registrada"}
+                  {ageInfo ? ` (${ageInfo.age} años)` : ""}
+                </span>
+                {ageInfo && ageInfo.daysUntilBirthday <= 30 && (
+                  <Badge
+                    variant="outline"
+                    className="w-fit text-[10px] bg-pink-500/10 text-pink-700 dark:text-pink-300 border-pink-500/30"
+                  >
+                    🎂 Cumpleaños{" "}
+                    {ageInfo.daysUntilBirthday === 0
+                      ? "¡Hoy!"
+                      : `en ${ageInfo.daysUntilBirthday} días`}
+                  </Badge>
+                )}
+              </div>
             </div>
             {client.rfc && (
               <div className="flex items-center gap-3">
