@@ -2,9 +2,9 @@
 
 import { useState, useRef } from "react";
 import {
-  extractPolicyFromPdfAction,
   createClientAndPolicyFromAi,
 } from "./actions";
+import { uploadAndExtractPolicyPdfSmart } from "./pdfClientHelper";
 import {
   RAMO_LABELS,
   COMMON_INSURERS,
@@ -97,24 +97,7 @@ export default function QuickPdfAiPolicyDialog({
 
     setIsExtracting(true);
     try {
-      const fd = new FormData();
-      fd.append("file", file);
-
-      const response = await fetch("/api/cartera/extract-pdf", {
-        method: "POST",
-        body: fd,
-      });
-      const res = await response.json().catch(() => null);
-
-      if (!response.ok || !res || res.error || !res.extracted) {
-        throw new Error(
-          res?.error ||
-            (response.status === 413
-              ? "El archivo PDF supera el límite permitido (4.5 MB)."
-              : "No se pudo analizar el PDF. Intenta de nuevo.")
-        );
-      }
-
+      const res = await uploadAndExtractPolicyPdfSmart(file);
       const ext = res.extracted;
       setFileName(file.name);
       setPdfUrl(res.pdfUrl || null);

@@ -312,6 +312,9 @@ export async function extractPolicyWithGeminiFromPdfBase64(
   fileName: string = "poliza.pdf"
 ): Promise<ExtractedPolicyData> {
   const pdfBuffer = Buffer.from(base64Pdf, "base64");
+  const isLargePdf = pdfBuffer.length > 8 * 1024 * 1024;
+  const extractedRawText = isLargePdf ? extractRawTextFromPdfBuffer(pdfBuffer) : "";
+
   const apiKey = (
     process.env.GEMINI_API_KEY ||
     process.env.GOOGLE_GENERATIVE_AI_API_KEY ||
@@ -328,9 +331,28 @@ export async function extractPolicyWithGeminiFromPdfBase64(
       "gemini-2.0-flash",
     ];
 
+    const parts =
+      isLargePdf && extractedRawText.length > 100
+        ? [
+            {
+              text: `${EXTRACTION_PROMPT}\n\nARCHIVO: ${fileName}\nTEXTO EXTRAÍDO DE LA CARÁTULA DEL PDF:\n${extractedRawText.slice(0, 35000)}`,
+            },
+          ]
+        : [
+            { text: EXTRACTION_PROMPT },
+            {
+              inline_data: {
+                mime_type: "application/pdf",
+                data: isLargePdf
+                  ? pdfBuffer.subarray(0, 4 * 1024 * 1024).toString("base64")
+                  : base64Pdf,
+              },
+            },
+          ];
+
     for (const modelName of candidateModels) {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 9000);
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
       try {
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
@@ -342,15 +364,7 @@ export async function extractPolicyWithGeminiFromPdfBase64(
               contents: [
                 {
                   role: "user",
-                  parts: [
-                    { text: EXTRACTION_PROMPT },
-                    {
-                      inline_data: {
-                        mime_type: "application/pdf",
-                        data: base64Pdf,
-                      },
-                    },
-                  ],
+                  parts,
                 },
               ],
               generationConfig: {

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { uploadPolicyPdf, deletePolicyPdf, updatePolicyPdfUrl } from "../../actions";
+import { deletePolicyPdf, updatePolicyPdfUrl } from "../../actions";
+import { uploadPolicyPdfSmart } from "../../pdfClientHelper";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, FileText, Trash2, Loader2 } from "lucide-react";
@@ -40,24 +41,7 @@ export default function PolicyUpload({ policy }: { policy: any }) {
 
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("policyId", policy.id);
-
-      const response = await fetch("/api/cartera/upload-pdf", {
-        method: "POST",
-        body: formData,
-      });
-      const res = await response.json().catch(() => null);
-
-      if (!response.ok || !res || res.error || !res.url) {
-        throw new Error(
-          res?.error ||
-            (response.status === 413
-              ? "El archivo PDF supera el límite permitido (4.5 MB)."
-              : "No se pudo subir el archivo PDF")
-        );
-      }
+      await uploadPolicyPdfSmart(file, policy.id);
 
       toast({ title: "Carátula PDF guardada correctamente" });
       router.refresh();

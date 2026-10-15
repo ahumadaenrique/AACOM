@@ -7,8 +7,8 @@ import { policySchema, PolicyFormValues } from "../../schema";
 import {
   createPolicy,
   updatePolicy,
-  extractPolicyFromPdfAction,
 } from "../../actions";
+import { uploadAndExtractPolicyPdfSmart } from "../../pdfClientHelper";
 import {
   toDateInputValue,
   RAMO_LABELS,
@@ -130,24 +130,7 @@ export default function PolicyFormDialog({
 
     setIsExtractingPdf(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const response = await fetch("/api/cartera/extract-pdf", {
-        method: "POST",
-        body: formData,
-      });
-      const res = await response.json().catch(() => null);
-
-      if (!response.ok || !res || res.error || !res.extracted) {
-        throw new Error(
-          res?.error ||
-            (response.status === 413
-              ? "El archivo PDF supera el límite permitido (4.5 MB)."
-              : "No se pudo leer la carátula PDF.")
-        );
-      }
-
+      const res = await uploadAndExtractPolicyPdfSmart(file);
       const ext = res.extracted;
       if (ext.policyNumber) form.setValue("policyNumber", ext.policyNumber);
       if (ext.insuranceCompany) form.setValue("insuranceCompany", ext.insuranceCompany);
