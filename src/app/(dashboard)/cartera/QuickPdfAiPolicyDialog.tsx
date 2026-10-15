@@ -22,11 +22,25 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Sparkles, UploadCloud, Loader2, CheckCircle2 } from "lucide-react";
+import {
+  Sparkles,
+  UploadCloud,
+  Loader2,
+  CheckCircle2,
+  Plus,
+  Settings2,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export default function QuickPdfAiPolicyDialog() {
+export default function QuickPdfAiPolicyDialog({
+  existingClients = [],
+}: {
+  existingClients?: { id: string; name: string; phone?: string | null }[];
+}) {
   const [open, setOpen] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [isExtracting, setIsExtracting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -56,6 +70,18 @@ export default function QuickPdfAiPolicyDialog() {
   const { toast } = useToast();
   const router = useRouter();
 
+  const handleClientNameChange = (val: string) => {
+    const matched = existingClients.find(
+      (c) => c.name.trim().toLowerCase() === val.trim().toLowerCase()
+    );
+    setFormState((prev) => ({
+      ...prev,
+      clientName: val,
+      clientPhone:
+        prev.clientPhone || (matched?.phone ? matched.phone : prev.clientPhone),
+    }));
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -83,6 +109,10 @@ export default function QuickPdfAiPolicyDialog() {
       setFileName(file.name);
       setPdfUrl(res.pdfUrl || null);
 
+      if (ext.currency && ext.currency !== "MXN") {
+        setShowAdvanced(true);
+      }
+
       setFormState({
         clientName: ext.contractor || ext.insured || "",
         clientRfc: ext.contractorRfc || "",
@@ -105,7 +135,7 @@ export default function QuickPdfAiPolicyDialog() {
 
       toast({
         title: "✨ Carátula leída con IA",
-        description: "Verifica los datos extraídos y confirma para guardar en Cartera.",
+        description: "Revisa los datos y haz clic en Guardar Póliza.",
       });
     } catch (err: any) {
       toast({
@@ -162,8 +192,8 @@ export default function QuickPdfAiPolicyDialog() {
       });
 
       toast({
-        title: "✅ Cliente, Póliza y Recibos creados",
-        description: `Póliza ${formState.policyNumber} agregada exitosamente a tu cartera.`,
+        title: "✅ Póliza guardada en tu Cartera",
+        description: `Póliza ${formState.policyNumber} registrada con sus recibos programados.`,
       });
       setOpen(false);
       setFileName(null);
@@ -185,26 +215,24 @@ export default function QuickPdfAiPolicyDialog() {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button
-          variant="secondary"
-          className="border border-indigo-500/30 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-500/20"
-        >
-          <Sparkles className="w-4 h-4 mr-2 text-indigo-500" />
-          Alta con PDF (IA)
+        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">
+          <Plus className="w-4 h-4 mr-1.5" />
+          Nueva Póliza
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-indigo-500" />
-            Alta Inteligente de Póliza desde Carátula PDF (Gemini IA)
+            Registrar Nueva Póliza
           </DialogTitle>
           <DialogDescription>
-            Sube el PDF de cualquier aseguradora (Insignia Life, GNP, AXA, SMNYL, MetLife, Quálitas). Gemini extraerá automáticamente los datos del cliente y de la póliza y proyectará sus recibos.
+            Sube la carátula en PDF para llenar todo automáticamente con IA, o captura los 7 datos básicos manualmente.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="p-4 border-2 border-dashed border-indigo-500/30 rounded-lg bg-indigo-500/5 flex flex-col items-center justify-center text-center gap-2">
+        {/* ZONA OPCIONAL DE AUTOCOMPLETADO CON PDF */}
+        <div className="p-3.5 border-2 border-dashed border-indigo-500/30 rounded-lg bg-indigo-500/5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <input
             ref={fileInputRef}
             type="file"
@@ -213,62 +241,81 @@ export default function QuickPdfAiPolicyDialog() {
             onChange={handleFileChange}
           />
           {isExtracting ? (
-            <div className="flex flex-col items-center py-3 gap-2">
-              <Loader2 className="w-8 h-8 text-indigo-600 animate-spin" />
-              <p className="text-sm font-medium">
-                Analizando carátula PDF con Gemini IA...
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Extrayendo contratante, vigencia, moneda, prima y plan
-              </p>
+            <div className="flex items-center gap-3 py-1 w-full justify-center">
+              <Loader2 className="w-6 h-6 text-indigo-600 animate-spin" />
+              <div className="text-left">
+                <p className="text-sm font-medium">
+                  Leyendo carátula PDF con Gemini IA...
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Extrayendo cliente, vigencia, prima y aseguradora
+                </p>
+              </div>
             </div>
           ) : fileName ? (
-            <div className="flex flex-col items-center py-1 gap-1.5">
-              <CheckCircle2 className="w-8 h-8 text-emerald-600" />
-              <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-400">
-                {fileName}
-              </p>
+            <div className="flex items-center justify-between w-full gap-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400 truncate max-w-[260px]">
+                  {fileName}
+                </span>
+              </div>
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
               >
-                Subir otro PDF diferente
+                Cambiar PDF
               </Button>
             </div>
           ) : (
-            <div className="flex flex-col items-center py-2 gap-2">
-              <UploadCloud className="w-10 h-10 text-indigo-500" />
+            <>
+              <div className="flex items-center gap-2.5 text-left">
+                <UploadCloud className="w-7 h-7 text-indigo-500 shrink-0" />
+                <div>
+                  <p className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+                    ¿Tienes la carátula en PDF?
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Súbela y la IA llenará los campos y adjuntará el archivo en 1 paso.
+                  </p>
+                </div>
+              </div>
               <Button
                 type="button"
+                size="sm"
                 onClick={() => fileInputRef.current?.click()}
-                className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white shrink-0 w-full sm:w-auto"
               >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Seleccionar Carátula PDF
+                <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+                Autocompletar con PDF
               </Button>
-              <span className="text-xs text-muted-foreground">
-                Se vinculará automáticamente a un cliente existente o creará uno nuevo
-              </span>
-            </div>
+            </>
           )}
         </div>
 
-        <form onSubmit={handleSave} className="grid gap-3 md:grid-cols-2 pt-2">
-          <div className="space-y-1 md:col-span-2">
-            <Label>Nombre del Cliente / Contratante *</Label>
+        <form onSubmit={handleSave} className="grid gap-3.5 md:grid-cols-2 pt-1">
+          {/* 7 CAMPOS ESENCIALES */}
+          <div className="space-y-1.5 md:col-span-2">
+            <Label>Cliente / Contratante *</Label>
             <Input
+              list="existing-clients-list"
               value={formState.clientName}
-              onChange={(e) =>
-                setFormState({ ...formState, clientName: e.target.value })
-              }
-              placeholder="Nombre completo del asegurado o contratante"
+              onChange={(e) => handleClientNameChange(e.target.value)}
+              placeholder="Escribe el nombre o selecciona un cliente existente..."
               required
             />
+            {existingClients.length > 0 && (
+              <datalist id="existing-clients-list">
+                {existingClients.map((c) => (
+                  <option key={c.id} value={c.name} />
+                ))}
+              </datalist>
+            )}
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label>Número de Póliza *</Label>
             <Input
               value={formState.policyNumber}
@@ -280,7 +327,7 @@ export default function QuickPdfAiPolicyDialog() {
             />
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label>Aseguradora *</Label>
             <Input
               list="quick-insurers"
@@ -296,8 +343,8 @@ export default function QuickPdfAiPolicyDialog() {
             </datalist>
           </div>
 
-          <div className="space-y-1">
-            <Label>Ramo</Label>
+          <div className="space-y-1.5">
+            <Label>Ramo *</Label>
             <select
               className={selectClassName}
               value={formState.ramo}
@@ -320,7 +367,7 @@ export default function QuickPdfAiPolicyDialog() {
             </select>
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label>Producto / Plan</Label>
             <Input
               value={formState.product}
@@ -331,7 +378,7 @@ export default function QuickPdfAiPolicyDialog() {
             />
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label>Inicio de Vigencia</Label>
             <Input
               type="date"
@@ -342,18 +389,7 @@ export default function QuickPdfAiPolicyDialog() {
             />
           </div>
 
-          <div className="space-y-1">
-            <Label>Aniversario / Renovación</Label>
-            <Input
-              type="date"
-              value={formState.renewalDate}
-              onChange={(e) =>
-                setFormState({ ...formState, renewalDate: e.target.value })
-              }
-            />
-          </div>
-
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <Label>Forma de Pago</Label>
             <select
               className={selectClassName}
@@ -370,23 +406,8 @@ export default function QuickPdfAiPolicyDialog() {
             </select>
           </div>
 
-          <div className="space-y-1">
-            <Label>Moneda</Label>
-            <select
-              className={selectClassName}
-              value={formState.currency}
-              onChange={(e) =>
-                setFormState({ ...formState, currency: e.target.value })
-              }
-            >
-              <option value="MXN">MXN</option>
-              <option value="UDI">UDI</option>
-              <option value="USD">USD</option>
-            </select>
-          </div>
-
-          <div className="space-y-1">
-            <Label>Prima Anualizada (MXN)</Label>
+          <div className="space-y-1.5">
+            <Label>Prima Anual en Pesos (MXN) *</Label>
             <Input
               type="number"
               step="0.01"
@@ -400,26 +421,103 @@ export default function QuickPdfAiPolicyDialog() {
             />
           </div>
 
-          <div className="space-y-1">
-            <Label>Teléfono / WhatsApp del Cliente (Opcional)</Label>
+          <div className="space-y-1.5">
+            <Label>WhatsApp del Cliente (Opcional)</Label>
             <Input
               value={formState.clientPhone}
               onChange={(e) =>
                 setFormState({ ...formState, clientPhone: e.target.value })
               }
-              placeholder="10 dígitos"
+              placeholder="10 dígitos para enviar recordatorios"
             />
           </div>
 
-          <div className="space-y-1 md:col-span-2">
-            <Label>Observaciones / Suma Asegurada</Label>
-            <Input
-              value={formState.observations}
-              onChange={(e) =>
-                setFormState({ ...formState, observations: e.target.value })
-              }
-            />
+          {/* OPCIONES AVANZADAS COLAPSABLES */}
+          <div className="md:col-span-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((v) => !v)}
+              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Settings2 className="w-3.5 h-3.5" />
+              {showAdvanced
+                ? "Ocultar opciones avanzadas"
+                : "Opciones avanzadas (Moneda UDI/USD, Fin de vigencia, RFC, Notas)"}
+              {showAdvanced ? (
+                <ChevronUp className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5" />
+              )}
+            </button>
           </div>
+
+          {showAdvanced && (
+            <div className="md:col-span-2 grid gap-3 md:grid-cols-2 p-3.5 rounded-lg border bg-muted/20">
+              <div className="space-y-1">
+                <Label>Moneda de la Póliza</Label>
+                <select
+                  className={selectClassName}
+                  value={formState.currency}
+                  onChange={(e) =>
+                    setFormState({ ...formState, currency: e.target.value })
+                  }
+                >
+                  <option value="MXN">MXN (Pesos)</option>
+                  <option value="UDI">UDI (Unidades de Inversión)</option>
+                  <option value="USD">USD (Dólares)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <Label>Prima en Moneda Original (UDI / USD)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="Opcional"
+                  value={formState.originalPremium}
+                  onChange={(e) =>
+                    setFormState({
+                      ...formState,
+                      originalPremium: e.target.value,
+                    })
+                  }
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label>Aniversario / Fin de Vigencia</Label>
+                <Input
+                  type="date"
+                  value={formState.renewalDate}
+                  onChange={(e) =>
+                    setFormState({ ...formState, renewalDate: e.target.value })
+                  }
+                />
+              </div>
+
+              <div className="space-y-1">
+                <Label>RFC del Cliente (Opcional)</Label>
+                <Input
+                  value={formState.clientRfc}
+                  onChange={(e) =>
+                    setFormState({ ...formState, clientRfc: e.target.value })
+                  }
+                  placeholder="RFC"
+                />
+              </div>
+
+              <div className="space-y-1 md:col-span-2">
+                <Label>Observaciones / Suma Asegurada</Label>
+                <Input
+                  value={formState.observations}
+                  onChange={(e) =>
+                    setFormState({ ...formState, observations: e.target.value })
+                  }
+                  placeholder="Ej. Suma Asegurada $5,000,000 MXN..."
+                />
+              </div>
+            </div>
+          )}
 
           <div className="md:col-span-2 pt-2">
             <Button
@@ -432,7 +530,7 @@ export default function QuickPdfAiPolicyDialog() {
               ) : (
                 <CheckCircle2 className="w-4 h-4 mr-2" />
               )}
-              Guardar Póliza y Generar Recibos
+              Guardar Póliza
             </Button>
           </div>
         </form>

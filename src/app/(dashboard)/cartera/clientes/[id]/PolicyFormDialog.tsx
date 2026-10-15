@@ -28,7 +28,15 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import { FileText, Loader2, Sparkles, CheckCircle2 } from "lucide-react";
+import {
+  FileText,
+  Loader2,
+  Sparkles,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Settings2,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function PolicyFormDialog({
@@ -41,6 +49,7 @@ export default function PolicyFormDialog({
   triggerButton?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
   const [isExtractingPdf, setIsExtractingPdf] = useState(false);
   const [extractedFileName, setExtractedFileName] = useState<string | null>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
@@ -82,6 +91,12 @@ export default function PolicyFormDialog({
     if (open) {
       form.reset(getInitialValues());
       setExtractedFileName(null);
+      setShowAdvanced(
+        isEditing &&
+          (policy?.currency !== "MXN" ||
+            Boolean(policy?.subStatus) ||
+            Boolean(policy?.observations))
+      );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, policy]);
@@ -139,6 +154,10 @@ export default function PolicyFormDialog({
       if (ext.originalPremium) form.setValue("originalPremium", ext.originalPremium);
       if (ext.observations) form.setValue("observations", ext.observations);
       if (res.pdfUrl) form.setValue("pdfUrl", res.pdfUrl);
+
+      if (ext.currency && ext.currency !== "MXN") {
+        setShowAdvanced(true);
+      }
 
       setExtractedFileName(file.name);
       toast({
@@ -201,12 +220,12 @@ export default function PolicyFormDialog({
           </DialogTitle>
         </DialogHeader>
 
-        {/* ETAPA 3: Lector Inteligente de Carátula PDF con Gemini */}
+        {/* Lector Inteligente de Carátula PDF con Gemini */}
         <div className="p-3 rounded-lg border border-indigo-500/30 bg-indigo-500/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-0.5">
             <div className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 flex items-center gap-1.5">
               <Sparkles className="w-4 h-4 text-indigo-500" />
-              Lector Inteligente de Carátulas PDF (Gemini IA)
+              Autocompletar subiendo la Carátula PDF (Opcional)
             </div>
             <p className="text-[11px] text-muted-foreground">
               {extractedFileName ? (
@@ -215,7 +234,7 @@ export default function PolicyFormDialog({
                   Datos extraídos de: {extractedFileName}
                 </span>
               ) : (
-                "Sube el PDF de la póliza y la IA llenará automáticamente vigencia, prima, moneda y aseguradora."
+                "Sube el PDF de la póliza y llenaremos los campos automáticamente."
               )}
             </p>
           </div>
@@ -243,14 +262,15 @@ export default function PolicyFormDialog({
               ) : (
                 <>
                   <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                  Autocompletar con PDF
+                  Leer Carátula PDF
                 </>
               )}
             </Button>
           </div>
         </div>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-4 md:grid-cols-2">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-3.5 md:grid-cols-2">
+          {/* 7 CAMPOS ESENCIALES */}
           <div className="space-y-1.5">
             <Label>Número de Póliza *</Label>
             <Input {...form.register("policyNumber")} placeholder="Ej. 308299" />
@@ -291,26 +311,16 @@ export default function PolicyFormDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label>Tipo de Vigencia</Label>
-            <select
-              className={selectClassName}
-              {...form.register("tipoVigencia")}
-            >
-              <option value="LARGO_PLAZO">
-                Largo Plazo / Vitalicia (Aniversario Anual)
-              </option>
-              <option value="ANUAL_RENOVABLE">
-                Anual Renovable (Renovación de Contrato)
-              </option>
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
             <Label>Producto / Plan</Label>
             <Input
               {...form.register("product")}
-              placeholder="Ej. Temporal 20, Orvi 99, VPL, Alfa Medical..."
+              placeholder="Ej. Temporal 20, Orvi 99, Alfa Medical..."
             />
+          </div>
+
+          <div className="space-y-1.5">
+            <Label>Inicio de Vigencia</Label>
+            <Input type="date" {...form.register("effectiveDate")} />
           </div>
 
           <div className="space-y-1.5">
@@ -319,7 +329,6 @@ export default function PolicyFormDialog({
               className={selectClassName}
               {...form.register("paymentMethod")}
             >
-              <option value="">Seleccionar...</option>
               {PAYMENT_METHODS.map((pm) => (
                 <option key={pm} value={pm}>
                   {pm}
@@ -328,41 +337,8 @@ export default function PolicyFormDialog({
             </select>
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Contratante</Label>
-            <Input {...form.register("contractor")} placeholder="Nombre del contratante" />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Asegurado Titular</Label>
-            <Input {...form.register("insured")} placeholder="Nombre del asegurado" />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Inicio de Vigencia (Emisión)</Label>
-            <Input type="date" {...form.register("effectiveDate")} />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>
-              {watchedTipoVigencia === "LARGO_PLAZO"
-                ? "Próximo Aniversario / Fin de Plazo"
-                : "Fecha de Renovación Anual"}
-            </Label>
-            <Input type="date" {...form.register("renewalDate")} />
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Moneda de Póliza</Label>
-            <select className={selectClassName} {...form.register("currency")}>
-              <option value="MXN">MXN (Pesos Mexicanos)</option>
-              <option value="UDI">UDI (Unidades de Inversión)</option>
-              <option value="USD">USD (Dólares)</option>
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Prima Anualizada en MXN *</Label>
+          <div className="space-y-1.5 md:col-span-2">
+            <Label>Prima Anual en Pesos (MXN) *</Label>
             <Input
               type="number"
               step="0.01"
@@ -376,49 +352,115 @@ export default function PolicyFormDialog({
             )}
           </div>
 
-          {watchedCurrency && watchedCurrency !== "MXN" && (
-            <div className="space-y-1.5 md:col-span-2">
-              <Label>Prima en Moneda Original ({watchedCurrency}) — Opcional</Label>
-              <Input
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder={`Monto en ${watchedCurrency} (ej. 3,500 ${watchedCurrency})`}
-                {...form.register("originalPremium")}
-              />
+          {/* BOTÓN DE REVELACIÓN PROGRESIVA */}
+          <div className="md:col-span-2 pt-1">
+            <button
+              type="button"
+              onClick={() => setShowAdvanced((v) => !v)}
+              className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Settings2 className="w-3.5 h-3.5" />
+              {showAdvanced
+                ? "Ocultar opciones avanzadas"
+                : "Opciones avanzadas (Moneda UDI/USD, Asegurado distinto, Estatus, Notas)"}
+              {showAdvanced ? (
+                <ChevronUp className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronDown className="w-3.5 h-3.5" />
+              )}
+            </button>
+          </div>
+
+          {showAdvanced && (
+            <div className="md:col-span-2 grid gap-3.5 md:grid-cols-2 p-3.5 rounded-lg border bg-muted/20">
+              <div className="space-y-1.5">
+                <Label>Contratante</Label>
+                <Input {...form.register("contractor")} placeholder="Nombre del contratante" />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Asegurado Titular</Label>
+                <Input {...form.register("insured")} placeholder="Nombre del asegurado" />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Moneda de la Póliza</Label>
+                <select className={selectClassName} {...form.register("currency")}>
+                  <option value="MXN">MXN (Pesos Mexicanos)</option>
+                  <option value="UDI">UDI (Unidades de Inversión)</option>
+                  <option value="USD">USD (Dólares)</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>
+                  Prima en Moneda Original ({watchedCurrency || "UDI/USD"})
+                </Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="Opcional si está en UDI o USD"
+                  {...form.register("originalPremium")}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Tipo de Duración</Label>
+                <select
+                  className={selectClassName}
+                  {...form.register("tipoVigencia")}
+                >
+                  <option value="LARGO_PLAZO">
+                    Largo Plazo / Vitalicia (Aniversario Anual)
+                  </option>
+                  <option value="ANUAL_RENOVABLE">
+                    Anual Renovable (Renovación cada año)
+                  </option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>
+                  {watchedTipoVigencia === "LARGO_PLAZO"
+                    ? "Fecha Fin de Plazo (Opcional)"
+                    : "Fecha de Renovación Anual"}
+                </Label>
+                <Input type="date" {...form.register("renewalDate")} />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Estatus de la Póliza</Label>
+                <select className={selectClassName} {...form.register("status")}>
+                  {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
+                    <option key={key} value={key}>
+                      {cfg.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label>Detalle Especial (Opcional)</Label>
+                <select className={selectClassName} {...form.register("subStatus")}>
+                  <option value="">Ninguno (Normal)</option>
+                  {Object.entries(SUB_STATUS_LABELS).map(([key, label]) => (
+                    <option key={key} value={key}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1.5 md:col-span-2">
+                <Label>Notas / Suma Asegurada</Label>
+                <Input
+                  {...form.register("observations")}
+                  placeholder="Ej. Suma Asegurada $5,000,000 MXN, domiciliada a BBVA..."
+                />
+              </div>
             </div>
           )}
-
-          <div className="space-y-1.5">
-            <Label>Estatus de Conservación</Label>
-            <select className={selectClassName} {...form.register("status")}>
-              {Object.entries(STATUS_CONFIG).map(([key, cfg]) => (
-                <option key={key} value={key}>
-                  {cfg.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1.5">
-            <Label>Sub-estatus Técnico (Opcional)</Label>
-            <select className={selectClassName} {...form.register("subStatus")}>
-              <option value="">Ninguno (Normal)</option>
-              {Object.entries(SUB_STATUS_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="space-y-1.5 md:col-span-2">
-            <Label>Observaciones / Suma Asegurada / Notas</Label>
-            <Input
-              {...form.register("observations")}
-              placeholder="Ej. Suma Asegurada $5,000,000 MXN, domiciliada a BBVA..."
-            />
-          </div>
 
           <div className="md:col-span-2 pt-2">
             <Button
@@ -429,7 +471,7 @@ export default function PolicyFormDialog({
               {form.formState.isSubmitting ? (
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
               ) : null}
-              {isEditing ? "Guardar Cambios" : "Crear Póliza"}
+              {isEditing ? "Guardar Cambios" : "Guardar Póliza"}
             </Button>
           </div>
         </form>

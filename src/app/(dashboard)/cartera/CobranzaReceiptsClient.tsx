@@ -43,7 +43,7 @@ export default function CobranzaReceiptsClient({
   policies: any[];
   isAdmin: boolean;
 }) {
-  const [activeTab, setActiveTab] = useState<"GRACIA" | "PROXIMOS" | "PAGADOS">("GRACIA");
+  const [userSelectedTab, setUserSelectedTab] = useState<"GRACIA" | "PROXIMOS" | "PAGADOS" | null>(null);
   const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
   const [paidDate, setPaidDate] = useState<string>(() => toDateInputValue(new Date()));
   const [paymentNotes, setPaymentNotes] = useState<string>("");
@@ -104,7 +104,19 @@ export default function CobranzaReceiptsClient({
     [allReceipts]
   );
 
-  // Si no hay recibos en gracia pero sí próximos, mostrar primero la pestaña de próximos al cargar
+  // Seleccionar automáticamente la primera pestaña con pendientes si el asesor no ha hecho clic
+  const activeTab: "GRACIA" | "PROXIMOS" | "PAGADOS" =
+    userSelectedTab ??
+    (graceAndConfirmReceipts.length > 0
+      ? "GRACIA"
+      : upcomingReceipts.length > 0
+      ? "PROXIMOS"
+      : "GRACIA");
+
+  const setActiveTab = (tab: "GRACIA" | "PROXIMOS" | "PAGADOS") => {
+    setUserSelectedTab(tab);
+  };
+
   const currentList =
     activeTab === "GRACIA"
       ? graceAndConfirmReceipts
@@ -377,8 +389,8 @@ export default function CobranzaReceiptsClient({
                       Póliza <strong className="text-foreground">{policy.policyNumber}</strong> •{" "}
                       {policy.product || "Plan"} ({policy.insuranceCompany}) •{" "}
                       {RAMO_LABELS[policy.ramo || "VIDA_INDIVIDUAL"] || policy.ramo} •{" "}
-                      Exigible: <strong>{formatDateSafe(r.dueDate, "dd/MM/yyyy")}</strong>{" "}
-                      (Límite Gracia:{" "}
+                      Fecha de pago: <strong>{formatDateSafe(r.dueDate, "dd/MM/yyyy")}</strong>{" "}
+                      (Fecha límite para pagar:{" "}
                       <strong>{formatDateSafe(r.graceEndDate, "dd/MM/yyyy")}</strong>)
                     </span>
                   </div>

@@ -30,6 +30,7 @@ import {
   SUB_STATUS_LABELS,
 } from "./dateUtils";
 import PolicyActions from "./clientes/[id]/PolicyActions";
+import PolicyUpload from "./clientes/[id]/PolicyUpload";
 
 export default function CarteraTableClient({
   policies,
@@ -210,12 +211,12 @@ export default function CarteraTableClient({
             <TableRow>
               <TableHead>Póliza / Aseguradora</TableHead>
               {isAdmin && <TableHead>Agente</TableHead>}
-              <TableHead>Contratante</TableHead>
-              <TableHead>Producto / Ramo</TableHead>
+              <TableHead>Cliente / Contratante</TableHead>
+              <TableHead>Plan / Ramo</TableHead>
               <TableHead>Estatus</TableHead>
-              <TableHead>Inicio Vigencia</TableHead>
               <TableHead>Próx. Aniversario / Renovación</TableHead>
               <TableHead className="text-right">Prima Anual</TableHead>
+              <TableHead>Carátula PDF</TableHead>
               <TableHead className="text-center">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -291,10 +292,6 @@ export default function CarteraTableClient({
                   </TableCell>
 
                   <TableCell className="text-xs whitespace-nowrap">
-                    {formatDateSafe(policy.effectiveDate, "dd/MM/yyyy", "-")}
-                  </TableCell>
-
-                  <TableCell className="text-xs whitespace-nowrap">
                     {policy.cycle.nextEventDate ? (
                       <div className="flex flex-col">
                         <span className="font-medium">
@@ -335,6 +332,10 @@ export default function CarteraTableClient({
                           {policy.currency}
                         </div>
                       )}
+                  </TableCell>
+
+                  <TableCell>
+                    <PolicyUpload policy={policy} />
                   </TableCell>
 
                   <TableCell className="text-center">
