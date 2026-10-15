@@ -18,6 +18,31 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const deviceToken = searchParams.get('deviceToken')?.trim() || '';
 
+    // QA T9: Modo Demo virtual sin consumo de créditos ni persistencia en base de datos
+    if (code === 'DEMO') {
+      return NextResponse.json({
+        session: {
+          id: 'demo_session_virtual',
+          code: 'DEMO',
+          title: 'Taller TIPS — Modo Demo y Capacitación (Sin Consumo de Créditos)',
+          location: 'Simulador Interactivo',
+          status: 'ACTIVE',
+          unlockedStep: 8,
+          allowNicknames: true,
+          customParams: { realReturnRatePct: 4.0, inflationRatePct: 4.5, lifeExpectancy: 82.3 },
+          hostName: 'Asesor Demo TIPS',
+          hostPhone: '',
+          hostEmail: '',
+          brandName: 'TIPS · Modo Capacitación',
+          brandLogo: null,
+          brandColor: '#4f46e5',
+          privacyNoticeText: DEFAULT_PRIVACY_NOTICE,
+          isDemo: true,
+        },
+        participant: null,
+      });
+    }
+
     const tipsSession = await prisma.tipsSession.findUnique({
       where: { code },
       include: {
@@ -106,6 +131,43 @@ export async function POST(
     }
 
     const cleanToken = String(deviceToken).trim();
+
+    // QA T9: Si es el modo DEMO, responder sin consumir créditos ni crear registros en BD
+    if (code === 'DEMO') {
+      const demoSession = {
+        id: 'demo_session_virtual',
+        code: 'DEMO',
+        title: 'Taller TIPS — Modo Demo y Capacitación (Sin Consumo de Créditos)',
+        status: 'ACTIVE',
+        unlockedStep: 8,
+        allowNicknames: true,
+        isDemo: true,
+      };
+      const stepNum =
+        action === 'ACCEPT_PRIVACY_AND_STEP1'
+          ? 1
+          : action === 'REQUEST_APPOINTMENT'
+          ? 8
+          : Number(body.stepNumber || body.currentStep || 1);
+      return NextResponse.json({
+        ok: true,
+        session: demoSession,
+        participant: {
+          id: 'demo_participant',
+          deviceToken: cleanToken,
+          nickname: body.nickname || 'Demo',
+          fullName: body.fullName || body.nickname || 'Participante Demo',
+          phone: body.phone || '',
+          email: body.email || '',
+          privacyAccepted: true,
+          creditConsumed: false,
+          currentStep: Math.min(8, Math.max(1, stepNum)),
+          completedStep: Math.min(8, Math.max(1, stepNum)),
+          status: stepNum >= 8 ? 'COMPLETED' : 'ACTIVE',
+        },
+        kicked: false,
+      });
+    }
 
     const tipsSession = await prisma.tipsSession.findUnique({
       where: { code },
@@ -380,8 +442,11 @@ export async function POST(
       if (stepNumber === 6) updateFields.step6Savings = stepData;
       if (stepNumber === 7) updateFields.step7Insurance = stepData;
 
-      const nextCompleted = Math.max(participant.completedStep, stepNumber);
-      const nextCurrent = Math.min(8, Math.max(participant.currentStep, stepNumber));
+      const rawNextCompleted = Math.max(participant.completedStep, stepNumber);
+      // Si el participante acaba de guardar el Paso 7 y el Paso 8 ya está desbloqueado, completar 8/8 automáticamente
+      const nextCompleted =
+        rawNextCompleted === 7 && tipsSession.unlockedStep >= 8 ? 8 : rawNextCompleted;
+      const nextCurrent = Math.min(8, Math.max(participant.currentStep, nextCompleted));
 
       const calc = evaluateTipsDiagnostic({
         completedStep: nextCompleted,
@@ -415,6 +480,29 @@ export async function POST(
           lastHeartbeatAt: new Date(),
         },
       });
+
+      // Si completó 8/8 y es Caliente (HOT >= 70 pts), disparar creación de tarea 48h de forma idempotente (QA T1)
+      if (nextCompleted >= 8 && calc.leadTier === 'HOT') {
+        const cleanName = (updated.fullName || updated.nickname || 'Prospecto TIPS').trim();
+        const dueIn48h = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const taskTitle = `🔥 Cita Individual TIPS (48h): ${cleanName}`;
+        const existingTask = await prisma.task.findFirst({
+          where: { userId: tipsSession.hostId, title: taskTitle },
+        });
+        if (!existingTask) {
+          const gapLabels = calc.detectedGaps.map((g) => g.code).join(', ') || 'Revisión integral';
+          await prisma.task.create({
+            data: {
+              userId: tipsSession.hostId,
+              title: taskTitle,
+              description: `Agendar sesión individual 1 a 1 tras taller TIPS "${tipsSession.title}" (Score: ${calc.leadScore}/100 - CALIENTE). Tel: ${updated.phone || 'S/N'}. Oportunidades: ${gapLabels}.`,
+              dueDate: dueIn48h,
+              priority: 'HIGH',
+              completed: false,
+            },
+          });
+        }
+      }
 
       return NextResponse.json({
         participant: updated,
@@ -562,19 +650,77 @@ export async function POST(
     // 5. HEARTBEAT EN TIEMPO REAL (<= 2s)
     if (action === 'HEARTBEAT') {
       const requestedViewStep = Number(body.currentStep || 0);
-      const participant = await prisma.tipsParticipant.findUnique({
+      let participant = await prisma.tipsParticipant.findUnique({
         where: { deviceToken: cleanToken },
       });
 
       if (participant && participant.sessionId === tipsSession.id && participant.status !== 'KICKED') {
         const validCurrentStep = Math.min(tipsSession.unlockedStep, Math.max(0, requestedViewStep));
-        await prisma.tipsParticipant.update({
-          where: { id: participant.id },
-          data: {
-            lastHeartbeatAt: new Date(),
-            ...(validCurrentStep > 0 ? { currentStep: validCurrentStep } : {}),
-          },
-        });
+
+        // QA T1: Si el Host ya liberó el Paso 8 y el participante ya había completado el Paso 7,
+        // marcar automáticamente 8/8 (COMPLETED), recalcular score a HOT y generar tarea 48h
+        if (tipsSession.unlockedStep >= 8 && participant.completedStep === 7) {
+          const calc = evaluateTipsDiagnostic({
+            completedStep: 8,
+            step1: participant.step1General as any,
+            step2: participant.step2Patrimony as any,
+            step3: participant.step3Income as any,
+            step4: participant.step4Retirement as any,
+            step5: participant.step5Dreams as any,
+            step6: participant.step6Savings as any,
+            step7: participant.step7Insurance as any,
+            customParams: tipsSession.customParams as any,
+          });
+          const prevCalc = (participant.calculatedResults as any) || {};
+          const mergedCalc = {
+            ...calc,
+            appointmentRequested: Boolean(prevCalc.appointmentRequested),
+            preferredSlot: prevCalc.preferredSlot || null,
+          };
+
+          participant = await prisma.tipsParticipant.update({
+            where: { id: participant.id },
+            data: {
+              currentStep: 8,
+              completedStep: 8,
+              status: 'COMPLETED',
+              calculatedResults: mergedCalc as any,
+              leadScore: calc.leadScore,
+              leadTier: calc.leadTier,
+              lastHeartbeatAt: new Date(),
+            },
+          });
+
+          if (calc.leadTier === 'HOT') {
+            const cleanName = (participant.fullName || participant.nickname || 'Prospecto TIPS').trim();
+            const dueIn48h = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0];
+            const taskTitle = `🔥 Cita Individual TIPS (48h): ${cleanName}`;
+            const existingTask = await prisma.task.findFirst({
+              where: { userId: tipsSession.hostId, title: taskTitle },
+            });
+            if (!existingTask) {
+              const gapLabels = calc.detectedGaps.map((g) => g.code).join(', ') || 'Revisión integral';
+              await prisma.task.create({
+                data: {
+                  userId: tipsSession.hostId,
+                  title: taskTitle,
+                  description: `Agendar sesión individual 1 a 1 tras taller TIPS "${tipsSession.title}" (Score: ${calc.leadScore}/100 - CALIENTE). Tel: ${participant.phone || 'S/N'}. Oportunidades: ${gapLabels}.`,
+                  dueDate: dueIn48h,
+                  priority: 'HIGH',
+                  completed: false,
+                },
+              });
+            }
+          }
+        } else {
+          participant = await prisma.tipsParticipant.update({
+            where: { id: participant.id },
+            data: {
+              lastHeartbeatAt: new Date(),
+              ...(validCurrentStep > 0 ? { currentStep: validCurrentStep } : {}),
+            },
+          });
+        }
       }
 
       return NextResponse.json({
@@ -583,6 +729,7 @@ export async function POST(
           unlockedStep: tipsSession.unlockedStep,
           allowNicknames: tipsSession.allowNicknames,
         },
+        participant,
         kicked: participant?.status === 'KICKED',
       });
     }

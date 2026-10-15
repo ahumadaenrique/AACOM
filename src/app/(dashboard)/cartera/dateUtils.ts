@@ -203,22 +203,31 @@ export function computePolicyCycleInfo(policy: any, referenceDate: Date = new Da
   let nextEventDate: Date | null = null;
   let currentCycleStartDate: Date | null = null;
 
+  const firstReceiptCalDate =
+    Array.isArray(policy?.receipts) && policy.receipts.length > 0
+      ? toCalendarDateLocal(policy.receipts[0]?.dueDate)
+      : null;
+  const createdCalDate = toCalendarDateLocal(policy?.createdAt);
+  const fallbackRefDate =
+    effectiveCalDate || renewalCalDate || firstReceiptCalDate || createdCalDate;
+
+  const rawAnnivMonth =
+    policy?.anniversaryMonth != null ? Number(policy.anniversaryMonth) : NaN;
+  const rawAnnivDay =
+    policy?.anniversaryDay != null ? Number(policy.anniversaryDay) : NaN;
+
   const annivMonth =
-    policy?.anniversaryMonth != null
-      ? Number(policy.anniversaryMonth) - 1
-      : effectiveCalDate
-      ? effectiveCalDate.getMonth()
-      : renewalCalDate
-      ? renewalCalDate.getMonth()
+    !isNaN(rawAnnivMonth) && rawAnnivMonth >= 1 && rawAnnivMonth <= 12
+      ? rawAnnivMonth - 1
+      : fallbackRefDate
+      ? fallbackRefDate.getMonth()
       : null;
 
   const annivDay =
-    policy?.anniversaryDay != null
-      ? Number(policy.anniversaryDay)
-      : effectiveCalDate
-      ? effectiveCalDate.getDate()
-      : renewalCalDate
-      ? renewalCalDate.getDate()
+    !isNaN(rawAnnivDay) && rawAnnivDay >= 1 && rawAnnivDay <= 31
+      ? rawAnnivDay
+      : fallbackRefDate
+      ? fallbackRefDate.getDate()
       : null;
 
   if (annivMonth !== null && annivDay !== null) {

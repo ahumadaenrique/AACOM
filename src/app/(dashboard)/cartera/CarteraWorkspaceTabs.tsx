@@ -56,9 +56,10 @@ export default function CarteraWorkspaceTabs({
   const [activeTab, setActiveTab] = useState<WorkspaceTab>("POLIZAS");
   const [daysHorizon, setDaysHorizon] = useState<number>(30);
 
-  // Contar recibos pendientes (en gracia + próximos 30 días)
-  const { graceReceiptsCount, upcomingReceiptsCount } = useMemo(() => {
+  // Contar recibos pendientes (en gracia + próximos 30 días) y sumar el monto exacto de recibos en gracia (QA C3)
+  const { graceReceiptsCount, graceReceiptsAmount, upcomingReceiptsCount } = useMemo(() => {
     let grace = 0;
+    let graceAmt = 0;
     let upcoming = 0;
     for (const p of policies) {
       if (p.isArchived || p.status === "CANCELADA" || p.status === "TERMINADA") {
@@ -68,12 +69,17 @@ export default function CarteraWorkspaceTabs({
         const live = computeReceiptLiveStatus(r);
         if (live.liveStatus === "EN_GRACIA" || live.liveStatus === "POR_CONFIRMAR") {
           grace++;
+          graceAmt += Number(r.amount || 0);
         } else if (live.liveStatus === "PROXIMO") {
           upcoming++;
         }
       }
     }
-    return { graceReceiptsCount: grace, upcomingReceiptsCount: upcoming };
+    return {
+      graceReceiptsCount: grace,
+      graceReceiptsAmount: graceAmt,
+      upcomingReceiptsCount: upcoming,
+    };
   }, [policies]);
 
   const totalActionableReceipts = graceReceiptsCount + upcomingReceiptsCount;
@@ -96,11 +102,12 @@ export default function CarteraWorkspaceTabs({
     [activePolicies, daysHorizon]
   );
 
-  // Contar oportunidades de venta cruzada
+  // Contar oportunidades de venta cruzada (incluyendo prospectos TIPS - QA T4)
   const crossSellCount = useMemo(() => {
     let count = 0;
     for (const c of clientsWithPolicies) {
-      if ((c.policies || []).length === 0) continue;
+      const isTipsLead = String(c.notes || "").toUpperCase().includes("TIPS");
+      if ((c.policies || []).length === 0 && !isTipsLead) continue;
       const analysis = analyzeClientBlindaje(c, adnDiagnostics);
       if (analysis.primaryGap && analysis.coveredCount < 4) count++;
     }
@@ -170,7 +177,7 @@ export default function CarteraWorkspaceTabs({
             </div>
             <p className="text-xs text-muted-foreground mt-1">
               {graceReceiptsCount > 0
-                ? `${graceReceiptsCount} en periodo de gracia (${new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(atRiskPremium)})`
+                ? `${graceReceiptsCount} en periodo de gracia (${new Intl.NumberFormat("es-MX", { style: "currency", currency: "MXN", maximumFractionDigits: 0 }).format(graceReceiptsAmount)})`
                 : `${upcomingReceiptsCount} próximos en los siguientes 30 días`}
             </p>
           </CardContent>
@@ -477,33 +484,41 @@ export default function CarteraWorkspaceTabs({
                                   currency: "MXN",
                                 }).format(policy.annualPremium || 0)}
                               </strong>{" "}
-                              {policy.paymentMethod
-                                ? `(${policy.paymentMethod})`
+                              {policy.paymentMethod?.trim()
+                                ? `(${policy.paymentMethod.trim()})`
                                 : ""}
                             </span>
                           </div>
 
-                          {cleanPhone.length >= 10 && (
-                            <a
-                              href={`https://wa.me/${
-                                cleanPhone.length === 10
-                                  ? "52" + cleanPhone
-                                  : cleanPhone
-                              }?text=${encodeURIComponent(waMessage)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              title="Enviar recordatorio por WhatsApp"
+                          <a
+                            href={
+                              cleanPhone.length >= 10
+                                ? `https://wa.me/${
+                                    cleanPhone.length === 10
+                                      ? "52" + cleanPhone
+                                      : cleanPhone
+                                  }?text=${encodeURIComponent(waMessage)}`
+                                : `https://wa.me/?text=${encodeURIComponent(
+                                    waMessage
+                                  )}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={
+                              cleanPhone.length >= 10
+                                ? "Enviar recordatorio directo por WhatsApp"
+                                : "Abrir WhatsApp con mensaje prellenado para elegir contacto"
+                            }
+                          >
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10"
                             >
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="border-emerald-500/40 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/10"
-                              >
-                                <MessageCircle className="w-4 h-4 mr-1.5" />
-                                WhatsApp
-                              </Button>
-                            </a>
-                          )}
+                              <MessageCircle className="w-4 h-4 mr-1.5" />
+                              WhatsApp
+                            </Button>
+                          </a>
                         </div>
                       </div>
                     );

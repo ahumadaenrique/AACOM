@@ -12,7 +12,9 @@ export const authConfig = {
             const isLoginPage = nextUrl.pathname === '/login';
             const isPublicTipsRoute =
                 nextUrl.pathname.startsWith('/tips/sala') ||
-                nextUrl.pathname.startsWith('/tips/proyector');
+                nextUrl.pathname.startsWith('/tips/proyector') ||
+                nextUrl.pathname.startsWith('/tips/demo') ||
+                nextUrl.pathname.startsWith('/tips/join');
 
             if (!isLoggedIn) {
                 if (isLoginPage || isPublicTipsRoute) return true;

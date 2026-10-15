@@ -35,11 +35,11 @@ export const TIPS_PACKAGES: Record<string, TipsPackageDef> = {
     id: 'tips_150',
     name: 'Paquete Promotoría / Escala — 150 Créditos TIPS',
     credits: 150,
-    priceMxn: 3500,
-    priceCents: 350000, // $3,500.00 MXN
+    priceMxn: 2700,
+    priceCents: 270000, // $2,700.00 MXN ($18/crédito)
     validityDays: 90,
-    badge: 'Alto Volumen',
-    description: 'Bolsa de alto volumen para múltiples talleres presenciales en el trimestre. Vigencia de 90 días.',
+    badge: 'Mejor Valor ($18/crédito)',
+    description: 'Bolsa de alto volumen con el menor costo unitario ($18/prospecto) para múltiples talleres en el trimestre. Vigencia de 90 días.',
   },
 };
 

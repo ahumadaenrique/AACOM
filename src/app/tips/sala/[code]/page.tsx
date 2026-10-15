@@ -57,71 +57,37 @@ export default function TipsParticipantMobilePage() {
   const completedStepRef = useRef<number>(0);
   const confettiFiredRef = useRef<boolean>(false);
 
-  // Lobby & Paso 1: Datos Generales + Consentimiento LFPDPPP
+  // Lobby & Paso 1: Datos Generales + Consentimiento LFPDPPP (Sin valores de ejemplo precargados - QA T3)
   const [nickname, setNickname] = useState('');
   const [inLobbyJoined, setInLobbyJoined] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
-  const [birthDate, setBirthDate] = useState('1984-05-15');
+  const [birthDate, setBirthDate] = useState('');
   const [maritalStatus, setMaritalStatus] = useState<
     'SOLTERO' | 'CASADO' | 'UNION_LIBRE' | 'DIVORCIADO' | 'VIUDO'
   >('CASADO');
-  const [dependentsCount, setDependentsCount] = useState(2);
+  const [dependentsCount, setDependentsCount] = useState<number | ''>('');
 
-  // Paso 2: Patrimonio y Deudas
-  const [assets, setAssets] = useState<TipsAssetItem[]>([
-    {
-      id: 'ast_1',
-      category: 'INMUEBLE',
-      description: 'Casa / Departamento',
-      value: 0,
-      annualRatePct: 6.0,
-      liquidity: 'BAJA',
-    },
-    {
-      id: 'ast_2',
-      category: 'FONDO_EMERGENCIA',
-      description: 'Ahorro en Banco / CETES',
-      value: 0,
-      annualRatePct: 8.0,
-      liquidity: 'ALTA',
-    },
-  ]);
+  // Paso 2: Patrimonio y Deudas (Vacío por defecto, con botones rápidos para agregar - QA T3)
+  const [assets, setAssets] = useState<TipsAssetItem[]>([]);
   const [debts, setDebts] = useState<TipsDebtItem[]>([]);
 
-  // Paso 3: Sueldo Mensual
-  const [monthlyIncome, setMonthlyIncome] = useState<number>(50000);
+  // Paso 3: Sueldo Mensual (Vacío por defecto con placeholder - QA T3)
+  const [monthlyIncome, setMonthlyIncome] = useState<number>(0);
 
   // Paso 4: Jubilación (Cinta Métrica)
   const [desiredRetirementAge, setDesiredRetirementAge] = useState<number>(65);
   const [desiredPensionPct, setDesiredPensionPct] = useState<number>(80);
   const [imssRegime, setImssRegime] = useState<'LEY_73' | 'LEY_97' | 'NINGUNO' | 'NO_SE'>('LEY_97');
-  const [aforeBalance, setAforeBalance] = useState<number>(150000);
+  const [aforeBalance, setAforeBalance] = useState<number>(0);
   const [hasPpr, setHasPpr] = useState<boolean>(false);
   const [pprBalance, setPprBalance] = useState<number>(0);
   const [pprMonthlyContribution, setPprMonthlyContribution] = useState<number>(0);
 
-  // Paso 5: Sueños y Prioridades
-  const [dreams, setDreams] = useState<TipsDreamItem[]>([
-    {
-      id: 'drm_1',
-      name: '🎓 Universidad de los hijos / Posgrado',
-      category: 'DEPENDIENTES',
-      targetAmount: 800000,
-      yearsToGoal: 10,
-      priority: 1,
-    },
-    {
-      id: 'drm_2',
-      name: '🏠 Propiedad / Inversión Patrimonial',
-      category: 'PROPIO',
-      targetAmount: 1500000,
-      yearsToGoal: 8,
-      priority: 2,
-    },
-  ]);
+  // Paso 5: Sueños y Prioridades (Vacío por defecto, con plantillas de 1 toque - QA T3)
+  const [dreams, setDreams] = useState<TipsDreamItem[]>([]);
 
   // Paso 6: Ahorro Mensual (Regla del 16%)
   const [savingsPct, setSavingsPct] = useState<number>(16);
@@ -150,19 +116,41 @@ export default function TipsParticipantMobilePage() {
     }
   }, [participant]);
 
-  // Disparar confetti al llegar al Paso 8 (Diagnóstico Preliminar)
+  // Disparar confetti y marcar automáticamente Paso 8 (8/8 COMPLETED) al llegar al Diagnóstico (QA T1)
   useEffect(() => {
-    if (viewStep === 8 && !confettiFiredRef.current) {
-      confettiFiredRef.current = true;
-      try {
-        confetti({
-          particleCount: 70,
-          spread: 65,
-          origin: { y: 0.6 },
-        });
-      } catch (_) {}
+    if (viewStep === 8) {
+      if (!confettiFiredRef.current) {
+        confettiFiredRef.current = true;
+        try {
+          confetti({
+            particleCount: 70,
+            spread: 65,
+            origin: { y: 0.6 },
+          });
+        } catch (_) {}
+      }
+      if (deviceToken && (completedStepRef.current || 0) < 8) {
+        completedStepRef.current = 8;
+        fetch(`/api/tips/public/${encodeURIComponent(code)}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'SAVE_STEP',
+            deviceToken,
+            stepNumber: 8,
+            stepData: { completedAt: new Date().toISOString() },
+          }),
+        })
+          .then((r) => (r.ok ? r.json() : null))
+          .then((json) => {
+            if (json?.participant) {
+              setParticipant(json.participant);
+            }
+          })
+          .catch(() => {});
+      }
     }
-  }, [viewStep]);
+  }, [viewStep, code, deviceToken]);
 
   // Inicializar o recuperar Device Token en localStorage
   useEffect(() => {
@@ -300,6 +288,9 @@ export default function TipsParticipantMobilePage() {
         });
         if (res.ok) {
           const json = await res.json();
+          if (json.participant && (json.participant.completedStep || 0) > completedStepRef.current) {
+            setParticipant(json.participant);
+          }
           if (json.session) {
             setSession((prev: any) => {
               const prevUnlocked = prev?.unlockedStep || 0;
@@ -317,6 +308,15 @@ export default function TipsParticipantMobilePage() {
                   setUnlockToast(`🔓 ¡Paso ${nextAutoStep} desbloqueado por el expositor!`);
                   setTimeout(() => setUnlockToast(null), 4000);
                 }
+              } else if (newUnlocked < prevUnlocked && viewStep > newUnlocked) {
+                const safeStep = newUnlocked <= 0 ? 0 : newUnlocked;
+                setViewStep(safeStep);
+                setUnlockToast(
+                  safeStep === 0
+                    ? '🔒 El expositor regresó la sesión a la Sala de Espera'
+                    : `🔒 El expositor regresó al Paso ${safeStep}`
+                );
+                setTimeout(() => setUnlockToast(null), 4000);
               }
               return { ...prev, ...json.session };
             });
@@ -342,7 +342,12 @@ export default function TipsParticipantMobilePage() {
     }
     return evaluateTipsDiagnostic({
       completedStep: participant?.completedStep || viewStep,
-      step1: { fullName, birthDate, maritalStatus, dependentsCount },
+      step1: {
+        fullName,
+        birthDate,
+        maritalStatus,
+        dependentsCount: Number(dependentsCount || 0),
+      },
       step2: { assets, debts },
       step3: { monthlyIncome },
       step4: {
@@ -433,6 +438,10 @@ export default function TipsParticipantMobilePage() {
       setErrorMsg('Debes aceptar el Aviso de Privacidad LFPDPPP para continuar.');
       return;
     }
+    if (!birthDate) {
+      setErrorMsg('Por favor captura tu fecha de nacimiento para calcular tu horizonte patrimonial.');
+      return;
+    }
     setSaving(true);
     setErrorMsg(null);
     try {
@@ -451,7 +460,7 @@ export default function TipsParticipantMobilePage() {
             fullName: fullName.trim(),
             birthDate,
             maritalStatus,
-            dependentsCount,
+            dependentsCount: Number(dependentsCount || 0),
           },
         }),
       });
@@ -473,6 +482,10 @@ export default function TipsParticipantMobilePage() {
   };
 
   const handleSaveStep = async (stepNumber: number, stepData: any) => {
+    if (stepNumber === 3 && (!monthlyIncome || monthlyIncome <= 0)) {
+      setErrorMsg('Por favor ingresa o selecciona tu ingreso mensual promedio para continuar.');
+      return;
+    }
     setSaving(true);
     setErrorMsg(null);
     const payload = {
@@ -823,8 +836,11 @@ export default function TipsParticipantMobilePage() {
                     type="number"
                     min={0}
                     max={15}
+                    placeholder="Ej. 2 (0 si ninguno)"
                     value={dependentsCount}
-                    onChange={(e) => setDependentsCount(Number(e.target.value))}
+                    onChange={(e) =>
+                      setDependentsCount(e.target.value === '' ? '' : Number(e.target.value))
+                    }
                     className="w-full rounded-xl border border-slate-300 px-3.5 py-2.5 text-sm"
                   />
                 </div>
@@ -924,6 +940,45 @@ export default function TipsParticipantMobilePage() {
                   <Plus className="w-3.5 h-3.5" /> Agregar Activo
                 </button>
               </div>
+
+              {/* Botones rápidos para agregar activos sin precargar valores falsos (QA T3) */}
+              <div className="flex flex-wrap gap-1.5">
+                {[
+                  { cat: 'INMUEBLE' as TipsAssetCategory, label: '🏠 + Inmueble', rate: 6.0, liq: 'BAJA' as const },
+                  { cat: 'FONDO_EMERGENCIA' as TipsAssetCategory, label: '🏦 + Ahorro / CETES', rate: 8.0, liq: 'ALTA' as const },
+                  { cat: 'INVERSION' as TipsAssetCategory, label: '📈 + Inversión', rate: 8.5, liq: 'MEDIA' as const },
+                  { cat: 'NEGOCIO' as TipsAssetCategory, label: '🚀 + Negocio', rate: 18.0, liq: 'BAJA' as const },
+                  { cat: 'VEHICULO' as TipsAssetCategory, label: '🚗 + Auto', rate: -15.0, liq: 'MEDIA' as const },
+                ].map((q) => (
+                  <button
+                    key={q.cat}
+                    type="button"
+                    onClick={() =>
+                      setAssets([
+                        ...assets,
+                        {
+                          id: `ast_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
+                          category: q.cat,
+                          description: '',
+                          value: 0,
+                          annualRatePct: q.rate,
+                          liquidity: q.liq,
+                        },
+                      ])
+                    }
+                    className="px-2.5 py-1 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-800 text-[11px] font-bold transition"
+                  >
+                    {q.label}
+                  </button>
+                ))}
+              </div>
+
+              {assets.length === 0 && (
+                <div className="bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-4 text-center text-xs text-slate-500">
+                  Toca uno de los botones superiores para agregar tus activos actuales, o continúa si
+                  aún no cuentas con activos acumulados.
+                </div>
+              )}
 
               {assets.map((ast, idx) => (
                 <div
@@ -1434,89 +1489,128 @@ export default function TipsParticipantMobilePage() {
             </div>
 
             <div className="space-y-3">
-              {dreams.map((drm, idx) => (
-                <div
-                  key={drm.id}
-                  className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200 space-y-2.5"
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <input
-                      type="text"
-                      value={drm.name}
-                      onChange={(e) => {
-                        const next = [...dreams];
-                        next[idx] = { ...drm, name: e.target.value };
-                        setDreams(next);
-                      }}
-                      placeholder="Nombre del sueño"
-                      className="flex-1 rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-bold"
-                    />
-                    {dreams.length > 1 && (
+              {dreams.length === 0 && (
+                <div className="bg-slate-50 border border-dashed border-slate-300 rounded-2xl p-4 text-center text-xs text-slate-500">
+                  Toca uno de los botones superiores para elegir tus sueños principales (Universidad,
+                  Casa, Negocio, Viaje o Legado).
+                </div>
+              )}
+
+              {dreams.map((drm, idx) => {
+                const evalDrm = liveCalc.evaluatedDreams[idx];
+                return (
+                  <div
+                    key={drm.id}
+                    className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200 space-y-2.5"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <input
+                        type="text"
+                        value={drm.name}
+                        onChange={(e) => {
+                          const next = [...dreams];
+                          next[idx] = { ...drm, name: e.target.value };
+                          setDreams(next);
+                        }}
+                        placeholder="Nombre del sueño"
+                        className="flex-1 rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-bold"
+                      />
                       <button
                         type="button"
                         onClick={() => setDreams(dreams.filter((_, i) => i !== idx))}
                         className="text-rose-500 p-1"
+                        title="Eliminar sueño"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
-                    )}
-                  </div>
+                    </div>
 
-                  <div className="grid grid-cols-3 gap-2">
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500">Tipo</label>
-                      <select
-                        value={drm.category}
-                        onChange={(e) => {
-                          const next = [...dreams];
-                          next[idx] = { ...drm, category: e.target.value as any };
-                          setDreams(next);
-                        }}
-                        className="w-full rounded-xl border border-slate-300 px-2 py-1.5 text-[11px] bg-white font-semibold"
-                      >
-                        <option value="PROPIO">Propio</option>
-                        <option value="DEPENDIENTES">Dependientes</option>
-                        <option value="TRASCENDENCIA">Trascender</option>
-                      </select>
+                    <div className="grid grid-cols-3 gap-2">
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-500">
+                          Tipo
+                        </label>
+                        <select
+                          value={drm.category}
+                          onChange={(e) => {
+                            const next = [...dreams];
+                            next[idx] = { ...drm, category: e.target.value as any };
+                            setDreams(next);
+                          }}
+                          className="w-full rounded-xl border border-slate-300 px-2 py-1.5 text-[11px] bg-white font-semibold"
+                        >
+                          <option value="PROPIO">Propio</option>
+                          <option value="DEPENDIENTES">Dependientes</option>
+                          <option value="TRASCENDENCIA">Trascender</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-500">
+                          Monto ($ MXN)
+                        </label>
+                        <input
+                          type="number"
+                          min={10000}
+                          step={50000}
+                          placeholder="Ej. 800000"
+                          value={drm.targetAmount || ''}
+                          onChange={(e) => {
+                            const next = [...dreams];
+                            next[idx] = { ...drm, targetAmount: Number(e.target.value) };
+                            setDreams(next);
+                          }}
+                          className="w-full rounded-xl border border-slate-300 px-2.5 py-1.5 text-xs font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-semibold text-slate-500">
+                          Plazo (Años)
+                        </label>
+                        <input
+                          type="number"
+                          min={1}
+                          max={40}
+                          value={drm.yearsToGoal}
+                          onChange={(e) => {
+                            const next = [...dreams];
+                            next[idx] = { ...drm, yearsToGoal: Number(e.target.value) };
+                            setDreams(next);
+                          }}
+                          className="w-full rounded-xl border border-slate-300 px-2.5 py-1.5 text-xs font-bold"
+                        />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500">
-                        Monto ($ MXN)
-                      </label>
-                      <input
-                        type="number"
-                        min={10000}
-                        step={50000}
-                        value={drm.targetAmount || ''}
-                        onChange={(e) => {
-                          const next = [...dreams];
-                          next[idx] = { ...drm, targetAmount: Number(e.target.value) };
-                          setDreams(next);
-                        }}
-                        className="w-full rounded-xl border border-slate-300 px-2.5 py-1.5 text-xs font-bold"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-semibold text-slate-500">
-                        Plazo (Años)
-                      </label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={40}
-                        value={drm.yearsToGoal}
-                        onChange={(e) => {
-                          const next = [...dreams];
-                          next[idx] = { ...drm, yearsToGoal: Number(e.target.value) };
-                          setDreams(next);
-                        }}
-                        className="w-full rounded-xl border border-slate-300 px-2.5 py-1.5 text-xs font-bold"
-                      />
+
+                    {/* QA T7: Mostrar ahorro mensual requerido directamente en el Paso 5 */}
+                    <div className="flex items-center justify-between pt-2 border-t border-slate-200/80 text-xs">
+                      <span className="text-slate-600 font-medium">
+                        Ahorro mensual requerido ({drm.yearsToGoal} años):
+                      </span>
+                      <strong className="text-indigo-700 font-black">
+                        ${(evalDrm?.monthlyPmtRequired || 0).toLocaleString('es-MX')} / mes
+                      </strong>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
+
+            {dreams.length > 0 && (
+              <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-3.5 text-xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-indigo-950">
+                    Ahorro mensual total para tus sueños:
+                  </span>
+                  <strong className="text-sm font-black text-indigo-700">
+                    ${liveCalc.totalDreamsMonthlyRequired.toLocaleString('es-MX')} / mes
+                  </strong>
+                </div>
+                <p className="text-[10px] text-indigo-700/80">
+                  * Cálculo PMT con tasa real anual nominal del{' '}
+                  {session?.customParams?.realReturnRatePct ?? 4.0}% capitalizable mensualmente (r/12).
+                </p>
+              </div>
+            )}
 
             <button
               type="button"

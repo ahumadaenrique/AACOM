@@ -50,21 +50,35 @@ export default function ClientListTable({
 }) {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState("name");
+  const [originFilter, setOriginFilter] = useState<"ALL" | "TIPS">("ALL");
   const [clientToArchive, setClientToArchive] = useState<any | null>(null);
   const [isArchiving, setIsArchiving] = useState(false);
 
   const router = useRouter();
   const { toast } = useToast();
 
+  const tipsCount = useMemo(
+    () =>
+      clients.filter((c: any) =>
+        String(c.notes || "").toUpperCase().includes("TIPS")
+      ).length,
+    [clients]
+  );
+
   const sortedAndFiltered = useMemo(() => {
     const term = search.toLowerCase().trim();
-    const result = clients.filter(
-      (c: any) =>
+    const result = clients.filter((c: any) => {
+      const isTips = String(c.notes || "").toUpperCase().includes("TIPS");
+      if (originFilter === "TIPS" && !isTips) return false;
+      if (!term) return true;
+      return (
         c.name.toLowerCase().includes(term) ||
         (c.email && c.email.toLowerCase().includes(term)) ||
         (c.phone && c.phone.includes(term)) ||
-        (c.rfc && c.rfc.toLowerCase().includes(term))
-    );
+        (c.rfc && c.rfc.toLowerCase().includes(term)) ||
+        (c.notes && c.notes.toLowerCase().includes(term))
+      );
+    });
 
     const withClosestRenewal = result.map((c: any) => {
       const activePols = (c.policies || []).filter((p: any) => {
@@ -91,6 +105,7 @@ export default function ClientListTable({
       );
 
       const ageInfo = calculateClientAgeInfo(c.birthDate);
+      const isTipsLead = String(c.notes || "").toUpperCase().includes("TIPS");
 
       return {
         ...c,
@@ -98,6 +113,7 @@ export default function ClientListTable({
         closestRenewal,
         totalPremium,
         ageInfo,
+        isTipsLead,
       };
     });
 
@@ -118,7 +134,7 @@ export default function ClientListTable({
     });
 
     return withClosestRenewal;
-  }, [clients, search, sortBy]);
+  }, [clients, search, sortBy, originFilter]);
 
   const handleArchiveClient = async () => {
     if (!clientToArchive) return;
@@ -145,14 +161,36 @@ export default function ClientListTable({
   return (
     <div className="space-y-4">
       <div className="flex flex-col md:flex-row gap-4 justify-between items-center">
-        <div className="relative w-full md:w-96">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar por nombre, correo, teléfono o RFC..."
-            className="pl-9"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <div className="relative w-full md:w-80">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nombre, correo, teléfono, RFC o TIPS..."
+              className="pl-9"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <div className="inline-flex rounded-lg border p-1 bg-muted/30">
+            <Button
+              type="button"
+              size="sm"
+              variant={originFilter === "ALL" ? "default" : "ghost"}
+              onClick={() => setOriginFilter("ALL")}
+              className="h-7 text-xs px-2.5"
+            >
+              Todos ({clients.length})
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={originFilter === "TIPS" ? "default" : "ghost"}
+              onClick={() => setOriginFilter("TIPS")}
+              className="h-7 text-xs px-2.5"
+            >
+              🎯 Prospectos TIPS ({tipsCount})
+            </Button>
+          </div>
         </div>
         <div className="w-full md:w-64">
           <Select value={sortBy} onValueChange={setSortBy}>
@@ -198,12 +236,22 @@ export default function ClientListTable({
                 return (
                   <TableRow key={client.id} className="hover:bg-muted/50">
                     <TableCell>
-                      <Link
-                        href={`/cartera/clientes/${client.id}`}
-                        className="font-semibold text-primary hover:underline"
-                      >
-                        {client.name}
-                      </Link>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <Link
+                          href={`/cartera/clientes/${client.id}`}
+                          className="font-semibold text-primary hover:underline"
+                        >
+                          {client.name}
+                        </Link>
+                        {client.isTipsLead && (
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] px-1.5 py-0 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/30"
+                          >
+                            🎯 Origen: TIPS
+                          </Badge>
+                        )}
+                      </div>
                       <div className="text-xs text-muted-foreground flex flex-col mt-0.5">
                         {client.email && <span>{client.email}</span>}
                         {client.phone && <span>{client.phone}</span>}

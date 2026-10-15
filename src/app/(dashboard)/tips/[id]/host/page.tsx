@@ -126,6 +126,17 @@ export default function TipsHostConsolePage() {
     return () => clearInterval(interval);
   }, [fetchHostState]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setSelectedParticipant(null);
+        setShowQrModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const sendCommand = async (payload: Record<string, any>) => {
     setActionBusy(true);
     try {
@@ -438,7 +449,7 @@ export default function TipsHostConsolePage() {
             </p>
           </div>
           <Link
-            href="/clientes"
+            href="/cartera/clientes"
             className="px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shrink-0"
           >
             Ir a mi Cartera →
@@ -508,23 +519,49 @@ export default function TipsHostConsolePage() {
           </div>
 
           {sess.status !== 'CLOSED' && (
-            <button
-              onClick={() =>
-                sendCommand({
-                  action: 'UNLOCK_STEP',
-                  step: Math.min(8, (sess.unlockedStep || 0) + 1),
-                })
-              }
-              disabled={actionBusy || sess.unlockedStep >= 8}
-              className="w-full py-3.5 px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-extrabold text-sm shadow-lg transition flex items-center justify-center gap-2"
-            >
-              <Unlock className="w-4 h-4" />
-              {sess.unlockedStep === 0
-                ? 'Iniciar Taller: Liberar Paso 1 (Datos Generales)'
-                : sess.unlockedStep < 8
-                ? `Liberar Paso ${sess.unlockedStep + 1} a todos los celulares`
-                : 'Los 8 Pasos ya están liberados'}
-            </button>
+            <div className="space-y-2">
+              <button
+                onClick={() =>
+                  sendCommand({
+                    action: 'UNLOCK_STEP',
+                    step: Math.min(8, (sess.unlockedStep || 0) + 1),
+                  })
+                }
+                disabled={actionBusy || sess.unlockedStep >= 8}
+                className="w-full py-3.5 px-5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-extrabold text-sm shadow-lg transition flex items-center justify-center gap-2"
+              >
+                <Unlock className="w-4 h-4" />
+                {sess.unlockedStep === 0
+                  ? 'Iniciar Taller: Liberar Paso 1 (Datos Generales)'
+                  : sess.unlockedStep < 8
+                  ? `Liberar Paso ${sess.unlockedStep + 1} a todos los celulares`
+                  : 'Los 8 Pasos ya están liberados'}
+              </button>
+              {sess.unlockedStep > 0 && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const prev = Math.max(0, (sess.unlockedStep || 1) - 1);
+                    if (
+                      confirm(
+                        prev === 0
+                          ? '¿Volver a bloquear el Paso 1 y regresar los celulares a la Sala de Espera?'
+                          : `¿Volver a bloquear el Paso ${sess.unlockedStep} y regresar los celulares al Paso ${prev}?`
+                      )
+                    ) {
+                      sendCommand({ action: 'UNLOCK_STEP', step: prev });
+                    }
+                  }}
+                  disabled={actionBusy}
+                  className="w-full py-2 px-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 font-bold text-xs transition flex items-center justify-center gap-1.5"
+                >
+                  <Lock className="w-3.5 h-3.5 text-slate-500" />
+                  {sess.unlockedStep === 1
+                    ? 'Volver a bloquear Paso 1 (Regresar a Lobby)'
+                    : `Volver a bloquear Paso ${sess.unlockedStep} (Regresar a Paso ${sess.unlockedStep - 1})`}
+                </button>
+              )}
+            </div>
           )}
         </div>
 
@@ -577,22 +614,49 @@ export default function TipsHostConsolePage() {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-200/60">
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 gap-2">
                     <span className="text-[11px] font-semibold text-slate-500">
                       {isUnlocked ? '🔓 Abierto en celulares' : '🔒 Bloqueado'}
                     </span>
                     {sess.status !== 'CLOSED' && (
-                      <button
-                        onClick={() => sendCommand({ action: 'UNLOCK_STEP', step: item.step })}
-                        disabled={actionBusy || sess.unlockedStep === item.step}
-                        className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
-                          isUnlocked
-                            ? 'bg-slate-200 hover:bg-slate-300 text-slate-700'
-                            : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-                        }`}
-                      >
-                        {isUnlocked ? 'Fijar aquí' : `Liberar Paso ${item.step}`}
-                      </button>
+                      <div className="flex items-center gap-1.5">
+                        {isUnlocked && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const prevStep = item.step - 1;
+                              if (
+                                confirm(
+                                  prevStep === 0
+                                    ? '¿Bloquear nuevamente el Paso 1 y regresar a la Sala de Espera?'
+                                    : `¿Volver a bloquear desde el Paso ${item.step} y dejar la sesión en el Paso ${prevStep}?`
+                                )
+                              ) {
+                                sendCommand({ action: 'UNLOCK_STEP', step: prevStep });
+                              }
+                            }}
+                            disabled={actionBusy}
+                            className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-100 hover:bg-amber-200 text-amber-900 transition"
+                            title={`Volver a bloquear el Paso ${item.step}`}
+                          >
+                            🔒 Bloquear
+                          </button>
+                        )}
+                        {!isCurrent && (
+                          <button
+                            type="button"
+                            onClick={() => sendCommand({ action: 'UNLOCK_STEP', step: item.step })}
+                            disabled={actionBusy}
+                            className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                              isUnlocked
+                                ? 'bg-slate-200 hover:bg-slate-300 text-slate-700'
+                                : 'bg-indigo-600 hover:bg-indigo-700 text-white'
+                            }`}
+                          >
+                            {isUnlocked ? 'Fijar aquí' : `Liberar Paso ${item.step}`}
+                          </button>
+                        )}
+                      </div>
                     )}
                   </div>
                 </div>
@@ -804,8 +868,14 @@ export default function TipsHostConsolePage() {
 
       {/* MODAL DETALLE PRIVADO DEL ASISTENTE */}
       {selectedParticipant && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+        <div
+          onClick={() => setSelectedParticipant(null)}
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto"
+          >
             <div className="flex items-start justify-between">
               <div>
                 <span className="text-xs font-bold uppercase text-indigo-600">
@@ -962,8 +1032,14 @@ export default function TipsHostConsolePage() {
 
       {/* MODAL QR PARA PROYECTAR DESDE EL HOST */}
       {showQrModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 text-center space-y-5 shadow-2xl">
+        <div
+          onClick={() => setShowQrModal(false)}
+          className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 text-center space-y-5 shadow-2xl"
+          >
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase text-indigo-600">
                 Escanea con tu celular para unirte

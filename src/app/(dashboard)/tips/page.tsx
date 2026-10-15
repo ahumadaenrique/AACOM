@@ -116,6 +116,20 @@ export default function TipsDashboardPage() {
     }
   }, [searchParams, fetchDashboard]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowBuyCreditsModal(false);
+        setShowCreateModal(false);
+        setQrModalSession(null);
+        setSelectedReportSession(null);
+        setShowSettingsModal(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     setCopiedText(label);
@@ -624,10 +638,16 @@ export default function TipsDashboardPage() {
         </div>
       )}
 
-      {/* MODAL 1: COMPRAR PAQUETES DE CRÉDITOS TIPS ($750/30, $1400/70, $3500/150) */}
+      {/* MODAL 1: COMPRAR PAQUETES DE CRÉDITOS TIPS ($750/30, $1400/70, $2700/150) */}
       {showBuyCreditsModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+        <div
+          onClick={() => setShowBuyCreditsModal(false)}
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
+          >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
@@ -766,8 +786,12 @@ export default function TipsDashboardPage() {
 
       {/* MODAL 2: CREAR NUEVA SESIÓN EN VIVO */}
       {showCreateModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          onClick={() => setShowCreateModal(false)}
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <form
+            onClick={(e) => e.stopPropagation()}
             onSubmit={handleCreateSession}
             className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl space-y-5"
           >
@@ -877,8 +901,14 @@ export default function TipsDashboardPage() {
 
       {/* MODAL 3: QR Y ENLACES DE LA SESIÓN */}
       {qrModalSession && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl text-center space-y-5">
+        <div
+          onClick={() => setQrModalSession(null)}
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl text-center space-y-5"
+          >
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">
                 Acceso Rápido QR (&lt;15s sin instalar nada)
@@ -966,8 +996,14 @@ export default function TipsDashboardPage() {
 
       {/* MODAL 4: REPORTE DE EMBUDO Y CONVERSIÓN POST-SESIÓN */}
       {selectedReportSession && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+        <div
+          onClick={() => setSelectedReportSession(null)}
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-4xl w-full p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto"
+          >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <span className="text-xs font-bold uppercase text-indigo-600">
@@ -1106,8 +1142,12 @@ export default function TipsDashboardPage() {
 
       {/* MODAL 5: PARÁMETROS DE LA PROMOTORÍA Y AVISO DE PRIVACIDAD LFPDPPP */}
       {showSettingsModal && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div
+          onClick={() => setShowSettingsModal(false)}
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
           <form
+            onClick={(e) => e.stopPropagation()}
             onSubmit={handleSaveSettings}
             className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto"
           >

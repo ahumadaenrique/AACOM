@@ -21,7 +21,7 @@ import {
 import Link from "next/link";
 import { analyzeClientBlindaje } from "./protectionGapUtils";
 
-type PillarFilter = "ALL" | "VIDA" | "RETIRO_AHORRO" | "GMM" | "PATRIMONIO";
+type PillarFilter = "ALL" | "TIPS" | "VIDA" | "RETIRO_AHORRO" | "GMM" | "PATRIMONIO";
 
 export default function CrossSellRadarClient({
   clients,
@@ -41,38 +41,50 @@ export default function CrossSellRadarClient({
           (acc: number, p: any) => acc + (p.annualPremium || 0),
           0
         );
+        const isTipsLead = String(client.notes || "")
+          .toUpperCase()
+          .includes("TIPS");
         return {
           client,
           analysis,
           totalPremium,
+          isTipsLead,
         };
       })
       .filter(
         (item) =>
-          (item.client.policies || []).length > 0 &&
+          ((item.client.policies || []).length > 0 || item.isTipsLead) &&
           item.analysis.primaryGap !== null &&
           item.analysis.coveredCount < 4
       )
-      .sort((a, b) => b.totalPremium - a.totalPremium);
+      .sort((a, b) => {
+        if (a.isTipsLead !== b.isTipsLead && a.totalPremium === 0 && b.totalPremium === 0) {
+          return a.isTipsLead ? -1 : 1;
+        }
+        return b.totalPremium - a.totalPremium;
+      });
   }, [clients, adnDiagnostics]);
 
   const filteredOpportunities = useMemo(() => {
     const term = searchTerm.toLowerCase().trim();
-    return opportunities.filter(({ client, analysis }) => {
+    return opportunities.filter(({ client, analysis, isTipsLead }) => {
       const matchesSearch =
         term === "" ||
         client.name?.toLowerCase().includes(term) ||
         client.email?.toLowerCase().includes(term) ||
-        client.phone?.includes(term);
+        client.phone?.includes(term) ||
+        client.notes?.toLowerCase().includes(term);
 
       const matchesPillar =
         pillarFilter === "ALL" ||
-        analysis.pillars.some(
-          (p) =>
-            p.id === pillarFilter &&
-            !p.coveredInCartera &&
-            !p.coveredInAdnExternal
-        );
+        (pillarFilter === "TIPS" && isTipsLead) ||
+        (pillarFilter !== "TIPS" &&
+          analysis.pillars.some(
+            (p) =>
+              p.id === pillarFilter &&
+              !p.coveredInCartera &&
+              !p.coveredInAdnExternal
+          ));
 
       return matchesSearch && matchesPillar;
     });
@@ -85,10 +97,10 @@ export default function CrossSellRadarClient({
           <div>
             <CardTitle className="text-lg flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-indigo-500" />
-              Oportunidades de Venta Cruzada ({filteredOpportunities.length} clientes)
+              Oportunidades de Venta Cruzada y Leads TIPS ({filteredOpportunities.length} clientes)
             </CardTitle>
             <CardDescription>
-              Clientes actuales de tu cartera con brechas abiertas en Retiro/PPR, Gastos Médicos, Vida o Patrimonio listos para profundizar.
+              Clientes actuales de tu cartera y prospectos de talleres TIPS con brechas abiertas en Retiro/PPR, Gastos Médicos, Vida o Patrimonio.
             </CardDescription>
           </div>
         </div>
@@ -97,7 +109,7 @@ export default function CrossSellRadarClient({
           <div className="relative w-full md:w-72">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar cliente..."
+              placeholder="Buscar cliente o taller TIPS..."
               className="pl-8 h-9 text-xs bg-background"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -108,6 +120,7 @@ export default function CrossSellRadarClient({
             {(
               [
                 { id: "ALL", label: "Todas las brechas" },
+                { id: "TIPS", label: "🎯 Origen: TIPS" },
                 { id: "RETIRO_AHORRO", label: "Falta Retiro / PPR" },
                 { id: "GMM", label: "Falta Gastos Médicos" },
                 { id: "VIDA", label: "Falta Vida" },
@@ -135,9 +148,9 @@ export default function CrossSellRadarClient({
           </div>
         ) : (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {filteredOpportunities.slice(0, 32).map(({ client, analysis }) => {
+            {filteredOpportunities.slice(0, 32).map(({ client, analysis, isTipsLead }) => {
               const targetGap =
-                pillarFilter !== "ALL"
+                pillarFilter !== "ALL" && pillarFilter !== "TIPS"
                   ? analysis.pillars.find(
                       (p) =>
                         p.id === pillarFilter &&
@@ -158,12 +171,22 @@ export default function CrossSellRadarClient({
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-start justify-between gap-2">
-                      <Link
-                        href={`/cartera/clientes/${client.id}`}
-                        className="font-semibold text-sm text-primary hover:underline line-clamp-1"
-                      >
-                        {client.name}
-                      </Link>
+                      <div className="flex items-center gap-1.5 flex-wrap min-w-0">
+                        <Link
+                          href={`/cartera/clientes/${client.id}`}
+                          className="font-semibold text-sm text-primary hover:underline line-clamp-1"
+                        >
+                          {client.name}
+                        </Link>
+                        {isTipsLead && (
+                          <Badge
+                            variant="outline"
+                            className="text-[9px] px-1.5 py-0 bg-amber-500/15 text-amber-800 dark:text-amber-300 border-amber-500/30"
+                          >
+                            🎯 TIPS
+                          </Badge>
+                        )}
+                      </div>
                       <Badge
                         variant="outline"
                         className="text-[10px] shrink-0 bg-indigo-500/10 text-indigo-700 dark:text-indigo-300 border-indigo-500/20"
