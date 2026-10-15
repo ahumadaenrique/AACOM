@@ -178,7 +178,7 @@ export default function ImportarCartera() {
     ];
     const ws = xlsx.utils.aoa_to_sheet(ws_data);
 
-    const wscols = ws_data[0].map((h) => ({ wch: h.length + 6 }));
+    const wscols = ws_data[0].map((h) => ({ wch: String(h).length + 6 }));
     ws["!cols"] = wscols;
 
     xlsx.utils.book_append_sheet(wb, ws, "Layout Cartera");
