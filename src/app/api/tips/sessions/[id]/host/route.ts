@@ -162,6 +162,66 @@ export async function PATCH(
           status: targetStep > 0 && tipsSession.status === 'LOBBY' ? 'ACTIVE' : tipsSession.status,
         },
       });
+
+      // Si el Host libera el Paso 8, promover de inmediato en servidor a quienes ya completaron el Paso 7 (QA T1)
+      if (targetStep >= 8) {
+        const dueIn48h = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0];
+        for (const p of tipsSession.participants) {
+          if (p.status !== 'KICKED' && p.completedStep === 7) {
+            const prevCalc = (p.calculatedResults as any) || {};
+            const calc = evaluateTipsDiagnostic({
+              completedStep: 8,
+              step1: p.step1General as any,
+              step2: p.step2Patrimony as any,
+              step3: p.step3Income as any,
+              step4: p.step4Retirement as any,
+              step5: p.step5Dreams as any,
+              step6: p.step6Savings as any,
+              step7: p.step7Insurance as any,
+              customParams: tipsSession.customParams as any,
+            });
+            const mergedCalc = {
+              ...calc,
+              appointmentRequested: Boolean(prevCalc.appointmentRequested),
+              preferredSlot: prevCalc.preferredSlot || null,
+            };
+            await prisma.tipsParticipant.update({
+              where: { id: p.id },
+              data: {
+                completedStep: 8,
+                currentStep: 8,
+                status: 'COMPLETED',
+                calculatedResults: mergedCalc as any,
+                leadScore: calc.leadScore,
+                leadTier: calc.leadTier,
+              },
+            });
+
+            if (calc.leadTier === 'HOT' && p.privacyAccepted) {
+              const cleanName = (p.fullName || p.nickname || 'Prospecto TIPS').trim();
+              const taskTitle = `🔥 Cita Individual TIPS (48h): ${cleanName}`;
+              const existingTask = await prisma.task.findFirst({
+                where: { userId: tipsSession.hostId, title: taskTitle },
+              });
+              if (!existingTask) {
+                const gapLabels =
+                  calc.detectedGaps.map((g) => g.code).join(', ') || 'Revisión integral';
+                await prisma.task.create({
+                  data: {
+                    userId: tipsSession.hostId,
+                    title: taskTitle,
+                    description: `Lead Caliente que completó 8/8 pasos del taller "${tipsSession.title}" (Score: ${calc.leadScore}/100). Tel: ${p.phone || 'S/N'}. Oportunidades detectadas: ${gapLabels}. Patrimonio Neto: $${calc.netWorth.toLocaleString('es-MX')} vs Número Mágico: $${calc.magicNumber.toLocaleString('es-MX')}.`,
+                    dueDate: dueIn48h,
+                    priority: 'HIGH',
+                    completed: false,
+                  },
+                });
+              }
+            }
+          }
+        }
+      }
+
       return NextResponse.json({ session: updated });
     }
 
@@ -247,9 +307,10 @@ export async function PATCH(
       for (const p of tipsSession.participants) {
         if (p.status === 'KICKED' || !p.privacyAccepted) continue;
 
+        const effectiveCompletedStep = p.completedStep >= 7 ? 8 : p.completedStep;
         const prevCalc = (p.calculatedResults as any) || {};
         const calc = evaluateTipsDiagnostic({
-          completedStep: p.completedStep,
+          completedStep: effectiveCompletedStep,
           step1: p.step1General as any,
           step2: p.step2Patrimony as any,
           step3: p.step3Income as any,
@@ -270,9 +331,37 @@ export async function PATCH(
         const cleanPhone = (p.phone || '').trim();
         const cleanEmail = (p.email || '').trim().toLowerCase();
 
+        const gapsSummary = calc.detectedGaps.map((g) => g.code).join(', ') || 'Sin huecos críticos';
+        const sessionTag = `[Taller TIPS #${tipsSession.code}]`;
+        const tipsSummaryNote = `${sessionTag} "${tipsSession.title}" (${new Date().toLocaleDateString('es-MX')}) | Score: ${calc.leadScore}/100 (${calc.leadTier}) | Pasos: ${effectiveCompletedStep}/8 | Número Mágico: $${calc.magicNumber.toLocaleString('es-MX')} | Patrimonio Neto: $${calc.netWorth.toLocaleString('es-MX')} | Huecos: ${gapsSummary}`;
+
         let targetClientId = p.linkedClientId;
 
-        if (!targetClientId && (cleanPhone || cleanEmail)) {
+        if (targetClientId) {
+          const preLinked = await prisma.client.findUnique({
+            where: { id: targetClientId },
+          });
+          if (preLinked) {
+            clientsLinked++;
+            const currentNotes = preLinked.notes || '';
+            const updatedNotes = currentNotes.includes(sessionTag)
+              ? currentNotes
+                  .split('\n')
+                  .map((line) => (line.includes(sessionTag) ? tipsSummaryNote : line))
+                  .join('\n')
+              : currentNotes
+              ? `${currentNotes}\n${tipsSummaryNote}`
+              : tipsSummaryNote;
+            await prisma.client.update({
+              where: { id: preLinked.id },
+              data: { notes: updatedNotes },
+            });
+          } else {
+            targetClientId = null;
+          }
+        }
+
+        if (!targetClientId && (cleanPhone || cleanEmail || cleanName)) {
           // Deduplicar por celular o correo dentro de la cartera del Agente Host
           const orConditions: any[] = [];
           const digits = cleanPhone.replace(/\D/g, '');
@@ -295,22 +384,24 @@ export async function PATCH(
                 })
               : null;
 
-          const gapsSummary = calc.detectedGaps.map((g) => g.code).join(', ') || 'Sin huecos críticos';
-          const sessionTag = `[Taller TIPS #${tipsSession.code}]`;
-          const tipsSummaryNote = `${sessionTag} "${tipsSession.title}" (${new Date().toLocaleDateString('es-MX')}) | Score: ${calc.leadScore}/100 (${calc.leadTier}) | Pasos: ${p.completedStep}/8 | Número Mágico: $${calc.magicNumber.toLocaleString('es-MX')} | Patrimonio Neto: $${calc.netWorth.toLocaleString('es-MX')} | Huecos: ${gapsSummary}`;
-
           if (existingClient) {
             targetClientId = existingClient.id;
             clientsLinked++;
             const currentNotes = existingClient.notes || '';
-            if (!currentNotes.includes(sessionTag)) {
-              await prisma.client.update({
-                where: { id: existingClient.id },
-                data: {
-                  notes: currentNotes ? `${currentNotes}\n${tipsSummaryNote}` : tipsSummaryNote,
-                },
-              });
-            }
+            const updatedNotes = currentNotes.includes(sessionTag)
+              ? currentNotes
+                  .split('\n')
+                  .map((line) => (line.includes(sessionTag) ? tipsSummaryNote : line))
+                  .join('\n')
+              : currentNotes
+              ? `${currentNotes}\n${tipsSummaryNote}`
+              : tipsSummaryNote;
+            await prisma.client.update({
+              where: { id: existingClient.id },
+              data: {
+                notes: updatedNotes,
+              },
+            });
           } else {
             const step1 = (p.step1General as any) || {};
             const parsedBirth = step1.birthDate ? new Date(step1.birthDate) : null;
@@ -334,11 +425,13 @@ export async function PATCH(
         await prisma.tipsParticipant.update({
           where: { id: p.id },
           data: {
+            completedStep: effectiveCompletedStep,
+            currentStep: effectiveCompletedStep,
             calculatedResults: mergedCalc as any,
             leadScore: calc.leadScore,
             leadTier: calc.leadTier,
             linkedClientId: targetClientId,
-            status: p.completedStep >= 8 ? 'COMPLETED' : p.status,
+            status: effectiveCompletedStep >= 8 ? 'COMPLETED' : p.status,
           },
         });
 
