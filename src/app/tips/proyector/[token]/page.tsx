@@ -1,0 +1,299 @@
+'use client';
+
+import React, { useState, useEffect, useCallback } from 'react';
+import { useParams } from 'next/navigation';
+import { QRCodeSVG } from 'qrcode.react';
+import {
+  Users,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  PauseCircle,
+  Trophy,
+  Sparkles,
+} from 'lucide-react';
+
+const STEP_NAMES: Record<number, string> = {
+  0: 'Sala de Espera — Escanea el QR para conectarte',
+  1: 'Bloque 1: Datos Generales',
+  2: 'Bloque 2: Tu Patrimonio por Categorías y Deudas',
+  3: 'Bloque 3: Tu Sueldo y El Número Mágico',
+  4: 'Bloque 4: La Cinta Métrica de tu Jubilación',
+  5: 'Bloque 5: Tus Sueños y Prioridades',
+  6: 'Bloque 6: Regla de Oro del Ahorro (16%)',
+  7: 'Bloque 7: Protección de Capital Humano y Seguros',
+  8: 'Bloque 8: Diagnóstico Patrimonial Preliminar',
+};
+
+export default function TipsProjectorBoardPage() {
+  const params = useParams();
+  const token = String(params?.token || '');
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchBoard = useCallback(async () => {
+    if (!token) return;
+    try {
+      const res = await fetch(`/api/tips/proyector/${encodeURIComponent(token)}`, {
+        cache: 'no-store',
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setData(json);
+      }
+    } catch (err) {
+      console.error('Error polling projector board:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, [token]);
+
+  // Actualización en tiempo real <= 2 segundos
+  useEffect(() => {
+    fetchBoard();
+    const interval = setInterval(fetchBoard, 2000);
+    return () => clearInterval(interval);
+  }, [fetchBoard]);
+
+  if (loading && !data) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
+        <div className="text-center space-y-2">
+          <div className="w-10 h-10 border-4 border-indigo-400 border-t-transparent rounded-full animate-spin mx-auto" />
+          <p className="text-sm text-indigo-200 font-semibold">
+            Conectando Tablero en Vivo TIPS...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!data?.session) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6 text-center">
+        <p className="text-xl font-bold text-slate-400">Sesión TIPS no encontrada.</p>
+      </div>
+    );
+  }
+
+  const sess = data.session;
+  const counters = data.counters || {
+    connected: 0,
+    expectedCapacity: 50,
+    readyForUnlockedStep: 0,
+    completedAll: 0,
+    laggingCount: 0,
+    stepCounts: {},
+  };
+  const laggingList: any[] = data.laggingList || [];
+  const participants: any[] = data.participants || [];
+  const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://aacomsoft.com';
+  const joinUrl = `${originUrl}/tips/sala/${sess.code}`;
+
+  // Diseño adaptativo para que 50-100 participantes quepan en una sola pantalla sin paginar
+  const gridColsClass =
+    participants.length > 60
+      ? 'grid-cols-5 sm:grid-cols-8 lg:grid-cols-10'
+      : participants.length > 35
+      ? 'grid-cols-4 sm:grid-cols-6 lg:grid-cols-8'
+      : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-5';
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white p-4 sm:p-6 flex flex-col justify-between select-none overflow-hidden">
+      {/* Encabezado Superior con QR, Título y Contador Gigante "X de 50 listos" */}
+      <div className="flex flex-col lg:flex-row items-center justify-between gap-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-4 sm:p-5">
+        <div className="flex items-center gap-4">
+          <div className="bg-white p-2 rounded-2xl shadow-lg shrink-0">
+            <QRCodeSVG value={joinUrl} size={88} level="M" includeMargin={false} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-extrabold uppercase tracking-wider bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 px-2.5 py-0.5 rounded-full">
+                {sess.brandName} · TIPS
+              </span>
+              <span className="text-xs font-mono font-black bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-md">
+                CÓDIGO: {sess.code}
+              </span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-black tracking-tight mt-1">{sess.title}</h1>
+            <p className="text-xs sm:text-sm text-indigo-200 font-semibold mt-0.5">
+              {STEP_NAMES[sess.unlockedStep] || `Paso ${sess.unlockedStep} de 8`}
+            </p>
+          </div>
+        </div>
+
+        {/* Indicador Gigante: "X de 50 listos" */}
+        <div className="flex items-center gap-4">
+          <div className="bg-indigo-600/30 border-2 border-indigo-400/50 rounded-2xl px-6 py-3 text-center shadow-inner">
+            <span className="text-[11px] uppercase tracking-widest text-indigo-200 font-bold block">
+              Avance del Grupo en Paso {sess.unlockedStep}/8
+            </span>
+            <div className="text-3xl sm:text-4xl font-black text-amber-300">
+              {counters.readyForUnlockedStep} de{' '}
+              {counters.connected || counters.expectedCapacity}{' '}
+              <span className="text-lg font-extrabold text-white">listos</span>
+            </div>
+          </div>
+
+          <div className="hidden xl:grid grid-cols-2 gap-2 text-center bg-white/5 border border-white/10 rounded-2xl p-3 text-xs">
+            <div className="px-2">
+              <span className="text-indigo-300 block text-[10px]">Conectados</span>
+              <strong className="text-lg font-black">{counters.connected}</strong>
+            </div>
+            <div className="px-2 border-l border-white/10">
+              <span className="text-emerald-300 block text-[10px]">Terminaron 8/8</span>
+              <strong className="text-lg font-black text-emerald-400">
+                {counters.completedAll}
+              </strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Si el Host pausó la sesión o decidió ocultar temporalmente el tablero */}
+      {sess.status === 'PAUSED' ? (
+        <div className="my-auto text-center space-y-4 py-16">
+          <PauseCircle className="w-20 h-20 text-amber-400 mx-auto animate-pulse" />
+          <h2 className="text-4xl font-black">Sesión en Pausa</h2>
+          <p className="text-lg text-indigo-200 max-w-xl mx-auto">
+            Presta atención a la explicación del expositor. En unos momentos se habilitará el
+            siguiente bloque en tu celular.
+          </p>
+        </div>
+      ) : !sess.showBoardOnProjector ? (
+        <div className="my-auto text-center space-y-4 py-16">
+          <Sparkles className="w-16 h-16 text-indigo-400 mx-auto" />
+          <h2 className="text-3xl font-black">{STEP_NAMES[sess.unlockedStep]}</h2>
+          <p className="text-base text-indigo-200">
+            Escanea el código QR superior con tu celular para participar en vivo.
+          </p>
+        </div>
+      ) : (
+        <div className="flex-1 flex flex-col justify-between gap-4 my-4">
+          {/* SECCIÓN DE PRESIÓN DE GRUPO: "FALTAN:" (Quienes van rezagados, a la vista de todos) */}
+          {sess.unlockedStep > 0 && laggingList.length > 0 && (
+            <div className="bg-amber-500/15 border-2 border-amber-400/60 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3 shadow-lg">
+              <div className="flex items-center gap-2 shrink-0">
+                <AlertTriangle className="w-6 h-6 text-amber-400 animate-bounce" />
+                <span className="text-sm sm:text-base font-black uppercase tracking-wider text-amber-300">
+                  Faltan por completar el Paso {sess.unlockedStep} ({laggingList.length}):
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {laggingList.map((lag) => (
+                  <span
+                    key={lag.id}
+                    className="px-3 py-1 rounded-xl bg-amber-400 text-slate-950 font-extrabold text-xs sm:text-sm shadow"
+                  >
+                    ⏳ {lag.displayName}{' '}
+                    <span className="text-[11px] font-bold opacity-80">
+                      ({lag.completedStep}/8)
+                    </span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Mosaico de hasta 50-100 participantes en una sola pantalla, sin paginar */}
+          {participants.length === 0 ? (
+            <div className="my-auto text-center space-y-3 py-12">
+              <p className="text-2xl font-extrabold text-indigo-200">
+                ¡Apunta la cámara de tu celular al código QR para aparecer en pantalla!
+              </p>
+              <p className="text-sm text-indigo-300">
+                Código directo: <strong className="text-amber-300 font-mono">{sess.code}</strong>
+              </p>
+            </div>
+          ) : (
+            <div className={`grid ${gridColsClass} gap-2.5 my-auto`}>
+              {participants.map((p) => {
+                const isDoneAll = p.completedStep >= 8;
+                const isReadyCurrent = p.isReady;
+                const isLag = p.isLagging;
+
+                return (
+                  <div
+                    key={p.id}
+                    className={`rounded-2xl p-2.5 sm:p-3 border transition-all flex flex-col justify-between ${
+                      isDoneAll
+                        ? 'bg-emerald-500/20 border-emerald-400/60 text-white'
+                        : isLag
+                        ? 'bg-amber-500/20 border-2 border-amber-400 text-amber-100 animate-pulse'
+                        : isReadyCurrent
+                        ? 'bg-indigo-500/20 border-indigo-400/40 text-white'
+                        : 'bg-white/5 border-white/10 text-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-1">
+                      <span className="font-extrabold text-xs sm:text-sm truncate">
+                        {p.displayName}
+                      </span>
+                      {isDoneAll ? (
+                        <Trophy className="w-4 h-4 text-amber-300 shrink-0" />
+                      ) : isReadyCurrent ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                      ) : (
+                        <Clock className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                      )}
+                    </div>
+
+                    <div className="mt-2 space-y-1">
+                      <div className="flex items-center justify-between text-[10px] font-bold">
+                        <span>Paso {p.completedStep}/8</span>
+                        <span>{p.progressPct}%</span>
+                      </div>
+                      <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-500 ${
+                            isDoneAll
+                              ? 'bg-emerald-400'
+                              : isLag
+                              ? 'bg-amber-400'
+                              : 'bg-indigo-400'
+                          }`}
+                          style={{ width: `${Math.max(8, p.progressPct)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Barra Inferior: Contadores por Paso (1 al 8) y Aviso de Privacidad */}
+      <div className="bg-white/5 border border-white/10 rounded-2xl p-3 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+        <div className="flex flex-wrap items-center gap-2">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((stepNum) => {
+            const isUnlocked = sess.unlockedStep >= stepNum;
+            const isCurrent = sess.unlockedStep === stepNum;
+            const countInStep = counters.stepCounts?.[stepNum] || 0;
+            return (
+              <div
+                key={stepNum}
+                className={`px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 ${
+                  isCurrent
+                    ? 'bg-amber-400 text-slate-950'
+                    : isUnlocked
+                    ? 'bg-indigo-500/30 text-indigo-100'
+                    : 'bg-white/5 text-slate-500'
+                }`}
+              >
+                <span>Paso {stepNum}</span>
+                <span className="px-1.5 py-0.2 rounded bg-black/20 text-[10px]">
+                  {countInStep}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <span className="text-[11px] text-indigo-300/80">
+          🔒 Privacidad protegida (LFPDPPP): Esta pantalla jamás muestra montos ni resultados financieros.
+        </span>
+      </div>
+    </div>
+  );
+}

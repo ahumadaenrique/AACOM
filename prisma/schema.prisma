@@ -68,6 +68,15 @@ model Agency {
   quoterEnableUniversal        Boolean              @default(true)
   quoterShowAccumulatedPremium Boolean              @default(false)
 
+  // Configuraciones Add-on TIPS (Taller Integral de Planeación y Seguridad)
+  allowTipsModule              Boolean              @default(true)
+  tipsCreditsBalance           Int                  @default(0)
+  tipsShareAgencyCredits       Boolean              @default(true)
+  tipsPrivacyNotice            String?
+  tipsRealReturnRate           Float                @default(4.0)
+  tipsInflationRate            Float                @default(4.5)
+  tipsLifeExpectancy           Float                @default(82.3)
+
   activityLogs          ActivityLog[]
   adnDiagnostics        AdnDiagnostic[]
   referrer              User?                @relation("AgencyReferrer", fields: [referredById], references: [id])
@@ -90,6 +99,9 @@ model Agency {
   insuranceCompanies    InsuranceCompany[]
   agentEmissions        AgentEmission[]
   agentMonthlyBudgets   AgentMonthlyBudget[]
+  tipsCreditPurchases   TipsCreditPurchase[]
+  tipsSessions          TipsSession[]
+  tipsParticipants      TipsParticipant[]
 
   @@index([referredById])
 }
@@ -149,6 +161,7 @@ model User {
   voiceSecondsBalance  Int                       @default(300)
   freeSecondsBalance   Int                       @default(300)
   lastFreeMinutesReset DateTime                  @default(now())
+  tipsCreditsBalance   Int                       @default(0)
   cedulaValidUntil     DateTime?
   promotoriaJoinDate   DateTime?
   rcPolicyValidUntil   DateTime?
@@ -187,6 +200,8 @@ model User {
   surveyReferrals      SurveyReferral[]
   agentEmissions       AgentEmission[]
   agentMonthlyBudgets  AgentMonthlyBudget[]
+  tipsCreditPurchases  TipsCreditPurchase[]
+  tipsSessions         TipsSession[]
 
   @@index([agencyId])
   @@index([reportsToId])
@@ -227,23 +242,24 @@ model DailyRecord {
 }
 
 model Client {
-  id         String    @id @default(cuid())
-  name       String
-  email      String?
-  phone      String?
-  birthDate  DateTime?
-  rfc        String?
-  curp       String?
-  notes      String?
-  isArchived Boolean   @default(false)
-  deletedAt  DateTime?
-  userId     String
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  agencyId   String?
-  agency     Agency?   @relation(fields: [agencyId], references: [id])
-  user       User      @relation(fields: [userId], references: [id])
-  policies   Policy[]
+  id               String            @id @default(cuid())
+  name             String
+  email            String?
+  phone            String?
+  birthDate        DateTime?
+  rfc              String?
+  curp             String?
+  notes            String?
+  isArchived       Boolean           @default(false)
+  deletedAt        DateTime?
+  userId           String
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  agencyId         String?
+  agency           Agency?           @relation(fields: [agencyId], references: [id])
+  user             User              @relation(fields: [userId], references: [id])
+  policies         Policy[]
+  tipsParticipants TipsParticipant[]
 
   @@index([agencyId])
   @@index([userId])
@@ -1065,4 +1081,102 @@ model Lead {
   @@index([createdAt])
   @@index([email])
 }
+
+model TipsCreditPurchase {
+  id               String   @id @default(cuid())
+  userId           String?
+  agencyId         String?
+  packageId        String   @default("tips_30")
+  creditsTotal     Int
+  creditsRemaining Int
+  amountPaid       Float    @default(0)
+  stripeSessionId  String?
+  purchasedAt      DateTime @default(now())
+  expiresAt        DateTime
+
+  user             User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency           Agency?  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([agencyId])
+  @@index([expiresAt])
+  @@map("tips_credit_purchases")
+}
+
+model TipsSession {
+  id                   String            @id @default(cuid())
+  code                 String            @unique
+  projectorToken       String            @unique
+  hostId               String
+  agencyId             String?
+  title                String
+  location             String?           @default("Presencial")
+  scheduledAt          DateTime          @default(now())
+  expectedCapacity     Int               @default(50)
+  status               String            @default("LOBBY")
+  unlockedStep         Int               @default(0)
+  allowNicknames       Boolean           @default(true)
+  showBoardOnProjector Boolean           @default(true)
+  inactiveThresholdSec Int               @default(180)
+  customParams         Json?
+  closedAt             DateTime?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+
+  host                 User              @relation(fields: [hostId], references: [id], onDelete: Cascade)
+  agency               Agency?           @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  participants         TipsParticipant[]
+
+  @@index([hostId])
+  @@index([agencyId])
+  @@index([code])
+  @@index([status])
+  @@map("tips_sessions")
+}
+
+model TipsParticipant {
+  id                String      @id @default(cuid())
+  sessionId         String
+  agencyId          String?
+  deviceToken       String      @unique
+  nickname          String?
+  fullName          String?
+  phone             String?
+  email             String?
+  privacyAccepted   Boolean     @default(false)
+  privacyAcceptedAt DateTime?
+  privacyVersion    String?     @default("1.0")
+  privacyIp         String?
+  creditConsumed    Boolean     @default(false)
+  creditSource      String?
+  currentStep       Int         @default(0)
+  completedStep     Int         @default(0)
+  status            String      @default("ACTIVE")
+  lastHeartbeatAt   DateTime    @default(now())
+  step1General      Json?
+  step2Patrimony    Json?
+  step3Income       Json?
+  step4Retirement   Json?
+  step5Dreams       Json?
+  step6Savings      Json?
+  step7Insurance    Json?
+  calculatedResults Json?
+  leadScore         Int         @default(0)
+  leadTier          String      @default("COLD")
+  linkedClientId    String?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  session           TipsSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  agency            Agency?     @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  linkedClient      Client?     @relation(fields: [linkedClientId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId])
+  @@index([agencyId])
+  @@index([phone])
+  @@index([email])
+  @@index([linkedClientId])
+  @@map("tips_participants")
+}
+
 

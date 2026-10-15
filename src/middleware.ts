@@ -44,6 +44,8 @@ export default auth((req) => {
         req.nextUrl.pathname.startsWith('/reset-password') || 
         req.nextUrl.pathname.startsWith('/presentacion') || 
         req.nextUrl.pathname.startsWith('/print') || 
+        req.nextUrl.pathname.startsWith('/tips/sala') || 
+        req.nextUrl.pathname.startsWith('/tips/proyector') || 
         req.nextUrl.pathname.startsWith('/registro');
 
     // If user is not logged in and tries to access a private route, kick them to login

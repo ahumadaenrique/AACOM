@@ -10,9 +10,12 @@ export const authConfig = {
         authorized({ auth, request: { nextUrl } }) {
             const isLoggedIn = !!auth?.user;
             const isLoginPage = nextUrl.pathname === '/login';
+            const isPublicTipsRoute =
+                nextUrl.pathname.startsWith('/tips/sala') ||
+                nextUrl.pathname.startsWith('/tips/proyector');
 
             if (!isLoggedIn) {
-                if (isLoginPage) return true;
+                if (isLoginPage || isPublicTipsRoute) return true;
                 return false; // Redirige a /login automáticamente
             }
 
