@@ -4,13 +4,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import { QRCodeSVG } from 'qrcode.react';
 import {
-  Users,
   CheckCircle2,
   AlertTriangle,
   Clock,
   PauseCircle,
   Trophy,
   Sparkles,
+  Maximize2,
+  Minimize2,
 } from 'lucide-react';
 
 const STEP_NAMES: Record<number, string> = {
@@ -30,6 +31,7 @@ export default function TipsProjectorBoardPage() {
   const token = String(params?.token || '');
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const fetchBoard = useCallback(async () => {
     if (!token) return;
@@ -48,12 +50,22 @@ export default function TipsProjectorBoardPage() {
     }
   }, [token]);
 
-  // Actualización en tiempo real <= 2 segundos
   useEffect(() => {
     fetchBoard();
     const interval = setInterval(fetchBoard, 2000);
     return () => clearInterval(interval);
   }, [fetchBoard]);
+
+  const toggleFullscreen = () => {
+    if (typeof document === 'undefined') return;
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen?.().catch(() => {});
+      setIsFullscreen(true);
+    } else {
+      document.exitFullscreen?.().catch(() => {});
+      setIsFullscreen(false);
+    }
+  };
 
   if (loading && !data) {
     return (
@@ -90,7 +102,6 @@ export default function TipsProjectorBoardPage() {
   const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://aacomsoft.com';
   const joinUrl = `${originUrl}/tips/sala/${sess.code}`;
 
-  // Diseño adaptativo para que 50-100 participantes quepan en una sola pantalla sin paginar
   const gridColsClass =
     participants.length > 60
       ? 'grid-cols-5 sm:grid-cols-8 lg:grid-cols-10'
@@ -122,8 +133,8 @@ export default function TipsProjectorBoardPage() {
           </div>
         </div>
 
-        {/* Indicador Gigante: "X de 50 listos" */}
-        <div className="flex items-center gap-4">
+        {/* Indicador Gigante: "X de 50 listos" + Botón Pantalla Completa */}
+        <div className="flex items-center gap-3">
           <div className="bg-indigo-600/30 border-2 border-indigo-400/50 rounded-2xl px-6 py-3 text-center shadow-inner">
             <span className="text-[11px] uppercase tracking-widest text-indigo-200 font-bold block">
               Avance del Grupo en Paso {sess.unlockedStep}/8
@@ -147,10 +158,18 @@ export default function TipsProjectorBoardPage() {
               </strong>
             </div>
           </div>
+
+          <button
+            onClick={toggleFullscreen}
+            className="p-3 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/10 text-indigo-200 transition"
+            title="Pantalla Completa para Proyector"
+          >
+            {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
+          </button>
         </div>
       </div>
 
-      {/* Si el Host pausó la sesión o decidió ocultar temporalmente el tablero */}
+      {/* Contenido Central */}
       {sess.status === 'PAUSED' ? (
         <div className="my-auto text-center space-y-4 py-16">
           <PauseCircle className="w-20 h-20 text-amber-400 mx-auto animate-pulse" />
@@ -170,7 +189,7 @@ export default function TipsProjectorBoardPage() {
         </div>
       ) : (
         <div className="flex-1 flex flex-col justify-between gap-4 my-4">
-          {/* SECCIÓN DE PRESIÓN DE GRUPO: "FALTAN:" (Quienes van rezagados, a la vista de todos) */}
+          {/* SECCIÓN DE PRESIÓN DE GRUPO: "FALTAN:" */}
           {sess.unlockedStep > 0 && laggingList.length > 0 && (
             <div className="bg-amber-500/15 border-2 border-amber-400/60 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center gap-3 shadow-lg">
               <div className="flex items-center gap-2 shrink-0">
@@ -195,15 +214,21 @@ export default function TipsProjectorBoardPage() {
             </div>
           )}
 
-          {/* Mosaico de hasta 50-100 participantes en una sola pantalla, sin paginar */}
-          {participants.length === 0 ? (
-            <div className="my-auto text-center space-y-3 py-12">
-              <p className="text-2xl font-extrabold text-indigo-200">
-                ¡Apunta la cámara de tu celular al código QR para aparecer en pantalla!
-              </p>
-              <p className="text-sm text-indigo-300">
-                Código directo: <strong className="text-amber-300 font-mono">{sess.code}</strong>
-              </p>
+          {/* Si aún estamos en Paso 0 (Lobby) y hay pocos conectados, mostrar Hero QR grande junto con los conectados */}
+          {sess.unlockedStep === 0 && participants.length === 0 ? (
+            <div className="my-auto flex flex-col items-center justify-center text-center space-y-5 py-8">
+              <div className="bg-white p-5 rounded-3xl shadow-2xl border-4 border-amber-400">
+                <QRCodeSVG value={joinUrl} size={220} level="H" includeMargin={false} />
+              </div>
+              <div className="space-y-1">
+                <h2 className="text-2xl sm:text-3xl font-black text-white">
+                  ¡Escanea el código QR con la cámara de tu celular!
+                </h2>
+                <p className="text-base text-indigo-200">
+                  No necesitas instalar nada · Código de sala:{' '}
+                  <strong className="text-amber-300 font-mono text-xl">{sess.code}</strong>
+                </p>
+              </div>
             </div>
           ) : (
             <div className={`grid ${gridColsClass} gap-2.5 my-auto`}>

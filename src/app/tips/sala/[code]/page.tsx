@@ -1,7 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useParams } from 'next/navigation';
+import confetti from 'canvas-confetti';
 import {
   evaluateTipsDiagnostic,
   ASSET_REFERENCE_RATES,
@@ -13,7 +14,6 @@ import {
 } from '@/lib/tips-calculator';
 import {
   ShieldCheck,
-  Lock,
   PauseCircle,
   CheckCircle2,
   ArrowRight,
@@ -21,14 +21,23 @@ import {
   Plus,
   Trash2,
   Sparkles,
-  TrendingUp,
-  HeartHandshake,
   Download,
   MessageCircle,
   AlertCircle,
   WifiOff,
   Clock,
+  CalendarCheck,
+  Unlock,
+  Award,
 } from 'lucide-react';
+
+const DREAM_PRESETS: Array<{ name: string; category: 'PROPIO' | 'DEPENDIENTES' | 'TRASCENDENCIA'; amount: number; years: number }> = [
+  { name: '🎓 Universidad / Posgrado Hijos', category: 'DEPENDIENTES', amount: 900000, years: 10 },
+  { name: '🏠 Casa o Inmueble Patrimonial', category: 'PROPIO', amount: 2500000, years: 8 },
+  { name: '🚀 Negocio o Consultorio Propio', category: 'PROPIO', amount: 1200000, years: 5 },
+  { name: '✈️ Viaje Familiar Internacional', category: 'PROPIO', amount: 250000, years: 3 },
+  { name: '🏛️ Legado / Herencia Familiar', category: 'TRASCENDENCIA', amount: 3000000, years: 15 },
+];
 
 export default function TipsParticipantMobilePage() {
   const params = useParams();
@@ -40,10 +49,13 @@ export default function TipsParticipantMobilePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [unlockToast, setUnlockToast] = useState<string | null>(null);
   const [offlinePending, setOfflinePending] = useState(false);
 
   // Paso activo en la vista móvil (0 = Lobby / Consentimiento, 1..8 = Pasos)
   const [viewStep, setViewStep] = useState<number>(0);
+  const completedStepRef = useRef<number>(0);
+  const confettiFiredRef = useRef<boolean>(false);
 
   // Lobby & Paso 1: Datos Generales + Consentimiento LFPDPPP
   const [nickname, setNickname] = useState('');
@@ -80,7 +92,7 @@ export default function TipsParticipantMobilePage() {
   const [debts, setDebts] = useState<TipsDebtItem[]>([]);
 
   // Paso 3: Sueldo Mensual
-  const [monthlyIncome, setMonthlyIncome] = useState<number>(45000);
+  const [monthlyIncome, setMonthlyIncome] = useState<number>(50000);
 
   // Paso 4: Jubilación (Cinta Métrica)
   const [desiredRetirementAge, setDesiredRetirementAge] = useState<number>(65);
@@ -95,7 +107,7 @@ export default function TipsParticipantMobilePage() {
   const [dreams, setDreams] = useState<TipsDreamItem[]>([
     {
       id: 'drm_1',
-      name: 'Universidad de los hijos / Posgrado',
+      name: '🎓 Universidad de los hijos / Posgrado',
       category: 'DEPENDIENTES',
       targetAmount: 800000,
       yearsToGoal: 10,
@@ -103,7 +115,7 @@ export default function TipsParticipantMobilePage() {
     },
     {
       id: 'drm_2',
-      name: 'Propiedad / Inversión Patrimonial',
+      name: '🏠 Propiedad / Inversión Patrimonial',
       category: 'PROPIO',
       targetAmount: 1500000,
       yearsToGoal: 8,
@@ -122,6 +134,35 @@ export default function TipsParticipantMobilePage() {
   const [hasGmm, setHasGmm] = useState<boolean>(false);
   const [hasAutoInsurance, setHasAutoInsurance] = useState<boolean>(false);
   const [hasHomeInsurance, setHasHomeInsurance] = useState<boolean>(false);
+
+  // Paso 8: Agendar cita individual en 1 clic
+  const [preferredSlot, setPreferredSlot] = useState<string>('En las próximas 48 horas (Zoom o Presencial)');
+  const [appointmentConfirmed, setAppointmentConfirmed] = useState<boolean>(false);
+  const [bookingAppointment, setBookingAppointment] = useState<boolean>(false);
+
+  useEffect(() => {
+    completedStepRef.current = participant?.completedStep || 0;
+    if (participant?.calculatedResults?.appointmentRequested) {
+      setAppointmentConfirmed(true);
+      if (participant.calculatedResults.preferredSlot) {
+        setPreferredSlot(participant.calculatedResults.preferredSlot);
+      }
+    }
+  }, [participant]);
+
+  // Disparar confetti al llegar al Paso 8 (Diagnóstico Preliminar)
+  useEffect(() => {
+    if (viewStep === 8 && !confettiFiredRef.current) {
+      confettiFiredRef.current = true;
+      try {
+        confetti({
+          particleCount: 70,
+          spread: 65,
+          origin: { y: 0.6 },
+        });
+      } catch (_) {}
+    }
+  }, [viewStep]);
 
   // Inicializar o recuperar Device Token en localStorage
   useEffect(() => {
@@ -207,7 +248,6 @@ export default function TipsParticipantMobilePage() {
           }
         }
 
-        // Posicionar en el paso donde iba (sin rebasar el paso liberado por el host)
         const unlocked = json.session?.unlockedStep || 0;
         if (!p.privacyAccepted) {
           setViewStep(unlocked >= 1 ? 1 : 0);
@@ -229,13 +269,12 @@ export default function TipsParticipantMobilePage() {
     }
   }, [deviceToken, fetchInitialState]);
 
-  // Heartbeat en tiempo real cada 2 segundos + Reintento de cola offline
+  // Heartbeat en tiempo real cada 2 segundos + Auto-Follow cuando el Host libera el siguiente paso
   useEffect(() => {
     if (!code || !deviceToken || !inLobbyJoined) return;
 
     const interval = setInterval(async () => {
       try {
-        // Si había un envío pendiente por red débil en el salón, reintentarlo primero
         const queuedRaw = localStorage.getItem(`tips_queue_${code}`);
         if (queuedRaw) {
           const queuedPayload = JSON.parse(queuedRaw);
@@ -265,23 +304,31 @@ export default function TipsParticipantMobilePage() {
             setSession((prev: any) => {
               const prevUnlocked = prev?.unlockedStep || 0;
               const newUnlocked = json.session.unlockedStep || 0;
-              // Si el host acaba de abrir el paso 1 y estábamos en el lobby, avanzar automáticamente al paso 1
-              if (prevUnlocked === 0 && newUnlocked >= 1 && viewStep === 0) {
-                setViewStep(1);
+
+              // Si el Host acaba de liberar un nuevo paso y el participante ya estaba listo: avanzar automáticamente
+              if (newUnlocked > prevUnlocked) {
+                if (prevUnlocked === 0 && viewStep === 0) {
+                  setViewStep(1);
+                  setUnlockToast('🔓 ¡El expositor ha iniciado el Paso 1!');
+                  setTimeout(() => setUnlockToast(null), 4000);
+                } else if (completedStepRef.current >= prevUnlocked) {
+                  const nextAutoStep = Math.min(newUnlocked, completedStepRef.current + 1);
+                  setViewStep(nextAutoStep);
+                  setUnlockToast(`🔓 ¡Paso ${nextAutoStep} desbloqueado por el expositor!`);
+                  setTimeout(() => setUnlockToast(null), 4000);
+                }
               }
               return { ...prev, ...json.session };
             });
           }
         }
-      } catch (_) {
-        // Red débil en el salón: ignorar silenciosamente y reintentar en 2s
-      }
+      } catch (_) {}
     }, 2000);
 
     return () => clearInterval(interval);
   }, [code, deviceToken, inLobbyJoined, viewStep]);
 
-  // Cálculo reactivo local en vivo para gráficas instantáneas
+  // Cálculo reactivo local en vivo
   const liveCalc = useMemo(() => {
     const policies: TipsInsuranceItem[] = [];
     if (hasLifeInsurance && lifeInsuredSum > 0) {
@@ -348,7 +395,6 @@ export default function TipsParticipantMobilePage() {
     session?.customParams,
   ]);
 
-  // Unirse a la sala de espera (Lobby)
   const handleJoinLobby = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!nickname.trim()) return;
@@ -381,7 +427,6 @@ export default function TipsParticipantMobilePage() {
     }
   };
 
-  // Guardar Paso 1 + Consentimiento LFPDPPP (Consume 1 crédito de forma idempotente)
   const handleSaveStep1AndConsent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!privacyAccepted) {
@@ -427,7 +472,6 @@ export default function TipsParticipantMobilePage() {
     }
   };
 
-  // Guardar Pasos 2 al 8 (Con cola offline si falla el Wi-Fi del salón)
   const handleSaveStep = async (stepNumber: number, stepData: any) => {
     setSaving(true);
     setErrorMsg(null);
@@ -455,11 +499,38 @@ export default function TipsParticipantMobilePage() {
         setErrorMsg(json.error || 'No se pudo guardar el avance.');
       }
     } catch (err) {
-      // Guardar en cola offline para sincronización automática
       localStorage.setItem(`tips_queue_${code}`, JSON.stringify(payload));
       setOfflinePending(true);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleRequestAppointment = async () => {
+    setBookingAppointment(true);
+    setErrorMsg(null);
+    try {
+      const res = await fetch(`/api/tips/public/${encodeURIComponent(code)}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'REQUEST_APPOINTMENT',
+          deviceToken,
+          preferredSlot,
+        }),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        setParticipant(json.participant);
+        setAppointmentConfirmed(true);
+        try {
+          confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
+        } catch (_) {}
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setBookingAppointment(false);
     }
   };
 
@@ -490,7 +561,6 @@ export default function TipsParticipantMobilePage() {
     );
   }
 
-  // Si el Host pausó la sesión: mostrar "Pausa" en <= 2s
   if (session.status === 'PAUSED') {
     return (
       <div className="min-h-screen bg-gradient-to-b from-indigo-950 to-slate-950 text-white flex items-center justify-center p-6 text-center">
@@ -518,9 +588,9 @@ export default function TipsParticipantMobilePage() {
       (completedStep >= unlockedStep && viewStep === unlockedStep && unlockedStep < 8));
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-16">
-      {/* Encabezado Móvil con Progreso */}
-      <header className="bg-indigo-950 text-white px-4 py-3.5 sticky top-0 z-30 shadow-md">
+    <div className="min-h-screen bg-slate-50 pb-16 print:bg-white print:pb-0">
+      {/* Encabezado Móvil con Progreso (Oculto al imprimir PDF) */}
+      <header className="bg-indigo-950 text-white px-4 py-3.5 sticky top-0 z-30 shadow-md print:hidden">
         <div className="max-w-lg mx-auto flex items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-1.5">
@@ -571,9 +641,17 @@ export default function TipsParticipantMobilePage() {
         </div>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 pt-5 space-y-5">
+      <main className="max-w-lg mx-auto px-4 pt-5 space-y-5 print:max-w-3xl print:px-8 print:pt-2">
+        {/* Toast cuando el Host desbloquea un paso en vivo */}
+        {unlockToast && (
+          <div className="bg-indigo-600 text-white rounded-2xl p-3.5 text-xs font-extrabold flex items-center justify-center gap-2 shadow-lg animate-bounce print:hidden">
+            <Unlock className="w-4 h-4 text-amber-300" />
+            <span>{unlockToast}</span>
+          </div>
+        )}
+
         {errorMsg && (
-          <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl p-3.5 text-xs font-semibold flex items-start gap-2">
+          <div className="bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl p-3.5 text-xs font-semibold flex items-start gap-2 print:hidden">
             <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
             <span>{errorMsg}</span>
           </div>
@@ -753,7 +831,6 @@ export default function TipsParticipantMobilePage() {
               </div>
             </div>
 
-            {/* Aviso de Privacidad LFPDPPP Obligatorio */}
             <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200 space-y-2.5">
               <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
                 <ShieldCheck className="w-4 h-4 text-indigo-600" />
@@ -801,7 +878,6 @@ export default function TipsParticipantMobilePage() {
               </p>
             </div>
 
-            {/* Tarjeta de Calificación en Vivo */}
             <div className="grid grid-cols-3 gap-2 bg-indigo-950 text-white rounded-2xl p-3.5 text-center">
               <div>
                 <span className="text-[10px] text-indigo-300 block">Patrimonio Neto</span>
@@ -823,7 +899,6 @@ export default function TipsParticipantMobilePage() {
               </div>
             </div>
 
-            {/* Lista de Activos */}
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-extrabold uppercase text-slate-700">
@@ -905,6 +980,11 @@ export default function TipsParticipantMobilePage() {
                         placeholder="Ej. 2500000"
                         className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-bold"
                       />
+                      {ast.value > 0 && (
+                        <span className="text-[10px] font-bold text-indigo-600 block mt-0.5">
+                          ${Number(ast.value).toLocaleString('es-MX')} MXN
+                        </span>
+                      )}
                     </div>
                     <div>
                       <label className="block text-[10px] font-semibold text-slate-500">
@@ -927,7 +1007,6 @@ export default function TipsParticipantMobilePage() {
               ))}
             </div>
 
-            {/* Lista de Deudas (Buenas vs Malas) */}
             <div className="space-y-3 pt-2 border-t border-slate-100">
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-extrabold uppercase text-slate-700">
@@ -1050,10 +1129,15 @@ export default function TipsParticipantMobilePage() {
               </p>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                Ingreso Mensual Promedio ($ MXN)
-              </label>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700">
+                  Ingreso Mensual Promedio ($ MXN)
+                </label>
+                <span className="text-xs font-black text-indigo-600">
+                  ${(monthlyIncome || 0).toLocaleString('es-MX')} / mes
+                </span>
+              </div>
               <input
                 type="number"
                 min={0}
@@ -1062,9 +1146,25 @@ export default function TipsParticipantMobilePage() {
                 onChange={(e) => setMonthlyIncome(Number(e.target.value))}
                 className="w-full rounded-2xl border-2 border-indigo-200 px-4 py-3 text-xl font-black text-slate-900"
               />
+              {/* Botones rápidos cero fricción */}
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {[25000, 40000, 50000, 75000, 100000, 150000].map((val) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setMonthlyIncome(val)}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition ${
+                      monthlyIncome === val
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-indigo-50'
+                    }`}
+                  >
+                    ${(val / 1000).toFixed(0)}k
+                  </button>
+                ))}
+              </div>
             </div>
 
-            {/* Tarjeta del Número Mágico */}
             <div className="bg-gradient-to-br from-indigo-950 to-slate-900 text-white rounded-2xl p-5 space-y-4">
               <div className="flex items-center justify-between">
                 <span className="text-xs uppercase tracking-wider text-indigo-300 font-bold">
@@ -1078,7 +1178,6 @@ export default function TipsParticipantMobilePage() {
                 ${liveCalc.magicNumber.toLocaleString('es-MX')} MXN
               </div>
 
-              {/* Comparativa Gráfica Patrimonio vs Número Mágico */}
               <div className="space-y-2 pt-2 border-t border-white/10 text-xs">
                 <div className="flex justify-between">
                   <span className="text-indigo-200">Tu Patrimonio Neto Actual:</span>
@@ -1132,7 +1231,6 @@ export default function TipsParticipantMobilePage() {
               </h2>
             </div>
 
-            {/* Representación visual de la Cinta Métrica */}
             <div className="bg-slate-900 text-white rounded-2xl p-4 space-y-3">
               <div className="flex justify-between text-[11px] font-bold">
                 <span className="text-slate-400">Vividos: {liveCalc.age}a</span>
@@ -1304,9 +1402,35 @@ export default function TipsParticipantMobilePage() {
                 Tus Sueños y Prioridades
               </h2>
               <p className="text-xs text-slate-500">
-                Define tus sueños propios, de tus dependientes y de trascendencia. Calcularemos el
-                ahorro mensual necesario para cada uno.
+                Toca una plantilla rápida o personaliza tus sueños propios, de dependientes y
+                herencia.
               </p>
+            </div>
+
+            {/* Plantillas de 1 toque (Cero Fricción) */}
+            <div className="flex flex-wrap gap-1.5">
+              {DREAM_PRESETS.map((preset) => (
+                <button
+                  key={preset.name}
+                  type="button"
+                  onClick={() =>
+                    setDreams([
+                      ...dreams,
+                      {
+                        id: `drm_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
+                        name: preset.name,
+                        category: preset.category,
+                        targetAmount: preset.amount,
+                        yearsToGoal: preset.years,
+                        priority: dreams.length + 1,
+                      },
+                    ])
+                  }
+                  className="px-2.5 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-indigo-800 text-[11px] font-bold transition"
+                >
+                  + {preset.name}
+                </button>
+              ))}
             </div>
 
             <div className="space-y-3">
@@ -1392,26 +1516,6 @@ export default function TipsParticipantMobilePage() {
                   </div>
                 </div>
               ))}
-
-              <button
-                type="button"
-                onClick={() =>
-                  setDreams([
-                    ...dreams,
-                    {
-                      id: `drm_${Date.now()}`,
-                      name: 'Nuevo Sueño Familiar',
-                      category: 'PROPIO',
-                      targetAmount: 500000,
-                      yearsToGoal: 5,
-                      priority: dreams.length + 1,
-                    },
-                  ])
-                }
-                className="w-full py-2.5 rounded-xl border border-dashed border-indigo-300 text-indigo-600 text-xs font-bold hover:bg-indigo-50"
-              >
-                + Agregar otro sueño
-              </button>
             </div>
 
             <button
@@ -1456,12 +1560,17 @@ export default function TipsParticipantMobilePage() {
               />
               <div className="flex justify-between text-[10px] text-indigo-300">
                 <span>0%</span>
-                <span className="text-amber-300 font-bold">16% Regla de Oro</span>
+                <button
+                  type="button"
+                  onClick={() => setSavingsPct(16)}
+                  className="text-amber-300 font-extrabold underline"
+                >
+                  Fijar 16% (Regla de Oro)
+                </button>
                 <span>50%</span>
               </div>
             </div>
 
-            {/* Simulador de qué sueños se alcanzan con este ahorro */}
             <div className="space-y-2">
               <h3 className="text-xs font-extrabold uppercase text-slate-700">
                 Viabilidad de tus Sueños con tu Ahorro Actual
@@ -1523,7 +1632,6 @@ export default function TipsParticipantMobilePage() {
               </h2>
             </div>
 
-            {/* Impacto por fallecimiento o invalidez (Capital Humano) */}
             <div className="bg-rose-950 text-white rounded-2xl p-4 space-y-2">
               <span className="text-[11px] uppercase tracking-wider text-rose-200 font-bold block">
                 Tu Capital Humano (Sueldo acumulado de hoy a tu retiro)
@@ -1553,36 +1661,50 @@ export default function TipsParticipantMobilePage() {
               </label>
 
               {hasLifeInsurance && (
-                <div className="grid grid-cols-2 gap-3 p-3 bg-indigo-50/50 rounded-2xl border border-indigo-100">
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      Suma Asegurada ($ MXN)
-                    </label>
-                    <input
-                      type="number"
-                      min={0}
-                      step={100000}
-                      value={lifeInsuredSum || ''}
-                      onChange={(e) => setLifeInsuredSum(Number(e.target.value))}
-                      placeholder="Ej. 3000000"
-                      className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-bold"
-                    />
+                <div className="p-3.5 bg-indigo-50/50 rounded-2xl border border-indigo-100 space-y-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Suma Asegurada ($ MXN)
+                      </label>
+                      <input
+                        type="number"
+                        min={0}
+                        step={100000}
+                        value={lifeInsuredSum || ''}
+                        onChange={(e) => setLifeInsuredSum(Number(e.target.value))}
+                        placeholder="Ej. 3000000"
+                        className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-xs font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        ¿Qué tan seguro te sientes? (1-5)
+                      </label>
+                      <select
+                        value={lifePerception}
+                        onChange={(e) => setLifePerception(Number(e.target.value))}
+                        className="w-full rounded-xl border border-slate-300 px-2.5 py-1.5 text-xs bg-white font-bold"
+                      >
+                        <option value={5}>⭐⭐⭐⭐⭐ Muy seguro</option>
+                        <option value={4}>⭐⭐⭐⭐ Bien cubierto</option>
+                        <option value={3}>⭐⭐⭐ No recuerdo coberturas</option>
+                        <option value={2}>⭐⭐ Suma baja / Solo prestación</option>
+                        <option value={1}>⭐ Desactualizado</option>
+                      </select>
+                    </div>
                   </div>
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
-                      ¿Qué tan seguro te sientes? (1-5)
-                    </label>
-                    <select
-                      value={lifePerception}
-                      onChange={(e) => setLifePerception(Number(e.target.value))}
-                      className="w-full rounded-xl border border-slate-300 px-2.5 py-1.5 text-xs bg-white font-bold"
-                    >
-                      <option value={5}>⭐⭐⭐⭐⭐ Muy seguro</option>
-                      <option value={4}>⭐⭐⭐⭐ Bien cubierto</option>
-                      <option value={3}>⭐⭐⭐ No recuerdo coberturas</option>
-                      <option value={2}>⭐⭐ Suma baja / Solo prestación</option>
-                      <option value={1}>⭐ Desactualizado</option>
-                    </select>
+                  <div className="flex flex-wrap gap-1.5">
+                    {[1000000, 2000000, 3500000, 5000000, 10000000].map((sumVal) => (
+                      <button
+                        key={sumVal}
+                        type="button"
+                        onClick={() => setLifeInsuredSum(sumVal)}
+                        className="px-2 py-1 rounded-lg bg-white border border-indigo-200 text-indigo-700 font-bold text-[10px]"
+                      >
+                        ${(sumVal / 1000000).toFixed(1)}M
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
@@ -1666,18 +1788,34 @@ export default function TipsParticipantMobilePage() {
             </button>
           </div>
         ) : (
-          /* PASO 8: DIAGNÓSTICO PRELIMINAR + DESCARGABLE PDF + AGENDAR CITA CON AGENTE */
+          /* PASO 8: DIAGNÓSTICO EJECUTIVO + CITA EN 1 CLIC + REPORTE PDF DE MARCA BLANCA */
           <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-md space-y-6 print:shadow-none print:border-none">
-            <div className="text-center space-y-1 border-b border-slate-100 pb-4">
-              <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-600">
-                {session.brandName} · Diagnóstico Patrimonial TIPS
-              </span>
-              <h2 className="text-2xl font-black text-slate-900">
-                Resultados de {fullName || nickname}
-              </h2>
-              <p className="text-xs text-slate-500">
-                Para revisar en tu cita individual con <strong>{session.hostName}</strong>
-              </p>
+            <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+              <div>
+                <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-600">
+                  {session.brandName} · Diagnóstico Patrimonial TIPS
+                </span>
+                <h2 className="text-2xl font-black text-slate-900">
+                  {fullName || nickname} ({liveCalc.age} años)
+                </h2>
+                <p className="text-xs text-slate-500">
+                  Asesor titular: <strong>{session.hostName}</strong> · Fecha:{' '}
+                  {new Date().toLocaleDateString('es-MX')}
+                </p>
+              </div>
+              <div className="text-right">
+                <span
+                  className={`inline-block px-3 py-1 rounded-full text-xs font-black ${
+                    liveCalc.patrimonySemaphore === 'VERDE'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : liveCalc.patrimonySemaphore === 'AMARILLO'
+                      ? 'bg-amber-100 text-amber-800'
+                      : 'bg-rose-100 text-rose-800'
+                  }`}
+                >
+                  Semáforo: {liveCalc.patrimonySemaphore} ({liveCalc.patrimonyQualificationScore}/100)
+                </span>
+              </div>
             </div>
 
             {/* Tarjetas de Resumen Ejecutivo */}
@@ -1688,7 +1826,8 @@ export default function TipsParticipantMobilePage() {
                   ${liveCalc.netWorth.toLocaleString('es-MX')}
                 </strong>
                 <span className="text-[10px] text-emerald-700 font-bold block mt-0.5">
-                  Tasa Integrada: {liveCalc.integratedReturnRatePct}%
+                  Tasa Integrada: {liveCalc.integratedReturnRatePct}% · Div:{' '}
+                  {liveCalc.diversificationScore}/100
                 </span>
               </div>
               <div className="bg-indigo-50 rounded-2xl p-3.5 border border-indigo-200">
@@ -1706,7 +1845,7 @@ export default function TipsParticipantMobilePage() {
                   ${liveCalc.retirementGap.toLocaleString('es-MX')}
                 </strong>
                 <span className="text-[10px] text-amber-800 font-bold block mt-0.5">
-                  Retiro deseado: {desiredRetirementAge} años
+                  Retiro deseado: {desiredRetirementAge} años ({desiredPensionPct}% sueldo)
                 </span>
               </div>
               <div className="bg-rose-50 rounded-2xl p-3.5 border border-rose-200">
@@ -1715,15 +1854,42 @@ export default function TipsParticipantMobilePage() {
                   ${liveCalc.humanCapitalValue.toLocaleString('es-MX')}
                 </strong>
                 <span className="text-[10px] text-rose-700 font-bold block mt-0.5">
-                  Vida sugerido: ${liveCalc.recommendedLifeSumMin.toLocaleString('es-MX')}
+                  Vida sugerido (7×): ${liveCalc.recommendedLifeSumMin.toLocaleString('es-MX')}
                 </span>
+              </div>
+            </div>
+
+            {/* Cinta Métrica y Sueños en el Reporte Completo */}
+            <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 space-y-2 text-xs">
+              <div className="font-extrabold text-slate-800 uppercase text-[11px]">
+                Resumen de Sueños y Ahorro ({savingsPct}% = $
+                {liveCalc.selectedMonthlySavings.toLocaleString('es-MX')}/mes)
+              </div>
+              <div className="divide-y divide-slate-200">
+                {liveCalc.evaluatedDreams.map((d) => (
+                  <div key={d.id} className="py-1.5 flex items-center justify-between">
+                    <span>
+                      <strong>{d.name}</strong> (${d.targetAmount.toLocaleString('es-MX')} en{' '}
+                      {d.yearsToGoal}a)
+                    </span>
+                    <span
+                      className={`font-bold ${
+                        d.reachableWithCurrentSavings ? 'text-emerald-700' : 'text-amber-700'
+                      }`}
+                    >
+                      {d.reachableWithCurrentSavings
+                        ? '✓ Alcanzable'
+                        : `Faltan $${d.shortfallMonthly.toLocaleString('es-MX')}/mes`}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
             {/* Huecos de Protección y Oportunidades Detectadas */}
             <div className="space-y-2.5">
               <h3 className="text-xs font-extrabold uppercase text-slate-700">
-                Áreas Prioritarias Detectadas para tu Cita Individual
+                Huecos de Protección y Prioridades para tu Cita Individual
               </h3>
               {liveCalc.detectedGaps.map((gap) => (
                 <div
@@ -1741,39 +1907,96 @@ export default function TipsParticipantMobilePage() {
               ))}
             </div>
 
-            {/* Botones de Cierre: Agendar Cita por WhatsApp + Descargar PDF */}
-            <div className="space-y-2.5 pt-2 print:hidden">
-              <a
-                href={`https://wa.me/${(session.hostPhone || '').replace(/\D/g, '')}?text=${encodeURIComponent(
-                  `Hola ${session.hostName}, acabo de completar mi diagnóstico en el taller TIPS "${session.title}". Soy ${fullName || nickname} y me gustaría agendar mi cita individual para revisar mi Número Mágico ($${liveCalc.magicNumber.toLocaleString('es-MX')}) y mis prioridades.`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => handleSaveStep(8, { completedAt: new Date().toISOString() })}
-                className="w-full py-4 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-lg flex items-center justify-center gap-2"
-              >
-                <MessageCircle className="w-5 h-5" />
-                Agendar Cita Individual con {session.hostName}
-              </a>
+            {/* Agendamiento en 1 Clic dentro de la App + WhatsApp Directo */}
+            <div className="bg-indigo-950 text-white rounded-2xl p-5 space-y-4 print:hidden">
+              <div className="flex items-center gap-2">
+                <CalendarCheck className="w-5 h-5 text-amber-300" />
+                <h3 className="text-sm font-extrabold">
+                  Agenda tu Cita Individual de Estrategia Patrimonial (Sin Costo)
+                </h3>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => {
-                  handleSaveStep(8, { completedAt: new Date().toISOString() });
-                  window.print();
-                }}
-                className="w-full py-3 rounded-2xl border-2 border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-800 font-extrabold text-xs flex items-center justify-center gap-2"
-              >
-                <Download className="w-4 h-4" />
-                Descargar Diagnóstico Completo en PDF
-              </button>
+              {appointmentConfirmed ? (
+                <div className="bg-emerald-500/20 border border-emerald-400/50 rounded-xl p-3.5 text-xs text-emerald-100 space-y-1">
+                  <strong className="text-emerald-300 block text-sm">
+                    ✓ ¡Solicitud de cita registrada con {session.hostName}!
+                  </strong>
+                  <span>Horario elegido: {preferredSlot}.</span>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  <label className="block text-xs text-indigo-200 font-semibold">
+                    ¿En qué modalidad u horario prefieres tu sesión individual de 30 min?
+                  </label>
+                  <select
+                    value={preferredSlot}
+                    onChange={(e) => setPreferredSlot(e.target.value)}
+                    className="w-full rounded-xl bg-white text-slate-900 px-3.5 py-2.5 text-xs font-bold"
+                  >
+                    <option value="En las próximas 48 horas (Zoom o Presencial)">
+                      🔥 Prioritario: En las próximas 48 horas (Zoom o Presencial)
+                    </option>
+                    <option value="Esta semana por la mañana (9:00 a 13:00 hrs)">
+                      ☀️ Esta semana por la mañana (9:00 a 13:00 hrs)
+                    </option>
+                    <option value="Esta semana por la tarde (16:00 a 20:00 hrs)">
+                      🌙 Esta semana por la tarde (16:00 a 20:00 hrs)
+                    </option>
+                    <option value="Videollamada ejecutiva por Zoom / Meet">
+                      💻 Videollamada ejecutiva por Zoom / Meet
+                    </option>
+                  </select>
+
+                  <button
+                    type="button"
+                    disabled={bookingAppointment}
+                    onClick={handleRequestAppointment}
+                    className="w-full py-3.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-sm shadow-lg transition flex items-center justify-center gap-2"
+                  >
+                    <CalendarCheck className="w-4 h-4" />
+                    {bookingAppointment
+                      ? 'Confirmando tu cita...'
+                      : `Confirmar Cita con ${session.hostName}`}
+                  </button>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                {session.hostPhone && (
+                  <a
+                    href={`https://wa.me/${(session.hostPhone || '').replace(/\D/g, '')}?text=${encodeURIComponent(
+                      `Hola ${session.hostName}, acabo de completar mi diagnóstico en el taller TIPS "${session.title}". Soy ${fullName || nickname}, elegí horario "${preferredSlot}" para revisar mi Número Mágico ($${liveCalc.magicNumber.toLocaleString('es-MX')}).`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => {
+                      if (!appointmentConfirmed) handleRequestAppointment();
+                    }}
+                    className="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5"
+                  >
+                    <MessageCircle className="w-4 h-4" />
+                    Enviar por WhatsApp
+                  </a>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    handleSaveStep(8, { completedAt: new Date().toISOString() });
+                    window.print();
+                  }}
+                  className="w-full py-2.5 px-3 rounded-xl bg-white/15 hover:bg-white/25 text-white font-bold text-xs flex items-center justify-center gap-1.5"
+                >
+                  <Download className="w-4 h-4" />
+                  Descargar Diagnóstico PDF
+                </button>
+              </div>
             </div>
           </div>
         )}
 
-        {/* Banner cuando completó el paso actual pero el Host aún no libera el siguiente */}
         {isWaitingForNextUnlock && viewStep > 0 && viewStep < 8 && (
-          <div className="bg-indigo-900 text-white rounded-2xl p-4 text-center space-y-1 shadow">
+          <div className="bg-indigo-900 text-white rounded-2xl p-4 text-center space-y-1 shadow print:hidden">
             <div className="flex items-center justify-center gap-1.5 text-amber-300 text-xs font-extrabold">
               <Clock className="w-4 h-4 animate-spin" />
               ¡Paso {completedStep} Guardado!
@@ -1785,7 +2008,6 @@ export default function TipsParticipantMobilePage() {
           </div>
         )}
 
-        {/* Navegación entre pasos ya desbloqueados por el Host */}
         {inLobbyJoined && participant?.privacyAccepted && unlockedStep > 1 && (
           <div className="flex items-center justify-between pt-2 print:hidden">
             <button

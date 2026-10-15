@@ -115,7 +115,7 @@ export async function POST(
       return NextResponse.json({ error: 'Sesión no encontrada.' }, { status: 404 });
     }
 
-    if (tipsSession.status === 'CLOSED') {
+    if (tipsSession.status === 'CLOSED' && action !== 'REQUEST_APPOINTMENT' && action !== 'HEARTBEAT') {
       return NextResponse.json(
         { error: 'Esta sesión del taller TIPS ya ha concluido.', sessionClosed: true },
         { status: 400 }
@@ -395,6 +395,13 @@ export async function POST(
         customParams: tipsSession.customParams as any,
       });
 
+      const prevCalc = (participant.calculatedResults as any) || {};
+      const mergedCalc = {
+        ...calc,
+        appointmentRequested: Boolean(prevCalc.appointmentRequested),
+        preferredSlot: prevCalc.preferredSlot || null,
+      };
+
       const updated = await prisma.tipsParticipant.update({
         where: { id: participant.id },
         data: {
@@ -402,7 +409,7 @@ export async function POST(
           currentStep: nextCurrent,
           completedStep: nextCompleted,
           status: nextCompleted >= 8 ? 'COMPLETED' : 'ACTIVE',
-          calculatedResults: calc as any,
+          calculatedResults: mergedCalc as any,
           leadScore: calc.leadScore,
           leadTier: calc.leadTier,
           lastHeartbeatAt: new Date(),
@@ -418,7 +425,141 @@ export async function POST(
       });
     }
 
-    // 4. HEARTBEAT EN TIEMPO REAL (<= 2s)
+    // 4. SOLICITAR CITA INDIVIDUAL EN 1 CLIC (Desde Paso 8 Diagnóstico)
+    if (action === 'REQUEST_APPOINTMENT') {
+      const preferredSlot = String(body.preferredSlot || 'Próximas 48 horas').trim();
+      const participant = await prisma.tipsParticipant.findUnique({
+        where: { deviceToken: cleanToken },
+      });
+
+      if (!participant || participant.sessionId !== tipsSession.id) {
+        return NextResponse.json({ error: 'Participante no encontrado.' }, { status: 404 });
+      }
+
+      const calc = evaluateTipsDiagnostic({
+        completedStep: Math.max(8, participant.completedStep),
+        step1: participant.step1General as any,
+        step2: participant.step2Patrimony as any,
+        step3: participant.step3Income as any,
+        step4: participant.step4Retirement as any,
+        step5: participant.step5Dreams as any,
+        step6: participant.step6Savings as any,
+        step7: participant.step7Insurance as any,
+        customParams: tipsSession.customParams as any,
+      });
+
+      const mergedCalc = {
+        ...calc,
+        appointmentRequested: true,
+        preferredSlot,
+        appointmentRequestedAt: new Date().toISOString(),
+      };
+
+      const cleanName = (participant.fullName || participant.nickname || 'Prospecto TIPS').trim();
+      const cleanPhone = (participant.phone || '').trim();
+      const cleanEmail = (participant.email || '').trim().toLowerCase();
+
+      let targetClientId = participant.linkedClientId;
+
+      if (!targetClientId && (cleanPhone || cleanEmail)) {
+        const orConditions: any[] = [];
+        const digits = cleanPhone.replace(/\D/g, '');
+        if (digits.length >= 7) {
+          orConditions.push({ phone: { contains: digits.slice(-8) } });
+        }
+        if (cleanEmail.includes('@')) {
+          orConditions.push({ email: { equals: cleanEmail, mode: 'insensitive' } });
+        }
+
+        const existingClient =
+          orConditions.length > 0
+            ? await prisma.client.findFirst({
+                where: {
+                  userId: tipsSession.hostId,
+                  agencyId: tipsSession.agencyId,
+                  isArchived: false,
+                  OR: orConditions,
+                },
+              })
+            : null;
+
+        const gapsSummary = calc.detectedGaps.map((g) => g.code).join(', ') || 'Revisión integral';
+        const sessionTag = `[Taller TIPS #${tipsSession.code}]`;
+        const tipsSummaryNote = `${sessionTag} "${tipsSession.title}" (${new Date().toLocaleDateString('es-MX')}) | 📅 PIDIÓ CITA (${preferredSlot}) | Score: ${calc.leadScore}/100 (${calc.leadTier}) | Número Mágico: $${calc.magicNumber.toLocaleString('es-MX')} | Patrimonio Neto: $${calc.netWorth.toLocaleString('es-MX')} | Huecos: ${gapsSummary}`;
+
+        if (existingClient) {
+          targetClientId = existingClient.id;
+          const currentNotes = existingClient.notes || '';
+          if (!currentNotes.includes(sessionTag)) {
+            await prisma.client.update({
+              where: { id: existingClient.id },
+              data: {
+                notes: currentNotes ? `${currentNotes}\n${tipsSummaryNote}` : tipsSummaryNote,
+              },
+            });
+          }
+        } else {
+          const step1 = (participant.step1General as any) || {};
+          const parsedBirth = step1.birthDate ? new Date(step1.birthDate) : null;
+          const newClient = await prisma.client.create({
+            data: {
+              name: cleanName,
+              phone: cleanPhone || null,
+              email: cleanEmail || null,
+              birthDate: parsedBirth && !isNaN(parsedBirth.getTime()) ? parsedBirth : null,
+              notes: tipsSummaryNote,
+              userId: tipsSession.hostId,
+              agencyId: tipsSession.agencyId,
+            },
+          });
+          targetClientId = newClient.id;
+        }
+      }
+
+      const dueIn48h = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0];
+      const taskTitle = `🔥 Cita Individual TIPS (48h): ${cleanName}`;
+      const existingTask = await prisma.task.findFirst({
+        where: {
+          userId: tipsSession.hostId,
+          title: taskTitle,
+        },
+      });
+
+      if (!existingTask) {
+        const gapLabels = calc.detectedGaps.map((g) => g.code).join(', ') || 'Revisión integral';
+        await prisma.task.create({
+          data: {
+            userId: tipsSession.hostId,
+            title: taskTitle,
+            description: `¡El prospecto solicitó su cita individual desde el celular! Horario preferido: ${preferredSlot}. Taller: "${tipsSession.title}" (Score: ${calc.leadScore}/100). Tel: ${cleanPhone || 'S/N'}. Oportunidades: ${gapLabels}.`,
+            dueDate: dueIn48h,
+            priority: 'HIGH',
+            completed: false,
+          },
+        });
+      }
+
+      const updated = await prisma.tipsParticipant.update({
+        where: { id: participant.id },
+        data: {
+          currentStep: 8,
+          completedStep: 8,
+          status: 'COMPLETED',
+          calculatedResults: mergedCalc as any,
+          leadScore: calc.leadScore,
+          leadTier: calc.leadTier,
+          linkedClientId: targetClientId,
+          lastHeartbeatAt: new Date(),
+        },
+      });
+
+      return NextResponse.json({
+        ok: true,
+        participant: updated,
+      });
+    }
+
+    // 5. HEARTBEAT EN TIEMPO REAL (<= 2s)
     if (action === 'HEARTBEAT') {
       const requestedViewStep = Number(body.currentStep || 0);
       const participant = await prisma.tipsParticipant.findUnique({

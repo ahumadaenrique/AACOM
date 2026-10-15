@@ -201,6 +201,32 @@ export async function PATCH(
       return NextResponse.json({ ok: true });
     }
 
+    if (action === 'EXTEND_TIME') {
+      const extraSec = Math.max(60, Math.min(600, Number(body.extraSeconds) || 120));
+      const updated = await prisma.tipsSession.update({
+        where: { id: tipsSession.id },
+        data: {
+          inactiveThresholdSec: Math.min(1800, (tipsSession.inactiveThresholdSec || 180) + extraSec),
+        },
+      });
+      await prisma.tipsParticipant.updateMany({
+        where: { sessionId: tipsSession.id, status: 'ACTIVE' },
+        data: { lastHeartbeatAt: new Date() },
+      });
+      return NextResponse.json({ session: updated });
+    }
+
+    if (action === 'REOPEN_SESSION') {
+      const updated = await prisma.tipsSession.update({
+        where: { id: tipsSession.id },
+        data: {
+          status: 'ACTIVE',
+          closedAt: null,
+        },
+      });
+      return NextResponse.json({ session: updated });
+    }
+
     if (action === 'CLOSE_SESSION') {
       // 1. Cerrar la sesión
       const closedSession = await prisma.tipsSession.update({
@@ -221,6 +247,7 @@ export async function PATCH(
       for (const p of tipsSession.participants) {
         if (p.status === 'KICKED' || !p.privacyAccepted) continue;
 
+        const prevCalc = (p.calculatedResults as any) || {};
         const calc = evaluateTipsDiagnostic({
           completedStep: p.completedStep,
           step1: p.step1General as any,
@@ -233,6 +260,12 @@ export async function PATCH(
           customParams: tipsSession.customParams as any,
         });
 
+        const mergedCalc = {
+          ...calc,
+          appointmentRequested: Boolean(prevCalc.appointmentRequested),
+          preferredSlot: prevCalc.preferredSlot || null,
+        };
+
         const cleanName = (p.fullName || p.nickname || 'Prospecto TIPS').trim();
         const cleanPhone = (p.phone || '').trim();
         const cleanEmail = (p.email || '').trim().toLowerCase();
@@ -242,8 +275,9 @@ export async function PATCH(
         if (!targetClientId && (cleanPhone || cleanEmail)) {
           // Deduplicar por celular o correo dentro de la cartera del Agente Host
           const orConditions: any[] = [];
-          if (cleanPhone.length >= 7) {
-            orConditions.push({ phone: { contains: cleanPhone.slice(-8) } });
+          const digits = cleanPhone.replace(/\D/g, '');
+          if (digits.length >= 7) {
+            orConditions.push({ phone: { contains: digits.slice(-8) } });
           }
           if (cleanEmail.includes('@')) {
             orConditions.push({ email: { equals: cleanEmail, mode: 'insensitive' } });
@@ -262,19 +296,21 @@ export async function PATCH(
               : null;
 
           const gapsSummary = calc.detectedGaps.map((g) => g.code).join(', ') || 'Sin huecos críticos';
-          const tipsSummaryNote = `[Taller TIPS "${tipsSession.title}" (${new Date().toLocaleDateString('es-MX')})] Score: ${calc.leadScore}/100 (${calc.leadTier}) | Pasos: ${p.completedStep}/8 | Número Mágico: $${calc.magicNumber.toLocaleString('es-MX')} | Patrimonio Neto: $${calc.netWorth.toLocaleString('es-MX')} | Huecos detectados: ${gapsSummary}`;
+          const sessionTag = `[Taller TIPS #${tipsSession.code}]`;
+          const tipsSummaryNote = `${sessionTag} "${tipsSession.title}" (${new Date().toLocaleDateString('es-MX')}) | Score: ${calc.leadScore}/100 (${calc.leadTier}) | Pasos: ${p.completedStep}/8 | Número Mágico: $${calc.magicNumber.toLocaleString('es-MX')} | Patrimonio Neto: $${calc.netWorth.toLocaleString('es-MX')} | Huecos: ${gapsSummary}`;
 
           if (existingClient) {
             targetClientId = existingClient.id;
             clientsLinked++;
-            await prisma.client.update({
-              where: { id: existingClient.id },
-              data: {
-                notes: existingClient.notes
-                  ? `${existingClient.notes}\n${tipsSummaryNote}`
-                  : tipsSummaryNote,
-              },
-            });
+            const currentNotes = existingClient.notes || '';
+            if (!currentNotes.includes(sessionTag)) {
+              await prisma.client.update({
+                where: { id: existingClient.id },
+                data: {
+                  notes: currentNotes ? `${currentNotes}\n${tipsSummaryNote}` : tipsSummaryNote,
+                },
+              });
+            }
           } else {
             const step1 = (p.step1General as any) || {};
             const parsedBirth = step1.birthDate ? new Date(step1.birthDate) : null;
@@ -298,7 +334,7 @@ export async function PATCH(
         await prisma.tipsParticipant.update({
           where: { id: p.id },
           data: {
-            calculatedResults: calc as any,
+            calculatedResults: mergedCalc as any,
             leadScore: calc.leadScore,
             leadTier: calc.leadTier,
             linkedClientId: targetClientId,
@@ -306,20 +342,33 @@ export async function PATCH(
           },
         });
 
-        // Criterio de aceptación: A los leads CALIENTES (8/8 pasos y >= 70 pts) se les crea tarea de "Cita individual" a 48h
-        if (calc.leadTier === 'HOT') {
-          const gapLabels = calc.detectedGaps.map((g) => g.code).join(', ') || 'Revisión integral';
-          await prisma.task.create({
-            data: {
+        // Criterio de aceptación: A los leads CALIENTES (8/8 pasos y >= 70 pts) o que pidieron cita se les crea tarea de "Cita individual" a 48h (idempotente)
+        if (calc.leadTier === 'HOT' || mergedCalc.appointmentRequested) {
+          const taskTitle = `🔥 Cita Individual TIPS (48h): ${cleanName}`;
+          const existingTask = await prisma.task.findFirst({
+            where: {
               userId: tipsSession.hostId,
-              title: `🔥 Cita Individual TIPS (48h): ${cleanName}`,
-              description: `Lead Caliente del taller "${tipsSession.title}" (Score: ${calc.leadScore}/100). Tel: ${cleanPhone || 'S/N'}. Oportunidades detectadas: ${gapLabels}. Patrimonio Neto: $${calc.netWorth.toLocaleString('es-MX')} vs Número Mágico: $${calc.magicNumber.toLocaleString('es-MX')}.`,
-              dueDate: dueIn48h,
-              priority: 'HIGH',
-              completed: false,
+              title: taskTitle,
             },
           });
-          tasksCreated++;
+
+          if (!existingTask) {
+            const gapLabels = calc.detectedGaps.map((g) => g.code).join(', ') || 'Revisión integral';
+            const slotNote = mergedCalc.preferredSlot
+              ? ` | Horario preferido: ${mergedCalc.preferredSlot}`
+              : '';
+            await prisma.task.create({
+              data: {
+                userId: tipsSession.hostId,
+                title: taskTitle,
+                description: `Lead ${calc.leadTier === 'HOT' ? 'Caliente' : 'con Cita Solicitada'} del taller "${tipsSession.title}" (Score: ${calc.leadScore}/100)${slotNote}. Tel: ${cleanPhone || 'S/N'}. Oportunidades detectadas: ${gapLabels}. Patrimonio Neto: $${calc.netWorth.toLocaleString('es-MX')} vs Número Mágico: $${calc.magicNumber.toLocaleString('es-MX')}.`,
+                dueDate: dueIn48h,
+                priority: 'HIGH',
+                completed: false,
+              },
+            });
+            tasksCreated++;
+          }
         }
       }
 
