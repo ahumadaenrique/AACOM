@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
     
     return NextResponse.json(questions, {
       headers: {
-        "Cache-Control": "public, max-age=3600, s-maxage=86400"
+        "Cache-Control": "no-store, max-age=0"
       }
     })
   } catch (err: any) {

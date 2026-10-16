@@ -52,24 +52,37 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: true, message: `Successfully re-seeded ${questionsData.length} questions.` })
     }
 
+    // Always serve the canonical, audited, and deduplicated question bank from public/cedula-a/preguntas.json
+    // so Production never serves stale legacy DB rows that lack explanations or contain duplicates.
+    const jsonPath = path.join(process.cwd(), 'public', 'cedula-a', 'preguntas.json')
+    if (fs.existsSync(jsonPath)) {
+      const canonicalData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'))
+      return NextResponse.json(canonicalData, {
+        headers: {
+          "Cache-Control": "no-store, max-age=0"
+        }
+      })
+    }
+
     const rows = await prisma.pregunta.findMany({
       orderBy: { id: 'asc' }
     });
-    if (rows.length === 0) {
-      const jsonPath = path.join(process.cwd(), 'public', 'cedula-a', 'preguntas.json')
-      if (fs.existsSync(jsonPath)) {
-        const fallbackData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'))
-        return NextResponse.json(fallbackData)
+    return NextResponse.json(rows, {
+      headers: {
+        "Cache-Control": "no-store, max-age=0"
       }
-    }
-    return NextResponse.json(rows)
+    })
   } catch (err: any) {
     console.error("Error in GET preguntas:", err)
     try {
       const jsonPath = path.join(process.cwd(), 'public', 'cedula-a', 'preguntas.json')
       if (fs.existsSync(jsonPath)) {
         const fallbackData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'))
-        return NextResponse.json(fallbackData)
+        return NextResponse.json(fallbackData, {
+          headers: {
+            "Cache-Control": "no-store, max-age=0"
+          }
+        })
       }
     } catch {}
     return NextResponse.json({ error: "Database error", details: err.message }, { status: 500 })

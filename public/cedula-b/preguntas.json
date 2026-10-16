@@ -971,8 +971,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Se puede operar en planes diferentes al temporal a un año",
-    "explanation": "La diferencia esencial del seguro colectivo frente al de grupo es que puede operar en planes distintos al temporal a un año. En ambos se expiden certificados, la prima promedio y las comisiones no son la diferencia esencial.",
-    "explicacion": "La diferencia esencial del seguro colectivo frente al de grupo es que puede operar en planes distintos al temporal a un año. En ambos se expiden certificados, la prima promedio y las comisiones no son la diferencia esencial."
+    "explanation": "Conforme al Reglamento del Seguro de Grupo para la Operación de Vida y al de Colectivo, el Seguro de Grupo Vida opera exclusivamente bajo el plan Temporal a 1 año renovable, mientras que el Seguro Colectivo de Vida sí permite contratar planes distintos al temporal de un año (como temporales a mayor plazo). En ambos se emiten certificados individuales.",
+    "explicacion": "Conforme al Reglamento del Seguro de Grupo para la Operación de Vida y al de Colectivo, el Seguro de Grupo Vida opera exclusivamente bajo el plan Temporal a 1 año renovable, mientras que el Seguro Colectivo de Vida sí permite contratar planes distintos al temporal de un año (como temporales a mayor plazo). En ambos se emiten certificados individuales."
   },
   {
     "id": 40,
@@ -1621,8 +1621,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Se aplica prima promedio a los asegurados que se den de alta en fecha distinta a la emisión o renovación",
-    "explanation": "En el sistema autoadministrado, a quienes se dan de alta en fecha distinta a la emisión o renovación se les aplica la prima promedio del grupo. No se cobra extraprima ni examen por edad, y no hay descuentos por sexo.",
-    "explicacion": "En el sistema autoadministrado, a quienes se dan de alta en fecha distinta a la emisión o renovación se les aplica la prima promedio del grupo. No se cobra extraprima ni examen por edad, y no hay descuentos por sexo."
+    "explanation": "En el Sistema Autoadministrado de Seguro de Grupo Vida (para grupos grandes que aseguran al 100% del personal activo), el contratante no reporta movimientos cada mes; los asegurados que ingresan durante la vigencia quedan amparados automáticamente cobrándose al final la prima promedio de la tarifa del grupo por el tiempo de cobertura.",
+    "explicacion": "En el Sistema Autoadministrado de Seguro de Grupo Vida (para grupos grandes que aseguran al 100% del personal activo), el contratante no reporta movimientos cada mes; los asegurados que ingresan durante la vigencia quedan amparados automáticamente cobrándose al final la prima promedio de la tarifa del grupo por el tiempo de cobertura."
   },
   {
     "id": 66,
@@ -1796,8 +1796,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "5.",
-    "explanation": "Una colectividad asegurable requiere un mínimo de 5 personas. Los mínimos de 8, 10 o 25 corresponden a otras modalidades o reglas.",
-    "explicacion": "Una colectividad asegurable requiere un mínimo de 5 personas. Los mínimos de 8, 10 o 25 corresponden a otras modalidades o reglas."
+    "explanation": "De acuerdo con la normatividad del Seguro Colectivo de Vida, para constituir una colectividad asegurable (cuando no existe relación laboral o sindical de grupo estricto) se exige un mínimo de 5 personas aseguradas, a diferencia del Seguro de Grupo patronal (mínimo 10) o sindical (mínimo 25).",
+    "explicacion": "De acuerdo con la normatividad del Seguro Colectivo de Vida, para constituir una colectividad asegurable (cuando no existe relación laboral o sindical de grupo estricto) se exige un mínimo de 5 personas aseguradas, a diferencia del Seguro de Grupo patronal (mínimo 10) o sindical (mínimo 25)."
   },
   {
     "id": 73,
@@ -2096,8 +2096,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "A partir del segundo año del certificado.",
-    "explanation": "La indisputabilidad de cada certificado del seguro de gastos funerarios inicia a partir del segundo año. El primer año es el periodo disputable, y el tercer año o la segunda renovación no corresponden.",
-    "explicacion": "La indisputabilidad de cada certificado del seguro de gastos funerarios inicia a partir del segundo año. El primer año es el periodo disputable, y el tercer año o la segunda renovación no corresponden."
+    "explanation": "En el Seguro de Gastos Funerarios de Grupo o Colectivo, la cláusula de indisputabilidad establece que la aseguradora renuncia a impugnar el certificado individual por omisiones o inexactas declaraciones una vez que dicho certificado cumple su segundo año continuo de vigencia (los primeros 2 años constituyen el periodo disputable).",
+    "explicacion": "En el Seguro de Gastos Funerarios de Grupo o Colectivo, la cláusula de indisputabilidad establece que la aseguradora renuncia a impugnar el certificado individual por omisiones o inexactas declaraciones una vez que dicho certificado cumple su segundo año continuo de vigencia (los primeros 2 años constituyen el periodo disputable)."
   },
   {
     "id": 85,
@@ -3696,8 +3696,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Como consecuencia de un accidente cubierto",
-    "explanation": "Los tratamientos dentales, alveolares o gingivales solo se amparan cuando son consecuencia de un accidente cubierto. La prescripción de un dentista, una enfermedad o la ortodoncia no los hacen cubiertos.",
-    "explicacion": "Los tratamientos dentales, alveolares o gingivales solo se amparan cuando son consecuencia de un accidente cubierto. La prescripción de un dentista, una enfermedad o la ortodoncia no los hacen cubiertos."
+    "explanation": "En la póliza de Gastos Médicos (Individual o de Grupo), los tratamientos odontológicos, alveolares o gingivales ordinarios por caries, enfermedad periodontal u ortodoncia están excluidos; únicamente quedan amparados cuando son indispensables para reconstruir daños sufridos directamente a consecuencia de un accidente cubierto por la póliza.",
+    "explicacion": "En la póliza de Gastos Médicos (Individual o de Grupo), los tratamientos odontológicos, alveolares o gingivales ordinarios por caries, enfermedad periodontal u ortodoncia están excluidos; únicamente quedan amparados cuando son indispensables para reconstruir daños sufridos directamente a consecuencia de un accidente cubierto por la póliza."
   },
   {
     "id": 149,
@@ -3721,8 +3721,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Tratamientos de hipnotismo",
-    "explanation": "Los tratamientos de hipnotismo son una exclusión del seguro de gastos médicos, por no considerarse tratamientos médicos reconocidos. La eclampsia, las transfusiones y la hospitalización son gastos cubiertos.",
-    "explicacion": "Los tratamientos de hipnotismo son una exclusión del seguro de gastos médicos, por no considerarse tratamientos médicos reconocidos. La eclampsia, las transfusiones y la hospitalización son gastos cubiertos."
+    "explanation": "El seguro de Gastos Médicos solo ampara procedimientos médicos y quirúrgicos científicamente reconocidos por la medicina alopática; por ello, las terapias alternativas o psicológicas como el hipnotismo, acupuntura o curas de reposo son exclusiones expresas. En cambio, complicaciones obstétricas como la eclampsia, transfusiones y hospitalización sí están cubiertas.",
+    "explicacion": "El seguro de Gastos Médicos solo ampara procedimientos médicos y quirúrgicos científicamente reconocidos por la medicina alopática; por ello, las terapias alternativas o psicológicas como el hipnotismo, acupuntura o curas de reposo son exclusiones expresas. En cambio, complicaciones obstétricas como la eclampsia, transfusiones y hospitalización sí están cubiertas."
   },
   {
     "id": 150,
@@ -3746,8 +3746,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Gastos como receptor en un transplante de órganos",
-    "explanation": "Los gastos como receptor en un trasplante de órganos sí se cubren en gastos médicos de grupo. Los trastornos de conducta y aprendizaje, los preexistentes y los padecimientos por alcoholismo o toxicomanía se excluyen.",
-    "explicacion": "Los gastos como receptor en un trasplante de órganos sí se cubren en gastos médicos de grupo. Los trastornos de conducta y aprendizaje, los preexistentes y los padecimientos por alcoholismo o toxicomanía se excluyen."
+    "explanation": "En el Seguro de Gastos Médicos de Grupo, cuando un asegurado requiere un trasplante de órgano, los gastos médicos y quirúrgicos en que incurra como 'receptor' sí están amparados por la póliza. En contraste, los trastornos de conducta/aprendizaje, los padecimientos preexistentes no declarados y las secuelas de alcoholismo o toxicomanía son exclusiones.",
+    "explicacion": "En el Seguro de Gastos Médicos de Grupo, cuando un asegurado requiere un trasplante de órgano, los gastos médicos y quirúrgicos en que incurra como 'receptor' sí están amparados por la póliza. En contraste, los trastornos de conducta/aprendizaje, los padecimientos preexistentes no declarados y las secuelas de alcoholismo o toxicomanía son exclusiones."
   },
   {
     "id": 151,
@@ -4021,8 +4021,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Muerte accidental .",
-    "explanation": "La sección básica de la póliza de accidentes personales colectivo es la muerte accidental. Las pérdidas orgánicas, la indemnización diaria y el reembolso de gastos médicos se contratan como secciones adicionales.",
-    "explicacion": "La sección básica de la póliza de accidentes personales colectivo es la muerte accidental. Las pérdidas orgánicas, la indemnización diaria y el reembolso de gastos médicos se contratan como secciones adicionales."
+    "explanation": "En la póliza de Accidentes Personales (Individual o Colectivo), la cobertura básica obligatoria sobre la cual se estructura el contrato es siempre Muerte Accidental (indemnización de la suma asegurada si el fallecimiento ocurre dentro de los 90 días siguientes al accidente). Pérdidas orgánicas, indemnización diaria y reembolso de gastos médicos son coberturas adicionales opcionales.",
+    "explicacion": "En la póliza de Accidentes Personales (Individual o Colectivo), la cobertura básica obligatoria sobre la cual se estructura el contrato es siempre Muerte Accidental (indemnización de la suma asegurada si el fallecimiento ocurre dentro de los 90 días siguientes al accidente). Pérdidas orgánicas, indemnización diaria y reembolso de gastos médicos son coberturas adicionales opcionales."
   },
   {
     "id": 162,
@@ -4121,8 +4121,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Ambulancia y ortodoncia.",
-    "explanation": "En reembolso de gastos médicos de accidentes personales colectivo la ambulancia y la ortodoncia tienen límite de suma asegurada. Honorarios, medicinas o enfermeras se cubren hasta la suma general de la sección.",
-    "explicacion": "En reembolso de gastos médicos de accidentes personales colectivo la ambulancia y la ortodoncia tienen límite de suma asegurada. Honorarios, medicinas o enfermeras se cubren hasta la suma general de la sección."
+    "explanation": "Dentro de la cobertura adicional de Reembolso de Gastos Médicos por Accidente en una póliza colectiva de Accidentes Personales, la mayoría de los conceptos se pagan hasta el tope de la sección, pero el servicio de ambulancia y el tratamiento dental/ortodoncia reconstructiva por accidente tienen sublímites específicos de suma asegurada para controlar el costo siniestral.",
+    "explicacion": "Dentro de la cobertura adicional de Reembolso de Gastos Médicos por Accidente en una póliza colectiva de Accidentes Personales, la mayoría de los conceptos se pagan hasta el tope de la sección, pero el servicio de ambulancia y el tratamiento dental/ortodoncia reconstructiva por accidente tienen sublímites específicos de suma asegurada para controlar el costo siniestral."
   },
   {
     "id": 166,
@@ -4221,8 +4221,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Esposa, los hijos mayores de 30 días y los que sean solteros, siempre y cuando no tengan trabajo remunerado",
-    "explanation": "En la póliza colectiva de accidentes personales pueden cubrirse el cónyuge, los hijos mayores de 30 días y los hijos solteros que no tengan trabajo remunerado. Los padres, hermanos o suegros no son dependientes económicos en este esquema.",
-    "explicacion": "En la póliza colectiva de accidentes personales pueden cubrirse el cónyuge, los hijos mayores de 30 días y los hijos solteros que no tengan trabajo remunerado. Los padres, hermanos o suegros no son dependientes económicos en este esquema."
+    "explanation": "Para efectos de inclusión como dependientes económicos en la póliza Colectiva de Accidentes Personales, las condiciones generales aceptan al cónyuge (esposa/o) y a los hijos mayores de 30 días de nacidos que sean solteros, dependan económicamente del titular y no perciban ingresos por trabajo remunerado (hasta la edad límite de la póliza).",
+    "explicacion": "Para efectos de inclusión como dependientes económicos en la póliza Colectiva de Accidentes Personales, las condiciones generales aceptan al cónyuge (esposa/o) y a los hijos mayores de 30 días de nacidos que sean solteros, dependan económicamente del titular y no perciban ingresos por trabajo remunerado (hasta la edad límite de la póliza)."
   },
   {
     "id": 170,
@@ -4746,8 +4746,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Fuego directo",
-    "explanation": "El fuego directo es el medio de calefacción producido por fuego o flama, así como por vapor, aire o agua caliente, distinto de los sistemas eléctricos en cámaras cerradas. El vicio propio, el corto circuito y la combustión espontánea son otros conceptos.",
-    "explicacion": "El fuego directo es el medio de calefacción producido por fuego o flama, así como por vapor, aire o agua caliente, distinto de los sistemas eléctricos en cámaras cerradas. El vicio propio, el corto circuito y la combustión espontánea son otros conceptos."
+    "explanation": "En la terminología técnica del ramo de Incendio (AMIS), se denomina 'Fuego Directo' al medio de calentamiento industrial o doméstico producido por flama abierta, vapor, aire o agua caliente (excepto resistencias eléctricas en cámaras cerradas). Es fundamental distinguirlo del 'vicio propio' o la 'combustión espontánea' para determinar si el daño a las mercancías procesadas es indemnizable.",
+    "explicacion": "En la terminología técnica del ramo de Incendio (AMIS), se denomina 'Fuego Directo' al medio de calentamiento industrial o doméstico producido por flama abierta, vapor, aire o agua caliente (excepto resistencias eléctricas en cámaras cerradas). Es fundamental distinguirlo del 'vicio propio' o la 'combustión espontánea' para determinar si el daño a las mercancías procesadas es indemnizable."
   },
   {
     "id": 191,
@@ -4871,8 +4871,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "1, 3, 5",
-    "explanation": "La AMIS clasifica los negocios para incendio como ordinarios, edificios y grandes riesgos. Monumentales y ornamentales no son categorías de esa clasificación.",
-    "explicacion": "La AMIS clasifica los negocios para incendio como ordinarios, edificios y grandes riesgos. Monumentales y ornamentales no son categorías de esa clasificación."
+    "explanation": "La tarifa técnica de la Asociación Mexicana de Instituciones de Seguros (AMIS) para el ramo de Incendio clasifica los riesgos comerciales e industriales en tres grandes grupos según su exposición y suma asegurada: 1) Riesgos Ordinarios, 2) Edificios y 3) Grandes Riesgos. Las denominaciones 'monumentales' u 'ornamentales' no existen en la tarifa técnica.",
+    "explicacion": "La tarifa técnica de la Asociación Mexicana de Instituciones de Seguros (AMIS) para el ramo de Incendio clasifica los riesgos comerciales e industriales en tres grandes grupos según su exposición y suma asegurada: 1) Riesgos Ordinarios, 2) Edificios y 3) Grandes Riesgos. Las denominaciones 'monumentales' u 'ornamentales' no existen en la tarifa técnica."
   },
   {
     "id": 196,
@@ -5071,8 +5071,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Resistencia al fuego",
-    "explanation": "La resistencia al fuego es la capacidad de un elemento de conservar al menos 2 horas su estabilidad, aislamiento térmico y no emisión de gases flamables. El punto de inflamación es la temperatura a la que un material arde.",
-    "explicacion": "La resistencia al fuego es la capacidad de un elemento de conservar al menos 2 horas su estabilidad, aislamiento térmico y no emisión de gases flamables. El punto de inflamación es la temperatura a la que un material arde."
+    "explanation": "En ingeniería de prevención de incendios y suscripción técnica, la 'Resistencia al Fuego' (RF) de un muro, losa o puerta cortafuego se define como su capacidad estructural para soportar el fuego durante al menos 2 horas manteniendo su estabilidad mecánica, aislamiento térmico y estanqueidad sin emitir gases inflamables.",
+    "explicacion": "En ingeniería de prevención de incendios y suscripción técnica, la 'Resistencia al Fuego' (RF) de un muro, losa o puerta cortafuego se define como su capacidad estructural para soportar el fuego durante al menos 2 horas manteniendo su estabilidad mecánica, aislamiento térmico y estanqueidad sin emitir gases inflamables."
   },
   {
     "id": 204,
@@ -5146,8 +5146,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Instalaciones fijas que se encuentren a la intemperie",
-    "explanation": "En el endoso de inundación, las instalaciones fijas a la intemperie se amparan por convenio expreso. Siembras, construcciones en la playa y canales suelen estar excluidos.",
-    "explicacion": "En el endoso de inundación, las instalaciones fijas a la intemperie se amparan por convenio expreso. Siembras, construcciones en la playa y canales suelen estar excluidos."
+    "explanation": "En el endoso adicional de Inundación y Riesgos Hidrometeorológicos del seguro de Incendio, los bienes e instalaciones fijas ubicadas a la intemperie (fuera de edificios cerrados) están excluidos de la cobertura básica por su alta vulnerabilidad al agua y viento, pero pueden asegurarse mediante Convenio Expreso pactando su suma asegurada y deducible específico.",
+    "explicacion": "En el endoso adicional de Inundación y Riesgos Hidrometeorológicos del seguro de Incendio, los bienes e instalaciones fijas ubicadas a la intemperie (fuera de edificios cerrados) están excluidos de la cobertura básica por su alta vulnerabilidad al agua y viento, pero pueden asegurarse mediante Convenio Expreso pactando su suma asegurada y deducible específico."
   },
   {
     "id": 207,
@@ -5171,8 +5171,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Pérdidas consecuenciales",
-    "explanation": "Las pérdidas consecuenciales son la pérdida real por la interrupción de actividades como consecuencia directa del daño a los bienes por un riesgo amparado. Los daños directos afectan los bienes mismos.",
-    "explicacion": "Las pérdidas consecuenciales son la pérdida real por la interrupción de actividades como consecuencia directa del daño a los bienes por un riesgo amparado. Los daños directos afectan los bienes mismos."
+    "explanation": "Las 'Pérdidas Consecuenciales' (o Lucro Cesante / Interrupción de Negocios) protegen el impacto financiero indirecto que sufre una empresa —como la pérdida de utilidades netas y el pago de gastos fijos continuos (salarios, rentas)— cuando su operación se detiene a consecuencia directa de un daño material físico amparado en la póliza de Incendio.",
+    "explicacion": "Las 'Pérdidas Consecuenciales' (o Lucro Cesante / Interrupción de Negocios) protegen el impacto financiero indirecto que sufre una empresa —como la pérdida de utilidades netas y el pago de gastos fijos continuos (salarios, rentas)— cuando su operación se detiene a consecuencia directa de un daño material físico amparado en la póliza de Incendio."
   },
   {
     "id": 208,
@@ -5296,8 +5296,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Valor real.",
-    "explanation": "El valor real es el valor de reposición menos la depreciación por uso y el estado de conservación. El valor de reposición no descuenta depreciación, y el fiscal y el comercial son otros criterios.",
-    "explicacion": "El valor real es el valor de reposición menos la depreciación por uso y el estado de conservación. El valor de reposición no descuenta depreciación, y el fiscal y el comercial son otros criterios."
+    "explanation": "El 'Valor Real' de un bien asegurado se obtiene restando al Valor de Reposición (costo de un bien nuevo de igual clase y capacidad) la depreciación física acumulada por su antigüedad, uso y estado de conservación. Es la base indemnizatoria tradicional bajo el principio de no enriquecimiento si no se contrató el endoso de Valor de Reposición.",
+    "explicacion": "El 'Valor Real' de un bien asegurado se obtiene restando al Valor de Reposición (costo de un bien nuevo de igual clase y capacidad) la depreciación física acumulada por su antigüedad, uso y estado de conservación. Es la base indemnizatoria tradicional bajo el principio de no enriquecimiento si no se contrató el endoso de Valor de Reposición."
   },
   {
     "id": 213,
@@ -5321,8 +5321,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Daños por rotura accidental de tuberías de agua o vapor.",
-    "explanation": "La cobertura de daños por agua ampara los daños por rotura accidental de tuberías de agua o vapor. El huracán y el granizo son hidrometeorológicos, y la deficiencia del drenaje se excluye.",
-    "explicacion": "La cobertura de daños por agua ampara los daños por rotura accidental de tuberías de agua o vapor. El huracán y el granizo son hidrometeorológicos, y la deficiencia del drenaje se excluye."
+    "explanation": "En el seguro de Incendio, la cobertura adicional de 'Daños por Agua' ampara específicamente los daños materiales directos provocados por la rotura, filtración o desbordamiento accidental e imprevisto de tuberías hidrosanitarias, tanques o sistemas de vapor propios del inmueble. Las lluvias, inundaciones o huracanes pertenecen al endoso de Fenómenos Hidrometeorológicos.",
+    "explicacion": "En el seguro de Incendio, la cobertura adicional de 'Daños por Agua' ampara específicamente los daños materiales directos provocados por la rotura, filtración o desbordamiento accidental e imprevisto de tuberías hidrosanitarias, tanques o sistemas de vapor propios del inmueble. Las lluvias, inundaciones o huracanes pertenecen al endoso de Fenómenos Hidrometeorológicos."
   },
   {
     "id": 214,
@@ -5646,8 +5646,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Daños por derrame accidental del equipo de protección.",
-    "explanation": "El endoso de derrame de equipo de protección contra incendio cubre los daños por derrame accidental de rociadores u otros equipos. El vicio propio y el derrame durante la instalación se excluyen.",
-    "explicacion": "El endoso de derrame de equipo de protección contra incendio cubre los daños por derrame accidental de rociadores u otros equipos. El vicio propio y el derrame durante la instalación se excluyen."
+    "explanation": "El endoso de 'Derrame de Equipo de Protección contra Incendio' (Sprinkler Leakage) cubre los daños materiales por agua o sustancias químicas causados a los bienes asegurados cuando la red de rociadores automáticos, hidrantes o tanques contra incendio sufre una descarga o fuga accidental sin que exista fuego. Excluye fallas durante su instalación o por vicio propio.",
+    "explicacion": "El endoso de 'Derrame de Equipo de Protección contra Incendio' (Sprinkler Leakage) cubre los daños materiales por agua o sustancias químicas causados a los bienes asegurados cuando la red de rociadores automáticos, hidrantes o tanques contra incendio sufre una descarga o fuga accidental sin que exista fuego. Excluye fallas durante su instalación o por vicio propio."
   },
   {
     "id": 227,
@@ -5771,8 +5771,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Deducible convenido.",
-    "explanation": "El primer riesgo relativo también se conoce como deducible convenido. El valor real, el de reposición y el coaseguro convenido son conceptos distintos.",
-    "explicacion": "El primer riesgo relativo también se conoce como deducible convenido. El valor real, el de reposición y el coaseguro convenido son conceptos distintos."
+    "explanation": "En el ramo de Incendio, la modalidad de 'Primer Riesgo Relativo' también se denomina técnicamente 'Deducible Convenido', ya que combina una suma asegurada parcial respecto del valor total expuesto con una participación pactada del asegurado, evitando la aplicación penalizadora de la regla proporcional tradicional.",
+    "explicacion": "En el ramo de Incendio, la modalidad de 'Primer Riesgo Relativo' también se denomina técnicamente 'Deducible Convenido', ya que combina una suma asegurada parcial respecto del valor total expuesto con una participación pactada del asegurado, evitando la aplicación penalizadora de la regla proporcional tradicional."
   },
   {
     "id": 232,
@@ -5796,8 +5796,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Valor de reposición.",
-    "explanation": "El valor de reposición es la cantidad necesaria para reparar o reponer el bien por otro de igual clase, calidad y capacidad, sin descontar depreciación. El valor real sí descuenta depreciación.",
-    "explicacion": "El valor de reposición es la cantidad necesaria para reparar o reponer el bien por otro de igual clase, calidad y capacidad, sin descontar depreciación. El valor real sí descuenta depreciación."
+    "explanation": "El 'Valor de Reposición' (o Valor a Nuevo) es la suma de dinero necesaria al momento del siniestro para reconstruir, reparar o adquirir un bien nuevo de la misma clase, calidad, tamaño y capacidad operativa que el bien dañado, sin descontar depreciación por uso o antigüedad.",
+    "explicacion": "El 'Valor de Reposición' (o Valor a Nuevo) es la suma de dinero necesaria al momento del siniestro para reconstruir, reparar o adquirir un bien nuevo de la misma clase, calidad, tamaño y capacidad operativa que el bien dañado, sin descontar depreciación por uso o antigüedad."
   },
   {
     "id": 233,
@@ -5871,8 +5871,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Traducción.",
-    "explanation": "La cláusula de traducción dispone que, para la interpretación legal, prevalece el texto en español de la póliza. El pago preferente, la venta de salvamentos y el seguro flotante regulan otros temas.",
-    "explicacion": "La cláusula de traducción dispone que, para la interpretación legal, prevalece el texto en español de la póliza. El pago preferente, la venta de salvamentos y el seguro flotante regulan otros temas."
+    "explanation": "Cuando una póliza de seguro empresarial se emite con textos o respaldos en otro idioma (por ejemplo, por requerimientos de matrices extranjeras o reaseguro internacional), la 'Cláusula de Traducción' establece jurídicamente que, ante cualquier controversia o duda de interpretación legal en México, prevalecerá siempre el texto oficial en idioma español.",
+    "explicacion": "Cuando una póliza de seguro empresarial se emite con textos o respaldos en otro idioma (por ejemplo, por requerimientos de matrices extranjeras o reaseguro internacional), la 'Cláusula de Traducción' establece jurídicamente que, ante cualquier controversia o duda de interpretación legal en México, prevalecerá siempre el texto oficial en idioma español."
   },
   {
     "id": 236,
@@ -6396,8 +6396,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Se realizan declaraciones mensuales",
-    "explanation": "La póliza específica ampara un solo viaje, no es cancelable y su prima se paga de contado. Las declaraciones mensuales son propias de la póliza abierta o anual a declaración.",
-    "explicacion": "La póliza específica ampara un solo viaje, no es cancelable y su prima se paga de contado. Las declaraciones mensuales son propias de la póliza abierta o anual a declaración."
+    "explanation": "En el seguro de Transporte de Mercancías, la 'Póliza Específica por Viaje' se expide para amparar un único traslado determinado (con origen, destino y mercancía fijos); por ello, su prima se cobra de contado al emitirse y es no cancelable una vez iniciado el tránsito. Las declaraciones mensuales de embarques son exclusivas de la Póliza Abierta o Anual a Declaración.",
+    "explicacion": "En el seguro de Transporte de Mercancías, la 'Póliza Específica por Viaje' se expide para amparar un único traslado determinado (con origen, destino y mercancía fijos); por ello, su prima se cobra de contado al emitirse y es no cancelable una vez iniciado el tránsito. Las declaraciones mensuales de embarques son exclusivas de la Póliza Abierta o Anual a Declaración."
   },
   {
     "id": 257,
@@ -6571,8 +6571,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Todo riesgo",
-    "explanation": "En transporte de mercancías se usan las pólizas anual a declaración, abierta y específica. Todo riesgo es una cobertura, no un tipo de póliza.",
-    "explicacion": "En transporte de mercancías se usan las pólizas anual a declaración, abierta y específica. Todo riesgo es una cobertura, no un tipo de póliza."
+    "explanation": "En el ramo de Transporte de Mercancías, las modalidades de contratación de póliza (según la frecuencia de envíos del cliente) son: Póliza Específica (un viaje), Póliza Abierta y Póliza Anual a Declaración.En cambio, 'Todo Riesgo' no es un tipo de póliza, sino una modalidad de cobertura de riesgos asegurados.",
+    "explicacion": "En el ramo de Transporte de Mercancías, las modalidades de contratación de póliza (según la frecuencia de envíos del cliente) son: Póliza Específica (un viaje), Póliza Abierta y Póliza Anual a Declaración.En cambio, 'Todo Riesgo' no es un tipo de póliza, sino una modalidad de cobertura de riesgos asegurados."
   },
   {
     "id": 264,
@@ -6846,8 +6846,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Contaminación, rotura y oxidación.",
-    "explanation": "Contaminación, rotura y oxidación forman parte de la cobertura adicional de todo riesgo. El robo de bulto por entero y la guerra suelen contratarse por separado.",
-    "explicacion": "Contaminación, rotura y oxidación forman parte de la cobertura adicional de todo riesgo. El robo de bulto por entero y la guerra suelen contratarse por separado."
+    "explanation": "En el seguro de Transporte de Mercancías, más allá de los Riesgos Ordinarios de Tránsito (ROT), el asegurado puede contratar coberturas adicionales específicas —que integradas conforman la protección de 'Todo Riesgo'—, entre las cuales destacan Contaminación (contacto con otras cargas), Rotura y Oxidación. Los riesgos de Guerra y Huelgas requieren endoso especial separado.",
+    "explicacion": "En el seguro de Transporte de Mercancías, más allá de los Riesgos Ordinarios de Tránsito (ROT), el asegurado puede contratar coberturas adicionales específicas —que integradas conforman la protección de 'Todo Riesgo'—, entre las cuales destacan Contaminación (contacto con otras cargas), Rotura y Oxidación. Los riesgos de Guerra y Huelgas requieren endoso especial separado."
   },
   {
     "id": 275,
@@ -6896,8 +6896,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Baratería del capitán.",
-    "explanation": "La baratería del capitán cubre los actos ilícitos cometidos voluntariamente por el capitán o la tripulación en perjuicio del propietario o fletador. El robo de bulto y el robo parcial son actos de terceros.",
-    "explicacion": "La baratería del capitán cubre los actos ilícitos cometidos voluntariamente por el capitán o la tripulación en perjuicio del propietario o fletador. El robo de bulto y el robo parcial son actos de terceros."
+    "explanation": "En derecho marítimo y seguro de transportes, se denomina 'Baratería del Capitán o de la Tripulación' a todo acto doloso, fraudulento o ilícito cometido intencionalmente por el capitán o los marineros (como desviar el buque, hundirlo o dañar la carga) en perjuicio directo del armador, propietario del buque o fletador.",
+    "explicacion": "En derecho marítimo y seguro de transportes, se denomina 'Baratería del Capitán o de la Tripulación' a todo acto doloso, fraudulento o ilícito cometido intencionalmente por el capitán o los marineros (como desviar el buque, hundirlo o dañar la carga) en perjuicio directo del armador, propietario del buque o fletador."
   },
   {
     "id": 277,
@@ -6946,8 +6946,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Mojaduras.",
-    "explanation": "La cobertura de mojaduras ampara los daños por mojadura directa e imprevista con agua dulce, salada o ambas. Las manchas, la contaminación y el derrame son riesgos distintos.",
-    "explicacion": "La cobertura de mojaduras ampara los daños por mojadura directa e imprevista con agua dulce, salada o ambas. Las manchas, la contaminación y el derrame son riesgos distintos."
+    "explanation": "Dentro de las coberturas adicionales del seguro de Transporte de Mercancías, el riesgo de 'Mojaduras' ampara los daños materiales que sufran las mercancías por el contacto directo, accidental e imprevisto con agua dulce (lluvia, condensación externa) o agua salada (mar), siempre que el empaque sea el adecuado para el tránsito.",
+    "explicacion": "Dentro de las coberturas adicionales del seguro de Transporte de Mercancías, el riesgo de 'Mojaduras' ampara los daños materiales que sufran las mercancías por el contacto directo, accidental e imprevisto con agua dulce (lluvia, condensación externa) o agua salada (mar), siempre que el empaque sea el adecuado para el tránsito."
   },
   {
     "id": 279,
@@ -6971,8 +6971,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Oxidación.",
-    "explanation": "La cobertura de oxidación ampara los daños por óxido, pero excluye bienes sin empaque. Mojaduras, manchas y derrame cubren otros tipos de daño.",
-    "explicacion": "La cobertura de oxidación ampara los daños por óxido, pero excluye bienes sin empaque. Mojaduras, manchas y derrame cubren otros tipos de daño."
+    "explanation": "La cobertura adicional de 'Oxidación' en Transporte de Mercancías protege piezas metálicas, maquinaria o aceros contra la corrosión superficial provocada por humedad o agua durante el viaje; sin embargo, es requisito indispensable de suscripción que la mercancía viaje debidamente empacada y protegida, excluyéndose bienes a granel o sin empaque.",
+    "explicacion": "La cobertura adicional de 'Oxidación' en Transporte de Mercancías protege piezas metálicas, maquinaria o aceros contra la corrosión superficial provocada por humedad o agua durante el viaje; sin embargo, es requisito indispensable de suscripción que la mercancía viaje debidamente empacada y protegida, excluyéndose bienes a granel o sin empaque."
   },
   {
     "id": 280,
@@ -7071,8 +7071,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Robo parcial.",
-    "explanation": "El robo parcial cubre la falta de entrega del contenido de uno o más bultos por robo con violencia o asalto. El robo de bulto por entero aplica cuando se pierde el bulto completo.",
-    "explicacion": "El robo parcial cubre la falta de entrega del contenido de uno o más bultos por robo con violencia o asalto. El robo de bulto por entero aplica cuando se pierde el bulto completo."
+    "explanation": "En el seguro de Transporte de Mercancías es vital distinguir entre dos coberturas de robo: el 'Robo de Bulto por Entero' (cuando desaparece la caja, tarima o fardo completo) y el 'Robo Parcial' (cuando los bultos llegan abiertos o violados y falta parte de su contenido interior a causa de robo con violencia o asalto).",
+    "explicacion": "En el seguro de Transporte de Mercancías es vital distinguir entre dos coberturas de robo: el 'Robo de Bulto por Entero' (cuando desaparece la caja, tarima o fardo completo) y el 'Robo Parcial' (cuando los bultos llegan abiertos o violados y falta parte de su contenido interior a causa de robo con violencia o asalto)."
   },
   {
     "id": 284,
@@ -7096,8 +7096,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Suma asegurada total.",
-    "explanation": "El límite máximo por embarque es la suma asegurada total que la aseguradora responde por un envío. No se refiere a un solo contenedor, a un bulto ni a una cobertura de convenio expreso.",
-    "explicacion": "El límite máximo por embarque es la suma asegurada total que la aseguradora responde por un envío. No se refiere a un solo contenedor, a un bulto ni a una cobertura de convenio expreso."
+    "explanation": "En las pólizas de Transporte de Mercancías (especialmente Abiertas o a Declaración), el 'Límite Máximo por Embarque' (o límite máximo de responsabilidad) es la suma asegurada total máxima que la compañía indemnizará en caso de siniestro sobre un mismo medio de transporte o envío acumulado, independientemente de cuántos bultos o contenedores lo integren.",
+    "explicacion": "En las pólizas de Transporte de Mercancías (especialmente Abiertas o a Declaración), el 'Límite Máximo por Embarque' (o límite máximo de responsabilidad) es la suma asegurada total máxima que la compañía indemnizará en caso de siniestro sobre un mismo medio de transporte o envío acumulado, independientemente de cuántos bultos o contenedores lo integren."
   },
   {
     "id": 285,
@@ -7221,8 +7221,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Islas caiman",
-    "explanation": "Bureau Veritas, el Registro Italiano y la British Corporation son sociedades clasificadoras de buques. Islas Caimán es un territorio y no una sociedad clasificadora.",
-    "explicacion": "Bureau Veritas, el Registro Italiano y la British Corporation son sociedades clasificadoras de buques. Islas Caimán es un territorio y no una sociedad clasificadora."
+    "explanation": "Las Sociedades Clasificadoras de Buques son organismos técnicos internacionales (miembros de IACS, como Bureau Veritas, Lloyd's Register, American Bureau of Shipping o el Registro Italiano Navale) que inspeccionan y certifican que los buques cumplen estándares de seguridad y navegabilidad. 'Islas Caimán' es un país/registro de bandera de conveniencia, no una sociedad clasificadora.",
+    "explicacion": "Las Sociedades Clasificadoras de Buques son organismos técnicos internacionales (miembros de IACS, como Bureau Veritas, Lloyd's Register, American Bureau of Shipping o el Registro Italiano Navale) que inspeccionan y certifican que los buques cumplen estándares de seguridad y navegabilidad. 'Islas Caimán' es un país/registro de bandera de conveniencia, no una sociedad clasificadora."
   },
   {
     "id": 290,
@@ -8496,8 +8496,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Cobertura básica",
-    "explanation": "Los daños materiales al inmueble causados por un robo con violencia forman parte de la cobertura básica de la póliza de robo. No requieren convenio expreso ni son una exclusión.",
-    "explicacion": "Los daños materiales al inmueble causados por un robo con violencia forman parte de la cobertura básica de la póliza de robo. No requieren convenio expreso ni son una exclusión."
+    "explanation": "En el seguro de Robo de Contenidos / Mercancías, cuando los delincuentes fuerzan puertas, ventanas, techos o muros para penetrar al local (Robo con Violencia del exterior al interior), los daños materiales ocasionados a la estructura del inmueble durante esa intrusión quedan amparados automáticamente dentro de la Cobertura Básica de la póliza.",
+    "explicacion": "En el seguro de Robo de Contenidos / Mercancías, cuando los delincuentes fuerzan puertas, ventanas, techos o muros para penetrar al local (Robo con Violencia del exterior al interior), los daños materiales ocasionados a la estructura del inmueble durante esa intrusión quedan amparados automáticamente dentro de la Cobertura Básica de la póliza."
   },
   {
     "id": 341,
@@ -8521,8 +8521,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Pérdidas causadas directamente por huelguistas",
-    "explanation": "Las pérdidas causadas directamente por huelguistas se excluyen de la póliza de robo con violencia. El asalto puede contratarse, y los contenidos en cajas fuertes y los daños materiales por el robo se cubren.",
-    "explicacion": "Las pérdidas causadas directamente por huelguistas se excluyen de la póliza de robo con violencia. El asalto puede contratarse, y los contenidos en cajas fuertes y los daños materiales por el robo se cubren."
+    "explanation": "En la póliza de Robo con Violencia y/o Asalto, los actos de saqueo, pillaje o pérdidas causadas directamente por huelguistas o personas que participen en alborotos populares y disturbios laborales están excluidos de la cobertura de robo, pues corresponden a riesgos de carácter político-social amparables en el ramo de Incendio (endoso de Huelgas y Vandalismo).",
+    "explicacion": "En la póliza de Robo con Violencia y/o Asalto, los actos de saqueo, pillaje o pérdidas causadas directamente por huelguistas o personas que participen en alborotos populares y disturbios laborales están excluidos de la cobertura de robo, pues corresponden a riesgos de carácter político-social amparables en el ramo de Incendio (endoso de Huelgas y Vandalismo)."
   },
   {
     "id": 342,
@@ -8646,8 +8646,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Daños materiales a los muebles por intento de robo",
-    "explanation": "La cobertura básica de robo ampara los daños materiales a los muebles causados por intento de robo. El asalto por el servicio doméstico, el robo por huelguistas y el saqueo se excluyen.",
-    "explicacion": "La cobertura básica de robo ampara los daños materiales a los muebles causados por intento de robo. El asalto por el servicio doméstico, el robo por huelguistas y el saqueo se excluyen."
+    "explanation": "La cobertura básica del Seguro de Robo con Violencia ampara tanto la sustracción de los bienes como los daños materiales causados a los muebles, instalaciones o al inmueble durante el robo o el simple 'intento de robo' con violencia. En cambio, la infidelidad o complicidad del servicio doméstico, el saqueo y los actos de huelguistas son exclusiones expresas.",
+    "explicacion": "La cobertura básica del Seguro de Robo con Violencia ampara tanto la sustracción de los bienes como los daños materiales causados a los muebles, instalaciones o al inmueble durante el robo o el simple 'intento de robo' con violencia. En cambio, la infidelidad o complicidad del servicio doméstico, el saqueo y los actos de huelguistas son exclusiones expresas."
   },
   {
     "id": 347,
@@ -8796,8 +8796,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Se rechaza la reclamación por ser un acto excluido",
-    "explanation": "La insurrección, el saqueo y la suspensión de garantías son actos excluidos del seguro de robo de mercancías, por lo que la reclamación se rechaza. No se paga a primer riesgo ni hasta agotar la suma asegurada.",
-    "explicacion": "La insurrección, el saqueo y la suspensión de garantías son actos excluidos del seguro de robo de mercancías, por lo que la reclamación se rechaza. No se paga a primer riesgo ni hasta agotar la suma asegurada."
+    "explanation": "Los siniestros de robo o rapiña ocurridos durante eventos de insurrección, rebelión, guerra civil, ley marcial o suspensión constitucional de garantías individuales constituyen riesgos político-catastróficos que rebasan la técnica actuarial del seguro privado; por ello son exclusiones absolutas en la póliza de Robo de Mercancías y la reclamación es improcedente.",
+    "explicacion": "Los siniestros de robo o rapiña ocurridos durante eventos de insurrección, rebelión, guerra civil, ley marcial o suspensión constitucional de garantías individuales constituyen riesgos político-catastróficos que rebasan la técnica actuarial del seguro privado; por ello son exclusiones absolutas en la póliza de Robo de Mercancías y la reclamación es improcedente."
   },
   {
     "id": 353,
@@ -8846,8 +8846,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Acciones y cédulas hipotecarias.",
-    "explanation": "Las acciones y las cédulas hipotecarias son valores amparados por la póliza de dinero y valores. Las pieles y joyas se cubren en otros ramos.",
-    "explicacion": "Las acciones y las cédulas hipotecarias son valores amparados por la póliza de dinero y valores. Las pieles y joyas se cubren en otros ramos."
+    "explanation": "La póliza de Dinero y Valores ampara efectivo (moneda nacional o extranjera) y documentos negociables o títulos valor como acciones, bonos, cédulas hipotecarias, cheques, giros y pagarés. En cambio, bienes físicos de alto valor como joyas, pieles u obras de arte no son títulos financieros y deben asegurarse en Robo de Mercancías u Objetos Personales.",
+    "explicacion": "La póliza de Dinero y Valores ampara efectivo (moneda nacional o extranjera) y documentos negociables o títulos valor como acciones, bonos, cédulas hipotecarias, cheques, giros y pagarés. En cambio, bienes físicos de alto valor como joyas, pieles u obras de arte no son títulos financieros y deben asegurarse en Robo de Mercancías u Objetos Personales."
   },
   {
     "id": 355,
@@ -9046,8 +9046,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Asalto a camionetas de cobro",
-    "explanation": "El asalto a bordo de camionetas de cobro se contrata mediante convenio expreso en dinero y valores. El extravío y el robo sin violencia se excluyen, por la dificultad de comprobarlos.",
-    "explicacion": "El asalto a bordo de camionetas de cobro se contrata mediante convenio expreso en dinero y valores. El extravío y el robo sin violencia se excluyen, por la dificultad de comprobarlos."
+    "explanation": "En el Seguro de Dinero y Valores, la cobertura básica protege los valores dentro del local (en caja fuerte o ventanilla) y en tránsito con portadores; sin embargo, el riesgo de robo o asalto a bordo de vehículos repartidores o camionetas de cobro de mercancías requiere contratarse específicamente mediante Convenio Expreso. El extravío o robo sin violencia siempre están excluidos.",
+    "explicacion": "En el Seguro de Dinero y Valores, la cobertura básica protege los valores dentro del local (en caja fuerte o ventanilla) y en tránsito con portadores; sin embargo, el riesgo de robo o asalto a bordo de vehículos repartidores o camionetas de cobro de mercancías requiere contratarse específicamente mediante Convenio Expreso. El extravío o robo sin violencia siempre están excluidos."
   },
   {
     "id": 363,
@@ -9071,8 +9071,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Saqueo",
-    "explanation": "El seguro de dinero y valores ampara incendio, explosión y robo con violencia. El saqueo, ligado a alborotos o disturbios, se excluye.",
-    "explicacion": "El seguro de dinero y valores ampara incendio, explosión y robo con violencia. El saqueo, ligado a alborotos o disturbios, se excluye."
+    "explanation": "La póliza de Dinero y Valores cubre la pérdida, destrucción o robo de efectivo y títulos por Robo con Violencia, Asalto, Incendio y Explosión (tanto de la caja fuerte como del local). Sin embargo, el 'saqueo' (sustracción tumultuaria durante disturbios civiles o catástrofes) es una exclusión general del contrato.",
+    "explicacion": "La póliza de Dinero y Valores cubre la pérdida, destrucción o robo de efectivo y títulos por Robo con Violencia, Asalto, Incendio y Explosión (tanto de la caja fuerte como del local). Sin embargo, el 'saqueo' (sustracción tumultuaria durante disturbios civiles o catástrofes) es una exclusión general del contrato."
   },
   {
     "id": 364,
@@ -9246,8 +9246,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Robo de mercancías",
-    "explanation": "El seguro de robo de mercancías se contrata a primer riesgo dentro de los diversos misceláneos. Automóviles, terremoto y rotura de maquinaria no son del ramo de diversos misceláneos.",
-    "explicacion": "El seguro de robo de mercancías se contrata a primer riesgo dentro de los diversos misceláneos. Automóviles, terremoto y rotura de maquinaria no son del ramo de diversos misceláneos."
+    "explanation": "Dentro de los Ramos Diversos Misceláneos (como Robo de Mercancías, Dinero y Valores y Rotura de Cristales), la contratación suele realizarse bajo la modalidad de 'Primer Riesgo Absoluto', donde la aseguradora paga hasta el límite de la suma asegurada contratada sin aplicar proporción indemnizable por el valor total del inventario. Automóviles, Terremoto y Rotura de Maquinaria pertenecen a otros ramos.",
+    "explicacion": "Dentro de los Ramos Diversos Misceláneos (como Robo de Mercancías, Dinero y Valores y Rotura de Cristales), la contratación suele realizarse bajo la modalidad de 'Primer Riesgo Absoluto', donde la aseguradora paga hasta el límite de la suma asegurada contratada sin aplicar proporción indemnizable por el valor total del inventario. Automóviles, Terremoto y Rotura de Maquinaria pertenecen a otros ramos."
   },
   {
     "id": 371,
@@ -9296,8 +9296,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "4 mm.",
-    "explanation": "Los cristales deben tener un espesor mínimo de 4 mm para quedar amparados. Los espesores de 3, 6 u 8 mm no son el mínimo señalado por la guía.",
-    "explicacion": "Los cristales deben tener un espesor mínimo de 4 mm para quedar amparados. Los espesores de 3, 6 u 8 mm no son el mínimo señalado por la guía."
+    "explanation": "Conforme a las condiciones técnicas del seguro de Rotura de Cristales, únicamente son asegurables en cobertura básica las lunas, vitrinas y cristales que cuenten con un espesor mínimo de 4 milímetros y estén debidamente instalados en forma fija. Los vidrios menores a 4 mm se excluyen por su extrema fragilidad ante vibraciones o cambios térmicos.",
+    "explicacion": "Conforme a las condiciones técnicas del seguro de Rotura de Cristales, únicamente son asegurables en cobertura básica las lunas, vitrinas y cristales que cuenten con un espesor mínimo de 4 milímetros y estén debidamente instalados en forma fija. Los vidrios menores a 4 mm se excluyen por su extrema fragilidad ante vibraciones o cambios térmicos."
   },
   {
     "id": 373,
@@ -9346,8 +9346,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Cobertura por convenio.",
-    "explanation": "Los daños a los cristales durante su remoción se cubren por convenio, porque la maniobra agrava el riesgo. No son básicos ni una exclusión total.",
-    "explicacion": "Los daños a los cristales durante su remoción se cubren por convenio, porque la maniobra agrava el riesgo. No son básicos ni una exclusión total."
+    "explanation": "En la póliza de Rotura de Cristales, cuando un cristal debe ser desmontado, removido temporalmente o trasladado dentro del predio por obras o remodelaciones, el riesgo de fractura aumenta considerablemente; por ello, los daños durante su remoción están excluidos en la básica y solo se amparan si se contratan mediante Convenio Expreso.",
+    "explicacion": "En la póliza de Rotura de Cristales, cuando un cristal debe ser desmontado, removido temporalmente o trasladado dentro del predio por obras o remodelaciones, el riesgo de fractura aumenta considerablemente; por ello, los daños durante su remoción están excluidos en la básica y solo se amparan si se contratan mediante Convenio Expreso."
   },
   {
     "id": 375,
@@ -9371,8 +9371,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Daños durante reparaciones del edificio.",
-    "explanation": "Los daños a los cristales durante reparaciones del edificio son un riesgo por convenio expreso. La instalación del cristal se excluye, los daños a terceros son materia de RC y el valor de reposición es una base de indemnización.",
-    "explicacion": "Los daños a los cristales durante reparaciones del edificio son un riesgo por convenio expreso. La instalación del cristal se excluye, los daños a terceros son materia de RC y el valor de reposición es una base de indemnización."
+    "explanation": "En el seguro de Rotura de Cristales, las maniobras de reparación, remodelación, pintura o alteración del edificio o de los marcos incrementan la probabilidad de impacto accidental sobre los vidrios; por esa razón se clasifican como riesgos cubiertos únicamente bajo Convenio Expreso. Los defectos de instalación inicial están excluidos.",
+    "explicacion": "En el seguro de Rotura de Cristales, las maniobras de reparación, remodelación, pintura o alteración del edificio o de los marcos incrementan la probabilidad de impacto accidental sobre los vidrios; por esa razón se clasifican como riesgos cubiertos únicamente bajo Convenio Expreso. Los defectos de instalación inicial están excluidos."
   },
   {
     "id": 376,
@@ -9396,8 +9396,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Teñido.",
-    "explanation": "El teñido o decorado de los cristales es un bien que se cubre por convenio expreso. Las vitrinas, espejos y lunas son cristales amparados normalmente.",
-    "explicacion": "El teñido o decorado de los cristales es un bien que se cubre por convenio expreso. Las vitrinas, espejos y lunas son cristales amparados normalmente."
+    "explanation": "En la póliza de Rotura de Cristales, la cobertura básica ampara únicamente el valor del cristal liso o luna (vitrinas, espejos, domos); cualquier trabajo artístico o valor agregado sobre la superficie —como el teñido, grabado, biselado, esmerilado, plateado o rótulos pintados— debe asegurarse por separado como Bien cubierto por Convenio Expreso.",
+    "explicacion": "En la póliza de Rotura de Cristales, la cobertura básica ampara únicamente el valor del cristal liso o luna (vitrinas, espejos, domos); cualquier trabajo artístico o valor agregado sobre la superficie —como el teñido, grabado, biselado, esmerilado, plateado o rótulos pintados— debe asegurarse por separado como Bien cubierto por Convenio Expreso."
   },
   {
     "id": 377,
@@ -9496,8 +9496,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Bien por convenio expreso",
-    "explanation": "El decorado de los cristales se contrata como bien por convenio expreso. No forma parte de la cobertura básica y no es un riesgo, sino un bien adicional.",
-    "explicacion": "El decorado de los cristales se contrata como bien por convenio expreso. No forma parte de la cobertura básica y no es un riesgo, sino un bien adicional."
+    "explanation": "El decorado de los cristales (rótulos, grabados al ácido, serigrafía, biselado o polarizado especial) incrementa el costo de reposición por encima del vidrio estándar; por ello, las condiciones generales de Rotura de Cristales lo catalogan como un Bien asegurable bajo Convenio Expreso con suma asegurada específica.",
+    "explicacion": "El decorado de los cristales (rótulos, grabados al ácido, serigrafía, biselado o polarizado especial) incrementa el costo de reposición por encima del vidrio estándar; por ello, las condiciones generales de Rotura de Cristales lo catalogan como un Bien asegurable bajo Convenio Expreso con suma asegurada específica."
   },
   {
     "id": 381,
@@ -9521,8 +9521,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Un grosor mínimo de 4 mm",
-    "explanation": "Para ser asegurados los cristales deben tener un grosor mínimo de 4 mm. No se exige que sean antirreflejantes ni que la aseguradora los coloque.",
-    "explicacion": "Para ser asegurados los cristales deben tener un grosor mínimo de 4 mm. No se exige que sean antirreflejantes ni que la aseguradora los coloque."
+    "explanation": "Para que un vidrio o cristal sea asegurable en el ramo de Rotura de Cristales, la norma técnica de suscripción exige que tenga un grosor o espesor mínimo de 4 mm y se encuentre colocado de manera fija y definitiva en su marco. No se requiere que sea antirreflejante ni que lo instale la aseguradora.",
+    "explicacion": "Para que un vidrio o cristal sea asegurable en el ramo de Rotura de Cristales, la norma técnica de suscripción exige que tenga un grosor o espesor mínimo de 4 mm y se encuentre colocado de manera fija y definitiva en su marco. No se requiere que sea antirreflejante ni que lo instale la aseguradora."
   },
   {
     "id": 382,
@@ -9546,8 +9546,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Básicos",
-    "explanation": "Los cristales de 4 mm de espesor cumplen el mínimo y se contratan como bienes básicos. Los de menor espesor no son asegurables en esta póliza.",
-    "explicacion": "Los cristales de 4 mm de espesor cumplen el mínimo y se contratan como bienes básicos. Los de menor espesor no son asegurables en esta póliza."
+    "explanation": "Todo cristal plano, curvo, espejo o vitrina que tenga un espesor igual o superior a 4 milímetros y esté instalado de forma fija cumple con el estándar técnico del ramo y se ampara directamente dentro de los Bienes de Cobertura Básica de la póliza de Rotura de Cristales.",
+    "explicacion": "Todo cristal plano, curvo, espejo o vitrina que tenga un espesor igual o superior a 4 milímetros y esté instalado de forma fija cumple con el estándar técnico del ramo y se ampara directamente dentro de los Bienes de Cobertura Básica de la póliza de Rotura de Cristales."
   },
   {
     "id": 383,
@@ -9596,8 +9596,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "A primer riesgo",
-    "explanation": "El seguro de rotura de cristales se contrata a primer riesgo, sin proporción indemnizable. No opera a riesgos nombrados ni a proporción.",
-    "explicacion": "El seguro de rotura de cristales se contrata a primer riesgo, sin proporción indemnizable. No opera a riesgos nombrados ni a proporción."
+    "explanation": "El seguro de Rotura de Cristales opera técnicamente bajo la modalidad de 'Primer Riesgo', lo que significa que la aseguradora indemniza el costo de reposición de las piezas rotas hasta el límite de la suma asegurada asignada, sin aplicar penalización por cláusula de proporción indemnizable.",
+    "explicacion": "El seguro de Rotura de Cristales opera técnicamente bajo la modalidad de 'Primer Riesgo', lo que significa que la aseguradora indemniza el costo de reposición de las piezas rotas hasta el límite de la suma asegurada asignada, sin aplicar penalización por cláusula de proporción indemnizable."
   },
   {
     "id": 385,
@@ -9621,8 +9621,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Rotura súbita, accidental e imprevista",
-    "explanation": "La cobertura básica de cristales es la rotura súbita, accidental e imprevista. Las raspaduras se excluyen, las manchas no son rotura y la rotura por reparaciones se cubre por convenio.",
-    "explicacion": "La cobertura básica de cristales es la rotura súbita, accidental e imprevista. Las raspaduras se excluyen, las manchas no son rotura y la rotura por reparaciones se cubre por convenio."
+    "explanation": "La cobertura básica del seguro de Rotura de Cristales ampara la fractura o rotura súbita, accidental e imprevista de las piezas aseguradas (por viento, impacto accidental, actos vandálicos o dilatación térmica). Las simples raspaduras, rayaduras o despostilladuras superficiales que no rompen el cristal de lado a lado son exclusiones estéticas.",
+    "explicacion": "La cobertura básica del seguro de Rotura de Cristales ampara la fractura o rotura súbita, accidental e imprevista de las piezas aseguradas (por viento, impacto accidental, actos vandálicos o dilatación térmica). Las simples raspaduras, rayaduras o despostilladuras superficiales que no rompen el cristal de lado a lado son exclusiones estéticas."
   },
   {
     "id": 386,
@@ -9721,8 +9721,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Daños durante la reparación del anuncio.",
-    "explanation": "Los daños durante la reparación del anuncio son un riesgo por convenio expreso. Los vientos y el incendio forman parte de la básica, y la falta de mantenimiento se excluye.",
-    "explicacion": "Los daños durante la reparación del anuncio son un riesgo por convenio expreso. Los vientos y el incendio forman parte de la básica, y la falta de mantenimiento se excluye."
+    "explanation": "En la póliza de Anuncios Luminosos, la cobertura básica protege el anuncio ya instalado contra riesgos externos como incendio, rayo, explosión, vientos o impacto de vehículos. En cambio, los daños que sufra el anuncio mientras es desmontado o intervenido para mantenimiento, mejoras o reparación requieren contratarse bajo Convenio Expreso.",
+    "explicacion": "En la póliza de Anuncios Luminosos, la cobertura básica protege el anuncio ya instalado contra riesgos externos como incendio, rayo, explosión, vientos o impacto de vehículos. En cambio, los daños que sufra el anuncio mientras es desmontado o intervenido para mantenimiento, mejoras o reparación requieren contratarse bajo Convenio Expreso."
   },
   {
     "id": 390,
@@ -9746,8 +9746,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Cobertura básica.",
-    "explanation": "Un cartel publicitario puede asegurarse en la cobertura básica de la póliza de anuncios luminosos. No requiere convenio ni está excluido.",
-    "explicacion": "Un cartel publicitario puede asegurarse en la cobertura básica de la póliza de anuncios luminosos. No requiere convenio ni está excluido."
+    "explanation": "En el seguro de Anuncios Luminosos y Rótulos, tanto los anuncios con iluminación propia (neón, LED, cajas de luz) como los carteles publicitarios o espectaculares sin luz debidamente anclados forman parte de los bienes asegurables dentro de la Cobertura Básica de la póliza.",
+    "explicacion": "En el seguro de Anuncios Luminosos y Rótulos, tanto los anuncios con iluminación propia (neón, LED, cajas de luz) como los carteles publicitarios o espectaculares sin luz debidamente anclados forman parte de los bienes asegurables dentro de la Cobertura Básica de la póliza."
   },
   {
     "id": 391,
@@ -9846,8 +9846,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Por convenio expreso",
-    "explanation": "Los daños por reparaciones y mejoras del anuncio se contratan por convenio expreso. No están excluidos ni forman parte de la cobertura básica.",
-    "explicacion": "Los daños por reparaciones y mejoras del anuncio se contratan por convenio expreso. No están excluidos ni forman parte de la cobertura básica."
+    "explanation": "Cuando un anuncio luminoso o espectacular es sometido a trabajos de reparación, mantenimiento, pintura o mejoras estructurales, la manipulación directa de sus componentes eleva el riesgo de caída o corto circuito; por ello, los daños ocurridos durante dichas maniobras solo quedan cubiertos si se pactan por Convenio Expreso.",
+    "explicacion": "Cuando un anuncio luminoso o espectacular es sometido a trabajos de reparación, mantenimiento, pintura o mejoras estructurales, la manipulación directa de sus componentes eleva el riesgo de caída o corto circuito; por ello, los daños ocurridos durante dichas maniobras solo quedan cubiertos si se pactan por Convenio Expreso."
   },
   {
     "id": 395,
@@ -9871,8 +9871,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Rayaduras al anuncio",
-    "explanation": "La pintura y las mejoras del anuncio y las alteraciones del inmueble pueden contratarse por convenio expreso. Las rayaduras al anuncio son un defecto estético excluido.",
-    "explicacion": "La pintura y las mejoras del anuncio y las alteraciones del inmueble pueden contratarse por convenio expreso. Las rayaduras al anuncio son un defecto estético excluido."
+    "explanation": "En el seguro de Anuncios Luminosos pueden ampararse mediante Convenio Expreso los riesgos derivados de trabajos de pintura, mejoras al anuncio o alteraciones al inmueble donde está colocado. Sin embargo, las simples rayaduras, raspaduras o defectos meramente estéticos que no impiden el funcionamiento del anuncio son exclusiones absolutas.",
+    "explicacion": "En el seguro de Anuncios Luminosos pueden ampararse mediante Convenio Expreso los riesgos derivados de trabajos de pintura, mejoras al anuncio o alteraciones al inmueble donde está colocado. Sin embargo, las simples rayaduras, raspaduras o defectos meramente estéticos que no impiden el funcionamiento del anuncio son exclusiones absolutas."
   },
   {
     "id": 396,
@@ -9921,8 +9921,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Terremoto y erupción volcánica",
-    "explanation": "El terremoto y la erupción volcánica pueden contratarse en el seguro de anuncios luminosos, por lo que no son exclusiones definitivas. La instalación defectuosa, el desgaste y las rayaduras sí se excluyen.",
-    "explicacion": "El terremoto y la erupción volcánica pueden contratarse en el seguro de anuncios luminosos, por lo que no son exclusiones definitivas. La instalación defectuosa, el desgaste y las rayaduras sí se excluyen."
+    "explanation": "En la póliza de Anuncios Luminosos, los daños por instalación defectuosa, desgaste natural por uso y rayaduras estéticas son exclusiones definitivas (no asegurables). En cambio, los riesgos catastróficos de Terremoto y Erupción Volcánica sí son asegurables en la póliza, por lo que constituyen la excepción.",
+    "explicacion": "En la póliza de Anuncios Luminosos, los daños por instalación defectuosa, desgaste natural por uso y rayaduras estéticas son exclusiones definitivas (no asegurables). En cambio, los riesgos catastróficos de Terremoto y Erupción Volcánica sí son asegurables en la póliza, por lo que constituyen la excepción."
   },
   {
     "id": 398,
@@ -9946,8 +9946,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Incendio, explosión y robo total",
-    "explanation": "Incendio, explosión y robo total son riesgos cubiertos en la póliza de anuncios luminosos. La corrosión, las fallas mecánicas y la humedad atmosférica son exclusiones.",
-    "explicacion": "Incendio, explosión y robo total son riesgos cubiertos en la póliza de anuncios luminosos. La corrosión, las fallas mecánicas y la humedad atmosférica son exclusiones."
+    "explanation": "La cobertura básica de la póliza de Anuncios Luminosos opera a riesgos nombrados, amparando principalmente Incendio, Explosión, Robo Total con violencia, Vientos tempestuosos, Granizo e Impacto de vehículos. Por el contrario, la corrosión paulatina, la humedad atmosférica y las fallas mecánicas o eléctricas internas están excluidas.",
+    "explicacion": "La cobertura básica de la póliza de Anuncios Luminosos opera a riesgos nombrados, amparando principalmente Incendio, Explosión, Robo Total con violencia, Vientos tempestuosos, Granizo e Impacto de vehículos. Por el contrario, la corrosión paulatina, la humedad atmosférica y las fallas mecánicas o eléctricas internas están excluidas."
   },
   {
     "id": 399,
@@ -9971,8 +9971,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Por ser un riesgo excluido no se cubre la pérdida",
-    "explanation": "Los daños por instalación defectuosa son un riesgo excluido del seguro de anuncios luminosos, por lo que la pérdida no se cubre. No se paga el 80% ni procede por convenio.",
-    "explicacion": "Los daños por instalación defectuosa son un riesgo excluido del seguro de anuncios luminosos, por lo que la pérdida no se cubre. No se paga el 80% ni procede por convenio."
+    "explanation": "En todos los ramos técnicos y diversos (incluyendo Anuncios Luminosos), los daños originados por una instalación defectuosa, anclaje inadecuado o error de montaje inicial constituyen una exclusión absoluta, ya que el seguro ampara accidentes súbitos e imprevistos y no garantiza la calidad del trabajo del instalador.",
+    "explicacion": "En todos los ramos técnicos y diversos (incluyendo Anuncios Luminosos), los daños originados por una instalación defectuosa, anclaje inadecuado o error de montaje inicial constituyen una exclusión absoluta, ya que el seguro ampara accidentes súbitos e imprevistos y no garantiza la calidad del trabajo del instalador."
   },
   {
     "id": 400,
@@ -10071,8 +10071,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Súbitos e imprevistos cuando se encuentran fuera del domicilio del asegurado",
-    "explanation": "La cobertura básica de objetos personales ampara daños o pérdidas súbitos e imprevistos cuando los bienes están fuera del domicilio del asegurado. Los daños por empleados o por su negligencia se excluyen.",
-    "explicacion": "La cobertura básica de objetos personales ampara daños o pérdidas súbitos e imprevistos cuando los bienes están fuera del domicilio del asegurado. Los daños por empleados o por su negligencia se excluyen."
+    "explanation": "El seguro de Objetos Personales (All Risks / Todo Riesgo para artículos portátiles como cámaras, relojes, joyas o instrumentos musicales) tiene como propósito principal proteger dichos bienes contra daños o pérdidas súbitas, accidentales e imprevistas mientras son portados o utilizados fuera del domicilio habitual del asegurado.",
+    "explicacion": "El seguro de Objetos Personales (All Risks / Todo Riesgo para artículos portátiles como cámaras, relojes, joyas o instrumentos musicales) tiene como propósito principal proteger dichos bienes contra daños o pérdidas súbitas, accidentales e imprevistas mientras son portados o utilizados fuera del domicilio habitual del asegurado."
   },
   {
     "id": 404,
@@ -10096,8 +10096,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "1, 3, 4",
-    "explanation": "Son exclusiones del seguro de objetos personales las raspaduras, la polilla y el hurto. Los daños accidentales y los ocurridos dentro del domicilio pueden cubrirse.",
-    "explicacion": "Son exclusiones del seguro de objetos personales las raspaduras, la polilla y el hurto. Los daños accidentales y los ocurridos dentro del domicilio pueden cubrirse."
+    "explanation": "En la póliza de Objetos Personales se excluyen: 1) defectos meramente estéticos como raspaduras o rayaduras, 3) deterioros graduales o plagas como la polilla, roedores y moho, y 4) el hurto o desaparición misteriosa sin violencia (para evitar fraude o descuido). Los accidentes súbitos y la estancia en el domicilio sí son asegurables.",
+    "explicacion": "En la póliza de Objetos Personales se excluyen: 1) defectos meramente estéticos como raspaduras o rayaduras, 3) deterioros graduales o plagas como la polilla, roedores y moho, y 4) el hurto o desaparición misteriosa sin violencia (para evitar fraude o descuido). Los accidentes súbitos y la estancia en el domicilio sí son asegurables."
   },
   {
     "id": 405,
@@ -10196,8 +10196,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Los gastos por reproducción y regrabación de la información.",
-    "explanation": "La sección de portadores externos de datos cubre los gastos de reproducción y regrabación de la información perdida. No cubre reponer portadores obsoletos ni mejorar la capacidad de los equipos.",
-    "explicacion": "La sección de portadores externos de datos cubre los gastos de reproducción y regrabación de la información perdida. No cubre reponer portadores obsoletos ni mejorar la capacidad de los equipos."
+    "explanation": "En la póliza de Equipo Electrónico, la Sección II (Portadores Externos de Datos) ampara tanto el valor físico del medio de almacenamiento dañado (discos, cintas, memorias externas) como los gastos necesarios para la reproducción, regrabación y restitución de la información o bases de datos contenidas en ellos a partir de respaldos.",
+    "explicacion": "En la póliza de Equipo Electrónico, la Sección II (Portadores Externos de Datos) ampara tanto el valor físico del medio de almacenamiento dañado (discos, cintas, memorias externas) como los gastos necesarios para la reproducción, regrabación y restitución de la información o bases de datos contenidas en ellos a partir de respaldos."
   },
   {
     "id": 409,
@@ -10246,8 +10246,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Portadores externos de datos.",
-    "explanation": "La sección II de la póliza de equipo electrónico es la de portadores externos de datos. La sección I es daños materiales y la sección III es incremento en el costo de operación.",
-    "explicacion": "La sección II de la póliza de equipo electrónico es la de portadores externos de datos. La sección I es daños materiales y la sección III es incremento en el costo de operación."
+    "explanation": "La póliza de Equipo Electrónico se estructura técnicamente en tres secciones: la Sección I ampara Daños Materiales al hardware y equipos; la Sección II se denomina 'Portadores Externos de Datos' (cubre los medios de almacenamiento y la regrabación de información); y la Sección III se denomina 'Incremento en el Costo de Operación'.",
+    "explicacion": "La póliza de Equipo Electrónico se estructura técnicamente en tres secciones: la Sección I ampara Daños Materiales al hardware y equipos; la Sección II se denomina 'Portadores Externos de Datos' (cubre los medios de almacenamiento y la regrabación de información); y la Sección III se denomina 'Incremento en el Costo de Operación'."
   },
   {
     "id": 411,
@@ -10271,8 +10271,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Incremento en el costo de operación.",
-    "explanation": "La sección III de la póliza de equipo electrónico es la de incremento en el costo de operación. La sección I es daños materiales y la II portadores externos de datos.",
-    "explicacion": "La sección III de la póliza de equipo electrónico es la de incremento en el costo de operación. La sección I es daños materiales y la II portadores externos de datos."
+    "explanation": "En la póliza de Equipo Electrónico, la Sección III se denomina 'Incremento en el Costo de Operación' y tiene por objeto indemnizar los gastos adicionales (como renta de equipos sustitutos o procesamiento externo) en que incurre la empresa para no detener sus actividades tras un siniestro amparado en la Sección I.",
+    "explicacion": "En la póliza de Equipo Electrónico, la Sección III se denomina 'Incremento en el Costo de Operación' y tiene por objeto indemnizar los gastos adicionales (como renta de equipos sustitutos o procesamiento externo) en que incurre la empresa para no detener sus actividades tras un siniestro amparado en la Sección I."
   },
   {
     "id": 412,
@@ -10296,8 +10296,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Riesgo excluido",
-    "explanation": "Los daños por vibraciones o choque sónico de aviones son un riesgo excluido en la póliza de equipo electrónico. No forman parte de la básica ni del convenio expreso.",
-    "explicacion": "Los daños por vibraciones o choque sónico de aviones son un riesgo excluido en la póliza de equipo electrónico. No forman parte de la básica ni del convenio expreso."
+    "explanation": "En las condiciones generales del seguro de Equipo Electrónico, los daños físicos ocasionados por ondas de presión, vibraciones continuas o choque sónico producido por aeronaves que rompen la barrera del sonido constituyen un Riesgo Excluido de la póliza.",
+    "explicacion": "En las condiciones generales del seguro de Equipo Electrónico, los daños físicos ocasionados por ondas de presión, vibraciones continuas o choque sónico producido por aeronaves que rompen la barrera del sonido constituyen un Riesgo Excluido de la póliza."
   },
   {
     "id": 413,
@@ -10496,8 +10496,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "1, 3, 5",
-    "explanation": "En portadores externos de datos se excluyen los gastos por falsa programación, la reducción de ingresos y el desgaste paulatino. Los gastos de reproducción son precisamente la cobertura.",
-    "explicacion": "En portadores externos de datos se excluyen los gastos por falsa programación, la reducción de ingresos y el desgaste paulatino. Los gastos de reproducción son precisamente la cobertura."
+    "explanation": "En la Sección II (Portadores Externos de Datos) del seguro de Equipo Electrónico se excluyen: 1) los gastos derivados de programación errónea o borrado accidental ('falsa programación'), 3) las pérdidas consecuenciales por reducción de ingresos o utilidades, y 5) el desgaste paulatino de los medios magnéticos. Los gastos de reproducción (2) son el objeto mismo de la cobertura.",
+    "explicacion": "En la Sección II (Portadores Externos de Datos) del seguro de Equipo Electrónico se excluyen: 1) los gastos derivados de programación errónea o borrado accidental ('falsa programación'), 3) las pérdidas consecuenciales por reducción de ingresos o utilidades, y 5) el desgaste paulatino de los medios magnéticos. Los gastos de reproducción (2) son el objeto mismo de la cobertura."
   },
   {
     "id": 421,
@@ -10621,8 +10621,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Para equipos nuevos, después del periodo de prueba.",
-    "explanation": "Para equipos nuevos, la cobertura del seguro de montaje termina después del periodo de prueba. Para equipos usados termina al concluir el montaje, sin periodo de prueba.",
-    "explicacion": "Para equipos nuevos, la cobertura del seguro de montaje termina después del periodo de prueba. Para equipos usados termina al concluir el montaje, sin periodo de prueba."
+    "explanation": "En el seguro técnico de Montaje de Maquinaria (EAR), la responsabilidad de la aseguradora para maquinaria y equipos nuevos concluye únicamente después de que finaliza satisfactoriamente el 'periodo de pruebas de operación' (normalmente hasta 4 semanas). En cambio, para maquinaria usada el seguro termina en el instante en que concluye el ensamblaje físico, sin cubrir pruebas.",
+    "explicacion": "En el seguro técnico de Montaje de Maquinaria (EAR), la responsabilidad de la aseguradora para maquinaria y equipos nuevos concluye únicamente después de que finaliza satisfactoriamente el 'periodo de pruebas de operación' (normalmente hasta 4 semanas). En cambio, para maquinaria usada el seguro termina en el instante en que concluye el ensamblaje físico, sin cubrir pruebas."
   },
   {
     "id": 426,
@@ -10696,8 +10696,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Riesgos del fabricante.",
-    "explanation": "El endoso de riesgos del fabricante cubre los daños por errores de diseño, defectos de construcción, fundición, materiales defectuosos y mano de obra. Los riesgos del contratista y del subcontratista se refieren a otros actores.",
-    "explicacion": "El endoso de riesgos del fabricante cubre los daños por errores de diseño, defectos de construcción, fundición, materiales defectuosos y mano de obra. Los riesgos del contratista y del subcontratista se refieren a otros actores."
+    "explanation": "Dentro del seguro de Montaje, el endoso adicional denominado 'Riesgos del Fabricante' extiende la cobertura para amparar los daños materiales causados a la maquinaria durante el montaje o pruebas a consecuencia de errores de cálculo o diseño, defectos de fundición, uso de materiales defectuosos o fallas de mano de obra en la fábrica de origen.",
+    "explicacion": "Dentro del seguro de Montaje, el endoso adicional denominado 'Riesgos del Fabricante' extiende la cobertura para amparar los daños materiales causados a la maquinaria durante el montaje o pruebas a consecuencia de errores de cálculo o diseño, defectos de fundición, uso de materiales defectuosos o fallas de mano de obra en la fábrica de origen."
   },
   {
     "id": 429,
@@ -10771,8 +10771,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Cobertura por convenio expreso.",
-    "explanation": "Los gastos de desmontaje y remoción de escombros se cubren por convenio expreso en la póliza de montaje. No forman parte de la básica ni están excluidos.",
-    "explicacion": "Los gastos de desmontaje y remoción de escombros se cubren por convenio expreso en la póliza de montaje. No forman parte de la básica ni están excluidos."
+    "explanation": "En las pólizas de Ramos Técnicos (Montaje y Rotura de Maquinaria), los gastos necesarios para desmontar estructuras, demoler restos y remover los escombros tras un siniestro no están incluidos en la suma asegurada básica del equipo, sino que deben contratarse como Cobertura bajo Convenio Expreso asignando un límite específico.",
+    "explicacion": "En las pólizas de Ramos Técnicos (Montaje y Rotura de Maquinaria), los gastos necesarios para desmontar estructuras, demoler restos y remover los escombros tras un siniestro no están incluidos en la suma asegurada básica del equipo, sino que deben contratarse como Cobertura bajo Convenio Expreso asignando un límite específico."
   },
   {
     "id": 432,
@@ -10896,8 +10896,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Montaje",
-    "explanation": "El montaje es la acción de ensamblar en un conjunto las partes de una máquina, estructura o puente. La fabricación produce las partes, el diseño las planea y la obra civil se refiere a construcción.",
-    "explicacion": "El montaje es la acción de ensamblar en un conjunto las partes de una máquina, estructura o puente. La fabricación produce las partes, el diseño las planea y la obra civil se refiere a construcción."
+    "explanation": "En ingeniería y seguros de Ramos Técnicos, se define como 'Montaje' a la acción técnica de posicionar, fijar y ensamblar en su sitio definitivo las distintas piezas y componentes que integran una máquina industrial, planta, estructura metálica o puente, hasta dejarlo listo para operar.",
+    "explicacion": "En ingeniería y seguros de Ramos Técnicos, se define como 'Montaje' a la acción técnica de posicionar, fijar y ensamblar en su sitio definitivo las distintas piezas y componentes que integran una máquina industrial, planta, estructura metálica o puente, hasta dejarlo listo para operar."
   },
   {
     "id": 437,
@@ -10996,8 +10996,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Impericia y sabotaje.",
-    "explanation": "La impericia y el sabotaje son riesgos amparados en rotura de maquinaria. El incendio y el huracán se cubren en la póliza de incendio, y el dolo del asegurado nunca se cubre.",
-    "explicacion": "La impericia y el sabotaje son riesgos amparados en rotura de maquinaria. El incendio y el huracán se cubren en la póliza de incendio, y el dolo del asegurado nunca se cubre."
+    "explanation": "La póliza de Rotura de Maquinaria cubre accidentes internos o de operación súbitos e imprevistos mientras la máquina trabaja o está en reposo, destacando entre sus riesgos amparados la impericia, negligencia o descuido de los operadores y el sabotaje individual del personal. Los riesgos externos como incendio o huracán corresponden al ramo de Incendio.",
+    "explicacion": "La póliza de Rotura de Maquinaria cubre accidentes internos o de operación súbitos e imprevistos mientras la máquina trabaja o está en reposo, destacando entre sus riesgos amparados la impericia, negligencia o descuido de los operadores y el sabotaje individual del personal. Los riesgos externos como incendio o huracán corresponden al ramo de Incendio."
   },
   {
     "id": 441,
@@ -11021,8 +11021,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "El periodo de inactividad.",
-    "explanation": "El periodo de inactividad es un riesgo por convenio expreso en rotura de maquinaria. Los fenómenos naturales se cubren en incendio, y los cambios estructurales y las pérdidas consecuenciales se excluyen.",
-    "explicacion": "El periodo de inactividad es un riesgo por convenio expreso en rotura de maquinaria. Los fenómenos naturales se cubren en incendio, y los cambios estructurales y las pérdidas consecuenciales se excluyen."
+    "explanation": "En el seguro de Rotura de Maquinaria, la consideración de 'Periodo de Inactividad' (ajustes o devolución parcial de prima cuando la planta o máquina permanece detenida por periodos prolongados programados, o su cobertura especial) se pacta mediante Convenio Expreso. Los fenómenos naturales pertenecen a Incendio y las pérdidas consecuenciales a su propia póliza.",
+    "explicacion": "En el seguro de Rotura de Maquinaria, la consideración de 'Periodo de Inactividad' (ajustes o devolución parcial de prima cuando la planta o máquina permanece detenida por periodos prolongados programados, o su cobertura especial) se pacta mediante Convenio Expreso. Los fenómenos naturales pertenecen a Incendio y las pérdidas consecuenciales a su propia póliza."
   },
   {
     "id": 442,
@@ -11121,8 +11121,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Incendio, rayo y explosión.",
-    "explanation": "Incendio, rayo y explosión se excluyen de rotura de maquinaria porque se cubren en la póliza de incendio. El sabotaje y los errores de diseño son riesgos de rotura.",
-    "explicacion": "Incendio, rayo y explosión se excluyen de rotura de maquinaria porque se cubren en la póliza de incendio. El sabotaje y los errores de diseño son riesgos de rotura."
+    "explanation": "Para evitar duplicidad de coberturas con el ramo de Incendio, la póliza de Rotura de Maquinaria excluye expresamente los daños causados por Incendio, Rayo y Explosión química externa. En cambio, sí ampara accidentes mecánicos/eléctricos internos como errores de diseño, corto circuito, fuerza centrífuga o sabotaje de empleados.",
+    "explicacion": "Para evitar duplicidad de coberturas con el ramo de Incendio, la póliza de Rotura de Maquinaria excluye expresamente los daños causados por Incendio, Rayo y Explosión química externa. En cambio, sí ampara accidentes mecánicos/eléctricos internos como errores de diseño, corto circuito, fuerza centrífuga o sabotaje de empleados."
   },
   {
     "id": 446,
@@ -11146,8 +11146,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Exclusión total.",
-    "explanation": "El desgaste, la corrosión y la oxidación son exclusiones totales en rotura de maquinaria, porque son deterioros graduales. No se cubren por convenio.",
-    "explicacion": "El desgaste, la corrosión y la oxidación son exclusiones totales en rotura de maquinaria, porque son deterioros graduales. No se cubren por convenio."
+    "explanation": "En todos los seguros de Ramos Técnicos (Rotura de Maquinaria, Calderas, Equipo Electrónico), el deterioro previsible y paulatino como el desgaste natural por uso, la cavitación, la erosión, la corrosión y la oxidación constituyen una Exclusión Total, ya que son costos de mantenimiento preventivo y no eventos fortuitos.",
+    "explicacion": "En todos los seguros de Ramos Técnicos (Rotura de Maquinaria, Calderas, Equipo Electrónico), el deterioro previsible y paulatino como el desgaste natural por uso, la cavitación, la erosión, la corrosión y la oxidación constituyen una Exclusión Total, ya que son costos de mantenimiento preventivo y no eventos fortuitos."
   },
   {
     "id": 447,
@@ -11421,8 +11421,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Pulverizadores de carbón.",
-    "explanation": "Los pulverizadores de carbón son bienes excluidos en la póliza de calderas. Las huelgas, el agrietamiento y las pérdidas consecuenciales son riesgos, no bienes.",
-    "explicacion": "Los pulverizadores de carbón son bienes excluidos en la póliza de calderas. Las huelgas, el agrietamiento y las pérdidas consecuenciales son riesgos, no bienes."
+    "explanation": "En la póliza de Calderas y Recipientes Sujetos a Presión, los 'pulverizadores de carbón', las bombas alimentadoras externas, los tapones fusibles y los revestimientos refractarios (equipo no metálico) son Bienes Excluidos. Las huelgas, el agrietamiento y las pérdidas consecuenciales no son bienes físicos, sino riesgos o coberturas.",
+    "explicacion": "En la póliza de Calderas y Recipientes Sujetos a Presión, los 'pulverizadores de carbón', las bombas alimentadoras externas, los tapones fusibles y los revestimientos refractarios (equipo no metálico) son Bienes Excluidos. Las huelgas, el agrietamiento y las pérdidas consecuenciales no son bienes físicos, sino riesgos o coberturas."
   },
   {
     "id": 458,
@@ -11521,8 +11521,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "5, 6, 7",
-    "explanation": "No son asegurables en calderas las bombas alimentadoras de agua, los pulverizadores de carbón y los tapones fusibles. Las tuberías y el equipo de control se consideran parte asegurable.",
-    "explicacion": "No son asegurables en calderas las bombas alimentadoras de agua, los pulverizadores de carbón y los tapones fusibles. Las tuberías y el equipo de control se consideran parte asegurable."
+    "explanation": "Dentro del seguro de Calderas y Recipientes Sujetos a Presión, se catalogan como bienes NO asegurables los componentes externos de preparación o consumibles de desgaste/seguridad: 5) bombas alimentadoras de agua, 6) pulverizadores de carbón y 7) tapones fusibles o discos de seguridad. El cuerpo de la caldera, sus tuberías internas y el equipo de control sí son asegurables.",
+    "explicacion": "Dentro del seguro de Calderas y Recipientes Sujetos a Presión, se catalogan como bienes NO asegurables los componentes externos de preparación o consumibles de desgaste/seguridad: 5) bombas alimentadoras de agua, 6) pulverizadores de carbón y 7) tapones fusibles o discos de seguridad. El cuerpo de la caldera, sus tuberías internas y el equipo de control sí son asegurables."
   },
   {
     "id": 462,
@@ -11571,8 +11571,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "1, 4, 5",
-    "explanation": "Los quemadores de combustible, los ventiladores de tiro forzado y los inyectores se amparan en la básica de calderas. El equipo no metálico y los discos de seguridad se excluyen.",
-    "explicacion": "Los quemadores de combustible, los ventiladores de tiro forzado y los inyectores se amparan en la básica de calderas. El equipo no metálico y los discos de seguridad se excluyen."
+    "explanation": "La cobertura básica del seguro de Calderas ampara la estructura metálica principal y sus accesorios integrados de combustión e inyección: 1) quemadores de combustible, 4) ventiladores de tiro forzado y 5) inyectores. Se excluyen los revestimientos refractarios no metálicos (2) y los discos o tapones de seguridad (3) cuya función misma es romperse para liberar presión.",
+    "explicacion": "La cobertura básica del seguro de Calderas ampara la estructura metálica principal y sus accesorios integrados de combustión e inyección: 1) quemadores de combustible, 4) ventiladores de tiro forzado y 5) inyectores. Se excluyen los revestimientos refractarios no metálicos (2) y los discos o tapones de seguridad (3) cuya función misma es romperse para liberar presión."
   },
   {
     "id": 464,
@@ -11621,8 +11621,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "1, 2, 4",
-    "explanation": "La póliza se divide en daños materiales a calderas y recipientes con fogón, gastos extraordinarios y daños materiales a recipientes sujetos a presión sin fogón. Compresores y motores de combustión interna no son secciones de esta póliza.",
-    "explicacion": "La póliza se divide en daños materiales a calderas y recipientes con fogón, gastos extraordinarios y daños materiales a recipientes sujetos a presión sin fogón. Compresores y motores de combustión interna no son secciones de esta póliza."
+    "explanation": "La póliza de Calderas y Recipientes Sujetos a Presión se divide técnicamente en 3 secciones: Sección I (Daños materiales a calderas y recipientes con fogón, número 1), Sección II (Daños materiales a recipientes sujetos a presión sin fogón, número 4) y Sección III (Gastos extraordinarios, número 2). Los compresores y motores de combustión interna pertenecen a Rotura de Maquinaria.",
+    "explicacion": "La póliza de Calderas y Recipientes Sujetos a Presión se divide técnicamente en 3 secciones: Sección I (Daños materiales a calderas y recipientes con fogón, número 1), Sección II (Daños materiales a recipientes sujetos a presión sin fogón, número 4) y Sección III (Gastos extraordinarios, número 2). Los compresores y motores de combustión interna pertenecen a Rotura de Maquinaria."
   },
   {
     "id": 466,
@@ -11646,8 +11646,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Equipos auxiliares",
-    "explanation": "Los equipos auxiliares de la caldera sí se cubren. Los equipos no metálicos, los discos de seguridad y los pulverizadores de carbón son bienes no cubiertos.",
-    "explicacion": "Los equipos auxiliares de la caldera sí se cubren. Los equipos no metálicos, los discos de seguridad y los pulverizadores de carbón son bienes no cubiertos."
+    "explanation": "En el seguro de Calderas y Recipientes Sujetos a Presión, los 'equipos auxiliares' integrados a la operación de la caldera (como quemadores, inyectores y ventiladores de tiro forzado) sí están cubiertos; en cambio, los recubrimientos no metálicos (ladrillo refractario), discos de seguridad y pulverizadores de carbón son bienes expresamente excluidos.",
+    "explicacion": "En el seguro de Calderas y Recipientes Sujetos a Presión, los 'equipos auxiliares' integrados a la operación de la caldera (como quemadores, inyectores y ventiladores de tiro forzado) sí están cubiertos; en cambio, los recubrimientos no metálicos (ladrillo refractario), discos de seguridad y pulverizadores de carbón son bienes expresamente excluidos."
   },
   {
     "id": 467,
@@ -11671,8 +11671,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Cobertura básica",
-    "explanation": "El daño a la caldera por explosión del gas no quemado en el horno se ampara en la cobertura básica. No requiere coberturas adicionales.",
-    "explicacion": "El daño a la caldera por explosión del gas no quemado en el horno se ampara en la cobertura básica. No requiere coberturas adicionales."
+    "explanation": "La Cobertura Básica de la póliza de Calderas ampara dos grandes riesgos propios de su operación: 1) la rotura o colapso súbito por la presión interna del vapor o fluido, y 2) la explosión súbita de gases o combustible no quemado acumulados dentro del horno, fogón o conductos de humos de la caldera.",
+    "explicacion": "La Cobertura Básica de la póliza de Calderas ampara dos grandes riesgos propios de su operación: 1) la rotura o colapso súbito por la presión interna del vapor o fluido, y 2) la explosión súbita de gases o combustible no quemado acumulados dentro del horno, fogón o conductos de humos de la caldera."
   },
   {
     "id": 468,
@@ -11746,8 +11746,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Daños existentes y exceder la capacidad de operación de la maquina.",
-    "explanation": "Los daños preexistentes y exceder la capacidad de operación de la máquina son riesgos excluidos en maquinaria pesada móvil. Incendio, volcadura y hundimiento de puentes son riesgos cubiertos.",
-    "explicacion": "Los daños preexistentes y exceder la capacidad de operación de la máquina son riesgos excluidos en maquinaria pesada móvil. Incendio, volcadura y hundimiento de puentes son riesgos cubiertos."
+    "explanation": "En el seguro de Maquinaria Pesada Móvil (Equipo de Contratistas), constituyen exclusiones fundamentales los daños preexistentes al inicio de la póliza y los siniestros provocados por sobrecargar la máquina o exceder su capacidad nominal de diseño. En cambio, accidentes externos como incendio, volcadura, colisión y hundimiento de puentes sí están amparados.",
+    "explicacion": "En el seguro de Maquinaria Pesada Móvil (Equipo de Contratistas), constituyen exclusiones fundamentales los daños preexistentes al inicio de la póliza y los siniestros provocados por sobrecargar la máquina o exceder su capacidad nominal de diseño. En cambio, accidentes externos como incendio, volcadura, colisión y hundimiento de puentes sí están amparados."
   },
   {
     "id": 471,
@@ -11771,8 +11771,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Cobertura por convenio.",
-    "explanation": "Los daños por huelguistas se cubren por convenio en la póliza de equipo de contratistas. No forman parte de la básica ni están excluidos.",
-    "explicacion": "Los daños por huelguistas se cubren por convenio en la póliza de equipo de contratistas. No forman parte de la básica ni están excluidos."
+    "explanation": "En la póliza de Equipo de Contratistas (maquinaria pesada móvil de construcción), los daños materiales directos ocasionados por huelguistas, alborotos populares o personas malintencionadas no están incluidos en la cobertura básica, pero pueden ampararse contratando la Cobertura por Convenio Expreso correspondiente.",
+    "explicacion": "En la póliza de Equipo de Contratistas (maquinaria pesada móvil de construcción), los daños materiales directos ocasionados por huelguistas, alborotos populares o personas malintencionadas no están incluidos en la cobertura básica, pero pueden ampararse contratando la Cobertura por Convenio Expreso correspondiente."
   },
   {
     "id": 472,
@@ -11796,8 +11796,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Valor real.",
-    "explanation": "Si la reparación iguala o supera el valor real, se considera pérdida total y se indemniza a valor real. El valor de reposición aplica a pérdidas parciales.",
-    "explicacion": "Si la reparación iguala o supera el valor real, se considera pérdida total y se indemniza a valor real. El valor de reposición aplica a pérdidas parciales."
+    "explanation": "En el seguro de Equipo de Contratistas, el criterio técnico de indemnización distingue entre pérdida parcial (donde se pagan los costos de reparación y refacciones a Valor de Reposición) y Pérdida Total (cuando la reparación iguala o supera el Valor Real del equipo): en pérdida total se indemniza el Valor Real (restando depreciación por uso) para evitar enriquecimiento indebido.",
+    "explicacion": "En el seguro de Equipo de Contratistas, el criterio técnico de indemnización distingue entre pérdida parcial (donde se pagan los costos de reparación y refacciones a Valor de Reposición) y Pérdida Total (cuando la reparación iguala o supera el Valor Real del equipo): en pérdida total se indemniza el Valor Real (restando depreciación por uso) para evitar enriquecimiento indebido."
   },
   {
     "id": 473,
@@ -11871,8 +11871,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Valor de reposición.",
-    "explanation": "La suma asegurada de equipo de contratistas debe ser igual al valor de reposición de los equipos. El valor real o comercial generaría infraseguro.",
-    "explicacion": "La suma asegurada de equipo de contratistas debe ser igual al valor de reposición de los equipos. El valor real o comercial generaría infraseguro."
+    "explanation": "En los seguros de Ramos Técnicos (Equipo de Contratistas, Rotura de Maquinaria, Equipo Electrónico), es obligación del asegurado declarar y mantener como Suma Asegurada el 'Valor de Reposición' (lo que cuesta un equipo nuevo igual), incluso si el equipo tiene varios años de uso; de declararse un monto menor (como el valor real o comercial), se incurrirá en infraseguro y se aplicará la regla proporcional.",
+    "explicacion": "En los seguros de Ramos Técnicos (Equipo de Contratistas, Rotura de Maquinaria, Equipo Electrónico), es obligación del asegurado declarar y mantener como Suma Asegurada el 'Valor de Reposición' (lo que cuesta un equipo nuevo igual), incluso si el equipo tiene varios años de uso; de declararse un monto menor (como el valor real o comercial), se incurrirá en infraseguro y se aplicará la regla proporcional."
   },
   {
     "id": 476,
@@ -11946,8 +11946,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "1, 4",
-    "explanation": "Se excluyen los equipos que trabajan sobre el agua y los de perforación. Los equipos de nivelación y compactación son típicos de contratistas y se cubren.",
-    "explicacion": "Se excluyen los equipos que trabajan sobre el agua y los de perforación. Los equipos de nivelación y compactación son típicos de contratistas y se cubren."
+    "explanation": "En la póliza estándar de Equipo de Contratistas se aseguran máquinas terrestres de movimiento de tierras (tractores de nivelación, rodillos de compactación, excavadoras). Sin embargo, se excluyen los equipos que operan flotando sobre el agua (dragas marítimas, barcazas) y los equipos especializados de perforación profunda (pozos petroleros o mineros) por su riesgo catastrófico.",
+    "explicacion": "En la póliza estándar de Equipo de Contratistas se aseguran máquinas terrestres de movimiento de tierras (tractores de nivelación, rodillos de compactación, excavadoras). Sin embargo, se excluyen los equipos que operan flotando sobre el agua (dragas marítimas, barcazas) y los equipos especializados de perforación profunda (pozos petroleros o mineros) por su riesgo catastrófico."
   },
   {
     "id": 479,
@@ -11971,8 +11971,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "1, 2, 6",
-    "explanation": "Pueden cubrirse por convenio expreso los bienes en operación bajo tierra, los gastos extraordinarios y los actos de huelguistas. La sobrecarga y la congelación se excluyen.",
-    "explicacion": "Pueden cubrirse por convenio expreso los bienes en operación bajo tierra, los gastos extraordinarios y los actos de huelguistas. La sobrecarga y la congelación se excluyen."
+    "explanation": "Dentro del seguro de Equipo de Contratistas, pueden contratarse mediante Convenio Expreso: 1) el riesgo de equipos trabajando en obras subterráneas o túneles, 2) los gastos extraordinarios (flete expreso, horas extra de reparación) y 6) los daños causados por huelguistas. En cambio, la sobrecarga intencional y la congelación del refrigerante por falta de anticongelante son exclusiones.",
+    "explicacion": "Dentro del seguro de Equipo de Contratistas, pueden contratarse mediante Convenio Expreso: 1) el riesgo de equipos trabajando en obras subterráneas o túneles, 2) los gastos extraordinarios (flete expreso, horas extra de reparación) y 6) los daños causados por huelguistas. En cambio, la sobrecarga intencional y la congelación del refrigerante por falta de anticongelante son exclusiones."
   },
   {
     "id": 480,
@@ -11996,8 +11996,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Por convenio expreso.",
-    "explanation": "En obra civil los daños por granizo, ciclón y huracán se cubren por convenio expreso. No forman parte de la cobertura básica ni están excluidos.",
-    "explicacion": "En obra civil los daños por granizo, ciclón y huracán se cubren por convenio expreso. No forman parte de la cobertura básica ni están excluidos."
+    "explanation": "En la póliza de Seguro de Obra Civil (Todo Riesgo de Construcción - CAR), aunque se denomina a todo riesgo, los fenómenos hidrometeorológicos y catastróficos (granizo, ciclón, huracán, inundación y terremoto) requieren contratarse específicamente como Coberturas por Convenio Expreso para ajustar la tarifa y el deducible a la ubicación geográfica de la obra.",
+    "explicacion": "En la póliza de Seguro de Obra Civil (Todo Riesgo de Construcción - CAR), aunque se denomina a todo riesgo, los fenómenos hidrometeorológicos y catastróficos (granizo, ciclón, huracán, inundación y terremoto) requieren contratarse específicamente como Coberturas por Convenio Expreso para ajustar la tarifa y el deducible a la ubicación geográfica de la obra."
   },
   {
     "id": 481,
@@ -12021,8 +12021,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Montaje de maquinaria y equipo.",
-    "explanation": "En obra civil puede contratarse por convenio expreso el montaje de maquinaria y equipo. Las embarcaciones y los planos se excluyen, y las instalaciones subterráneas son materia de responsabilidad civil.",
-    "explicacion": "En obra civil puede contratarse por convenio expreso el montaje de maquinaria y equipo. Las embarcaciones y los planos se excluyen, y las instalaciones subterráneas son materia de responsabilidad civil."
+    "explanation": "La póliza de Obra Civil cubre principalmente las estructuras y edificaciones en proceso de construcción; sin embargo, permite incluir mediante Convenio Expreso el 'montaje de maquinaria y equipo' auxiliar propio de las instalaciones del edificio (como elevadores, escaleras eléctricas o aire acondicionado central). Los planos y embarcaciones son bienes excluidos.",
+    "explicacion": "La póliza de Obra Civil cubre principalmente las estructuras y edificaciones en proceso de construcción; sin embargo, permite incluir mediante Convenio Expreso el 'montaje de maquinaria y equipo' auxiliar propio de las instalaciones del edificio (como elevadores, escaleras eléctricas o aire acondicionado central). Los planos y embarcaciones son bienes excluidos."
   },
   {
     "id": 482,
@@ -12096,8 +12096,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Daños materiales.",
-    "explanation": "La sección I de la póliza de obra civil es la de daños materiales a la obra. Los gastos extraordinarios, la responsabilidad civil y la remoción de escombros corresponden a otras secciones o coberturas.",
-    "explicacion": "La sección I de la póliza de obra civil es la de daños materiales a la obra. Los gastos extraordinarios, la responsabilidad civil y la remoción de escombros corresponden a otras secciones o coberturas."
+    "explanation": "La póliza de Seguro de Obra Civil (CAR) se estructura en tres secciones principales: la Sección I se denomina 'Daños Materiales' (protege la obra civil misma contra colapso, incendio, defectos o fenómenos naturales); la Sección II cubre Gastos Extraordinarios y Remoción de Escombros; y la Sección III ampara la Responsabilidad Civil frente a terceros.",
+    "explicacion": "La póliza de Seguro de Obra Civil (CAR) se estructura en tres secciones principales: la Sección I se denomina 'Daños Materiales' (protege la obra civil misma contra colapso, incendio, defectos o fenómenos naturales); la Sección II cubre Gastos Extraordinarios y Remoción de Escombros; y la Sección III ampara la Responsabilidad Civil frente a terceros."
   },
   {
     "id": 485,
@@ -12171,8 +12171,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Sección III",
-    "explanation": "El apuntalamiento y la demolición son coberturas adicionales de la sección III, por los daños que pueden causar a terceros. No son exclusiones.",
-    "explicacion": "El apuntalamiento y la demolición son coberturas adicionales de la sección III, por los daños que pueden causar a terceros. No son exclusiones."
+    "explanation": "En la póliza de Obra Civil, las coberturas de 'Apuntalamiento y Demolición' (o gastos para proteger propiedades colindantes por debilitamiento de cimientos y vibraciones de la obra) se contratan como coberturas adicionales dentro de la Sección III (Responsabilidad Civil), pues su finalidad es prevenir o resarcir daños estructurales a inmuebles de terceros vecinos.",
+    "explicacion": "En la póliza de Obra Civil, las coberturas de 'Apuntalamiento y Demolición' (o gastos para proteger propiedades colindantes por debilitamiento de cimientos y vibraciones de la obra) se contratan como coberturas adicionales dentro de la Sección III (Responsabilidad Civil), pues su finalidad es prevenir o resarcir daños estructurales a inmuebles de terceros vecinos."
   },
   {
     "id": 488,
@@ -12196,8 +12196,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Gastos extraordinarios y remoción de escombros.",
-    "explanation": "La sección II de obra civil cubre gastos extraordinarios y remoción de escombros. Las costas y gastos de reclamaciones corresponden a la sección de RC, y los daños punitivos se excluyen.",
-    "explicacion": "La sección II de obra civil cubre gastos extraordinarios y remoción de escombros. Las costas y gastos de reclamaciones corresponden a la sección de RC, y los daños punitivos se excluyen."
+    "explanation": "En la estructura de la póliza de Obra Civil, la Sección II tiene como cobertura básica amparar los 'Gastos Extraordinarios' (horas extra, trabajo nocturno, flete expreso para acelerar la reconstrucción tras un siniestro) y la 'Remoción de Escombros' del predio. Las costas legales pertenecen a la Sección III (Responsabilidad Civil).",
+    "explicacion": "En la estructura de la póliza de Obra Civil, la Sección II tiene como cobertura básica amparar los 'Gastos Extraordinarios' (horas extra, trabajo nocturno, flete expreso para acelerar la reconstrucción tras un siniestro) y la 'Remoción de Escombros' del predio. Las costas legales pertenecen a la Sección III (Responsabilidad Civil)."
   },
   {
     "id": 489,
@@ -12221,8 +12221,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "7 meses",
-    "explanation": "La vigencia del seguro de obra civil corresponde al periodo estimado de construcción, en este caso 7 meses. No es abierta ni se renueva mensualmente.",
-    "explicacion": "La vigencia del seguro de obra civil corresponde al periodo estimado de construcción, en este caso 7 meses. No es abierta ni se renueva mensualmente."
+    "explanation": "A diferencia de los seguros anuales tradicionales (como Incendio o Autos), los seguros de construcción (Obra Civil y Montaje) se contratan por la duración exacta proyectada para el proyecto desde el inicio de los trabajos hasta la entrega de la obra; por tanto, si el programa de construcción es de 7 meses, la vigencia de la póliza será de 7 meses.",
+    "explicacion": "A diferencia de los seguros anuales tradicionales (como Incendio o Autos), los seguros de construcción (Obra Civil y Montaje) se contratan por la duración exacta proyectada para el proyecto desde el inicio de los trabajos hasta la entrega de la obra; por tanto, si el programa de construcción es de 7 meses, la vigencia de la póliza será de 7 meses."
   },
   {
     "id": 490,
@@ -12321,8 +12321,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Daños por errores de diseño y daños por interrupción de la obra",
-    "explanation": "Los errores de diseño y los daños por interrupción de la obra se excluyen de la cobertura básica de obra civil. La impericia se cubre, y la inundación, el huracán, el incendio y la explosión pueden ampararse.",
-    "explicacion": "Los errores de diseño y los daños por interrupción de la obra se excluyen de la cobertura básica de obra civil. La impericia se cubre, y la inundación, el huracán, el incendio y la explosión pueden ampararse."
+    "explanation": "En la cobertura básica del seguro de Obra Civil se excluyen: 1) los daños originados directamente por errores de cálculo o diseño defectuoso del ingeniero/arquitecto, y 2) los perjuicios económicos consecuenciales o multas contractuales por el retraso o interrupción de la obra. En cambio, la impericia de los trabajadores sí está cubierta.",
+    "explicacion": "En la cobertura básica del seguro de Obra Civil se excluyen: 1) los daños originados directamente por errores de cálculo o diseño defectuoso del ingeniero/arquitecto, y 2) los perjuicios económicos consecuenciales o multas contractuales por el retraso o interrupción de la obra. En cambio, la impericia de los trabajadores sí está cubierta."
   },
   {
     "id": 494,
@@ -15596,8 +15596,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Mutualidades de armadores que cubren responsabilidades de los buques frente a terceros, como contaminación, lesiones a tripulantes y daños a la carga.",
-    "explanation": "Los clubes P&I son mutualidades de armadores que cubren responsabilidades de los buques que el seguro de casco no ampara, como contaminación, lesiones a tripulantes o daños a la carga. No son asociaciones de agentes, oficinas de la CONDUSEF ni sociedades clasificadoras.",
-    "explicacion": "Los clubes P&I son mutualidades de armadores que cubren responsabilidades de los buques que el seguro de casco no ampara, como contaminación, lesiones a tripulantes o daños a la carga. No son asociaciones de agentes, oficinas de la CONDUSEF ni sociedades clasificadoras."
+    "explanation": "En el comercio marítimo internacional, los Clubes de Protección e Indemnización (P&I Clubs) son asociaciones mutualistas de armadores y navieros creadas para cubrir las enormes responsabilidades civiles frente a terceros que las pólizas comerciales de Casco y Maquinaria no amparan, tales como derrames y contaminación marina, lesiones o muerte de la tripulación, colisión con muelles y pérdida de carga.",
+    "explicacion": "En el comercio marítimo internacional, los Clubes de Protección e Indemnización (P&I Clubs) son asociaciones mutualistas de armadores y navieros creadas para cubrir las enormes responsabilidades civiles frente a terceros que las pólizas comerciales de Casco y Maquinaria no amparan, tales como derrames y contaminación marina, lesiones o muerte de la tripulación, colisión con muelles y pérdida de carga."
   },
   {
     "id": 625,

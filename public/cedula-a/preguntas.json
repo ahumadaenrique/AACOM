@@ -6131,8 +6131,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Tratamientos excluidos.",
-    "explanation": "Los tratamientos no indispensables para recuperar la salud, como los estéticos, dietéticos, de obesidad o calvicie, son exclusiones de la póliza de gastos médicos mayores. No se aseguran con extraprima, periodo de espera ni convenio expreso.",
-    "explicacion": "Los tratamientos no indispensables para recuperar la salud, como los estéticos, dietéticos, de obesidad o calvicie, son exclusiones de la póliza de gastos médicos mayores. No se aseguran con extraprima, periodo de espera ni convenio expreso.",
+    "explanation": "En Gastos Médicos Mayores, el objeto del seguro es resarcir gastos médicos necesarios para restablecer la salud alterada por un accidente o enfermedad cubierta. Por ello, los tratamientos estéticos, dietéticos, de control de peso (obesidad) o calvicie carecen de necesidad médica curativa y constituyen exclusiones absolutas de la póliza (no son contratables ni por convenio expreso, ni con extraprima o periodo de espera).",
+    "explicacion": "En Gastos Médicos Mayores, el objeto del seguro es resarcir gastos médicos necesarios para restablecer la salud alterada por un accidente o enfermedad cubierta. Por ello, los tratamientos estéticos, dietéticos, de control de peso (obesidad) o calvicie carecen de necesidad médica curativa y constituyen exclusiones absolutas de la póliza (no son contratables ni por convenio expreso, ni con extraprima o periodo de espera).",
     "has_error": false
   },
   {
@@ -6391,8 +6391,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "1a, c, e; 2b, d, f",
-    "explanation": "El deducible es una cantidad fija a cargo del asegurado, se aplica una vez por padecimiento y ayuda a reducir el costo de la prima. El coaseguro es un porcentaje a cargo del asegurado que se aplica sobre los gastos cubiertos que exceden el deducible.",
-    "explicacion": "El deducible es una cantidad fija a cargo del asegurado, se aplica una vez por padecimiento y ayuda a reducir el costo de la prima. El coaseguro es un porcentaje a cargo del asegurado que se aplica sobre los gastos cubiertos que exceden el deducible.",
+    "explanation": "El deducible es un monto fijo (1c) que se aplica una sola vez por cada enfermedad o accidente cubierto (1a) y cuya función actuarial es eliminar reclamaciones pequeñas para reducir el costo de la prima (1e). Por su parte, el coaseguro es un porcentaje de participación a cargo del asegurado (2b) que se calcula sobre los gastos médicos procedentes una vez descontado el deducible (2f).",
+    "explicacion": "El deducible es un monto fijo (1c) que se aplica una sola vez por cada enfermedad o accidente cubierto (1a) y cuya función actuarial es eliminar reclamaciones pequeñas para reducir el costo de la prima (1e). Por su parte, el coaseguro es un porcentaje de participación a cargo del asegurado (2b) que se calcula sobre los gastos médicos procedentes una vez descontado el deducible (2f).",
     "has_error": false
   },
   {
@@ -6417,8 +6417,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Radioterapia",
-    "explanation": "La radioterapia es un tratamiento médico cubierto por el seguro de salud. Los lentes de contacto, el mantenimiento de prótesis y los servicios fuera del territorio nacional suelen ser exclusiones.",
-    "explicacion": "La radioterapia es un tratamiento médico cubierto por el seguro de salud. Los lentes de contacto, el mantenimiento de prótesis y los servicios fuera del territorio nacional suelen ser exclusiones.",
+    "explanation": "En los seguros de salud y gastos médicos, la radioterapia (al igual que la quimioterapia) es un tratamiento oncológico terapéutico indispensable y por tanto sí está amparado por la póliza. En cambio, los lentes de contacto, el mantenimiento o reemplazo de prótesis por desgaste y la atención médica electiva fuera del territorio nacional son exclusiones estándar.",
+    "explicacion": "En los seguros de salud y gastos médicos, la radioterapia (al igual que la quimioterapia) es un tratamiento oncológico terapéutico indispensable y por tanto sí está amparado por la póliza. En cambio, los lentes de contacto, el mantenimiento o reemplazo de prótesis por desgaste y la atención médica electiva fuera del territorio nacional son exclusiones estándar.",
     "has_error": false
   },
   {
@@ -7067,8 +7067,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "14 en adelante",
-    "explanation": "La atención en gineco-obstetricia se otorga a partir de los 14 años. Los rangos de edad pediátrica de las demás opciones no corresponden a esta especialidad.",
-    "explicacion": "La atención en gineco-obstetricia se otorga a partir de los 14 años. Los rangos de edad pediátrica de las demás opciones no corresponden a esta especialidad.",
+    "explanation": "Conforme a los criterios médico-normativos de las Instituciones de Seguros Especializadas en Salud (ISES), la atención preventiva y curativa en la especialidad de gineco-obstetricia se otorga a mujeres a partir de los 14 años de edad en adelante, mientras que a menores de 14 años les corresponde el área de pediatría.",
+    "explicacion": "Conforme a los criterios médico-normativos de las Instituciones de Seguros Especializadas en Salud (ISES), la atención preventiva y curativa en la especialidad de gineco-obstetricia se otorga a mujeres a partir de los 14 años de edad en adelante, mientras que a menores de 14 años les corresponde el área de pediatría.",
     "has_error": false
   },
   {
@@ -8029,8 +8029,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "2, 4, 6",
-    "explanation": "La cobertura de daños materiales no ampara la privación del uso del vehículo, el desgaste natural ni las fallas mecánicas. Los motines, la rotura de cristales, la transportación y el derrumbe sí se encuentran entre los riesgos cubiertos.",
-    "explicacion": "La cobertura de daños materiales no ampara la privación del uso del vehículo, el desgaste natural ni las fallas mecánicas. Los motines, la rotura de cristales, la transportación y el derrumbe sí se encuentran entre los riesgos cubiertos.",
+    "explanation": "La cobertura de Daños Materiales protege pérdidas físicas directas y súbitas al vehículo (como motines, rotura de cristales, riesgos durante la transportación y derrumbes). En cambio, se excluyen: el perjuicio económico indirecto por privación del uso del auto (2), el desgaste natural por uso (4) y las fallas mecánicas o eléctricas internas (6), ya que no son accidentes súbitos externos.",
+    "explicacion": "La cobertura de Daños Materiales protege pérdidas físicas directas y súbitas al vehículo (como motines, rotura de cristales, riesgos durante la transportación y derrumbes). En cambio, se excluyen: el perjuicio económico indirecto por privación del uso del auto (2), el desgaste natural por uso (4) y las fallas mecánicas o eléctricas internas (6), ya que no son accidentes súbitos externos.",
     "has_error": false
   },
   {
@@ -9277,8 +9277,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "1, 4, 5",
-    "explanation": "La cobertura básica de terremoto y erupción volcánica ampara el sismo, la emanación de ceniza volcánica y el derrame de lava. El maremoto, el acoplamiento y las vibraciones del suelo no se incluyen en la cobertura básica de esta forma.",
-    "explicacion": "La cobertura básica de terremoto y erupción volcánica ampara el sismo, la emanación de ceniza volcánica y el derrame de lava. El maremoto, el acoplamiento y las vibraciones del suelo no se incluyen en la cobertura básica de esta forma.",
+    "explanation": "La cobertura básica del endoso de Terremoto y/o Erupción Volcánica ampara los daños materiales directos causados por sismo (1), emanación de ceniza volcánica (4) y derrame de lava (5). Fenómenos como el maremoto/tsunami corresponden al ramo de riesgos hidrometeorológicos, mientras que asentamientos o vibraciones no sísmicas del subsuelo están excluidos.",
+    "explicacion": "La cobertura básica del endoso de Terremoto y/o Erupción Volcánica ampara los daños materiales directos causados por sismo (1), emanación de ceniza volcánica (4) y derrame de lava (5). Fenómenos como el maremoto/tsunami corresponden al ramo de riesgos hidrometeorológicos, mientras que asentamientos o vibraciones no sísmicas del subsuelo están excluidos.",
     "has_error": false
   },
   {
@@ -9693,8 +9693,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Albercas",
-    "explanation": "En la cobertura de terremoto, las albercas son bienes que solo se aseguran mediante convenio expreso. El sismo, el maremoto y la emanación de ceniza son riesgos, no bienes.",
-    "explicacion": "En la cobertura de terremoto, las albercas son bienes que solo se aseguran mediante convenio expreso. El sismo, el maremoto y la emanación de ceniza son riesgos, no bienes.",
+    "explanation": "En el seguro de Incendio / Paquete Familiar, las estructuras secundarias o exteriores como albercas, bardas, patios, jardines y escaleras exteriores están expuestas de forma distinta a la estructura principal de la vivienda; por ello, la cobertura de Terremoto las excluye en forma básica y solo las protege mediante convenio expreso declarando su valor. Sismo, maremoto y ceniza son riesgos (causas), no bienes asegurables.",
+    "explicacion": "En el seguro de Incendio / Paquete Familiar, las estructuras secundarias o exteriores como albercas, bardas, patios, jardines y escaleras exteriores están expuestas de forma distinta a la estructura principal de la vivienda; por ello, la cobertura de Terremoto las excluye en forma básica y solo las protege mediante convenio expreso declarando su valor. Sismo, maremoto y ceniza son riesgos (causas), no bienes asegurables.",
     "has_error": false
   },
   {
@@ -10109,8 +10109,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Bienes cubiertos en la sección II",
-    "explanation": "Los contenidos en general de las habitaciones particulares dentro del edificio especificado en la póliza son los bienes cubiertos en la sección II. La sección I corresponde al edificio, y los contenidos no son bienes excluidos.",
-    "explicacion": "Los contenidos en general de las habitaciones particulares dentro del edificio especificado en la póliza son los bienes cubiertos en la sección II. La sección I corresponde al edificio, y los contenidos no son bienes excluidos.",
+    "explanation": "En la estructura técnica de la póliza de Incendio Casa Habitación, la Sección I ampara el Edificio (construcción material e instalaciones fijas) y la Sección II ampara los Contenidos Generales (muebles, enseres domésticos, ropa y electrodomésticos propios de la vivienda mientras se encuentren dentro del inmueble descrito en la carátula).",
+    "explicacion": "En la estructura técnica de la póliza de Incendio Casa Habitación, la Sección I ampara el Edificio (construcción material e instalaciones fijas) y la Sección II ampara los Contenidos Generales (muebles, enseres domésticos, ropa y electrodomésticos propios de la vivienda mientras se encuentren dentro del inmueble descrito en la carátula).",
     "has_error": false
   },
   {
@@ -10135,8 +10135,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Incendio y o rayo",
-    "explanation": "La cobertura básica de las secciones I y II, edificio y contenidos, es incendio y/o rayo. La explosión y la extensión de cubierta son coberturas adicionales.",
-    "explicacion": "La cobertura básica de las secciones I y II, edificio y contenidos, es incendio y/o rayo. La explosión y la extensión de cubierta son coberturas adicionales.",
+    "explanation": "En el ramo de Incendio (tanto para la Sección I Edificio como para la Sección II Contenidos), la cobertura básica ampara únicamente el daño material directo causado por Incendio y/o Rayo. Riesgos como Explosión, Huelgas, Naves Aéreas, Humo o Caída de Árboles no son básicos, sino que forman parte de la cobertura adicional denominada Extensión de Cubierta.",
+    "explicacion": "En el ramo de Incendio (tanto para la Sección I Edificio como para la Sección II Contenidos), la cobertura básica ampara únicamente el daño material directo causado por Incendio y/o Rayo. Riesgos como Explosión, Huelgas, Naves Aéreas, Humo o Caída de Árboles no son básicos, sino que forman parte de la cobertura adicional denominada Extensión de Cubierta.",
     "has_error": false
   },
   {
@@ -10681,8 +10681,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Embarcación menor de placer",
-    "explanation": "La embarcación con menos de 500 unidades de arqueo se denomina embarcación menor de placer. El buque, la barcaza y el crucero son embarcaciones mayores o de otro uso.",
-    "explicacion": "La embarcación con menos de 500 unidades de arqueo se denomina embarcación menor de placer. El buque, la barcaza y el crucero son embarcaciones mayores o de otro uso.",
+    "explanation": "En el seguro marítimo y la Ley de Navegación, las embarcaciones se clasifican por su tonelaje o unidades de arqueo bruto (UAB): aquellas con menos de 500 unidades de arqueo destinadas a recreo o deporte se denominan 'embarcaciones menores de placer' (yates, lanchas, veleros), diferenciándose de los buques mercantes mayores, barcazas de carga o cruceros comerciales.",
+    "explicacion": "En el seguro marítimo y la Ley de Navegación, las embarcaciones se clasifican por su tonelaje o unidades de arqueo bruto (UAB): aquellas con menos de 500 unidades de arqueo destinadas a recreo o deporte se denominan 'embarcaciones menores de placer' (yates, lanchas, veleros), diferenciándose de los buques mercantes mayores, barcazas de carga o cruceros comerciales.",
     "has_error": false
   },
   {
@@ -11149,8 +11149,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Tasa activa",
-    "explanation": "La tasa activa es la que cobran las instituciones financieras por prestar recursos, es decir, la que paga quien usa el dinero ajeno. La tasa pasiva es la que pagan los bancos a los ahorradores, la tasa real descuenta inflación y el tipo de cambio es el precio de una divisa.",
-    "explicacion": "La tasa activa es la que cobran las instituciones financieras por prestar recursos, es decir, la que paga quien usa el dinero ajeno. La tasa pasiva es la que pagan los bancos a los ahorradores, la tasa real descuenta inflación y el tipo de cambio es el precio de una divisa.",
+    "explanation": "Se denomina 'tasa activa' porque los créditos y préstamos que otorga una institución financiera representan un activo en su balance contable; es la tasa que paga el usuario o deudor por utilizar recursos financieros ajenos. En contraste: la 'tasa pasiva' es la que el banco paga a los ahorradores por sus depósitos (pasivo bancario), la 'tasa real' descuenta la inflación, y el 'tipo de cambio' es el precio de una divisa extranjera.",
+    "explicacion": "Se denomina 'tasa activa' porque los créditos y préstamos que otorga una institución financiera representan un activo en su balance contable; es la tasa que paga el usuario o deudor por utilizar recursos financieros ajenos. En contraste: la 'tasa pasiva' es la que el banco paga a los ahorradores por sus depósitos (pasivo bancario), la 'tasa real' descuenta la inflación, y el 'tipo de cambio' es el precio de una divisa extranjera.",
     "has_error": false
   },
   {
@@ -11279,8 +11279,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Certificados de participación ordinarios",
-    "explanation": "Los certificados de participación ordinarios (CPO) son instrumentos de deuda a largo plazo. Las aceptaciones bancarias, el papel comercial y los pagarés con rendimiento liquidable al vencimiento son instrumentos de corto plazo del mercado de dinero.",
-    "explicacion": "Los certificados de participación ordinarios (CPO) son instrumentos de deuda a largo plazo. Las aceptaciones bancarias, el papel comercial y los pagarés con rendimiento liquidable al vencimiento son instrumentos de corto plazo del mercado de dinero.",
+    "explanation": "Los Certificados de Participación Ordinarios (CPOs) son títulos fiduciarios de deuda emitidos a mediano y largo plazo en el mercado de capitales para financiar proyectos de inversión o infraestructura. En contraste, las aceptaciones bancarias, el papel comercial y los pagarés bancarios (PRLV) son instrumentos de corto plazo (menos de un año) negociados en el mercado de dinero.",
+    "explicacion": "Los Certificados de Participación Ordinarios (CPOs) son títulos fiduciarios de deuda emitidos a mediano y largo plazo en el mercado de capitales para financiar proyectos de inversión o infraestructura. En contraste, las aceptaciones bancarias, el papel comercial y los pagarés bancarios (PRLV) son instrumentos de corto plazo (menos de un año) negociados en el mercado de dinero.",
     "has_error": false
   },
   {
@@ -11851,8 +11851,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Activos Financieros en forma de deuda a corto plazo, bajo riesgo y elevada liquidez",
-    "explanation": "El mercado de dinero se caracteriza por negociar activos financieros de deuda a corto plazo, de bajo riesgo y elevada liquidez. Los activos de largo plazo o de renta variable pertenecen al mercado de capitales.",
-    "explicacion": "El mercado de dinero se caracteriza por negociar activos financieros de deuda a corto plazo, de bajo riesgo y elevada liquidez. Los activos de largo plazo o de renta variable pertenecen al mercado de capitales.",
+    "explanation": "El mercado de dinero (o mercado monetario) es el segmento del sistema financiero donde se negocian instrumentos de deuda de corto plazo (generalmente menores a 1 año, como CETES, PRLV y Papel Comercial), los cuales ofrecen bajo riesgo crediticio y alta liquidez (fácil conversión a efectivo). Los instrumentos de largo plazo o de renta variable pertenecen al mercado de capitales.",
+    "explicacion": "El mercado de dinero (o mercado monetario) es el segmento del sistema financiero donde se negocian instrumentos de deuda de corto plazo (generalmente menores a 1 año, como CETES, PRLV y Papel Comercial), los cuales ofrecen bajo riesgo crediticio y alta liquidez (fácil conversión a efectivo). Los instrumentos de largo plazo o de renta variable pertenecen al mercado de capitales.",
     "has_error": false
   },
   {
@@ -11929,8 +11929,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "No está garantizada",
-    "explanation": "La tasa de rendimiento variable no está garantizada, ya que depende de las condiciones del mercado. No siempre es positiva y depende de factores externos no controlables por el inversionista.",
-    "explicacion": "La tasa de rendimiento variable no está garantizada, ya que depende de las condiciones del mercado. No siempre es positiva y depende de factores externos no controlables por el inversionista.",
+    "explanation": "En los instrumentos de renta variable (como acciones o fondos de renta variable), la tasa de rendimiento no está garantizada ni se conoce de antemano, pues depende directamente de las fluctuaciones de precios en el mercado bursátil y de los resultados financieros del emisor, pudiendo incluso generar minusvalías.",
+    "explicacion": "En los instrumentos de renta variable (como acciones o fondos de renta variable), la tasa de rendimiento no está garantizada ni se conoce de antemano, pues depende directamente de las fluctuaciones de precios en el mercado bursátil y de los resultados financieros del emisor, pudiendo incluso generar minusvalías.",
     "has_error": false
   },
   {
@@ -11955,8 +11955,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Las que canalizan sus recursos al mercado de capitales en los que su rendimiento depende de las fluctuaciones del mismo",
-    "explanation": "Las sociedades de inversión de renta variable canalizan sus recursos al mercado de capitales, por lo que su rendimiento depende de las fluctuaciones de este. No invierten solo en acciones AAA ni en instrumentos de tasa fija, y no garantizan altos rendimientos con bajo riesgo.",
-    "explicacion": "Las sociedades de inversión de renta variable canalizan sus recursos al mercado de capitales, por lo que su rendimiento depende de las fluctuaciones de este. No invierten solo en acciones AAA ni en instrumentos de tasa fija, y no garantizan altos rendimientos con bajo riesgo.",
+    "explanation": "Las sociedades (hoy fondos) de inversión de renta variable invierten el patrimonio de los ahorradores en activos del mercado de capitales (principalmente acciones y títulos referenciados a acciones), por lo que su rendimiento es variable y depende de la plusvalía o minusvalía de dichos valores en la bolsa, sin garantizar una tasa fija.",
+    "explicacion": "Las sociedades (hoy fondos) de inversión de renta variable invierten el patrimonio de los ahorradores en activos del mercado de capitales (principalmente acciones y títulos referenciados a acciones), por lo que su rendimiento es variable y depende de la plusvalía o minusvalía de dichos valores en la bolsa, sin garantizar una tasa fija.",
     "has_error": false
   },
   {
@@ -12345,8 +12345,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Sociedades financieras de objeto múltiple (sofomes)",
-    "explanation": "Las sofomes captan recursos mediante la colocación de instrumentos inscritos en el Registro Nacional de Valores y otorgan créditos para determinadas actividades o sectores. Las aseguradoras de pensiones, las Afores y las Siefores manejan recursos de seguridad social y retiro.",
-    "explicacion": "Las sofomes captan recursos mediante la colocación de instrumentos inscritos en el Registro Nacional de Valores y otorgan créditos para determinadas actividades o sectores. Las aseguradoras de pensiones, las Afores y las Siefores manejan recursos de seguridad social y retiro.",
+    "explanation": "Las Sociedades Financieras de Objeto Múltiple (SOFOMES) son entidades que obtienen recursos mediante el fondeo bancario o la emisión pública de deuda inscrita en el Registro Nacional de Valores (RNV) para otorgar crédito, arrendamiento financiero o factoraje a diversos sectores. Las Afores, Siefores y aseguradoras de pensiones administran exclusivamente ahorro para el retiro y seguridad social.",
+    "explicacion": "Las Sociedades Financieras de Objeto Múltiple (SOFOMES) son entidades que obtienen recursos mediante el fondeo bancario o la emisión pública de deuda inscrita en el Registro Nacional de Valores (RNV) para otorgar crédito, arrendamiento financiero o factoraje a diversos sectores. Las Afores, Siefores y aseguradoras de pensiones administran exclusivamente ahorro para el retiro y seguridad social.",
     "has_error": false
   },
   {
@@ -12865,8 +12865,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "a, c, f",
-    "explanation": "El mercado de dinero se caracteriza por negociar deuda de corto plazo, de bajo riesgo y alta liquidez. Los activos de mediano y largo plazo, de alto riesgo, baja liquidez o renta variable corresponden al mercado de capitales.",
-    "explicacion": "El mercado de dinero se caracteriza por negociar deuda de corto plazo, de bajo riesgo y alta liquidez. Los activos de mediano y largo plazo, de alto riesgo, baja liquidez o renta variable corresponden al mercado de capitales.",
+    "explanation": "El mercado de dinero se distingue por tres pilares técnicos: 1) instrumentos de deuda a corto plazo (a), 2) bajo nivel de riesgo de mercado e incumplimiento (c), y 3) alta liquidez en el mercado secundario (f). Los activos empresariales de largo plazo, alto riesgo y renta variable corresponden al mercado de capitales.",
+    "explicacion": "El mercado de dinero se distingue por tres pilares técnicos: 1) instrumentos de deuda a corto plazo (a), 2) bajo nivel de riesgo de mercado e incumplimiento (c), y 3) alta liquidez en el mercado secundario (f). Los activos empresariales de largo plazo, alto riesgo y renta variable corresponden al mercado de capitales.",
     "has_error": false
   },
   {
@@ -12969,8 +12969,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Precio de la divisa extranjera en términos de la unidad monetaria nacional",
-    "explanation": "El tipo de cambio es el precio de una divisa extranjera expresado en unidades de la moneda nacional. No es el precio de los bienes exportados, el precio del dinero (tasa de interés) ni una tasa interna de rentabilidad.",
-    "explicacion": "El tipo de cambio es el precio de una divisa extranjera expresado en unidades de la moneda nacional. No es el precio de los bienes exportados, el precio del dinero (tasa de interés) ni una tasa interna de rentabilidad.",
+    "explanation": "El tipo de cambio (o paridad cambiaria) es la relación de equivalencia o precio de una moneda extranjera (divisa, como el dólar o euro) expresado en unidades de la moneda nacional (pesos). En economía, el 'precio del dinero' en el tiempo es la tasa de interés, no el tipo de cambio.",
+    "explicacion": "El tipo de cambio (o paridad cambiaria) es la relación de equivalencia o precio de una moneda extranjera (divisa, como el dólar o euro) expresado en unidades de la moneda nacional (pesos). En economía, el 'precio del dinero' en el tiempo es la tasa de interés, no el tipo de cambio.",
     "has_error": false
   },
   {
@@ -13099,8 +13099,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Seguros y de fianzas",
-    "explanation": "La CNBV regula y supervisa los sectores bancario, bursátil y de organizaciones auxiliares del crédito. Los sectores de seguros y fianzas corresponden a la CNSF.",
-    "explicacion": "La CNBV regula y supervisa los sectores bancario, bursátil y de organizaciones auxiliares del crédito. Los sectores de seguros y fianzas corresponden a la CNSF.",
+    "explanation": "La Comisión Nacional Bancaria y de Valores (CNBV) supervisa y regula a los bancos, casas de bolsa, fondos de inversión y organizaciones auxiliares del crédito. Sin embargo, las instituciones de seguros y de fianzas están reguladas exclusivamente por la Comisión Nacional de Seguros y Fianzas (CNSF), conforme a la LISF.",
+    "explicacion": "La Comisión Nacional Bancaria y de Valores (CNBV) supervisa y regula a los bancos, casas de bolsa, fondos de inversión y organizaciones auxiliares del crédito. Sin embargo, las instituciones de seguros y de fianzas están reguladas exclusivamente por la Comisión Nacional de Seguros y Fianzas (CNSF), conforme a la LISF.",
     "has_error": false
   },
   {
@@ -13125,8 +13125,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "BANXICO",
-    "explanation": "BANJERCITO, BANCOMEXT y BANOBRAS son instituciones de banca de desarrollo. BANXICO es el banco central autónomo, no una institución de banca de desarrollo.",
-    "explicacion": "BANJERCITO, BANCOMEXT y BANOBRAS son instituciones de banca de desarrollo. BANXICO es el banco central autónomo, no una institución de banca de desarrollo.",
+    "explanation": "La Banca de Desarrollo (banca de segundo piso del Estado mexicano) incluye instituciones como BANOBRAS (obras y servicios públicos), BANCOMEXT (comercio exterior), NAFIN y BANJERCITO. En cambio, el Banco de México (BANXICO) es el Banco Central autónomo encargado de la estabilidad del poder adquisitivo de la moneda, no un banco de desarrollo.",
+    "explicacion": "La Banca de Desarrollo (banca de segundo piso del Estado mexicano) incluye instituciones como BANOBRAS (obras y servicios públicos), BANCOMEXT (comercio exterior), NAFIN y BANJERCITO. En cambio, el Banco de México (BANXICO) es el Banco Central autónomo encargado de la estabilidad del poder adquisitivo de la moneda, no un banco de desarrollo.",
     "has_error": false
   },
   {
@@ -13333,8 +13333,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "2.5 %",
-    "explanation": "El porcentaje se obtiene dividiendo 337.50 entre 13,500, lo que da 0.025, es decir, 2.5%. Las demás opciones desplazan el punto decimal.",
-    "explicacion": "El porcentaje se obtiene dividiendo 337.50 entre 13,500, lo que da 0.025, es decir, 2.5%. Las demás opciones desplazan el punto decimal.",
+    "explanation": "Para calcular qué porcentaje representa una cantidad parcial ($337.50) respecto de un total ($13,500.00), se divide la parte entre la base total y se multiplica por 100: (337.50 ÷ 13,500) × 100 = 0.025 × 100 = 2.5%. Los valores de 15%, 0.15% y 25% provienen de errores al colocar el punto decimal.",
+    "explicacion": "Para calcular qué porcentaje representa una cantidad parcial ($337.50) respecto de un total ($13,500.00), se divide la parte entre la base total y se multiplica por 100: (337.50 ÷ 13,500) × 100 = 0.025 × 100 = 2.5%. Los valores de 15%, 0.15% y 25% provienen de errores al colocar el punto decimal.",
     "has_error": false
   },
   {
@@ -13385,8 +13385,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "$468.00",
-    "explanation": "El monto con interés simple es 450 × (1 + 0.06 × 8/12) = 450 × 1.04 = $468. Las demás cantidades no aplican correctamente la proporción del plazo anual.",
-    "explicacion": "El monto con interés simple es 450 × (1 + 0.06 × 8/12) = 450 × 1.04 = $468. Las demás cantidades no aplican correctamente la proporción del plazo anual.",
+    "explanation": "Aplicando la fórmula de monto a interés simple M = C × [1 + (i × t)], donde la tasa anual del 6% (0.06) debe convertirse a meses dividiendo entre 12: Interés = $450 × (0.06 ÷ 12) × 8 meses = $450 × 0.04 = $18.00. Al sumar el capital inicial ($450 + $18), el monto final es $468.00.",
+    "explicacion": "Aplicando la fórmula de monto a interés simple M = C × [1 + (i × t)], donde la tasa anual del 6% (0.06) debe convertirse a meses dividiendo entre 12: Interés = $450 × (0.06 ÷ 12) × 8 meses = $450 × 0.04 = $18.00. Al sumar el capital inicial ($450 + $18), el monto final es $468.00.",
     "has_error": false
   },
   {
@@ -13411,8 +13411,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "$ 603.75",
-    "explanation": "Con interés simple, el monto es 525 × (1 + 0.025 × 6) = 525 × 1.15 = $603.75. Las demás cantidades no corresponden al cálculo de interés simple.",
-    "explicacion": "Con interés simple, el monto es 525 × (1 + 0.025 × 6) = 525 × 1.15 = $603.75. Las demás cantidades no corresponden al cálculo de interés simple.",
+    "explanation": "Con la fórmula de monto a interés simple M = C × [1 + (i × n)], dado que la tasa (2.5% mensual = 0.025) y el plazo (6 meses) ya están en la misma unidad de tiempo: Interés = $525 × 0.025 × 6 = $78.75. Sumando el capital original ($525 + $78.75), el valor acumulado es $603.75 (mientras que $608.84 sería interés compuesto).",
+    "explicacion": "Con la fórmula de monto a interés simple M = C × [1 + (i × n)], dado que la tasa (2.5% mensual = 0.025) y el plazo (6 meses) ya están en la misma unidad de tiempo: Interés = $525 × 0.025 × 6 = $78.75. Sumando el capital original ($525 + $78.75), el valor acumulado es $603.75 (mientras que $608.84 sería interés compuesto).",
     "has_error": false
   },
   {
@@ -13515,8 +13515,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "3.77 %",
-    "explanation": "La tasa real se obtiene con la fórmula de Fisher: (1.10 / 1.06) - 1 = 3.77%. Restar simplemente 10% - 6% da 4%, que es solo una aproximación.",
-    "explicacion": "La tasa real se obtiene con la fórmula de Fisher: (1.10 / 1.06) - 1 = 3.77%. Restar simplemente 10% - 6% da 4%, que es solo una aproximación.",
+    "explanation": "Para determinar el rendimiento real descontando el efecto de la inflación, se aplica la fórmula exacta de Fisher: Tasa Real = [(1 + Tasa Nominal) ÷ (1 + Inflación)] - 1. Sustituyendo los datos: (1.10 ÷ 1.06) - 1 = 1.037735 - 1 = 0.037735, que equivale a 3.77%. Restar directamente 10% - 6% = 4% es un error común porque no descuenta la pérdida de poder adquisitivo sobre los intereses.",
+    "explicacion": "Para determinar el rendimiento real descontando el efecto de la inflación, se aplica la fórmula exacta de Fisher: Tasa Real = [(1 + Tasa Nominal) ÷ (1 + Inflación)] - 1. Sustituyendo los datos: (1.10 ÷ 1.06) - 1 = 1.037735 - 1 = 0.037735, que equivale a 3.77%. Restar directamente 10% - 6% = 4% es un error común porque no descuenta la pérdida de poder adquisitivo sobre los intereses.",
     "has_error": false
   },
   {
@@ -13567,8 +13567,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "$468.75",
-    "explanation": "Pepe recibe 3/8 de 1,250: 0.375 × 1,250 = $468.75. La cantidad de $781.25 corresponde a Sandra y $375 no resulta de la fracción indicada.",
-    "explicacion": "Pepe recibe 3/8 de 1,250: 0.375 × 1,250 = $468.75. La cantidad de $781.25 corresponde a Sandra y $375 no resulta de la fracción indicada.",
+    "explanation": "Para obtener la parte proporcional de una fracción sobre un monto total, se multiplica el capital por el numerador y se divide entre el denominador: $1,250.00 × (3 ÷ 8) = $1,250.00 × 0.375 = $468.75 para Pepe (mientras que los 5/8 restantes, equivalentes a $781.25, corresponden a Sandra).",
+    "explicacion": "Para obtener la parte proporcional de una fracción sobre un monto total, se multiplica el capital por el numerador y se divide entre el denominador: $1,250.00 × (3 ÷ 8) = $1,250.00 × 0.375 = $468.75 para Pepe (mientras que los 5/8 restantes, equivalentes a $781.25, corresponden a Sandra).",
     "has_error": false
   },
   {
@@ -13645,8 +13645,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "1,600",
-    "explanation": "Cuatro tercios de 1,200 es 1,200 × 4 / 3 = 1,600. La cantidad 300 es solo un cuarto y 400 un tercio.",
-    "explicacion": "Cuatro tercios de 1,200 es 1,200 × 4 / 3 = 1,600. La cantidad 300 es solo un cuarto y 400 un tercio.",
+    "explanation": "Una fracción impropia (4/3, donde el numerador es mayor que el denominador) representa más de una unidad completa (133.33%). Se calcula dividiendo 1,200 entre 3 (= 400 por cada tercio) y multiplicando el resultado por 4: 400 × 4 = 1,600.",
+    "explicacion": "Una fracción impropia (4/3, donde el numerador es mayor que el denominador) representa más de una unidad completa (133.33%). Se calcula dividiendo 1,200 entre 3 (= 400 por cada tercio) y multiplicando el resultado por 4: 400 × 4 = 1,600.",
     "has_error": false
   },
   {
@@ -13671,8 +13671,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "$8,575.00",
-    "explanation": "Con interés simple, el monto es 7,000 × (1 + 0.18 × 15/12) = 7,000 × 1.225 = $8,575. Las demás cantidades usan interés compuesto o solo el interés.",
-    "explicacion": "Con interés simple, el monto es 7,000 × (1 + 0.18 × 15/12) = 7,000 × 1.225 = $8,575. Las demás cantidades usan interés compuesto o solo el interés.",
+    "explanation": "En el interés simple el capital permanece constante y la tasa anual (18% = 0.18) se ajusta proporcionalmente al plazo de 15 meses (15 ÷ 12 = 1.25 años): Interés = $7,000 × 0.18 × 1.25 = $1,575.00. Sumando el capital inicial ($7,000 + $1,575), el monto total es $8,575.00 ($8,751.62 correspondería a capitalización compuesta).",
+    "explicacion": "En el interés simple el capital permanece constante y la tasa anual (18% = 0.18) se ajusta proporcionalmente al plazo de 15 meses (15 ÷ 12 = 1.25 años): Interés = $7,000 × 0.18 × 1.25 = $1,575.00. Sumando el capital inicial ($7,000 + $1,575), el monto total es $8,575.00 ($8,751.62 correspondería a capitalización compuesta).",
     "has_error": false
   },
   {
@@ -13697,8 +13697,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "$6,352.50",
-    "explanation": "Con interés simple, el monto es 5,250 × (1 + 0.035 × 6) = 5,250 × 1.21 = $6,352.50. La cantidad de $6,679.47 corresponde a interés compuesto.",
-    "explicacion": "Con interés simple, el monto es 5,250 × (1 + 0.035 × 6) = 5,250 × 1.21 = $6,352.50. La cantidad de $6,679.47 corresponde a interés compuesto.",
+    "explanation": "Aplicando la fórmula de monto en interés simple M = C × (1 + i × n) con tasa mensual de 3.5% (0.035) durante 6 meses: Interés = $5,250 × 0.035 × 6 = $1,102.50. Al sumarlo al capital inicial ($5,250 + $1,102.50), se obtiene un valor final de $6,352.50 (la opción de $6,679.47 corresponde a interés compuesto).",
+    "explicacion": "Aplicando la fórmula de monto en interés simple M = C × (1 + i × n) con tasa mensual de 3.5% (0.035) durante 6 meses: Interés = $5,250 × 0.035 × 6 = $1,102.50. Al sumarlo al capital inicial ($5,250 + $1,102.50), se obtiene un valor final de $6,352.50 (la opción de $6,679.47 corresponde a interés compuesto).",
     "has_error": false
   },
   {
@@ -13749,8 +13749,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "0.21",
-    "explanation": "El 21% en notación decimal es 0.21, resultado de dividir 21 entre 100. Las demás opciones desplazan el punto o expresan otra cantidad.",
-    "explicacion": "El 21% en notación decimal es 0.21, resultado de dividir 21 entre 100. Las demás opciones desplazan el punto o expresan otra cantidad.",
+    "explanation": "Para convertir cualquier porcentaje a notación decimal (necesaria en fórmulas financieras), se divide el valor porcentual entre 100 recorriendo el punto decimal dos lugares hacia la izquierda: 21 ÷ 100 = 0.21. El valor 0.021 equivale a 2.1% y 0.012 equivale a 1.2%.",
+    "explicacion": "Para convertir cualquier porcentaje a notación decimal (necesaria en fórmulas financieras), se divide el valor porcentual entre 100 recorriendo el punto decimal dos lugares hacia la izquierda: 21 ÷ 100 = 0.21. El valor 0.021 equivale a 2.1% y 0.012 equivale a 1.2%.",
     "has_error": false
   },
   {
@@ -13775,8 +13775,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "2.50%",
-    "explanation": "1/40 = 0.025, que en notación porcentual es 2.50%. El 25% y el 0.25% desplazan el punto, y 2.50 sin el signo no es notación porcentual.",
-    "explicacion": "1/40 = 0.025, que en notación porcentual es 2.50%. El 25% y el 0.25% desplazan el punto, y 2.50 sin el signo no es notación porcentual.",
+    "explanation": "Para convertir una fracción a notación porcentual, primero se realiza la división para obtener el decimal (1 ÷ 40 = 0.025) y luego se multiplica por 100 agregando el símbolo de porcentaje: 0.025 × 100 = 2.50%. La opción 2.50 carece del símbolo % y 25% corresponde a 1/4.",
+    "explicacion": "Para convertir una fracción a notación porcentual, primero se realiza la división para obtener el decimal (1 ÷ 40 = 0.025) y luego se multiplica por 100 agregando el símbolo de porcentaje: 0.025 × 100 = 2.50%. La opción 2.50 carece del símbolo % y 25% corresponde a 1/4.",
     "has_error": false
   },
   {
@@ -13827,8 +13827,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "5.50%",
-    "explanation": "La tasa real se obtiene con la fórmula de Fisher: (1.15 / 1.09) - 1 = 5.50%. Restar 15% - 9% da 6%, que es solo una aproximación.",
-    "explicacion": "La tasa real se obtiene con la fórmula de Fisher: (1.15 / 1.09) - 1 = 5.50%. Restar 15% - 9% da 6%, que es solo una aproximación.",
+    "explanation": "Aplicando la ecuación de Fisher para calcular la tasa de interés real efectiva: Tasa Real = [(1 + Tasa Nominal) ÷ (1 + Tasa de Inflación)] - 1. Al sustituir: (1.15 ÷ 1.09) - 1 = 1.055045 - 1 = 0.055045, es decir, 5.50%. La diferencia simple (15% - 9% = 6.00%) sobreestima el rendimiento real.",
+    "explicacion": "Aplicando la ecuación de Fisher para calcular la tasa de interés real efectiva: Tasa Real = [(1 + Tasa Nominal) ÷ (1 + Tasa de Inflación)] - 1. Al sustituir: (1.15 ÷ 1.09) - 1 = 1.055045 - 1 = 0.055045, es decir, 5.50%. La diferencia simple (15% - 9% = 6.00%) sobreestima el rendimiento real.",
     "has_error": false
   },
   {
@@ -13853,8 +13853,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "$7,470.00",
-    "explanation": "El interés simple es 41,500 × 0.015 × 12 = $7,470. La cantidad de $622.50 corresponde a un solo mes y las demás incluyen el capital o errores de cálculo.",
-    "explicacion": "El interés simple es 41,500 × 0.015 × 12 = $7,470. La cantidad de $622.50 corresponde a un solo mes y las demás incluyen el capital o errores de cálculo.",
+    "explanation": "La fórmula del interés simple es I = C × i × n (únicamente la ganancia, sin sumar el capital). Con un capital C = $41,500, tasa mensual i = 1.5% (0.015) y plazo n = 12 meses (1 año): I = 41,500 × 0.015 × 12 = $7,470.00. La opción de $622.50 es el interés de un solo mes.",
+    "explicacion": "La fórmula del interés simple es I = C × i × n (únicamente la ganancia, sin sumar el capital). Con un capital C = $41,500, tasa mensual i = 1.5% (0.015) y plazo n = 12 meses (1 año): I = 41,500 × 0.015 × 12 = $7,470.00. La opción de $622.50 es el interés de un solo mes.",
     "has_error": false
   },
   {
@@ -13905,8 +13905,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "$52,000.00",
-    "explanation": "Si $1,560 es el 3% del préstamo, el monto es 1,560 / 0.03 = $52,000. Las demás cantidades no corresponden a esa proporción.",
-    "explicacion": "Si $1,560 es el 3% del préstamo, el monto es 1,560 / 0.03 = $52,000. Las demás cantidades no corresponden a esa proporción.",
+    "explanation": "Como el pago realizado ($1,560) equivale al 3% (0.03) del capital prestado (I = C × i), despejamos el capital original dividiendo el interés pagado entre la tasa en decimal: Capital = $1,560 ÷ 0.03 = $52,000.00. Multiplicar 1,560 × 0.03 ($46.80) es un error frecuente de despeje.",
+    "explicacion": "Como el pago realizado ($1,560) equivale al 3% (0.03) del capital prestado (I = C × i), despejamos el capital original dividiendo el interés pagado entre la tasa en decimal: Capital = $1,560 ÷ 0.03 = $52,000.00. Multiplicar 1,560 × 0.03 ($46.80) es un error frecuente de despeje.",
     "has_error": false
   },
   {
@@ -13957,8 +13957,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "3 %",
-    "explanation": "Si 15,000 × (1 + i)^2 = 15,913.50, entonces (1 + i) = 1.03 y la tasa semestral es 3%. Las tasas de 1%, 6% y 12% no reproducen ese monto.",
-    "explicacion": "Si 15,000 × (1 + i)^2 = 15,913.50, entonces (1 + i) = 1.03 y la tasa semestral es 3%. Las tasas de 1%, 6% y 12% no reproducen ese monto.",
+    "explanation": "En un año hay n = 2 semestres. Con capitalización semestral, el Valor Futuro cumple VF = VP × (1 + i)². Despejando la tasa semestral i: (1 + i)² = 15,913.50 ÷ 15,000 = 1.0609; sacando raíz cuadrada: 1 + i = √1.0609 = 1.03, por lo que i = 0.03 = 3% semestral.",
+    "explicacion": "En un año hay n = 2 semestres. Con capitalización semestral, el Valor Futuro cumple VF = VP × (1 + i)². Despejando la tasa semestral i: (1 + i)² = 15,913.50 ÷ 15,000 = 1.0609; sacando raíz cuadrada: 1 + i = √1.0609 = 1.03, por lo que i = 0.03 = 3% semestral.",
     "has_error": false
   },
   {
@@ -13983,8 +13983,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "41",
-    "explanation": "Si 27 mujeres representan el 65.85% del total, el total es 27 / 0.6585 = 41 personas. Las demás opciones no corresponden a esa proporción.",
-    "explicacion": "Si 27 mujeres representan el 65.85% del total, el total es 27 / 0.6585 = 41 personas. Las demás opciones no corresponden a esa proporción.",
+    "explanation": "Por regla de tres o despeje porcentual, si 27 personas equivalen al 65.85% (0.6585) de la plantilla laboral, el 100% del personal se obtiene dividiendo la cantidad conocida entre su proporción decimal: Total = 27 ÷ 0.6585 = 41.002, es decir, 41 personas en total (27 mujeres y 14 hombres).",
+    "explicacion": "Por regla de tres o despeje porcentual, si 27 personas equivalen al 65.85% (0.6585) de la plantilla laboral, el 100% del personal se obtiene dividiendo la cantidad conocida entre su proporción decimal: Total = 27 ÷ 0.6585 = 41.002, es decir, 41 personas en total (27 mujeres y 14 hombres).",
     "has_error": false
   },
   {
@@ -14035,8 +14035,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "$175,478.78",
-    "explanation": "Con 4% trimestral compuesto durante un año, el monto es 150,000 × (1.04)^4 = $175,478.78. Las demás cantidades usan menos periodos o interés simple.",
-    "explicacion": "Con 4% trimestral compuesto durante un año, el monto es 150,000 × (1.04)^4 = $175,478.78. Las demás cantidades usan menos periodos o interés simple.",
+    "explanation": "En un año existen 4 trimestres (n = 4). Aplicando la fórmula de monto a interés compuesto M = C × (1 + i)^n con tasa trimestral i = 4% (0.04): M = $150,000 × (1.04)⁴ = $150,000 × 1.16985856 = $175,478.78. Usar interés simple daría solo $174,000 y elevar al cubo daría $168,729.60.",
+    "explicacion": "En un año existen 4 trimestres (n = 4). Aplicando la fórmula de monto a interés compuesto M = C × (1 + i)^n con tasa trimestral i = 4% (0.04): M = $150,000 × (1.04)⁴ = $150,000 × 1.16985856 = $175,478.78. Usar interés simple daría solo $174,000 y elevar al cubo daría $168,729.60.",
     "has_error": false
   },
   {

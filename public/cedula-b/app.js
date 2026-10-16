@@ -404,16 +404,20 @@ window.addEventListener("DOMContentLoaded", async () => {
 // Load questions from JSON or use fallback
 async function loadQuestions() {
     try {
-        const response = await fetch('/api/cedula-b/preguntas');
+        const response = await fetch('/api/cedula-b/preguntas?v=8', { cache: 'no-store' });
         if (!response.ok) throw new Error("API Error");
         const data = await response.json();
         if (!Array.isArray(data) || data.length === 0) throw new Error("Empty DB response");
+        const hasAllExplanations = data.every(q => (q.explanation || q.explicacion || "").length > 40);
+        if (!hasAllExplanations) {
+            throw new Error("Stale response lacking pedagogical explanations; falling back to canonical preguntas.json");
+        }
         questionsDb = data;
-        console.log(`Loaded ${questionsDb.length} questions from Neon Database.`);
+        console.log(`Loaded ${questionsDb.length} verified Cédula B questions with explanations.`);
     } catch (e) {
-        console.log("Neon DB API error. Falling back to local preguntas.json:", e);
+        console.log("Loading canonical local preguntas.json?v=8:", e);
         try {
-            const response = await fetch('preguntas.json');
+            const response = await fetch('preguntas.json?v=8', { cache: 'no-store' });
             if (!response.ok) throw new Error("Local file error");
             const data = await response.json();
             if (!Array.isArray(data) || data.length === 0) throw new Error("Empty local file");
