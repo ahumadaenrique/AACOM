@@ -446,7 +446,13 @@ export async function POST(
       // Si el participante acaba de guardar el Paso 7 y el Paso 8 ya está desbloqueado, completar 8/8 automáticamente
       const nextCompleted =
         rawNextCompleted === 7 && tipsSession.unlockedStep >= 8 ? 8 : rawNextCompleted;
-      const nextCurrent = Math.min(8, Math.max(participant.currentStep, nextCompleted));
+      const nextCurrent = Math.min(
+        8,
+        Math.max(
+          participant.currentStep,
+          nextCompleted < tipsSession.unlockedStep ? nextCompleted + 1 : nextCompleted
+        )
+      );
 
       const calc = evaluateTipsDiagnostic({
         completedStep: nextCompleted,

@@ -86,18 +86,31 @@ export async function GET(
           ? true
           : p.completedStep >= tipsSession.unlockedStep;
 
+      const activeStep =
+        tipsSession.unlockedStep === 0
+          ? 0
+          : p.completedStep >= 8
+          ? 8
+          : Math.min(
+              tipsSession.unlockedStep,
+              Math.max(p.currentStep || 1, p.completedStep + 1)
+            );
+
+      const isBehindPreviousSteps =
+        tipsSession.unlockedStep > 1 && p.completedStep < tipsSession.unlockedStep - 1;
       const isInactive = nowMs - new Date(p.lastHeartbeatAt).getTime() > thresholdMs;
       const isLagging =
         p.status !== 'COMPLETED' &&
         tipsSession.status === 'ACTIVE' &&
-        (!isReady || isInactive);
+        !isReady &&
+        (isBehindPreviousSteps || isInactive);
 
       const progressPct = Math.round((Math.min(8, Math.max(0, p.completedStep)) / 8) * 100);
 
       return {
         id: p.id,
         displayName,
-        currentStep: p.currentStep,
+        currentStep: activeStep,
         completedStep: p.completedStep,
         progressPct,
         status: p.completedStep >= 8 ? 'COMPLETED' : isInactive ? 'INACTIVE' : 'ACTIVE',

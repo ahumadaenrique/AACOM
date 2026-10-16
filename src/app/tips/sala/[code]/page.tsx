@@ -1178,9 +1178,8 @@ export default function TipsParticipantMobilePage() {
               <h2 className="text-xl font-black text-slate-900 mt-0.5">
                 Tu Ingreso y tu Número Mágico
               </h2>
-              <p className="text-xs text-slate-500">
-                Cantidad de patrimonio que debes tener hoy a tus <strong>{liveCalc.age} años</strong>{' '}
-                para alcanzar tu libertad financiera al momento de tu jubilación.
+              <p className="text-xs font-semibold text-indigo-900 bg-indigo-50 border border-indigo-100 rounded-xl px-3 py-2 mt-1.5">
+                💡 <strong>“Lo que ya tendrías que tener construido a estas alturas de tu vida”</strong>: es el patrimonio que deberías llevar acumulado <strong>hoy a tus {liveCalc.age} años</strong> según los años que llevas trabajando (en el Paso 4 calcularemos el capital total para tu retiro).
               </p>
             </div>
 
@@ -1221,17 +1220,26 @@ export default function TipsParticipantMobilePage() {
             </div>
 
             <div className="bg-gradient-to-br from-indigo-950 to-slate-900 text-white rounded-2xl p-5 space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-xs uppercase tracking-wider text-indigo-300 font-bold">
-                  Tu Número Mágico Ideal Hoy
-                </span>
-                <span className="text-xs font-mono bg-amber-400/20 text-amber-300 px-2.5 py-0.5 rounded-full font-bold">
-                  {liveCalc.magicNumberMultiplier}× tu sueldo
-                </span>
+              <div className="space-y-1">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-xs uppercase tracking-wider text-indigo-300 font-bold">
+                    Tu Número Mágico Ideal Hoy ({liveCalc.age} años)
+                  </span>
+                  <span className="text-xs font-mono bg-amber-400/20 text-amber-300 px-2.5 py-0.5 rounded-full font-bold shrink-0">
+                    {liveCalc.magicNumberMultiplier}× tu sueldo mensual
+                  </span>
+                </div>
+                <p className="text-xs font-bold text-amber-200/90">
+                  “Lo que ya tendrías que tener construido a estas alturas de tu vida”
+                </p>
               </div>
               <div className="text-3xl font-black text-amber-300">
                 ${liveCalc.magicNumber.toLocaleString('es-MX')} MXN
               </div>
+              <p className="text-[11px] text-indigo-200/90 leading-relaxed">
+                Equivale a tener ahorrados <strong>{liveCalc.magicNumberMultiplier} meses</strong> (
+                <strong>{(liveCalc.magicNumberMultiplier / 12).toFixed(1)} años</strong>) de tu ingreso actual en activos netos.
+              </p>
 
               <div className="space-y-2 pt-2 border-t border-white/10 text-xs">
                 <div className="flex justify-between">
@@ -1925,12 +1933,14 @@ export default function TipsParticipantMobilePage() {
                 </span>
               </div>
               <div className="bg-indigo-50 rounded-2xl p-3.5 border border-indigo-200">
-                <span className="text-[11px] text-indigo-700 block">Tu Número Mágico</span>
+                <span className="text-[11px] text-indigo-700 font-bold block">
+                  Tu Número Mágico ({liveCalc.age} años)
+                </span>
                 <strong className="text-lg font-black text-indigo-950">
                   ${liveCalc.magicNumber.toLocaleString('es-MX')}
                 </strong>
                 <span className="text-[10px] text-indigo-700 font-bold block mt-0.5">
-                  Cobertura actual: {liveCalc.magicNumberRatioPct}%
+                  Lo que ya tendrías que tener construido hoy · Cubierto: {liveCalc.magicNumberRatioPct}%
                 </span>
               </div>
               <div className="bg-amber-50 rounded-2xl p-3.5 border border-amber-200">

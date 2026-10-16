@@ -74,14 +74,28 @@ export async function GET(
         0,
         Math.floor((nowMs - new Date(p.lastHeartbeatAt).getTime()) / 1000)
       );
-      const isBehindUnlockedStep =
-        tipsSession.unlockedStep > 0 && p.completedStep < tipsSession.unlockedStep;
+      const activeStep =
+        tipsSession.unlockedStep === 0
+          ? 0
+          : p.completedStep >= 8
+          ? 8
+          : Math.min(
+              tipsSession.unlockedStep,
+              Math.max(p.currentStep || 1, p.completedStep + 1)
+            );
+      // Un asistente solo está "Rezagado" si se quedó atrás en pasos ANTERIORES al actual
+      // (completedStep < unlockedStep - 1) o si lleva inactivo más del umbral sin terminar el paso actual.
+      const isBehindPreviousSteps =
+        tipsSession.unlockedStep > 1 && p.completedStep < tipsSession.unlockedStep - 1;
       const isInactiveTooLong = nowMs - new Date(p.lastHeartbeatAt).getTime() > thresholdMs;
       const isLagging =
-        p.status !== 'COMPLETED' && (isBehindUnlockedStep || isInactiveTooLong);
+        p.status !== 'COMPLETED' &&
+        p.completedStep < tipsSession.unlockedStep &&
+        (isBehindPreviousSteps || isInactiveTooLong);
 
       return {
         ...p,
+        activeStep,
         inactiveSeconds,
         isLagging,
         isReadyForCurrentStep:

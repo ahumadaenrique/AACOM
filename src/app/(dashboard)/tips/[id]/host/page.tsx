@@ -506,7 +506,7 @@ export default function TipsHostConsolePage() {
                         {p.fullName || p.nickname || 'Asistente'}
                       </span>
                       <span className="text-[11px] text-amber-700 ml-2">
-                        (Va en paso {p.completedStep}/8)
+                        (En paso {p.activeStep || p.currentStep || p.completedStep}/8 · {p.completedStep} guardados)
                       </span>
                     </div>
                     <span className="text-[11px] font-semibold text-amber-700">
@@ -794,8 +794,19 @@ export default function TipsHostConsolePage() {
                         <div className="text-[11px] text-slate-400">{p.email || ''}</div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="font-extrabold text-indigo-700">
-                          Paso {p.completedStep} / 8
+                        <span className="font-extrabold text-indigo-700 block">
+                          Paso {p.activeStep ?? p.currentStep ?? p.completedStep} / 8
+                        </span>
+                        <span
+                          className={`text-[10px] font-bold ${
+                            p.completedStep >= (sess.unlockedStep || 1)
+                              ? 'text-emerald-600'
+                              : 'text-indigo-500'
+                          }`}
+                        >
+                          {p.completedStep >= (sess.unlockedStep || 1)
+                            ? `✓ Paso ${p.completedStep} listo`
+                            : `✍️ Capturando (${p.completedStep}/8 listos)`}
                         </span>
                       </td>
                       <td className="py-3 px-4">

@@ -44,9 +44,9 @@ const STEP_SPOTLIGHTS: Record<
   },
   3: {
     badge: 'PASO 3 EN VIVO · EL NÚMERO MÁGICO',
-    headline: '¿Cuánto patrimonio deberías tener acumulado hoy según tu edad?',
+    headline: '“Lo que ya tendrías que tener construido a estas alturas de tu vida”',
     formulaOrRule: '✨ Fórmula: ((Edad² × 0.05) − (Edad × 1.1)) × Ingreso Mensual',
-    prompt: 'Ingresa tu sueldo mensual promedio en tu celular y descubre tu Número Mágico.',
+    prompt: 'Ingresa tu sueldo mensual promedio en tu celular y descubre cuánto patrimonio deberías llevar acumulado hoy.',
   },
   4: {
     badge: 'PASO 4 EN VIVO · LA CINTA MÉTRICA DE TU VIDA',
@@ -352,7 +352,10 @@ export default function TipsProjectorBoardPage() {
 
                     <div className="mt-2 space-y-1">
                       <div className="flex items-center justify-between text-[10px] font-bold">
-                        <span>Paso {p.completedStep}/8</span>
+                        <span>
+                          Paso {p.currentStep || p.completedStep}/8{' '}
+                          {isReadyCurrent ? '✓' : '✍️'}
+                        </span>
                         <span>{p.progressPct}%</span>
                       </div>
                       <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
