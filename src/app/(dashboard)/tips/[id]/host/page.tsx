@@ -64,62 +64,82 @@ const DREAM_CATEGORY_LABELS: Record<string, string> = {
   TRASCENDENCIA: 'Trascendencia / Legado',
 };
 
+const STEP_SLIDES: Record<number, string> = {
+  0: '/tips/slides/slide-0-lobby.webp',
+  1: '/tips/slides/slide-1-datos.webp',
+  2: '/tips/slides/slide-2-patrimonio.webp',
+  3: '/tips/slides/slide-3-numero-magico.webp',
+  4: '/tips/slides/slide-4-retiro.webp',
+  5: '/tips/slides/slide-5-suenos.webp',
+  6: '/tips/slides/slide-6-ahorro.webp',
+  7: '/tips/slides/slide-7-seguros.webp',
+  8: '/tips/slides/slide-8-diagnostico.webp',
+};
+
+const LOBBY_DEFINITION = {
+  step: 0,
+  title: '0. Bienvenida y Lobby',
+  desc: 'Reglas del juego, confidencialidad y escaneo QR',
+  speakerScript:
+    '🎙️ Guion: "Nadie planea fracasar financieramente; la gente fracasa por no planear. En los próximos 45 minutos vas a descubrir en tu propio celular dónde estás parado hoy, cuánto deberías tener acumulado a tu edad y qué ajustes necesitas hacer para blindar a tu familia y tu retiro. Escanea el código QR y pon un apodo que solo tú reconozcas."',
+};
+
 const STEP_DEFINITIONS = [
   {
     step: 1,
     title: '1. Datos Generales',
     desc: 'Nombre, fecha de nacimiento, estado civil y dependientes',
     speakerScript:
-      '💬 Guion: "Es momento de usar tu programa. Acepten el aviso de privacidad para proteger sus datos y capturen su fecha de nacimiento y dependientes económicos."',
+      '🎙️ Guion: "El activo más poderoso en las finanzas no es el dinero, es el tiempo. No se planea igual a los 28 años soltero que a los 42 con dos hijos. Captura tu fecha de nacimiento exacta y cuántas personas dependen económicamente de que tú llegues a casa generando ingresos."',
   },
   {
     step: 2,
     title: '2. Patrimonio y Deudas',
     desc: 'Activos por categoría, tasa integrada y diversificación',
     speakerScript:
-      '💬 Guion: "Registren sus inmuebles, inversiones, negocios y vehículos. Recuerden separar las deudas buenas (como hipoteca) de las deudas malas (tarjetas de crédito con CAT del 40-70%)."',
+      '🎙️ Guion: "Muchos creen que tener un coche nuevo o límite alto en la tarjeta es riqueza. Pero un auto pierde entre 15% y 30% de su valor cada año, y una tarjeta de crédito te cobra 50% anual. Vamos a separar tus activos reales y tus deudas buenas de las deudas malas para descubrir tu verdadero Patrimonio Neto y tu Tasa Integrada."',
   },
   {
     step: 3,
     title: '3. Sueldo y Número Mágico',
-    desc: 'Cálculo del Número Mágico frente al patrimonio actual',
+    desc: 'Lo que ya tendrías que tener construido a estas alturas de tu vida',
     speakerScript:
-      '💬 Guion: "Capturen su ingreso mensual promedio. El programa aplicará la fórmula (Edad² × 0.05 − Edad × 1.1) × Ingreso para revelar su Número Mágico y compararlo con su patrimonio."',
+      '🎙️ Guion: "Atención aquí: el Número Mágico NO es lo que necesitas para jubilarte a los 65 años. Es el termómetro de lo que YA tendrías que tener acumulado hoy a tu edad por todos los años que ya llevas trabajando: ((Edad² × 0.05) − (Edad × 1.1)) × Ingreso. Ve en tu celular qué porcentaje de tu Número Mágico llevas construido."',
   },
   {
     step: 4,
     title: '4. Jubilación (Cinta Métrica)',
-    desc: 'Años vividos, productivos y brecha de retiro',
+    desc: 'Años vividos, productivos y brecha de retiro (82.3 años)',
     speakerScript:
-      '💬 Guion: "Vean en pantalla la cinta métrica de su vida: cuántos años han vivido, cuántos les quedan para acumular y cuántos vivirán en el retiro (esperanza de vida 82.3 años)."',
+      '🎙️ Guion: "Mira la barra verde en tu teléfono: esos son los únicos años productivos que te quedan para financiar casi 20 años de retiro (esperanza de vida 82.3 años). Si eres Ley 97 o independiente, tu Afore apenas te dará el 30% de tu sueldo actual. Revisa de qué tamaño es tu brecha y cuánto necesitas empezar a apartar hoy."',
   },
   {
     step: 5,
     title: '5. Sueños y Prioridades',
     desc: 'Sueños propios, dependientes y trascendencia con PMT',
     speakerScript:
-      '💬 Guion: "Elijan o capturen sus sueños: universidad de los hijos, casa, negocio o herencia. La app calculará cuánto ahorro mensual requiere cada meta."',
+      '🎙️ Guion: "Un sueño sin fecha y sin monto es solo una ilusión. Cuando le pones nombre, monto y años a una meta —como la universidad de tus hijos o liquidar tu casa— se convierte en una cuota mensual exacta (PMT). Elige tus sueños más importantes y ponlos en orden de prioridad."',
   },
   {
     step: 6,
     title: '6. Regla de Ahorro (16%)',
-    desc: 'Personalización de ahorro mensual y sueños alcanzables',
+    desc: 'Págate a ti primero: personalización de ahorro mensual',
     speakerScript:
-      '💬 Guion: "La regla de oro es ahorrar al menos el 16% de nuestros ingresos. Muevan el deslizador en su celular y descubran cuáles de sus sueños son alcanzables hoy."',
+      '🎙️ Guion: "No ahorres lo que te sobre después de gastar; gasta lo que te sobre después de separar tu futuro. El estándar internacional es ahorrar al menos el 16% de tu ingreso mensual. Mueve el deslizador en tu celular y observa en tiempo real cuáles de tus sueños se encienden en verde."',
   },
   {
     step: 7,
     title: '7. Riesgos y Seguros',
-    desc: 'Capital humano y detección de huecos de protección',
+    desc: 'Capital humano ("La máquina de hacer dinero") y huecos',
     speakerScript:
-      '💬 Guion: "Observen su Capital Humano: todo el dinero que producirán de aquí a su retiro. Una suma asegurada sana en Vida e Invalidez debe cubrir de 7 a 10 años de su ingreso."',
+      '🎙️ Guion: "Aseguramos el auto de $400 mil pesos, pero dejamos sin blindar al generador de $15, $20 o $30 millones. ¡Esa máquina eres tú! Ese número gigante en tu pantalla es tu Capital Humano. Una suma asegurada sana en Vida e Invalidez debe cubrir de 7 a 10 años de tu ingreso para que tu familia no pierda su nivel de vida."',
   },
   {
     step: 8,
     title: '8. Diagnóstico Preliminar',
-    desc: 'Semáforo patrimonial, PDF descargable y agendar cita',
+    desc: 'El diagnóstico no cambia tu vida; la acción sí (Cita 1 a 1)',
     speakerScript:
-      '💬 Guion: "¡Felicidades por llegar al paso 8! Descarguen su diagnóstico preliminar en PDF y presionen el botón amarillo para agendar nuestra cita individual de 30 minutos esta semana."',
+      '🎙️ Guion: "¡Felicidades! Acabas de hacer en 45 minutos lo que el 95% de las personas pospone toda su vida. Descarga tu PDF y presiona ahora mismo el botón para solicitar tu cita individual 1 a 1 conmigo en las próximas 48 horas o envíame un WhatsApp directo desde tu pantalla para diseñar tu traje a la medida."',
   },
 ];
 
@@ -132,6 +152,8 @@ export default function TipsHostConsolePage() {
   const [actionBusy, setActionBusy] = useState(false);
   const [selectedParticipant, setSelectedParticipant] = useState<any>(null);
   const [showQrModal, setShowQrModal] = useState(false);
+  const [previewStepOverride, setPreviewStepOverride] = useState<number | null>(null);
+  const [zoomedSlideStep, setZoomedSlideStep] = useState<number | null>(null);
   const [closeSummary, setCloseSummary] = useState<any>(null);
   const [copied, setCopied] = useState(false);
   const [copiedDossier, setCopiedDossier] = useState(false);
@@ -843,27 +865,111 @@ export default function TipsHostConsolePage() {
         </div>
       )}
 
-      {/* Teleprompter / Guion del Expositor en Vivo */}
-      <div className="bg-indigo-50 border border-indigo-200 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <div className="p-2 rounded-xl bg-indigo-600 text-white shrink-0 mt-0.5">
-            <BookOpen className="w-4 h-4" />
+      {/* Teleprompter + Lámina Visual de Apoyo del Expositor en Vivo */}
+      {(() => {
+        const viewedStep = previewStepOverride !== null ? previewStepOverride : sess.unlockedStep || 0;
+        const viewedDef =
+          viewedStep === 0
+            ? LOBBY_DEFINITION
+            : STEP_DEFINITIONS.find((d) => d.step === viewedStep) || LOBBY_DEFINITION;
+        const viewedSlideUrl = STEP_SLIDES[viewedStep] || STEP_SLIDES[0];
+        const isViewingLiveStep = viewedStep === (sess.unlockedStep || 0);
+
+        return (
+          <div className="bg-indigo-950 text-white border border-indigo-800 rounded-3xl p-4 sm:p-5 shadow-lg">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
+              {/* Vista Previa de la Lámina (16:9) */}
+              <div className="lg:col-span-5">
+                <div
+                  onClick={() => setZoomedSlideStep(viewedStep)}
+                  className="relative group cursor-pointer rounded-2xl overflow-hidden border-2 border-indigo-400/40 bg-slate-950 shadow-xl"
+                  title="Haz clic para ampliar esta lámina a pantalla completa"
+                >
+                  <img
+                    src={viewedSlideUrl}
+                    alt={viewedDef.title}
+                    className="w-full h-auto object-contain"
+                  />
+                  <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
+                    <span className="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-extrabold text-xs shadow-lg">
+                      🔍 Ampliar Lámina
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Guion del Expositor + Selector Rápido de Láminas */}
+              <div className="lg:col-span-7 space-y-3">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-extrabold uppercase tracking-wider bg-indigo-600 text-white px-2.5 py-1 rounded-lg">
+                      <BookOpen className="w-3.5 h-3.5" />
+                      Material Visual y Guion del Expositor
+                    </span>
+                    {isViewingLiveStep ? (
+                      <span className="text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2.5 py-0.5 rounded-full">
+                        ● Sincronizado con Paso Actual ({sess.unlockedStep}/8)
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => setPreviewStepOverride(null)}
+                        className="text-[11px] font-bold bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full hover:bg-amber-300"
+                      >
+                        Vista previa Paso {viewedStep} · Volver al paso en vivo ({sess.unlockedStep})
+                      </button>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => setZoomedSlideStep(viewedStep)}
+                    className="text-xs font-bold text-indigo-200 hover:text-white underline"
+                  >
+                    🔍 Ver lámina en grande
+                  </button>
+                </div>
+
+                <div>
+                  <h3 className="text-base sm:text-lg font-black text-amber-300">
+                    {viewedDef.title} — <span className="text-white font-bold">{viewedDef.desc}</span>
+                  </h3>
+                  <p className="text-xs sm:text-sm leading-relaxed text-indigo-100 mt-1.5 bg-white/5 border border-white/10 rounded-2xl p-3.5">
+                    {viewedDef.speakerScript}
+                  </p>
+                </div>
+
+                {/* Selector rápido para previsualizar cualquier lámina (0 a 8) */}
+                <div className="flex items-center gap-1.5 flex-wrap pt-1">
+                  <span className="text-[11px] font-bold text-indigo-300 mr-1">
+                    Previsualizar lámina:
+                  </span>
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((sNum) => {
+                    const isSelected = viewedStep === sNum;
+                    const isLive = (sess.unlockedStep || 0) === sNum;
+                    return (
+                      <button
+                        key={sNum}
+                        type="button"
+                        onClick={() =>
+                          setPreviewStepOverride(sNum === (sess.unlockedStep || 0) ? null : sNum)
+                        }
+                        className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition ${
+                          isSelected
+                            ? 'bg-amber-400 text-slate-950 shadow'
+                            : isLive
+                            ? 'bg-emerald-500/30 text-emerald-200 border border-emerald-400/40'
+                            : 'bg-white/10 hover:bg-white/20 text-indigo-200'
+                        }`}
+                      >
+                        {sNum === 0 ? 'Lobby' : `P${sNum}`}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-700 block">
-              Guía del Expositor ·{' '}
-              {sess.unlockedStep === 0
-                ? 'Bienvenida y Escaneo QR'
-                : currentStepDef?.title || `Paso ${sess.unlockedStep}`}
-            </span>
-            <p className="text-xs sm:text-sm font-medium text-indigo-950 mt-0.5">
-              {sess.unlockedStep === 0
-                ? '💬 Guion: "Bienvenidos al Taller Integral de Planeación y Seguridad (TIPS). Apunten la cámara de su celular al código QR en pantalla y escriban su nombre o apodo para aparecer en el tablero."'
-                : currentStepDef?.speakerScript}
-            </p>
-          </div>
-        </div>
-      </div>
+        );
+      })()}
 
       {/* Notificación de Cierre e Inyección al Embudo */}
       {closeSummary && (
@@ -1933,6 +2039,63 @@ export default function TipsHostConsolePage() {
               {copied ? <Check className="w-4 h-4 text-emerald-600" /> : <Copy className="w-4 h-4" />}
               {copied ? '¡Enlace copiado!' : joinUrl}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL LÁMINA AMPLIADA PARA EL EXPOSITOR */}
+      {zoomedSlideStep !== null && (
+        <div
+          onClick={() => setZoomedSlideStep(null)}
+          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="max-w-5xl w-full bg-slate-900 border border-indigo-400/30 rounded-3xl p-4 sm:p-6 space-y-4 shadow-2xl"
+          >
+            <div className="flex items-center justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-extrabold uppercase bg-amber-400 text-slate-950 px-3 py-1 rounded-lg">
+                  {zoomedSlideStep === 0 ? 'Slide 0 · Lobby' : `Slide Paso ${zoomedSlideStep} de 8`}
+                </span>
+                <div className="flex items-center gap-1">
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((sNum) => (
+                    <button
+                      key={sNum}
+                      type="button"
+                      onClick={() => setZoomedSlideStep(sNum)}
+                      className={`px-2 py-1 rounded-md text-xs font-bold ${
+                        zoomedSlideStep === sNum
+                          ? 'bg-indigo-600 text-white'
+                          : 'bg-white/10 text-indigo-200 hover:bg-white/20'
+                      }`}
+                    >
+                      {sNum === 0 ? 'Lobby' : `P${sNum}`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <button
+                onClick={() => setZoomedSlideStep(null)}
+                className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold"
+              >
+                Cerrar ✕
+              </button>
+            </div>
+
+            <div className="rounded-2xl overflow-hidden border border-white/15 bg-slate-950">
+              <img
+                src={STEP_SLIDES[zoomedSlideStep] || STEP_SLIDES[0]}
+                alt={`Slide ${zoomedSlideStep}`}
+                className="w-full h-auto max-h-[72vh] object-contain mx-auto"
+              />
+            </div>
+
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 text-xs sm:text-sm text-indigo-100">
+              {zoomedSlideStep === 0
+                ? LOBBY_DEFINITION.speakerScript
+                : STEP_DEFINITIONS.find((d) => d.step === zoomedSlideStep)?.speakerScript}
+            </div>
           </div>
         </div>
       )}
