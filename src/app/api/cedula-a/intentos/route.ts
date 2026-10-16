@@ -19,26 +19,21 @@ export async function GET(req: NextRequest) {
   const targetEmail = searchParams.get("email")
 
   try {
-    if (isPromoter(currentUserEmail, session.user.role)) {
-      if (targetEmail) {
-        const rows = await prisma.examenIntento.findMany({
-          where: { email: targetEmail.toLowerCase() },
-          orderBy: { fecha: 'desc' }
-        })
-        return NextResponse.json(rows)
-      } else {
-        const rows = await prisma.examenIntento.findMany({
-          orderBy: { fecha: 'desc' }
-        })
-        return NextResponse.json(rows)
-      }
-    } else {
-      const rows = await prisma.examenIntento.findMany({
-        where: { email: currentUserEmail.toLowerCase() },
-        orderBy: { fecha: 'desc' }
-      })
-      return NextResponse.json(rows)
-    }
+    const filterEmail = targetEmail && isPromoter(currentUserEmail, session.user.role)
+      ? targetEmail.toLowerCase()
+      : (!isPromoter(currentUserEmail, session.user.role) ? currentUserEmail.toLowerCase() : undefined);
+
+    const rows = await prisma.examenIntento.findMany({
+      where: filterEmail ? { email: filterEmail } : undefined,
+      orderBy: { fecha: 'desc' }
+    });
+
+    const cedulaARows = rows.filter((r: any) => {
+      const details = r.detalles_modulos as any;
+      return !details || details._cedula !== 'B';
+    });
+
+    return NextResponse.json(cedulaARows)
   } catch (err: any) {
     console.error("Error in GET intentos:", err)
     return NextResponse.json({ error: "Database error", details: err.message }, { status: 500 })
@@ -61,6 +56,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
+    const payloadDetalles = {
+      ...(detalles_modulos || {}),
+      _cedula: 'A'
+    };
+
     const intento = await prisma.examenIntento.create({
       data: {
         email: currentUserEmail.toLowerCase(),
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
         aprobado,
         respuestas_correctas,
         total_preguntas,
-        detalles_modulos: detalles_modulos || {}
+        detalles_modulos: payloadDetalles
       }
     })
 

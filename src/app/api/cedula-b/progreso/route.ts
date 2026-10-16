@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
         }
       },
       update: {
-        tiempo_segundos: tiempo_segundos !== undefined ? { increment: tiempo_segundos } : undefined,
+        tiempo_segundos: tiempo_segundos !== undefined ? tiempo_segundos : undefined,
         pregunta_actual: pregunta_actual !== undefined ? pregunta_actual : undefined,
         fecha_actualizacion: new Date()
       },

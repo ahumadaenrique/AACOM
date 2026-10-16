@@ -289,7 +289,8 @@ let fallbackQuestions = [
         "module": "Vida Individual",
         "question": "¿Tipo de plan que siempre garantiza el pago de una cierta suma si el asegurado fallece durante la vigencia de la póliza o en caso de supervivencia?",
         "options": ["Flexible", "Temporal", "Dotal", "Universal"],
-        "correct": 2
+        "correct": 2,
+        "explanation": "El Seguro Dotal Mixto combina la cobertura por fallecimiento con un componente de ahorro garantizado que paga la suma asegurada si el titular sobrevive al vencimiento del plazo contratado."
     },
     {
         "id": 2,
@@ -301,7 +302,8 @@ let fallbackQuestions = [
             "Persona física o moral beneficiaria del fideicomiso",
             "Institución financiera que funge como intermediaria para la celebración del contrato"
         ],
-        "correct": 0
+        "correct": 0,
+        "explanation": "En la estructura del fideicomiso patrimonial o de seguros, el fideicomitente es la persona que aporta los bienes o derechos (la suma asegurada) y establece las instrucciones de administración."
     },
     {
         "id": 3,
@@ -313,7 +315,8 @@ let fallbackQuestions = [
             "Tener una carrera técnica concluida y constancia de capacitación",
             "Contar con una fianza de fidelidad contratada a su nombre"
         ],
-        "correct": 1
+        "correct": 1,
+        "explanation": "De acuerdo con el Reglamento de Agentes de Seguros y de Fianzas, haber sido condenado por delito patrimonial intencional o encontrarse declarado en quiebra o concurso mercantil impide obtener autorización de la CNSF."
     },
     {
         "id": 4,
@@ -325,14 +328,16 @@ let fallbackQuestions = [
             "El cobro de la prima fraccionada que realiza la aseguradora",
             "La póliza complementaria contratada con otra aseguradora para el mismo riesgo"
         ],
-        "correct": 1
+        "correct": 1,
+        "explanation": "El coaseguro en Gastos Médicos Mayores es el porcentaje que aplica sobre los gastos médicos procedentes una vez descontado el deducible, funcionando como participación solidaria del asegurado."
     },
     {
         "id": 5,
         "module": "Aspectos Generales",
         "question": "¿Cuál es la prima que se obtiene directamente de las tablas de mortalidad y cubre únicamente el costo neto del riesgo?",
         "options": ["Prima de tarifa", "Prima pura de riesgo", "Prima única", "Prima total"],
-        "correct": 1
+        "correct": 1,
+        "explanation": "La prima pura de riesgo (o prima neta) es el valor actuarial calculado a partir de la frecuencia y severidad estadística (tablas de mortalidad o siniestralidad) para hacer frente exclusivamente a las reclamaciones."
     },
     {
         "id": 6,
@@ -344,7 +349,8 @@ let fallbackQuestions = [
             "Indemnizar el robo total del automóvil del asegurado",
             "Pagar los gastos médicos de los ocupantes del vehículo asegurado"
         ],
-        "correct": 1
+        "correct": 1,
+        "explanation": "La cobertura de Responsabilidad Civil ampara la obligación legal del asegurado de indemnizar los daños materiales o lesiones corporales causados sin dolo a terceros en sus bienes o personas."
     },
     {
         "id": 7,
@@ -356,14 +362,16 @@ let fallbackQuestions = [
             "Secretaría de Hacienda y Crédito Público (SHCP)",
             "Banco de México (Banxico)"
         ],
-        "correct": 1
+        "correct": 1,
+        "explanation": "La Comisión Nacional de Seguros y Fianzas (CNSF) es el órgano desconcentrado de la SHCP encargado de la inspección, vigilancia y supervisión de las instituciones de seguros y de fianzas."
     },
     {
         "id": 8,
         "module": "Vida Individual",
         "question": "Tipo de plan de seguro que otorga protección por un plazo fijo definido y cuyas primas cubren únicamente el riesgo de fallecimiento sin acumular valores garantizados:",
         "options": ["Dotal", "Temporal", "Ordinario de Vida", "Universal"],
-        "correct": 1
+        "correct": 1,
+        "explanation": "El seguro Temporal ofrece protección pura por fallecimiento durante un plazo determinado; al concluir la vigencia sin siniestro, el contrato termina sin rescate ni valores garantizados."
     },
     {
         "id": 9,
@@ -375,7 +383,8 @@ let fallbackQuestions = [
             "Garantizar el pago de honorarios médicos de forma inmediata",
             "Aumentar el monto máximo de la suma asegurada total de la póliza"
         ],
-        "correct": 0
+        "correct": 0,
+        "explanation": "El deducible es el monto fijo inicial a cargo del asegurado que filtra reclamaciones menores a dicho umbral y fomenta la corresponsabilidad en el uso de la póliza."
     },
     {
         "id": 10,
@@ -387,7 +396,8 @@ let fallbackQuestions = [
             "La aseguradora puede cambiar la prima en cualquier momento sin previo aviso",
             "Se rige exclusivamente por las leyes internacionales de comercio marítimo"
         ],
-        "correct": 0
+        "correct": 0,
+        "explanation": "Es aleatorio porque la obligación de indemnizar por parte de la aseguradora depende de la realización de un evento futuro e incierto (el siniestro)."
     }
 ];
 
@@ -433,14 +443,18 @@ async function loadQuestions() {
     try {
         const response = await fetch('/api/cedula-a/preguntas');
         if (!response.ok) throw new Error("API Error");
-        questionsDb = await response.json();
+        const data = await response.json();
+        if (!Array.isArray(data) || data.length === 0) throw new Error("Empty DB response");
+        questionsDb = data;
         console.log(`Loaded ${questionsDb.length} questions from Neon Database.`);
     } catch (e) {
         console.log("Neon DB API error. Falling back to local preguntas.json:", e);
         try {
             const response = await fetch('preguntas.json');
             if (!response.ok) throw new Error("Local file error");
-            questionsDb = await response.json();
+            const data = await response.json();
+            if (!Array.isArray(data) || data.length === 0) throw new Error("Empty local file");
+            questionsDb = data;
         } catch (localErr) {
             console.log("Local fallback failed. Using mock seeds:", localErr);
             questionsDb = fallbackQuestions;
@@ -619,12 +633,12 @@ function updateAgentDashboard() {
     }
     
     const modulesData = [
-        { name: "Aspectos Generales", total: 134, display: "1. Aspectos Generales" },
-        { name: "Regulación CNSF", total: 31, display: "2. Regulación CNSF" },
-        { name: "Vida Individual", total: 79, display: "3. Vida Individual" },
-        { name: "Accidentes y Enfermedades", total: 71, display: "4. Accidentes y Enfermedades" },
-        { name: "Seguros de Daños", total: 147, display: "5. Seguros de Daños" },
-        { name: "Sistema y Mercados Financieros", total: 168, display: "6. Sistema y Mercados Fin." }
+        { name: "Aspectos Generales", total: 108, display: "1. Aspectos Generales" },
+        { name: "Regulación CNSF", total: 26, display: "2. Regulación CNSF" },
+        { name: "Vida Individual", total: 77, display: "3. Vida Individual" },
+        { name: "Accidentes y Enfermedades", total: 69, display: "4. Accidentes y Enfermedades" },
+        { name: "Seguros de Daños", total: 145, display: "5. Seguros de Daños" },
+        { name: "Sistema y Mercados Financieros", total: 117, display: "6. Sistema y Mercados Fin." }
     ];
 
     if (!activeAgent.studyProgress) {
@@ -634,11 +648,16 @@ function updateAgentDashboard() {
     let totalCompletedModules = 0;
 
     modulesData.forEach(mod => {
+        const dbCount = Array.isArray(questionsDb) && questionsDb.length > 10
+            ? questionsDb.filter(q => q.module === mod.name).length
+            : 0;
+        const effectiveTotal = dbCount > 0 ? dbCount : mod.total;
+        mod.total = effectiveTotal;
         const currentIdx = activeAgent.studyProgress[mod.name] || 0;
         
         let pct = 0;
         if (currentIdx > 0) {
-            pct = Math.min(100, Math.round((currentIdx / mod.total) * 100));
+            pct = Math.min(100, Math.round((currentIdx / effectiveTotal) * 100));
         }
         
         if (pct >= 100) {
@@ -1143,7 +1162,7 @@ function renderStudyQuestion() {
     });
 
     // Render Contextual Animation
-    renderContextAnimation(q.question);
+    renderContextAnimation(q);
     
     // Reset any playing audio on next question (silent study by default)
     stopAudioSpeech();
@@ -1170,7 +1189,6 @@ function selectStudyOption(selectedIndex) {
         const nextBtn = document.getElementById("btn-study-next");
         if (nextBtn) nextBtn.disabled = false;
         
-        // Play success notification in speech if desired or just let them read
         // Log performance on active agent
         if (activeAgent.moduleScores[studyModule] < 95) {
             activeAgent.moduleScores[studyModule] = Math.min(100, activeAgent.moduleScores[studyModule] + 1);
@@ -1179,10 +1197,30 @@ function selectStudyOption(selectedIndex) {
         // INCORRECT CHOICE
         if (isCurrentQuestionSolved) return; // ignore if already solved
         
-        // Show scandalous red error highlight
+        // Show red error highlight
         items[selectedIndex].classList.remove("selected");
         items[selectedIndex].classList.add("incorrect");
         
+        // Provide immediate coherent feedback in the explanation box
+        const descEl = document.getElementById("animation-concept-desc");
+        if (descEl) {
+            const chosenText = (q.options && q.options[selectedIndex]) || "";
+            descEl.innerHTML = `
+                <div style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 12px; padding: 14px; text-align: left;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                        <span style="font-size: 11px; font-weight: 800; color: #f87171; text-transform: uppercase; letter-spacing: 0.5px;">✕ Opción Incorrecta (${String.fromCharCode(65 + selectedIndex)})</span>
+                        <button onclick="revealExplanation()" style="background: rgba(20,184,166,0.2); border: 1px solid rgba(20,184,166,0.4); color: #2dd4bf; border-radius: 6px; padding: 3px 10px; font-size: 11px; cursor: pointer; font-weight: 700;">
+                            Ver respuesta y fundamento →
+                        </button>
+                    </div>
+                    <div style="font-size: 13px; color: #fca5a5; margin-bottom: 6px; font-weight: 600;">${chosenText}</div>
+                    <p style="font-size: 13px; line-height: 1.5; color: #cbd5e1; margin: 0;">
+                        Analiza nuevamente las opciones del reactivo o presiona <strong>Ver respuesta y fundamento</strong> (o el botón <strong>Explicar</strong>) para consultar la explicación técnica y legal exacta.
+                    </p>
+                </div>
+            `;
+        }
+
         // Block next button
         const nextBtn = document.getElementById("btn-study-next");
         if (nextBtn) nextBtn.disabled = true;
@@ -1378,7 +1416,7 @@ function showQuestionExplanation(q) {
     descEl.innerHTML = `
         <div style="background: rgba(13, 148, 136, 0.15); border: 1px solid rgba(20, 184, 166, 0.4); border-radius: 12px; padding: 14px; text-align: left;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                <span style="font-size: 11px; font-weight: 800; color: #2dd4bf; text-transform: uppercase; letter-spacing: 0.5px;">✓ Respuesta Correcta</span>
+                <span style="font-size: 11px; font-weight: 800; color: #2dd4bf; text-transform: uppercase; letter-spacing: 0.5px;">✓ Respuesta Correcta (${String.fromCharCode(65 + (q.correct || 0))})</span>
                 <button onclick="playExplanationAudio()" style="background: rgba(20,184,166,0.2); border: 1px solid rgba(20,184,166,0.4); color: #2dd4bf; border-radius: 6px; padding: 3px 8px; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 4px; font-weight: 700;">
                     <span>🔊</span> Escuchar explicación
                 </button>
@@ -1394,645 +1432,234 @@ function showQuestionExplanation(q) {
     `;
 }
 
-function renderContextAnimation(questionText) {
+function renderContextAnimation(qOrText) {
     const container = document.getElementById("animation-canvas-container");
     const descEl = document.getElementById("animation-concept-desc");
-    
-    const text = questionText.toLowerCase();
-    
-    // 1. CONDUSEF / Equidad / Usuarios
-    if (text.includes("condusef") || text.includes("equidad entre") || text.includes("protección y defensa") || text.includes("de los usuarios")) {
-        descEl.innerHTML = `
-            <strong>CONDUSEF (Defensa del Usuario):</strong><br>
-            Tiene como objetivo prioritario **procurar la equidad** en las relaciones entre los usuarios de servicios financieros y las instituciones, actuando como órgano de consulta, conciliación y arbitraje para proteger sus derechos e intereses.
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 240">
-                <rect width="400" height="240" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <line x1="200" y1="60" x2="200" y2="180" stroke="#9ca3af" stroke-width="4"/>
-                <line x1="160" y1="180" x2="240" y2="180" stroke="#9ca3af" stroke-width="6"/>
-                <line x1="100" y1="80" x2="300" y2="80" stroke="#9ca3af" stroke-width="4" class="timeline-line"/>
-                <circle cx="200" cy="80" r="6" fill="#8b5cf6"/>
-                
-                <line x1="100" y1="80" x2="100" y2="130" stroke="#9ca3af" stroke-width="1.5"/>
-                <path d="M75,130 L125,130 L115,145 L85,145 Z" fill="rgba(20, 184, 166, 0.2)" stroke="#14b8a6" stroke-width="2"/>
-                <text x="100" y="121" font-size="10" fill="#2dd4bf" font-weight="700" text-anchor="middle">Usuario</text>
-                
-                <line x1="300" y1="80" x2="300" y2="130" stroke="#9ca3af" stroke-width="1.5"/>
-                <path d="M275,130 L325,130 L315,145 L285,145 Z" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="2"/>
-                <text x="300" y="121" font-size="10" fill="#a78bfa" font-weight="700" text-anchor="middle">Institución</text>
-                
-                <g transform="translate(145, 195)">
-                    <rect width="110" height="30" rx="6" fill="#14b8a6"/>
-                    <text x="55" y="19" font-size="12" fill="#fff" font-weight="800" text-anchor="middle">CONDUSEF</text>
-                </g>
-                <text x="200" y="45" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Equidad y Protección</text>
-            </svg>
-        `;
-    }
-    // 2. SHCP / Secretaría de Hacienda (Máxima Autoridad)
-    else if (text.includes("shcp") || text.includes("secretaría de hacienda") || text.includes("secretaria de hacienda")) {
-        descEl.innerHTML = `
-            <strong>SHCP (Máxima Autoridad Financiera):</strong><br>
-            Es el órgano rector del sistema financiero en México. Coordina las políticas de seguros y tiene la facultad exclusiva de **otorgar o revocar autorizaciones** para operar instituciones de seguros y fianzas.
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 240">
-                <rect width="400" height="240" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <g transform="translate(150, 20)">
-                    <rect width="100" height="40" rx="6" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="2"/>
-                    <text x="50" y="24" font-size="12" fill="#fff" font-weight="800" text-anchor="middle">SHCP</text>
-                </g>
-                <line x1="200" y1="60" x2="200" y2="100" stroke="#8b5cf6" stroke-width="2"/>
-                
-                <g transform="translate(150, 100)">
-                    <rect width="100" height="40" rx="6" fill="rgba(20, 184, 166, 0.2)" stroke="#14b8a6" stroke-width="2"/>
-                    <text x="50" y="24" font-size="12" fill="#fff" font-weight="800" text-anchor="middle">CNSF</text>
-                </g>
-                <line x1="200" y1="140" x2="200" y2="180" stroke="#14b8a6" stroke-width="2"/>
-                
-                <g transform="translate(125, 180)">
-                    <rect width="150" height="40" rx="6" fill="rgba(16, 185, 129, 0.2)" stroke="#10b981" stroke-width="2"/>
-                    <text x="75" y="24" font-size="11" fill="#fff" font-weight="800" text-anchor="middle">Aseguradoras</text>
-                </g>
-            </svg>
-        `;
-    }
-    // 3. CNSF (Supervisión y Solvencia)
-    else if (text.includes("cnsf") || text.includes("comisión nacional de seguros")) {
-        descEl.innerHTML = `
-            <strong>CNSF (Supervisión y Solvencia):</strong><br>
-            Órgano desconcentrado de la SHCP que **supervisa e inspecciona** la solvencia de aseguradoras y afianzadoras, autoriza el registro de pólizas y expide las **cédulas de agentes de seguros**.
-        `;
-        
+    if (!container || !descEl) return;
+
+    const qObj = typeof qOrText === "object" && qOrText !== null ? qOrText : { question: String(qOrText || ""), module: studyModule };
+    const text = (qObj.question || "").toLowerCase();
+    const mod = qObj.module || studyModule || "Aspectos Generales";
+
+    // Coherent module descriptions for the pre-answer state (no misleading keyword guesses before the user answers)
+    const moduleGuides = {
+        "Aspectos Generales": {
+            badge: "Ley sobre el Contrato de Seguro (LSCS)",
+            summary: "Evalúa los principios jurídicos y técnicos del seguro: interés asegurable, agravación del riesgo, prescripción, subrogación, primas e indemnización."
+        },
+        "Regulación CNSF": {
+            badge: "Marco Normativo y Reglamento de Agentes",
+            summary: "Evalúa las facultades de inspección de la CNSF, autorizaciones, cédulas, sanciones administrativas e impedimentos legales del agente."
+        },
+        "Vida Individual": {
+            badge: "Ramo de Vida Individual (Cédula A)",
+            summary: "Evalúa planes Temporales, Ordinarios de Vida y Dotales, valores garantizados (rescate, saldado, prorrogado), indisputabilidad y beneficios adicionales."
+        },
+        "Accidentes y Enfermedades": {
+            badge: "Gastos Médicos Mayores y Accidentes Personales",
+            summary: "Evalúa deducible, coaseguro, periodos de espera, preexistencias, tabuladores médicos y coberturas de pérdidas orgánicas."
+        },
+        "Seguros de Daños": {
+            badge: "Riesgos Individuales de Daños (Hogar y Autos)",
+            summary: "Evalúa seguro múltiple familiar, incendio, robo con violencia, responsabilidad civil familiar/vehicular, proporción indemnizable y embarcaciones de placer."
+        },
+        "Sistema y Mercados Financieros": {
+            badge: "Sistema Financiero Mexicano e Inversiones",
+            summary: "Evalúa autoridades reguladoras (SHCP, Banxico, CNBV, CNSF, CONSAR, CONDUSEF), mercado de deuda, renta variable y sociedades de inversión."
+        }
+    };
+
+    const guide = moduleGuides[mod] || {
+        badge: "Certificación Oficial Cédula A (CNSF)",
+        summary: "Riesgos Individuales de Personas y Daños conforme al temario vigente de la Comisión Nacional de Seguros y Fianzas."
+    };
+
+    descEl.innerHTML = `
+        <div style="background: rgba(30, 41, 59, 0.55); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 12px; padding: 14px; text-align: left;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                <span style="font-size: 11px; font-weight: 800; color: #38bdf8; text-transform: uppercase; letter-spacing: 0.5px;">${guide.badge}</span>
+                <span style="font-size: 11px; color: #94a3b8;">Reactivo #${qObj.id || (studyCurrentIdx + 1)}</span>
+            </div>
+            <p style="font-size: 13px; line-height: 1.5; color: #cbd5e1; margin: 0 0 10px 0;">
+                ${guide.summary}
+            </p>
+            <div style="border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                <span style="font-size: 12.5px; color: #94a3b8;">Selecciona la respuesta correcta o consulta el fundamento directo:</span>
+                <button onclick="revealExplanation()" style="background: rgba(20,184,166,0.15); border: 1px solid rgba(20,184,166,0.35); color: #2dd4bf; border-radius: 6px; padding: 4px 10px; font-size: 11.5px; cursor: pointer; font-weight: 700; white-space: nowrap;">
+                    Explicar reactivo
+                </button>
+            </div>
+        </div>
+    `;
+
+    // Render coherent SVG diagram based on unambiguous topic + module
+    if (text.includes("condusef") || text.includes("protección y defensa al usuario")) {
         container.innerHTML = `
             <svg class="concept-svg" viewBox="0 0 400 220">
                 <rect width="400" height="220" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <g class="pulse-shield" transform="translate(150, 20)">
+                <line x1="200" y1="50" x2="200" y2="165" stroke="#9ca3af" stroke-width="4"/>
+                <line x1="160" y1="165" x2="240" y2="165" stroke="#9ca3af" stroke-width="6"/>
+                <line x1="100" y1="70" x2="300" y2="70" stroke="#9ca3af" stroke-width="4" class="timeline-line"/>
+                <circle cx="200" cy="70" r="6" fill="#8b5cf6"/>
+                <line x1="100" y1="70" x2="100" y2="120" stroke="#9ca3af" stroke-width="1.5"/>
+                <path d="M75,120 L125,120 L115,135 L85,135 Z" fill="rgba(20, 184, 166, 0.2)" stroke="#14b8a6" stroke-width="2"/>
+                <text x="100" y="111" font-size="10" fill="#2dd4bf" font-weight="700" text-anchor="middle">Usuario</text>
+                <line x1="300" y1="70" x2="300" y2="120" stroke="#9ca3af" stroke-width="1.5"/>
+                <path d="M275,120 L325,120 L315,135 L285,135 Z" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="2"/>
+                <text x="300" y="111" font-size="10" fill="#a78bfa" font-weight="700" text-anchor="middle">Institución</text>
+                <g transform="translate(145, 180)">
+                    <rect width="110" height="28" rx="6" fill="#14b8a6"/>
+                    <text x="55" y="18" font-size="12" fill="#fff" font-weight="800" text-anchor="middle">CONDUSEF</text>
+                </g>
+                <text x="200" y="35" font-size="13" fill="#fff" font-weight="700" text-anchor="middle">Conciliación, Arbitraje y Defensa del Usuario</text>
+            </svg>
+        `;
+    } else if (text.includes("fideicomiso") || text.includes("fideicomitente") || text.includes("fiduciario") || text.includes("fideicomisario")) {
+        container.innerHTML = `
+            <svg class="concept-svg" viewBox="0 0 400 220">
+                <rect width="400" height="220" rx="10" fill="rgba(255,255,255,0.01)"/>
+                <g transform="translate(20, 80)">
+                    <rect width="95" height="50" rx="8" fill="var(--glass-bg)" stroke="#8b5cf6" stroke-width="2"/>
+                    <text x="47" y="26" font-size="10" fill="#fff" font-weight="600" text-anchor="middle">Fideicomitente</text>
+                    <text x="47" y="40" font-size="8" fill="#9ca3af" text-anchor="middle">(Aporta / Ordena)</text>
+                </g>
+                <path d="M120,105 L150,105" stroke="#14b8a6" stroke-width="2" fill="none" stroke-dasharray="4" class="fideicomiso-flow"/>
+                <g transform="translate(155, 80)" class="pulse-shield">
+                    <rect width="90" height="50" rx="8" fill="var(--glass-bg)" stroke="#14b8a6" stroke-width="2"/>
+                    <text x="45" y="26" font-size="10" fill="#fff" font-weight="600" text-anchor="middle">Fiduciario</text>
+                    <text x="45" y="40" font-size="8" fill="#9ca3af" text-anchor="middle">(Administra)</text>
+                </g>
+                <path d="M250,105 L280,105" stroke="#10b981" stroke-width="2" fill="none" stroke-dasharray="4" class="fideicomiso-flow"/>
+                <g transform="translate(285, 80)">
+                    <rect width="95" height="50" rx="8" fill="var(--glass-bg)" stroke="#10b981" stroke-width="2"/>
+                    <text x="47" y="26" font-size="10" fill="#fff" font-weight="600" text-anchor="middle">Fideicomisario</text>
+                    <text x="47" y="40" font-size="8" fill="#9ca3af" text-anchor="middle">(Beneficiario)</text>
+                </g>
+                <text x="200" y="45" font-size="13" fill="#fff" font-weight="700" text-anchor="middle">Estructura Patrimonial del Fideicomiso</text>
+            </svg>
+        `;
+    } else if (text.includes("valores garantizados") || text.includes("seguro saldado") || text.includes("seguro prorrogado") || text.includes("valor de rescate")) {
+        container.innerHTML = `
+            <svg class="concept-svg" viewBox="0 0 400 220">
+                <rect width="400" height="220" rx="10" fill="rgba(255,255,255,0.01)"/>
+                <g transform="translate(30, 50)">
+                    <rect width="100" height="120" rx="6" fill="rgba(20, 184, 166, 0.1)" stroke="#14b8a6" stroke-width="1.5"/>
+                    <text x="50" y="25" font-size="11" fill="#14b8a6" font-weight="700" text-anchor="middle">Valor Rescate</text>
+                    <text x="50" y="60" font-size="10" fill="#fff" text-anchor="middle">Efectivo Líquido</text>
+                    <text x="50" y="85" font-size="9" fill="#9ca3af" text-anchor="middle">Termina Contrato</text>
+                </g>
+                <g transform="translate(150, 50)">
+                    <rect width="100" height="120" rx="6" fill="rgba(139, 92, 246, 0.1)" stroke="#8b5cf6" stroke-width="1.5"/>
+                    <text x="50" y="25" font-size="11" fill="#8b5cf6" font-weight="700" text-anchor="middle">Seguro Saldado</text>
+                    <text x="50" y="60" font-size="10" fill="#fff" text-anchor="middle">Mismo Plazo</text>
+                    <text x="50" y="85" font-size="9" fill="#9ca3af" text-anchor="middle">Suma Reducida</text>
+                </g>
+                <g transform="translate(270, 50)">
+                    <rect width="100" height="120" rx="6" fill="rgba(239, 68, 68, 0.1)" stroke="#ef4444" stroke-width="1.5"/>
+                    <text x="50" y="25" font-size="11" fill="#ef4444" font-weight="700" text-anchor="middle">S. Prorrogado</text>
+                    <text x="50" y="60" font-size="10" fill="#fff" text-anchor="middle">Misma Suma</text>
+                    <text x="50" y="85" font-size="9" fill="#9ca3af" text-anchor="middle">Plazo Reducido</text>
+                </g>
+            </svg>
+        `;
+    } else if (mod === "Accidentes y Enfermedades" && (text.includes("coaseguro") || text.includes("deducible"))) {
+        container.innerHTML = `
+            <svg class="concept-svg" viewBox="0 0 400 220">
+                <rect width="400" height="220" rx="10" fill="rgba(255,255,255,0.01)"/>
+                <text x="200" y="40" font-size="13" fill="#fff" font-weight="700" text-anchor="middle">Participación en Gastos Médicos Mayores</text>
+                <g class="grow-bar">
+                    <rect x="45" y="75" width="85" height="40" fill="#ef4444" rx="4"/>
+                    <text x="87" y="100" font-size="11" fill="#fff" font-weight="700" text-anchor="middle">1. Deducible</text>
+                    <text x="87" y="135" font-size="10" fill="#fca5a5" text-anchor="middle">Monto Fijo Inicial</text>
+                </g>
+                <g class="grow-bar">
+                    <rect x="145" y="75" width="90" height="40" fill="#8b5cf6" rx="4"/>
+                    <text x="190" y="100" font-size="11" fill="#fff" font-weight="700" text-anchor="middle">2. Coaseguro</text>
+                    <text x="190" y="135" font-size="10" fill="#c084fc" text-anchor="middle">% Remanente</text>
+                </g>
+                <g class="grow-bar">
+                    <rect x="250" y="75" width="110" height="40" fill="#10b981" rx="4"/>
+                    <text x="305" y="100" font-size="11" fill="#fff" font-weight="700" text-anchor="middle">3. Aseguradora</text>
+                    <text x="305" y="135" font-size="10" fill="#34d399" text-anchor="middle">Indemnización Neta</text>
+                </g>
+            </svg>
+        `;
+    } else if (mod === "Aspectos Generales") {
+        container.innerHTML = `
+            <svg class="concept-svg" viewBox="0 0 400 200">
+                <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
+                <g transform="translate(160, 20)">
+                    <rect width="80" height="95" rx="6" fill="rgba(139, 92, 246, 0.15)" stroke="#8b5cf6" stroke-width="2"/>
+                    <line x1="15" y1="30" x2="65" y2="30" stroke="#8b5cf6" stroke-width="2"/>
+                    <line x1="15" y1="50" x2="65" y2="50" stroke="#8b5cf6" stroke-width="2"/>
+                    <line x1="15" y1="70" x2="50" y2="70" stroke="#8b5cf6" stroke-width="2"/>
+                </g>
+                <text x="200" y="145" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Aspectos Generales y Contrato de Seguro</text>
+                <text x="200" y="170" font-size="11" fill="#9ca3af" text-anchor="middle">Ley sobre el Contrato de Seguro (LSCS) • Principios Técnicos</text>
+            </svg>
+        `;
+    } else if (mod === "Regulación CNSF") {
+        container.innerHTML = `
+            <svg class="concept-svg" viewBox="0 0 400 200">
+                <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
+                <g class="pulse-shield" transform="translate(150, 15)">
                     <polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill="none" stroke="#14b8a6" stroke-width="2"/>
                     <path d="M25,30 L50,15 L75,30 V60 C75,75 50,85 50,85 C50,85 25,75 25,60 V30 Z" fill="rgba(20, 184, 166, 0.2)" stroke="#14b8a6" stroke-width="3"/>
                 </g>
-                <text x="200" y="150" font-size="16" fill="#fff" font-weight="800" text-anchor="middle">CNSF</text>
-                <text x="200" y="175" font-size="11" fill="#9ca3af" text-anchor="middle">Supervisión • Solvencia • Cédulas</text>
+                <text x="200" y="145" font-size="15" fill="#fff" font-weight="700" text-anchor="middle">Regulación Oficial CNSF</text>
+                <text x="200" y="170" font-size="11" fill="#9ca3af" text-anchor="middle">LISF • Reglamento de Agentes de Seguros y de Fianzas</text>
             </svg>
         `;
-    }
-    // 4. Banco de México / BANXICO
-    else if (text.includes("banco de méxico") || text.includes("banxico") || text.includes("banco central")) {
-        descEl.innerHTML = `
-            <strong>Banco de México (Banco Central):</strong><br>
-            Regula la emisión monetaria, controla la inflación, determina políticas de tasa de interés y administra las reservas internacionales del país, influyendo en las inversiones de las aseguradoras.
-        `;
-        
+    } else if (mod === "Vida Individual") {
         container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 220">
-                <rect width="400" height="220" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <g transform="translate(160, 30)">
-                    <rect x="0" y="10" width="80" height="60" rx="4" fill="none" stroke="#8b5cf6" stroke-width="2"/>
-                    <line x1="40" y1="10" x2="40" y2="70" stroke="#8b5cf6" stroke-width="2"/>
-                    <circle cx="40" cy="40" r="15" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="2"/>
-                    <text x="40" y="44" font-size="12" fill="#fff" font-weight="800" text-anchor="middle">$</text>
-                </g>
-                <text x="200" y="140" font-size="15" fill="#fff" font-weight="800" text-anchor="middle">BANXICO</text>
-                <text x="200" y="165" font-size="11" fill="#9ca3af" text-anchor="middle">Estabilidad Cambiaria • Política Monetaria</text>
+            <svg class="concept-svg" viewBox="0 0 400 200">
+                <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
+                <line x1="50" y1="125" x2="350" y2="125" stroke="#6b7280" stroke-width="2" class="timeline-line"/>
+                <circle cx="70" cy="125" r="6" fill="#14b8a6"/>
+                <circle cx="200" cy="125" r="6" fill="#8b5cf6"/>
+                <circle cx="330" cy="125" r="6" fill="#10b981"/>
+                <text x="200" y="80" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Seguro de Vida Individual (Cédula A)</text>
+                <text x="200" y="165" font-size="11" fill="#9ca3af" text-anchor="middle">Planes Temporales • Ordinario de Vida • Dotales • Valores Garantizados</text>
             </svg>
         `;
-    }
-    // 5. Lavado de dinero (UIF / Querella)
-    else if (text.includes("lavado") || text.includes("recursos de procedencia ilícita") || text.includes("proceda penalmente")) {
-        descEl.innerHTML = `
-            <strong>Lavado de Dinero (Petición Penal):</strong><br>
-            La **SHCP** es el único organismo facultado en México para formular la denuncia o querella ante el Ministerio Público Federal para proceder penalmente contra operaciones de lavado.
-        `;
-        
+    } else if (mod === "Accidentes y Enfermedades") {
         container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 220">
-                <rect width="400" height="220" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <rect x="130" y="40" width="140" height="50" rx="8" fill="rgba(239, 68, 68, 0.15)" stroke="#ef4444" stroke-width="2"/>
-                <text x="200" y="69" font-size="12" fill="#fff" font-weight="800" text-anchor="middle">SHCP / UIF</text>
-                
-                <path d="M200,90 L200,130" stroke="#ef4444" stroke-width="2" marker-end="url(#arrow)" stroke-dasharray="4"/>
-                
-                <rect x="110" y="135" width="180" height="40" rx="6" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="1.5"/>
-                <text x="200" y="160" font-size="11" fill="#fff" font-weight="700" text-anchor="middle">✔ Querella Penal al M.P.</text>
+            <svg class="concept-svg" viewBox="0 0 400 200">
+                <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
+                <circle cx="200" cy="70" r="30" fill="rgba(20, 184, 166, 0.15)" stroke="#14b8a6" stroke-width="2.5"/>
+                <path d="M190,70 h20 M200,60 v20" stroke="#14b8a6" stroke-width="3"/>
+                <text x="200" y="135" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Accidentes Personales y Gastos Médicos</text>
+                <text x="200" y="160" font-size="11" fill="#9ca3af" text-anchor="middle">Deducible • Coaseguro • Periodos de Espera • Pérdidas Orgánicas</text>
             </svg>
         `;
-    }
-    // 6. Accidente Colectivo
-    else if (text.includes("colectivo") || text.includes("accidente colectivo")) {
-        descEl.innerHTML = `
-            <strong>Accidente Colectivo:</strong><br>
-            Se considera **Accidente Colectivo** a la muerte o incapacidad que deriva de un siniestro en entornos públicos regulados o eventos catastróficos colectivos, tales como un **incendio en un edificio público**, el colapso de un ascensor público, descarrilamiento de trenes o hundimiento de transportes de servicio público concesionado.
-        `;
-        
+    } else if (mod === "Seguros de Daños") {
         container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 240">
-                <rect width="400" height="240" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <g transform="translate(40, 50)">
-                    <rect x="0" y="10" width="70" height="80" fill="none" stroke="#6b7280" stroke-width="2"/>
-                    <rect x="10" y="20" width="15" height="15" fill="#f3f4f6" opacity="0.3"/>
-                    <rect x="45" y="20" width="15" height="15" fill="#f3f4f6" opacity="0.3"/>
-                    <rect x="10" y="45" width="15" height="15" fill="#f3f4f6" opacity="0.3"/>
-                    <rect x="45" y="45" width="15" height="15" fill="#f3f4f6" opacity="0.3"/>
-                    <path d="M25,80 C20,70 25,60 35,55 C30,65 35,70 32,80 Z" fill="#ef4444" class="pulse-shield"/>
-                    <path d="M30,80 C28,73 32,68 38,65 C35,72 38,75 36,80 Z" fill="#f59e0b" class="pulse-shield"/>
+            <svg class="concept-svg" viewBox="0 0 400 200">
+                <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
+                <g transform="translate(160, 25)">
+                    <polygon points="40,10 75,40 65,40 65,75 15,75 15,40 5,40" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="2"/>
                 </g>
-                <g transform="translate(140, 45)">
-                    <text x="0" y="20" font-size="14" fill="#ef4444" font-weight="700">Accidente Colectivo (CNSF)</text>
-                    <text x="0" y="40" font-size="11" fill="#9ca3af">Se define por eventos de afectación pública:</text>
-                    <circle cx="10" cy="65" r="4" fill="#ef4444"/>
-                    <text x="22" y="69" font-size="11" fill="#f3f4f6" font-weight="600">✔ Incendio en Edificio Público</text>
-                    <circle cx="10" cy="85" r="4" fill="#14b8a6"/>
-                    <text x="22" y="89" font-size="11" fill="#9ca3af">✔ Ascensor Público de uso común</text>
-                    <circle cx="10" cy="105" r="4" fill="#14b8a6"/>
-                    <text x="22" y="109" font-size="11" fill="#9ca3af">✔ Transporte Público Concesionado</text>
-                </g>
+                <text x="200" y="135" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Seguros de Daños (Riesgos Individuales)</text>
+                <text x="200" y="160" font-size="11" fill="#9ca3af" text-anchor="middle">Hogar • Automóviles Residentes • RC Familiar • Proporción Indemnizable</text>
             </svg>
         `;
-    }
-    // 7. Fideicomiso
-    else if (text.includes("fideicomiso") || text.includes("fideicomitente") || text.includes("fiduciario")) {
-        descEl.innerHTML = `
-            <strong>Estructura del Fideicomiso:</strong><br>
-            * **Fideicomitente:** Quien ordena el fideicomiso y aporta los bienes (ej. asegurado).<br>
-            * **Fiduciario:** La aseguradora o banco que administra e invierte dichos bienes.<br>
-            * **Fideicomisario:** El beneficiario que recibe los fondos fideicomitidos según las reglas.
-        `;
-        
+    } else {
         container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 240">
-                <rect width="400" height="240" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <g transform="translate(30, 90)">
-                    <rect width="95" height="50" rx="8" fill="var(--glass-bg)" stroke="#8b5cf6" stroke-width="2"/>
-                    <text x="12" y="28" font-size="10" fill="#fff" font-weight="600">Fideicomitente</text>
-                    <text x="20" y="42" font-size="8" fill="#9ca3af">(Asegurado/Ordena)</text>
-                </g>
-                <path d="M130,115 L175,115" stroke="#14b8a6" stroke-width="2" fill="none" stroke-dasharray="4" class="fideicomiso-flow"/>
-                <polygon points="175,111 183,115 175,119" fill="#14b8a6" />
-                <g transform="translate(180, 90)" class="pulse-shield">
-                    <rect width="90" height="50" rx="8" fill="var(--glass-bg)" stroke="#14b8a6" stroke-width="2"/>
-                    <text x="22" y="28" font-size="10" fill="#fff" font-weight="600">Fiduciario</text>
-                    <text x="12" y="42" font-size="8" fill="#9ca3af">(Aseguradora/Admin)</text>
-                </g>
-                <path d="M275,115 L320,115" stroke="#10b981" stroke-width="2" fill="none" stroke-dasharray="4" class="fideicomiso-flow"/>
-                <polygon points="320,111 328,115 320,119" fill="#10b981" />
-                <g transform="translate(325, 90)">
-                    <rect width="95" height="50" rx="8" fill="var(--glass-bg)" stroke="#10b981" stroke-width="2"/>
-                    <text x="12" y="28" font-size="10" fill="#fff" font-weight="600">Fideicomisario</text>
-                    <text x="16" y="42" font-size="8" fill="#9ca3af">(Beneficiario/Recibe)</text>
-                </g>
+            <svg class="concept-svg" viewBox="0 0 400 200">
+                <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
+                <rect x="150" y="20" width="100" height="30" rx="4" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="1.5"/>
+                <text x="200" y="39" font-size="10" fill="#fff" font-weight="bold" text-anchor="middle">SHCP / BANXICO</text>
+                <line x1="200" y1="50" x2="200" y2="80" stroke="#8b5cf6" stroke-width="1.5"/>
+                <line x1="100" y1="80" x2="300" y2="80" stroke="#8b5cf6" stroke-width="1.5"/>
+                <line x1="100" y1="80" x2="100" y2="110" stroke="#14b8a6" stroke-width="1.5"/>
+                <line x1="300" y1="80" x2="300" y2="110" stroke="#10b981" stroke-width="1.5"/>
+                <rect x="50" y="110" width="100" height="30" rx="4" fill="rgba(20, 184, 166, 0.2)" stroke="#14b8a6" stroke-width="1.5"/>
+                <text x="100" y="129" font-size="9" fill="#fff" text-anchor="middle">CNSF / CNBV</text>
+                <rect x="250" y="110" width="100" height="30" rx="4" fill="rgba(16, 185, 129, 0.2)" stroke="#10b981" stroke-width="1.5"/>
+                <text x="300" y="129" font-size="9" fill="#fff" text-anchor="middle">CONDUSEF / CONSAR</text>
+                <text x="200" y="175" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">Sistema y Mercados Financieros</text>
             </svg>
         `;
-    }
-    // 8. Fianzas
-    else if (text.includes("fianza") || text.includes("fiado") || text.includes("solidario")) {
-        descEl.innerHTML = `
-            <strong>Estructura de la Fianza:</strong><br>
-            Contrato accesorio de garantía. El **Fiado** (deudor) garantiza a favor del **Beneficiario** (acreedor) el cumplimiento de una obligación mediante el respaldo de la **Afianzadora** (institución autorizada), quien puede exigir contragarantía al **Obligado Solidario**.
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 240">
-                <rect width="400" height="240" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <circle cx="200" cy="60" r="25" fill="var(--glass-bg)" stroke="#8b5cf6" stroke-width="2"/>
-                <text x="200" y="64" font-size="9" fill="#fff" font-weight="600" text-anchor="middle">Beneficiario</text>
-                <circle cx="100" cy="160" r="25" fill="var(--glass-bg)" stroke="#14b8a6" stroke-width="2"/>
-                <text x="100" y="164" font-size="9" fill="#fff" font-weight="600" text-anchor="middle">Fiado</text>
-                <circle cx="300" cy="160" r="25" fill="var(--glass-bg)" stroke="#10b981" stroke-width="2"/>
-                <text x="300" y="164" font-size="9" fill="#fff" font-weight="600" text-anchor="middle">Afianzadora</text>
-                <line x1="120" y1="145" x2="180" y2="78" stroke="#8b5cf6" stroke-width="2"/>
-                <line x1="280" y1="145" x2="220" y2="78" stroke="#10b981" stroke-width="2"/>
-                <line x1="125" y1="160" x2="275" y2="160" stroke="#14b8a6" stroke-dasharray="3" stroke-width="2"/>
-            </svg>
-        `;
-    }
-    // 9. Subrogación de derechos
-    else if (text.includes("subrogación") || text.includes("subroga")) {
-        descEl.innerHTML = `
-            <strong>Subrogación de Derechos:</strong><br>
-            Una vez pagado el siniestro, el asegurado transfiere a la aseguradora los derechos de cobrar al tercero culpable. Esto evita que el asegurado reciba una doble indemnización y garantiza que el responsable asuma el costo.
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 240">
-                <rect width="400" height="240" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <g transform="translate(30, 90)">
-                    <rect width="90" height="50" rx="6" fill="var(--glass-bg)" stroke="#14b8a6" stroke-width="1.5"/>
-                    <text x="45" y="28" font-size="10" fill="#fff" text-anchor="middle">Asegurado</text>
-                </g>
-                <path d="M120,80 L200,80 L200,100" stroke="#10b981" stroke-width="2" fill="none" class="fideicomiso-flow"/>
-                <polygon points="196,100 200,108 204,100" fill="#10b981" />
-                <g transform="translate(160, 110)">
-                    <rect width="90" height="50" rx="6" fill="var(--glass-bg)" stroke="#8b5cf6" stroke-width="1.5"/>
-                    <text x="45" y="28" font-size="10" fill="#fff" text-anchor="middle">Aseguradora</text>
-                </g>
-                <path d="M250,135 L300,135 L300,115" stroke="#ef4444" stroke-width="2" fill="none" class="fideicomiso-flow"/>
-                <polygon points="296,115 300,107 304,115" fill="#ef4444" />
-                <g transform="translate(290, 50)">
-                    <rect width="80" height="50" rx="6" fill="var(--glass-bg)" stroke="#ef4444" stroke-width="1.5"/>
-                    <text x="40" y="28" font-size="10" fill="#fff" text-anchor="middle">Tercero Culpable</text>
-                </g>
-            </svg>
-        `;
-    }
-    // 10. Coaseguro y Deducible / Gastos Médicos
-    else if (text.includes("coaseguro") || text.includes("deducible") || text.includes("gastos médicos") || text.includes("copago") || text.includes("g.m.m") || text.includes("gastos medicos") || text.includes("gatos médicos")) {
-        descEl.innerHTML = `
-            <strong>Coaseguro y Deducible:</strong><br>
-            * **Deducible:** Cantidad fija que paga el asegurado al inicio de un siniestro.<br>
-            * **Coaseguro:** Porcentaje (ej. 10%) que paga el asegurado del gasto remanente.<br>
-            Ambos buscan desincentivar el sobreuso de servicios médicos y regular el costo de la prima.
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 240">
-                <rect width="400" height="240" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <text x="50" y="45" font-size="13" fill="#9ca3af" font-weight="600">Repartición del Gasto Médico (Siniestro)</text>
-                <g class="grow-bar">
-                    <rect x="50" y="80" width="80" height="40" fill="#ef4444" rx="4"/>
-                    <text x="63" y="105" font-size="11" fill="#fff" font-weight="700">Deducible</text>
-                    <text x="65" y="140" font-size="11" fill="#fca5a5">(Cargo Fijo)</text>
-                </g>
-                <g class="grow-bar">
-                    <rect x="140" y="80" width="85" height="40" fill="#8b5cf6" rx="4"/>
-                    <text x="150" y="105" font-size="11" fill="#fff" font-weight="700">Coaseguro</text>
-                    <text x="158" y="140" font-size="11" fill="#c084fc">(Copago %)</text>
-                </g>
-                <g class="grow-bar">
-                    <rect x="235" y="80" width="115" height="40" fill="#10b981" rx="4"/>
-                    <text x="245" y="105" font-size="11" fill="#fff" font-weight="700">Aseguradora</text>
-                    <text x="255" y="140" font-size="11" fill="#34d399">(Cubre el Resto)</text>
-                </g>
-            </svg>
-        `;
-    }
-    // 11. Muerte Accidental (Exclusiones y Excepciones)
-    else if (text.includes("accidental") || text.includes("accidente") || text.includes("exclusiones y excepciones")) {
-        descEl.innerHTML = `
-            <strong>Muerte Accidental (Exclusiones y Excepciones):</strong><br>
-            Ciertos eventos de muerte por accidente tienen condiciones específicas en pólizas de vida y accidentes:<br>
-            * **Excepciones (Sí Cubierto):** Eventos ajenos e involuntarios (inhalación accidental de gas, fármacos recetados).<br>
-            * **Exclusiones (No Cubierto):** Negligencias o dolo (actos delictivos, alcoholismo/drogas, riña).
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 240">
-                <rect width="400" height="240" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <text x="50" y="45" font-size="13" fill="#ef4444" font-weight="700">Beneficio Muerte Accidental (CNSF)</text>
-                <g transform="translate(40, 70)">
-                    <rect width="150" height="120" rx="8" fill="rgba(16, 185, 129, 0.08)" stroke="#10b981" stroke-width="1.5"/>
-                    <text x="75" y="22" font-size="11" fill="#10b981" font-weight="700" text-anchor="middle">✔ Excepciones (Cubierto)</text>
-                    <text x="15" y="50" font-size="10" fill="#a7f3d0">• Gas inhalado por accidente</text>
-                    <text x="15" y="75" font-size="10" fill="#a7f3d0">• Medicamentos recetados</text>
-                    <text x="15" y="100" font-size="10" fill="#a7f3d0">• Asfixia por inmersión</text>
-                </g>
-                <g transform="translate(210, 70)">
-                    <rect width="150" height="120" rx="8" fill="rgba(239, 68, 68, 0.08)" stroke="#ef4444" stroke-width="1.5"/>
-                    <text x="75" y="22" font-size="11" fill="#ef4444" font-weight="700" text-anchor="middle">✖ Exclusiones (Excluido)</text>
-                    <text x="15" y="50" font-size="10" fill="#fca5a5">• Alcoholismo o riña</text>
-                    <text x="15" y="75" font-size="10" fill="#fca5a5">• Actos delictivos propios</text>
-                    <text x="15" y="100" font-size="10" fill="#fca5a5">• Deportes de alto riesgo</text>
-                </g>
-            </svg>
-        `;
-    }
-    // 12. Valores Garantizados (Saldado, Prorrogado, Rescate)
-    else if (text.includes("valores garantizados") || text.includes("saldado") || text.includes("prorrogado") || text.includes("rescate")) {
-        descEl.innerHTML = `
-            <strong>Valores Garantizados:</strong><br>
-            Derechos adquiridos por el asegurado al acumular reserva matemática en pólizas de vida con ahorro:<br>
-            * **Rescate:** Devolución del dinero en efectivo (cancela la póliza).<br>
-            * **Seguro Saldado:** Misma vigencia original, pero con una suma asegurada reducida.<br>
-            * **Seguro Prorrogado:** Misma suma asegurada original, pero con vigencia reducida (temporal).
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 240">
-                <rect width="400" height="240" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <g transform="translate(30, 60)">
-                    <rect width="100" height="130" rx="6" fill="rgba(20, 184, 166, 0.1)" stroke="#14b8a6" stroke-width="1.5"/>
-                    <text x="50" y="25" font-size="11" fill="#14b8a6" font-weight="700" text-anchor="middle">Valor Rescate</text>
-                    <text x="50" y="65" font-size="10" fill="#fff" text-anchor="middle">Efectivo Cash</text>
-                    <text x="50" y="90" font-size="9" fill="#9ca3af" text-anchor="middle">Cancela Contrato</text>
-                </g>
-                <g transform="translate(150, 60)">
-                    <rect width="100" height="130" rx="6" fill="rgba(139, 92, 246, 0.1)" stroke="#8b5cf6" stroke-width="1.5"/>
-                    <text x="50" y="25" font-size="11" fill="#8b5cf6" font-weight="700" text-anchor="middle">Seguro Saldado</text>
-                    <text x="50" y="65" font-size="10" fill="#fff" text-anchor="middle">Mismo Plazo</text>
-                    <text x="50" y="90" font-size="9" fill="#9ca3af" text-anchor="middle">Suma Reducida</text>
-                </g>
-                <g transform="translate(270, 60)">
-                    <rect width="100" height="130" rx="6" fill="rgba(239, 68, 68, 0.1)" stroke="#ef4444" stroke-width="1.5"/>
-                    <text x="50" y="25" font-size="11" fill="#ef4444" font-weight="700" text-anchor="middle">S. Prorrogado</text>
-                    <text x="50" y="65" font-size="10" fill="#fff" text-anchor="middle">Misma Suma</text>
-                    <text x="50" y="90" font-size="9" fill="#9ca3af" text-anchor="middle">Plazo Reducido</text>
-                </g>
-            </svg>
-        `;
-    }
-    // 13. Seguro Dotal (Supervivencia)
-    else if (text.includes("dotal") || text.includes("supervivencia")) {
-        descEl.innerHTML = `
-            <strong>Seguro Dotal:</strong><br>
-            El plan **Dotal** combina protección (Vida) y ahorro. Garantiza el pago de la suma asegurada si el asegurado fallece durante la vigencia, **O** al propio asegurado si sobrevive al término del contrato. Genera reservas y valores garantizados.
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 240">
-                <rect width="400" height="240" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <line x1="50" y1="160" x2="350" y2="160" stroke="#6b7280" stroke-width="2" stroke-dasharray="2" class="timeline-line"/>
-                <polygon points="350,156 360,160 350,164" fill="#6b7280" />
-                <text x="350" y="180" font-size="11" fill="#9ca3af" font-weight="500">Plazo Póliza</text>
-                <circle cx="60" cy="160" r="5" fill="#14b8a6"/>
-                <text x="45" y="195" font-size="12" fill="#14b8a6" font-weight="600">Año 0: Inicio</text>
-                <path d="M70,140 Q180,110 290,140" stroke="#8b5cf6" stroke-width="2" fill="none" stroke-dasharray="5" class="fideicomiso-flow"/>
-                <text x="145" y="100" font-size="11" fill="#a78bfa">Ahorro y Primas</text>
-                <circle cx="300" cy="160" r="6" fill="#10b981" class="timeline-point timeline-point-2"/>
-                <text x="250" y="195" font-size="12" fill="#10b981" font-weight="600">Vencimiento (Supervivencia)</text>
-                <g transform="translate(280, 50)" class="timeline-point timeline-point-3">
-                    <rect width="40" height="40" rx="8" fill="#10b981" opacity="0.8"/>
-                    <path d="M12,12 h16 v16 h-16 z M15,20 h10 M20,15 v10" stroke="#fff" stroke-width="2" fill="none"/>
-                    <text x="-40" y="-10" font-size="11" fill="#34d399" font-weight="600">Pago Suma Asegurada</text>
-                </g>
-                <line x1="300" y1="160" x2="300" y2="90" stroke="#10b981" stroke-width="2" stroke-dasharray="4" class="timeline-line"/>
-            </svg>
-        `;
-    }
-    // 14. Seguro Temporal
-    else if (text.includes("temporal")) {
-        descEl.innerHTML = `
-            <strong>Seguro Temporal:</strong><br>
-            El plan **Temporal** es protección pura a bajo costo. Solo paga si el asegurado fallece dentro del plazo de vigencia. Si el asegurado sobrevive al plazo, el contrato se da por terminado sin devolver dinero ni acumular valores.
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 240">
-                <rect width="400" height="240" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <line x1="50" y1="160" x2="350" y2="160" stroke="#6b7280" stroke-width="2" stroke-dasharray="2" class="timeline-line"/>
-                <polygon points="350,156 360,160 350,164" fill="#6b7280" />
-                <text x="350" y="180" font-size="11" fill="#9ca3af" font-weight="500">Límite Plazo</text>
-                <circle cx="60" cy="160" r="5" fill="#14b8a6"/>
-                <text x="45" y="195" font-size="12" fill="#14b8a6" font-weight="600">Año 0: Inicio</text>
-                <circle cx="200" cy="160" r="6" fill="#ef4444" class="timeline-point timeline-point-2"/>
-                <text x="140" y="195" font-size="12" fill="#ef4444" font-weight="600">Fallecimiento (CUBIERTO)</text>
-                <g transform="translate(180, 50)" class="timeline-point timeline-point-3">
-                    <rect width="40" height="40" rx="8" fill="#ef4444" opacity="0.8"/>
-                    <path d="M12,15 L20,11 L28,15 V22 C28,26 20,29 20,29 C20,29 12,26 12,22 V15 Z" fill="none" stroke="#fff" stroke-width="2"/>
-                    <text x="-40" y="-10" font-size="11" fill="#fca5a5" font-weight="600">Suma a Beneficiarios</text>
-                </g>
-                <line x1="200" y1="160" x2="200" y2="90" stroke="#ef4444" stroke-width="2" stroke-dasharray="4" class="timeline-line"/>
-            </svg>
-        `;
-    }
-    // 15. Prima de Tarifa vs Prima Pura de Riesgo
-    else if (text.includes("prima") || text.includes("mortalidad") || text.includes("tarifa")) {
-        descEl.innerHTML = `
-            <strong>Composición de la Prima Comercial:</strong><br>
-            * **Prima Pura de Riesgo:** Costo calculado actuarialmente para cubrir fallecimientos.<br>
-            * **Gastos de Adquisición/Operación + Margen:** Recargos por comisiones, administración y utilidades.<br>
-            La suma de ambos componentes constituye la **Prima de Tarifa** comercial.
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 240">
-                <rect width="400" height="240" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <g transform="translate(50, 40)" class="grow-bar">
-                    <rect width="130" height="150" fill="rgba(20, 184, 166, 0.15)" stroke="#14b8a6" stroke-width="2" rx="6"/>
-                    <rect y="110" width="130" height="40" fill="#14b8a6" rx="0 0 6 6"/>
-                    <text x="15" y="40" font-size="11" fill="#9ca3af" font-weight="500">Costo de Siniestralidad</text>
-                    <text x="12" y="60" font-size="10" fill="#6b7280">(Tablas de Mortalidad)</text>
-                    <text x="15" y="133" font-size="12" fill="#fff" font-weight="700">Prima Pura de Riesgo</text>
-                </g>
-                <text x="195" y="120" font-size="28" fill="#8b5cf6" font-weight="bold">+</text>
-                <g transform="translate(220, 40)" class="grow-bar">
-                    <rect width="130" height="150" fill="rgba(139, 92, 246, 0.15)" stroke="#8b5cf6" stroke-width="2" rx="6"/>
-                    <rect y="0" width="130" height="40" fill="#7c3aed" opacity="0.9" rx="6 6 0 0"/>
-                    <text x="15" y="24" font-size="10" fill="#fff" font-weight="600">Comisiones y Venta</text>
-                    <rect y="40" width="130" height="40" fill="#8b5cf6" opacity="0.8"/>
-                    <text x="15" y="64" font-size="10" fill="#fff" font-weight="600">Gastos Administración</text>
-                    <rect y="80" width="130" height="30" fill="#a78bfa" opacity="0.7"/>
-                    <text x="15" y="98" font-size="10" fill="#000" font-weight="600">Margen de Utilidad</text>
-                    <rect y="110" width="130" height="40" fill="#312e81" rx="0 0 6 6"/>
-                    <text x="20" y="133" font-size="12" fill="#fff" font-weight="700">Gastos y Recargos</text>
-                </g>
-                <text x="200" y="215" font-size="13" fill="#a78bfa" font-weight="700" text-anchor="middle">PRIMA DE TARIFA = RIESGO + RECARGOS</text>
-            </svg>
-        `;
-    }
-    // 16. Carencia de Restricciones
-    else if (text.includes("carencia") || text.includes("restricciones") || text.includes("género de vida")) {
-        descEl.innerHTML = `
-            <strong>Carencia de Restricciones:</strong><br>
-            Cláusula del seguro de Vida que garantiza que la póliza estará exenta de limitaciones por causa de **residencia, ocupación, viajes o género de vida** una vez emitida.
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 220">
-                <rect width="400" height="220" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <g transform="translate(60, 40)">
-                    <rect width="80" height="80" rx="4" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="2"/>
-                    <text x="40" y="35" font-size="10" fill="#fff" text-anchor="middle">Residencia</text>
-                    <text x="40" y="55" font-size="10" fill="#a7f3d0" text-anchor="middle" font-weight="bold">CUBIERTA</text>
-                </g>
-                <g transform="translate(160, 40)">
-                    <rect width="80" height="80" rx="4" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="2"/>
-                    <text x="40" y="35" font-size="10" fill="#fff" text-anchor="middle">Ocupación</text>
-                    <text x="40" y="55" font-size="10" fill="#a7f3d0" text-anchor="middle" font-weight="bold">CUBIERTA</text>
-                </g>
-                <g transform="translate(260, 40)">
-                    <rect width="80" height="80" rx="4" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="2"/>
-                    <text x="40" y="35" font-size="10" fill="#fff" text-anchor="middle">Viajes</text>
-                    <text x="40" y="55" font-size="10" fill="#a7f3d0" text-anchor="middle" font-weight="bold">CUBIERTA</text>
-                </g>
-                <text x="200" y="165" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Sin Restricciones Posteriores</text>
-            </svg>
-        `;
-    }
-    // 17. Interés Asegurable
-    else if (text.includes("interés asegurable") || text.includes("asegurable")) {
-        descEl.innerHTML = `
-            <strong>Interés Asegurable:</strong><br>
-            Principio fundamental del seguro. Es la **relación económica o afectiva legítima** que el beneficiario tiene en la preservación del bien o de la vida del asegurado, evitando el azar o el fraude.
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 220">
-                <rect width="400" height="220" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <circle cx="200" cy="80" r="40" fill="rgba(20, 184, 166, 0.15)" stroke="#14b8a6" stroke-width="3"/>
-                <path d="M190,85 C185,75 190,68 200,65 C210,68 215,75 210,85 L200,95 Z" fill="#fff" stroke="#14b8a6" stroke-width="1.5"/>
-                <text x="200" y="150" font-size="14" fill="#fff" font-weight="800" text-anchor="middle">Relación Económica y Afectiva</text>
-                <text x="200" y="175" font-size="11" fill="#9ca3af" text-anchor="middle">Evita la especulación del azar o juego</text>
-            </svg>
-        `;
-    }
-    // 18. Plazo de Pago de Siniestro (30 días)
-    else if (text.includes("plazo para efectuar la indemnización") || text.includes("30 días") || text.includes("plazo máximo para efectuar")) {
-        descEl.innerHTML = `
-            <strong>Plazo Límite de Indemnización:</strong><br>
-            Establecido por la Ley sobre el Contrato de Seguro. La aseguradora tiene un **plazo máximo de 30 días** naturales tras recibir la reclamación y documentos para efectuar el pago correspondiente.
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 220">
-                <rect width="400" height="220" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <rect x="150" y="30" width="100" height="100" rx="8" fill="rgba(20, 184, 166, 0.1)" stroke="#14b8a6" stroke-width="2"/>
-                <line x1="150" y1="60" x2="250" y2="60" stroke="#14b8a6" stroke-width="2"/>
-                <text x="200" y="52" font-size="11" fill="#9ca3af" font-weight="800" text-anchor="middle">LÍMITE</text>
-                <text x="200" y="105" font-size="32" fill="#fff" font-weight="900" text-anchor="middle">30</text>
-                <text x="200" y="120" font-size="10" fill="#2dd4bf" font-weight="700" text-anchor="middle">DÍAS LEY</text>
-                <text x="200" y="165" font-size="13" fill="#fff" font-weight="700" text-anchor="middle">Pago Obligatorio de Siniestros</text>
-            </svg>
-        `;
-    }
-    // 19. Obligación de declarar los hechos
-    else if (text.includes("obligado al solicitar") || text.includes("declarar por escrito") || text.includes("apreciación del riesgo")) {
-        descEl.innerHTML = `
-            <strong>Deber de Declaración Escrita:</strong><br>
-            El prospecto tiene la obligación legal de **declarar por escrito y con veracidad** todos los hechos importantes para la apreciación del riesgo, permitiendo a la aseguradora tarifar adecuadamente.
-        `;
-        
-        container.innerHTML = `
-            <svg class="concept-svg" viewBox="0 0 400 220">
-                <rect width="400" height="220" rx="10" fill="rgba(255,255,255,0.01)"/>
-                <g transform="translate(160, 30)">
-                    <rect width="80" height="90" rx="6" fill="rgba(16, 185, 129, 0.15)" stroke="#10b981" stroke-width="2"/>
-                    <line x1="15" y1="30" x2="65" y2="30" stroke="#10b981" stroke-width="2"/>
-                    <line x1="15" y1="50" x2="65" y2="50" stroke="#10b981" stroke-width="2"/>
-                    <line x1="15" y1="70" x2="45" y2="70" stroke="#10b981" stroke-width="2"/>
-                </g>
-                <text x="200" y="150" font-size="14" fill="#fff" font-weight="800" text-anchor="middle">Declaración Escrita de Buena Fe</text>
-                <text x="200" y="175" font-size="11" fill="#9ca3af" text-anchor="middle">Sin omisión de hechos importantes</text>
-            </svg>
-        `;
-    }
-    // 20. MODULE-SPECIFIC FALLBACKS
-    else {
-        if (studyModule === "Aspectos Generales") {
-            descEl.innerHTML = `
-                <strong>Fundamentos y Aspectos Generales:</strong><br>
-                La Ley sobre el Contrato de Seguro regula los derechos y deberes mutuos (buena fe, interés asegurable, solicitudes).
-            `;
-            container.innerHTML = `
-                <svg class="concept-svg" viewBox="0 0 400 200">
-                    <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
-                    <g transform="translate(160, 20)">
-                        <rect width="80" height="100" rx="6" fill="rgba(139, 92, 246, 0.15)" stroke="#8b5cf6" stroke-width="2"/>
-                        <line x1="15" y1="30" x2="65" y2="30" stroke="#8b5cf6" stroke-width="2"/>
-                        <line x1="15" y1="50" x2="65" y2="50" stroke="#8b5cf6" stroke-width="2"/>
-                        <line x1="15" y1="70" x2="55" y2="70" stroke="#8b5cf6" stroke-width="2"/>
-                    </g>
-                    <text x="200" y="150" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Aspectos Generales y Contrato</text>
-                    <text x="200" y="175" font-size="11" fill="#9ca3af" text-anchor="middle">Bases de la Ley sobre el Contrato de Seguro</text>
-                </svg>
-            `;
-        }
-        else if (studyModule === "Regulación CNSF") {
-            descEl.innerHTML = `
-                <strong>Regulación y Supervisión CNSF:</strong><br>
-                La **CNSF** se encarga de supervisar que la operación de las instituciones de seguros y fianzas se apegue a la ley, protegiendo al usuario.
-            `;
-            container.innerHTML = `
-                <svg class="concept-svg" viewBox="0 0 400 200">
-                    <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
-                    <g class="pulse-shield" transform="translate(150, 15)">
-                        <polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill="none" stroke="#14b8a6" stroke-width="2"/>
-                        <path d="M25,30 L50,15 L75,30 V60 C75,75 50,85 50,85 C50,85 25,75 25,60 V30 Z" fill="rgba(20, 184, 166, 0.2)" stroke="#14b8a6" stroke-width="3"/>
-                    </g>
-                    <text x="200" y="145" font-size="15" fill="#fff" font-weight="700" text-anchor="middle">Regulación Oficial CNSF</text>
-                    <text x="200" y="170" font-size="11" fill="#9ca3af" text-anchor="middle">Inspección de solvencia y sanas prácticas</text>
-                </svg>
-            `;
-        }
-        else if (studyModule === "Vida Individual") {
-            descEl.innerHTML = `
-                <strong>Seguro de Vida Individual:</strong><br>
-                El ramo de **Vida** protege la estabilidad económica familiar ante el deceso, invalidez o supervivencia del asegurado.
-            `;
-            container.innerHTML = `
-                <svg class="concept-svg" viewBox="0 0 400 200">
-                    <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
-                    <line x1="50" y1="130" x2="350" y2="130" stroke="#6b7280" stroke-width="2" class="timeline-line"/>
-                    <circle cx="60" cy="130" r="5" fill="#14b8a6"/>
-                    <circle cx="300" cy="130" r="6" fill="#10b981"/>
-                    <text x="200" y="90" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Protección y Ahorro en Vida</text>
-                    <text x="200" y="165" font-size="11" fill="#9ca3af" text-anchor="middle">Ordinario de Vida • Temporales • Dotales</text>
-                </svg>
-            `;
-        }
-        else if (studyModule === "Accidentes y Enfermedades") {
-            descEl.innerHTML = `
-                <strong>Gastos Médicos y Accidentes:</strong><br>
-                Las coberturas de **Gastos Médicos Mayores** e indemnizaciones por accidentes resarcen gastos hospitalarios ante imprevistos de salud.
-            `;
-            container.innerHTML = `
-                <svg class="concept-svg" viewBox="0 0 400 200">
-                    <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
-                    <circle cx="200" cy="70" r="30" fill="rgba(20, 184, 166, 0.15)" stroke="#14b8a6" stroke-width="2.5"/>
-                    <path d="M190,70 h20 M200,60 v20" stroke="#14b8a6" stroke-width="3"/>
-                    <text x="200" y="135" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Accidentes y Enfermedades</text>
-                    <text x="200" y="160" font-size="11" fill="#9ca3af" text-anchor="middle">Deducibles, coaseguros y periodos de espera</text>
-                </svg>
-            `;
-        }
-        else if (studyModule === "Seguros de Daños") {
-            descEl.innerHTML = `
-                <strong>Riesgos Individuales de Daños:</strong><br>
-                Los seguros de **Daños** (autos, incendio, embarcaciones) resarcen el valor real o reposición de bienes materiales tras un siniestro fortuito.
-            `;
-            container.innerHTML = `
-                <svg class="concept-svg" viewBox="0 0 400 200">
-                    <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
-                    <g transform="translate(160, 30)">
-                        <path d="M12,15 L20,11 L28,15 V22 C28,26 20,29 20,29 C20,29 12,26 12,22 V15 Z" fill="rgba(139, 92, 246, 0.15)" stroke="#8b5cf6" stroke-width="2.5"/>
-                    </g>
-                    <text x="200" y="135" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Seguros de Daños</text>
-                    <text x="200" y="160" font-size="11" fill="#9ca3af" text-anchor="middle">Principio indemnizatorio y valuación de bienes</text>
-                </svg>
-            `;
-        }
-        else if (studyModule === "Sistema y Mercados Financieros") {
-            descEl.innerHTML = `
-                <strong>Sistema y Mercados Financieros:</strong><br>
-                Estructura regulatoria y entidades operativas (bancos, aseguradoras, afores) coordinadas bajo la SHCP, Banxico y comisiones.
-            `;
-            container.innerHTML = `
-                <svg class="concept-svg" viewBox="0 0 400 200">
-                    <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
-                    <rect x="150" y="20" width="100" height="30" rx="4" fill="rgba(139, 92, 246, 0.2)" stroke="#8b5cf6" stroke-width="1.5"/>
-                    <text x="200" y="39" font-size="10" fill="#fff" font-weight="bold" text-anchor="middle">SHCP / BANXICO</text>
-                    <line x1="200" y1="50" x2="200" y2="80" stroke="#8b5cf6" stroke-width="1.5"/>
-                    <line x1="100" y1="80" x2="300" y2="80" stroke="#8b5cf6" stroke-width="1.5"/>
-                    <line x1="100" y1="80" x2="100" y2="110" stroke="#14b8a6" stroke-width="1.5"/>
-                    <line x1="300" y1="80" x2="300" y2="110" stroke="#10b981" stroke-width="1.5"/>
-                    <rect x="50" y="110" width="100" height="30" rx="4" fill="rgba(20, 184, 166, 0.2)" stroke="#14b8a6" stroke-width="1.5"/>
-                    <text x="100" y="129" font-size="9" fill="#fff" text-anchor="middle">CNSF / CNBV</text>
-                    <rect x="250" y="110" width="100" height="30" rx="4" fill="rgba(16, 185, 129, 0.2)" stroke="#10b981" stroke-width="1.5"/>
-                    <text x="300" y="129" font-size="9" fill="#fff" text-anchor="middle">CONDUSEF</text>
-                    <text x="200" y="175" font-size="12" fill="#fff" font-weight="700" text-anchor="middle">Sistema Financiero Mexicano</text>
-                </svg>
-            `;
-        }
-        else {
-            descEl.innerHTML = `
-                <strong>Seguro de Cédula A - CNSF:</strong><br>
-                El análisis del riesgo es la piedra angular del seguro. Esta sección abarca los fundamentos de la transferencia del riesgo, coaseguro y mutualidad.
-            `;
-            container.innerHTML = `
-                <svg class="concept-svg" viewBox="0 0 400 200">
-                    <rect width="400" height="200" rx="10" fill="rgba(255,255,255,0.01)"/>
-                    <g class="pulse-shield" transform="translate(150, 20)">
-                        <polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill="none" stroke="var(--accent-purple)" stroke-width="2"/>
-                        <path d="M25,30 L50,15 L75,30 V60 C75,75 50,85 50,85 C50,85 25,75 25,60 V30 Z" fill="rgba(20, 184, 166, 0.2)" stroke="var(--accent-teal)" stroke-width="3"/>
-                        <path d="M50,30 L53,40 L63,40 L55,46 L58,56 L50,50 L42,56 L45,46 L37,40 L47,40 Z" fill="#fff"/>
-                    </g>
-                    <text x="130" y="145" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Mutualidad</text>
-                    <text x="270" y="145" font-size="14" fill="#fff" font-weight="700" text-anchor="middle">Previsión</text>
-                    <text x="200" y="175" font-size="12" fill="var(--text-secondary)" text-anchor="middle">Evaluación del Riesgo e Intermediación Comercial</text>
-                </svg>
-            `;
-        }
     }
 }
 

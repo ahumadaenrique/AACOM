@@ -90,23 +90,15 @@ export async function GET(req: NextRequest) {
       tokens = currentDays;
     }
     
-    const agencyId = dbUser?.agencyId
+    const effectiveAgencyId = dbUser?.agencyId || (dbUser?.role === 'SUPER_ADMIN' ? 'aacom' : null)
     
-    // Find all real agents/users belonging to this agency (including admins/promoters except current promoter)
+    // Find all real agents/users belonging to this agency (strictly isolated by agencyId)
     let dbAgents: Array<{ email: string; name: string | null }> = []
-    if (agencyId) {
+    if (effectiveAgencyId) {
       dbAgents = await prisma.user.findMany({
         where: {
-          agencyId
+          agencyId: effectiveAgencyId
         },
-        select: {
-          email: true,
-          name: true
-        }
-      })
-    } else if (dbUser?.role === 'SUPER_ADMIN') {
-      // Super admin sees all users in the platform
-      dbAgents = await prisma.user.findMany({
         select: {
           email: true,
           name: true
@@ -137,9 +129,12 @@ export async function GET(req: NextRequest) {
         licensesMap[row.agente_email.toLowerCase()] = row;
       });
 
-      // Bulk 2: Progress
+      // Bulk 2: Progress (only Cédula A modules)
       const progressRows = await prisma.estudioProgreso.findMany({
-        where: { email: { in: emails } },
+        where: {
+          email: { in: emails },
+          NOT: { module: { startsWith: "b:" } }
+        },
         select: { email: true, module: true, tiempo_segundos: true, pregunta_actual: true }
       });
       progressRows.forEach(row => {
@@ -162,17 +157,22 @@ export async function GET(req: NextRequest) {
             "Sistema y Mercados Financieros": 0
           };
         }
-        progressMap[email][row.module] = (row.tiempo_segundos || 0) / 60; // convert to minutes
-        progressIndexMap[email][row.module] = row.pregunta_actual || 0;
+        if (progressMap[email][row.module] !== undefined) {
+          progressMap[email][row.module] = (row.tiempo_segundos || 0) / 60; // convert to minutes
+          progressIndexMap[email][row.module] = row.pregunta_actual || 0;
+        }
       });
 
-      // Bulk 3: Attempts
+      // Bulk 3: Attempts (only Cédula A attempts)
       const attemptsRows = await prisma.examenIntento.findMany({
         where: { email: { in: emails } },
         orderBy: { fecha: 'asc' },
         select: { email: true, calificacion: true, aprobado: true, fecha: true, detalles_modulos: true }
       });
       attemptsRows.forEach(row => {
+        const rawDetails = (row.detalles_modulos as Record<string, any>) || {};
+        if (rawDetails._cedula === 'B') return; // Skip Cédula B attempts
+        const { _cedula, ...cleanDetails } = rawDetails;
         const email = row.email.toLowerCase();
         if (!attemptsMap[email]) {
           attemptsMap[email] = [];
@@ -181,10 +181,10 @@ export async function GET(req: NextRequest) {
           date: row.fecha ? new Date(row.fecha).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
           score: Number(row.calificacion),
           passed: row.aprobado,
-          details: row.detalles_modulos
+          details: cleanDetails
         });
-        // Last processed item is the latest attempt
-        latestAttemptMap[email] = row.detalles_modulos;
+        // Last processed Cédula A item is the latest attempt
+        latestAttemptMap[email] = cleanDetails;
       });
     }
 
@@ -244,7 +244,7 @@ export async function GET(req: NextRequest) {
       if (latestDetails) {
         Object.keys(latestDetails).forEach(mod => {
           const modData = latestDetails[mod];
-          if (modData && modData.total > 0) {
+          if (modData && modData.total > 0 && moduleScores[mod] !== undefined) {
             moduleScores[mod] = Math.round((modData.correct / modData.total) * 100);
           }
         });
@@ -265,14 +265,9 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    // Add promoter's own study account if they study (Calculate remainingDays based on their actual license!)
+    // Add promoter's own study account if they study (using already-filtered maps)
     const promoterSelfEmail = promoterEmail.toLowerCase();
-    const promoterProgressRows = await prisma.estudioProgreso.findMany({
-      where: { email: promoterSelfEmail },
-      select: { module: true, tiempo_segundos: true, pregunta_actual: true }
-    });
-    
-    const promoterTimesPerModule: Record<string, number> = {
+    const promoterTimesPerModule: Record<string, number> = progressMap[promoterSelfEmail] || {
       "Aspectos Generales": 0,
       "Regulación CNSF": 0,
       "Vida Individual": 0,
@@ -281,7 +276,7 @@ export async function GET(req: NextRequest) {
       "Sistema y Mercados Financieros": 0
     };
     
-    const promoterStudyProgress: Record<string, number> = {
+    const promoterStudyProgress: Record<string, number> = progressIndexMap[promoterSelfEmail] || {
       "Aspectos Generales": 0,
       "Regulación CNSF": 0,
       "Vida Individual": 0,
@@ -289,34 +284,15 @@ export async function GET(req: NextRequest) {
       "Seguros de Daños": 0,
       "Sistema y Mercados Financieros": 0
     };
-    
-    promoterProgressRows.forEach(row => {
-      if (promoterTimesPerModule[row.module] !== undefined) {
-        promoterTimesPerModule[row.module] = (row.tiempo_segundos || 0) / 60;
-        promoterStudyProgress[row.module] = row.pregunta_actual || 0;
-      }
-    });
 
     let promoterStudyTime = 0;
     Object.values(promoterTimesPerModule).forEach(v => {
       promoterStudyTime += v;
     });
 
-    // Load promoter's own attempts
-    const promoterAttemptsRows = await prisma.examenIntento.findMany({
-      where: { email: promoterSelfEmail },
-      orderBy: { fecha: 'asc' },
-      select: { calificacion: true, aprobado: true, fecha: true, detalles_modulos: true }
-    });
-    
-    const promoterAttempts = promoterAttemptsRows.map(row => ({
-      date: row.fecha ? new Date(row.fecha).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      score: Number(row.calificacion),
-      passed: row.aprobado,
-      details: row.detalles_modulos
-    }));
+    const promoterAttempts = attemptsMap[promoterSelfEmail] || [];
 
-    // Calculate promoter's own module scores based on latest attempt
+    // Calculate promoter's own module scores based on latest Cédula A attempt
     const promoterModuleScores: Record<string, number> = {
       "Aspectos Generales": 0,
       "Regulación CNSF": 0,
@@ -326,16 +302,14 @@ export async function GET(req: NextRequest) {
       "Sistema y Mercados Financieros": 0
     };
     
-    if (promoterAttemptsRows.length > 0) {
-      const latestDetails = promoterAttemptsRows[promoterAttemptsRows.length - 1].detalles_modulos as Record<string, any>;
-      if (latestDetails) {
-        Object.keys(latestDetails).forEach(mod => {
-          const modData = latestDetails[mod];
-          if (modData && modData.total > 0) {
-            promoterModuleScores[mod] = Math.round((modData.correct / modData.total) * 100);
-          }
-        });
-      }
+    const promoterLatestDetails = latestAttemptMap[promoterSelfEmail] as Record<string, any>;
+    if (promoterLatestDetails) {
+      Object.keys(promoterLatestDetails).forEach(mod => {
+        const modData = promoterLatestDetails[mod];
+        if (modData && modData.total > 0 && promoterModuleScores[mod] !== undefined) {
+          promoterModuleScores[mod] = Math.round((modData.correct / modData.total) * 100);
+        }
+      });
     }
 
     // Fetch actual remaining days from license for promoter

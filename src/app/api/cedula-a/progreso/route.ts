@@ -23,13 +23,17 @@ export async function GET(req: NextRequest) {
       // Promoter can read any agent's progress
       if (targetEmail) {
         const rows = await prisma.estudioProgreso.findMany({
-          where: { email: targetEmail.toLowerCase() },
+          where: {
+            email: targetEmail.toLowerCase(),
+            NOT: { module: { startsWith: "b:" } }
+          },
           select: { module: true, tiempo_segundos: true, pregunta_actual: true }
         })
         return NextResponse.json(rows)
       } else {
-        // Return progress for all agents
+        // Return progress for all agents in Cédula A
         const rows = await prisma.estudioProgreso.findMany({
+          where: { NOT: { module: { startsWith: "b:" } } },
           select: { email: true, module: true, tiempo_segundos: true, pregunta_actual: true }
         })
         return NextResponse.json(rows)
@@ -37,7 +41,10 @@ export async function GET(req: NextRequest) {
     } else {
       // Agent can only read their own progress
       const rows = await prisma.estudioProgreso.findMany({
-        where: { email: currentUserEmail.toLowerCase() },
+        where: {
+          email: currentUserEmail.toLowerCase(),
+          NOT: { module: { startsWith: "b:" } }
+        },
         select: { module: true, tiempo_segundos: true, pregunta_actual: true }
       })
       return NextResponse.json(rows)

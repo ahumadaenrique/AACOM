@@ -95,12 +95,16 @@ export async function GET(req: NextRequest) {
       return details && details._cedula === 'B';
     });
 
-    const attempts = cedulaBAttempts.map(att => ({
-      date: att.fecha ? new Date(att.fecha).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      score: Number(att.calificacion),
-      passed: att.aprobado,
-      details: att.detalles_modulos
-    }));
+    const attempts = cedulaBAttempts.map(att => {
+      const rawDetails = (att.detalles_modulos as Record<string, any>) || {};
+      const { _cedula, ...cleanDetails } = rawDetails;
+      return {
+        date: att.fecha ? new Date(att.fecha).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        score: Number(att.calificacion),
+        passed: att.aprobado,
+        details: cleanDetails
+      };
+    });
 
     // Calculate module scores based on last attempt details
     const moduleScores: Record<string, number> = {};

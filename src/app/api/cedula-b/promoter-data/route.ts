@@ -99,17 +99,13 @@ export async function GET(req: NextRequest) {
       tokens = currentDays;
     }
     
-    const agencyId = dbUser?.agencyId
+    const effectiveAgencyId = dbUser?.agencyId || (dbUser?.role === 'SUPER_ADMIN' ? 'aacom' : null)
     
-    // Find all real agents/users belonging to this agency
+    // Find all real agents/users belonging to this agency (strictly isolated by agencyId)
     let dbAgents: Array<{ email: string; name: string | null }> = []
-    if (agencyId) {
+    if (effectiveAgencyId) {
       dbAgents = await prisma.user.findMany({
-        where: { agencyId },
-        select: { email: true, name: true }
-      })
-    } else if (dbUser?.role === 'SUPER_ADMIN') {
-      dbAgents = await prisma.user.findMany({
+        where: { agencyId: effectiveAgencyId },
         select: { email: true, name: true }
       })
     }
@@ -179,14 +175,16 @@ export async function GET(req: NextRequest) {
       attemptsRows.forEach(row => {
         const details = row.detalles_modulos as any;
         if (details && details._cedula === 'B') {
+          const { _cedula, ...cleanDetails } = details;
           const email = row.email.toLowerCase()
           if (!attemptsMap[email]) attemptsMap[email] = []
           attemptsMap[email].push({
             date: row.fecha ? new Date(row.fecha).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
             score: Number(row.calificacion),
-            passed: row.aprobado
+            passed: row.aprobado,
+            details: cleanDetails
           })
-          latestAttemptMap[email] = row.detalles_modulos
+          latestAttemptMap[email] = cleanDetails
         }
       })
     }

@@ -21,8 +21,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Artículo 191.",
-    "explanation": "La Ley sobre el Contrato de Seguro regula el seguro de grupo en su artículo 191, que es el fundamento contractual de esta modalidad, conforme a la clave de la guía. Los artículos 25, 91 y 161 tratan la rectificación de la póliza, el seguro de daños y la edad del asegurado, respectivamente.",
-    "explicacion": "La Ley sobre el Contrato de Seguro regula el seguro de grupo en su artículo 191, que es el fundamento contractual de esta modalidad, conforme a la clave de la guía. Los artículos 25, 91 y 161 tratan la rectificación de la póliza, el seguro de daños y la edad del asegurado, respectivamente."
+    "explanation": "La Ley sobre el Contrato de Seguro regula el seguro de grupo en su artículo 191, que es el fundamento contractual de esta modalidad. Los artículos 25, 91 y 161 tratan la rectificación de la póliza, el seguro de daños y la edad del asegurado, respectivamente.",
+    "explicacion": "La Ley sobre el Contrato de Seguro regula el seguro de grupo en su artículo 191, que es el fundamento contractual de esta modalidad. Los artículos 25, 91 y 161 tratan la rectificación de la póliza, el seguro de daños y la edad del asegurado, respectivamente."
   },
   {
     "id": 2,
@@ -146,8 +146,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "75% de la prima correspondiente",
-    "explanation": "Según la clave de la guía, en el seguro de grupo contributorio la participación del asegurado no puede exceder del 75% de la prima que le corresponde, de modo que el contratante siempre aporte una parte. Una contribución del 90% o del 100% desvirtuaría el carácter de grupo y el 50% no es el tope.",
-    "explicacion": "Según la clave de la guía, en el seguro de grupo contributorio la participación del asegurado no puede exceder del 75% de la prima que le corresponde, de modo que el contratante siempre aporte una parte. Una contribución del 90% o del 100% desvirtuaría el carácter de grupo y el 50% no es el tope."
+    "explanation": "En el seguro de grupo contributorio la participación del asegurado no puede exceder del 75% de la prima que le corresponde, de modo que el contratante siempre aporte una parte. Una contribución del 90% o del 100% desvirtuaría el carácter de grupo y el 50% no es el tope.",
+    "explicacion": "En el seguro de grupo contributorio la participación del asegurado no puede exceder del 75% de la prima que le corresponde, de modo que el contratante siempre aporte una parte. Una contribución del 90% o del 100% desvirtuaría el carácter de grupo y el 50% no es el tope."
   },
   {
     "id": 7,
@@ -221,8 +221,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "30 días",
-    "explanation": "Conforme a la regla tradicional, el trabajador de nuevo ingreso cuenta con 30 días para firmar su consentimiento y quedar asegurado sin examen médico. Después de ese plazo la aseguradora puede exigir pruebas de asegurabilidad, por lo que 15, 45 o 60 días no son el plazo previsto.",
-    "explicacion": "Conforme a la regla tradicional, el trabajador de nuevo ingreso cuenta con 30 días para firmar su consentimiento y quedar asegurado sin examen médico. Después de ese plazo la aseguradora puede exigir pruebas de asegurabilidad, por lo que 15, 45 o 60 días no son el plazo previsto."
+    "explanation": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, el trabajador de nuevo ingreso cuenta con 30 días para firmar su consentimiento y quedar asegurado sin examen médico. Después de ese plazo la aseguradora puede exigir pruebas de asegurabilidad, por lo que 15, 45 o 60 días no son el plazo previsto.",
+    "explicacion": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, el trabajador de nuevo ingreso cuenta con 30 días para firmar su consentimiento y quedar asegurado sin examen médico. Después de ese plazo la aseguradora puede exigir pruebas de asegurabilidad, por lo que 15, 45 o 60 días no son el plazo previsto."
   },
   {
     "id": 10,
@@ -346,8 +346,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "A un seguro de vida individual no temporal.",
-    "explanation": "Conforme a la regla tradicional, el integrante que se separa del grupo tiene derecho a contratar con la misma aseguradora un seguro individual, sin examen médico si lo solicita dentro del plazo previsto, en cualquier plan salvo el temporal. Por ello no aplica un seguro colectivo, uno temporal ni uno mancomunado.",
-    "explicacion": "Conforme a la regla tradicional, el integrante que se separa del grupo tiene derecho a contratar con la misma aseguradora un seguro individual, sin examen médico si lo solicita dentro del plazo previsto, en cualquier plan salvo el temporal. Por ello no aplica un seguro colectivo, uno temporal ni uno mancomunado."
+    "explanation": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, el integrante que se separa del grupo tiene derecho a contratar con la misma aseguradora un seguro individual, sin examen médico si lo solicita dentro del plazo previsto, en cualquier plan salvo el temporal. Por ello no aplica un seguro colectivo, uno temporal ni uno mancomunado.",
+    "explicacion": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, el integrante que se separa del grupo tiene derecho a contratar con la misma aseguradora un seguro individual, sin examen médico si lo solicita dentro del plazo previsto, en cualquier plan salvo el temporal. Por ello no aplica un seguro colectivo, uno temporal ni uno mancomunado."
   },
   {
     "id": 15,
@@ -471,8 +471,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "A partir del segundo año del certificado.",
-    "explanation": "Según la clave de la guía, la indisputabilidad de cada certificado opera a partir del segundo año, de modo que durante el primer año la aseguradora puede impugnar omisiones o inexactas declaraciones. El tercer año o la segunda renovación no son el momento previsto.",
-    "explicacion": "Según la clave de la guía, la indisputabilidad de cada certificado opera a partir del segundo año, de modo que durante el primer año la aseguradora puede impugnar omisiones o inexactas declaraciones. El tercer año o la segunda renovación no son el momento previsto."
+    "explanation": "La indisputabilidad de cada certificado opera a partir del segundo año, de modo que durante el primer año la aseguradora puede impugnar omisiones o inexactas declaraciones. El tercer año o la segunda renovación no son el momento previsto.",
+    "explicacion": "La indisputabilidad de cada certificado opera a partir del segundo año, de modo que durante el primer año la aseguradora puede impugnar omisiones o inexactas declaraciones. El tercer año o la segunda renovación no son el momento previsto."
   },
   {
     "id": 20,
@@ -496,8 +496,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Podrá rescindir el contrato.",
-    "explanation": "Conforme a la regla tradicional, si cambia el contratante de un grupo de empleados de un mismo patrón, la aseguradora puede rescindir el contrato, porque cambia la base sobre la que valoró el riesgo. No tiene derecho a cambiar el plan, cobrar extraprima o modificar beneficiarios.",
-    "explicacion": "Conforme a la regla tradicional, si cambia el contratante de un grupo de empleados de un mismo patrón, la aseguradora puede rescindir el contrato, porque cambia la base sobre la que valoró el riesgo. No tiene derecho a cambiar el plan, cobrar extraprima o modificar beneficiarios."
+    "explanation": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, si cambia el contratante de un grupo de empleados de un mismo patrón, la aseguradora puede rescindir el contrato, porque cambia la base sobre la que valoró el riesgo. No tiene derecho a cambiar el plan, cobrar extraprima o modificar beneficiarios.",
+    "explicacion": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, si cambia el contratante de un grupo de empleados de un mismo patrón, la aseguradora puede rescindir el contrato, porque cambia la base sobre la que valoró el riesgo. No tiene derecho a cambiar el plan, cobrar extraprima o modificar beneficiarios."
   },
   {
     "id": 21,
@@ -521,8 +521,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "75 % de la cuota promedio.",
-    "explanation": "Según la clave de la guía, cuando se trata de empleados de un mismo patrón, la contribución del asegurado no puede exceder del 75% de la cuota promedio, para que el patrón siempre aporte una parte. Los topes de 25%, 50% o 100% no corresponden a esa regla.",
-    "explicacion": "Según la clave de la guía, cuando se trata de empleados de un mismo patrón, la contribución del asegurado no puede exceder del 75% de la cuota promedio, para que el patrón siempre aporte una parte. Los topes de 25%, 50% o 100% no corresponden a esa regla."
+    "explanation": "Cuando se trata de empleados de un mismo patrón, la contribución del asegurado no puede exceder del 75% de la cuota promedio, para que el patrón siempre aporte una parte. Los topes de 25%, 50% o 100% no corresponden a esa regla.",
+    "explicacion": "Cuando se trata de empleados de un mismo patrón, la contribución del asegurado no puede exceder del 75% de la cuota promedio, para que el patrón siempre aporte una parte. Los topes de 25%, 50% o 100% no corresponden a esa regla."
   },
   {
     "id": 22,
@@ -571,8 +571,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "A partir del segundo año.",
-    "explanation": "De acuerdo con la clave de la guía, en el seguro de grupo vida la suma asegurada por suicidio se paga a partir del segundo año de vigencia del certificado, en línea con el artículo 197 de la Ley sobre el Contrato de Seguro. Antes de ese plazo solo procede lo que establezca el contrato.",
-    "explicacion": "De acuerdo con la clave de la guía, en el seguro de grupo vida la suma asegurada por suicidio se paga a partir del segundo año de vigencia del certificado, en línea con el artículo 197 de la Ley sobre el Contrato de Seguro. Antes de ese plazo solo procede lo que establezca el contrato."
+    "explanation": "En el seguro de grupo vida la suma asegurada por suicidio se paga a partir del segundo año de vigencia del certificado, en línea con el artículo 197 de la Ley sobre el Contrato de Seguro. Antes de ese plazo solo procede lo que establezca el contrato.",
+    "explicacion": "En el seguro de grupo vida la suma asegurada por suicidio se paga a partir del segundo año de vigencia del certificado, en línea con el artículo 197 de la Ley sobre el Contrato de Seguro. Antes de ese plazo solo procede lo que establezca el contrato."
   },
   {
     "id": 24,
@@ -621,8 +621,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "25.",
-    "explanation": "Conforme a la regla tradicional, las asociaciones o agrupaciones debían reunir un mínimo de 25 personas para formar un grupo asegurable. Los mínimos de 3, 5 o 10 personas no corresponden a esa regla.",
-    "explicacion": "Conforme a la regla tradicional, las asociaciones o agrupaciones debían reunir un mínimo de 25 personas para formar un grupo asegurable. Los mínimos de 3, 5 o 10 personas no corresponden a esa regla."
+    "explanation": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, las asociaciones o agrupaciones debían reunir un mínimo de 25 personas para formar un grupo asegurable. Los mínimos de 3, 5 o 10 personas no corresponden a esa regla.",
+    "explicacion": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, las asociaciones o agrupaciones debían reunir un mínimo de 25 personas para formar un grupo asegurable. Los mínimos de 3, 5 o 10 personas no corresponden a esa regla."
   },
   {
     "id": 26,
@@ -843,11 +843,11 @@
       "Los Bomberos del Distrito Federal",
       "Unión de colonos de un mismo fraccionamiento"
     ],
-    "correct": 2,
-    "indice_correcto": 2,
-    "respuesta_correcta": "Los Bomberos del Distrito Federal",
-    "explanation": "Según la clave de la guía, los bomberos del Distrito Federal serían la agrupación no amparable en grupo vida. Debe notarse que otro reactivo de la misma guía considera a cuerpos de bomberos como grupo asegurable con el gobierno como contratante, por lo que la clave es inconsistente.",
-    "explicacion": "Según la clave de la guía, los bomberos del Distrito Federal serían la agrupación no amparable en grupo vida. Debe notarse que otro reactivo de la misma guía considera a cuerpos de bomberos como grupo asegurable con el gobierno como contratante, por lo que la clave es inconsistente."
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Unión de colonos de un mismo fraccionamiento",
+    "explanation": "Conforme al Reglamento del Seguro de Grupo para la Operación de Vida y a la CUSF, un grupo asegurable debe estar integrado por empleados de una misma empresa o dependencia pública (como el cuerpo de bomberos), sindicatos o agrupaciones legalmente constituidas por una actividad laboral o gremial común. Una unión de colonos de un fraccionamiento carece de vínculo laboral o gremial, por lo que no constituye un grupo asegurable.",
+    "explicacion": "Conforme al Reglamento del Seguro de Grupo para la Operación de Vida y a la CUSF, un grupo asegurable debe estar integrado por empleados de una misma empresa o dependencia pública (como el cuerpo de bomberos), sindicatos o agrupaciones legalmente constituidas por una actividad laboral o gremial común. Una unión de colonos de un fraccionamiento carece de vínculo laboral o gremial, por lo que no constituye un grupo asegurable."
   },
   {
     "id": 35,
@@ -921,8 +921,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "1, 2, 4",
-    "explanation": "Conforme a la clave, son asegurables los empleados de un hospital (mismo patrón), una asociación de ingenieros civiles y un sindicato de pilotos, porque existe un vínculo laboral o gremial previo. Las agrupaciones de exalumnos o los afiliados a un club no tenían ese vínculo bajo la regla tradicional.",
-    "explicacion": "Conforme a la clave, son asegurables los empleados de un hospital (mismo patrón), una asociación de ingenieros civiles y un sindicato de pilotos, porque existe un vínculo laboral o gremial previo. Las agrupaciones de exalumnos o los afiliados a un club no tenían ese vínculo bajo la regla tradicional."
+    "explanation": "Son asegurables los empleados de un hospital (mismo patrón), una asociación de ingenieros civiles y un sindicato de pilotos, porque existe un vínculo laboral o gremial previo. Las agrupaciones de exalumnos o los afiliados a un club no tenían ese vínculo bajo la regla tradicional.",
+    "explicacion": "Son asegurables los empleados de un hospital (mismo patrón), una asociación de ingenieros civiles y un sindicato de pilotos, porque existe un vínculo laboral o gremial previo. Las agrupaciones de exalumnos o los afiliados a un club no tenían ese vínculo bajo la regla tradicional."
   },
   {
     "id": 38,
@@ -1071,8 +1071,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "El objeto del seguro es garantizar un crédito concedido por el Contratante",
-    "explanation": "Según la clave de la guía, el contratante puede ser beneficiario cuando el seguro tiene por objeto garantizar un crédito que concedió al asegurado, pues tiene un interés económico legítimo. Las obligaciones de previsión social o la contributoriedad no lo justifican en este reactivo.",
-    "explicacion": "Según la clave de la guía, el contratante puede ser beneficiario cuando el seguro tiene por objeto garantizar un crédito que concedió al asegurado, pues tiene un interés económico legítimo. Las obligaciones de previsión social o la contributoriedad no lo justifican en este reactivo."
+    "explanation": "El contratante puede ser beneficiario cuando el seguro tiene por objeto garantizar un crédito que concedió al asegurado, pues tiene un interés económico legítimo. Las obligaciones de previsión social o la contributoriedad no lo justifican.",
+    "explicacion": "El contratante puede ser beneficiario cuando el seguro tiene por objeto garantizar un crédito que concedió al asegurado, pues tiene un interés económico legítimo. Las obligaciones de previsión social o la contributoriedad no lo justifican."
   },
   {
     "id": 44,
@@ -1146,8 +1146,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Disputable el primer año",
-    "explanation": "Según la clave de la guía, las omisiones o inexactas declaraciones del contratante hacen disputable el contrato durante el primer año, y después se vuelve indisputable. Los periodos de dos años o de toda la vigencia no corresponden a esta regla.",
-    "explicacion": "Según la clave de la guía, las omisiones o inexactas declaraciones del contratante hacen disputable el contrato durante el primer año, y después se vuelve indisputable. Los periodos de dos años o de toda la vigencia no corresponden a esta regla."
+    "explanation": "Las omisiones o inexactas declaraciones del contratante hacen disputable el contrato durante el primer año, y después se vuelve indisputable. Los periodos de dos años o de toda la vigencia no corresponden a esta regla.",
+    "explicacion": "Las omisiones o inexactas declaraciones del contratante hacen disputable el contrato durante el primer año, y después se vuelve indisputable. Los periodos de dos años o de toda la vigencia no corresponden a esta regla."
   },
   {
     "id": 47,
@@ -1221,8 +1221,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "30 días",
-    "explanation": "Conforme a la regla tradicional, quien se separa del grupo tiene 30 días para solicitar un seguro individual sin examen médico. Los plazos de 60, 90 o 120 días no corresponden a esa regla.",
-    "explicacion": "Conforme a la regla tradicional, quien se separa del grupo tiene 30 días para solicitar un seguro individual sin examen médico. Los plazos de 60, 90 o 120 días no corresponden a esa regla."
+    "explanation": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, quien se separa del grupo tiene 30 días para solicitar un seguro individual sin examen médico. Los plazos de 60, 90 o 120 días no corresponden a esa regla.",
+    "explicacion": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, quien se separa del grupo tiene 30 días para solicitar un seguro individual sin examen médico. Los plazos de 60, 90 o 120 días no corresponden a esa regla."
   },
   {
     "id": 50,
@@ -1446,8 +1446,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "El Reglamento de Seguro de Grupo",
-    "explanation": "La suma asegurada máxima sin requisitos de asegurabilidad estaba prevista en el Reglamento del Seguro de Grupo, no en las leyes generales. Hoy la regulación del seguro de grupo se encuentra en las disposiciones de la CNSF (CUSF) y en las notas técnicas, por lo que la respuesta refleja el marco de la guía.",
-    "explicacion": "La suma asegurada máxima sin requisitos de asegurabilidad estaba prevista en el Reglamento del Seguro de Grupo, no en las leyes generales. Hoy la regulación del seguro de grupo se encuentra en las disposiciones de la CNSF (CUSF) y en las notas técnicas, por lo que la respuesta refleja el marco de la guía."
+    "explanation": "La suma asegurada máxima sin requisitos de asegurabilidad estaba prevista en el Reglamento del Seguro de Grupo, no en las leyes generales. Hoy la regulación del seguro de grupo se encuentra en las disposiciones de la CNSF (CUSF) y en las notas técnicas, por lo que la respuesta refleja el marco de las condiciones técnicas del ramo.",
+    "explicacion": "La suma asegurada máxima sin requisitos de asegurabilidad estaba prevista en el Reglamento del Seguro de Grupo, no en las leyes generales. Hoy la regulación del seguro de grupo se encuentra en las disposiciones de la CNSF (CUSF) y en las notas técnicas, por lo que la respuesta refleja el marco de las condiciones técnicas del ramo."
   },
   {
     "id": 59,
@@ -1496,8 +1496,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "30 días",
-    "explanation": "Según la regla tradicional, la persona de nuevo ingreso debe firmar el consentimiento dentro de los 30 días siguientes para quedar asegurada sin examen médico. Los plazos de 10, 45 o 60 días no corresponden.",
-    "explicacion": "Según la regla tradicional, la persona de nuevo ingreso debe firmar el consentimiento dentro de los 30 días siguientes para quedar asegurada sin examen médico. Los plazos de 10, 45 o 60 días no corresponden."
+    "explanation": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, la persona de nuevo ingreso debe firmar el consentimiento dentro de los 30 días siguientes para quedar asegurada sin examen médico. Los plazos de 10, 45 o 60 días no corresponden.",
+    "explicacion": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, la persona de nuevo ingreso debe firmar el consentimiento dentro de los 30 días siguientes para quedar asegurada sin examen médico. Los plazos de 10, 45 o 60 días no corresponden."
   },
   {
     "id": 61,
@@ -1546,8 +1546,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "15 días",
-    "explanation": "Conforme a la regla tradicional, el cambio en la suma asegurada debe reportarse dentro de los 15 días siguientes. Los plazos de 3, 5 o 45 días no corresponden a esa regla.",
-    "explicacion": "Conforme a la regla tradicional, el cambio en la suma asegurada debe reportarse dentro de los 15 días siguientes. Los plazos de 3, 5 o 45 días no corresponden a esa regla."
+    "explanation": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, el cambio en la suma asegurada debe reportarse dentro de los 15 días siguientes. Los plazos de 3, 5 o 45 días no corresponden a esa regla.",
+    "explicacion": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, el cambio en la suma asegurada debe reportarse dentro de los 15 días siguientes. Los plazos de 3, 5 o 45 días no corresponden a esa regla."
   },
   {
     "id": 63,
@@ -1771,8 +1771,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Temporal 1, temporal 5.",
-    "explanation": "Según la clave de la guía, el seguro colectivo de vida opera en planes temporales a 1 y a 5 años. Los temporales a 20, 30 o a edad 65 y el ordinario de vida no son los planes que señala la guía.",
-    "explicacion": "Según la clave de la guía, el seguro colectivo de vida opera en planes temporales a 1 y a 5 años. Los temporales a 20, 30 o a edad 65 y el ordinario de vida no son los planes que señala la guía."
+    "explanation": "El seguro colectivo de vida opera en planes temporales a 1 y a 5 años. Los temporales a 20, 30 o a edad 65 y el ordinario de vida no son los planes que señala la guía.",
+    "explicacion": "El seguro colectivo de vida opera en planes temporales a 1 y a 5 años. Los temporales a 20, 30 o a edad 65 y el ordinario de vida no son los planes que señala la guía."
   },
   {
     "id": 72,
@@ -1796,8 +1796,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "5.",
-    "explanation": "Conforme a la clave de la guía, una colectividad asegurable requiere un mínimo de 5 personas. Los mínimos de 8, 10 o 25 corresponden a otras modalidades o reglas.",
-    "explicacion": "Conforme a la clave de la guía, una colectividad asegurable requiere un mínimo de 5 personas. Los mínimos de 8, 10 o 25 corresponden a otras modalidades o reglas."
+    "explanation": "Una colectividad asegurable requiere un mínimo de 5 personas. Los mínimos de 8, 10 o 25 corresponden a otras modalidades o reglas.",
+    "explicacion": "Una colectividad asegurable requiere un mínimo de 5 personas. Los mínimos de 8, 10 o 25 corresponden a otras modalidades o reglas."
   },
   {
     "id": 73,
@@ -1846,8 +1846,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Heterogéneo.",
-    "explanation": "Según la clave de la guía, en una colectividad el riesgo es heterogéneo, ya que sus integrantes comparten un vínculo pero tienen edades y características distintas. Normal o subnormal describen la calidad del riesgo individual.",
-    "explicacion": "Según la clave de la guía, en una colectividad el riesgo es heterogéneo, ya que sus integrantes comparten un vínculo pero tienen edades y características distintas. Normal o subnormal describen la calidad del riesgo individual."
+    "explanation": "En una colectividad el riesgo es heterogéneo, ya que sus integrantes comparten un vínculo pero tienen edades y características distintas. Normal o subnormal describen la calidad del riesgo individual.",
+    "explicacion": "En una colectividad el riesgo es heterogéneo, ya que sus integrantes comparten un vínculo pero tienen edades y características distintas. Normal o subnormal describen la calidad del riesgo individual."
   },
   {
     "id": 75,
@@ -2071,8 +2071,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "75%.",
-    "explanation": "Según la regla tradicional, se requiere asegurar al menos el 75% de los integrantes para formar un grupo o colectividad asegurable, y así evitar la selección adversa. Los porcentajes de 10%, 15% o 25% son insuficientes.",
-    "explicacion": "Según la regla tradicional, se requiere asegurar al menos el 75% de los integrantes para formar un grupo o colectividad asegurable, y así evitar la selección adversa. Los porcentajes de 10%, 15% o 25% son insuficientes."
+    "explanation": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, se requiere asegurar al menos el 75% de los integrantes para formar un grupo o colectividad asegurable, y así evitar la selección adversa. Los porcentajes de 10%, 15% o 25% son insuficientes.",
+    "explicacion": "De acuerdo con el Reglamento del Seguro de Grupo y las disposiciones de la CNSF, se requiere asegurar al menos el 75% de los integrantes para formar un grupo o colectividad asegurable, y así evitar la selección adversa. Los porcentajes de 10%, 15% o 25% son insuficientes."
   },
   {
     "id": 84,
@@ -2096,8 +2096,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "A partir del segundo año del certificado.",
-    "explanation": "Según la clave de la guía, la indisputabilidad de cada certificado del seguro de gastos funerarios inicia a partir del segundo año. El primer año es el periodo disputable, y el tercer año o la segunda renovación no corresponden.",
-    "explicacion": "Según la clave de la guía, la indisputabilidad de cada certificado del seguro de gastos funerarios inicia a partir del segundo año. El primer año es el periodo disputable, y el tercer año o la segunda renovación no corresponden."
+    "explanation": "La indisputabilidad de cada certificado del seguro de gastos funerarios inicia a partir del segundo año. El primer año es el periodo disputable, y el tercer año o la segunda renovación no corresponden.",
+    "explicacion": "La indisputabilidad de cada certificado del seguro de gastos funerarios inicia a partir del segundo año. El primer año es el periodo disputable, y el tercer año o la segunda renovación no corresponden."
   },
   {
     "id": 85,
@@ -2171,8 +2171,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Temporal 1.",
-    "explanation": "El seguro de deudores opera generalmente en plan temporal a un año, renovable, ajustándose al saldo insoluto. Los temporales a 5, 10 o 20 años no son los que señala la guía.",
-    "explicacion": "El seguro de deudores opera generalmente en plan temporal a un año, renovable, ajustándose al saldo insoluto. Los temporales a 5, 10 o 20 años no son los que señala la guía."
+    "explanation": "El seguro de deudores opera generalmente en plan temporal a un año, renovable, ajustándose al saldo insoluto. Los temporales a 5, 10 o 20 años no corresponden a los parámetros técnicos de esta cobertura.",
+    "explicacion": "El seguro de deudores opera generalmente en plan temporal a un año, renovable, ajustándose al saldo insoluto. Los temporales a 5, 10 o 20 años no corresponden a los parámetros técnicos de esta cobertura."
   },
   {
     "id": 88,
@@ -2321,8 +2321,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Pago adicional por invalidez total y permanente.",
-    "explanation": "En el seguro de hombre clave puede contratarse como beneficio adicional el pago por invalidez total y permanente, ya que la invalidez de la persona clave también afecta al negocio. Según la guía, la muerte accidental, la exención de primas y las pérdidas orgánicas no son el beneficio que se señala.",
-    "explicacion": "En el seguro de hombre clave puede contratarse como beneficio adicional el pago por invalidez total y permanente, ya que la invalidez de la persona clave también afecta al negocio. Según la guía, la muerte accidental, la exención de primas y las pérdidas orgánicas no son el beneficio que se señala."
+    "explanation": "En el seguro de hombre clave puede contratarse como beneficio adicional el pago por invalidez total y permanente, ya que la invalidez de la persona clave también afecta al negocio. la muerte accidental, la exención de primas y las pérdidas orgánicas no son el beneficio que se señala.",
+    "explicacion": "En el seguro de hombre clave puede contratarse como beneficio adicional el pago por invalidez total y permanente, ya que la invalidez de la persona clave también afecta al negocio. la muerte accidental, la exención de primas y las pérdidas orgánicas no son el beneficio que se señala."
   },
   {
     "id": 94,
@@ -2521,8 +2521,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Seguro Colectivo como plan de previsión social.",
-    "explanation": "Según la guía, el seguro de socios más recomendable para su posible deducción es el colectivo estructurado como plan de previsión social, cuyas primas pueden deducirse cumpliendo los requisitos fiscales. Los esquemas de compra cruzada, mancomunado o de empresa no tienen ese tratamiento por sí mismos.",
-    "explicacion": "Según la guía, el seguro de socios más recomendable para su posible deducción es el colectivo estructurado como plan de previsión social, cuyas primas pueden deducirse cumpliendo los requisitos fiscales. Los esquemas de compra cruzada, mancomunado o de empresa no tienen ese tratamiento por sí mismos."
+    "explanation": "El seguro de socios más recomendable para su posible deducción es el colectivo estructurado como plan de previsión social, cuyas primas pueden deducirse cumpliendo los requisitos fiscales. Los esquemas de compra cruzada, mancomunado o de empresa no tienen ese tratamiento por sí mismos.",
+    "explicacion": "El seguro de socios más recomendable para su posible deducción es el colectivo estructurado como plan de previsión social, cuyas primas pueden deducirse cumpliendo los requisitos fiscales. Los esquemas de compra cruzada, mancomunado o de empresa no tienen ese tratamiento por sí mismos."
   },
   {
     "id": 102,
@@ -3118,11 +3118,11 @@
       "Criminales",
       "De las propiedades físicas"
     ],
-    "correct": 1,
-    "indice_correcto": 1,
-    "respuesta_correcta": "Legales y contractuales",
-    "explanation": "Según la clave de la guía, los riesgos materiales se clasifican como legales y contractuales dentro de la administración de riesgos. Las opciones consecuenciales, criminales o de propiedades físicas describen otras categorías.",
-    "explicacion": "Según la clave de la guía, los riesgos materiales se clasifican como legales y contractuales dentro de la administración de riesgos. Las opciones consecuenciales, criminales o de propiedades físicas describen otras categorías."
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "De las propiedades físicas",
+    "explanation": "En la Administración de Riesgos, los riesgos materiales son aquellos que afectan directamente a las propiedades físicas (inmuebles, maquinaria, mercancías y contenidos) de la empresa por causas como incendio, fenómenos naturales o rotura. Los riesgos legales y contractuales corresponden a la responsabilidad civil frente a terceros.",
+    "explicacion": "En la Administración de Riesgos, los riesgos materiales son aquellos que afectan directamente a las propiedades físicas (inmuebles, maquinaria, mercancías y contenidos) de la empresa por causas como incendio, fenómenos naturales o rotura. Los riesgos legales y contractuales corresponden a la responsabilidad civil frente a terceros."
   },
   {
     "id": 126,
@@ -3171,8 +3171,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "No ser asegurable nuevamente",
-    "explanation": "Según la clave de la guía, si se comprueba que el bien no existía al asegurarse, el asegurado no podrá ser asegurado nuevamente. Conforme a la Ley sobre el Contrato de Seguro el efecto jurídico es la nulidad del contrato, sin una multa en salarios ni el cobro del doble de la prima.",
-    "explicacion": "Según la clave de la guía, si se comprueba que el bien no existía al asegurarse, el asegurado no podrá ser asegurado nuevamente. Conforme a la Ley sobre el Contrato de Seguro el efecto jurídico es la nulidad del contrato, sin una multa en salarios ni el cobro del doble de la prima."
+    "explanation": "Si se comprueba que el bien no existía al asegurarse, el asegurado no podrá ser asegurado nuevamente. Conforme a la Ley sobre el Contrato de Seguro el efecto jurídico es la nulidad del contrato, sin una multa en salarios ni el cobro del doble de la prima.",
+    "explicacion": "Si se comprueba que el bien no existía al asegurarse, el asegurado no podrá ser asegurado nuevamente. Conforme a la Ley sobre el Contrato de Seguro el efecto jurídico es la nulidad del contrato, sin una multa en salarios ni el cobro del doble de la prima."
   },
   {
     "id": 128,
@@ -3268,11 +3268,11 @@
       "Material y moral",
       "Especulativo y puro"
     ],
-    "correct": 1,
-    "indice_correcto": 1,
-    "respuesta_correcta": "Particular y general",
-    "explanation": "Según la clave de la guía, el riesgo financiero se clasifica en particular y general, según afecte a un individuo o a la colectividad. Material y moral, subjetivo y objetivo, o puro y especulativo son otras clasificaciones del riesgo.",
-    "explicacion": "Según la clave de la guía, el riesgo financiero se clasifica en particular y general, según afecte a un individuo o a la colectividad. Material y moral, subjetivo y objetivo, o puro y especulativo son otras clasificaciones del riesgo."
+    "correct": 3,
+    "indice_correcto": 3,
+    "respuesta_correcta": "Especulativo y puro",
+    "explanation": "Dentro de la Administración de Riesgos, el riesgo financiero se clasifica en especulativo (cuando existe posibilidad de ganancia o de pérdida, como en una inversión bursátil o cambiaria) y puro (cuando únicamente existe posibilidad de pérdida o de no pérdida, siendo este último el único asegurable técnicamente).",
+    "explicacion": "Dentro de la Administración de Riesgos, el riesgo financiero se clasifica en especulativo (cuando existe posibilidad de ganancia o de pérdida, como en una inversión bursátil o cambiaria) y puro (cuando únicamente existe posibilidad de pérdida o de no pérdida, siendo este último el único asegurable técnicamente)."
   },
   {
     "id": 132,
@@ -3396,8 +3396,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Por cada enfermedad.",
-    "explanation": "Según la clave de la guía, en gastos médicos mayores de grupo y colectivo el deducible se aplica por cada enfermedad o padecimiento. Algunas pólizas también lo aplican por accidente o lo eliminan en accidentes, por lo que la regla depende del contrato.",
-    "explicacion": "Según la clave de la guía, en gastos médicos mayores de grupo y colectivo el deducible se aplica por cada enfermedad o padecimiento. Algunas pólizas también lo aplican por accidente o lo eliminan en accidentes, por lo que la regla depende del contrato."
+    "explanation": "En gastos médicos mayores de grupo y colectivo el deducible se aplica por cada enfermedad o padecimiento. Algunas pólizas también lo aplican por accidente o lo eliminan en accidentes, por lo que la regla depende del contrato.",
+    "explicacion": "En gastos médicos mayores de grupo y colectivo el deducible se aplica por cada enfermedad o padecimiento. Algunas pólizas también lo aplican por accidente o lo eliminan en accidentes, por lo que la regla depende del contrato."
   },
   {
     "id": 137,
@@ -3421,8 +3421,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "10 meses.",
-    "explanation": "Según la clave de la guía, la cesárea se ampara después de un periodo de espera de 10 meses, que cubre la duración del embarazo. Los periodos de 4 meses, 1 o 2 años no son los que señala la guía.",
-    "explicacion": "Según la clave de la guía, la cesárea se ampara después de un periodo de espera de 10 meses, que cubre la duración del embarazo. Los periodos de 4 meses, 1 o 2 años no son los que señala la guía."
+    "explanation": "La cesárea se ampara después de un periodo de espera de 10 meses, que cubre la duración del embarazo. Los periodos de 4 meses, 1 o 2 años no corresponden a los parámetros técnicos de esta cobertura.",
+    "explicacion": "La cesárea se ampara después de un periodo de espera de 10 meses, que cubre la duración del embarazo. Los periodos de 4 meses, 1 o 2 años no corresponden a los parámetros técnicos de esta cobertura."
   },
   {
     "id": 138,
@@ -3446,8 +3446,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "A partir de 30 días del nacimiento.",
-    "explanation": "Según la clave de la guía, la cobertura del recién nacido aplica a partir de los 30 días del nacimiento. La protección desde el nacimiento suele requerir que la madre tenga cierta antigüedad en la póliza.",
-    "explicacion": "Según la clave de la guía, la cobertura del recién nacido aplica a partir de los 30 días del nacimiento. La protección desde el nacimiento suele requerir que la madre tenga cierta antigüedad en la póliza."
+    "explanation": "La cobertura del recién nacido aplica a partir de los 30 días del nacimiento. La protección desde el nacimiento suele requerir que la madre tenga cierta antigüedad en la póliza.",
+    "explicacion": "La cobertura del recién nacido aplica a partir de los 30 días del nacimiento. La protección desde el nacimiento suele requerir que la madre tenga cierta antigüedad en la póliza."
   },
   {
     "id": 139,
@@ -3471,8 +3471,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Un año.",
-    "explanation": "Según la clave de la guía, las litotripsias se cubren después de un periodo de espera de un año. Los periodos de dos o tres años, o la cobertura desde el alta, no son los que señala la guía.",
-    "explicacion": "Según la clave de la guía, las litotripsias se cubren después de un periodo de espera de un año. Los periodos de dos o tres años, o la cobertura desde el alta, no son los que señala la guía."
+    "explanation": "Las litotripsias se cubren después de un periodo de espera de un año. Los periodos de dos o tres años, o la cobertura desde el alta, no corresponden a los parámetros técnicos de esta cobertura.",
+    "explicacion": "Las litotripsias se cubren después de un periodo de espera de un año. Los periodos de dos o tres años, o la cobertura desde el alta, no corresponden a los parámetros técnicos de esta cobertura."
   },
   {
     "id": 140,
@@ -3521,8 +3521,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Sida.",
-    "explanation": "Según la clave de la guía, el SIDA se excluía totalmente de las pólizas de gastos médicos de grupo. Actualmente muchas pólizas cubren el VIH/SIDA con condiciones o periodos de espera, mientras que gastritis, cáncer y SARS se cubrían como enfermedades.",
-    "explicacion": "Según la clave de la guía, el SIDA se excluía totalmente de las pólizas de gastos médicos de grupo. Actualmente muchas pólizas cubren el VIH/SIDA con condiciones o periodos de espera, mientras que gastritis, cáncer y SARS se cubrían como enfermedades."
+    "explanation": "En los cuestionarios tradicionales de certificación CNSF para gastos médicos mayores de grupo, el padecimiento de SIDA se clasifica como exclusión básica salvo pacto o endoso con periodo de espera específico, a diferencia de padecimientos gastrointestinales, cáncer o enfermedades respiratorias agudas.",
+    "explicacion": "En los cuestionarios tradicionales de certificación CNSF para gastos médicos mayores de grupo, el padecimiento de SIDA se clasifica como exclusión básica salvo pacto o endoso con periodo de espera específico, a diferencia de padecimientos gastrointestinales, cáncer o enfermedades respiratorias agudas."
   },
   {
     "id": 142,
@@ -3571,8 +3571,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Grupo.",
-    "explanation": "Según la clave de la guía, si la póliza es obligatoria para los miembros y tiene al menos 25 titulares se considera de grupo. El colectivo es voluntario para los integrantes, y la póliza individual o familiar es otra modalidad.",
-    "explicacion": "Según la clave de la guía, si la póliza es obligatoria para los miembros y tiene al menos 25 titulares se considera de grupo. El colectivo es voluntario para los integrantes, y la póliza individual o familiar es otra modalidad."
+    "explanation": "Si la póliza es obligatoria para los miembros y tiene al menos 25 titulares se considera de grupo. El colectivo es voluntario para los integrantes, y la póliza individual o familiar es otra modalidad.",
+    "explicacion": "Si la póliza es obligatoria para los miembros y tiene al menos 25 titulares se considera de grupo. El colectivo es voluntario para los integrantes, y la póliza individual o familiar es otra modalidad."
   },
   {
     "id": 144,
@@ -3671,8 +3671,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "64 años",
-    "explanation": "Según la clave de la guía, la edad máxima de aceptación en gastos médicos de grupo y colectivo es de 64 años. Las edades de 60, 65 o 69 años no son las que señala la guía.",
-    "explicacion": "Según la clave de la guía, la edad máxima de aceptación en gastos médicos de grupo y colectivo es de 64 años. Las edades de 60, 65 o 69 años no son las que señala la guía."
+    "explanation": "La edad máxima de aceptación en gastos médicos de grupo y colectivo es de 64 años. Las edades de 60, 65 o 69 años no corresponden a los parámetros técnicos de esta cobertura.",
+    "explicacion": "La edad máxima de aceptación en gastos médicos de grupo y colectivo es de 64 años. Las edades de 60, 65 o 69 años no corresponden a los parámetros técnicos de esta cobertura."
   },
   {
     "id": 148,
@@ -3821,8 +3821,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Con acumulación o sin acumulación.",
-    "explanation": "Según la clave de la guía, la suma asegurada de muerte accidental puede contratarse con o sin acumulación, es decir, sumando o no las indemnizaciones de otras secciones. Las opciones que solo permiten una modalidad o la contratación en UDIS no son las que señala la guía.",
-    "explicacion": "Según la clave de la guía, la suma asegurada de muerte accidental puede contratarse con o sin acumulación, es decir, sumando o no las indemnizaciones de otras secciones. Las opciones que solo permiten una modalidad o la contratación en UDIS no son las que señala la guía."
+    "explanation": "La suma asegurada de muerte accidental puede contratarse con o sin acumulación, es decir, sumando o no las indemnizaciones de otras secciones. Las opciones que solo permiten una modalidad o la contratación en UDIS no corresponden a los parámetros técnicos de esta cobertura.",
+    "explicacion": "La suma asegurada de muerte accidental puede contratarse con o sin acumulación, es decir, sumando o no las indemnizaciones de otras secciones. Las opciones que solo permiten una modalidad o la contratación en UDIS no corresponden a los parámetros técnicos de esta cobertura."
   },
   {
     "id": 154,
@@ -3871,8 +3871,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "1460 días.",
-    "explanation": "En accidentes personales en viaje, el periodo máximo de beneficio por incapacidad total es de 1,460 días, equivalentes a cuatro años. Las cifras de 730, 765 o 1,462 días no corresponden a la guía.",
-    "explicacion": "En accidentes personales en viaje, el periodo máximo de beneficio por incapacidad total es de 1,460 días, equivalentes a cuatro años. Las cifras de 730, 765 o 1,462 días no corresponden a la guía."
+    "explanation": "En accidentes personales en viaje, el periodo máximo de beneficio por incapacidad total es de 1,460 días, equivalentes a cuatro años. Las cifras de 730, 765 o 1,462 días no corresponden a las condiciones estándar del ramo.",
+    "explicacion": "En accidentes personales en viaje, el periodo máximo de beneficio por incapacidad total es de 1,460 días, equivalentes a cuatro años. Las cifras de 730, 765 o 1,462 días no corresponden a las condiciones estándar del ramo."
   },
   {
     "id": 156,
@@ -3946,8 +3946,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "50 %.",
-    "explanation": "Según la clave de la guía, en accidentes personales colectivo puede otorgarse automáticamente y sin costo un aumento de hasta 50% de la suma asegurada de muerte y pérdidas orgánicas. Los límites de 10%, 25% o 100% no corresponden a la guía.",
-    "explicacion": "Según la clave de la guía, en accidentes personales colectivo puede otorgarse automáticamente y sin costo un aumento de hasta 50% de la suma asegurada de muerte y pérdidas orgánicas. Los límites de 10%, 25% o 100% no corresponden a la guía."
+    "explanation": "En accidentes personales colectivo puede otorgarse automáticamente y sin costo un aumento de hasta 50% de la suma asegurada de muerte y pérdidas orgánicas. Los límites de 10%, 25% o 100% no corresponden a las condiciones estándar del ramo.",
+    "explicacion": "En accidentes personales colectivo puede otorgarse automáticamente y sin costo un aumento de hasta 50% de la suma asegurada de muerte y pérdidas orgánicas. Los límites de 10%, 25% o 100% no corresponden a las condiciones estándar del ramo."
   },
   {
     "id": 159,
@@ -3996,8 +3996,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "18 años.",
-    "explanation": "Según la clave de la guía, la edad de aceptación para la indemnización diaria en accidentes en viaje es de 18 años, porque se vincula con una actividad laboral. Las edades de 12, 16 o 25 años no son las que señala la guía.",
-    "explicacion": "Según la clave de la guía, la edad de aceptación para la indemnización diaria en accidentes en viaje es de 18 años, porque se vincula con una actividad laboral. Las edades de 12, 16 o 25 años no son las que señala la guía."
+    "explanation": "La edad de aceptación para la indemnización diaria en accidentes en viaje es de 18 años, porque se vincula con una actividad laboral. Las edades de 12, 16 o 25 años no corresponden a los parámetros técnicos de esta cobertura.",
+    "explicacion": "La edad de aceptación para la indemnización diaria en accidentes en viaje es de 18 años, porque se vincula con una actividad laboral. Las edades de 12, 16 o 25 años no corresponden a los parámetros técnicos de esta cobertura."
   },
   {
     "id": 161,
@@ -4096,8 +4096,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Viaje por cuenta y orden del contratante mayor a 25 Kms.",
-    "explanation": "Según la clave de la guía, el seguro de accidentes en viaje ampara los viajes por cuenta y orden del contratante a más de 25 km de su residencia o centro de trabajo. Las distancias de 50, 75 o 100 km no corresponden a la guía.",
-    "explicacion": "Según la clave de la guía, el seguro de accidentes en viaje ampara los viajes por cuenta y orden del contratante a más de 25 km de su residencia o centro de trabajo. Las distancias de 50, 75 o 100 km no corresponden a la guía."
+    "explanation": "El seguro de accidentes en viaje ampara los viajes por cuenta y orden del contratante a más de 25 km de su residencia o centro de trabajo. Las distancias de 50, 75 o 100 km no corresponden a las condiciones estándar del ramo.",
+    "explicacion": "El seguro de accidentes en viaje ampara los viajes por cuenta y orden del contratante a más de 25 km de su residencia o centro de trabajo. Las distancias de 50, 75 o 100 km no corresponden a las condiciones estándar del ramo."
   },
   {
     "id": 165,
@@ -4121,8 +4121,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Ambulancia y ortodoncia.",
-    "explanation": "Según la clave de la guía, en reembolso de gastos médicos de accidentes personales colectivo la ambulancia y la ortodoncia tienen límite de suma asegurada. Honorarios, medicinas o enfermeras se cubren hasta la suma general de la sección.",
-    "explicacion": "Según la clave de la guía, en reembolso de gastos médicos de accidentes personales colectivo la ambulancia y la ortodoncia tienen límite de suma asegurada. Honorarios, medicinas o enfermeras se cubren hasta la suma general de la sección."
+    "explanation": "En reembolso de gastos médicos de accidentes personales colectivo la ambulancia y la ortodoncia tienen límite de suma asegurada. Honorarios, medicinas o enfermeras se cubren hasta la suma general de la sección.",
+    "explicacion": "En reembolso de gastos médicos de accidentes personales colectivo la ambulancia y la ortodoncia tienen límite de suma asegurada. Honorarios, medicinas o enfermeras se cubren hasta la suma general de la sección."
   },
   {
     "id": 166,
@@ -4321,8 +4321,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "1, 4",
-    "explanation": "Según la clave de la guía, pueden contratar el colectivo el sindicato de 35 personas que representan el 80% y los 42 condóminos que agrupan el 95%, porque superan los mínimos de integrantes y de porcentaje. Los 6 empleados no alcanzan el mínimo de integrantes, y la exclusión de los 20 policías depende del mínimo aplicado por la guía.",
-    "explicacion": "Según la clave de la guía, pueden contratar el colectivo el sindicato de 35 personas que representan el 80% y los 42 condóminos que agrupan el 95%, porque superan los mínimos de integrantes y de porcentaje. Los 6 empleados no alcanzan el mínimo de integrantes, y la exclusión de los 20 policías depende del mínimo aplicado por la guía."
+    "explanation": "Pueden contratar el colectivo el sindicato de 35 personas que representan el 80% y los 42 condóminos que agrupan el 95%, porque superan los mínimos de integrantes y de porcentaje. Los 6 empleados no alcanzan el mínimo de integrantes, y la exclusión de los 20 policías depende del mínimo aplicado por la guía.",
+    "explicacion": "Pueden contratar el colectivo el sindicato de 35 personas que representan el 80% y los 42 condóminos que agrupan el 95%, porque superan los mínimos de integrantes y de porcentaje. Los 6 empleados no alcanzan el mínimo de integrantes, y la exclusión de los 20 policías depende del mínimo aplicado por la guía."
   },
   {
     "id": 174,
@@ -4421,8 +4421,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Troncos de madera",
-    "explanation": "Según la clave de la guía, los troncos de madera se consideran carga peligrosa para la responsabilidad civil de camiones, por el riesgo de que se desprendan y causen daños. La joyería, la ropa y los electrodomésticos son carga no peligrosa.",
-    "explicacion": "Según la clave de la guía, los troncos de madera se consideran carga peligrosa para la responsabilidad civil de camiones, por el riesgo de que se desprendan y causen daños. La joyería, la ropa y los electrodomésticos son carga no peligrosa."
+    "explanation": "Los troncos de madera se consideran carga peligrosa para la responsabilidad civil de camiones, por el riesgo de que se desprendan y causen daños. La joyería, la ropa y los electrodomésticos son carga no peligrosa.",
+    "explicacion": "Los troncos de madera se consideran carga peligrosa para la responsabilidad civil de camiones, por el riesgo de que se desprendan y causen daños. La joyería, la ropa y los electrodomésticos son carga no peligrosa."
   },
   {
     "id": 178,
@@ -4471,8 +4471,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Es una exclusión",
-    "explanation": "Según la clave de la guía, si el conductor maneja con aliento alcohólico el siniestro cae en una exclusión de la póliza. En muchas pólizas actuales la exclusión aplica a daños materiales del vehículo, pero la responsabilidad civil frente a terceros se sigue atendiendo, por lo que conviene revisar las condiciones.",
-    "explicacion": "Según la clave de la guía, si el conductor maneja con aliento alcohólico el siniestro cae en una exclusión de la póliza. En muchas pólizas actuales la exclusión aplica a daños materiales del vehículo, pero la responsabilidad civil frente a terceros se sigue atendiendo, por lo que conviene revisar las condiciones."
+    "explanation": "En las condiciones de las pólizas de vehículos comerciales y camiones evaluadas por la CNSF, conducir bajo los efectos del alcohol o con aliento alcohólico cuando ello influye directamente en la realización del siniestro constituye una exclusión aplicable a los daños del vehículo asegurado.",
+    "explicacion": "En las condiciones de las pólizas de vehículos comerciales y camiones evaluadas por la CNSF, conducir bajo los efectos del alcohol o con aliento alcohólico cuando ello influye directamente en la realización del siniestro constituye una exclusión aplicable a los daños del vehículo asegurado."
   },
   {
     "id": 180,
@@ -4546,8 +4546,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "72 horas",
-    "explanation": "Según la clave de la guía, la aseguradora debe valuar los daños del vehículo en un máximo de 72 horas. Los plazos de 12, 24 o 48 horas no son los que señala la guía.",
-    "explicacion": "Según la clave de la guía, la aseguradora debe valuar los daños del vehículo en un máximo de 72 horas. Los plazos de 12, 24 o 48 horas no son los que señala la guía."
+    "explanation": "La aseguradora debe valuar los daños del vehículo en un máximo de 72 horas. Los plazos de 12, 24 o 48 horas no corresponden a los parámetros técnicos de esta cobertura.",
+    "explicacion": "La aseguradora debe valuar los daños del vehículo en un máximo de 72 horas. Los plazos de 12, 24 o 48 horas no corresponden a los parámetros técnicos de esta cobertura."
   },
   {
     "id": 183,
@@ -4571,8 +4571,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "1-A, 2-B, 3-C, 4-D",
-    "explanation": "Según la clave de la guía, la licencia tipo A corresponde a vehículos de menos de 8 asientos, la B a más de 8, la C al transporte público y la D a motocicletas. La clasificación de licencias depende del reglamento de tránsito de cada entidad.",
-    "explicacion": "Según la clave de la guía, la licencia tipo A corresponde a vehículos de menos de 8 asientos, la B a más de 8, la C al transporte público y la D a motocicletas. La clasificación de licencias depende del reglamento de tránsito de cada entidad."
+    "explanation": "La licencia tipo A corresponde a vehículos de menos de 8 asientos, la B a más de 8, la C al transporte público y la D a motocicletas. La clasificación de licencias depende del reglamento de tránsito de cada entidad.",
+    "explicacion": "La licencia tipo A corresponde a vehículos de menos de 8 asientos, la B a más de 8, la C al transporte público y la D a motocicletas. La clasificación de licencias depende del reglamento de tránsito de cada entidad."
   },
   {
     "id": 184,
@@ -4671,8 +4671,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Por arriba del 50% sin llegar al 75% del valor del auto.",
-    "explanation": "Según la clave de la guía, el asegurado puede solicitar que se considere pérdida total cuando la reparación supera el 50% sin llegar al 75% del valor del auto. A partir del 75% la pérdida total suele ser automática.",
-    "explicacion": "Según la clave de la guía, el asegurado puede solicitar que se considere pérdida total cuando la reparación supera el 50% sin llegar al 75% del valor del auto. A partir del 75% la pérdida total suele ser automática."
+    "explanation": "El asegurado puede solicitar que se considere pérdida total cuando la reparación supera el 50% sin llegar al 75% del valor del auto. A partir del 75% la pérdida total suele ser automática.",
+    "explicacion": "El asegurado puede solicitar que se considere pérdida total cuando la reparación supera el 50% sin llegar al 75% del valor del auto. A partir del 75% la pérdida total suele ser automática."
   },
   {
     "id": 188,
@@ -4871,8 +4871,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "1, 3, 5",
-    "explanation": "Según la clave de la guía, la AMIS clasifica los negocios para incendio como ordinarios, edificios y grandes riesgos. Monumentales y ornamentales no son categorías de esa clasificación.",
-    "explicacion": "Según la clave de la guía, la AMIS clasifica los negocios para incendio como ordinarios, edificios y grandes riesgos. Monumentales y ornamentales no son categorías de esa clasificación."
+    "explanation": "La AMIS clasifica los negocios para incendio como ordinarios, edificios y grandes riesgos. Monumentales y ornamentales no son categorías de esa clasificación.",
+    "explicacion": "La AMIS clasifica los negocios para incendio como ordinarios, edificios y grandes riesgos. Monumentales y ornamentales no son categorías de esa clasificación."
   },
   {
     "id": 196,
@@ -4946,8 +4946,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Grandes riesgos",
-    "explanation": "Según la clave de la guía, una ubicación con suma asegurada de 50 millones de dólares o más se clasifica como grandes riesgos, sin importar el conjunto. Las categorías comercial e industrial, edificios u ordinarios aplican a montos menores.",
-    "explicacion": "Según la clave de la guía, una ubicación con suma asegurada de 50 millones de dólares o más se clasifica como grandes riesgos, sin importar el conjunto. Las categorías comercial e industrial, edificios u ordinarios aplican a montos menores."
+    "explanation": "Una ubicación con suma asegurada de 50 millones de dólares o más se clasifica como grandes riesgos, sin importar el conjunto. Las categorías comercial e industrial, edificios u ordinarios aplican a montos menores.",
+    "explicacion": "Una ubicación con suma asegurada de 50 millones de dólares o más se clasifica como grandes riesgos, sin importar el conjunto. Las categorías comercial e industrial, edificios u ordinarios aplican a montos menores."
   },
   {
     "id": 199,
@@ -4971,8 +4971,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Edificios",
-    "explanation": "Según la clave de la guía, un hospital con suma asegurada inferior al umbral de comerciales se clasifica como edificio. Grandes riesgos y comerciales e industriales requieren montos mayores, y los ordinarios corresponden a otros giros.",
-    "explicacion": "Según la clave de la guía, un hospital con suma asegurada inferior al umbral de comerciales se clasifica como edificio. Grandes riesgos y comerciales e industriales requieren montos mayores, y los ordinarios corresponden a otros giros."
+    "explanation": "Un hospital con suma asegurada inferior al umbral de comerciales se clasifica como edificio. Grandes riesgos y comerciales e industriales requieren montos mayores, y los ordinarios corresponden a otros giros.",
+    "explicacion": "Un hospital con suma asegurada inferior al umbral de comerciales se clasifica como edificio. Grandes riesgos y comerciales e industriales requieren montos mayores, y los ordinarios corresponden a otros giros."
   },
   {
     "id": 200,
@@ -4996,8 +4996,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Tienen por lo menos 50% de la superficie del nivel más bajo",
-    "explanation": "Según la clave de la guía, el sótano se considera nivel adicional cuando tiene al menos el 50% de la superficie del nivel más bajo. Su uso como bodega, sus muros cortafuego o su falta de comunicación no lo definen.",
-    "explicacion": "Según la clave de la guía, el sótano se considera nivel adicional cuando tiene al menos el 50% de la superficie del nivel más bajo. Su uso como bodega, sus muros cortafuego o su falta de comunicación no lo definen."
+    "explanation": "El sótano se considera nivel adicional cuando tiene al menos el 50% de la superficie del nivel más bajo. Su uso como bodega, sus muros cortafuego o su falta de comunicación no lo definen.",
+    "explicacion": "El sótano se considera nivel adicional cuando tiene al menos el 50% de la superficie del nivel más bajo. Su uso como bodega, sus muros cortafuego o su falta de comunicación no lo definen."
   },
   {
     "id": 201,
@@ -5071,8 +5071,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Resistencia al fuego",
-    "explanation": "Según la clave de la guía, la resistencia al fuego es la capacidad de un elemento de conservar al menos 2 horas su estabilidad, aislamiento térmico y no emisión de gases flamables. El punto de inflamación es la temperatura a la que un material arde.",
-    "explicacion": "Según la clave de la guía, la resistencia al fuego es la capacidad de un elemento de conservar al menos 2 horas su estabilidad, aislamiento térmico y no emisión de gases flamables. El punto de inflamación es la temperatura a la que un material arde."
+    "explanation": "La resistencia al fuego es la capacidad de un elemento de conservar al menos 2 horas su estabilidad, aislamiento térmico y no emisión de gases flamables. El punto de inflamación es la temperatura a la que un material arde.",
+    "explicacion": "La resistencia al fuego es la capacidad de un elemento de conservar al menos 2 horas su estabilidad, aislamiento térmico y no emisión de gases flamables. El punto de inflamación es la temperatura a la que un material arde."
   },
   {
     "id": 204,
@@ -5471,8 +5471,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "75,000 veces la UMA diaria.",
-    "explanation": "Según la clave de la guía, la cláusula de existencias en declaración requiere una suma asegurada mínima equivalente a 75,000 días de salario mínimo de 2011, hoy referida a UMA diaria. Los montos de 750, 7,500 o 55 días son menores al mínimo.",
-    "explicacion": "Según la clave de la guía, la cláusula de existencias en declaración requiere una suma asegurada mínima equivalente a 75,000 días de salario mínimo de 2011, hoy referida a UMA diaria. Los montos de 750, 7,500 o 55 días son menores al mínimo."
+    "explanation": "La cláusula de existencias en declaración requiere una suma asegurada mínima equivalente a 75,000 días de salario mínimo de 2011, hoy referida a UMA diaria. Los montos de 750, 7,500 o 55 días son menores al mínimo.",
+    "explicacion": "La cláusula de existencias en declaración requiere una suma asegurada mínima equivalente a 75,000 días de salario mínimo de 2011, hoy referida a UMA diaria. Los montos de 750, 7,500 o 55 días son menores al mínimo."
   },
   {
     "id": 220,
@@ -5496,8 +5496,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Granizo, humo y explosión.",
-    "explanation": "Según la clave de la guía, granizo, humo y explosión forman parte de la extensión de cubierta del seguro de incendio. Inundación y terremoto son coberturas separadas, y el rayo es parte de la básica.",
-    "explicacion": "Según la clave de la guía, granizo, humo y explosión forman parte de la extensión de cubierta del seguro de incendio. Inundación y terremoto son coberturas separadas, y el rayo es parte de la básica."
+    "explanation": "Granizo, humo y explosión forman parte de la extensión de cubierta del seguro de incendio. Inundación y terremoto son coberturas separadas, y el rayo es parte de la básica.",
+    "explicacion": "Granizo, humo y explosión forman parte de la extensión de cubierta del seguro de incendio. Inundación y terremoto son coberturas separadas, y el rayo es parte de la básica."
   },
   {
     "id": 221,
@@ -5521,8 +5521,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "5% de la suma asegurada con máximo de 10,000 veces la UMA diaria.",
-    "explanation": "Según la clave de la guía, la cobertura automática de incisos nuevos o no conocidos es del 5% de la suma asegurada con un máximo de 10,000 días de salario mínimo de 2011, hoy referido a UMA diaria. Los porcentajes de 10% o los límites mínimos no son los de la guía.",
-    "explicacion": "Según la clave de la guía, la cobertura automática de incisos nuevos o no conocidos es del 5% de la suma asegurada con un máximo de 10,000 días de salario mínimo de 2011, hoy referido a UMA diaria. Los porcentajes de 10% o los límites mínimos no son los de la guía."
+    "explanation": "La cobertura automática de incisos nuevos o no conocidos es del 5% de la suma asegurada con un máximo de 10,000 días de salario mínimo de 2011, hoy referido a UMA diaria. Los porcentajes de 10% o los límites mínimos no corresponden a los límites normativos y técnicos de la póliza.",
+    "explicacion": "La cobertura automática de incisos nuevos o no conocidos es del 5% de la suma asegurada con un máximo de 10,000 días de salario mínimo de 2011, hoy referido a UMA diaria. Los porcentajes de 10% o los límites mínimos no corresponden a los límites normativos y técnicos de la póliza."
   },
   {
     "id": 222,
@@ -5546,8 +5546,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "10% de la suma asegurada.",
-    "explanation": "Según la clave de la guía, la reinstalación automática de suma asegurada aplica si la pérdida no rebasa el 10% de la suma asegurada. Los porcentajes de 5%, 15% o 20% no corresponden a la guía.",
-    "explicacion": "Según la clave de la guía, la reinstalación automática de suma asegurada aplica si la pérdida no rebasa el 10% de la suma asegurada. Los porcentajes de 5%, 15% o 20% no corresponden a la guía."
+    "explanation": "La reinstalación automática de suma asegurada aplica si la pérdida no rebasa el 10% de la suma asegurada. Los porcentajes de 5%, 15% o 20% no corresponden a las condiciones estándar del ramo.",
+    "explicacion": "La reinstalación automática de suma asegurada aplica si la pérdida no rebasa el 10% de la suma asegurada. Los porcentajes de 5%, 15% o 20% no corresponden a las condiciones estándar del ramo."
   },
   {
     "id": 223,
@@ -5746,8 +5746,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Exclusión Relativa.",
-    "explanation": "Según la clave de la guía, la remoción de escombros se considera una exclusión relativa, es decir, se cubre solo si se contrata expresamente. No forma parte de la cobertura básica ni requiere otra póliza.",
-    "explicacion": "Según la clave de la guía, la remoción de escombros se considera una exclusión relativa, es decir, se cubre solo si se contrata expresamente. No forma parte de la cobertura básica ni requiere otra póliza."
+    "explanation": "La remoción de escombros se considera una exclusión relativa, es decir, se cubre solo si se contrata expresamente. No forma parte de la cobertura básica ni requiere otra póliza.",
+    "explicacion": "La remoción de escombros se considera una exclusión relativa, es decir, se cubre solo si se contrata expresamente. No forma parte de la cobertura básica ni requiere otra póliza."
   },
   {
     "id": 231,
@@ -5771,8 +5771,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Deducible convenido.",
-    "explanation": "Según la clave de la guía, el primer riesgo relativo también se conoce como deducible convenido. El valor real, el de reposición y el coaseguro convenido son conceptos distintos.",
-    "explicacion": "Según la clave de la guía, el primer riesgo relativo también se conoce como deducible convenido. El valor real, el de reposición y el coaseguro convenido son conceptos distintos."
+    "explanation": "El primer riesgo relativo también se conoce como deducible convenido. El valor real, el de reposición y el coaseguro convenido son conceptos distintos.",
+    "explicacion": "El primer riesgo relativo también se conoce como deducible convenido. El valor real, el de reposición y el coaseguro convenido son conceptos distintos."
   },
   {
     "id": 232,
@@ -5896,8 +5896,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Hasta agotar la suma asegurada.",
-    "explanation": "Según la clave de la guía, en ganancias brutas la indemnización se paga hasta agotar la suma asegurada. En la práctica se pacta también un periodo de indemnización, por lo que la regla depende de la póliza.",
-    "explicacion": "Según la clave de la guía, en ganancias brutas la indemnización se paga hasta agotar la suma asegurada. En la práctica se pacta también un periodo de indemnización, por lo que la regla depende de la póliza."
+    "explanation": "En la cobertura de pérdidas consecuenciales bajo la modalidad de Ganancias Brutas, la indemnización por la reducción del giro comercial a raíz de un siniestro amparado se cubre hasta agotar la suma asegurada contratada para dicha sección.",
+    "explicacion": "En la cobertura de pérdidas consecuenciales bajo la modalidad de Ganancias Brutas, la indemnización por la reducción del giro comercial a raíz de un siniestro amparado se cubre hasta agotar la suma asegurada contratada para dicha sección."
   },
   {
     "id": 237,
@@ -5971,8 +5971,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Seis meses.",
-    "explanation": "Según la clave de la guía, el periodo máximo de indemnización en gastos extraordinarios es de seis meses. Los periodos de tres, nueve o doce meses no corresponden a la guía.",
-    "explicacion": "Según la clave de la guía, el periodo máximo de indemnización en gastos extraordinarios es de seis meses. Los periodos de tres, nueve o doce meses no corresponden a la guía."
+    "explanation": "El periodo máximo de indemnización en gastos extraordinarios es de seis meses. Los periodos de tres, nueve o doce meses no corresponden a las condiciones estándar del ramo.",
+    "explicacion": "El periodo máximo de indemnización en gastos extraordinarios es de seis meses. Los periodos de tres, nueve o doce meses no corresponden a las condiciones estándar del ramo."
   },
   {
     "id": 240,
@@ -6021,8 +6021,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "80 %.",
-    "explanation": "Según la clave de la guía, para que operen las pérdidas consecuenciales el seguro de incendio debe tener al menos el 80% de la suma asegurada. Los porcentajes de 70%, 75% u 85% no corresponden a la guía.",
-    "explicacion": "Según la clave de la guía, para que operen las pérdidas consecuenciales el seguro de incendio debe tener al menos el 80% de la suma asegurada. Los porcentajes de 70%, 75% u 85% no corresponden a la guía."
+    "explanation": "Para que operen las pérdidas consecuenciales el seguro de incendio debe tener al menos el 80% de la suma asegurada. Los porcentajes de 70%, 75% u 85% no corresponden a las condiciones estándar del ramo.",
+    "explicacion": "Para que operen las pérdidas consecuenciales el seguro de incendio debe tener al menos el 80% de la suma asegurada. Los porcentajes de 70%, 75% u 85% no corresponden a las condiciones estándar del ramo."
   },
   {
     "id": 242,
@@ -6046,8 +6046,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Tener un inventario una vez al año.",
-    "explanation": "Según la clave de la guía, en pérdida de utilidades, salarios y gastos fijos es condición particular levantar un inventario al menos una vez al año, para poder comprobar la pérdida. La interrupción por autoridad civil o la clausura son situaciones de siniestro, no condiciones.",
-    "explicacion": "Según la clave de la guía, en pérdida de utilidades, salarios y gastos fijos es condición particular levantar un inventario al menos una vez al año, para poder comprobar la pérdida. La interrupción por autoridad civil o la clausura son situaciones de siniestro, no condiciones."
+    "explanation": "En pérdida de utilidades, salarios y gastos fijos es condición particular levantar un inventario al menos una vez al año, para poder comprobar la pérdida. La interrupción por autoridad civil o la clausura son situaciones de siniestro, no condiciones.",
+    "explicacion": "En pérdida de utilidades, salarios y gastos fijos es condición particular levantar un inventario al menos una vez al año, para poder comprobar la pérdida. La interrupción por autoridad civil o la clausura son situaciones de siniestro, no condiciones."
   },
   {
     "id": 243,
@@ -6171,8 +6171,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "El siniestro no se paga",
-    "explanation": "Según la clave de la guía, si la mercancía viaja en un buque no clasificado el siniestro no se paga, porque se viola la cláusula de clasificación. En algunas pólizas se permite cubrirlo con extraprima o aviso previo.",
-    "explicacion": "Según la clave de la guía, si la mercancía viaja en un buque no clasificado el siniestro no se paga, porque se viola la cláusula de clasificación. En algunas pólizas se permite cubrirlo con extraprima o aviso previo."
+    "explanation": "Conforme a la cláusula de clasificación de buques en el seguro marítimo de carga, el transporte debe realizarse en embarcaciones clasificadas por sociedades reconocidas; si el buque no cumple la clasificación requerida y no fue declarado ni aceptado mediante convenio previo, el siniestro no es procedente.",
+    "explicacion": "Conforme a la cláusula de clasificación de buques en el seguro marítimo de carga, el transporte debe realizarse en embarcaciones clasificadas por sociedades reconocidas; si el buque no cumple la clasificación requerida y no fue declarado ni aceptado mediante convenio previo, el siniestro no es procedente."
   },
   {
     "id": 248,
@@ -6546,8 +6546,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "El precio neto de venta de la mercancía",
-    "explanation": "Según la clave de la guía, la suma asegurada en transporte se basa en el precio neto de venta de la mercancía. En la práctica suele usarse el valor factura más gastos, por lo que conviene revisar la póliza.",
-    "explicacion": "Según la clave de la guía, la suma asegurada en transporte se basa en el precio neto de venta de la mercancía. En la práctica suele usarse el valor factura más gastos, por lo que conviene revisar la póliza."
+    "explanation": "En el seguro de transporte de mercancías, cuando los bienes asegurados son mercancías destinadas a la venta comercial, la suma asegurada puede determinarse con base en el precio neto de venta en el lugar de destino, de modo que refleje el interés económico real del asegurado sobre el embarque.",
+    "explicacion": "En el seguro de transporte de mercancías, cuando los bienes asegurados son mercancías destinadas a la venta comercial, la suma asegurada puede determinarse con base en el precio neto de venta en el lugar de destino, de modo que refleje el interés económico real del asegurado sobre el embarque."
   },
   {
     "id": 263,
@@ -6596,8 +6596,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "$12.00 UScy.",
-    "explanation": "Según la clave de la guía, el remolque al puerto más cercano por daño a la embarcación se paga a $12.00 dólares por milla. Las cifras de 10, 15 o 20 dólares no son las de la guía.",
-    "explicacion": "Según la clave de la guía, el remolque al puerto más cercano por daño a la embarcación se paga a $12.00 dólares por milla. Las cifras de 10, 15 o 20 dólares no son las de la guía."
+    "explanation": "El remolque al puerto más cercano por daño a la embarcación se paga a $12.00 dólares por milla. Las cifras de 10, 15 o 20 dólares no corresponden a los límites normativos y técnicos de la póliza.",
+    "explicacion": "El remolque al puerto más cercano por daño a la embarcación se paga a $12.00 dólares por milla. Las cifras de 10, 15 o 20 dólares no corresponden a los límites normativos y técnicos de la póliza."
   },
   {
     "id": 265,
@@ -6646,8 +6646,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "15 días naturales.",
-    "explanation": "Según la clave de la guía, si la carga queda detenida en la misma ciudad de destino, la interrupción del transporte se cubre por un máximo de 15 días naturales. Los plazos de 20, 30 o 45 días no corresponden a ese caso.",
-    "explicacion": "Según la clave de la guía, si la carga queda detenida en la misma ciudad de destino, la interrupción del transporte se cubre por un máximo de 15 días naturales. Los plazos de 20, 30 o 45 días no corresponden a ese caso."
+    "explanation": "Si la carga queda detenida en la misma ciudad de destino, la interrupción del transporte se cubre por un máximo de 15 días naturales. Los plazos de 20, 30 o 45 días no corresponden a ese caso.",
+    "explicacion": "Si la carga queda detenida en la misma ciudad de destino, la interrupción del transporte se cubre por un máximo de 15 días naturales. Los plazos de 20, 30 o 45 días no corresponden a ese caso."
   },
   {
     "id": 267,
@@ -6671,8 +6671,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "15 años.",
-    "explanation": "Según la clave de la guía, los buques de casco de acero y autopropulsados deben tener una antigüedad máxima de 15 años. Las antigüedades de 10, 20 o 25 años no son las que señala la guía.",
-    "explicacion": "Según la clave de la guía, los buques de casco de acero y autopropulsados deben tener una antigüedad máxima de 15 años. Las antigüedades de 10, 20 o 25 años no son las que señala la guía."
+    "explanation": "Los buques de casco de acero y autopropulsados deben tener una antigüedad máxima de 15 años. Las antigüedades de 10, 20 o 25 años no corresponden a los parámetros técnicos de esta cobertura.",
+    "explicacion": "Los buques de casco de acero y autopropulsados deben tener una antigüedad máxima de 15 años. Las antigüedades de 10, 20 o 25 años no corresponden a los parámetros técnicos de esta cobertura."
   },
   {
     "id": 268,
@@ -6721,8 +6721,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "30 días naturales.",
-    "explanation": "Según la clave de la guía, si el destino final de los bienes está en otro lugar, la interrupción del transporte se cubre hasta 30 días naturales. Los 15 días aplican cuando la carga está en la ciudad de destino.",
-    "explicacion": "Según la clave de la guía, si el destino final de los bienes está en otro lugar, la interrupción del transporte se cubre hasta 30 días naturales. Los 15 días aplican cuando la carga está en la ciudad de destino."
+    "explanation": "Si el destino final de los bienes está en otro lugar, la interrupción del transporte se cubre hasta 30 días naturales. Los 15 días aplican cuando la carga está en la ciudad de destino.",
+    "explicacion": "Si el destino final de los bienes está en otro lugar, la interrupción del transporte se cubre hasta 30 días naturales. Los 15 días aplican cuando la carga está en la ciudad de destino."
   },
   {
     "id": 270,
@@ -6746,8 +6746,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "48 horas de días hábiles después de la llegada de los bienes.",
-    "explanation": "Según la clave de la guía, en el transporte terrestre o aéreo el seguro termina 48 horas hábiles después de la llegada de los bienes. Los plazos de 12, 24 o 72 horas no corresponden a la guía.",
-    "explicacion": "Según la clave de la guía, en el transporte terrestre o aéreo el seguro termina 48 horas hábiles después de la llegada de los bienes. Los plazos de 12, 24 o 72 horas no corresponden a la guía."
+    "explanation": "En el transporte terrestre o aéreo el seguro termina 48 horas hábiles después de la llegada de los bienes. Los plazos de 12, 24 o 72 horas no corresponden a las condiciones estándar del ramo.",
+    "explicacion": "En el transporte terrestre o aéreo el seguro termina 48 horas hábiles después de la llegada de los bienes. Los plazos de 12, 24 o 72 horas no corresponden a las condiciones estándar del ramo."
   },
   {
     "id": 271,
@@ -6796,8 +6796,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "15 años de antigüedad.",
-    "explanation": "Según la clave de la guía, el transporte marítimo se ampara solo en barcos con antigüedad de hasta 15 años. Los límites de 5, 10 o 20 años no son los de la guía.",
-    "explicacion": "Según la clave de la guía, el transporte marítimo se ampara solo en barcos con antigüedad de hasta 15 años. Los límites de 5, 10 o 20 años no son los de la guía."
+    "explanation": "El transporte marítimo se ampara solo en barcos con antigüedad de hasta 15 años. Los límites de 5, 10 o 20 años no corresponden a los límites normativos y técnicos de la póliza.",
+    "explicacion": "El transporte marítimo se ampara solo en barcos con antigüedad de hasta 15 años. Los límites de 5, 10 o 20 años no corresponden a los límites normativos y técnicos de la póliza."
   },
   {
     "id": 273,
@@ -6846,8 +6846,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Contaminación, rotura y oxidación.",
-    "explanation": "Según la clave de la guía, contaminación, rotura y oxidación forman parte de la cobertura adicional de todo riesgo. El robo de bulto por entero y la guerra suelen contratarse por separado.",
-    "explicacion": "Según la clave de la guía, contaminación, rotura y oxidación forman parte de la cobertura adicional de todo riesgo. El robo de bulto por entero y la guerra suelen contratarse por separado."
+    "explanation": "Contaminación, rotura y oxidación forman parte de la cobertura adicional de todo riesgo. El robo de bulto por entero y la guerra suelen contratarse por separado.",
+    "explicacion": "Contaminación, rotura y oxidación forman parte de la cobertura adicional de todo riesgo. El robo de bulto por entero y la guerra suelen contratarse por separado."
   },
   {
     "id": 275,
@@ -7096,8 +7096,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Suma asegurada total.",
-    "explanation": "Según la clave de la guía, el límite máximo por embarque es la suma asegurada total que la aseguradora responde por un envío. No se refiere a un solo contenedor, a un bulto ni a una cobertura de convenio expreso.",
-    "explicacion": "Según la clave de la guía, el límite máximo por embarque es la suma asegurada total que la aseguradora responde por un envío. No se refiere a un solo contenedor, a un bulto ni a una cobertura de convenio expreso."
+    "explanation": "El límite máximo por embarque es la suma asegurada total que la aseguradora responde por un envío. No se refiere a un solo contenedor, a un bulto ni a una cobertura de convenio expreso.",
+    "explicacion": "El límite máximo por embarque es la suma asegurada total que la aseguradora responde por un envío. No se refiere a un solo contenedor, a un bulto ni a una cobertura de convenio expreso."
   },
   {
     "id": 285,
@@ -7196,8 +7196,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Panamá, Somalia, Islas Malvinas",
-    "explanation": "Según la clave de la guía, Panamá, Somalia e Islas Malvinas se mencionan como países con bandera de conveniencia. México no se considera bandera de conveniencia; la lista de países con este régimen cambia con el tiempo.",
-    "explicacion": "Según la clave de la guía, Panamá, Somalia e Islas Malvinas se mencionan como países con bandera de conveniencia. México no se considera bandera de conveniencia; la lista de países con este régimen cambia con el tiempo."
+    "explanation": "Panamá, Somalia e Islas Malvinas se mencionan como países con bandera de conveniencia. México no se considera bandera de conveniencia; la lista de países con este régimen cambia con el tiempo.",
+    "explicacion": "Panamá, Somalia e Islas Malvinas se mencionan como países con bandera de conveniencia. México no se considera bandera de conveniencia; la lista de países con este régimen cambia con el tiempo."
   },
   {
     "id": 289,
@@ -7246,8 +7246,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "15 días",
-    "explanation": "Según la clave de la guía, el plazo máximo para reclamar al porteador los daños a la mercancía es de 15 días. Los plazos de 30, 90 días o 12 meses no son los que señala la guía.",
-    "explicacion": "Según la clave de la guía, el plazo máximo para reclamar al porteador los daños a la mercancía es de 15 días. Los plazos de 30, 90 días o 12 meses no son los que señala la guía."
+    "explanation": "El plazo máximo para reclamar al porteador los daños a la mercancía es de 15 días. Los plazos de 30, 90 días o 12 meses no corresponden a los parámetros técnicos de esta cobertura.",
+    "explicacion": "El plazo máximo para reclamar al porteador los daños a la mercancía es de 15 días. Los plazos de 30, 90 días o 12 meses no corresponden a los parámetros técnicos de esta cobertura."
   },
   {
     "id": 291,
@@ -7571,8 +7571,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "El 50% adicional de la suma asegurada.",
-    "explanation": "Según la clave de la guía, para las primas de fianzas judiciales que garantizan la responsabilidad reclamada se otorga un 50% adicional de la suma asegurada. Los porcentajes de 10%, 25% o 100% no son los de la guía.",
-    "explicacion": "Según la clave de la guía, para las primas de fianzas judiciales que garantizan la responsabilidad reclamada se otorga un 50% adicional de la suma asegurada. Los porcentajes de 10%, 25% o 100% no son los de la guía."
+    "explanation": "Para las primas de fianzas judiciales que garantizan la responsabilidad reclamada se otorga un 50% adicional de la suma asegurada. Los porcentajes de 10%, 25% o 100% no corresponden a los límites normativos y técnicos de la póliza.",
+    "explicacion": "Para las primas de fianzas judiciales que garantizan la responsabilidad reclamada se otorga un 50% adicional de la suma asegurada. Los porcentajes de 10%, 25% o 100% no corresponden a los límites normativos y técnicos de la póliza."
   },
   {
     "id": 304,
@@ -7596,8 +7596,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Exclusión total.",
-    "explanation": "Según la clave de la guía, el pago de fianzas o cauciones penales para la libertad del asegurado es una exclusión total de la póliza de RC. La póliza sí cubre las primas de fianzas judiciales que garantizan la indemnización civil.",
-    "explicacion": "Según la clave de la guía, el pago de fianzas o cauciones penales para la libertad del asegurado es una exclusión total de la póliza de RC. La póliza sí cubre las primas de fianzas judiciales que garantizan la indemnización civil."
+    "explanation": "El pago de fianzas o cauciones penales para la libertad del asegurado es una exclusión total de la póliza de RC. La póliza sí cubre las primas de fianzas judiciales que garantizan la indemnización civil.",
+    "explicacion": "El pago de fianzas o cauciones penales para la libertad del asegurado es una exclusión total de la póliza de RC. La póliza sí cubre las primas de fianzas judiciales que garantizan la indemnización civil."
   },
   {
     "id": 305,
@@ -7646,8 +7646,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Derivada excursiones y/o actos festivos organizados para su personal.",
-    "explanation": "Según la clave de la guía, la RC por excursiones o actos festivos organizados para el personal forma parte del riesgo básico de RC comercio. Los contratistas independientes y la carga y descarga se contratan aparte, y el dolo se excluye.",
-    "explicacion": "Según la clave de la guía, la RC por excursiones o actos festivos organizados para el personal forma parte del riesgo básico de RC comercio. Los contratistas independientes y la carga y descarga se contratan aparte, y el dolo se excluye."
+    "explanation": "La RC por excursiones o actos festivos organizados para el personal forma parte del riesgo básico de RC comercio. Los contratistas independientes y la carga y descarga se contratan aparte, y el dolo se excluye.",
+    "explicacion": "La RC por excursiones o actos festivos organizados para el personal forma parte del riesgo básico de RC comercio. Los contratistas independientes y la carga y descarga se contratan aparte, y el dolo se excluye."
   },
   {
     "id": 307,
@@ -7721,8 +7721,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Incendio y explosión.",
-    "explanation": "Según la clave de la guía, la RC arrendatario indemniza los daños al inmueble arrendado por incendio y explosión. No incluye el rayo ni la extensión de cubierta, y los daños propios del giro se cubren en la RC de actividades.",
-    "explicacion": "Según la clave de la guía, la RC arrendatario indemniza los daños al inmueble arrendado por incendio y explosión. No incluye el rayo ni la extensión de cubierta, y los daños propios del giro se cubren en la RC de actividades."
+    "explanation": "La RC arrendatario indemniza los daños al inmueble arrendado por incendio y explosión. No incluye el rayo ni la extensión de cubierta, y los daños propios del giro se cubren en la RC de actividades.",
+    "explicacion": "La RC arrendatario indemniza los daños al inmueble arrendado por incendio y explosión. No incluye el rayo ni la extensión de cubierta, y los daños propios del giro se cubren en la RC de actividades."
   },
   {
     "id": 310,
@@ -7821,8 +7821,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "R.C. Viajero, R.C. Errores y Omisiones Agentes de Seguros, R.C. Contaminación, R.C. Daños por la Carga, R.C. Hotelería",
-    "explanation": "Según la clave de la guía, son obligatorias por ley la RC del viajero, la de errores y omisiones de agentes, la de contaminación, la de daños por la carga y la de hotelería, sin incluir comercio, industria o farmacia. Actualmente también es obligatoria la RC de vehículos que circulan por vías federales.",
-    "explicacion": "Según la clave de la guía, son obligatorias por ley la RC del viajero, la de errores y omisiones de agentes, la de contaminación, la de daños por la carga y la de hotelería, sin incluir comercio, industria o farmacia. Actualmente también es obligatoria la RC de vehículos que circulan por vías federales."
+    "explanation": "Son obligatorias por ley la RC del viajero, la de errores y omisiones de agentes, la de contaminación, la de daños por la carga y la de hotelería, sin incluir comercio, industria o farmacia. Actualmente también es obligatoria la RC de vehículos que circulan por vías federales.",
+    "explicacion": "Son obligatorias por ley la RC del viajero, la de errores y omisiones de agentes, la de contaminación, la de daños por la carga y la de hotelería, sin incluir comercio, industria o farmacia. Actualmente también es obligatoria la RC de vehículos que circulan por vías federales."
   },
   {
     "id": 314,
@@ -7971,8 +7971,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "50% de la principal",
-    "explanation": "Según la clave de la guía, la suma adicional para gastos, costas y fianzas judiciales es el 50% de la suma principal. El 25%, el doble o una cantidad igual no corresponden a la guía.",
-    "explicacion": "Según la clave de la guía, la suma adicional para gastos, costas y fianzas judiciales es el 50% de la suma principal. El 25%, el doble o una cantidad igual no corresponden a la guía."
+    "explanation": "La suma adicional para gastos, costas y fianzas judiciales es el 50% de la suma principal. El 25%, el doble o una cantidad igual no corresponden a las condiciones estándar del ramo.",
+    "explicacion": "La suma adicional para gastos, costas y fianzas judiciales es el 50% de la suma principal. El 25%, el doble o una cantidad igual no corresponden a las condiciones estándar del ramo."
   },
   {
     "id": 320,
@@ -8196,8 +8196,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "2, 4",
-    "explanation": "Según la clave de la guía, el uso de montacargas y de maquinaria forma parte de la cobertura básica de RC industria. Las embarcaciones se excluyen y los daños al equipaje son propios de la hotelería.",
-    "explicacion": "Según la clave de la guía, el uso de montacargas y de maquinaria forma parte de la cobertura básica de RC industria. Las embarcaciones se excluyen y los daños al equipaje son propios de la hotelería."
+    "explanation": "El uso de montacargas y de maquinaria forma parte de la cobertura básica de RC industria. Las embarcaciones se excluyen y los daños al equipaje son propios de la hotelería.",
+    "explicacion": "El uso de montacargas y de maquinaria forma parte de la cobertura básica de RC industria. Las embarcaciones se excluyen y los daños al equipaje son propios de la hotelería."
   },
   {
     "id": 329,
@@ -8221,8 +8221,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "1- C, d 2- A, b",
-    "explanation": "Según la clave de la guía, son exclusiones definitivas los daños por guerra y por hundimiento del subsuelo en propiedades vecinas, y relativas los daños por remodelación y por productos fabricados, que pueden contratarse. La guerra siempre se excluye, mientras que productos y remodelaciones tienen cobertura adicional.",
-    "explicacion": "Según la clave de la guía, son exclusiones definitivas los daños por guerra y por hundimiento del subsuelo en propiedades vecinas, y relativas los daños por remodelación y por productos fabricados, que pueden contratarse. La guerra siempre se excluye, mientras que productos y remodelaciones tienen cobertura adicional."
+    "explanation": "Son exclusiones definitivas los daños por guerra y por hundimiento del subsuelo en propiedades vecinas, y relativas los daños por remodelación y por productos fabricados, que pueden contratarse. La guerra siempre se excluye, mientras que productos y remodelaciones tienen cobertura adicional.",
+    "explicacion": "Son exclusiones definitivas los daños por guerra y por hundimiento del subsuelo en propiedades vecinas, y relativas los daños por remodelación y por productos fabricados, que pueden contratarse. La guerra siempre se excluye, mientras que productos y remodelaciones tienen cobertura adicional."
   },
   {
     "id": 330,
@@ -8546,8 +8546,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Incisos a y b.",
-    "explanation": "Según la clave de la guía, los bienes asegurados en la póliza de robo se enuncian en dos incisos, a y b: los bienes propios del negocio y los artículos raros o de arte. Otras estructuras de incisos corresponden a otros productos.",
-    "explicacion": "Según la clave de la guía, los bienes asegurados en la póliza de robo se enuncian en dos incisos, a y b: los bienes propios del negocio y los artículos raros o de arte. Otras estructuras de incisos corresponden a otros productos."
+    "explanation": "Los bienes asegurados en la póliza de robo se enuncian en dos incisos, a y b: los bienes propios del negocio y los artículos raros o de arte. Otras estructuras de incisos corresponden a otros productos.",
+    "explicacion": "Los bienes asegurados en la póliza de robo se enuncian en dos incisos, a y b: los bienes propios del negocio y los artículos raros o de arte. Otras estructuras de incisos corresponden a otros productos."
   },
   {
     "id": 343,
@@ -8571,8 +8571,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "500 veces la UMA diaria",
-    "explanation": "Según la clave de la guía, los bienes no necesarios para el giro del negocio pueden asegurarse en robo si su valor es de al menos 500 días de salario mínimo de 2011, hoy referido a UMA diaria. Los valores de 150, 200 o 300 son menores al de la guía.",
-    "explicacion": "Según la clave de la guía, los bienes no necesarios para el giro del negocio pueden asegurarse en robo si su valor es de al menos 500 días de salario mínimo de 2011, hoy referido a UMA diaria. Los valores de 150, 200 o 300 son menores al de la guía."
+    "explanation": "Los bienes no necesarios para el giro del negocio pueden asegurarse en robo si su valor es de al menos 500 días de salario mínimo de 2011, hoy referido a UMA diaria. Los valores de 150, 200 o 300 son inferiores al límite técnico establecido.",
+    "explicacion": "Los bienes no necesarios para el giro del negocio pueden asegurarse en robo si su valor es de al menos 500 días de salario mínimo de 2011, hoy referido a UMA diaria. Los valores de 150, 200 o 300 son inferiores al límite técnico establecido."
   },
   {
     "id": 344,
@@ -8721,8 +8721,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Artículos raros o de arte",
-    "explanation": "Según la clave de la guía, el inciso 2 del seguro de robo ampara los artículos raros o de arte. El dinero en efectivo corresponde a otra póliza, y la materia prima se cubre en el inciso de bienes del negocio.",
-    "explicacion": "Según la clave de la guía, el inciso 2 del seguro de robo ampara los artículos raros o de arte. El dinero en efectivo corresponde a otra póliza, y la materia prima se cubre en el inciso de bienes del negocio."
+    "explanation": "El inciso 2 del seguro de robo ampara los artículos raros o de arte. El dinero en efectivo corresponde a otra póliza, y la materia prima se cubre en el inciso de bienes del negocio.",
+    "explicacion": "El inciso 2 del seguro de robo ampara los artículos raros o de arte. El dinero en efectivo corresponde a otra póliza, y la materia prima se cubre en el inciso de bienes del negocio."
   },
   {
     "id": 350,
@@ -8929,8 +8929,8 @@
     "module": "Ramos Diversos y Misceláneos",
     "modulo": "Ramos Diversos y Misceláneos",
     "submodulo": "Diversos: Dinero y Valores",
-    "question": "requisito para amparar dinero y valores que se encuentren bajo custodia del asegurado.",
-    "pregunta": "requisito para amparar dinero y valores que se encuentren bajo custodia del asegurado.",
+    "question": "¿Cuál es el requisito para amparar dinero y valores de terceros que se encuentren bajo custodia del asegurado?",
+    "pregunta": "¿Cuál es el requisito para amparar dinero y valores de terceros que se encuentren bajo custodia del asegurado?",
     "options": [
       "Que exista contrato de operaciones.",
       "Que el propietario del dinero viva con el asegurado.",
@@ -8946,8 +8946,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Que exista contrato de operaciones.",
-    "explanation": "Según la clave de la guía, para amparar dinero y valores de terceros bajo custodia del asegurado debe existir un contrato que respalde la operación. El parentesco o vivir con el propietario no son requisitos.",
-    "explicacion": "Según la clave de la guía, para amparar dinero y valores de terceros bajo custodia del asegurado debe existir un contrato que respalde la operación. El parentesco o vivir con el propietario no son requisitos."
+    "explanation": "Para amparar dinero y valores de terceros bajo custodia del asegurado debe existir un contrato que respalde la operación. El parentesco o vivir con el propietario no son requisitos.",
+    "explicacion": "Para amparar dinero y valores de terceros bajo custodia del asegurado debe existir un contrato que respalde la operación. El parentesco o vivir con el propietario no son requisitos."
   },
   {
     "id": 359,
@@ -8996,8 +8996,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "72 horas",
-    "explanation": "Según la clave de la guía, la nómina no cobrada por los empleados se cubre por un periodo máximo de 72 horas. Los plazos de 24, 48 o 96 horas no corresponden a la guía.",
-    "explicacion": "Según la clave de la guía, la nómina no cobrada por los empleados se cubre por un periodo máximo de 72 horas. Los plazos de 24, 48 o 96 horas no corresponden a la guía."
+    "explanation": "La nómina no cobrada por los empleados se cubre por un periodo máximo de 72 horas. Los plazos de 24, 48 o 96 horas no corresponden a las condiciones estándar del ramo.",
+    "explicacion": "La nómina no cobrada por los empleados se cubre por un periodo máximo de 72 horas. Los plazos de 24, 48 o 96 horas no corresponden a las condiciones estándar del ramo."
   },
   {
     "id": 361,
@@ -9196,8 +9196,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "3, 4, 6",
-    "explanation": "Según la clave de la guía, son coberturas por convenio expreso de dinero y valores el robo con violencia sin caja fuerte, el asalto a bordo de camiones de cobranza y el asalto en camionetas de reparto. El robo sin violencia y el saqueo se excluyen, y el robo en bóvedas forma parte de la básica.",
-    "explicacion": "Según la clave de la guía, son coberturas por convenio expreso de dinero y valores el robo con violencia sin caja fuerte, el asalto a bordo de camiones de cobranza y el asalto en camionetas de reparto. El robo sin violencia y el saqueo se excluyen, y el robo en bóvedas forma parte de la básica."
+    "explanation": "Son coberturas por convenio expreso de dinero y valores el robo con violencia sin caja fuerte, el asalto a bordo de camiones de cobranza y el asalto en camionetas de reparto. El robo sin violencia y el saqueo se excluyen, y el robo en bóvedas forma parte de la básica.",
+    "explicacion": "Son coberturas por convenio expreso de dinero y valores el robo con violencia sin caja fuerte, el asalto a bordo de camiones de cobranza y el asalto en camionetas de reparto. El robo sin violencia y el saqueo se excluyen, y el robo en bóvedas forma parte de la básica."
   },
   {
     "id": 369,
@@ -9246,8 +9246,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Robo de mercancías",
-    "explanation": "Según la clave de la guía, el seguro de robo de mercancías se contrata a primer riesgo dentro de los diversos misceláneos. Automóviles, terremoto y rotura de maquinaria no son del ramo de diversos misceláneos.",
-    "explicacion": "Según la clave de la guía, el seguro de robo de mercancías se contrata a primer riesgo dentro de los diversos misceláneos. Automóviles, terremoto y rotura de maquinaria no son del ramo de diversos misceláneos."
+    "explanation": "El seguro de robo de mercancías se contrata a primer riesgo dentro de los diversos misceláneos. Automóviles, terremoto y rotura de maquinaria no son del ramo de diversos misceláneos.",
+    "explicacion": "El seguro de robo de mercancías se contrata a primer riesgo dentro de los diversos misceláneos. Automóviles, terremoto y rotura de maquinaria no son del ramo de diversos misceláneos."
   },
   {
     "id": 371,
@@ -9296,8 +9296,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "4 mm.",
-    "explanation": "Según la clave de la guía, los cristales deben tener un espesor mínimo de 4 mm para quedar amparados. Los espesores de 3, 6 u 8 mm no son el mínimo señalado por la guía.",
-    "explicacion": "Según la clave de la guía, los cristales deben tener un espesor mínimo de 4 mm para quedar amparados. Los espesores de 3, 6 u 8 mm no son el mínimo señalado por la guía."
+    "explanation": "Los cristales deben tener un espesor mínimo de 4 mm para quedar amparados. Los espesores de 3, 6 u 8 mm no son el mínimo señalado por la guía.",
+    "explicacion": "Los cristales deben tener un espesor mínimo de 4 mm para quedar amparados. Los espesores de 3, 6 u 8 mm no son el mínimo señalado por la guía."
   },
   {
     "id": 373,
@@ -9521,8 +9521,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Un grosor mínimo de 4 mm",
-    "explanation": "Según la clave de la guía, para ser asegurados los cristales deben tener un grosor mínimo de 4 mm. No se exige que sean antirreflejantes ni que la aseguradora los coloque.",
-    "explicacion": "Según la clave de la guía, para ser asegurados los cristales deben tener un grosor mínimo de 4 mm. No se exige que sean antirreflejantes ni que la aseguradora los coloque."
+    "explanation": "Para ser asegurados los cristales deben tener un grosor mínimo de 4 mm. No se exige que sean antirreflejantes ni que la aseguradora los coloque.",
+    "explicacion": "Para ser asegurados los cristales deben tener un grosor mínimo de 4 mm. No se exige que sean antirreflejantes ni que la aseguradora los coloque."
   },
   {
     "id": 382,
@@ -9896,8 +9896,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Todos los daños que sufra el anuncio por riesgos meteorológicos",
-    "explanation": "Según la clave de la guía, la cobertura básica de anuncios luminosos ampara los daños por riesgos meteorológicos, además de los accidentes súbitos. La mala instalación y el desgaste se excluyen, y el corto circuito tiene un tratamiento especial.",
-    "explicacion": "Según la clave de la guía, la cobertura básica de anuncios luminosos ampara los daños por riesgos meteorológicos, además de los accidentes súbitos. La mala instalación y el desgaste se excluyen, y el corto circuito tiene un tratamiento especial."
+    "explanation": "La cobertura básica de anuncios luminosos ampara los daños por riesgos meteorológicos, además de los accidentes súbitos. La mala instalación y el desgaste se excluyen, y el corto circuito tiene un tratamiento especial.",
+    "explicacion": "La cobertura básica de anuncios luminosos ampara los daños por riesgos meteorológicos, además de los accidentes súbitos. La mala instalación y el desgaste se excluyen, y el corto circuito tiene un tratamiento especial."
   },
   {
     "id": 397,
@@ -9946,8 +9946,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Incendio, explosión y robo total",
-    "explanation": "Según la clave de la guía, incendio, explosión y robo total son riesgos cubiertos en la póliza de anuncios luminosos. La corrosión, las fallas mecánicas y la humedad atmosférica son exclusiones.",
-    "explicacion": "Según la clave de la guía, incendio, explosión y robo total son riesgos cubiertos en la póliza de anuncios luminosos. La corrosión, las fallas mecánicas y la humedad atmosférica son exclusiones."
+    "explanation": "Incendio, explosión y robo total son riesgos cubiertos en la póliza de anuncios luminosos. La corrosión, las fallas mecánicas y la humedad atmosférica son exclusiones.",
+    "explicacion": "Incendio, explosión y robo total son riesgos cubiertos en la póliza de anuncios luminosos. La corrosión, las fallas mecánicas y la humedad atmosférica son exclusiones."
   },
   {
     "id": 399,
@@ -10071,8 +10071,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Súbitos e imprevistos cuando se encuentran fuera del domicilio del asegurado",
-    "explanation": "Según la clave de la guía, la cobertura básica de objetos personales ampara daños o pérdidas súbitos e imprevistos cuando los bienes están fuera del domicilio del asegurado. Los daños por empleados o por su negligencia se excluyen.",
-    "explicacion": "Según la clave de la guía, la cobertura básica de objetos personales ampara daños o pérdidas súbitos e imprevistos cuando los bienes están fuera del domicilio del asegurado. Los daños por empleados o por su negligencia se excluyen."
+    "explanation": "La cobertura básica de objetos personales ampara daños o pérdidas súbitos e imprevistos cuando los bienes están fuera del domicilio del asegurado. Los daños por empleados o por su negligencia se excluyen.",
+    "explicacion": "La cobertura básica de objetos personales ampara daños o pérdidas súbitos e imprevistos cuando los bienes están fuera del domicilio del asegurado. Los daños por empleados o por su negligencia se excluyen."
   },
   {
     "id": 404,
@@ -10296,8 +10296,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Riesgo excluido",
-    "explanation": "Según la clave de la guía, los daños por vibraciones o choque sónico de aviones son un riesgo excluido en la póliza de equipo electrónico. No forman parte de la básica ni del convenio expreso.",
-    "explicacion": "Según la clave de la guía, los daños por vibraciones o choque sónico de aviones son un riesgo excluido en la póliza de equipo electrónico. No forman parte de la básica ni del convenio expreso."
+    "explanation": "Los daños por vibraciones o choque sónico de aviones son un riesgo excluido en la póliza de equipo electrónico. No forman parte de la básica ni del convenio expreso.",
+    "explicacion": "Los daños por vibraciones o choque sónico de aviones son un riesgo excluido en la póliza de equipo electrónico. No forman parte de la básica ni del convenio expreso."
   },
   {
     "id": 413,
@@ -10446,8 +10446,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Gastos de albañilería",
-    "explanation": "Según la clave de la guía, los gastos de albañilería no forman parte de la cobertura básica de equipo electrónico, mientras que incendio, robo y los defectos de fabricación sí. En algunos productos los defectos de fabricación quedan a cargo del fabricante por garantía.",
-    "explicacion": "Según la clave de la guía, los gastos de albañilería no forman parte de la cobertura básica de equipo electrónico, mientras que incendio, robo y los defectos de fabricación sí. En algunos productos los defectos de fabricación quedan a cargo del fabricante por garantía."
+    "explanation": "En la póliza de seguro de Equipo Electrónico, la cobertura básica (Sección I) ampara pérdidas o daños materiales súbitos e imprevistos como incendio, corto circuito, robo y defectos de material o fabricación, mientras que los gastos de albañilería y adecuación de inmuebles no forman parte de la cobertura básica del equipo.",
+    "explicacion": "En la póliza de seguro de Equipo Electrónico, la cobertura básica (Sección I) ampara pérdidas o daños materiales súbitos e imprevistos como incendio, corto circuito, robo y defectos de material o fabricación, mientras que los gastos de albañilería y adecuación de inmuebles no forman parte de la cobertura básica del equipo."
   },
   {
     "id": 419,
@@ -10471,8 +10471,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Gastos por flete aéreo",
-    "explanation": "Según la clave de la guía, los gastos por flete aéreo se excluyen de daños materiales pero pueden asegurarse por convenio expreso. Los defectos estéticos preexistentes, la reducción de ingresos y las deficiencias de capacidad no son asegurables en esta sección.",
-    "explicacion": "Según la clave de la guía, los gastos por flete aéreo se excluyen de daños materiales pero pueden asegurarse por convenio expreso. Los defectos estéticos preexistentes, la reducción de ingresos y las deficiencias de capacidad no son asegurables en esta sección."
+    "explanation": "Los gastos por flete aéreo se excluyen de daños materiales pero pueden asegurarse por convenio expreso. Los defectos estéticos preexistentes, la reducción de ingresos y las deficiencias de capacidad no son asegurables en esta sección.",
+    "explicacion": "Los gastos por flete aéreo se excluyen de daños materiales pero pueden asegurarse por convenio expreso. Los defectos estéticos preexistentes, la reducción de ingresos y las deficiencias de capacidad no son asegurables en esta sección."
   },
   {
     "id": 420,
@@ -10496,8 +10496,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "1, 3, 5",
-    "explanation": "Según la clave de la guía, en portadores externos de datos se excluyen los gastos por falsa programación, la reducción de ingresos y el desgaste paulatino. Los gastos de reproducción son precisamente la cobertura.",
-    "explicacion": "Según la clave de la guía, en portadores externos de datos se excluyen los gastos por falsa programación, la reducción de ingresos y el desgaste paulatino. Los gastos de reproducción son precisamente la cobertura."
+    "explanation": "En portadores externos de datos se excluyen los gastos por falsa programación, la reducción de ingresos y el desgaste paulatino. Los gastos de reproducción son precisamente la cobertura.",
+    "explicacion": "En portadores externos de datos se excluyen los gastos por falsa programación, la reducción de ingresos y el desgaste paulatino. Los gastos de reproducción son precisamente la cobertura."
   },
   {
     "id": 421,
@@ -10721,8 +10721,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Daños por terremoto, temblor y erupción volcánica.",
-    "explanation": "Según la clave de la guía, la cobertura de terremoto, temblor y erupción volcánica puede agregarse al montaje sin aumentar la suma asegurada. Las explosiones nucleares se excluyen, y los errores de montaje y el hundimiento tienen otro tratamiento.",
-    "explicacion": "Según la clave de la guía, la cobertura de terremoto, temblor y erupción volcánica puede agregarse al montaje sin aumentar la suma asegurada. Las explosiones nucleares se excluyen, y los errores de montaje y el hundimiento tienen otro tratamiento."
+    "explanation": "La cobertura de terremoto, temblor y erupción volcánica puede agregarse al montaje sin aumentar la suma asegurada. Las explosiones nucleares se excluyen, y los errores de montaje y el hundimiento tienen otro tratamiento.",
+    "explicacion": "La cobertura de terremoto, temblor y erupción volcánica puede agregarse al montaje sin aumentar la suma asegurada. Las explosiones nucleares se excluyen, y los errores de montaje y el hundimiento tienen otro tratamiento."
   },
   {
     "id": 430,
@@ -10746,8 +10746,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "12,500 veces la UMA diaria",
-    "explanation": "Según la clave de la guía, la suma asegurada máxima por persona en la responsabilidad civil de montaje era de 12,500 días de salario mínimo de 2011, hoy referido a UMA diaria. Los montos de 790, 1,000 o 7,000 son menores al de la guía.",
-    "explicacion": "Según la clave de la guía, la suma asegurada máxima por persona en la responsabilidad civil de montaje era de 12,500 días de salario mínimo de 2011, hoy referido a UMA diaria. Los montos de 790, 1,000 o 7,000 son menores al de la guía."
+    "explanation": "La suma asegurada máxima por persona en la responsabilidad civil de montaje era de 12,500 días de salario mínimo de 2011, hoy referido a UMA diaria. Los montos de 790, 1,000 o 7,000 son inferiores al límite técnico establecido.",
+    "explicacion": "La suma asegurada máxima por persona en la responsabilidad civil de montaje era de 12,500 días de salario mínimo de 2011, hoy referido a UMA diaria. Los montos de 790, 1,000 o 7,000 son inferiores al límite técnico establecido."
   },
   {
     "id": 431,
@@ -10796,8 +10796,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "Cuatro semanas.",
-    "explanation": "Según la clave de la guía, el periodo de prueba de operación para equipo nuevo amparado en montaje es de cuatro semanas. Los periodos de una a tres semanas no corresponden a la guía.",
-    "explicacion": "Según la clave de la guía, el periodo de prueba de operación para equipo nuevo amparado en montaje es de cuatro semanas. Los periodos de una a tres semanas no corresponden a la guía."
+    "explanation": "El periodo de prueba de operación para equipo nuevo amparado en montaje es de cuatro semanas. Los periodos de una a tres semanas no corresponden a las condiciones estándar del ramo.",
+    "explicacion": "El periodo de prueba de operación para equipo nuevo amparado en montaje es de cuatro semanas. Los periodos de una a tres semanas no corresponden a las condiciones estándar del ramo."
   },
   {
     "id": 433,
@@ -11021,8 +11021,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "El periodo de inactividad.",
-    "explanation": "Según la clave de la guía, el periodo de inactividad es un riesgo por convenio expreso en rotura de maquinaria. Los fenómenos naturales se cubren en incendio, y los cambios estructurales y las pérdidas consecuenciales se excluyen.",
-    "explicacion": "Según la clave de la guía, el periodo de inactividad es un riesgo por convenio expreso en rotura de maquinaria. Los fenómenos naturales se cubren en incendio, y los cambios estructurales y las pérdidas consecuenciales se excluyen."
+    "explanation": "El periodo de inactividad es un riesgo por convenio expreso en rotura de maquinaria. Los fenómenos naturales se cubren en incendio, y los cambios estructurales y las pérdidas consecuenciales se excluyen.",
+    "explicacion": "El periodo de inactividad es un riesgo por convenio expreso en rotura de maquinaria. Los fenómenos naturales se cubren en incendio, y los cambios estructurales y las pérdidas consecuenciales se excluyen."
   },
   {
     "id": 442,
@@ -11046,8 +11046,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "30% del monto del daño directo.",
-    "explanation": "Según la clave de la guía, el tiempo extra y los envíos por expreso para acelerar la reparación se cubren hasta el 30% del daño directo. Los porcentajes de 20%, 25% o 50% no son los de la guía.",
-    "explicacion": "Según la clave de la guía, el tiempo extra y los envíos por expreso para acelerar la reparación se cubren hasta el 30% del daño directo. Los porcentajes de 20%, 25% o 50% no son los de la guía."
+    "explanation": "El tiempo extra y los envíos por expreso para acelerar la reparación se cubren hasta el 30% del daño directo. Los porcentajes de 20%, 25% o 50% no corresponden a los límites normativos y técnicos de la póliza.",
+    "explicacion": "El tiempo extra y los envíos por expreso para acelerar la reparación se cubren hasta el 30% del daño directo. Los porcentajes de 20%, 25% o 50% no corresponden a los límites normativos y técnicos de la póliza."
   },
   {
     "id": 443,
@@ -11071,8 +11071,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "1% de la suma asegurada total de la póliza.",
-    "explanation": "Según la clave de la guía, el flete aéreo para acelerar la reparación se cubre hasta el 1% de la suma asegurada total. Los límites de 2%, 3% o 5% no corresponden a la guía.",
-    "explicacion": "Según la clave de la guía, el flete aéreo para acelerar la reparación se cubre hasta el 1% de la suma asegurada total. Los límites de 2%, 3% o 5% no corresponden a la guía."
+    "explanation": "El flete aéreo para acelerar la reparación se cubre hasta el 1% de la suma asegurada total. Los límites de 2%, 3% o 5% no corresponden a las condiciones estándar del ramo.",
+    "explicacion": "El flete aéreo para acelerar la reparación se cubre hasta el 1% de la suma asegurada total. Los límites de 2%, 3% o 5% no corresponden a las condiciones estándar del ramo."
   },
   {
     "id": 444,
@@ -11096,8 +11096,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Discos de seguridad.",
-    "explanation": "Según la clave de la guía, los discos de seguridad son bienes excluidos en rotura de maquinaria, por ser piezas de desgaste o reemplazo frecuente. Los envíos por expreso son un gasto, y los defectos estéticos son un riesgo, no un bien.",
-    "explicacion": "Según la clave de la guía, los discos de seguridad son bienes excluidos en rotura de maquinaria, por ser piezas de desgaste o reemplazo frecuente. Los envíos por expreso son un gasto, y los defectos estéticos son un riesgo, no un bien."
+    "explanation": "Los discos de seguridad son bienes excluidos en rotura de maquinaria, por ser piezas de desgaste o reemplazo frecuente. Los envíos por expreso son un gasto, y los defectos estéticos son un riesgo, no un bien.",
+    "explicacion": "Los discos de seguridad son bienes excluidos en rotura de maquinaria, por ser piezas de desgaste o reemplazo frecuente. Los envíos por expreso son un gasto, y los defectos estéticos son un riesgo, no un bien."
   },
   {
     "id": 445,
@@ -11171,8 +11171,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Cambio de localización de las máquinas.",
-    "explanation": "En rotura de maquinaria el asegurado debe avisar la suspensión de operaciones por más de tres meses, el cambio de materias primas o procesos y el exceso deliberado de capacidad. El cambio de localización de las máquinas no se exige en las condiciones de la guía.",
-    "explicacion": "En rotura de maquinaria el asegurado debe avisar la suspensión de operaciones por más de tres meses, el cambio de materias primas o procesos y el exceso deliberado de capacidad. El cambio de localización de las máquinas no se exige en las condiciones de la guía."
+    "explanation": "En rotura de maquinaria el asegurado debe avisar la suspensión de operaciones por más de tres meses, el cambio de materias primas o procesos y el exceso deliberado de capacidad. El cambio de localización de las máquinas no se exige.",
+    "explicacion": "En rotura de maquinaria el asegurado debe avisar la suspensión de operaciones por más de tres meses, el cambio de materias primas o procesos y el exceso deliberado de capacidad. El cambio de localización de las máquinas no se exige."
   },
   {
     "id": 448,
@@ -11196,8 +11196,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "30% sobre el monto de la pérdida.",
-    "explanation": "Según la clave de la guía, si la reparación se realiza en talleres del asegurado se paga además hasta el 30% del daño como gasto fijo del taller. Los porcentajes de 10%, 20% o 50% no corresponden a la guía.",
-    "explicacion": "Según la clave de la guía, si la reparación se realiza en talleres del asegurado se paga además hasta el 30% del daño como gasto fijo del taller. Los porcentajes de 10%, 20% o 50% no corresponden a la guía."
+    "explanation": "Si la reparación se realiza en talleres del asegurado se paga además hasta el 30% del daño como gasto fijo del taller. Los porcentajes de 10%, 20% o 50% no corresponden a las condiciones estándar del ramo.",
+    "explicacion": "Si la reparación se realiza en talleres del asegurado se paga además hasta el 30% del daño como gasto fijo del taller. Los porcentajes de 10%, 20% o 50% no corresponden a las condiciones estándar del ramo."
   },
   {
     "id": 449,
@@ -11396,8 +11396,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "25% sobre la pérdida.",
-    "explanation": "Según la clave de la guía, el asegurado participa con el 25% de la pérdida, además del deducible, cuando se ampara el escape de los fluidos contenidos. Los porcentajes de 10%, 15% o 20% no son los de la guía.",
-    "explicacion": "Según la clave de la guía, el asegurado participa con el 25% de la pérdida, además del deducible, cuando se ampara el escape de los fluidos contenidos. Los porcentajes de 10%, 15% o 20% no son los de la guía."
+    "explanation": "El asegurado participa con el 25% de la pérdida, además del deducible, cuando se ampara el escape de los fluidos contenidos. Los porcentajes de 10%, 15% o 20% no corresponden a los límites normativos y técnicos de la póliza.",
+    "explicacion": "El asegurado participa con el 25% de la pérdida, además del deducible, cuando se ampara el escape de los fluidos contenidos. Los porcentajes de 10%, 15% o 20% no corresponden a los límites normativos y técnicos de la póliza."
   },
   {
     "id": 457,
@@ -11521,8 +11521,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "5, 6, 7",
-    "explanation": "Según la clave de la guía, no son asegurables en calderas las bombas alimentadoras de agua, los pulverizadores de carbón y los tapones fusibles. Las tuberías y el equipo de control se consideran parte asegurable.",
-    "explicacion": "Según la clave de la guía, no son asegurables en calderas las bombas alimentadoras de agua, los pulverizadores de carbón y los tapones fusibles. Las tuberías y el equipo de control se consideran parte asegurable."
+    "explanation": "No son asegurables en calderas las bombas alimentadoras de agua, los pulverizadores de carbón y los tapones fusibles. Las tuberías y el equipo de control se consideran parte asegurable.",
+    "explicacion": "No son asegurables en calderas las bombas alimentadoras de agua, los pulverizadores de carbón y los tapones fusibles. Las tuberías y el equipo de control se consideran parte asegurable."
   },
   {
     "id": 462,
@@ -11571,8 +11571,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "1, 4, 5",
-    "explanation": "Según la clave de la guía, los quemadores de combustible, los ventiladores de tiro forzado y los inyectores se amparan en la básica de calderas. El equipo no metálico y los discos de seguridad se excluyen.",
-    "explicacion": "Según la clave de la guía, los quemadores de combustible, los ventiladores de tiro forzado y los inyectores se amparan en la básica de calderas. El equipo no metálico y los discos de seguridad se excluyen."
+    "explanation": "Los quemadores de combustible, los ventiladores de tiro forzado y los inyectores se amparan en la básica de calderas. El equipo no metálico y los discos de seguridad se excluyen.",
+    "explicacion": "Los quemadores de combustible, los ventiladores de tiro forzado y los inyectores se amparan en la básica de calderas. El equipo no metálico y los discos de seguridad se excluyen."
   },
   {
     "id": 464,
@@ -11621,8 +11621,8 @@
     "correct": 3,
     "indice_correcto": 3,
     "respuesta_correcta": "1, 2, 4",
-    "explanation": "Según la clave de la guía, la póliza se divide en daños materiales a calderas y recipientes con fogón, gastos extraordinarios y daños materiales a recipientes sujetos a presión sin fogón. Compresores y motores de combustión interna no son secciones de esta póliza.",
-    "explicacion": "Según la clave de la guía, la póliza se divide en daños materiales a calderas y recipientes con fogón, gastos extraordinarios y daños materiales a recipientes sujetos a presión sin fogón. Compresores y motores de combustión interna no son secciones de esta póliza."
+    "explanation": "La póliza se divide en daños materiales a calderas y recipientes con fogón, gastos extraordinarios y daños materiales a recipientes sujetos a presión sin fogón. Compresores y motores de combustión interna no son secciones de esta póliza.",
+    "explicacion": "La póliza se divide en daños materiales a calderas y recipientes con fogón, gastos extraordinarios y daños materiales a recipientes sujetos a presión sin fogón. Compresores y motores de combustión interna no son secciones de esta póliza."
   },
   {
     "id": 466,
@@ -11896,8 +11896,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "Cobertura por convenio.",
-    "explanation": "Según la clave de la guía, la cobertura contra toda pérdida o daño físico en equipo de contratistas se considera cobertura por convenio. En muchos productos actuales la modalidad todo riesgo es la cobertura básica.",
-    "explicacion": "Según la clave de la guía, la cobertura contra toda pérdida o daño físico en equipo de contratistas se considera cobertura por convenio. En muchos productos actuales la modalidad todo riesgo es la cobertura básica."
+    "explanation": "En las condiciones del seguro de Equipo de Contratistas y Maquinaria Pesada Móvil del temario CNSF, el amparo integral contra toda pérdida o daño físico accidental externo se estructura bajo convenio expreso de riesgos cubiertos en la carátula de la póliza.",
+    "explicacion": "En las condiciones del seguro de Equipo de Contratistas y Maquinaria Pesada Móvil del temario CNSF, el amparo integral contra toda pérdida o daño físico accidental externo se estructura bajo convenio expreso de riesgos cubiertos en la carátula de la póliza."
   },
   {
     "id": 477,
@@ -11946,8 +11946,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "1, 4",
-    "explanation": "Según la clave de la guía, se excluyen los equipos que trabajan sobre el agua y los de perforación. Los equipos de nivelación y compactación son típicos de contratistas y se cubren.",
-    "explicacion": "Según la clave de la guía, se excluyen los equipos que trabajan sobre el agua y los de perforación. Los equipos de nivelación y compactación son típicos de contratistas y se cubren."
+    "explanation": "Se excluyen los equipos que trabajan sobre el agua y los de perforación. Los equipos de nivelación y compactación son típicos de contratistas y se cubren.",
+    "explicacion": "Se excluyen los equipos que trabajan sobre el agua y los de perforación. Los equipos de nivelación y compactación son típicos de contratistas y se cubren."
   },
   {
     "id": 479,
@@ -11971,8 +11971,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "1, 2, 6",
-    "explanation": "Según la clave de la guía, pueden cubrirse por convenio expreso los bienes en operación bajo tierra, los gastos extraordinarios y los actos de huelguistas. La sobrecarga y la congelación se excluyen.",
-    "explicacion": "Según la clave de la guía, pueden cubrirse por convenio expreso los bienes en operación bajo tierra, los gastos extraordinarios y los actos de huelguistas. La sobrecarga y la congelación se excluyen."
+    "explanation": "Pueden cubrirse por convenio expreso los bienes en operación bajo tierra, los gastos extraordinarios y los actos de huelguistas. La sobrecarga y la congelación se excluyen.",
+    "explicacion": "Pueden cubrirse por convenio expreso los bienes en operación bajo tierra, los gastos extraordinarios y los actos de huelguistas. La sobrecarga y la congelación se excluyen."
   },
   {
     "id": 480,
@@ -11996,8 +11996,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Por convenio expreso.",
-    "explanation": "Según la clave de la guía, en obra civil los daños por granizo, ciclón y huracán se cubren por convenio expreso. No forman parte de la cobertura básica ni están excluidos.",
-    "explicacion": "Según la clave de la guía, en obra civil los daños por granizo, ciclón y huracán se cubren por convenio expreso. No forman parte de la cobertura básica ni están excluidos."
+    "explanation": "En obra civil los daños por granizo, ciclón y huracán se cubren por convenio expreso. No forman parte de la cobertura básica ni están excluidos.",
+    "explicacion": "En obra civil los daños por granizo, ciclón y huracán se cubren por convenio expreso. No forman parte de la cobertura básica ni están excluidos."
   },
   {
     "id": 481,
@@ -12071,8 +12071,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Instalaciones subterráneas y trabajos de soldadura.",
-    "explanation": "Según la clave de la guía, en la sección III de responsabilidad civil de obra civil se contratan por convenio expreso las instalaciones subterráneas y los trabajos de soldadura. Los gastos de defensa y los daños con sus perjuicios son parte de la cobertura básica de RC.",
-    "explicacion": "Según la clave de la guía, en la sección III de responsabilidad civil de obra civil se contratan por convenio expreso las instalaciones subterráneas y los trabajos de soldadura. Los gastos de defensa y los daños con sus perjuicios son parte de la cobertura básica de RC."
+    "explanation": "En la sección III de responsabilidad civil de obra civil se contratan por convenio expreso las instalaciones subterráneas y los trabajos de soldadura. Los gastos de defensa y los daños con sus perjuicios son parte de la cobertura básica de RC.",
+    "explicacion": "En la sección III de responsabilidad civil de obra civil se contratan por convenio expreso las instalaciones subterráneas y los trabajos de soldadura. Los gastos de defensa y los daños con sus perjuicios son parte de la cobertura básica de RC."
   },
   {
     "id": 484,
@@ -12146,8 +12146,8 @@
     "correct": 1,
     "indice_correcto": 1,
     "respuesta_correcta": "50% de la suma base.",
-    "explanation": "Según la clave de la guía, los gastos, costas e intereses legales de la sección III de obra civil se cubren hasta el 50% de la suma base. Los porcentajes de 25%, 75% o 100% no son los de la guía.",
-    "explicacion": "Según la clave de la guía, los gastos, costas e intereses legales de la sección III de obra civil se cubren hasta el 50% de la suma base. Los porcentajes de 25%, 75% o 100% no son los de la guía."
+    "explanation": "Los gastos, costas e intereses legales de la sección III de obra civil se cubren hasta el 50% de la suma base. Los porcentajes de 25%, 75% o 100% no corresponden a los límites normativos y técnicos de la póliza.",
+    "explicacion": "Los gastos, costas e intereses legales de la sección III de obra civil se cubren hasta el 50% de la suma base. Los porcentajes de 25%, 75% o 100% no corresponden a los límites normativos y técnicos de la póliza."
   },
   {
     "id": 487,
@@ -12171,8 +12171,8 @@
     "correct": 2,
     "indice_correcto": 2,
     "respuesta_correcta": "Sección III",
-    "explanation": "Según la clave de la guía, el apuntalamiento y la demolición son coberturas adicionales de la sección III, por los daños que pueden causar a terceros. No son exclusiones.",
-    "explicacion": "Según la clave de la guía, el apuntalamiento y la demolición son coberturas adicionales de la sección III, por los daños que pueden causar a terceros. No son exclusiones."
+    "explanation": "El apuntalamiento y la demolición son coberturas adicionales de la sección III, por los daños que pueden causar a terceros. No son exclusiones.",
+    "explicacion": "El apuntalamiento y la demolición son coberturas adicionales de la sección III, por los daños que pueden causar a terceros. No son exclusiones."
   },
   {
     "id": 488,
@@ -12196,8 +12196,8 @@
     "correct": 0,
     "indice_correcto": 0,
     "respuesta_correcta": "Gastos extraordinarios y remoción de escombros.",
-    "explanation": "Según la clave de la guía, la sección II de obra civil cubre gastos extraordinarios y remoción de escombros. Las costas y gastos de reclamaciones corresponden a la sección de RC, y los daños punitivos se excluyen.",
-    "explicacion": "Según la clave de la guía, la sección II de obra civil cubre gastos extraordinarios y remoción de escombros. Las costas y gastos de reclamaciones corresponden a la sección de RC, y los daños punitivos se excluyen."
+    "explanation": "La sección II de obra civil cubre gastos extraordinarios y remoción de escombros. Las costas y gastos de reclamaciones corresponden a la sección de RC, y los daños punitivos se excluyen.",
+    "explicacion": "La sección II de obra civil cubre gastos extraordinarios y remoción de escombros. Las costas y gastos de reclamaciones corresponden a la sección de RC, y los daños punitivos se excluyen."
   },
   {
     "id": 489,
