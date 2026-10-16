@@ -434,9 +434,20 @@ export async function POST(
       }
 
       const updateFields: Record<string, any> = {};
-      if (stepNumber === 1) updateFields.step1General = stepData;
+      let effectiveStep1 = (participant.step1General as any) || {};
+      if (stepNumber === 1) {
+        updateFields.step1General = stepData;
+        effectiveStep1 = stepData;
+      } else if (stepNumber === 3 && (stepData.age || stepData.birthDate)) {
+        effectiveStep1 = {
+          ...effectiveStep1,
+          ...(stepData.birthDate ? { birthDate: stepData.birthDate } : {}),
+          ...(stepData.age ? { age: Number(stepData.age) } : {}),
+        };
+        updateFields.step1General = effectiveStep1;
+      }
       if (stepNumber === 2) updateFields.step2Patrimony = stepData;
-      if (stepNumber === 3) updateFields.step3Income = stepData;
+      if (stepNumber === 3) updateFields.step3Income = { monthlyIncome: Number(stepData.monthlyIncome || 0) };
       if (stepNumber === 4) updateFields.step4Retirement = stepData;
       if (stepNumber === 5) updateFields.step5Dreams = stepData;
       if (stepNumber === 6) updateFields.step6Savings = stepData;
@@ -456,9 +467,9 @@ export async function POST(
 
       const calc = evaluateTipsDiagnostic({
         completedStep: nextCompleted,
-        step1: (stepNumber === 1 ? stepData : participant.step1General) as any,
+        step1: effectiveStep1 as any,
         step2: (stepNumber === 2 ? stepData : participant.step2Patrimony) as any,
-        step3: (stepNumber === 3 ? stepData : participant.step3Income) as any,
+        step3: (stepNumber === 3 ? { monthlyIncome: Number(stepData.monthlyIncome || 0) } : participant.step3Income) as any,
         step4: (stepNumber === 4 ? stepData : participant.step4Retirement) as any,
         step5: (stepNumber === 5 ? stepData : participant.step5Dreams) as any,
         step6: (stepNumber === 6 ? stepData : participant.step6Savings) as any,

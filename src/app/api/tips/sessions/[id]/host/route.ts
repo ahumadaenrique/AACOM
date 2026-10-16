@@ -93,8 +93,33 @@ export async function GET(
         p.completedStep < tipsSession.unlockedStep &&
         (isBehindPreviousSteps || isInactiveTooLong);
 
+      const prevCalc = (p.calculatedResults as any) || null;
+      let finalCalc = prevCalc;
+      if (
+        p.completedStep >= 1 &&
+        (!prevCalc || (Number(prevCalc.monthlyIncome || 0) > 0 && Number(prevCalc.magicNumber || 0) === 0))
+      ) {
+        const recomputed = evaluateTipsDiagnostic({
+          completedStep: p.completedStep,
+          step1: p.step1General as any,
+          step2: p.step2Patrimony as any,
+          step3: p.step3Income as any,
+          step4: p.step4Retirement as any,
+          step5: p.step5Dreams as any,
+          step6: p.step6Savings as any,
+          step7: p.step7Insurance as any,
+          customParams: tipsSession.customParams as any,
+        });
+        finalCalc = {
+          ...recomputed,
+          appointmentRequested: Boolean(prevCalc?.appointmentRequested),
+          preferredSlot: prevCalc?.preferredSlot || null,
+        };
+      }
+
       return {
         ...p,
+        calculatedResults: finalCalc,
         activeStep,
         inactiveSeconds,
         isLagging,

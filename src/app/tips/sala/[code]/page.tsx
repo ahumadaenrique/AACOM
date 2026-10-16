@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import confetti from 'canvas-confetti';
 import {
   evaluateTipsDiagnostic,
+  calculateAgeFromBirthDate,
   ASSET_REFERENCE_RATES,
   TipsAssetCategory,
   TipsAssetItem,
@@ -65,6 +66,7 @@ export default function TipsParticipantMobilePage() {
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [manualAge, setManualAge] = useState<number | ''>('');
   const [maritalStatus, setMaritalStatus] = useState<
     'SOLTERO' | 'CASADO' | 'UNION_LIBRE' | 'DIVORCIADO' | 'VIUDO'
   >('CASADO');
@@ -77,9 +79,9 @@ export default function TipsParticipantMobilePage() {
   // Paso 3: Sueldo Mensual (Vacío por defecto con placeholder - QA T3)
   const [monthlyIncome, setMonthlyIncome] = useState<number>(0);
 
-  // Paso 4: Jubilación (Cinta Métrica)
-  const [desiredRetirementAge, setDesiredRetirementAge] = useState<number>(65);
-  const [desiredPensionPct, setDesiredPensionPct] = useState<number>(80);
+  // Paso 4: Jubilación (Cinta Métrica) — soporta '' mientras el usuario borra con backspace en celular
+  const [desiredRetirementAge, setDesiredRetirementAge] = useState<number | ''>(65);
+  const [desiredPensionPct, setDesiredPensionPct] = useState<number | ''>(80);
   const [imssRegime, setImssRegime] = useState<'LEY_73' | 'LEY_97' | 'NINGUNO' | 'NO_SE'>('LEY_97');
   const [aforeBalance, setAforeBalance] = useState<number>(0);
   const [hasPpr, setHasPpr] = useState<boolean>(false);
@@ -191,7 +193,17 @@ export default function TipsParticipantMobilePage() {
         setPrivacyAccepted(Boolean(p.privacyAccepted));
 
         if (p.step1General) {
-          if (p.step1General.birthDate) setBirthDate(p.step1General.birthDate);
+          if (p.step1General.birthDate) {
+            setBirthDate(p.step1General.birthDate);
+            const parsedY = new Date(p.step1General.birthDate).getUTCFullYear();
+            const currY = new Date().getUTCFullYear();
+            if (!isNaN(parsedY) && currY - parsedY >= 18 && currY - parsedY <= 100) {
+              setManualAge(currY - parsedY);
+            }
+          }
+          if (typeof p.step1General.age === 'number' && p.step1General.age >= 18) {
+            setManualAge(p.step1General.age);
+          }
           if (p.step1General.maritalStatus) setMaritalStatus(p.step1General.maritalStatus);
           if (typeof p.step1General.dependentsCount === 'number')
             setDependentsCount(p.step1General.dependentsCount);
@@ -345,14 +357,15 @@ export default function TipsParticipantMobilePage() {
       step1: {
         fullName,
         birthDate,
+        age: typeof manualAge === 'number' && manualAge >= 18 ? manualAge : undefined,
         maritalStatus,
         dependentsCount: Number(dependentsCount || 0),
       },
       step2: { assets, debts },
       step3: { monthlyIncome },
       step4: {
-        desiredRetirementAge,
-        desiredPensionPct,
+        desiredRetirementAge: Number(desiredRetirementAge || 65),
+        desiredPensionPct: Number(desiredPensionPct || 80),
         imssRegime,
         aforeBalance,
         hasPpr,
@@ -376,6 +389,7 @@ export default function TipsParticipantMobilePage() {
     viewStep,
     fullName,
     birthDate,
+    manualAge,
     maritalStatus,
     dependentsCount,
     assets,
@@ -438,10 +452,34 @@ export default function TipsParticipantMobilePage() {
       setErrorMsg('Debes aceptar el Aviso de Privacidad LFPDPPP para continuar.');
       return;
     }
-    if (!birthDate) {
-      setErrorMsg('Por favor captura tu fecha de nacimiento para calcular tu horizonte patrimonial.');
+    const currentYear = new Date().getUTCFullYear();
+    const parsedBirthYear = birthDate ? Number(birthDate.split('-')[0]) : NaN;
+    const hasValidBirthYear =
+      !isNaN(parsedBirthYear) &&
+      currentYear - parsedBirthYear >= 18 &&
+      currentYear - parsedBirthYear <= 100;
+    const hasValidManualAge =
+      typeof manualAge === 'number' && manualAge >= 18 && manualAge <= 100;
+
+    if (!hasValidBirthYear && !hasValidManualAge) {
+      setErrorMsg(
+        'Por favor verifica tu año de nacimiento (debes ser mayor de 18 años) o escribe tu edad actual.'
+      );
       return;
     }
+
+    let effectiveBirthDate = birthDate;
+    const effectiveAge = hasValidManualAge
+      ? Number(manualAge)
+      : currentYear - parsedBirthYear;
+
+    if (!hasValidBirthYear && hasValidManualAge) {
+      const parts = birthDate && birthDate.includes('-') ? birthDate.split('-') : ['1988', '06', '15'];
+      const calcYear = currentYear - Number(manualAge);
+      effectiveBirthDate = `${calcYear}-${parts[1] || '06'}-${parts[2] || '15'}`;
+      setBirthDate(effectiveBirthDate);
+    }
+
     setSaving(true);
     setErrorMsg(null);
     try {
@@ -458,7 +496,8 @@ export default function TipsParticipantMobilePage() {
           privacyAccepted: true,
           step1Data: {
             fullName: fullName.trim(),
-            birthDate,
+            birthDate: effectiveBirthDate,
+            age: effectiveAge,
             maritalStatus,
             dependentsCount: Number(dependentsCount || 0),
           },
@@ -796,18 +835,49 @@ export default function TipsParticipantMobilePage() {
                   <input
                     type="date"
                     required
+                    min="1930-01-01"
+                    max={`${new Date().getFullYear() - 18}-12-31`}
                     value={birthDate}
-                    onChange={(e) => setBirthDate(e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setBirthDate(val);
+                      if (val) {
+                        const yr = Number(val.slice(0, 4));
+                        const currentYear = new Date().getFullYear();
+                        if (yr >= 1925 && yr <= currentYear - 18) {
+                          setManualAge(calculateAgeFromBirthDate(val, 38));
+                        }
+                      }
+                    }}
                     className="w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm"
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Edad Calculada
+                    Tu Edad Actual (años) *
                   </label>
-                  <div className="w-full rounded-xl bg-indigo-50 border border-indigo-200 px-3.5 py-2.5 text-sm font-black text-indigo-900">
-                    {liveCalc.age} años
-                  </div>
+                  <input
+                    type="number"
+                    min={18}
+                    max={95}
+                    placeholder="Ej. 38"
+                    value={manualAge}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === '') {
+                        setManualAge('');
+                        return;
+                      }
+                      const num = Number(val);
+                      setManualAge(num);
+                      if (num >= 18 && num <= 95) {
+                        const yr = new Date().getFullYear() - num;
+                        const rest = birthDate && birthDate.length >= 10 ? birthDate.slice(4) : '-06-15';
+                        setBirthDate(`${yr}${rest}`);
+                      }
+                    }}
+                    className="w-full rounded-xl bg-indigo-50/70 border border-indigo-200 px-3.5 py-2.5 text-sm font-black text-indigo-900"
+                  />
                 </div>
               </div>
 
@@ -1048,10 +1118,14 @@ export default function TipsParticipantMobilePage() {
                       <input
                         type="number"
                         step="0.5"
-                        value={ast.annualRatePct}
+                        placeholder="0"
+                        value={ast.annualRatePct === 0 ? '' : ast.annualRatePct}
                         onChange={(e) => {
                           const next = [...assets];
-                          next[idx] = { ...ast, annualRatePct: Number(e.target.value) };
+                          next[idx] = {
+                            ...ast,
+                            annualRatePct: e.target.value === '' ? 0 : Number(e.target.value),
+                          };
                           setAssets(next);
                         }}
                         className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-xs"
@@ -1145,10 +1219,14 @@ export default function TipsParticipantMobilePage() {
                       <input
                         type="number"
                         step="0.5"
-                        value={dbt.annualCatPct}
+                        placeholder="0"
+                        value={dbt.annualCatPct === 0 ? '' : dbt.annualCatPct}
                         onChange={(e) => {
                           const next = [...debts];
-                          next[idx] = { ...dbt, annualCatPct: Number(e.target.value) };
+                          next[idx] = {
+                            ...dbt,
+                            annualCatPct: e.target.value === '' ? 0 : Number(e.target.value),
+                          };
                           setDebts(next);
                         }}
                         className="w-full rounded-xl border border-slate-300 px-3 py-1.5 text-xs"
@@ -1183,6 +1261,42 @@ export default function TipsParticipantMobilePage() {
               </p>
             </div>
 
+            {/* Ajuste rápido de edad en caso de que la fecha de nacimiento en móvil haya quedado mal */}
+            <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl px-3.5 py-2.5">
+              <div>
+                <span className="text-xs font-bold text-slate-800 block">
+                  Tu Edad Actual para el Cálculo
+                </span>
+                <span className="text-[11px] text-slate-500">
+                  Verifica que tu edad sea correcta para calcular tu multiplicador exacto
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <input
+                  type="number"
+                  min={18}
+                  max={95}
+                  value={manualAge}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === '') {
+                      setManualAge('');
+                      return;
+                    }
+                    const num = Number(val);
+                    setManualAge(num);
+                    if (num >= 18 && num <= 95) {
+                      const yr = new Date().getFullYear() - num;
+                      const rest = birthDate && birthDate.length >= 10 ? birthDate.slice(4) : '-06-15';
+                      setBirthDate(`${yr}${rest}`);
+                    }
+                  }}
+                  className="w-16 text-center rounded-xl border-2 border-indigo-200 bg-white px-2 py-1.5 text-sm font-black text-indigo-900"
+                />
+                <span className="text-xs font-bold text-slate-600">años</span>
+              </div>
+            </div>
+
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label className="text-xs font-bold text-slate-700">
@@ -1196,6 +1310,7 @@ export default function TipsParticipantMobilePage() {
                 type="number"
                 min={0}
                 step={5000}
+                placeholder="Ej. 50000"
                 value={monthlyIncome || ''}
                 onChange={(e) => setMonthlyIncome(Number(e.target.value))}
                 className="w-full rounded-2xl border-2 border-indigo-200 px-4 py-3 text-xl font-black text-slate-900"
@@ -1276,7 +1391,7 @@ export default function TipsParticipantMobilePage() {
             <button
               type="button"
               disabled={saving}
-              onClick={() => handleSaveStep(3, { monthlyIncome })}
+              onClick={() => handleSaveStep(3, { monthlyIncome, age: liveCalc.age, birthDate })}
               className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm shadow-lg"
             >
               {saving ? 'Guardando Paso 3...' : 'Guardar Número Mágico →'}
@@ -1326,7 +1441,7 @@ export default function TipsParticipantMobilePage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
                   ¿A qué edad te quieres jubilar?
@@ -1335,10 +1450,29 @@ export default function TipsParticipantMobilePage() {
                   type="number"
                   min={liveCalc.age + 1}
                   max={80}
+                  placeholder="Ej. 60"
                   value={desiredRetirementAge}
-                  onChange={(e) => setDesiredRetirementAge(Number(e.target.value))}
+                  onChange={(e) =>
+                    setDesiredRetirementAge(e.target.value === '' ? '' : Number(e.target.value))
+                  }
                   className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold"
                 />
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {[55, 60, 65, 70].map((ageOpt) => (
+                    <button
+                      key={ageOpt}
+                      type="button"
+                      onClick={() => setDesiredRetirementAge(ageOpt)}
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition ${
+                        Number(desiredRetirementAge) === ageOpt
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-indigo-50'
+                      }`}
+                    >
+                      {ageOpt} años
+                    </button>
+                  ))}
+                </div>
               </div>
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -1349,10 +1483,29 @@ export default function TipsParticipantMobilePage() {
                   min={30}
                   max={120}
                   step={5}
+                  placeholder="Ej. 80"
                   value={desiredPensionPct}
-                  onChange={(e) => setDesiredPensionPct(Number(e.target.value))}
+                  onChange={(e) =>
+                    setDesiredPensionPct(e.target.value === '' ? '' : Number(e.target.value))
+                  }
                   className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm font-bold"
                 />
+                <div className="flex flex-wrap gap-1 mt-1.5">
+                  {[70, 80, 100].map((pctOpt) => (
+                    <button
+                      key={pctOpt}
+                      type="button"
+                      onClick={() => setDesiredPensionPct(pctOpt)}
+                      className={`px-2 py-0.5 rounded-lg text-[10px] font-bold border transition ${
+                        Number(desiredPensionPct) === pctOpt
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-indigo-50'
+                      }`}
+                    >
+                      {pctOpt}%
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
@@ -1422,7 +1575,7 @@ export default function TipsParticipantMobilePage() {
                 </strong>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-600">Capital requerido a los {desiredRetirementAge} años:</span>
+                <span className="text-slate-600">Capital requerido a los {desiredRetirementAge || 65} años:</span>
                 <strong className="text-indigo-900">
                   ${liveCalc.retirementCapitalRequired.toLocaleString('es-MX')}
                 </strong>
@@ -1440,8 +1593,8 @@ export default function TipsParticipantMobilePage() {
               disabled={saving}
               onClick={() =>
                 handleSaveStep(4, {
-                  desiredRetirementAge,
-                  desiredPensionPct,
+                  desiredRetirementAge: Number(desiredRetirementAge || 65),
+                  desiredPensionPct: Number(desiredPensionPct || 80),
                   imssRegime,
                   aforeBalance,
                   hasPpr: pprBalance > 0 || pprMonthlyContribution > 0,
@@ -1578,7 +1731,8 @@ export default function TipsParticipantMobilePage() {
                           type="number"
                           min={1}
                           max={40}
-                          value={drm.yearsToGoal}
+                          placeholder="Ej. 5"
+                          value={drm.yearsToGoal || ''}
                           onChange={(e) => {
                             const next = [...dreams];
                             next[idx] = { ...drm, yearsToGoal: Number(e.target.value) };

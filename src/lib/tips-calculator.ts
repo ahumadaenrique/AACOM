@@ -213,23 +213,30 @@ export function calculateAgeFromBirthDate(birthDate?: string | null, fallbackAge
   if (m < 0 || (m === 0 && now.getUTCDate() < parsed.getUTCDate())) {
     age--;
   }
+  // Si el selector móvil dejó el año actual por error (ej. 2026 -> edad <= 0 o < 18), usar fallbackAge en vez de forzar 18
+  if (age < 18 || age > 100) {
+    return fallbackAge;
+  }
   return Math.max(18, Math.min(99, age));
 }
 
 /**
  * Fórmula oficial Número Mágico:
  * numero_magico = max(0, (edad² × 0.05 − edad × 1.1) × ingreso_mensual)
- * Criterio de aceptación: edad 42 e ingreso 50,000 => 2,100,000; < 22 años => 0
+ * Para jóvenes de 18 a 22 años donde el polinomio es <= 0, se establece piso de 3x sueldo mensual (Fondo Patrimonial Semilla).
  */
 export function calculateMagicNumber(age: number, monthlyIncome: number): {
   magicNumber: number;
   multiplier: number;
 } {
-  if (age < 22 || monthlyIncome <= 0) {
+  if (monthlyIncome <= 0 || age <= 0) {
     return { magicNumber: 0, multiplier: 0 };
   }
   const rawMultiplier = age * age * 0.05 - age * 1.1;
-  const cleanMultiplier = Math.max(0, Math.round(rawMultiplier * 10000) / 10000);
+  const cleanMultiplier =
+    rawMultiplier > 0
+      ? Math.round(rawMultiplier * 10000) / 10000
+      : 3; // Piso de 3 meses de sueldo para jóvenes de 18-22 años en etapa de arranque
   const magicNumber = Math.round(cleanMultiplier * monthlyIncome);
   return {
     magicNumber,
