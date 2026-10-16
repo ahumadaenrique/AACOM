@@ -28,6 +28,8 @@ import {
   Video,
   VideoOff,
   LogOut,
+  FastForward,
+  MicOff,
   Users,
   PieChart
 } from 'lucide-react';
@@ -166,6 +168,13 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   const transcriptRef = useRef<{ source: 'ai' | 'user'; message: string }[]>([]);
   const [currentEval, setCurrentEval] = useState<any>(null);
 
+  // ADN Fast-Forward State (2 Fases: Apertura F.O.R.D. y Cierre de Cita)
+  const [adnPhase, setAdnPhase] = useState<1 | 2>(1);
+  const [adnTransitioning, setAdnTransitioning] = useState<boolean>(false);
+  const [adnTransitionProgress, setAdnTransitionProgress] = useState<number>(0);
+  const adnTransitionTriggeredRef = useRef<boolean>(false);
+  const phase2StartTimeRef = useRef<number>(0);
+
   // Live Speech State
   const [interimSpeech, setInterimSpeech] = useState<string>('');
   const [micStatus, setMicStatus] = useState<{ status: string; details?: string }>({ status: 'idle' });
@@ -267,6 +276,98 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     osc.stop(now + 0.15);
   };
 
+  const playTransitionChime = () => {
+    if (isMuted) return;
+    initAudioCtx();
+    if (!audioCtxRef.current) return;
+    const now = audioCtxRef.current.currentTime;
+    const notes = [523.25, 659.25, 783.99, 1046.50];
+    notes.forEach((freq, idx) => {
+      const osc = audioCtxRef.current!.createOscillator();
+      const gain = audioCtxRef.current!.createGain();
+      const startTime = now + (idx * 0.1);
+      osc.frequency.setValueAtTime(freq, startTime);
+      gain.gain.setValueAtTime(0.08, startTime);
+      gain.gain.exponentialRampToValueAtTime(0.0001, startTime + 0.35);
+      osc.connect(gain);
+      gain.connect(audioCtxRef.current!.destination);
+      osc.start(startTime);
+      osc.stop(startTime + 0.4);
+    });
+  };
+
+  const triggerAdnFastForward = () => {
+    if (adnTransitionTriggeredRef.current || !isCalling || !isADN) return;
+    adnTransitionTriggeredRef.current = true;
+    setAdnTransitioning(true);
+    setAdnTransitionProgress(0);
+
+    // 1. Silenciar inmediatamente el audio de ambos motores (ElevenLabs y Gemini Live) y micrófonos
+    if (conversationRef.current && typeof conversationRef.current.setVolume === 'function') {
+      try { conversationRef.current.setVolume({ volume: 0 }); } catch (_) {}
+    }
+    if (geminiSessionRef.current) {
+      geminiSessionRef.current.suppressAiOutput(true);
+      geminiSessionRef.current.setMuted(true);
+    }
+    setProspectSpeaking(false);
+    setUserSpeaking(false);
+    setInterimSpeech('');
+
+    playTransitionChime();
+
+    // 2. Animar barra de progreso durante 5 segundos
+    const interval = setInterval(() => {
+      setAdnTransitionProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          return 100;
+        }
+        return prev + 5;
+      });
+    }, 250);
+
+    const finalize = () => {
+      clearInterval(interval);
+      setAdnTransitionProgress(100);
+      setAdnTransitioning(false);
+      setAdnPhase(2);
+      phase2StartTimeRef.current = Date.now();
+
+      // Restaurar volumen y desmutear micrófono del asesor
+      if (conversationRef.current && typeof conversationRef.current.setVolume === 'function') {
+        try { conversationRef.current.setVolume({ volume: 1 }); } catch (_) {}
+        // Enviar actualización de contexto silenciosa a ElevenLabs sin forzar voz prematura
+        try {
+          if (typeof conversationRef.current.sendContextualUpdate === 'function') {
+            conversationRef.current.sendContextualUpdate(
+              "[Aviso de tiempo: Han transcurrido 30 minutos de sesión. Ya capturaron todos los números del cuestionario en la libreta. Ahora el asesor tomará la palabra para agendar la siguiente reunión. Espera a que el asesor hable para responderle con naturalidad.]"
+            );
+          }
+        } catch (_) {}
+      }
+
+      if (geminiSessionRef.current) {
+        geminiSessionRef.current.suppressAiOutput(false);
+        geminiSessionRef.current.setMuted(false);
+      }
+
+      // Agregar marcador de sistema a la bitácora (NO como diálogo inventado de Karla)
+      const transitionMarker = {
+        source: 'ai' as const,
+        message: '⏩ [30 minutos después]: Se han capturado todos los números del cuestionario financiero en la libreta. Es momento de concluir la reunión.'
+      };
+      transcriptRef.current = [...transcriptRef.current, transitionMarker];
+      setTranscript(prev => [...prev, transitionMarker]);
+
+      setCallStatusText('⏩ Fase 2 iniciada: Toma la palabra para explicar los siguientes pasos y agendar la Cita de Cierre con Doble Alternativa.');
+    };
+
+    setTimeout(() => {
+      finalize();
+    }, 5000);
+  };
+
   // 2. Fetch or load session
   const initSession = async () => {
     try {
@@ -274,6 +375,11 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       // Limpiar inmediatamente el caso anterior para que no quede en pantalla
       setCallDuration(0);
       setTranscript([]);
+      setAdnPhase(1);
+      setAdnTransitioning(false);
+      setAdnTransitionProgress(0);
+      adnTransitionTriggeredRef.current = false;
+      phase2StartTimeRef.current = 0;
       setProspectSpeaking(false);
       setUserSpeaking(false);
       setUserMicVolume(0);
@@ -444,9 +550,33 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
             timerRef.current = setInterval(() => {
               const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
               setCallDuration(elapsed);
-              const maxDuration = isADN ? 1800 : isObjeciones ? 1200 : 300;
-              if (elapsed >= maxDuration) {
-                hangupCall();
+
+              if (isADN) {
+                // Auto-trigger transición a los 5 minutos (300 segundos) de Fase 1
+                if (elapsed >= 300 && !adnTransitionTriggeredRef.current) {
+                  triggerAdnFastForward();
+                }
+
+                // Límite de Fase 2 (3 minutos desde que terminó la transición) o 8 minutos totales (480s)
+                const phase2Secs = phase2StartTimeRef.current 
+                  ? Math.floor((Date.now() - phase2StartTimeRef.current) / 1000) 
+                  : 0;
+
+                if (phase2StartTimeRef.current && phase2Secs >= 180) {
+                  hangupCall();
+                  return;
+                }
+
+                if (elapsed >= 480) {
+                  hangupCall();
+                  return;
+                }
+              } else {
+                const maxDuration = isObjeciones ? 1200 : 300;
+                if (elapsed >= maxDuration) {
+                  hangupCall();
+                  return;
+                }
               }
             }, 1000);
           },
@@ -545,9 +675,33 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
             timerRef.current = setInterval(() => {
               const elapsed = Math.floor((Date.now() - startTimeRef.current) / 1000);
               setCallDuration(elapsed);
-              const maxDuration = isADN ? 1800 : isObjeciones ? 1200 : 300;
-              if (elapsed >= maxDuration) {
-                hangupCall();
+
+              if (isADN) {
+                // Auto-trigger transición a los 5 minutos (300 segundos) de Fase 1
+                if (elapsed >= 300 && !adnTransitionTriggeredRef.current) {
+                  triggerAdnFastForward();
+                }
+
+                // Límite de Fase 2 (3 minutos desde que terminó la transición) o 8 minutos totales (480s)
+                const phase2Secs = phase2StartTimeRef.current 
+                  ? Math.floor((Date.now() - phase2StartTimeRef.current) / 1000) 
+                  : 0;
+
+                if (phase2StartTimeRef.current && phase2Secs >= 180) {
+                  hangupCall();
+                  return;
+                }
+
+                if (elapsed >= 480) {
+                  hangupCall();
+                  return;
+                }
+              } else {
+                const maxDuration = isObjeciones ? 1200 : 300;
+                if (elapsed >= maxDuration) {
+                  hangupCall();
+                  return;
+                }
               }
             }, 1000);
 
@@ -637,6 +791,11 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     let recordingBlob: Blob | null = null;
     if (geminiSessionRef.current) {
       try {
+        const geminiTurns = geminiSessionRef.current.getTranscript();
+        if (geminiTurns && geminiTurns.length > transcriptRef.current.length) {
+          transcriptRef.current = geminiTurns;
+          setTranscript(geminiTurns);
+        }
         recordingBlob = await geminiSessionRef.current.stopRecording();
       } catch (e) {
         console.warn('Error stopping Gemini Live recording:', e);
@@ -1127,6 +1286,99 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                   )}
                 </div>
 
+                {/* ADN Active Phase, Countdown Timer & Fast-Forward Controls */}
+                {isCalling && isADN && (
+                  <div className="p-4 rounded-3xl bg-slate-950/80 border border-indigo-500/30 space-y-3 shadow-xl">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className={`px-3 py-1 rounded-xl font-black uppercase tracking-wider text-xs ${
+                          adnPhase === 1 
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' 
+                            : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                        }`}>
+                          {adnPhase === 1 ? 'Fase 1 de 2: Apertura & Metas' : 'Fase 2 de 2: Cierre de Cita'}
+                        </span>
+                        
+                        {/* Countdown Timers */}
+                        <div className="flex items-center gap-1.5 px-3 py-1 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono font-bold">
+                          <Clock className={`h-3.5 w-3.5 ${adnPhase === 1 ? 'text-amber-400' : 'text-emerald-400'}`} />
+                          <span className="text-slate-400">
+                            {adnPhase === 1 ? 'Te quedan:' : 'Restante Cierre:'}
+                          </span>
+                          <span className={`text-sm font-black ${adnPhase === 1 ? 'text-amber-300' : 'text-emerald-300'}`}>
+                            {adnPhase === 1 
+                              ? formatTime(Math.max(0, 300 - callDuration)) 
+                              : formatTime(Math.max(0, Math.min(180 - (phase2StartTimeRef.current ? Math.floor((Date.now() - phase2StartTimeRef.current) / 1000) : 0), 480 - callDuration)))}
+                          </span>
+                        </div>
+                      </div>
+
+                      {adnPhase === 1 && !adnTransitioning && (
+                        <button
+                          type="button"
+                          onClick={triggerAdnFastForward}
+                          className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-400 hover:from-amber-400 hover:to-amber-300 text-slate-950 font-black text-xs shadow-lg shadow-amber-500/20 transition-all hover:scale-105"
+                          title="Avanzar automáticamente los 30 minutos de desglose financiero y pasar al cierre"
+                        >
+                          <FastForward className="h-4 w-4" />
+                          <span>Completar preguntas y pasar al Cierre de Sesión</span>
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Barra Visual de Transición Cinemática */}
+                    {adnTransitioning && (
+                      <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/40 space-y-2.5 animate-in fade-in zoom-in-95">
+                        <div className="flex items-center justify-between text-xs font-bold text-amber-300">
+                          <span className="flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-amber-400 animate-spin" />
+                            <span>Avance temporal: 30 minutos de sesión...</span>
+                          </span>
+                          <span className="font-mono">{adnTransitionProgress}%</span>
+                        </div>
+                        <div className="w-full bg-slate-900 rounded-full h-2.5 overflow-hidden border border-slate-700">
+                          <div 
+                            className="bg-gradient-to-r from-amber-500 to-amber-300 h-full rounded-full transition-all duration-300"
+                            style={{ width: `${adnTransitionProgress}%` }}
+                          />
+                        </div>
+                        <p className="text-[11px] text-slate-300 text-center italic">
+                          "Se concluye la captura de cifras financieras en la libreta. Preparando cierre de reunión..."
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Banner de Acción Inmediata para el Asesor al entrar a Fase 2 */}
+                    {adnPhase === 2 && !adnTransitioning && (
+                      <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/40 flex items-start gap-3 shadow-lg shadow-emerald-950/30 animate-in fade-in">
+                        <Sparkles className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
+                        <div className="text-xs space-y-1">
+                          <strong className="text-emerald-300 font-bold block text-sm">
+                            👉 Es tu turno: Toma la palabra por el micrófono
+                          </strong>
+                          <p className="text-slate-200 leading-relaxed">
+                            Explícale al cliente que te llevarás su radiografía a tu despacho para diseñar la propuesta y <strong>agenda la Cita de Presentación con Doble Alternativa</strong> (ej: <em>"¿Te queda mejor vernos el martes a las 11:00 am o el jueves a las 4:00 pm?"</em>).
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-300 leading-relaxed">
+                      {adnPhase === 1 ? (
+                        <>
+                          <strong className="text-amber-300 font-bold block sm:inline">📌 Instrucciones Fase 1: </strong>
+                          Tienes <strong>hasta 5 minutos</strong> para explicar la intención de la sesión, marco de confidencialidad y explorar prioridades de vida (F.O.R.D.). Cuando vayas a pasar al cuestionario detallado y cierre, da clic en el botón amarillo o espera a que concluya el tiempo para la transición automática.
+                        </>
+                      ) : (
+                        <>
+                          <strong className="text-emerald-300 font-bold block sm:inline">🎯 Instrucciones Fase 2: </strong>
+                          Tienes <strong>hasta 3 minutos</strong> para explicar que te llevarás los números a tu despacho para estructurar la solución y agendar la <strong>Cita de Cierre con Doble Alternativa</strong> de fecha y horario.
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 {/* Big Action Buttons */}
                 <div className="flex items-center justify-center gap-6">
                   {!isCalling ? (
@@ -1182,17 +1434,34 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
                           : 'Presiona "Iniciar Llamada" para hablar con el prospecto por tu micrófono...'}
                       </div>
                     ) : (
-                      transcript.map((t, idx) => (
-                        <div
-                          key={idx}
-                          className={`p-2.5 rounded-xl ${t.source === 'ai' ? 'bg-slate-900 border border-slate-800 text-indigo-300' : 'bg-indigo-950/30 border border-indigo-500/20 text-slate-100 ml-6'}`}
-                        >
-                          <strong className="block text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">
-                            {t.source === 'ai' ? scenario?.prospecto?.nombre?.split(' ')[0] : 'Tú'}:
-                          </strong>
-                          <span>{t.message}</span>
-                        </div>
-                      ))
+                      transcript.map((t, idx) => {
+                        const isSystemMarker = t.message.startsWith('⏩') || t.message.startsWith('🎙️') || (t.source as any) === 'system';
+                        if (isSystemMarker) {
+                          return (
+                            <div 
+                              key={idx} 
+                              className="my-3 p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-center justify-center gap-2 text-center shadow-inner animate-in fade-in"
+                            >
+                              <Sparkles className="h-4 w-4 text-amber-400 shrink-0" />
+                              <span className="font-medium leading-relaxed">
+                                {t.message.replace(/^🎙️\s*(\[Director de Escena\]:?)?\s*/i, '').replace(/^⏩\s*/, '')}
+                              </span>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <div
+                            key={idx}
+                            className={`p-2.5 rounded-xl ${t.source === 'ai' ? 'bg-slate-900 border border-slate-800 text-indigo-300' : 'bg-indigo-950/30 border border-indigo-500/20 text-slate-100 ml-6'}`}
+                          >
+                            <strong className="block text-[10px] text-slate-400 uppercase tracking-wide mb-0.5">
+                              {(t.source === 'ai' ? scenario?.prospecto?.nombre?.split(' ')[0] : 'Tú') + ':'}
+                            </strong>
+                            <span>{t.message}</span>
+                          </div>
+                        );
+                      })
                     )}
                   </div>
                 </div>
@@ -1206,54 +1475,50 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
           {/* Right Column: Mission and Badges */}
           <div className="lg:col-span-4 space-y-6">
             
-            {/* Widget ADN: Metodología 50-30-20 (Elizabeth Warren) */}
+            {/* Widget ADN: Protocolo Consultivo en 2 Fases */}
             {isADN && (
               <div className="p-6 rounded-3xl bg-slate-900 border border-amber-500/30 space-y-4 shadow-lg relative overflow-hidden">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold text-amber-300 flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-amber-400" /> Guía ADN: Regla 50-30-20
+                    <Sparkles className="h-4 w-4 text-amber-400" /> Protocolo ADN (2 Fases)
                   </h3>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                    Elizabeth Warren
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                    5 a 6 Minutos
                   </span>
                 </div>
 
                 <div className="space-y-2 text-xs">
-                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
-                    <div className="flex justify-between font-bold text-slate-200">
-                      <span className="text-blue-400">50% Necesidades / Fijos</span>
-                      <span className="text-slate-400">Básicos</span>
+                  <div className="p-3 rounded-2xl bg-slate-950/70 border border-amber-500/20 space-y-1.5">
+                    <div className="flex items-center justify-between font-bold text-amber-300">
+                      <span>Fase 1: Apertura & Técnica F.O.R.D.</span>
+                      <span className="text-[10px] text-slate-400">0:00 - 3:00 min</span>
                     </div>
-                    <p className="text-[11px] text-slate-400">
-                      Vivienda (renta/hipoteca, luz, gas, agua, predial, internet), transporte, despensa básica y colegiaturas.
-                    </p>
+                    <ul className="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+                      <li><strong>Confidencialidad:</strong> Garantiza que la información es 100% privada.</li>
+                      <li><strong>Diagnóstico a la Medida:</strong> No productos genéricos ni ventas hoy.</li>
+                      <li><strong>F.O.R.D.:</strong> Familia, Ocupación, Recreación y Sueños/Dinero.</li>
+                      <li><strong>Priorizar:</strong> Pídele jerarquizar su meta #1 de vida (+35 XP).</li>
+                      <li><strong>Escucha Activa:</strong> Permite que hable sin interrumpirlo.</li>
+                    </ul>
                   </div>
 
-                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
-                    <div className="flex justify-between font-bold text-slate-200">
-                      <span className="text-amber-400">30% Estilo de Vida</span>
-                      <span className="text-slate-400">Deseos</span>
+                  <div className="p-3 rounded-2xl bg-slate-950/70 border border-emerald-500/20 space-y-1.5">
+                    <div className="flex items-center justify-between font-bold text-emerald-300">
+                      <span>Fase 2: Conclusión & Cierre de Cita</span>
+                      <span className="text-[10px] text-slate-400">3:00 - 5:30 min</span>
                     </div>
-                    <p className="text-[11px] text-slate-400">
-                      Hobbies, salidas, restaurantes, viajes, plataformas de streaming, compras no esenciales y diversión.
-                    </p>
-                  </div>
-
-                  <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 space-y-1">
-                    <div className="flex justify-between font-bold text-slate-200">
-                      <span className="text-emerald-400">20% Ahorro & Protección</span>
-                      <span className="text-slate-400">Futuro</span>
-                    </div>
-                    <p className="text-[11px] text-slate-400">
-                      Fondo de emergencia, Retiro (PPR deducible), Educación universitaria futura y blindaje familiar.
-                    </p>
+                    <ul className="text-[11px] text-slate-300 space-y-1 list-disc list-inside">
+                      <li><strong>En Despacho:</strong> Analizarás los datos contra la metodología.</li>
+                      <li><strong>Segunda Cita:</strong> Presentación de solución personalizada.</li>
+                      <li><strong>Doble Alternativa:</strong> Ofrece 2 opciones claras de día y hora.</li>
+                    </ul>
                   </div>
                 </div>
 
                 <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-[11px] text-amber-200 space-y-1">
-                  <strong className="block text-amber-300 font-bold">💡 Táctica ante Resistencia:</strong>
+                  <strong className="block text-amber-300 font-bold">💡 Regla de Oro:</strong>
                   <p>
-                    Si el prospecto dice: <em>"No me sé los centavos de la luz o gas"</em>, no insistas en recibos: agrupa en grandes bloques (Vivienda total, Transporte, Hobbies).
+                    Prohibido vender pólizas o cotizar aseguradoras hoy. El éxito es concretar la Cita de Cierre con Doble Alternativa.
                   </p>
                 </div>
               </div>

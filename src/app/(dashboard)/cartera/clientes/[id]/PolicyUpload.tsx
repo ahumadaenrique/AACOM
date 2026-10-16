@@ -1,15 +1,17 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { uploadPolicyPdf, deletePolicyPdf } from "../../actions";
+import { deletePolicyPdf, updatePolicyPdfUrl } from "../../actions";
+import { uploadPolicyPdfSmart } from "../../pdfClientHelper";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, FileDown, Trash2, Loader2, CheckCircle } from "lucide-react";
+import { Upload, FileText, Trash2, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -19,6 +21,7 @@ export default function PolicyUpload({ policy }: { policy: any }) {
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isPdfOpen, setIsPdfOpen] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const router = useRouter();
@@ -29,8 +32,8 @@ export default function PolicyUpload({ policy }: { policy: any }) {
 
     if (file.type !== "application/pdf") {
       toast({
-        title: "Archivo inválido",
-        description: "Por favor selecciona un archivo PDF",
+        title: "Archivo no válido",
+        description: "Por favor selecciona un documento en formato PDF.",
         variant: "destructive",
       });
       return;
@@ -38,17 +41,9 @@ export default function PolicyUpload({ policy }: { policy: any }) {
 
     setIsUploading(true);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-      const res = await uploadPolicyPdf(formData);
-      if (res.error) throw new Error(res.error);
-      if (!res.url) throw new Error("No se obtuvo la URL del archivo");
-      
-      const { updatePolicyPdfUrl } = await import("../../actions");
-      const updateRes = await updatePolicyPdfUrl(policy.id, res.url);
-      if (updateRes?.error) throw new Error(updateRes.error);
+      await uploadPolicyPdfSmart(file, policy.id);
 
-      toast({ title: "Póliza subida correctamente" });
+      toast({ title: "Carátula PDF guardada correctamente" });
       router.refresh();
     } catch (err: any) {
       toast({
@@ -64,23 +59,21 @@ export default function PolicyUpload({ policy }: { policy: any }) {
 
   const handleDelete = async () => {
     if (!policy.pdfUrl) return;
-    if (!confirm("¿Estás seguro de eliminar este PDF?")) return;
 
     setIsDeleting(true);
     try {
       const res = await deletePolicyPdf(policy.pdfUrl);
       if (res.error) throw new Error(res.error);
-      
-      // Update policy in DB
-      const { updatePolicyPdfUrl } = await import("../../actions");
+
       const updateRes = await updatePolicyPdfUrl(policy.id, null);
       if (updateRes?.error) throw new Error(updateRes.error);
 
-      toast({ title: "Póliza eliminada" });
+      toast({ title: "Documento PDF desvinculado" });
+      setConfirmDeleteOpen(false);
       router.refresh();
     } catch (err: any) {
       toast({
-        title: "Error al eliminar",
+        title: "Error al eliminar PDF",
         description: err.message || "Ocurrió un error",
         variant: "destructive",
       });
@@ -91,38 +84,85 @@ export default function PolicyUpload({ policy }: { policy: any }) {
 
   if (policy.pdfUrl) {
     return (
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center gap-1">
         <Dialog open={isPdfOpen} onOpenChange={setIsPdfOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline" size="sm">
-              <FileDown className="w-4 h-4 mr-1" />
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 px-2 text-xs border-blue-500/30 text-blue-700 dark:text-blue-300 hover:bg-blue-500/10"
+              title="Abrir carátula PDF de la póliza"
+            >
+              <FileText className="w-3.5 h-3.5 mr-1" />
               Ver PDF
             </Button>
           </DialogTrigger>
           <DialogContent className="max-w-5xl h-[90vh] flex flex-col p-0 overflow-hidden">
-            <DialogHeader className="p-4 pb-0">
-              <DialogTitle>Documento de la Póliza</DialogTitle>
+            <DialogHeader className="p-4 pb-2 border-b flex flex-row items-center justify-between">
+              <DialogTitle className="text-base">
+                Carátula de Póliza {policy.policyNumber} — {policy.contractor || policy.client?.name}
+              </DialogTitle>
             </DialogHeader>
-            <div className="flex-1 w-full bg-muted mt-2">
+            <div className="flex-1 w-full bg-muted">
               {isPdfOpen && (
-                <iframe 
-                  src={`/api/pdf?url=${encodeURIComponent(policy.pdfUrl)}`} 
-                  className="w-full h-full border-0" 
-                  title="PDF Viewer" 
+                <iframe
+                  src={`/api/pdf?url=${encodeURIComponent(policy.pdfUrl)}`}
+                  className="w-full h-full border-0"
+                  title="Visor de Póliza PDF"
                 />
               )}
             </div>
           </DialogContent>
         </Dialog>
-        <Button variant="destructive" size="icon" onClick={handleDelete} disabled={isDeleting} className="h-9 w-9">
-          {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
-        </Button>
+
+        <Dialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              disabled={isDeleting}
+              className="h-7 w-7 text-muted-foreground hover:text-rose-600"
+              title="Quitar PDF adjunto"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle>¿Quitar documento PDF?</DialogTitle>
+              <DialogDescription>
+                Se eliminará el archivo PDF adjunto a la póliza {policy.policyNumber}. Los datos de la póliza se conservarán intactos.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter className="flex gap-2 sm:justify-end">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setConfirmDeleteOpen(false)}
+                disabled={isDeleting}
+              >
+                Cancelar
+              </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDelete}
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
+                ) : null}
+                Quitar PDF
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
 
   return (
-    <div>
+    <div className="flex justify-center">
       <input
         type="file"
         accept=".pdf"
@@ -131,19 +171,21 @@ export default function PolicyUpload({ policy }: { policy: any }) {
         onChange={handleUpload}
       />
       <Button
-        variant="secondary"
+        variant="ghost"
         size="sm"
         disabled={isUploading}
         onClick={() => fileInputRef.current?.click()}
+        className="h-7 px-2 text-xs text-muted-foreground hover:text-foreground border border-dashed border-border"
+        title="Subir carátula PDF"
       >
         {isUploading ? (
           <>
-            <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+            <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
             Subiendo...
           </>
         ) : (
           <>
-            <Upload className="w-4 h-4 mr-1" />
+            <Upload className="w-3.5 h-3.5 mr-1" />
             Subir PDF
           </>
         )}
@@ -151,4 +193,3 @@ export default function PolicyUpload({ policy }: { policy: any }) {
     </div>
   );
 }
-

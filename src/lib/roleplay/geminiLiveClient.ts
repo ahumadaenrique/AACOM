@@ -55,6 +55,8 @@ export class GeminiLiveSession {
   private isIntentionallyClosed: boolean = false;
   private isListeningActive: boolean = false;
   private sessionId: string;
+  private isMuted: boolean = false;
+  private isAiSuppressed: boolean = false;
 
   constructor(config: GeminiLiveSessionConfig) {
     this.config = config;
@@ -212,7 +214,7 @@ export class GeminiLiveSession {
           parts: [
             {
               text: `${this.config.systemPrompt}
-IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en español de México con tono y modismos ejecutivos realistas. Sé conciso y directo en tus respuestas telefónicas (1 a 3 oraciones como en una llamada real). NUNCA rompas el personaje ni digas que eres una IA.`
+IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos realistas. Sé conciso y natural en tus respuestas (1 a 2 oraciones máximo por turno como en una conversación real). NUNCA rompas el personaje, NO hagas coaching ni digas que eres una IA.`
             }
           ]
         }
@@ -233,7 +235,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
             role: 'user',
             parts: [
               {
-                text: `[El teléfono acaba de sonar y has descolgado. Contesta la llamada en voz alta de inmediato diciendo exactamente tu saludo inicial: "${greeting}"]`
+                text: `[La interacción acaba de comenzar. Di en voz alta de inmediato únicamente tu saludo inicial: "${greeting}"]`
               }
             ]
           }
@@ -253,6 +255,39 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
    * Public method to send a user utterance (voice transcript or typed test message)
    * into the active Gemini Live session with turnComplete: true.
    */
+  public setMuted(muted: boolean): void {
+    this.isMuted = muted;
+    if (muted) {
+      if (this.silenceTimer) {
+        clearTimeout(this.silenceTimer);
+        this.silenceTimer = null;
+      }
+      this.pendingInterimText = '';
+      if (this.config.onInterimSpeech) this.config.onInterimSpeech('');
+      if (this.config.onUserSpeaking) this.config.onUserSpeaking(false, 0);
+    }
+    if (this.config.onMicStatus) {
+      this.config.onMicStatus(muted ? 'idle' : 'listening', muted ? 'Micrófono en pausa' : undefined);
+    }
+  }
+
+  public isUserMuted(): boolean {
+    return this.isMuted;
+  }
+
+  public suppressAiOutput(suppress: boolean): void {
+    this.isAiSuppressed = suppress;
+    if (suppress) {
+      this.stopAiAudioPlayback();
+      this.currentAiTextBuffer = '';
+      if (this.config.onAiSpeaking) this.config.onAiSpeaking(false);
+    }
+  }
+
+  public stopAiPlayback(): void {
+    this.stopAiAudioPlayback();
+  }
+
   public sendUserTurn(text: string): void {
     if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
       console.warn('[Gemini Live] Cannot send user turn, WebSocket is not open.');
@@ -626,6 +661,9 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
       // 3. Model Turn: Audio output & text transcripts
       const modelTurn = json.serverContent?.modelTurn;
       if (modelTurn?.parts) {
+        if (this.isAiSuppressed) {
+          return;
+        }
         for (const part of modelTurn.parts) {
           // A. Audio Chunk
           if (part.inlineData && part.inlineData.mimeType?.includes('audio/pcm')) {
@@ -671,7 +709,7 @@ IMPORTANTE: Estás en una llamada telefónica real en México. Habla siempre en 
   }
 
   private playPcmAudioChunk(base64Pcm: string): void {
-    if (!this.audioCtx) return;
+    if (this.isAiSuppressed || !this.audioCtx) return;
 
     try {
       if (this.audioCtx.state === 'suspended') {

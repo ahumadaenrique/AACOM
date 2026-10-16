@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
 import bcrypt from "bcryptjs";
+import { grantTipsCreditsPackage } from "@/lib/tips-credits";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -384,6 +385,47 @@ export async function POST(req: Request) {
             agencyId,
             `Compra de ${Math.round(secondsToAdd / 60)} Minutos de Voz${target === 'agency' ? ' (Bolsa de Agencia)' : ''}`,
             (session.amount_total || 0) / 100,
+            session.payment_intent as string,
+            discountCodeStr
+          );
+        }
+
+        if (discountCodeStr) {
+          try {
+            await prisma.discountCode.update({
+              where: { code: discountCodeStr },
+              data: { uses: { increment: 1 } },
+            });
+          } catch (err) {
+            console.error("Error updating discount code uses:", err);
+          }
+        }
+      } else if (session.metadata?.isTipsCreditsPackage === 'true') {
+        const userId = session.metadata?.userId;
+        const creditsToAdd = parseInt(session.metadata?.creditsToAdd || '0', 10);
+        const packageId = session.metadata?.packageId || 'tips_30';
+        const discountCodeStr = session.metadata?.discountCodeStr;
+        const sellerId = session.metadata?.sellerId || null;
+        const agencyId = session.metadata?.agencyId || null;
+        const target = session.metadata?.target === 'agency' ? 'agency' : 'user';
+        const amountPaidMxn = (session.amount_total || 0) / 100;
+
+        if (userId && creditsToAdd > 0) {
+          await grantTipsCreditsPackage({
+            userId,
+            agencyId,
+            target,
+            packageId,
+            creditsToAdd,
+            amountPaidMxn,
+            stripeSessionId: session.id,
+          });
+
+          await logCommission(
+            sellerId,
+            agencyId,
+            `Compra de ${creditsToAdd} Créditos TIPS${target === 'agency' ? ' (Bolsa Promotoría)' : ''}`,
+            amountPaidMxn,
             session.payment_intent as string,
             discountCodeStr
           );
