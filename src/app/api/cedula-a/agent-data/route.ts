@@ -47,9 +47,12 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    // 2. Get study times per module
+    // 2. Get study times per module (only Cédula A modules)
     const progressRows = await prisma.estudioProgreso.findMany({
-      where: { email: emailLower },
+      where: {
+        email: emailLower,
+        NOT: { module: { startsWith: "b:" } }
+      },
       select: { module: true, tiempo_segundos: true, pregunta_actual: true }
     });
     
@@ -80,21 +83,30 @@ export async function GET(req: NextRequest) {
       }
     });
 
-    // 3. Get attempts
+    // 3. Get attempts (only Cédula A attempts)
     const attemptsRows = await prisma.examenIntento.findMany({
       where: { email: emailLower },
       orderBy: { fecha: 'asc' },
       select: { calificacion: true, aprobado: true, fecha: true, detalles_modulos: true }
     });
 
-    const attempts = attemptsRows.map(att => ({
-      date: att.fecha ? new Date(att.fecha).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-      score: Number(att.calificacion),
-      passed: att.aprobado,
-      details: att.detalles_modulos
-    }));
+    const cedulaAAttempts = attemptsRows.filter(att => {
+      const details = att.detalles_modulos as any;
+      return !details || details._cedula !== 'B';
+    });
 
-    // Calculate module scores based on last attempt details
+    const attempts = cedulaAAttempts.map(att => {
+      const rawDetails = (att.detalles_modulos as Record<string, any>) || {};
+      const { _cedula, ...cleanDetails } = rawDetails;
+      return {
+        date: att.fecha ? new Date(att.fecha).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        score: Number(att.calificacion),
+        passed: att.aprobado,
+        details: cleanDetails
+      };
+    });
+
+    // Calculate module scores based on last Cédula A attempt details
     const moduleScores: Record<string, number> = {
       "Aspectos Generales": 0,
       "Regulación CNSF": 0,
@@ -104,21 +116,17 @@ export async function GET(req: NextRequest) {
       "Sistema y Mercados Financieros": 0
     };
 
-    const latestAttemptRows = await prisma.examenIntento.findMany({
-      where: { email: emailLower },
-      orderBy: { fecha: 'desc' },
-      take: 1,
-      select: { detalles_modulos: true }
-    });
-    
-    if (latestAttemptRows.length > 0 && latestAttemptRows[0].detalles_modulos) {
-      const details = latestAttemptRows[0].detalles_modulos as Record<string, any>;
-      Object.keys(details).forEach(mod => {
-        const modData = details[mod];
-        if (modData && modData.total > 0) {
-          moduleScores[mod] = Math.round((modData.correct / modData.total) * 100);
-        }
-      });
+    if (cedulaAAttempts.length > 0) {
+      const latest = cedulaAAttempts[cedulaAAttempts.length - 1];
+      if (latest && latest.detalles_modulos) {
+        const details = latest.detalles_modulos as Record<string, any>;
+        Object.keys(details).forEach(mod => {
+          const modData = details[mod];
+          if (modData && modData.total > 0 && moduleScores[mod] !== undefined) {
+            moduleScores[mod] = Math.round((modData.correct / modData.total) * 100);
+          }
+        });
+      }
     }
 
     return NextResponse.json({

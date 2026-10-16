@@ -55,9 +55,23 @@ export async function GET(req: NextRequest) {
     const rows = await prisma.pregunta.findMany({
       orderBy: { id: 'asc' }
     });
+    if (rows.length === 0) {
+      const jsonPath = path.join(process.cwd(), 'public', 'cedula-a', 'preguntas.json')
+      if (fs.existsSync(jsonPath)) {
+        const fallbackData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'))
+        return NextResponse.json(fallbackData)
+      }
+    }
     return NextResponse.json(rows)
   } catch (err: any) {
     console.error("Error in GET preguntas:", err)
+    try {
+      const jsonPath = path.join(process.cwd(), 'public', 'cedula-a', 'preguntas.json')
+      if (fs.existsSync(jsonPath)) {
+        const fallbackData = JSON.parse(fs.readFileSync(jsonPath, 'utf8'))
+        return NextResponse.json(fallbackData)
+      }
+    } catch {}
     return NextResponse.json({ error: "Database error", details: err.message }, { status: 500 })
   }
 }
