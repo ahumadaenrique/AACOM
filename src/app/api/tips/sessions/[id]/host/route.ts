@@ -345,9 +345,16 @@ export async function PATCH(
         const cleanPhone = (p.phone || '').trim();
         const cleanEmail = (p.email || '').trim().toLowerCase();
 
+        const s1 = (p.step1General as any) || {};
+        const s4 = (p.step4Retirement as any) || {};
+        const s5 = (p.step5Dreams as any) || {};
+        const dreamsSummary =
+          Array.isArray(s5.dreams) && s5.dreams.length > 0
+            ? s5.dreams.map((d: any) => `${d.name} ($${Number(d.targetAmount || 0).toLocaleString('es-MX')} en ${d.yearsToGoal}a)`).join(', ')
+            : 'Sin sueños registrados';
         const gapsSummary = calc.detectedGaps.map((g) => g.code).join(', ') || 'Sin huecos críticos';
         const sessionTag = `[Taller TIPS #${tipsSession.code}]`;
-        const tipsSummaryNote = `${sessionTag} "${tipsSession.title}" (${new Date().toLocaleDateString('es-MX')}) | Score: ${calc.leadScore}/100 (${calc.leadTier}) | Pasos: ${effectiveCompletedStep}/8 | Número Mágico: $${calc.magicNumber.toLocaleString('es-MX')} | Patrimonio Neto: $${calc.netWorth.toLocaleString('es-MX')} | Huecos: ${gapsSummary}`;
+        const tipsSummaryNote = `${sessionTag} "${tipsSession.title}" (${new Date().toLocaleDateString('es-MX')}) | Score: ${calc.leadScore}/100 (${calc.leadTier}) | Pasos: ${effectiveCompletedStep}/8 | Nac: ${s1.birthDate || 'S/D'} (${calc.age} años) | Edo. Civil: ${s1.maritalStatus || 'S/D'} | Dependientes: ${s1.dependentsCount ?? 0} | Ingreso: $${calc.monthlyIncome.toLocaleString('es-MX')}/mes | Patrimonio Neto: $${calc.netWorth.toLocaleString('es-MX')} vs Núm. Mágico: $${calc.magicNumber.toLocaleString('es-MX')} | Retiro deseado: ${s4.desiredRetirementAge || 65} años (Régimen: ${s4.imssRegime || 'S/D'}, Afore: $${Number(s4.aforeBalance || 0).toLocaleString('es-MX')}, PPR: ${s4.hasPpr ? 'Sí' : 'No'}) | Ahorro elegido: ${calc.selectedSavingsPct}% ($${calc.selectedMonthlySavings.toLocaleString('es-MX')}/mes) | Sueños: ${dreamsSummary} | Huecos: ${gapsSummary}`;
 
         let targetClientId = p.linkedClientId;
 
