@@ -194,6 +194,26 @@ export async function PATCH(
 
     if (action === 'UNLOCK_STEP') {
       const targetStep = Math.max(0, Math.min(8, Number(body.step ?? tipsSession.unlockedStep + 1)));
+      if (targetStep >= 1) {
+        const consumedParticipants = tipsSession.participants.filter((p) => p.creditConsumed).length;
+        if (consumedParticipants === 0) {
+          const creditStatus = await getAndSyncTipsBalance(
+            tipsSession.hostId,
+            tipsSession.agencyId
+          );
+          if (creditStatus.totalAvailableForHost <= 0) {
+            return NextResponse.json(
+              {
+                error: !creditStatus.agencySharesPool
+                  ? 'No cuentas con créditos TIPS propios ni autorización para usar la bolsa de la promotoría. No es posible iniciar el taller sin créditos.'
+                  : 'No hay créditos TIPS disponibles para iniciar este taller.',
+                noCredits: true,
+              },
+              { status: 402 }
+            );
+          }
+        }
+      }
       const updated = await prisma.tipsSession.update({
         where: { id: tipsSession.id },
         data: {

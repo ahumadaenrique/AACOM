@@ -249,7 +249,7 @@ export default function TipsParticipantMobilePage() {
         }
 
         const unlocked = json.session?.unlockedStep || 0;
-        if (!p.privacyAccepted) {
+        if (!p.privacyAccepted || !p.creditConsumed) {
           setViewStep(unlocked >= 1 ? 1 : 0);
         } else {
           const nextStep = Math.min(unlocked, Math.max(1, (p.completedStep || 1) + 1));
@@ -676,8 +676,13 @@ export default function TipsParticipantMobilePage() {
               <button
                 key={s}
                 type="button"
-                disabled={!unlocked || !participant?.privacyAccepted}
-                onClick={() => unlocked && participant?.privacyAccepted && setViewStep(s)}
+                disabled={!unlocked || !participant?.privacyAccepted || !participant?.creditConsumed}
+                onClick={() =>
+                  unlocked &&
+                  participant?.privacyAccepted &&
+                  participant?.creditConsumed &&
+                  setViewStep(s)
+                }
                 className={`h-1.5 rounded-full transition-all ${
                   active
                     ? 'bg-amber-400'
@@ -768,7 +773,7 @@ export default function TipsParticipantMobilePage() {
               <strong>Paso 1</strong>, tu teléfono avanzará automáticamente.
             </p>
           </div>
-        ) : viewStep === 1 || !participant?.privacyAccepted ? (
+        ) : viewStep === 1 || !participant?.privacyAccepted || !participant?.creditConsumed ? (
           /* PASO 1: CONSENTIMIENTO LFPDPPP + DATOS GENERALES */
           <form
             onSubmit={handleSaveStep1AndConsent}

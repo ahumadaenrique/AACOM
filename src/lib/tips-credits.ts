@@ -46,7 +46,11 @@ export const TIPS_PACKAGES: Record<string, TipsPackageDef> = {
 /**
  * Sincroniza el saldo de créditos vigentes (no expirados a 90 días) del Usuario y su Promotoría
  */
-export async function getAndSyncTipsBalance(userId: string, agencyId?: string | null) {
+export async function getAndSyncTipsBalance(
+  userId: string,
+  agencyId?: string | null,
+  overrideRole?: string | null
+) {
   const now = new Date();
 
   // 1. Compras vigentes individuales del agente
@@ -72,7 +76,7 @@ export async function getAndSyncTipsBalance(userId: string, agencyId?: string | 
     where: { userId, agencyId: null },
   });
 
-  let effectiveUserBalance = dbUser?.tipsCreditsBalance || 0;
+  let effectiveUserBalance = Math.max(0, dbUser?.tipsCreditsBalance || 0);
   if (totalUserPurchasesEver > 0 && effectiveUserBalance !== validUserPurchaseCredits) {
     effectiveUserBalance = validUserPurchaseCredits;
     await prisma.user.update({
@@ -113,8 +117,7 @@ export async function getAndSyncTipsBalance(userId: string, agencyId?: string | 
       },
     });
 
-    agencyGlobalShareEnabled = Boolean(dbAgency?.tipsShareAgencyCredits);
-    effectiveAgencyBalance = dbAgency?.tipsCreditsBalance || 0;
+    effectiveAgencyBalance = Math.max(0, dbAgency?.tipsCreditsBalance || 0);
 
     if (
       typeof dbAgency?.tipsAllowedAgentIds === 'string' &&
@@ -133,16 +136,22 @@ export async function getAndSyncTipsBalance(userId: string, agencyId?: string | 
       }
     }
 
-    const isManager = dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN';
+    // Regla estricta: Por default es "No compartir" (false).
+    // Solo se comparte si tipsShareAgencyCredits === true Y existe una configuración explícita de agentes autorizados.
+    agencyGlobalShareEnabled =
+      Boolean(dbAgency?.tipsShareAgencyCredits) && allowedAgentIds !== null;
+
+    const effectiveRole = overrideRole || dbUser?.role || 'AGENTE';
+    const isManager = effectiveRole === 'ADMIN' || effectiveRole === 'SUPER_ADMIN';
     if (isManager) {
       // El Promotor / Admin titular siempre puede usar la bolsa de su promotoría cuando él imparte un taller
       agencySharesPool = true;
     } else if (!agencyGlobalShareEnabled) {
       agencySharesPool = false;
-    } else if (allowedAgentIds !== null) {
+    } else if (Array.isArray(allowedAgentIds)) {
       agencySharesPool = allowedAgentIds.includes(userId);
     } else {
-      agencySharesPool = true;
+      agencySharesPool = false;
     }
 
     if (totalAgencyPurchasesEver > 0 && effectiveAgencyBalance !== validAgencyPurchaseCredits) {
@@ -158,6 +167,7 @@ export async function getAndSyncTipsBalance(userId: string, agencyId?: string | 
     effectiveUserBalance + (agencySharesPool ? effectiveAgencyBalance : 0);
 
   return {
+    effectiveAgencyId,
     userBalance: effectiveUserBalance,
     agencyBalance: effectiveAgencyBalance,
     agencySharesPool,
@@ -184,6 +194,7 @@ export async function consumeOneTipsCredit(params: {
 }> {
   const { hostId, agencyId } = params;
   const status = await getAndSyncTipsBalance(hostId, agencyId);
+  const targetAgencyId = agencyId || status.effectiveAgencyId;
 
   if (status.totalAvailableForHost <= 0) {
     return {
@@ -197,15 +208,16 @@ export async function consumeOneTipsCredit(params: {
   // 1. Intentar descontar de la bolsa individual del Agente Host
   if (status.userBalance > 0) {
     const earliestBatch = status.userPurchases[0];
+    const nextUserBalance = Math.max(0, status.userBalance - 1);
     if (earliestBatch) {
       await prisma.tipsCreditPurchase.update({
         where: { id: earliestBatch.id },
-        data: { creditsRemaining: { decrement: 1 } },
+        data: { creditsRemaining: Math.max(0, earliestBatch.creditsRemaining - 1) },
       });
     }
     await prisma.user.update({
       where: { id: hostId },
-      data: { tipsCreditsBalance: { decrement: 1 } },
+      data: { tipsCreditsBalance: nextUserBalance },
     });
 
     return {
@@ -216,17 +228,18 @@ export async function consumeOneTipsCredit(params: {
   }
 
   // 2. Intentar descontar de la bolsa compartida de la Promotoría (solo si el agente está autorizado)
-  if (agencyId && status.agencySharesPool && status.agencyBalance > 0) {
+  if (targetAgencyId && status.agencySharesPool && status.agencyBalance > 0) {
     const earliestAgencyBatch = status.agencyPurchases[0];
+    const nextAgencyBalance = Math.max(0, status.agencyBalance - 1);
     if (earliestAgencyBatch) {
       await prisma.tipsCreditPurchase.update({
         where: { id: earliestAgencyBatch.id },
-        data: { creditsRemaining: { decrement: 1 } },
+        data: { creditsRemaining: Math.max(0, earliestAgencyBatch.creditsRemaining - 1) },
       });
     }
     await prisma.agency.update({
-      where: { id: agencyId },
-      data: { tipsCreditsBalance: { decrement: 1 } },
+      where: { id: targetAgencyId },
+      data: { tipsCreditsBalance: nextAgencyBalance },
     });
 
     return {

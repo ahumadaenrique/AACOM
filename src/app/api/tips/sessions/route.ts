@@ -21,6 +21,32 @@ function generateProjectorToken(): string {
   return result;
 }
 
+async function resolveEffectiveAgencyId(
+  req: Request,
+  session: any,
+  user: { role?: string | null; agencyId?: string | null },
+  explicitAgencyId?: string | null
+): Promise<string> {
+  if (user.role === 'SUPER_ADMIN' && explicitAgencyId && explicitAgencyId !== 'ALL') {
+    return explicitAgencyId;
+  }
+  const sessionAgencyId = session?.user?.agencyId;
+  if (sessionAgencyId && sessionAgencyId !== 'ALL') {
+    return sessionAgencyId;
+  }
+  if (user.role === 'SUPER_ADMIN') {
+    const headerSlug = req.headers.get('x-agency-slug');
+    if (headerSlug && headerSlug !== 'aacom') {
+      const bySlug = await prisma.agency.findUnique({
+        where: { slug: headerSlug },
+        select: { id: true },
+      });
+      if (bySlug?.id) return bySlug.id;
+    }
+  }
+  return user.agencyId || 'aacom';
+}
+
 export async function GET(req: Request) {
   try {
     const session = await auth();
@@ -40,15 +66,18 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const requestedAgencyId = searchParams.get('agencyId');
 
-    // Aislamiento estricto Multi-Tenant (Regla de Oro: jamás "ALL", default siempre user.agencyId)
-    const effectiveAgencyId =
-      user.role === 'SUPER_ADMIN' && requestedAgencyId && requestedAgencyId !== 'ALL'
-        ? requestedAgencyId
-        : user.agencyId || 'aacom';
+    // Aislamiento estricto Multi-Tenant (Regla de Oro: jamás "ALL", respeta impersonación de Super Admin)
+    const effectiveAgencyId = await resolveEffectiveAgencyId(
+      req,
+      session,
+      user,
+      requestedAgencyId
+    );
+    const effectiveRole = (session.user as any).role || user.role;
 
-    const creditStatus = await getAndSyncTipsBalance(user.id, effectiveAgencyId);
+    const creditStatus = await getAndSyncTipsBalance(user.id, effectiveAgencyId, effectiveRole);
 
-    const isManager = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+    const isManager = effectiveRole === 'ADMIN' || effectiveRole === 'SUPER_ADMIN';
     const viewScope = searchParams.get('scope'); // 'agency' | 'mine'
 
     const whereClause =
@@ -128,7 +157,7 @@ export async function GET(req: Request) {
         id: user.id,
         name: user.name,
         email: user.email,
-        role: user.role,
+        role: effectiveRole,
         agencyId: effectiveAgencyId,
       },
       agencyConfig,
@@ -175,8 +204,9 @@ export async function POST(req: Request) {
       );
     }
 
-    const effectiveAgencyId = user.agencyId || 'aacom';
-    const creditStatus = await getAndSyncTipsBalance(user.id, effectiveAgencyId);
+    const effectiveAgencyId = await resolveEffectiveAgencyId(req, session, user, body.agencyId);
+    const effectiveRole = (session.user as any).role || user.role;
+    const creditStatus = await getAndSyncTipsBalance(user.id, effectiveAgencyId, effectiveRole);
 
     if (creditStatus.totalAvailableForHost <= 0) {
       return NextResponse.json(
@@ -200,10 +230,15 @@ export async function POST(req: Request) {
 
     const projectorToken = generateProjectorToken();
 
+    const targetAgency =
+      effectiveAgencyId === user.agencyId
+        ? user.agency
+        : await prisma.agency.findUnique({ where: { id: effectiveAgencyId } });
+
     const customParams = {
-      realReturnRatePct: user.agency?.tipsRealReturnRate ?? 4.0,
-      inflationRatePct: user.agency?.tipsInflationRate ?? 4.5,
-      lifeExpectancy: user.agency?.tipsLifeExpectancy ?? 82.3,
+      realReturnRatePct: targetAgency?.tipsRealReturnRate ?? 4.0,
+      inflationRatePct: targetAgency?.tipsInflationRate ?? 4.5,
+      lifeExpectancy: targetAgency?.tipsLifeExpectancy ?? 82.3,
     };
 
     const created = await prisma.tipsSession.create({
@@ -242,12 +277,13 @@ export async function PATCH(req: Request) {
       where: { email: session.user.email },
     });
 
-    if (!user || (user.role !== 'ADMIN' && user.role !== 'SUPER_ADMIN')) {
+    const effectiveRole = (session.user as any).role || user?.role;
+    if (!user || (effectiveRole !== 'ADMIN' && effectiveRole !== 'SUPER_ADMIN' && user.role !== 'SUPER_ADMIN')) {
       return NextResponse.json({ error: 'Permisos insuficientes' }, { status: 403 });
     }
 
     const body = await req.json().catch(() => ({}));
-    const effectiveAgencyId = user.agencyId || 'aacom';
+    const effectiveAgencyId = await resolveEffectiveAgencyId(req, session, user, body.agencyId);
 
     // Si es SUPER_ADMIN y desea abonar créditos de cortesía / prueba
     if (body.action === 'GRANT_BONUS_CREDITS' && user.role === 'SUPER_ADMIN') {
@@ -261,7 +297,7 @@ export async function PATCH(req: Request) {
         creditsToAdd: credits,
         amountPaidMxn: 0,
       });
-      const updatedCredits = await getAndSyncTipsBalance(user.id, effectiveAgencyId);
+      const updatedCredits = await getAndSyncTipsBalance(user.id, effectiveAgencyId, effectiveRole);
       return NextResponse.json({ ok: true, credits: updatedCredits });
     }
 
@@ -296,5 +332,85 @@ export async function PATCH(req: Request) {
   } catch (error) {
     console.error('[TIPS_SESSIONS_PATCH_ERROR]', error);
     return NextResponse.json({ error: 'Error al actualizar configuración TIPS' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const sessionId = searchParams.get('sessionId');
+    if (!sessionId) {
+      return NextResponse.json({ error: 'ID de sesión requerido' }, { status: 400 });
+    }
+
+    const effectiveAgencyId = await resolveEffectiveAgencyId(req, session, user, searchParams.get('agencyId'));
+    const effectiveRole = (session.user as any).role || user.role;
+    const isManager =
+      effectiveRole === 'ADMIN' ||
+      effectiveRole === 'SUPER_ADMIN' ||
+      user.role === 'SUPER_ADMIN' ||
+      user.role === 'ADMIN';
+
+    const tipsSession = await prisma.tipsSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        participants: {
+          select: { id: true, creditConsumed: true },
+        },
+      },
+    });
+
+    if (!tipsSession) {
+      return NextResponse.json({ error: 'Sesión no encontrada' }, { status: 404 });
+    }
+
+    // Aislamiento Multi-Inquilino: El administrador de la promotoría solo puede borrar eventos de su propia agencia
+    const belongsToAgency =
+      user.role === 'SUPER_ADMIN' || tipsSession.agencyId === effectiveAgencyId;
+
+    if (!belongsToAgency) {
+      return NextResponse.json(
+        { error: 'No tienes permiso para borrar eventos de otra promotoría.' },
+        { status: 403 }
+      );
+    }
+
+    const consumedCount = tipsSession.participants.filter((p) => p.creditConsumed).length;
+    const isHostWithNoConsumed = tipsSession.hostId === user.id && consumedCount === 0;
+
+    if (!isManager && !isHostWithNoConsumed) {
+      return NextResponse.json(
+        {
+          error:
+            'Solo el Administrador de la Promotoría puede eliminar eventos que ya cuentan con participantes registrados.',
+        },
+        { status: 403 }
+      );
+    }
+
+    await prisma.tipsSession.delete({
+      where: { id: tipsSession.id },
+    });
+
+    return NextResponse.json({
+      ok: true,
+      message: `El evento "${tipsSession.title}" (${tipsSession.code}) fue eliminado permanentemente.`,
+    });
+  } catch (error) {
+    console.error('[TIPS_SESSIONS_DELETE_ERROR]', error);
+    return NextResponse.json({ error: 'Error al eliminar la sesión TIPS' }, { status: 500 });
   }
 }

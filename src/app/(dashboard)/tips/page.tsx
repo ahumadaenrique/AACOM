@@ -28,6 +28,8 @@ import {
   ExternalLink,
   RefreshCw,
   MessageCircle,
+  Trash2,
+  AlertTriangle,
 } from 'lucide-react';
 
 interface TipsPackage {
@@ -49,10 +51,13 @@ export default function TipsDashboardPage() {
 
   // Modales
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showNoCreditsModal, setShowNoCreditsModal] = useState(false);
   const [showBuyCreditsModal, setShowBuyCreditsModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [selectedReportSession, setSelectedReportSession] = useState<any>(null);
   const [qrModalSession, setQrModalSession] = useState<any>(null);
+  const [sessionToDelete, setSessionToDelete] = useState<any>(null);
+  const [deletingSession, setDeletingSession] = useState(false);
 
   // Form crear sesión
   const [newTitle, setNewTitle] = useState('');
@@ -107,6 +112,8 @@ export default function TipsDashboardPage() {
               const parsed = JSON.parse(rawAllowed);
               if (Array.isArray(parsed)) {
                 setAllowedAgentIds(parsed.map((id) => String(id)));
+              } else {
+                setAllowedAgentIds([]);
               }
             } catch (_) {
               setAllowedAgentIds(
@@ -116,9 +123,6 @@ export default function TipsDashboardPage() {
                   .filter(Boolean)
               );
             }
-          } else if (isSharing) {
-            // Si aún no se ha guardado una lista restringida y el switch está activo, pre-seleccionar los agentes actuales
-            setAllowedAgentIds(allAgentsList.map((u: any) => String(u.id)));
           } else {
             setAllowedAgentIds([]);
           }
@@ -150,9 +154,11 @@ export default function TipsDashboardPage() {
       if (e.key === 'Escape') {
         setShowBuyCreditsModal(false);
         setShowCreateModal(false);
+        setShowNoCreditsModal(false);
         setQrModalSession(null);
         setSelectedReportSession(null);
         setShowSettingsModal(false);
+        setSessionToDelete(null);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -163,6 +169,15 @@ export default function TipsDashboardPage() {
     navigator.clipboard.writeText(text);
     setCopiedText(label);
     setTimeout(() => setCopiedText(null), 2000);
+  };
+
+  const handleOpenCreateModal = () => {
+    const available = data?.credits?.totalAvailableForHost ?? 0;
+    if (available <= 0) {
+      setShowNoCreditsModal(true);
+      return;
+    }
+    setShowCreateModal(true);
   };
 
   const handleCreateSession = async (e: React.FormEvent) => {
@@ -181,6 +196,7 @@ export default function TipsDashboardPage() {
           expectedCapacity: cap,
           allowNicknames: newAllowNicknames,
           inactiveThresholdSec: inact * 60,
+          agencyId: data?.agencyConfig?.id || data?.user?.agencyId,
         }),
       });
       const json = await res.json();
@@ -189,12 +205,45 @@ export default function TipsDashboardPage() {
         setNewTitle('');
         router.push(`/tips/${json.session.id}/host`);
       } else {
-        alert(json.error || 'Error al crear la sesión');
+        if (res.status === 402 || json.code === 'NO_TIPS_CREDITS') {
+          setShowCreateModal(false);
+          setShowNoCreditsModal(true);
+        } else {
+          alert(json.error || 'Error al crear la sesión');
+        }
       }
     } catch (err) {
       console.error(err);
     } finally {
       setCreating(false);
+    }
+  };
+
+  const handleDeleteSession = async () => {
+    if (!sessionToDelete) return;
+    setDeletingSession(true);
+    try {
+      const res = await fetch(
+        `/api/tips/sessions?sessionId=${encodeURIComponent(sessionToDelete.id)}`,
+        {
+          method: 'DELETE',
+        }
+      );
+      const json = await res.json();
+      if (res.ok && json.success) {
+        setBannerMsg(
+          `El evento "${sessionToDelete.title}" (Código ${sessionToDelete.code}) fue eliminado permanentemente.`
+        );
+        setSessionToDelete(null);
+        fetchDashboard();
+      } else {
+        alert(json.error || 'No se pudo eliminar la sesión.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error de conexión al intentar eliminar la sesión.');
+    } finally {
+      setDeletingSession(false);
     }
   };
 
@@ -233,6 +282,7 @@ export default function TipsDashboardPage() {
           action: 'GRANT_BONUS_CREDITS',
           credits: 30,
           target,
+          agencyId: data?.agencyConfig?.id || data?.user?.agencyId,
         }),
       });
       if (res.ok) {
@@ -252,6 +302,7 @@ export default function TipsDashboardPage() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          agencyId: data?.agencyConfig?.id || data?.user?.agencyId,
           tipsShareAgencyCredits: sharePool,
           tipsAllowedAgentIds: sharePool ? allowedAgentIds : [],
           tipsRealReturnRate: Number(realRate || 4.0),
@@ -415,7 +466,7 @@ export default function TipsDashboardPage() {
                 Comprar Créditos
               </button>
               <button
-                onClick={() => setShowCreateModal(true)}
+                onClick={handleOpenCreateModal}
                 className="flex-1 bg-indigo-500 hover:bg-indigo-400 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shadow"
               >
                 <Plus className="w-4 h-4" />
@@ -511,7 +562,7 @@ export default function TipsDashboardPage() {
             </button>
           )}
           <button
-            onClick={() => setShowCreateModal(true)}
+            onClick={handleOpenCreateModal}
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm"
           >
             <Plus className="w-4 h-4" />
@@ -540,7 +591,7 @@ export default function TipsDashboardPage() {
             </p>
           </div>
           <button
-            onClick={() => setShowCreateModal(true)}
+            onClick={handleOpenCreateModal}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold shadow"
           >
             <Plus className="w-4 h-4" />
@@ -555,6 +606,9 @@ export default function TipsDashboardPage() {
             const completedCount = participants.filter((p: any) => p.completedStep >= 8).length;
             const hotCount = participants.filter((p: any) => p.leadTier === 'HOT').length;
             const warmCount = participants.filter((p: any) => p.leadTier === 'WARM').length;
+            const consumedCreditsCount = participants.filter((p: any) => p.creditConsumed).length;
+            const canDeleteSession =
+              isManager || (sess.hostId === data?.user?.id && consumedCreditsCount === 0);
 
             const statusColors: Record<string, string> = {
               LOBBY: 'bg-amber-100 text-amber-800 border-amber-200',
@@ -612,13 +666,24 @@ export default function TipsDashboardPage() {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => setQrModalSession(sess)}
-                      className="p-2.5 rounded-xl bg-slate-50 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200 transition"
-                      title="Ver QR y enlaces de acceso"
-                    >
-                      <QrCode className="w-5 h-5" />
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => setQrModalSession(sess)}
+                        className="p-2.5 rounded-xl bg-slate-50 hover:bg-indigo-50 text-slate-700 hover:text-indigo-600 border border-slate-200 transition"
+                        title="Ver QR y enlaces de acceso"
+                      >
+                        <QrCode className="w-5 h-5" />
+                      </button>
+                      {canDeleteSession && (
+                        <button
+                          onClick={() => setSessionToDelete(sess)}
+                          className="p-2.5 rounded-xl bg-rose-50/70 hover:bg-rose-100 text-rose-600 hover:text-rose-700 border border-rose-200 transition"
+                          title="Eliminar evento / sala TIPS"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      )}
+                    </div>
                   </div>
 
                   {/* Métricas del taller */}
@@ -1538,6 +1603,138 @@ export default function TipsDashboardPage() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* MODAL 6: BLOQUEO POR FALTA DE CRÉDITOS TIPS */}
+      {showNoCreditsModal && (
+        <div
+          onClick={() => setShowNoCreditsModal(false)}
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5 text-center"
+          >
+            <div className="w-14 h-14 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto border border-amber-200">
+              <Coins className="w-7 h-7" />
+            </div>
+            <div className="space-y-2">
+              <span className="inline-block text-[11px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700">
+                Saldo Insuficiente (0 Créditos)
+              </span>
+              <h3 className="text-xl font-extrabold text-slate-900">
+                No puedes crear una sala sin créditos TIPS
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                {!isManager && credits.agencySharesPool === false
+                  ? 'Tu promotoría tiene desactivado el uso compartido de su bolsa de créditos para tu cuenta y tu saldo personal actual es de 0 créditos.'
+                  : 'Actualmente no cuentas con créditos TIPS disponibles en tu bolsa personal ni en la bolsa de tu promotoría.'}
+              </p>
+              <p className="text-xs text-slate-500 bg-slate-50 rounded-xl p-3 border border-slate-200">
+                💡 Si solo deseas explorar o practicar cómo funciona el taller en el celular sin gastar créditos, utiliza el botón{' '}
+                <strong className="text-emerald-700">Modo Demo / Práctica (Gratis)</strong>.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowNoCreditsModal(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Cerrar
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowNoCreditsModal(false);
+                  setShowBuyCreditsModal(true);
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-extrabold flex items-center justify-center gap-1.5 shadow"
+              >
+                <Coins className="w-4 h-4" />
+                Adquirir Créditos
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 7: CONFIRMACIÓN Y ALERTA PARA ELIMINAR UN EVENTO TIPS */}
+      {sessionToDelete && (
+        <div
+          onClick={() => !deletingSession && setSessionToDelete(null)}
+          className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl space-y-5"
+          >
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0 border border-rose-200">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-rose-600">
+                  Acción Irreversible
+                </span>
+                <h3 className="text-lg font-extrabold text-slate-900">
+                  ¿Eliminar este evento TIPS?
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Sala <strong className="text-slate-800">{sessionToDelete.title}</strong> · Código{' '}
+                  <span className="font-mono font-bold text-indigo-700">{sessionToDelete.code}</span>
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 space-y-2 text-xs text-rose-900">
+              <p className="font-bold flex items-center gap-1.5">
+                ⚠️ Aviso importante antes de borrar:
+              </p>
+              <ul className="list-disc pl-4 space-y-1 text-rose-800">
+                <li>
+                  Se cerrará y eliminará de forma permanente el código QR y la sala{' '}
+                  <strong>{sessionToDelete.code}</strong>.
+                </li>
+                <li>
+                  Se borrarán los registros de los{' '}
+                  <strong>{(sessionToDelete.participants || []).length} asistente(s)</strong>{' '}
+                  conectados a esta sala (los prospectos que ya hayan sido exportados a Cartera se
+                  conservan en Clientes).
+                </li>
+                {(sessionToDelete.participants || []).filter((p: any) => p.creditConsumed).length >
+                  0 && (
+                  <li className="font-semibold">
+                    Esta sesión ya consumió{' '}
+                    {(sessionToDelete.participants || []).filter((p: any) => p.creditConsumed).length}{' '}
+                    crédito(s) TIPS. Los créditos ya utilizados no son reembolsables al borrar el
+                    evento.
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                disabled={deletingSession}
+                onClick={() => setSessionToDelete(null)}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={deletingSession}
+                onClick={handleDeleteSession}
+                className="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 disabled:opacity-50 text-white text-xs font-extrabold flex items-center gap-1.5 shadow-sm"
+              >
+                <Trash2 className="w-4 h-4" />
+                {deletingSession ? 'Eliminando...' : 'Sí, Eliminar Evento'}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { consumeOneTipsCredit } from '@/lib/tips-credits';
+import { consumeOneTipsCredit, getAndSyncTipsBalance } from '@/lib/tips-credits';
 import { evaluateTipsDiagnostic } from '@/lib/tips-calculator';
 
 export const dynamic = 'force-dynamic';
@@ -197,6 +197,23 @@ export async function POST(
       const existing = await prisma.tipsParticipant.findUnique({
         where: { deviceToken: cleanToken },
       });
+
+      if (!existing || existing.sessionId !== tipsSession.id || !existing.creditConsumed) {
+        const creditStatus = await getAndSyncTipsBalance(
+          tipsSession.hostId,
+          tipsSession.agencyId
+        );
+        if (creditStatus.totalAvailableForHost <= 0) {
+          return NextResponse.json(
+            {
+              error:
+                'El organizador de esta sesión no cuenta con créditos TIPS activos ni autorización de su promotoría para recibir participantes.',
+              noCredits: true,
+            },
+            { status: 402 }
+          );
+        }
+      }
 
       if (existing && existing.sessionId === tipsSession.id) {
         if (existing.status === 'KICKED') {
