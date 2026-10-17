@@ -95,6 +95,7 @@ export async function GET(req: Request) {
             allowTipsModule: true,
             tipsCreditsBalance: true,
             tipsShareAgencyCredits: true,
+            tipsAllowedAgentIds: true,
             tipsPrivacyNotice: true,
             tipsRealReturnRate: true,
             tipsInflationRate: true,
@@ -102,6 +103,25 @@ export async function GET(req: Request) {
           },
         })
       : null;
+
+    // Lista de agentes activos de la promotoría (aislamiento estricto por agencyId) para el selector de créditos compartidos
+    const agencyAgents =
+      isManager && effectiveAgencyId
+        ? await prisma.user.findMany({
+            where: {
+              agencyId: effectiveAgencyId,
+              active: true,
+            },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              role: true,
+              tipsCreditsBalance: true,
+            },
+            orderBy: { name: 'asc' },
+          })
+        : [];
 
     return NextResponse.json({
       user: {
@@ -112,6 +132,7 @@ export async function GET(req: Request) {
         agencyId: effectiveAgencyId,
       },
       agencyConfig,
+      agencyAgents,
       credits: creditStatus,
       packages: Object.values(TIPS_PACKAGES),
       sessions,
@@ -154,6 +175,21 @@ export async function POST(req: Request) {
       );
     }
 
+    const effectiveAgencyId = user.agencyId || 'aacom';
+    const creditStatus = await getAndSyncTipsBalance(user.id, effectiveAgencyId);
+
+    if (creditStatus.totalAvailableForHost <= 0) {
+      return NextResponse.json(
+        {
+          error: !creditStatus.agencySharesPool
+            ? 'No cuentas con créditos TIPS propios ni autorización para usar la bolsa de la promotoría. Adquiere tu paquete de créditos individuales o pide autorización a tu promotor. (Si solo deseas explorar o practicar sin costo, usa el botón "Modo Demo / Práctica").'
+            : 'No hay créditos TIPS disponibles en tu cuenta ni en la bolsa de la promotoría. Recarga créditos para abrir una sesión en vivo o utiliza el "Modo Demo / Práctica" sin costo.',
+          noCredits: true,
+        },
+        { status: 402 }
+      );
+    }
+
     // Generar código único de 6 caracteres
     let code = generateSessionCode();
     for (let attempt = 0; attempt < 5; attempt++) {
@@ -163,7 +199,6 @@ export async function POST(req: Request) {
     }
 
     const projectorToken = generateProjectorToken();
-    const effectiveAgencyId = user.agencyId || 'aacom';
 
     const customParams = {
       realReturnRatePct: user.agency?.tipsRealReturnRate ?? 4.0,
@@ -236,6 +271,11 @@ export async function PATCH(req: Request) {
       data: {
         ...(typeof body.tipsShareAgencyCredits === 'boolean'
           ? { tipsShareAgencyCredits: body.tipsShareAgencyCredits }
+          : {}),
+        ...(Array.isArray(body.tipsAllowedAgentIds)
+          ? { tipsAllowedAgentIds: JSON.stringify(body.tipsAllowedAgentIds) }
+          : body.tipsAllowedAgentIds === null
+          ? { tipsAllowedAgentIds: null }
           : {}),
         ...(typeof body.tipsRealReturnRate === 'number'
           ? { tipsRealReturnRate: body.tipsRealReturnRate }

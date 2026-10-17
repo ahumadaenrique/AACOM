@@ -64,7 +64,7 @@ export async function getAndSyncTipsBalance(userId: string, agencyId?: string | 
 
   const dbUser = await prisma.user.findUnique({
     where: { id: userId },
-    select: { tipsCreditsBalance: true, agencyId: true },
+    select: { tipsCreditsBalance: true, agencyId: true, role: true },
   });
 
   // Si hubo compras con vencimiento, el saldo real es la suma de lotes vigentes (o saldo manual si no hay lotes)
@@ -84,6 +84,8 @@ export async function getAndSyncTipsBalance(userId: string, agencyId?: string | 
   // 2. Compras vigentes de la Promotoría (Agency)
   const effectiveAgencyId = agencyId || dbUser?.agencyId || null;
   let effectiveAgencyBalance = 0;
+  let agencyGlobalShareEnabled = true;
+  let allowedAgentIds: string[] | null = null;
   let agencySharesPool = true;
   let agencyPurchases: typeof userPurchases = [];
 
@@ -104,11 +106,44 @@ export async function getAndSyncTipsBalance(userId: string, agencyId?: string | 
 
     const dbAgency = await prisma.agency.findUnique({
       where: { id: effectiveAgencyId },
-      select: { tipsCreditsBalance: true, tipsShareAgencyCredits: true },
+      select: {
+        tipsCreditsBalance: true,
+        tipsShareAgencyCredits: true,
+        tipsAllowedAgentIds: true,
+      },
     });
 
-    agencySharesPool = dbAgency?.tipsShareAgencyCredits !== false;
+    agencyGlobalShareEnabled = dbAgency?.tipsShareAgencyCredits !== false;
     effectiveAgencyBalance = dbAgency?.tipsCreditsBalance || 0;
+
+    if (
+      typeof dbAgency?.tipsAllowedAgentIds === 'string' &&
+      dbAgency.tipsAllowedAgentIds.trim() !== ''
+    ) {
+      try {
+        const parsed = JSON.parse(dbAgency.tipsAllowedAgentIds);
+        if (Array.isArray(parsed)) {
+          allowedAgentIds = parsed.map((id) => String(id));
+        }
+      } catch (_) {
+        allowedAgentIds = dbAgency.tipsAllowedAgentIds
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+    }
+
+    const isManager = dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN';
+    if (isManager) {
+      // El Promotor / Admin titular siempre puede usar la bolsa de su promotoría cuando él imparte un taller
+      agencySharesPool = true;
+    } else if (!agencyGlobalShareEnabled) {
+      agencySharesPool = false;
+    } else if (allowedAgentIds !== null) {
+      agencySharesPool = allowedAgentIds.includes(userId);
+    } else {
+      agencySharesPool = true;
+    }
 
     if (totalAgencyPurchasesEver > 0 && effectiveAgencyBalance !== validAgencyPurchaseCredits) {
       effectiveAgencyBalance = validAgencyPurchaseCredits;
@@ -126,6 +161,8 @@ export async function getAndSyncTipsBalance(userId: string, agencyId?: string | 
     userBalance: effectiveUserBalance,
     agencyBalance: effectiveAgencyBalance,
     agencySharesPool,
+    agencyGlobalShareEnabled,
+    allowedAgentIds,
     totalAvailableForHost,
     userPurchases,
     agencyPurchases,
@@ -134,7 +171,7 @@ export async function getAndSyncTipsBalance(userId: string, agencyId?: string | 
 
 /**
  * Descuenta 1 crédito FIFO (primero el lote próximo a vencer < 90 días).
- * Prioridad: 1) Bolsa individual del Agente Host -> 2) Bolsa compartida de la Promotoría
+ * Prioridad: 1) Bolsa individual del Agente Host -> 2) Bolsa compartida de la Promotoría (solo si está autorizado)
  */
 export async function consumeOneTipsCredit(params: {
   hostId: string;
@@ -152,7 +189,8 @@ export async function consumeOneTipsCredit(params: {
     return {
       success: false,
       remainingTotal: 0,
-      error: 'Sin créditos TIPS disponibles. Solicita o adquiere un paquete para continuar.',
+      error:
+        'Sin créditos TIPS disponibles. Solicita autorización a tu promotoría o adquiere tu propio paquete de créditos.',
     };
   }
 
@@ -177,7 +215,7 @@ export async function consumeOneTipsCredit(params: {
     };
   }
 
-  // 2. Intentar descontar de la bolsa compartida de la Promotoría
+  // 2. Intentar descontar de la bolsa compartida de la Promotoría (solo si el agente está autorizado)
   if (agencyId && status.agencySharesPool && status.agencyBalance > 0) {
     const earliestAgencyBatch = status.agencyPurchases[0];
     if (earliestAgencyBatch) {
@@ -201,7 +239,7 @@ export async function consumeOneTipsCredit(params: {
   return {
     success: false,
     remainingTotal: 0,
-    error: 'No hay créditos vigentes disponibles para esta sesión.',
+    error: 'No hay créditos vigentes o autorizados disponibles para esta sesión.',
   };
 }
 

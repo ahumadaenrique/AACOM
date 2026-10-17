@@ -1732,21 +1732,44 @@ export default function TipsParticipantMobilePage() {
                           min={1}
                           max={40}
                           placeholder="Ej. 5"
-                          value={drm.yearsToGoal || ''}
+                          value={drm.yearsToGoal === 0 ? '' : drm.yearsToGoal}
                           onChange={(e) => {
                             const next = [...dreams];
-                            next[idx] = { ...drm, yearsToGoal: Number(e.target.value) };
+                            next[idx] = {
+                              ...drm,
+                              yearsToGoal: e.target.value === '' ? 0 : Number(e.target.value),
+                            };
                             setDreams(next);
                           }}
                           className="w-full rounded-xl border border-slate-300 px-2.5 py-1.5 text-xs font-bold"
                         />
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {[3, 5, 10, 15].map((yrOpt) => (
+                            <button
+                              key={yrOpt}
+                              type="button"
+                              onClick={() => {
+                                const next = [...dreams];
+                                next[idx] = { ...drm, yearsToGoal: yrOpt };
+                                setDreams(next);
+                              }}
+                              className={`px-1.5 py-0.5 rounded text-[9px] font-bold border transition ${
+                                Number(drm.yearsToGoal) === yrOpt
+                                  ? 'bg-indigo-600 text-white border-indigo-600'
+                                  : 'bg-white text-slate-600 border-slate-200 hover:bg-indigo-50'
+                              }`}
+                            >
+                              {yrOpt}a
+                            </button>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
                     {/* QA T7: Mostrar ahorro mensual requerido directamente en el Paso 5 */}
                     <div className="flex items-center justify-between pt-2 border-t border-slate-200/80 text-xs">
                       <span className="text-slate-600 font-medium">
-                        Ahorro mensual requerido ({drm.yearsToGoal} años):
+                        Ahorro mensual requerido ({drm.yearsToGoal || 5} años):
                       </span>
                       <strong className="text-indigo-700 font-black">
                         ${(evalDrm?.monthlyPmtRequired || 0).toLocaleString('es-MX')} / mes
@@ -1777,7 +1800,14 @@ export default function TipsParticipantMobilePage() {
             <button
               type="button"
               disabled={saving}
-              onClick={() => handleSaveStep(5, { dreams })}
+              onClick={() =>
+                handleSaveStep(5, {
+                  dreams: dreams.map((d) => ({
+                    ...d,
+                    yearsToGoal: Math.max(1, Number(d.yearsToGoal) || 5),
+                  })),
+                })
+              }
               className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-extrabold text-sm shadow-lg"
             >
               {saving ? 'Guardando Paso 5...' : 'Guardar Mis Sueños →'}

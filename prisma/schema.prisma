@@ -72,6 +72,7 @@ model Agency {
   allowTipsModule              Boolean              @default(true)
   tipsCreditsBalance           Int                  @default(0)
   tipsShareAgencyCredits       Boolean              @default(true)
+  tipsAllowedAgentIds          String?
   tipsPrivacyNotice            String?
   tipsRealReturnRate           Float                @default(4.0)
   tipsInflationRate            Float                @default(4.5)

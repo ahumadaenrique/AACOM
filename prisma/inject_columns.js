@@ -358,6 +358,7 @@ async function injectColumns() {
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "allowTipsModule" BOOLEAN NOT NULL DEFAULT true;`,
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "tipsCreditsBalance" INTEGER NOT NULL DEFAULT 0;`,
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "tipsShareAgencyCredits" BOOLEAN NOT NULL DEFAULT true;`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "tipsAllowedAgentIds" TEXT;`,
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "tipsPrivacyNotice" TEXT;`,
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "tipsRealReturnRate" DOUBLE PRECISION NOT NULL DEFAULT 4.0;`,
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "tipsInflationRate" DOUBLE PRECISION NOT NULL DEFAULT 4.5;`,

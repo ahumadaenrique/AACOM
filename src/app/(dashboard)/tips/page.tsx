@@ -57,9 +57,9 @@ export default function TipsDashboardPage() {
   // Form crear sesión
   const [newTitle, setNewTitle] = useState('');
   const [newLocation, setNewLocation] = useState('Salón Presencial');
-  const [newCapacity, setNewCapacity] = useState(50);
+  const [newCapacity, setNewCapacity] = useState<number | ''>(50);
   const [newAllowNicknames, setNewAllowNicknames] = useState(true);
-  const [newInactiveMin, setNewInactiveMin] = useState(3);
+  const [newInactiveMin, setNewInactiveMin] = useState<number | ''>(3);
   const [creating, setCreating] = useState(false);
 
   // Form comprar créditos
@@ -69,11 +69,13 @@ export default function TipsDashboardPage() {
   const [buying, setBuying] = useState(false);
   const [buyError, setBuyError] = useState('');
 
-  // Form ajustes promotoría
-  const [realRate, setRealRate] = useState(4.0);
-  const [inflationRate, setInflationRate] = useState(4.5);
-  const [lifeExpectancy, setLifeExpectancy] = useState(82.3);
+  // Form ajustes promotoría y permisos de créditos por agente
+  const [realRate, setRealRate] = useState<number | ''>(4.0);
+  const [inflationRate, setInflationRate] = useState<number | ''>(4.5);
+  const [lifeExpectancy, setLifeExpectancy] = useState<number | ''>(82.3);
   const [sharePool, setSharePool] = useState(true);
+  const [allowedAgentIds, setAllowedAgentIds] = useState<string[]>([]);
+  const [agentSearch, setAgentSearch] = useState('');
   const [privacyNotice, setPrivacyNotice] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -91,8 +93,35 @@ export default function TipsDashboardPage() {
           setRealRate(json.agencyConfig.tipsRealReturnRate ?? 4.0);
           setInflationRate(json.agencyConfig.tipsInflationRate ?? 4.5);
           setLifeExpectancy(json.agencyConfig.tipsLifeExpectancy ?? 82.3);
-          setSharePool(json.agencyConfig.tipsShareAgencyCredits !== false);
+          const isSharing = json.agencyConfig.tipsShareAgencyCredits !== false;
+          setSharePool(isSharing);
           setPrivacyNotice(json.agencyConfig.tipsPrivacyNotice || '');
+
+          const rawAllowed = json.agencyConfig.tipsAllowedAgentIds;
+          const allAgentsList: any[] = (json.agencyAgents || []).filter(
+            (u: any) => u.role !== 'ADMIN' && u.role !== 'SUPER_ADMIN'
+          );
+
+          if (typeof rawAllowed === 'string' && rawAllowed.trim() !== '') {
+            try {
+              const parsed = JSON.parse(rawAllowed);
+              if (Array.isArray(parsed)) {
+                setAllowedAgentIds(parsed.map((id) => String(id)));
+              }
+            } catch (_) {
+              setAllowedAgentIds(
+                rawAllowed
+                  .split(',')
+                  .map((s: string) => s.trim())
+                  .filter(Boolean)
+              );
+            }
+          } else if (isSharing) {
+            // Si aún no se ha guardado una lista restringida y el switch está activo, pre-seleccionar los agentes actuales
+            setAllowedAgentIds(allAgentsList.map((u: any) => String(u.id)));
+          } else {
+            setAllowedAgentIds([]);
+          }
         }
       }
     } catch (err) {
@@ -141,15 +170,17 @@ export default function TipsDashboardPage() {
     if (!newTitle.trim()) return;
     setCreating(true);
     try {
+      const cap = Number(newCapacity) || 50;
+      const inact = Number(newInactiveMin) || 3;
       const res = await fetch('/api/tips/sessions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: newTitle.trim(),
           location: newLocation.trim() || 'Presencial',
-          expectedCapacity: newCapacity,
+          expectedCapacity: cap,
           allowNicknames: newAllowNicknames,
-          inactiveThresholdSec: newInactiveMin * 60,
+          inactiveThresholdSec: inact * 60,
         }),
       });
       const json = await res.json();
@@ -222,15 +253,20 @@ export default function TipsDashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tipsShareAgencyCredits: sharePool,
-          tipsRealReturnRate: Number(realRate),
-          tipsInflationRate: Number(inflationRate),
-          tipsLifeExpectancy: Number(lifeExpectancy),
+          tipsAllowedAgentIds: sharePool ? allowedAgentIds : [],
+          tipsRealReturnRate: Number(realRate || 4.0),
+          tipsInflationRate: Number(inflationRate || 4.5),
+          tipsLifeExpectancy: Number(lifeExpectancy || 82.3),
           tipsPrivacyNotice: privacyNotice,
         }),
       });
       if (res.ok) {
         setShowSettingsModal(false);
-        setBannerMsg('Parámetros de la promotoría actualizados correctamente.');
+        setBannerMsg(
+          sharePool
+            ? `Configuración guardada: Bolsa compartida habilitada para ${allowedAgentIds.length} agente(s) autorizado(s).`
+            : 'Configuración guardada: Bolsa de Promotoría bloqueada para agentes (cada agente paga sus propios créditos).'
+        );
         fetchDashboard();
       }
     } catch (err) {
@@ -347,7 +383,26 @@ export default function TipsDashboardPage() {
               </div>
               <div>
                 <span className="text-indigo-300 block text-[11px]">Bolsa Promotoría:</span>
-                <strong className="font-bold">{credits.agencyBalance} cr</strong>
+                <strong className="font-bold">
+                  {credits.agencySharesPool === false && !isManager
+                    ? '0 cr (Pago propio)'
+                    : `${credits.agencyBalance} cr`}
+                </strong>
+                {isManager ? (
+                  <span className="text-[10px] text-amber-200 block mt-0.5">
+                    {sharePool
+                      ? `✓ Compartida (${allowedAgentIds.length} agentes)`
+                      : '🔒 No compartida con agentes'}
+                  </span>
+                ) : credits.agencySharesPool === false ? (
+                  <span className="text-[10px] text-amber-300 block mt-0.5">
+                    🔒 Requiere tus propios créditos
+                  </span>
+                ) : (
+                  <span className="text-[10px] text-emerald-300 block mt-0.5">
+                    ✓ Autorizada por tu promotoría
+                  </span>
+                )}
               </div>
             </div>
 
@@ -367,6 +422,17 @@ export default function TipsDashboardPage() {
                 Nueva Sesión
               </button>
             </div>
+
+            {isManager && (
+              <button
+                type="button"
+                onClick={() => setShowSettingsModal(true)}
+                className="w-full py-1.5 px-3 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 text-[11px] font-bold text-indigo-100 flex items-center justify-center gap-1.5 transition"
+              >
+                <Settings className="w-3.5 h-3.5 text-amber-300" />
+                Configurar quién puede usar créditos de Promotoría
+              </button>
+            )}
 
             {isSuperAdmin && (
               <div className="pt-1 flex items-center gap-2">
@@ -419,7 +485,15 @@ export default function TipsDashboardPage() {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/tips/sala/DEMO"
+            target="_blank"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
+            Modo Demo / Práctica (Gratis)
+          </Link>
           <button
             onClick={fetchDashboard}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold"
@@ -430,10 +504,10 @@ export default function TipsDashboardPage() {
           {isManager && (
             <button
               onClick={() => setShowSettingsModal(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-indigo-200 bg-indigo-50/70 hover:bg-indigo-100 text-indigo-900 text-xs font-bold"
             >
-              <Settings className="w-3.5 h-3.5" />
-              Parámetros y Aviso LFPDPPP
+              <Settings className="w-3.5 h-3.5 text-indigo-600" />
+              Permisos de Créditos y Parámetros
             </button>
           )}
           <button
@@ -844,8 +918,11 @@ export default function TipsDashboardPage() {
                     type="number"
                     min={5}
                     max={100}
+                    placeholder="50"
                     value={newCapacity}
-                    onChange={(e) => setNewCapacity(Number(e.target.value))}
+                    onChange={(e) =>
+                      setNewCapacity(e.target.value === '' ? '' : Number(e.target.value))
+                    }
                     className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm"
                   />
                 </div>
@@ -860,8 +937,11 @@ export default function TipsDashboardPage() {
                     type="number"
                     min={1}
                     max={15}
+                    placeholder="3"
                     value={newInactiveMin}
-                    onChange={(e) => setNewInactiveMin(Number(e.target.value))}
+                    onChange={(e) =>
+                      setNewInactiveMin(e.target.value === '' ? '' : Number(e.target.value))
+                    }
                     className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm"
                   />
                 </div>
@@ -876,6 +956,27 @@ export default function TipsDashboardPage() {
                     Permitir Apodo en Proyector
                   </label>
                 </div>
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-950 space-y-1.5">
+                <div className="font-bold flex items-center gap-1.5">
+                  <Coins className="w-4 h-4 text-amber-600 shrink-0" />
+                  Aviso sobre consumo de créditos en sesiones reales
+                </div>
+                <p className="text-[11px] text-amber-900 leading-relaxed">
+                  Las sesiones en vivo descuentan <strong>1 crédito</strong> cuando un participante
+                  firma el Paso 1. Si solo quieres{' '}
+                  <strong>explorar, picarle o practicar cómo funciona la app</strong> sin gastar
+                  créditos, utiliza el{' '}
+                  <Link
+                    href="/tips/sala/DEMO"
+                    target="_blank"
+                    className="font-extrabold text-indigo-700 underline"
+                  >
+                    Modo Demo / Práctica (100% Gratis)
+                  </Link>
+                  .
+                </p>
               </div>
             </div>
 
@@ -1140,7 +1241,7 @@ export default function TipsDashboardPage() {
         </div>
       )}
 
-      {/* MODAL 5: PARÁMETROS DE LA PROMOTORÍA Y AVISO DE PRIVACIDAD LFPDPPP */}
+      {/* MODAL 5: PARÁMETROS DE LA PROMOTORÍA, PERMISOS DE CRÉDITOS POR AGENTE Y AVISO LFPDPPP */}
       {showSettingsModal && (
         <div
           onClick={() => setShowSettingsModal(false)}
@@ -1149,12 +1250,17 @@ export default function TipsDashboardPage() {
           <form
             onClick={(e) => e.stopPropagation()}
             onSubmit={handleSaveSettings}
-            className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto"
+            className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl space-y-5 max-h-[92vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between">
-              <h3 className="text-xl font-extrabold text-slate-900">
-                Configuración TIPS de la Promotoría
-              </h3>
+              <div>
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-600">
+                  Control Financiero y de Créditos
+                </span>
+                <h3 className="text-xl font-extrabold text-slate-900">
+                  Configuración TIPS de la Promotoría
+                </h3>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowSettingsModal(false)}
@@ -1164,6 +1270,196 @@ export default function TipsDashboardPage() {
               </button>
             </div>
 
+            {/* BLOQUE 1: SWITCH Y CHECKBOXES DE BOLSA DE CRÉDITOS POR AGENTE */}
+            <div className="rounded-2xl border-2 border-indigo-100 bg-indigo-50/40 p-4 space-y-4">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="text-sm font-black text-slate-900 flex items-center gap-2">
+                    <Coins className="w-4 h-4 text-indigo-600 shrink-0" />
+                    ¿Compartir los créditos de la Promotoría con tus agentes?
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    Decide si tus agentes pueden utilizar los créditos de la Bolsa de Promotoría o
+                    si cada agente debe pagar sus propios créditos. Si activas compartir, puedes
+                    elegir con un checkbox exactamente <strong>a qué agentes sí autorizas</strong>{' '}
+                    para evitar consumos no autorizados o por error.
+                  </p>
+                </div>
+
+                {/* Switch Toggle */}
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={sharePool}
+                  onClick={() => setSharePool(!sharePool)}
+                  className={`relative inline-flex h-7 w-14 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    sharePool ? 'bg-indigo-600' : 'bg-slate-300'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-6 w-6 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      sharePool ? 'translate-x-7' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
+
+              {/* Estado del Switch */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSharePool(false)}
+                  className={`text-left p-3 rounded-xl border text-xs transition ${
+                    !sharePool
+                      ? 'bg-slate-900 text-white border-slate-900 font-bold shadow-sm'
+                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="font-extrabold">🔒 No compartir créditos</div>
+                  <div className={`text-[11px] mt-0.5 ${!sharePool ? 'text-slate-300' : 'text-slate-500'}`}>
+                    Cada agente paga sus propios créditos. Solo el Promotor/Admin usa la bolsa de la promotoría.
+                  </div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSharePool(true)}
+                  className={`text-left p-3 rounded-xl border text-xs transition ${
+                    sharePool
+                      ? 'bg-indigo-600 text-white border-indigo-600 font-bold shadow-sm'
+                      : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
+                  }`}
+                >
+                  <div className="font-extrabold">✅ Compartir con agentes autorizados</div>
+                  <div className={`text-[11px] mt-0.5 ${sharePool ? 'text-indigo-100' : 'text-slate-500'}`}>
+                    Elige en la lista inferior qué agentes específicos tienen permiso de usar la bolsa.
+                  </div>
+                </button>
+              </div>
+
+              {/* Lista de Agentes con Checkboxes cuando sharePool === true */}
+              {sharePool && (() => {
+                const allAgencyUsers: any[] = data?.agencyAgents || [];
+                const agentOnlyList = allAgencyUsers.filter(
+                  (u) => u.role !== 'ADMIN' && u.role !== 'SUPER_ADMIN'
+                );
+                const filteredAgents = agentOnlyList.filter((u) => {
+                  if (!agentSearch.trim()) return true;
+                  const q = agentSearch.toLowerCase();
+                  return (
+                    String(u.name || '').toLowerCase().includes(q) ||
+                    String(u.email || '').toLowerCase().includes(q)
+                  );
+                });
+
+                return (
+                  <div className="bg-white rounded-2xl border border-indigo-200 p-3.5 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <span className="text-xs font-extrabold text-slate-900 block">
+                          Selecciona los agentes autorizados ({allowedAgentIds.length} de{' '}
+                          {agentOnlyList.length})
+                        </span>
+                        <span className="text-[11px] text-slate-500">
+                          Solo los agentes con palomita [✓] podrán consumir créditos de la promotoría.
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setAllowedAgentIds(agentOnlyList.map((u) => String(u.id)))
+                          }
+                          className="px-2.5 py-1 rounded-lg bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-[11px] border border-indigo-200"
+                        >
+                          ✓ Marcar todos
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setAllowedAgentIds([])}
+                          className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] border border-slate-200"
+                        >
+                          ✕ Desmarcar todos
+                        </button>
+                      </div>
+                    </div>
+
+                    {agentOnlyList.length > 4 && (
+                      <input
+                        type="text"
+                        value={agentSearch}
+                        onChange={(e) => setAgentSearch(e.target.value)}
+                        placeholder="Buscar agente por nombre o correo..."
+                        className="w-full rounded-xl border border-slate-200 px-3 py-1.5 text-xs"
+                      />
+                    )}
+
+                    {agentOnlyList.length === 0 ? (
+                      <div className="text-xs text-slate-400 py-4 text-center">
+                        No hay agentes registrados en esta promotoría.
+                      </div>
+                    ) : (
+                      <div className="max-h-52 overflow-y-auto divide-y divide-slate-100 border border-slate-100 rounded-xl">
+                        {filteredAgents.map((ag) => {
+                          const isChecked = allowedAgentIds.includes(String(ag.id));
+                          return (
+                            <label
+                              key={ag.id}
+                              className={`flex items-center justify-between gap-3 px-3 py-2.5 cursor-pointer transition ${
+                                isChecked ? 'bg-emerald-50/40 hover:bg-emerald-50/80' : 'hover:bg-slate-50'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={(e) => {
+                                    const idStr = String(ag.id);
+                                    if (e.target.checked) {
+                                      setAllowedAgentIds((prev) =>
+                                        prev.includes(idStr) ? prev : [...prev, idStr]
+                                      );
+                                    } else {
+                                      setAllowedAgentIds((prev) =>
+                                        prev.filter((item) => item !== idStr)
+                                      );
+                                    }
+                                  }}
+                                  className="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500"
+                                />
+                                <div className="truncate">
+                                  <div className="text-xs font-bold text-slate-900 truncate">
+                                    {ag.name || 'Agente sin nombre'}
+                                  </div>
+                                  <div className="text-[11px] text-slate-500 truncate">
+                                    {ag.email}
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                <span className="text-[10px] font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                                  Propios: {ag.tipsCreditsBalance || 0} cr
+                                </span>
+                                <span
+                                  className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                                    isChecked
+                                      ? 'bg-emerald-100 text-emerald-800'
+                                      : 'bg-slate-100 text-slate-500'
+                                  }`}
+                                >
+                                  {isChecked ? '✓ Autorizado' : 'Pago propio'}
+                                </span>
+                              </div>
+                            </label>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+            </div>
+
+            {/* BLOQUE 2: PARÁMETROS FINANCIEROS */}
             <div className="grid grid-cols-3 gap-3">
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -1172,8 +1468,11 @@ export default function TipsDashboardPage() {
                 <input
                   type="number"
                   step="0.1"
+                  placeholder="4.0"
                   value={realRate}
-                  onChange={(e) => setRealRate(Number(e.target.value))}
+                  onChange={(e) =>
+                    setRealRate(e.target.value === '' ? '' : Number(e.target.value))
+                  }
                   className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                 />
               </div>
@@ -1184,8 +1483,11 @@ export default function TipsDashboardPage() {
                 <input
                   type="number"
                   step="0.1"
+                  placeholder="4.5"
                   value={inflationRate}
-                  onChange={(e) => setInflationRate(Number(e.target.value))}
+                  onChange={(e) =>
+                    setInflationRate(e.target.value === '' ? '' : Number(e.target.value))
+                  }
                   className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                 />
               </div>
@@ -1196,29 +1498,22 @@ export default function TipsDashboardPage() {
                 <input
                   type="number"
                   step="0.1"
+                  placeholder="82.3"
                   value={lifeExpectancy}
-                  onChange={(e) => setLifeExpectancy(Number(e.target.value))}
+                  onChange={(e) =>
+                    setLifeExpectancy(e.target.value === '' ? '' : Number(e.target.value))
+                  }
                   className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm"
                 />
               </div>
             </div>
-
-            <label className="flex items-center gap-2.5 text-xs font-semibold text-slate-700 p-3 rounded-xl bg-slate-50 border border-slate-200 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={sharePool}
-                onChange={(e) => setSharePool(e.target.checked)}
-                className="rounded text-indigo-600"
-              />
-              Permitir que los agentes de mi promotoría utilicen la Bolsa Compartida de Créditos TIPS cuando no tengan saldo individual
-            </label>
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1">
                 Aviso de Privacidad y Consentimiento Expreso (LFPDPPP)
               </label>
               <textarea
-                rows={5}
+                rows={4}
                 value={privacyNotice}
                 onChange={(e) => setPrivacyNotice(e.target.value)}
                 placeholder="Deja en blanco para utilizar el aviso LFPDPPP oficial que informa sobre la proyección del nombre/apodo y avance en pantalla..."
@@ -1239,7 +1534,7 @@ export default function TipsDashboardPage() {
                 disabled={savingSettings}
                 className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold"
               >
-                {savingSettings ? 'Guardando...' : 'Guardar Parámetros'}
+                {savingSettings ? 'Guardando...' : 'Guardar Permisos y Parámetros'}
               </button>
             </div>
           </form>
