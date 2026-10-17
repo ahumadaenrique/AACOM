@@ -101,7 +101,7 @@ export default function ClientHome({
                 </div>
                 
                 <div className="relative z-10 w-full md:w-auto shrink-0 flex justify-end">
-                    <a href="/support" className="w-full md:w-auto text-center bg-white text-teal-900 hover:bg-teal-50 hover:text-teal-950 font-bold px-6 py-3 rounded-xl shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 border border-teal-100/50">
+                    <a href="/support?tab=ticket" className="w-full md:w-auto text-center bg-white text-teal-900 hover:bg-teal-50 hover:text-teal-950 font-bold px-6 py-3 rounded-xl shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 border border-teal-100/50">
                         Cotizar Desarrollo
                     </a>
                 </div>

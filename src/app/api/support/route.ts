@@ -4,6 +4,37 @@ import { prisma } from "@/lib/prisma";
 import nodemailer from "nodemailer";
 import { put } from "@vercel/blob";
 
+export async function GET() {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!user) {
+            return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
+        }
+
+        const tickets = await prisma.ticket.findMany({
+            where: {
+                userId: user.id,
+                ...(user.agencyId ? { agencyId: user.agencyId } : {})
+            },
+            orderBy: { createdAt: "desc" },
+            take: 30
+        });
+
+        return NextResponse.json({ tickets });
+    } catch (error) {
+        console.error("Error obteniendo tickets:", error);
+        return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+    }
+}
+
 export async function POST(req: Request) {
     try {
         const session = await auth();
