@@ -6,7 +6,7 @@ import { evaluateTipsDiagnostic } from '@/lib/tips-calculator';
 export const dynamic = 'force-dynamic';
 
 const DEFAULT_PRIVACY_NOTICE = `AVISO DE PRIVACIDAD Y CONSENTIMIENTO EXPRESO (LFPDPPP):
-Al participar en este Taller Integral de Planeación y Seguridad (TIPS), autorizo expresamente que mi nombre o apodo elegido y mi porcentaje de avance por etapa se proyecten en el tablero grupal de la sesión en vivo frente a los demás participantes.
+Al participar en este Taller Integral de Planeación y Seguridad (TIPS), autorizo expresamente que mi nombre y mi porcentaje de avance por etapa se proyecten en el tablero grupal de la sesión en vivo frente a los demás participantes.
 Mis datos personales (nombre, teléfono, correo electrónico) y mis datos financieros o patrimoniales capturados durante el taller serán tratados de forma estrictamente confidencial y cifrada únicamente por el asesor titular de la sesión y su promotoría con la finalidad de elaborar mi Diagnóstico Patrimonial personalizado y brindarme asesoría sobre alternativas de protección, ahorro y retiro. En ningún momento se mostrarán montos, edades ni resultados financieros en la pantalla pública del taller.`;
 
 export async function GET(
@@ -28,7 +28,7 @@ export async function GET(
           location: 'Simulador Interactivo',
           status: 'ACTIVE',
           unlockedStep: 8,
-          allowNicknames: true,
+          allowNicknames: false,
           customParams: { realReturnRatePct: 4.0, inflationRatePct: 4.5, lifeExpectancy: 82.3 },
           hostName: 'Asesor Demo TIPS',
           hostPhone: '',
@@ -99,7 +99,7 @@ export async function GET(
         location: tipsSession.location,
         status: tipsSession.status,
         unlockedStep: tipsSession.unlockedStep,
-        allowNicknames: tipsSession.allowNicknames,
+        allowNicknames: false,
         customParams: tipsSession.customParams,
         hostName: tipsSession.host?.name || 'Tu Asesor Patrimonial',
         hostPhone: tipsSession.host?.phone || '',
@@ -140,7 +140,7 @@ export async function POST(
         title: 'Taller TIPS — Modo Demo y Capacitación (Sin Consumo de Créditos)',
         status: 'ACTIVE',
         unlockedStep: 8,
-        allowNicknames: true,
+        allowNicknames: false,
         isDemo: true,
       };
       const stepNum =
@@ -184,12 +184,12 @@ export async function POST(
       );
     }
 
-    // 1. ENTRAR AL LOBBY CON APODO / NOMBRE PÚBLICO (Sin cobrar crédito aún)
+    // 1. ENTRAR AL LOBBY CON NOMBRE DEL PARTICIPANTE (Sin cobrar crédito aún)
     if (action === 'JOIN_LOBBY') {
-      const nickname = String(body.nickname || '').trim();
-      if (!nickname) {
+      const enteredName = String(body.fullName || body.nickname || '').trim();
+      if (!enteredName) {
         return NextResponse.json(
-          { error: 'Por favor ingresa tu nombre o apodo para aparecer en el tablero.' },
+          { error: 'Por favor ingresa tu nombre para aparecer en el tablero.' },
           { status: 400 }
         );
       }
@@ -222,7 +222,8 @@ export async function POST(
         const updated = await prisma.tipsParticipant.update({
           where: { id: existing.id },
           data: {
-            nickname,
+            nickname: enteredName,
+            fullName: existing.fullName || enteredName,
             lastHeartbeatAt: new Date(),
           },
         });
@@ -234,7 +235,8 @@ export async function POST(
           sessionId: tipsSession.id,
           agencyId: tipsSession.agencyId,
           deviceToken: cleanToken,
-          nickname,
+          nickname: enteredName,
+          fullName: enteredName,
           currentStep: 0,
           completedStep: 0,
           status: 'ACTIVE',

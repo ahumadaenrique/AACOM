@@ -420,18 +420,23 @@ export default function TipsParticipantMobilePage() {
     setSaving(true);
     setErrorMsg(null);
     try {
+      const enteredName = nickname.trim();
       const res = await fetch(`/api/tips/public/${encodeURIComponent(code)}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'JOIN_LOBBY',
           deviceToken,
-          nickname: nickname.trim(),
+          nickname: enteredName,
+          fullName: enteredName,
         }),
       });
       const json = await res.json();
       if (res.ok) {
         setParticipant(json.participant);
+        if (!fullName.trim()) {
+          setFullName(enteredName);
+        }
         setInLobbyJoined(true);
         if ((json.session?.unlockedStep || session?.unlockedStep || 0) >= 1) {
           setViewStep(1);
@@ -732,23 +737,19 @@ export default function TipsParticipantMobilePage() {
 
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5">
-                {session.allowNicknames
-                  ? '¿Con qué nombre o apodo quieres aparecer en la pantalla del salón?'
-                  : 'Escribe tu nombre para aparecer en el tablero del taller:'}
+                Escribe tu nombre y apellido para aparecer en el tablero del taller:
               </label>
               <input
                 type="text"
                 required
                 value={nickname}
                 onChange={(e) => setNickname(e.target.value)}
-                placeholder={session.allowNicknames ? 'Ej. Dr. Roberto / Rober84' : 'Tu Nombre'}
+                placeholder="Ej. Roberto Gómez"
                 className="w-full rounded-2xl border border-slate-300 px-4 py-3 text-base font-bold text-slate-900 focus:border-indigo-600 focus:outline-none"
               />
-              {session.allowNicknames && (
-                <p className="text-[11px] text-slate-400 mt-1">
-                  Puedes usar un apodo para proteger tu identidad en el proyector público.
-                </p>
-              )}
+              <p className="text-[11px] text-slate-400 mt-1">
+                Tus montos y resultados financieros son 100% privados en tu celular; en la pantalla solo se muestra tu avance.
+              </p>
             </div>
 
             <button

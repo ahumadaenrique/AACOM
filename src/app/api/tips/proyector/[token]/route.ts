@@ -70,11 +70,7 @@ export async function GET(
     const thresholdMs = (tipsSession.inactiveThresholdSec || 180) * 1000;
 
     const publicParticipants = tipsSession.participants.map((p, index) => {
-      // Si el host habilitó apodos y el participante capturó apodo, jamás mostrar fullName en pantalla pública
-      const displayName =
-        tipsSession.allowNicknames && p.nickname && p.nickname.trim().length > 0
-          ? p.nickname.trim()
-          : (p.fullName || p.nickname || `Asistente #${index + 1}`).trim();
+      const displayName = (p.fullName || p.nickname || `Asistente #${index + 1}`).trim();
 
       const inactiveSeconds = Math.max(
         0,

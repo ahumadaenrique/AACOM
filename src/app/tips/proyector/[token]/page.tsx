@@ -17,7 +17,7 @@ import {
 } from 'lucide-react';
 
 const STEP_SLIDES: Record<number, string> = {
-  0: '/tips/slides/slide-0-lobby.webp',
+  0: '/tips/slides/slide-0-lobby.webp?v=2',
   1: '/tips/slides/slide-1-datos.webp',
   2: '/tips/slides/slide-2-patrimonio.webp',
   3: '/tips/slides/slide-3-numero-magico.webp',

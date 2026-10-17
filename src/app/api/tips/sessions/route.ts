@@ -252,7 +252,7 @@ export async function POST(req: Request) {
         expectedCapacity: Math.max(5, Math.min(100, Number(expectedCapacity) || 50)),
         status: 'LOBBY',
         unlockedStep: 0,
-        allowNicknames: Boolean(allowNicknames),
+        allowNicknames: false,
         showBoardOnProjector: true,
         inactiveThresholdSec: Math.max(60, Math.min(900, Number(inactiveThresholdSec) || 180)),
         customParams,

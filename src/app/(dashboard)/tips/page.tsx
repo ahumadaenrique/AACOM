@@ -63,7 +63,6 @@ export default function TipsDashboardPage() {
   const [newTitle, setNewTitle] = useState('');
   const [newLocation, setNewLocation] = useState('Salón Presencial');
   const [newCapacity, setNewCapacity] = useState<number | ''>(50);
-  const [newAllowNicknames, setNewAllowNicknames] = useState(true);
   const [newInactiveMin, setNewInactiveMin] = useState<number | ''>(3);
   const [creating, setCreating] = useState(false);
 
@@ -194,7 +193,7 @@ export default function TipsDashboardPage() {
           title: newTitle.trim(),
           location: newLocation.trim() || 'Presencial',
           expectedCapacity: cap,
-          allowNicknames: newAllowNicknames,
+          allowNicknames: false,
           inactiveThresholdSec: inact * 60,
           agencyId: data?.agencyConfig?.id || data?.user?.agencyId,
         }),
@@ -330,7 +329,6 @@ export default function TipsDashboardPage() {
   const exportSessionCsv = (sess: any) => {
     const headers = [
       'Nombre Completo',
-      'Apodo',
       'Celular',
       'Correo',
       'Consentimiento LFPDPPP',
@@ -340,8 +338,7 @@ export default function TipsDashboardPage() {
       'Cliente Vinculado en Cartera',
     ];
     const rows = (sess.participants || []).map((p: any) => [
-      `"${(p.fullName || '').replace(/"/g, '""')}"`,
-      `"${(p.nickname || '').replace(/"/g, '""')}"`,
+      `"${(p.fullName || p.nickname || '').replace(/"/g, '""')}"`,
       `"${p.phone || ''}"`,
       `"${p.email || ''}"`,
       p.privacyAccepted ? 'SI' : 'NO',
@@ -993,34 +990,21 @@ export default function TipsDashboardPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">
-                    Alerta de Inactividad (min)
-                  </label>
-                  <input
-                    type="number"
-                    min={1}
-                    max={15}
-                    placeholder="3"
-                    value={newInactiveMin}
-                    onChange={(e) =>
-                      setNewInactiveMin(e.target.value === '' ? '' : Number(e.target.value))
-                    }
-                    className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm"
-                  />
-                </div>
-                <div className="flex flex-col justify-end">
-                  <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer p-2.5 rounded-xl border border-slate-200 bg-slate-50">
-                    <input
-                      type="checkbox"
-                      checked={newAllowNicknames}
-                      onChange={(e) => setNewAllowNicknames(e.target.checked)}
-                      className="rounded text-indigo-600"
-                    />
-                    Permitir Apodo en Proyector
-                  </label>
-                </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Alerta de Inactividad para Rezagados (minutos)
+                </label>
+                <input
+                  type="number"
+                  min={1}
+                  max={15}
+                  placeholder="3"
+                  value={newInactiveMin}
+                  onChange={(e) =>
+                    setNewInactiveMin(e.target.value === '' ? '' : Number(e.target.value))
+                  }
+                  className="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm"
+                />
               </div>
 
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3.5 text-xs text-amber-950 space-y-1.5">
@@ -1258,11 +1242,8 @@ export default function TipsDashboardPage() {
                       <tr key={p.id} className="hover:bg-slate-50">
                         <td className="py-3 px-4">
                           <div className="font-bold text-slate-900">
-                            {p.fullName || p.nickname || 'Anónimo'}
+                            {p.fullName || p.nickname || 'Participante'}
                           </div>
-                          {p.nickname && p.fullName && (
-                            <div className="text-[11px] text-slate-400">Apodo: {p.nickname}</div>
-                          )}
                         </td>
                         <td className="py-3 px-4 text-slate-600">
                           <div>{p.phone || '—'}</div>
@@ -1581,7 +1562,7 @@ export default function TipsDashboardPage() {
                 rows={4}
                 value={privacyNotice}
                 onChange={(e) => setPrivacyNotice(e.target.value)}
-                placeholder="Deja en blanco para utilizar el aviso LFPDPPP oficial que informa sobre la proyección del nombre/apodo y avance en pantalla..."
+                placeholder="Deja en blanco para utilizar el aviso LFPDPPP oficial que informa sobre la proyección del nombre y avance en pantalla..."
                 className="w-full rounded-xl border border-slate-300 p-3 text-xs leading-relaxed"
               />
             </div>

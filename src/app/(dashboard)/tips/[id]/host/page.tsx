@@ -65,7 +65,7 @@ const DREAM_CATEGORY_LABELS: Record<string, string> = {
 };
 
 const STEP_SLIDES: Record<number, string> = {
-  0: '/tips/slides/slide-0-lobby.webp',
+  0: '/tips/slides/slide-0-lobby.webp?v=2',
   1: '/tips/slides/slide-1-datos.webp',
   2: '/tips/slides/slide-2-patrimonio.webp',
   3: '/tips/slides/slide-3-numero-magico.webp',
@@ -81,7 +81,7 @@ const LOBBY_DEFINITION = {
   title: '0. Bienvenida y Lobby',
   desc: 'Reglas del juego, confidencialidad y escaneo QR',
   speakerScript:
-    '🎙️ Guion: "Nadie planea fracasar financieramente; la gente fracasa por no planear. En los próximos 45 minutos vas a descubrir en tu propio celular dónde estás parado hoy, cuánto deberías tener acumulado a tu edad y qué ajustes necesitas hacer para blindar a tu familia y tu retiro. Escanea el código QR y pon un apodo que solo tú reconozcas."',
+    '🎙️ Guion: "Nadie planea fracasar financieramente; la gente fracasa por no planear. En los próximos 45 minutos vas a descubrir en tu propio celular dónde estás parado hoy, cuánto deberías tener acumulado a tu edad y qué ajustes necesitas hacer para blindar a tu familia y tu retiro. Escanea el código QR y registra tu nombre para acompañarte paso a paso."',
 };
 
 const STEP_DEFINITIONS = [
@@ -312,7 +312,6 @@ export default function TipsHostConsolePage() {
       `--------------------------------------------------`,
       `1. DATOS PERSONALES Y FAMILIARES`,
       `• Nombre Completo: ${p.fullName || s1.fullName || p.nickname || 'S/D'}`,
-      `• Apodo en Sala: ${p.nickname || '—'}`,
       `• Fecha de Nacimiento: ${s1.birthDate || 'No capturada'} (${calc.age || '—'} años)`,
       `• Estado Civil: ${MARITAL_LABELS[s1.maritalStatus] || s1.maritalStatus || 'No capturado'}`,
       `• Dependientes Económicos: ${s1.dependentsCount ?? 0}`,
@@ -464,7 +463,6 @@ export default function TipsHostConsolePage() {
     <div style="text-align:right; font-size:11px;">
       <div><strong>Tel / WhatsApp:</strong> ${p.phone || 'S/N'}</div>
       <div><strong>Email:</strong> ${p.email || 'S/N'}</div>
-      <div><strong>Apodo en Sala:</strong> ${p.nickname || '—'}</div>
       <div><strong>LFPDPPP:</strong> ${p.privacyAccepted ? '✓ Aceptado' : 'Pendiente'}</div>
     </div>
   </div>
@@ -1257,7 +1255,7 @@ export default function TipsHostConsolePage() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Buscar por nombre, apodo o WhatsApp..."
+            placeholder="Buscar por nombre o WhatsApp..."
             className="w-full md:w-64 rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs focus:outline-none focus:border-indigo-500"
           />
         </div>
@@ -1266,7 +1264,7 @@ export default function TipsHostConsolePage() {
           <table className="w-full text-left border-collapse text-xs">
             <thead>
               <tr className="bg-slate-100 text-slate-600 border-b border-slate-200">
-                <th className="py-3 px-4 font-bold">Asistente (Real / Apodo)</th>
+                <th className="py-3 px-4 font-bold">Asistente</th>
                 <th className="py-3 px-4 font-bold">Contacto</th>
                 <th className="py-3 px-4 font-bold">Paso Actual</th>
                 <th className="py-3 px-4 font-bold">Patrimonio vs Número Mágico</th>
@@ -1308,7 +1306,6 @@ export default function TipsHostConsolePage() {
                           )}
                         </div>
                         <div className="text-[11px] text-slate-400">
-                          Apodo proyector: {p.nickname || '—'} ·{' '}
                           {p.privacyAccepted ? '✓ LFPDPPP Aceptado' : 'En Lobby'}
                         </div>
                       </td>
@@ -1472,8 +1469,7 @@ export default function TipsHostConsolePage() {
                     {activeParticipant.fullName || s1.fullName || activeParticipant.nickname}
                   </h3>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    Apodo en Sala: <strong>{activeParticipant.nickname || '—'}</strong> · Tel:{' '}
-                    <strong>{activeParticipant.phone || 'S/N'}</strong> · Email:{' '}
+                    Tel: <strong>{activeParticipant.phone || 'S/N'}</strong> · Email:{' '}
                     <strong>{activeParticipant.email || 'S/N'}</strong>
                   </p>
                 </div>
