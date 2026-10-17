@@ -435,7 +435,7 @@ export async function getAgencyUsers(agencyId: string) {
 
   const users = await prisma.user.findMany({
     where: { agencyId, active: true },
-    select: { id: true, name: true, email: true, role: true },
+    select: { id: true, name: true, email: true, role: true, tipsCreditsBalance: true },
     orderBy: { name: 'asc' }
   });
 
@@ -500,6 +500,57 @@ export async function giftAcademiaMinutes(agencyId: string, minutes: number, use
     revalidatePath("/agencias");
     revalidatePath("/academia");
     return { success: true, message: `Se añadieron ${minutes} minutos de cortesía a la bolsa de ${agency.name}.` };
+  }
+}
+
+export async function giftTipsCredits(agencyId: string, credits: number, userEmail?: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+  if (!credits || credits <= 0) throw new Error("La cantidad de créditos TIPS debe ser mayor a 0");
+
+  const { grantTipsCreditsPackage } = await import("@/lib/tips-credits");
+
+  if (userEmail && userEmail.trim()) {
+    const targetUser = await prisma.user.findUnique({ where: { email: userEmail.trim() } });
+    if (!targetUser) throw new Error("Usuario destino no encontrado");
+
+    await grantTipsCreditsPackage({
+      userId: targetUser.id,
+      agencyId: null,
+      target: "user",
+      packageId: "tips_gift_superadmin",
+      creditsToAdd: credits,
+      amountPaidMxn: 0,
+    });
+
+    revalidatePath("/agencias");
+    revalidatePath("/tips");
+    return {
+      success: true,
+      message: `Se otorgaron ${credits} créditos TIPS (vigencia 90 días) a ${targetUser.name || targetUser.email}.`,
+    };
+  } else {
+    const agency = await prisma.agency.findUnique({ where: { id: agencyId } });
+    if (!agency) throw new Error("Agencia no encontrada");
+
+    await grantTipsCreditsPackage({
+      userId: user.id,
+      agencyId: agency.id,
+      target: "agency",
+      packageId: "tips_gift_superadmin",
+      creditsToAdd: credits,
+      amountPaidMxn: 0,
+    });
+
+    revalidatePath("/agencias");
+    revalidatePath("/tips");
+    return {
+      success: true,
+      message: `Se añadieron ${credits} créditos TIPS (vigencia 90 días) a la bolsa de la promotoría ${agency.name}.`,
+    };
   }
 }
 

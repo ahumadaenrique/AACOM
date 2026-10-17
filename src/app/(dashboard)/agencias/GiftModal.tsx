@@ -6,8 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { addAgencySaaSDays, addAcademiaDaysToPromoter, addAcademiaDaysToUser, giftAcademiaMinutes, resetAgencyStudyDays } from "./actions";
-import { Gift, BookOpen, Monitor, Users, PhoneCall, Sparkles, RefreshCw } from "lucide-react";
+import { addAgencySaaSDays, addAcademiaDaysToPromoter, addAcademiaDaysToUser, giftAcademiaMinutes, giftTipsCredits, resetAgencyStudyDays } from "./actions";
+import { Gift, BookOpen, Monitor, Users, Sparkles, RefreshCw, Coins } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type GiftModalProps = {
@@ -21,23 +21,29 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
   const [loading, setLoading] = useState(false);
   
   // Form states
-  const [saasDays, setSaasDays] = useState<number>(30);
-  const [academiaAgencyDays, setAcademiaAgencyDays] = useState<number>(10);
-  const [academiaUserDays, setAcademiaUserDays] = useState<number>(10);
+  const [saasDays, setSaasDays] = useState<number | "">(30);
+  const [academiaAgencyDays, setAcademiaAgencyDays] = useState<number | "">(10);
+  const [academiaUserDays, setAcademiaUserDays] = useState<number | "">(10);
   const [selectedUserEmail, setSelectedUserEmail] = useState<string>("");
 
   // AI Voice Minutes states
-  const [aiAgencyMinutes, setAiAgencyMinutes] = useState<number>(30);
-  const [aiUserMinutes, setAiUserMinutes] = useState<number>(15);
+  const [aiAgencyMinutes, setAiAgencyMinutes] = useState<number | "">(30);
+  const [aiUserMinutes, setAiUserMinutes] = useState<number | "">(15);
   const [selectedAiUserEmail, setSelectedAiUserEmail] = useState<string>("");
+
+  // TIPS Credits states
+  const [tipsAgencyCredits, setTipsAgencyCredits] = useState<number | "">(30);
+  const [tipsUserCredits, setTipsUserCredits] = useState<number | "">(30);
+  const [selectedTipsUserEmail, setSelectedTipsUserEmail] = useState<string>("");
 
   if (!agency) return null;
 
   const handleGiftSaaS = async () => {
-    if (saasDays <= 0) return alert("Ingresa una cantidad válida de días.");
+    const val = Number(saasDays);
+    if (!val || val <= 0) return alert("Ingresa una cantidad válida de días.");
     setLoading(true);
     try {
-      const res = await addAgencySaaSDays(agency.id, saasDays);
+      const res = await addAgencySaaSDays(agency.id, val);
       if (res.success) {
         alert(res.message);
         onClose();
@@ -64,10 +70,11 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
   };
 
   const handleGiftAcademiaToPromoter = async () => {
-    if (academiaAgencyDays <= 0) return alert("Ingresa una cantidad válida de días.");
+    const val = Number(academiaAgencyDays);
+    if (!val || val <= 0) return alert("Ingresa una cantidad válida de días.");
     setLoading(true);
     try {
-      const res = await addAcademiaDaysToPromoter(agency.id, academiaAgencyDays);
+      const res = await addAcademiaDaysToPromoter(agency.id, val);
       if (res.success) {
         alert(res.message);
         onClose();
@@ -79,11 +86,12 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
   };
 
   const handleGiftAcademiaToUser = async () => {
-    if (academiaUserDays <= 0) return alert("Ingresa una cantidad válida de días.");
+    const val = Number(academiaUserDays);
+    if (!val || val <= 0) return alert("Ingresa una cantidad válida de días.");
     if (!selectedUserEmail) return alert("Selecciona un usuario.");
     setLoading(true);
     try {
-      const res = await addAcademiaDaysToUser(selectedUserEmail, agency.id, academiaUserDays);
+      const res = await addAcademiaDaysToUser(selectedUserEmail, agency.id, val);
       if (res.success) {
         alert(res.message);
         onClose();
@@ -95,10 +103,11 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
   };
 
   const handleGiftAiToAgency = async () => {
-    if (aiAgencyMinutes <= 0) return alert("Ingresa una cantidad válida de minutos.");
+    const val = Number(aiAgencyMinutes);
+    if (!val || val <= 0) return alert("Ingresa una cantidad válida de minutos.");
     setLoading(true);
     try {
-      const res = await giftAcademiaMinutes(agency.id, aiAgencyMinutes);
+      const res = await giftAcademiaMinutes(agency.id, val);
       if (res.success) {
         alert(res.message);
         onClose();
@@ -110,11 +119,45 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
   };
 
   const handleGiftAiToUser = async () => {
-    if (aiUserMinutes <= 0) return alert("Ingresa una cantidad válida de minutos.");
+    const val = Number(aiUserMinutes);
+    if (!val || val <= 0) return alert("Ingresa una cantidad válida de minutos.");
     if (!selectedAiUserEmail) return alert("Selecciona un usuario.");
     setLoading(true);
     try {
-      const res = await giftAcademiaMinutes(agency.id, aiUserMinutes, selectedAiUserEmail);
+      const res = await giftAcademiaMinutes(agency.id, val, selectedAiUserEmail);
+      if (res.success) {
+        alert(res.message);
+        onClose();
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    }
+    setLoading(false);
+  };
+
+  const handleGiftTipsToAgency = async () => {
+    const val = Number(tipsAgencyCredits);
+    if (!val || val <= 0) return alert("Ingresa una cantidad válida de créditos TIPS.");
+    setLoading(true);
+    try {
+      const res = await giftTipsCredits(agency.id, val);
+      if (res.success) {
+        alert(res.message);
+        onClose();
+      }
+    } catch (err: any) {
+      alert("Error: " + err.message);
+    }
+    setLoading(false);
+  };
+
+  const handleGiftTipsToUser = async () => {
+    const val = Number(tipsUserCredits);
+    if (!val || val <= 0) return alert("Ingresa una cantidad válida de créditos TIPS.");
+    if (!selectedTipsUserEmail) return alert("Selecciona un usuario.");
+    setLoading(true);
+    try {
+      const res = await giftTipsCredits(agency.id, val, selectedTipsUserEmail);
       if (res.success) {
         alert(res.message);
         onClose();
@@ -127,7 +170,7 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[500px] border-slate-200">
+      <DialogContent className="sm:max-w-[540px] border-slate-200">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Gift className="w-5 h-5 text-indigo-500" />
@@ -139,7 +182,7 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
         </DialogHeader>
 
         <Tabs defaultValue="saas" className="mt-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="saas" className="flex items-center gap-1.5 text-xs">
               <Monitor className="w-3.5 h-3.5" /> App SaaS
             </TabsTrigger>
@@ -148,6 +191,9 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
             </TabsTrigger>
             <TabsTrigger value="simulador" className="flex items-center gap-1.5 text-xs">
               <Sparkles className="w-3.5 h-3.5 text-purple-600" /> Minutos IA
+            </TabsTrigger>
+            <TabsTrigger value="tips" className="flex items-center gap-1.5 text-xs">
+              <Coins className="w-3.5 h-3.5 text-amber-500" /> TIPS
             </TabsTrigger>
           </TabsList>
 
@@ -162,7 +208,7 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
                 <Input 
                   type="number" 
                   value={saasDays} 
-                  onChange={(e) => setSaasDays(parseInt(e.target.value))}
+                  onChange={(e) => setSaasDays(e.target.value === "" ? "" : parseInt(e.target.value))}
                   min={1}
                 />
                 <Button 
@@ -191,7 +237,7 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
                 <Input 
                   type="number" 
                   value={academiaAgencyDays} 
-                  onChange={(e) => setAcademiaAgencyDays(parseInt(e.target.value))}
+                  onChange={(e) => setAcademiaAgencyDays(e.target.value === "" ? "" : parseInt(e.target.value))}
                   min={1}
                 />
                 <Button 
@@ -244,7 +290,7 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
                   <Input 
                     type="number" 
                     value={academiaUserDays} 
-                    onChange={(e) => setAcademiaUserDays(parseInt(e.target.value))}
+                    onChange={(e) => setAcademiaUserDays(e.target.value === "" ? "" : parseInt(e.target.value))}
                     min={1}
                   />
                   <Button 
@@ -273,7 +319,7 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
                 <Input 
                   type="number" 
                   value={aiAgencyMinutes} 
-                  onChange={(e) => setAiAgencyMinutes(parseInt(e.target.value) || 0)}
+                  onChange={(e) => setAiAgencyMinutes(e.target.value === "" ? "" : parseInt(e.target.value))}
                   min={1}
                 />
                 <Button 
@@ -312,7 +358,7 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
                   <Input 
                     type="number" 
                     value={aiUserMinutes} 
-                    onChange={(e) => setAiUserMinutes(parseInt(e.target.value) || 0)}
+                    onChange={(e) => setAiUserMinutes(e.target.value === "" ? "" : parseInt(e.target.value))}
                     min={1}
                   />
                   <Button 
@@ -321,6 +367,113 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
                     className="bg-indigo-600 hover:bg-indigo-700 shrink-0 text-white"
                   >
                     Asignar al Agente
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* TAB: CRÉDITOS TIPS */}
+          <TabsContent value="tips" className="space-y-4 pt-4">
+            <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200 space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="text-amber-950 font-bold flex items-center gap-1.5">
+                  <Coins className="w-4 h-4 text-amber-600" /> Bolsa TIPS de la Promotoría
+                </Label>
+                <span className="text-[11px] font-bold bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full">
+                  Saldo actual: {agency.tipsCreditsBalance || 0} cr
+                </span>
+              </div>
+              <p className="text-xs text-amber-800">
+                Créditos TIPS (vigencia 90 días) para la bolsa de la promotoría. El promotor decide con qué agentes los comparte.
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {[15, 30, 70, 150].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setTipsAgencyCredits(preset)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition ${
+                      Number(tipsAgencyCredits) === preset
+                        ? "bg-amber-600 text-white border-amber-600"
+                        : "bg-white text-amber-900 border-amber-200 hover:bg-amber-100"
+                    }`}
+                  >
+                    +{preset} cr
+                  </button>
+                ))}
+              </div>
+              <div className="flex gap-3">
+                <Input 
+                  type="number" 
+                  value={tipsAgencyCredits} 
+                  onChange={(e) => setTipsAgencyCredits(e.target.value === "" ? "" : parseInt(e.target.value))}
+                  min={1}
+                  placeholder="Ej. 30"
+                />
+                <Button 
+                  onClick={handleGiftTipsToAgency} 
+                  disabled={loading}
+                  className="bg-amber-600 hover:bg-amber-700 shrink-0 text-white"
+                >
+                  Regalar a Promotoría
+                </Button>
+              </div>
+            </div>
+
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 space-y-3">
+              <Label className="text-slate-700 font-bold">Directo a un Agente o Promotor Específico</Label>
+              <p className="text-xs text-slate-500">
+                Créditos TIPS personales (vigencia 90 días) abonados directamente a la bolsa individual del usuario seleccionado.
+              </p>
+              <div className="space-y-3">
+                <Select value={selectedTipsUserEmail} onValueChange={setSelectedTipsUserEmail}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecciona un usuario de esta agencia..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {agencyUsers.filter(u => u.role !== 'SUPER_ADMIN').map((u) => (
+                      <SelectItem key={u.id} value={u.email}>
+                        {u.name || "Sin nombre"} ({u.email}) — {u.tipsCreditsBalance || 0} cr
+                      </SelectItem>
+                    ))}
+                    {agencyUsers.length === 0 && (
+                      <SelectItem value="empty" disabled>No hay usuarios en esta agencia</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+
+                <div className="flex flex-wrap gap-1.5">
+                  {[10, 30, 70, 150].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setTipsUserCredits(preset)}
+                      className={`px-2.5 py-1 rounded-lg text-xs font-bold border transition ${
+                        Number(tipsUserCredits) === preset
+                          ? "bg-indigo-600 text-white border-indigo-600"
+                          : "bg-white text-slate-700 border-slate-200 hover:bg-indigo-50"
+                      }`}
+                    >
+                      +{preset} cr
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex gap-3">
+                  <Input 
+                    type="number" 
+                    value={tipsUserCredits} 
+                    onChange={(e) => setTipsUserCredits(e.target.value === "" ? "" : parseInt(e.target.value))}
+                    min={1}
+                    placeholder="Ej. 30"
+                  />
+                  <Button 
+                    onClick={handleGiftTipsToUser} 
+                    disabled={loading || !selectedTipsUserEmail}
+                    className="bg-indigo-600 hover:bg-indigo-700 shrink-0 text-white"
+                  >
+                    Regalar al Agente
                   </Button>
                 </div>
               </div>
