@@ -21,11 +21,11 @@ export async function generateMetadata(): Promise<Metadata> {
     const agencyName = agency?.name || "AACOMSOFT";
 
     return {
-        title: "aacomsoft · Plataforma para promotorías y agencias de seguros",
-        description: "Plataforma para promotorías de seguros: actividad con gamificación, formación y simulador Cédula A CNSF, cartera, renovaciones, producción e IA. Agenda tu demo.",
+        title: "aacomsoft · Plataforma de Gestión Integral para Promotorías de Seguros",
+        description: "Una promotoría eficiente con los roles necesarios en una única plataforma: dirección, reclutamiento, coaching y agentes. Actividad por puntos, Academia CNSF Cédula A y B, talleres TIPS, diagnóstico ADN, cartera e IA.",
         openGraph: {
-            title: "aacomsoft · Plataforma para promotorías y agencias de seguros",
-            description: "Plataforma para promotorías de seguros: actividad con gamificación, formación y simulador Cédula A CNSF, cartera, renovaciones, producción e IA. Agenda tu demo.",
+            title: "aacomsoft · Plataforma de Gestión Integral para Promotorías de Seguros",
+            description: "Una promotoría eficiente con los roles necesarios en una única plataforma: dirección, reclutamiento, coaching y agentes. Actividad por puntos, Academia CNSF Cédula A y B, talleres TIPS, diagnóstico ADN, cartera e IA.",
             url: "https://www.aacomsoft.com",
             siteName: "aacomsoft",
             locale: "es_MX",
@@ -33,8 +33,8 @@ export async function generateMetadata(): Promise<Metadata> {
         },
         twitter: {
             card: "summary_large_image",
-            title: "aacomsoft · Plataforma para promotorías y agencias de seguros",
-            description: "Plataforma para promotorías de seguros: actividad con gamificación, formación y simulador Cédula A CNSF, cartera, renovaciones, producción e IA. Agenda tu demo.",
+            title: "aacomsoft · Plataforma de Gestión Integral para Promotorías de Seguros",
+            description: "Una promotoría eficiente con los roles necesarios en una única plataforma: dirección, reclutamiento, coaching y agentes. Actividad por puntos, Academia CNSF Cédula A y B, talleres TIPS, diagnóstico ADN, cartera e IA.",
         },
         verification: {
             google: "5kX4pRTxF91CuddNpfrYcKAN-EeTtDVfRu6KvFi69RU",

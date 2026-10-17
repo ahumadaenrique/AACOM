@@ -11,7 +11,7 @@ export const SITE_CONFIG = {
   phone: '+52 (55) 1501 5502',
   phoneRaw: '+525515015502',
   whatsappNumber: '525515015502',
-  whatsappMessage: 'Hola, me interesa una demo de aacomsoft para mi promotoría.',
+  whatsappMessage: 'Hola, solicito información y agendar una sesión demostrativa de aacomsoft para promotoría.',
   get whatsappUrl() {
     return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(this.whatsappMessage)}`;
   },
@@ -35,8 +35,8 @@ export const SITE_CONFIG = {
   },
   
   // Titular Hero (A/B testing)
-  // 1: "Tu promotoría más productiva, con todo tu equipo en una sola plataforma."
-  // 2: "Recluta, forma y haz crecer a tus agentes desde una sola plataforma."
-  // 3: "Menos hojas de cálculo, más citas y más pólizas emitidas."
+  // 1: "Una promotoría eficiente con los roles necesarios en una única plataforma."
+  // 2: "Dirección, reclutamiento, coaching y fuerza de ventas en una única plataforma."
+  // 3: "Menos hojas de cálculo, mayor control de actividad y más pólizas emitidas."
   headlineVariant: (process.env.NEXT_PUBLIC_HERO_HEADLINE as '1' | '2' | '3') || '1',
 };

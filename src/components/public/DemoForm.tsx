@@ -89,32 +89,32 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
     setErrorMsg(null);
 
     if (!fullName.trim() || fullName.trim().length < 3) {
-      setErrorMsg('Ingresa tu nombre completo (mínimo 3 caracteres).');
+      setErrorMsg('Por favor ingrese el nombre completo (mínimo 3 caracteres).');
       return;
     }
     if (!agencyName.trim() || agencyName.trim().length < 2) {
-      setErrorMsg('Ingresa el nombre de tu promotoría o agencia.');
+      setErrorMsg('Por favor ingrese el nombre de la promotoría o agencia.');
       return;
     }
     if (selectedInsurers.length === 0) {
-      setErrorMsg('Selecciona al menos una aseguradora con la que trabajas.');
+      setErrorMsg('Seleccione al menos una aseguradora con la que opera la promotoría.');
       return;
     }
     if (!city.trim()) {
-      setErrorMsg('Ingresa la ciudad de tu promotoría.');
+      setErrorMsg('Por favor ingrese la ciudad sede de la promotoría.');
       return;
     }
     const cleanPhone = whatsapp.replace(/\D/g, '');
     if (cleanPhone.length < 10) {
-      setErrorMsg('Ingresa un número de WhatsApp válido (10 dígitos).');
+      setErrorMsg('Por favor ingrese un número de WhatsApp válido (10 dígitos).');
       return;
     }
     if (!email.trim() || !email.includes('@')) {
-      setErrorMsg('Ingresa un correo electrónico válido.');
+      setErrorMsg('Por favor ingrese un correo electrónico válido.');
       return;
     }
     if (!privacyAccepted) {
-      setErrorMsg('Debes aceptar el aviso de privacidad para continuar.');
+      setErrorMsg('Es necesario aceptar el aviso de privacidad para continuar.');
       return;
     }
 
@@ -151,7 +151,7 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
       setSubmitted(true);
     } catch (err: any) {
       console.error(err);
-      setErrorMsg(err.message || 'Ocurrió un error. Por favor intenta de nuevo.');
+      setErrorMsg(err.message || 'Ocurrió un error al procesar la solicitud. Por favor intente nuevamente.');
     } finally {
       setLoading(false);
     }
@@ -167,13 +167,13 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
           ¡Solicitud Recibida con Éxito!
         </h3>
         <p className="text-slate-600 max-w-md mx-auto mb-6 leading-relaxed text-sm sm:text-base">
-          Gracias, <strong>{fullName}</strong>. Te contactaremos a la brevedad en días hábiles para coordinar tu demo personalizada de 20 minutos para <strong>{agencyName}</strong>.
+          Gracias, <strong>{fullName}</strong>. El equipo ejecutivo establecerá contacto a la brevedad en días hábiles para coordinar la sesión demostrativa de 20 minutos para <strong>{agencyName}</strong>.
         </p>
 
         <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-500 mb-8 max-w-md mx-auto space-y-1">
-          <p>✓ Demo de 20 minutos con datos de ejemplo</p>
-          <p>✓ Resolvemos todas tus dudas de confidencialidad</p>
-          <p>✓ Sin compromiso ni requerimiento de tarjeta</p>
+          <p>✓ Sesión ejecutiva de 20 minutos con entorno demostrativo</p>
+          <p>✓ Revisión de arquitectura de seguridad y convenio de confidencialidad</p>
+          <p>✓ Sin compromiso comercial ni requerimiento de tarjeta</p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -183,7 +183,7 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
             rel="noopener noreferrer"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold rounded-xl shadow-lg transition-all"
           >
-            <span>¿Quieres agendar más rápido? Escríbenos por WhatsApp</span>
+            <span>Atención directa e inmediata por WhatsApp</span>
           </a>
         </div>
       </div>
@@ -245,10 +245,10 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
         </div>
       </div>
 
-      {/* Row 2: Aseguradoras con las que trabajas */}
+      {/* Row 2: Aseguradoras con las que opera */}
       <div>
         <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-          Aseguradora(s) con las que trabajas * (Selecciona las que apliquen)
+          Aseguradora(s) con las que opera la promotoría *
         </label>
         <div className="flex flex-wrap gap-2 pt-1">
           {INSURERS_OPTIONS.map((ins) => {
@@ -273,7 +273,7 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
         {selectedInsurers.includes('Otra') && (
           <input
             type="text"
-            placeholder="¿Cuál otra aseguradora?"
+            placeholder="Especifique otra aseguradora"
             value={otherInsurer}
             onChange={(e) => setOtherInsurer(e.target.value)}
             className="mt-2 w-full px-4 py-2.5 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm text-slate-900 bg-slate-50/50"
@@ -285,7 +285,7 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-            Ciudad *
+            Ciudad Sede *
           </label>
           <input
             type="text"
@@ -299,7 +299,7 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
 
         <div>
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-            Tamaño del Equipo *
+            Tamaño de la Fuerza de Ventas *
           </label>
           <select
             value={agentsCount}
@@ -319,7 +319,7 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-            WhatsApp / Celular *
+            WhatsApp / Teléfono Directo *
           </label>
           <input
             type="tel"
@@ -334,13 +334,13 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
 
         <div>
           <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-            Correo Electrónico *
+            Correo Electrónico Corporativo *
           </label>
           <input
             type="email"
             inputMode="email"
             required
-            placeholder="roberto@tupromotoria.com"
+            placeholder="direccion@promotoria.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="w-full px-4 py-3 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm text-slate-900 bg-slate-50/50"
@@ -358,11 +358,11 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
             className="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500 shrink-0"
           />
           <span>
-            Acepto el{' '}
+            He leído y acepto el{' '}
             <Link href="/privacidad" target="_blank" className="text-teal-600 underline font-semibold hover:text-teal-700">
               Aviso de privacidad
             </Link>{' '}
-            y autorizo a aacomsoft a contactarme exclusivamente para agendar la demo personalizada de 20 minutos.
+            para el contacto ejecutivo y la coordinación de la sesión demostrativa de 20 minutos.
           </span>
         </label>
       </div>
@@ -377,11 +377,11 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
           {loading ? (
             <>
               <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Enviando solicitud...</span>
+              <span>Procesando solicitud...</span>
             </>
           ) : (
             <>
-              <span>Solicitar Demo de 20 Minutos</span>
+              <span>Solicitar Sesión Demostrativa (20 min)</span>
               <ArrowRight className="w-5 h-5" />
             </>
           )}
@@ -389,7 +389,7 @@ export function DemoForm({ originPage = '/inicio' }: DemoFormProps) {
       </div>
 
       <p className="text-center text-[11px] text-slate-400">
-        🔒 Tus datos están protegidos. Nos comunicaremos contigo a la brevedad en días hábiles.
+        🔒 Información protegida bajo estándares de confidencialidad empresarial. Atención en días hábiles.
       </p>
     </form>
   );

@@ -337,7 +337,7 @@ export function HeroProductMockup() {
                 Control de Conservación
               </span>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Alertas automáticas en 30, 45 y 60 días para que tu equipo contacte a tiempo a cada asegurado y no pierda comisiones.
+                Alertas automáticas a 30, 45 y 60 días para anticipar el contacto con cada asegurado y proteger la conservación de la cartera.
               </p>
               <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-center">
                 <span className="text-[11px] text-slate-400 block">Prima Anualizada en Riesgo</span>
