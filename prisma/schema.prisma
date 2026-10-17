@@ -71,7 +71,7 @@ model Agency {
   // Configuraciones Add-on TIPS (Taller Integral de Planeación y Seguridad)
   allowTipsModule              Boolean              @default(true)
   tipsCreditsBalance           Int                  @default(0)
-  tipsShareAgencyCredits       Boolean              @default(true)
+  tipsShareAgencyCredits       Boolean              @default(false)
   tipsAllowedAgentIds          String?
   tipsPrivacyNotice            String?
   tipsRealReturnRate           Float                @default(4.0)

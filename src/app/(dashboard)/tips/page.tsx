@@ -73,7 +73,7 @@ export default function TipsDashboardPage() {
   const [realRate, setRealRate] = useState<number | ''>(4.0);
   const [inflationRate, setInflationRate] = useState<number | ''>(4.5);
   const [lifeExpectancy, setLifeExpectancy] = useState<number | ''>(82.3);
-  const [sharePool, setSharePool] = useState(true);
+  const [sharePool, setSharePool] = useState(false);
   const [allowedAgentIds, setAllowedAgentIds] = useState<string[]>([]);
   const [agentSearch, setAgentSearch] = useState('');
   const [privacyNotice, setPrivacyNotice] = useState('');
@@ -93,7 +93,7 @@ export default function TipsDashboardPage() {
           setRealRate(json.agencyConfig.tipsRealReturnRate ?? 4.0);
           setInflationRate(json.agencyConfig.tipsInflationRate ?? 4.5);
           setLifeExpectancy(json.agencyConfig.tipsLifeExpectancy ?? 82.3);
-          const isSharing = json.agencyConfig.tipsShareAgencyCredits !== false;
+          const isSharing = Boolean(json.agencyConfig.tipsShareAgencyCredits);
           setSharePool(isSharing);
           setPrivacyNotice(json.agencyConfig.tipsPrivacyNotice || '');
 

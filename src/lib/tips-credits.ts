@@ -84,9 +84,9 @@ export async function getAndSyncTipsBalance(userId: string, agencyId?: string | 
   // 2. Compras vigentes de la Promotoría (Agency)
   const effectiveAgencyId = agencyId || dbUser?.agencyId || null;
   let effectiveAgencyBalance = 0;
-  let agencyGlobalShareEnabled = true;
+  let agencyGlobalShareEnabled = false;
   let allowedAgentIds: string[] | null = null;
-  let agencySharesPool = true;
+  let agencySharesPool = false;
   let agencyPurchases: typeof userPurchases = [];
 
   if (effectiveAgencyId) {
@@ -113,7 +113,7 @@ export async function getAndSyncTipsBalance(userId: string, agencyId?: string | 
       },
     });
 
-    agencyGlobalShareEnabled = dbAgency?.tipsShareAgencyCredits !== false;
+    agencyGlobalShareEnabled = Boolean(dbAgency?.tipsShareAgencyCredits);
     effectiveAgencyBalance = dbAgency?.tipsCreditsBalance || 0;
 
     if (
