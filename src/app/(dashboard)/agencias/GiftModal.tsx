@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,10 +15,18 @@ type GiftModalProps = {
   onClose: () => void;
   agency: any;
   agencyUsers: any[];
+  initialTab?: string;
 };
 
-export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalProps) {
+export function GiftModal({ isOpen, onClose, agency, agencyUsers, initialTab = "saas" }: GiftModalProps) {
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>(initialTab);
+
+  useEffect(() => {
+    if (isOpen) {
+      setActiveTab(initialTab || "saas");
+    }
+  }, [isOpen, initialTab]);
   
   // Form states
   const [saasDays, setSaasDays] = useState<number | "">(30);
@@ -37,6 +45,10 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
   const [selectedTipsUserEmail, setSelectedTipsUserEmail] = useState<string>("");
 
   if (!agency) return null;
+
+  const cedulaDaysBalance = agency.cedulaDaysBalance ?? 0;
+  const academiaMinutesBalance = agency.academiaProMinutes ?? Math.floor((agency.voiceSecondsBalance || 0) / 60);
+  const tipsCreditsBalance = agency.tipsCreditsBalance ?? 0;
 
   const handleGiftSaaS = async () => {
     const val = Number(saasDays);
@@ -170,18 +182,72 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-[540px] border-slate-200">
+      <DialogContent className="sm:max-w-[560px] border-slate-200">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-xl">
             <Gift className="w-5 h-5 text-indigo-500" />
             Regalos y Cortesías
           </DialogTitle>
           <DialogDescription>
-            Otorgar beneficios a la agencia <strong className="text-slate-800">{agency.name}</strong>.
+            Otorgar beneficios y consultar saldos de la agencia <strong className="text-slate-800">{agency.name}</strong>.
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="saas" className="mt-4">
+        {/* Resumen Integrado de Todos los Saldos de la Agencia */}
+        <div className="grid grid-cols-3 gap-2.5 pt-1">
+          <button
+            type="button"
+            onClick={() => setActiveTab("tips")}
+            className={`flex flex-col items-start p-2.5 rounded-xl border text-left transition cursor-pointer ${
+              activeTab === "tips"
+                ? "bg-amber-50 border-amber-300 ring-1 ring-amber-300"
+                : "bg-amber-50/40 border-amber-200/80 hover:bg-amber-50"
+            }`}
+          >
+            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-amber-800">
+              <Coins className="w-3 h-3 text-amber-600" /> Créditos TIPS
+            </span>
+            <span className="text-base font-black text-amber-950 mt-0.5">
+              {tipsCreditsBalance} <span className="text-xs font-bold text-amber-700">cr</span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("academia")}
+            className={`flex flex-col items-start p-2.5 rounded-xl border text-left transition cursor-pointer ${
+              activeTab === "academia"
+                ? "bg-teal-50 border-teal-300 ring-1 ring-teal-300"
+                : "bg-teal-50/40 border-teal-200/80 hover:bg-teal-50"
+            }`}
+          >
+            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-teal-800">
+              <BookOpen className="w-3 h-3 text-teal-600" /> Días de Cédula
+            </span>
+            <span className="text-base font-black text-teal-950 mt-0.5">
+              {cedulaDaysBalance} <span className="text-xs font-bold text-teal-700">días</span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("simulador")}
+            className={`flex flex-col items-start p-2.5 rounded-xl border text-left transition cursor-pointer ${
+              activeTab === "simulador"
+                ? "bg-purple-50 border-purple-300 ring-1 ring-purple-300"
+                : "bg-purple-50/40 border-purple-200/80 hover:bg-purple-50"
+            }`}
+          >
+            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-purple-800">
+              <Sparkles className="w-3 h-3 text-purple-600" /> Academia PRO
+            </span>
+            <span className="text-base font-black text-purple-950 mt-0.5">
+              {academiaMinutesBalance} <span className="text-xs font-bold text-purple-700">min</span>
+            </span>
+          </button>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-2">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="saas" className="flex items-center gap-1.5 text-xs">
               <Monitor className="w-3.5 h-3.5" /> App SaaS
@@ -227,9 +293,14 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
             
             {/* Academia: By Agency (Promoter) */}
             <div className="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 space-y-3">
-              <Label className="text-indigo-800 font-bold flex items-center gap-2">
-                <Users className="w-4 h-4" /> Al Saldo de la Agencia
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-indigo-800 font-bold flex items-center gap-2">
+                  <Users className="w-4 h-4" /> Al Saldo de la Agencia
+                </Label>
+                <span className="text-[11px] font-bold bg-indigo-100 text-indigo-800 px-2.5 py-0.5 rounded-full">
+                  Saldo actual: {cedulaDaysBalance} días
+                </span>
+              </div>
               <p className="text-xs text-indigo-600/70">
                 Se sumarán a la "bolsa" del Administrador para que él los asigne.
               </p>
@@ -277,7 +348,7 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
                   <SelectContent>
                     {agencyUsers.filter(u => u.role !== 'SUPER_ADMIN').map((u) => (
                       <SelectItem key={u.id} value={u.email}>
-                        {u.name || "Sin nombre"} ({u.email})
+                        {u.name || "Sin nombre"} ({u.email}) — {u.cedulaDaysLeft || 0}d activos
                       </SelectItem>
                     ))}
                     {agencyUsers.length === 0 && (
@@ -309,9 +380,14 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
           {/* TAB: SIMULADOR IA */}
           <TabsContent value="simulador" className="space-y-4 pt-4">
             <div className="bg-purple-50/50 p-4 rounded-xl border border-purple-100 space-y-3">
-              <Label className="text-purple-900 font-bold flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-purple-600" /> Bolsa Común de la Agencia (Minutos)
-              </Label>
+              <div className="flex items-center justify-between">
+                <Label className="text-purple-900 font-bold flex items-center gap-1.5">
+                  <Sparkles className="w-4 h-4 text-purple-600" /> Bolsa Común de la Agencia (Minutos)
+                </Label>
+                <span className="text-[11px] font-bold bg-purple-100 text-purple-900 px-2.5 py-0.5 rounded-full">
+                  Saldo actual: {academiaMinutesBalance} min
+                </span>
+              </div>
               <p className="text-xs text-purple-700">
                 Minutos de práctica que cualquier agente de la promotoría puede consumir para entrenar en la Academia PRO.
               </p>
@@ -345,7 +421,7 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
                   <SelectContent>
                     {agencyUsers.filter(u => u.role !== 'SUPER_ADMIN').map((u) => (
                       <SelectItem key={u.id} value={u.email}>
-                        {u.name || "Sin nombre"} ({u.email})
+                        {u.name || "Sin nombre"} ({u.email}) — {u.academiaProMinutes || 0} min
                       </SelectItem>
                     ))}
                     {agencyUsers.length === 0 && (
@@ -381,7 +457,7 @@ export function GiftModal({ isOpen, onClose, agency, agencyUsers }: GiftModalPro
                   <Coins className="w-4 h-4 text-amber-600" /> Bolsa TIPS de la Promotoría
                 </Label>
                 <span className="text-[11px] font-bold bg-amber-100 text-amber-900 px-2.5 py-0.5 rounded-full">
-                  Saldo actual: {agency.tipsCreditsBalance || 0} cr
+                  Saldo actual: {tipsCreditsBalance} cr
                 </span>
               </div>
               <p className="text-xs text-amber-800">

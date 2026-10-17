@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { differenceInCalendarDays, format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ShieldAlert, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff, Bot, Sparkles } from "lucide-react";
+import { ShieldAlert, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff, Bot, Sparkles, BookOpen, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { deleteAgency, getAgencyUsers, toggleAgencyRoleplay } from "./actions";
 import { useState } from "react";
@@ -19,6 +19,7 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
   const [giftAgency, setGiftAgency] = useState<any | null>(null);
   const [giftAgencyUsers, setGiftAgencyUsers] = useState<any[]>([]);
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
+  const [giftInitialTab, setGiftInitialTab] = useState<string>("saas");
   const [loadingUsers, setLoadingUsers] = useState(false);
 
   // AI Modal States
@@ -41,9 +42,10 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
     }
   };
 
-  const handleOpenGiftModal = async (agency: any) => {
+  const handleOpenGiftModal = async (agency: any, initialTab: string = "saas") => {
     setLoadingUsers(true);
     setGiftAgency(agency);
+    setGiftInitialTab(initialTab);
     try {
       const users = await getAgencyUsers(agency.id);
       setGiftAgencyUsers(users);
@@ -71,14 +73,14 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
     <div className="mt-12 bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden">
       <div className="p-6 border-b border-slate-100 bg-slate-50/50">
         <h2 className="text-xl font-bold text-slate-800">Resumen de Clientes SaaS</h2>
-        <p className="text-sm text-slate-500 mt-1">Estado de las suscripciones, vigencia y número de usuarios por agencia.</p>
+        <p className="text-sm text-slate-500 mt-1">Estado de las suscripciones, vigencia, saldos (TIPS, Cédula, Academia PRO) y número de usuarios por agencia.</p>
       </div>
       
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-slate-50 hover:bg-slate-50">
-              <TableHead className="font-bold text-slate-600">Agencia</TableHead>
+              <TableHead className="font-bold text-slate-600">Agencia y Saldos</TableHead>
               <TableHead className="font-bold text-slate-600">Administrador</TableHead>
               <TableHead className="font-bold text-slate-600 text-center">Usuarios</TableHead>
               <TableHead className="font-bold text-slate-600">Suscripción</TableHead>
@@ -98,6 +100,10 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
               const isWarning = isActive && endDate && daysLeft <= 7 && daysLeft > 0;
               const isExpired = endDate && daysLeft < 0;
 
+              const cedulaDays = agency.cedulaDaysBalance ?? 0;
+              const academiaMinutes = agency.academiaProMinutes ?? Math.floor((agency.voiceSecondsBalance || 0) / 60);
+              const tipsCredits = agency.tipsCreditsBalance ?? 0;
+
               return (
                 <TableRow key={agency.id} className="hover:bg-slate-50/80 transition-colors">
                   <TableCell className="font-medium">
@@ -107,7 +113,7 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                       {!agency.active && <Badge variant="destructive" className="ml-2 text-[10px] px-1.5 py-0">Inactiva</Badge>}
                     </div>
                     <div className="text-xs text-slate-400 mt-0.5">{agency.slug}.aacomsoft.com</div>
-                    <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                    <div className="flex items-center gap-1.5 mt-2 flex-wrap">
                       <Badge variant="outline" className={`text-[10px] px-1.5 py-0 border gap-1 font-medium ${
                         (agency.voiceEngine || 'GEMINI_LIVE') === 'GEMINI_LIVE' 
                           ? 'border-indigo-200 text-indigo-700 bg-indigo-50/50' 
@@ -125,11 +131,51 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                           {(agency.byokActive ?? true) ? 'BYOK Activa' : 'BYOK Apagada'}
                         </Badge>
                       )}
-                      {(agency.voiceSecondsBalance > 0) && (
-                        <Badge variant="outline" className="text-[10px] px-1.5 py-0 border border-slate-200 text-slate-600 bg-slate-50 font-medium">
-                          Saldo: {Math.floor(agency.voiceSecondsBalance / 60)}m
-                        </Badge>
-                      )}
+
+                      {/* Saldo: Créditos TIPS */}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenGiftModal(agency, "tips")}
+                        title="Click para regalar o gestionar Créditos TIPS"
+                        className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-semibold transition cursor-pointer ${
+                          tipsCredits > 0
+                            ? "border-amber-300 text-amber-900 bg-amber-50 hover:bg-amber-100"
+                            : "border-slate-200 text-slate-500 bg-slate-50 hover:bg-slate-100"
+                        }`}
+                      >
+                        <Coins className="w-2.5 h-2.5 text-amber-600" />
+                        TIPS: {tipsCredits} cr
+                      </button>
+
+                      {/* Saldo: Días de Cédula */}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenGiftModal(agency, "academia")}
+                        title="Click para regalar o gestionar Días de Cédula"
+                        className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-semibold transition cursor-pointer ${
+                          cedulaDays > 0
+                            ? "border-teal-300 text-teal-800 bg-teal-50 hover:bg-teal-100"
+                            : "border-slate-200 text-slate-500 bg-slate-50 hover:bg-slate-100"
+                        }`}
+                      >
+                        <BookOpen className="w-2.5 h-2.5 text-teal-600" />
+                        Cédula: {cedulaDays}d
+                      </button>
+
+                      {/* Saldo: Minutos de Academia PRO (Simulador IA) */}
+                      <button
+                        type="button"
+                        onClick={() => handleOpenGiftModal(agency, "simulador")}
+                        title="Click para regalar o gestionar Minutos de Academia PRO (Simulador IA)"
+                        className={`inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full border font-semibold transition cursor-pointer ${
+                          academiaMinutes > 0
+                            ? "border-purple-300 text-purple-800 bg-purple-50 hover:bg-purple-100"
+                            : "border-slate-200 text-slate-500 bg-slate-50 hover:bg-slate-100"
+                        }`}
+                      >
+                        <Sparkles className="w-2.5 h-2.5 text-purple-600" />
+                        Academia PRO: {academiaMinutes}m
+                      </button>
                     </div>
                   </TableCell>
                   
@@ -254,6 +300,7 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
         onClose={() => setIsGiftModalOpen(false)}
         agency={giftAgency}
         agencyUsers={giftAgencyUsers}
+        initialTab={giftInitialTab}
       />
 
       <AgencyAiSettingsModal

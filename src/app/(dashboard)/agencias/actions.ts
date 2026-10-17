@@ -58,17 +58,45 @@ export async function getAgencies() {
     }).catch(() => {}); // Catch por si hay colisiones simultáneas
   }
 
-  return await prisma.agency.findMany({
-    include: {
-      users: {
-        where: { role: "ADMIN" },
-        take: 1,
+  const [agencies, promotorSaldos] = await Promise.all([
+    prisma.agency.findMany({
+      include: {
+        users: {
+          where: { role: "ADMIN" },
+          take: 1,
+        },
+        _count: {
+          select: { users: true, clients: true, policies: true }
+        }
       },
-      _count: {
-        select: { users: true, clients: true, policies: true }
-      }
-    },
-    orderBy: { createdAt: "desc" },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.promotorSaldo.findMany(),
+  ]);
+
+  const { getAgencyStudyDaysLimit } = await import("@/lib/cedula/studyLimits");
+  const saldoMap = new Map(
+    promotorSaldos.map((s) => [s.promotor_email.toLowerCase(), s.dias_disponibles ?? 0])
+  );
+
+  return agencies.map((agency) => {
+    const adminEmail = agency.users?.[0]?.email?.toLowerCase();
+    const agencyKey = `agency_${agency.id}`.toLowerCase();
+    let cedulaDaysBalance: number;
+    if (saldoMap.has(agencyKey)) {
+      cedulaDaysBalance = saldoMap.get(agencyKey)!;
+    } else if (adminEmail && saldoMap.has(adminEmail)) {
+      cedulaDaysBalance = saldoMap.get(adminEmail)!;
+    } else {
+      cedulaDaysBalance = agency.subscriptionStatus === "trialing" ? 0 : getAgencyStudyDaysLimit(agency);
+    }
+
+    return {
+      ...agency,
+      cedulaDaysBalance,
+      academiaProMinutes: Math.floor((agency.voiceSecondsBalance || 0) / 60),
+      tipsCreditsBalance: agency.tipsCreditsBalance || 0,
+    };
   });
 }
 
@@ -424,6 +452,7 @@ export async function addAcademiaDaysToUser(agentEmail: string, agencyId: string
     }
   });
 
+  revalidatePath("/agencias");
   return { success: true, message: `Se añadieron ${days} días de estudio a ${agentEmail}.` };
 }
 
@@ -433,13 +462,39 @@ export async function getAgencyUsers(agencyId: string) {
   const user = await prisma.user.findUnique({ where: { id: session.user.id } });
   if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
 
-  const users = await prisma.user.findMany({
-    where: { agencyId, active: true },
-    select: { id: true, name: true, email: true, role: true, tipsCreditsBalance: true },
-    orderBy: { name: 'asc' }
-  });
+  const [users, licenses] = await Promise.all([
+    prisma.user.findMany({
+      where: { agencyId, active: true },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        tipsCreditsBalance: true,
+        voiceSecondsBalance: true,
+      },
+      orderBy: { name: "asc" },
+    }),
+    prisma.estudioLicencia.findMany({
+      where: { promotor_email: `agency_${agencyId}` },
+    }),
+  ]);
 
-  return users;
+  const now = new Date();
+  const licenseMap = new Map(
+    licenses.map((l) => {
+      const exp = l.fecha_expiracion ? new Date(l.fecha_expiracion) : null;
+      const daysLeft = exp && exp > now ? Math.ceil((exp.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)) : 0;
+      return [l.agente_email.toLowerCase(), daysLeft];
+    })
+  );
+
+  return users.map((u) => ({
+    ...u,
+    cedulaDaysLeft: licenseMap.get(u.email.toLowerCase()) || 0,
+    academiaProMinutes: Math.floor((u.voiceSecondsBalance || 0) / 60),
+    tipsCreditsBalance: u.tipsCreditsBalance || 0,
+  }));
 }
 
 export async function toggleAgencyRoleplay(agencyId: string, allow: boolean) {
