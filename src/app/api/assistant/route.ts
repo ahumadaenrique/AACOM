@@ -98,30 +98,48 @@ ${portfolioContext}`;
             }
         ];
 
-        // 5. Call Gemini API endpoint with STREAMING
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:streamGenerateContent?alt=sse&key=${apiKey}`;
-        
-        const googleRes = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
+        // 5. Call Gemini API endpoint with STREAMING and resilient model fallback
+        const candidateModels = [
+            "gemini-3.8-flash",
+            "gemini-2.5-flash",
+            "gemini-2.0-flash"
+        ];
+
+        const requestPayload = JSON.stringify({
+            contents,
+            systemInstruction: {
+                parts: [{ text: systemInstruction }]
             },
-            body: JSON.stringify({
-                contents,
-                systemInstruction: {
-                    parts: [{ text: systemInstruction }]
-                },
-                generationConfig: {
-                    temperature: 0.1,
-                    topP: 0.95,
-                    maxOutputTokens: 8192
-                }
-            })
+            generationConfig: {
+                temperature: 0.1,
+                topP: 0.95,
+                maxOutputTokens: 8192
+            }
         });
 
-        if (!googleRes.ok) {
-            const err = await googleRes.text();
-            console.error("Google API Error:", err);
+        let googleRes: Response | null = null;
+        let lastErrText = "";
+
+        for (const modelName of candidateModels) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:streamGenerateContent?alt=sse&key=${apiKey}`;
+            const res = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: requestPayload
+            });
+
+            if (res.ok) {
+                googleRes = res;
+                break;
+            }
+            lastErrText = await res.text();
+            console.warn(`Google API warn (${modelName}):`, res.status, lastErrText.slice(0, 200));
+        }
+
+        if (!googleRes || !googleRes.ok) {
+            console.error("Google API Error (all models failed):", lastErrText);
             return new Response("Error del servidor de IA", { status: 500 });
         }
 
