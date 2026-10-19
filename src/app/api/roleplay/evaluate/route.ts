@@ -146,20 +146,28 @@ export async function POST(req: Request) {
       evalInstructions = `
       Módulo: Prospección Telefónica.
       El asesor DEBE:
-      1. Presentarse profesionalmente (mencionando su nombre y el de su promotoría o despacho).
-      2. Si es referido, mencionar el nombre de quien lo recomienda oportunamente.
-      3. Posicionar el valor de la asesoría (vender la cita, no la póliza).
-      4. Manejar objeciones de tiempo.
-      5. Cerrar con doble alternativa de horario (ej. "¿jueves a las 4 o viernes a las 10?").
-      ERRORES FATALES: Usar jerga técnica, rogar por tiempo, o aceptar que el prospecto "le avise después".`;
+      1. PRESENTACIÓN PROFESIONAL Y EMPRESA (FLEXIBLE CON VARIANTES Y FONÉTICA):
+         - Presentarse con su nombre y mencionar su empresa, promotoría o despacho.
+         - IMPORTANTE: Son 100% VÁLIDAS cualquiera de estas formas: "Grupo AACOM", "AACOM Seguros", "AACOM", "AACOMSoft", el nombre de su promotoría, o transcripciones fonéticas del reconocimiento de voz como "Acom", "Acomsoft", "Grupo Acom", "Acom Seguros". NUNCA penalices por cómo se transcribió el nombre de la empresa si mencionó alguna de estas variantes.
+      2. ORIGEN DEL CONTACTO:
+         - Si es referido, mencionar oportunamente el nombre de quien lo recomienda. Si es inbound, recordar que solicitó informes / dejó sus datos.
+      3. POSICIONAR EL VALOR DEL DIAGNÓSTICO PERSONALIZADO (VENDER LA CITA, JAMÁS EL PRODUCTO NI DAR NÚMEROS):
+         - Explicar que la reunión breve es para conocer sus necesidades, objetivos y diseñar un plan 100% personalizado a su medida.
+      4. MANEJO DE OBJECIONES DE NÚMEROS / TIEMPO:
+         - Si el prospecto pide precios, montos de inversión o tasas de rendimiento por teléfono, el asesor DEBE negarse con tacto consultivo explicando que todo plan es personalizado y que sería irresponsable dar números sin antes hacer un diagnóstico de sus necesidades.
+      5. CIERRE CON DOBLE ALTERNATIVA DE HORARIO:
+         - Proponer dos opciones específicas de día y hora (ej. "¿miércoles a las 10:00 am o jueves a las 5:00 pm?").
+      ERRORES FATALES (cometioErrorFatal = true y appointmentClosed = false):
+      - DAR RANGOS DE INVERSIÓN, MONTOS EN PESOS O TASAS DE RENDIMIENTO / INTERÉS POR TELÉFONO (ej. decir "nuestros planes van de $10,000 a $1 millón de pesos" o "con un interés/rendimiento aproximado del 5%"). ¡En prospección telefónica NUNCA se dan precios, rangos de inversión ni tasas de rendimiento! Si el asesor dio montos o tasas de rendimiento por teléfono, DEBES marcar cometioErrorFatal = true, appointmentClosed = false y señalarlo explícitamente en errores con la cita textual.
+      - Cotizar pólizas por teléfono, rogar por tiempo o aceptar pasivamente que el prospecto "le avise después".`;
     }
 
     const EvaluationSchema = z.object({
       score: z.number().min(0).max(100).describe('Calificación del 0 al 100 basada en la calidad del desempeño del asesor.'),
       aciertos: z.array(z.string()).describe('Lista de 1 a 3 cosas que el asesor hizo muy bien.'),
       errores: z.array(z.string()).describe('Lista de errores cometidos por el asesor. OBLIGATORIO: Debes incluir una cita textual (entre comillas) de la transcripción para demostrar exactamente en qué momento cometió el error.'),
-      cometioErrorFatal: z.boolean().describe('Verdadero si el asesor cometió un error crítico según las instrucciones del módulo.'),
-      appointmentClosed: z.boolean().describe('Verdadero SOLAMENTE si el asesor logró concretar explícitamente la agenda de la cita o el cierre mediante técnica profesional (ej. doble alternativa de horario). Debe ser FALSO si el prospecto sugirió la cita o el horario por su cuenta sin que el asesor lo propusiera, si el asesor rogó/titubeó, o si el prospecto dijo "yo te aviso".'),
+      cometioErrorFatal: z.boolean().describe('Verdadero si el asesor cometió un error crítico según las instrucciones del módulo (por ejemplo, dar rangos de inversión o tasas de rendimiento por teléfono en prospección).'),
+      appointmentClosed: z.boolean().describe('Verdadero SOLAMENTE si el asesor logró concretar explícitamente la agenda de la cita o el cierre mediante técnica profesional (ej. doble alternativa de horario) Y NO cometió un error fatal como dar rangos de inversión o tasas de rendimiento por teléfono. Debe ser FALSO si el asesor dio montos/tasas por teléfono en prospección, si el prospecto sugirió el horario por su cuenta, o si el prospecto dijo "yo te aviso".'),
       aplicoTecnicaFord: z.boolean().describe('Verdadero si el asesor exploró activamente dimensiones de la vida del prospecto: Familia, Ocupación, Recreación o Sueños/Dinero (F.O.R.D.).').default(false),
       priorizoMetas: z.boolean().describe('Verdadero si el asesor le pidió explícitamente al prospecto ordenar o priorizar cuál es su meta o preocupación #1 en la vida.').default(false),
       coachTip: z.string().describe('Un consejo breve y técnico.'),
@@ -257,6 +265,7 @@ ${badgesText}`;
 
     if (cometioErrorFatal) {
       score = Math.max(0, score - 50);
+      appointmentClosed = false;
     }
     
     if (!appointmentClosed && score > 80) {

@@ -219,7 +219,7 @@ export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }
                   <AlertTriangle className="h-4 w-4" /> REGLA DE ORO DE LA LLAMADA TELEFÓNICA
                 </div>
                 <p className="text-xs text-amber-200/90 leading-relaxed">
-                  <strong>El teléfono es exclusivamente para "vender la cita", JAMÁS para vender la póliza ni cotizar.</strong> En cuanto mencionas primas, sumas aseguradas o coberturas técnicas, el prospecto se desconecta y te pide que se lo mandes por correo.
+                  <strong>El teléfono es exclusivamente para &quot;vender la cita&quot;, JAMÁS para vender la póliza, cotizar ni dar rangos o tasas.</strong> Está estrictamente prohibido mencionar montos o rangos de inversión (ej. <em>&quot;de $10,000 a $1 millón&quot;</em>) o tasas de interés/rendimiento (ej. <em>&quot;5%&quot;</em>). Si das cifras o porcentajes por teléfono, cometerás un <strong>Error Fatal</strong> y perderás la cita.
                 </p>
               </div>
 
@@ -228,10 +228,10 @@ export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }
                 
                 <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/50 space-y-2">
                   <div className="flex items-center gap-2 text-emerald-400 font-semibold text-xs">
-                    <CheckCircle2 className="h-4 w-4" /> 1. Posicionamiento Consultivo
+                    <CheckCircle2 className="h-4 w-4" /> 1. Identificación y Posicionamiento
                   </div>
                   <p className="text-xs text-slate-300">
-                    Preséntate como asesor de tu promotoría o despacho brindando una <em>asesoría financiera personalizada</em>. No eres un vendedor de seguros, eres un estratega patrimonial.
+                    Preséntate con tu nombre y tu empresa (<strong>Grupo AACOM</strong>, <strong>AACOM Seguros</strong>, <strong>AACOMSoft</strong> o tu promotoría), menciona el origen del contacto (referido o solicitud de informes) y ofrece una <em>asesoría personalizada</em>.
                   </p>
                 </div>
 
@@ -240,7 +240,7 @@ export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }
                     <ShieldCheck className="h-4 w-4" /> 2. Diagnóstico Antes de Recetar
                   </div>
                   <p className="text-xs text-slate-300">
-                    Tu escudo contra la objeción <em>"¿De qué números estamos hablando?"</em>: <strong>"Manejamos tantas soluciones y opciones que sería irresponsable recomendarle una sin antes platicar y conocer su situación."</strong>
+                    Tu escudo contra la objeción <em>&quot;¿De qué números o tasas estamos hablando?&quot;</em>: <strong>&quot;Todos nuestros planes son 100% personalizados; sería irresponsable darle números o tasas sin antes conocer sus necesidades y objetivos en una breve reunión.&quot;</strong>
                   </p>
                 </div>
 
@@ -249,16 +249,16 @@ export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }
                     <Zap className="h-4 w-4" /> 3. Doble Alternativa de Cierre
                   </div>
                   <p className="text-xs text-slate-300">
-                    Nunca preguntes <em>"¿Cuándo podría?"</em>. Da dos opciones cerradas: <strong>"¿Le queda mejor el martes a las 11:00 am o el jueves a las 4:00 pm en su oficina?"</strong>
+                    Nunca preguntes <em>&quot;¿Cuándo podría?&quot;</em>. Da dos opciones cerradas: <strong>&quot;¿Le queda mejor el miércoles a las 10:00 am o el jueves a las 5:00 pm?&quot;</strong>
                   </p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/50 space-y-2">
                   <div className="flex items-center gap-2 text-amber-400 font-semibold text-xs">
-                    <CheckCircle2 className="h-4 w-4" /> 4. Tiempo Estipulado (30-40 min)
+                    <CheckCircle2 className="h-4 w-4" /> 4. Tiempo Estipulado (20-30 min)
                   </div>
                   <p className="text-xs text-slate-300">
-                    Garantiza que la reunión no le quitará toda la tarde. Pide <strong>30 a 40 minutos</strong>. Esto genera confianza y elimina el miedo a una reunión interminable.
+                    Garantiza que la reunión será ejecutiva y sin compromiso. Pide <strong>20 a 30 minutos</strong> para conocer sus metas y diseñarle un traje a la medida.
                   </p>
                 </div>
 
@@ -269,23 +269,26 @@ export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Respuestas Maestras a Objeciones</h3>
                 
                 <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800 space-y-1">
-                  <div className="text-xs font-bold text-red-400">Objeción: "Mándamelo por WhatsApp / Correo y yo lo checo"</div>
+                  <div className="text-xs font-bold text-red-400">Objeción: &quot;Mándamelo por WhatsApp / Correo y yo lo checo&quot;</div>
                   <div className="text-xs text-slate-300 italic">
-                    "Con gusto se lo comparto, pero justamente como manejamos un abanico tan amplio de opciones, no sabría exactamente qué enviarle sin conocer sus metas primero. Tomará solo 30 minutos platicarlo. ¿Prefiere que nos veamos el martes o el jueves?"
+                    &quot;Con gusto le compartiría información, pero como todos nuestros planes se diseñan a la medida, no existe un folleto genérico que le haga justicia a lo que usted busca. Solo nos tomará 20 minutos platicar sobre sus objetivos para armarle una propuesta exacta. ¿Le queda mejor el miércoles a las 10:00 am o el jueves a las 5:00 pm?&quot;
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800 space-y-1">
-                  <div className="text-xs font-bold text-red-400">Objeción: "Ya tengo seguros con otra compañía / con mi banco"</div>
+                  <div className="text-xs font-bold text-red-400">Objeción: &quot;Ya tengo seguros con otra compañía / con mi banco&quot;</div>
                   <div className="text-xs text-slate-300 italic">
-                    "Excelente, me da mucho gusto que tenga esa previsión. Justamente lo que hacemos no es competir ni venderle otro seguro, sino una auditoría para verificar que sus coberturas actuales no tengan duplicidades y optimizar deducibles. ¿Le queda mejor el miércoles o el viernes?"
+                    &quot;Excelente, lo felicito por esa previsión. Justamente la reunión no es para venderle un producto encimado, sino para conocer qué objetivos busca proteger hoy y ver cómo complementar o hacer más eficiente su estrategia actual. ¿Le queda mejor miércoles a las 10:00 am o jueves a las 5:00 pm?&quot;
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800 space-y-1">
-                  <div className="text-xs font-bold text-red-400">Objeción: "Dígame rápido de cuánto dinero estamos hablando al mes"</div>
+                  <div className="text-xs font-bold text-red-400">Objeción: &quot;Dígame rápido de cuánto dinero al mes o qué tasa de rendimiento ofrecen&quot;</div>
                   <div className="text-xs text-slate-300 italic">
-                    "Precisamente por respeto a su presupuesto no le puedo dar un número genérico; hay proyectos desde montos muy cómodos hasta estrategias más amplias. El objetivo de la reunión de 30 minutos es ver qué le hace sentido a usted. ¿Le queda mejor el lunes o el martes?"
+                    &quot;Precisamente porque cada estrategia es un traje a la medida, no manejamos tarifas ni tasas fijas por teléfono sin antes entender sus metas y su horizonte. En una sesión ejecutiva de 20 minutos revisamos su caso y le presento números exactos y personalizados. ¿Qué le queda mejor, miércoles a las 10:00 am o jueves a las 5:00 pm?&quot;
+                  </div>
+                  <div className="text-[11px] text-rose-400 font-medium pt-1">
+                    ⚠️ Prohibido caer en la trampa de dar rangos (&quot;de $10 mil a $1 millón&quot;) o tasas (&quot;5% de interés&quot;).
                   </div>
                 </div>
 
