@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getMonthlyAdnRankings } from "@/app/actions";
+import { getMonthlyAdnRankings, saveAgencyRankingMetric, type RankingMetricMode } from "@/app/actions";
 import { resolveImageUrl } from "@/lib/utils";
 import { 
     Trophy, 
@@ -13,7 +13,11 @@ import {
     X, 
     ArrowUpRight,
     Megaphone,
-    User
+    Settings2,
+    CheckCircle2,
+    DollarSign,
+    Zap,
+    FileCheck2
 } from "lucide-react";
 
 interface UserRank {
@@ -24,6 +28,7 @@ interface UserRank {
         image: string | null; // base64
     };
     count: number;
+    secondaryCount?: number;
 }
 
 interface RankingAd {
@@ -33,6 +38,43 @@ interface RankingAd {
     createdAt: Date | string;
 }
 
+const METRIC_OPTIONS: {
+    id: RankingMetricMode;
+    label: string;
+    shortLabel: string;
+    emoji: string;
+    description: string;
+}[] = [
+    {
+        id: "ADN",
+        label: "Por Diagnósticos ADN",
+        shortLabel: "ADNs",
+        emoji: "🧬",
+        description: "Cantidad de diagnósticos de ADN completados"
+    },
+    {
+        id: "POINTS_25",
+        label: "Por Actividad (25 Puntos)",
+        shortLabel: "25 Puntos",
+        emoji: "⚡",
+        description: "Suma de puntos reales acumulados en Actividad Diaria (25 Puntos)"
+    },
+    {
+        id: "PRIMA_PAGADA",
+        label: "Por Primas Pagadas",
+        shortLabel: "Prima Pagada",
+        emoji: "💰",
+        description: "Suma de Prima Pagada registrada en el módulo de Producción y Primas"
+    },
+    {
+        id: "PRIMA_EMITIDA",
+        label: "Por Primas Emitidas",
+        shortLabel: "Prima Emitida",
+        emoji: "📈",
+        description: "Suma de Prima Emitida registrada en el módulo de Producción y Primas"
+    }
+];
+
 export default function RankingPage() {
     const now = new Date();
     const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth());
@@ -41,17 +83,23 @@ export default function RankingPage() {
     const [rankings, setRankings] = useState<UserRank[]>([]);
     const [campaignAd, setCampaignAd] = useState<RankingAd | null>(null);
     const [agencyName, setAgencyName] = useState<string>("la Agencia");
+    const [rankingMetric, setRankingMetric] = useState<RankingMetricMode>("ADN");
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+    const [savingMetric, setSavingMetric] = useState<boolean>(false);
+    const [savedFeedback, setSavedFeedback] = useState<string>("");
     const [loading, setLoading] = useState(true);
     const [selectedAd, setSelectedAd] = useState<RankingAd | null>(null);
 
-    const loadRankings = async () => {
+    const loadRankings = async (overrideMetric?: RankingMetricMode) => {
         try {
             setLoading(true);
-            const res = await getMonthlyAdnRankings(selectedMonth, selectedYear);
+            const res = await getMonthlyAdnRankings(selectedMonth, selectedYear, overrideMetric);
             if (res.success) {
                 setRankings(res.rankings as any);
                 setCampaignAd(res.rankingAd as any);
                 if (res.agencyName) setAgencyName(res.agencyName);
+                if (res.rankingMetric) setRankingMetric(res.rankingMetric as RankingMetricMode);
+                if (res.isAdmin !== undefined) setIsAdmin(Boolean(res.isAdmin));
             }
         } catch (err) {
             console.error("Error loading rankings:", err);
@@ -63,6 +111,62 @@ export default function RankingPage() {
     useEffect(() => {
         loadRankings();
     }, [selectedMonth, selectedYear]);
+
+    const handleChangeAgencyMetric = async (newMetric: RankingMetricMode) => {
+        if (newMetric === rankingMetric || savingMetric) return;
+        try {
+            setSavingMetric(true);
+            setSavedFeedback("");
+            const saveRes = await saveAgencyRankingMetric(newMetric);
+            if (saveRes.success) {
+                setRankingMetric(newMetric);
+                await loadRankings(newMetric);
+                setSavedFeedback("✓ Criterio guardado para toda tu promotoría");
+                setTimeout(() => setSavedFeedback(""), 4000);
+            }
+        } catch (err) {
+            console.error("Error saving agency ranking metric:", err);
+        } finally {
+            setSavingMetric(false);
+        }
+    };
+
+    // Format compact badge value for avatar corner pill
+    const formatCompactBadge = (val: number, metric: RankingMetricMode) => {
+        if (metric === "PRIMA_PAGADA" || metric === "PRIMA_EMITIDA") {
+            if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(1)}M`;
+            if (val >= 1_000) return `$${Math.round(val / 1_000)}k`;
+            return `$${Math.round(val)}`;
+        }
+        return val.toLocaleString("es-MX");
+    };
+
+    // Format primary metric label for Podium and Leaderboard
+    const formatPrimaryMetric = (item: UserRank, metric: RankingMetricMode) => {
+        if (metric === "PRIMA_PAGADA") {
+            return `$${Math.round(item.count).toLocaleString("es-MX")} MXN Pagados`;
+        }
+        if (metric === "PRIMA_EMITIDA") {
+            return `$${Math.round(item.count).toLocaleString("es-MX")} MXN Emitidos`;
+        }
+        if (metric === "POINTS_25") {
+            return `${item.count.toLocaleString("es-MX")} ${item.count === 1 ? "Punto" : "Puntos"}`;
+        }
+        return `${item.count} ${item.count === 1 ? "ADN Completado" : "ADNs Completados"}`;
+    };
+
+    // Format secondary subtitle if available (e.g. policy count or activity logs)
+    const formatSecondaryMetric = (item: UserRank, metric: RankingMetricMode) => {
+        if (metric === "PRIMA_PAGADA" || metric === "PRIMA_EMITIDA") {
+            const pols = item.secondaryCount || 0;
+            return `${pols} ${pols === 1 ? "póliza" : "pólizas"}`;
+        }
+        if (metric === "POINTS_25") {
+            const acts = item.secondaryCount || 0;
+            return `${acts} ${acts === 1 ? "actividad" : "actividades"}`;
+        }
+        return null;
+    };
 
     // Get initials for profile picture fallback
     const getInitials = (name: string) => {
@@ -129,18 +233,74 @@ export default function RankingPage() {
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 5 }, (_, i) => currentYear - i);
 
+    const currentMetricInfo = METRIC_OPTIONS.find((m) => m.id === rankingMetric) || METRIC_OPTIONS[0];
+
     // Separate Top 3 from the rest (Top 10 lists)
     const topThree = rankings.slice(0, 3);
     const topRest = rankings.slice(3, 10);
 
     return (
-        <div className="flex flex-col gap-8 w-full max-w-lg mx-auto py-2 md:max-w-6xl md:px-0">
+        <div className="flex flex-col gap-6 w-full max-w-lg mx-auto py-2 md:max-w-6xl md:px-0">
+            {/* ADMIN CONFIGURATION BAR: CHOOSE AGENCY RANKING METRIC */}
+            {isAdmin && (
+                <div className="mx-4 md:mx-0 rounded-2xl border border-teal-200/80 dark:border-teal-900/60 bg-gradient-to-r from-teal-50/90 via-emerald-50/50 to-slate-50 dark:from-teal-950/30 dark:via-zinc-900 dark:to-zinc-900 p-4 shadow-sm">
+                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                        <div className="space-y-0.5">
+                            <div className="flex items-center gap-2">
+                                <Settings2 className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                                <span className="text-xs font-black uppercase tracking-wider text-teal-800 dark:text-teal-300">
+                                    Configuración de Promotoría • Criterio Oficial del Ranking
+                                </span>
+                                {savedFeedback && (
+                                    <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950/60 px-2.5 py-0.5 rounded-full animate-in fade-in">
+                                        {savedFeedback}
+                                    </span>
+                                )}
+                            </div>
+                            <p className="text-[11px] text-slate-600 dark:text-zinc-400">
+                                Elige cómo deseas evaluar y mostrar el Ranking de Agentes para toda tu promotoría:
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+                            {METRIC_OPTIONS.map((opt) => {
+                                const active = rankingMetric === opt.id;
+                                return (
+                                    <button
+                                        key={opt.id}
+                                        type="button"
+                                        disabled={savingMetric}
+                                        onClick={() => handleChangeAgencyMetric(opt.id)}
+                                        className={`px-3 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
+                                            active
+                                                ? "bg-teal-600 text-white border-teal-600 shadow-sm ring-2 ring-teal-500/30"
+                                                : "bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-800 hover:border-teal-400 hover:bg-teal-50/40"
+                                        }`}
+                                    >
+                                        <span>{opt.emoji}</span>
+                                        <span>{opt.shortLabel}</span>
+                                        {active && <CheckCircle2 className="h-3.5 w-3.5 ml-0.5 shrink-0" />}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* HEADER */}
             <div className="flex flex-col gap-1.5 px-4 md:px-0">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                    <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-zinc-100">
-                        Ranking de Agentes
-                    </h1>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                        <h1 className="text-3xl font-black tracking-tight text-slate-800 dark:text-zinc-100">
+                            Ranking de Agentes
+                        </h1>
+                        <span className="inline-flex items-center gap-1.5 text-xs font-extrabold px-3 py-1 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 border border-teal-500/20">
+                            <span>{currentMetricInfo.emoji}</span>
+                            <span>{currentMetricInfo.label}</span>
+                        </span>
+                    </div>
+
                     <div className="flex items-center gap-2">
                         <select 
                             value={selectedMonth} 
@@ -163,9 +323,12 @@ export default function RankingPage() {
                         </select>
                     </div>
                 </div>
-                <p className="text-xs text-muted-foreground font-medium flex items-center gap-1">
-                    <TrendingUp className="h-3.5 w-3.5 text-primary" />
-                    Líderes de la promotoria ordenados por la cantidad de diagnósticos de ADN completados en {months[selectedMonth].toLowerCase()} del {selectedYear}.
+                <p className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                    <TrendingUp className="h-3.5 w-3.5 text-primary shrink-0" />
+                    <span>
+                        Líderes de <strong>{agencyName}</strong> ordenados por{" "}
+                        <strong>{currentMetricInfo.description.toLowerCase()}</strong> en {months[selectedMonth].toLowerCase()} del {selectedYear}.
+                    </span>
                 </p>
             </div>
 
@@ -174,6 +337,7 @@ export default function RankingPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 md:px-0">
                     {topThree.map((item, idx) => {
                         const style = getPodiumClass(idx);
+                        const secondaryText = formatSecondaryMetric(item, rankingMetric);
                         
                         return (
                             <div 
@@ -207,8 +371,8 @@ export default function RankingPage() {
                                             </div>
                                         )}
                                     </div>
-                                    <div className="absolute -bottom-1.5 -right-1.5 h-7 w-7 rounded-full bg-primary text-white flex items-center justify-center shadow-md border border-white font-extrabold text-xs">
-                                        {item.count}
+                                    <div className="absolute -bottom-1.5 -right-2 min-w-[1.75rem] h-7 px-2 rounded-full bg-primary text-white flex items-center justify-center shadow-md border border-white font-extrabold text-[11px]">
+                                        {formatCompactBadge(item.count, rankingMetric)}
                                     </div>
                                 </div>
 
@@ -222,9 +386,16 @@ export default function RankingPage() {
                                     </p>
                                 </div>
 
-                                <div className="mt-4 pt-3 border-t w-full border-slate-100 dark:border-zinc-800/80 flex items-center justify-center gap-1.5 text-xs text-muted-foreground font-bold">
-                                    <Trophy className={`h-4 w-4 ${style.iconColor}`} />
-                                    <span>{item.count} {item.count === 1 ? 'ADN Completado' : 'ADNs Completados'}</span>
+                                <div className="mt-4 pt-3 border-t w-full border-slate-100 dark:border-zinc-800/80 flex flex-col items-center justify-center gap-0.5">
+                                    <div className="flex items-center justify-center gap-1.5 text-xs text-slate-800 dark:text-zinc-100 font-extrabold">
+                                        <Trophy className={`h-4 w-4 shrink-0 ${style.iconColor}`} />
+                                        <span>{formatPrimaryMetric(item, rankingMetric)}</span>
+                                    </div>
+                                    {secondaryText && (
+                                        <span className="text-[10px] font-bold text-muted-foreground">
+                                            {secondaryText} en el mes
+                                        </span>
+                                    )}
                                 </div>
                             </div>
                         );
@@ -232,7 +403,7 @@ export default function RankingPage() {
                 </div>
             ) : (
                 <div className="py-12 bg-card rounded-2xl border text-center text-muted-foreground">
-                    No se registran diagnósticos de ADN cargados este mes todavía.
+                    No se registran agentes activos en esta promotoría todavía.
                 </div>
             )}
 
@@ -246,7 +417,7 @@ export default function RankingPage() {
                     <div className="divide-y divide-slate-100 dark:divide-zinc-800">
                         {topRest.map((item, idx) => {
                             const index = idx + 3; // Offset by 3 for top three
-                            const style = getPodiumClass(index);
+                            const secondaryText = formatSecondaryMetric(item, rankingMetric);
                             
                             return (
                                 <div 
@@ -284,12 +455,19 @@ export default function RankingPage() {
                                         </div>
                                     </div>
 
-                                    <div className="flex items-center gap-3">
-                                        <span className="text-[10px] font-black uppercase text-muted-foreground">
-                                            {item.count} {item.count === 1 ? 'ADN' : 'ADNs'}
-                                        </span>
-                                        <div className="h-7 w-7 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-600 dark:text-zinc-400 font-extrabold text-xs">
-                                            {item.count}
+                                    <div className="flex items-center gap-3 shrink-0">
+                                        <div className="text-right">
+                                            <span className="block text-xs font-black text-slate-800 dark:text-zinc-200">
+                                                {formatPrimaryMetric(item, rankingMetric)}
+                                            </span>
+                                            {secondaryText && (
+                                                <span className="block text-[10px] font-semibold text-muted-foreground">
+                                                    {secondaryText}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="min-w-[1.75rem] h-7 px-2 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center text-slate-700 dark:text-zinc-300 font-extrabold text-[11px]">
+                                            {formatCompactBadge(item.count, rankingMetric)}
                                         </div>
                                     </div>
                                 </div>

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react"
 import Image from "next/image"
-import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, reorderAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, deleteRankingAd, getMonthlyAdnRankings, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush, getFeedbackSurveys, requestAgentExpulsion, purgeAgentPortfolio } from "@/app/actions"
+import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, reorderAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, deleteRankingAd, getMonthlyAdnRankings, saveAgencyRankingMetric, type RankingMetricMode, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush, getFeedbackSurveys, requestAgentExpulsion, purgeAgentPortfolio } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import BibliotecaAdmin from "./BibliotecaAdmin"
@@ -145,10 +145,12 @@ export default function AdminClient() {
   const [announcements, setAnnouncements] = useState<any[]>([])
   const [loadingAnnouncements, setLoadingAnnouncements] = useState<boolean>(false)
 
-  // Ranking Banner states
+  // Ranking Banner & Metric states
   const [rankingBanner, setRankingBanner] = useState<string | null>(null)
   const [savingRankingBanner, setSavingRankingBanner] = useState<boolean>(false)
   const [rankingBannerMsg, setRankingBannerMsg] = useState<string>("")
+  const [rankingMetricMode, setRankingMetricMode] = useState<RankingMetricMode>("ADN")
+  const [savingRankingMetric, setSavingRankingMetric] = useState<boolean>(false)
   const [announcementLinkInput, setAnnouncementLinkInput] = useState<string>("")
   
   // AACOM 25 Activity Report states
@@ -609,6 +611,27 @@ export default function AdminClient() {
     }
   }
 
+  // Save Agency Ranking Criterion
+  const handleSaveRankingMetricMode = async (newMetric: RankingMetricMode) => {
+    if (newMetric === rankingMetricMode || savingRankingMetric) return
+    setSavingRankingMetric(true)
+    setRankingBannerMsg("Guardando criterio del ranking...")
+    try {
+      const res = await saveAgencyRankingMetric(newMetric)
+      if (res.success) {
+        setRankingMetricMode(newMetric)
+        setRankingBannerMsg("✓ ¡Criterio oficial del Ranking actualizado para toda la promotoría!")
+        setTimeout(() => setRankingBannerMsg(""), 5000)
+      } else {
+        setRankingBannerMsg(res.message || "Error al guardar criterio")
+      }
+    } catch (err: any) {
+      setRankingBannerMsg(`Error: ${err.message || "Fallo de red"}`)
+    } finally {
+      setSavingRankingMetric(false)
+    }
+  }
+
   // Upload new announcement banner
   const handleUploadAnnouncement = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -746,8 +769,9 @@ export default function AdminClient() {
       });
 
       const rankingPromise = getMonthlyAdnRankings().then(res => {
-        if (res.success && res.rankingAd) {
-          setRankingBanner(res.rankingAd.imageUrl)
+        if (res.success) {
+          if (res.rankingAd) setRankingBanner(res.rankingAd.imageUrl)
+          if (res.rankingMetric) setRankingMetricMode(res.rankingMetric as RankingMetricMode)
         }
       });
 
@@ -1357,15 +1381,44 @@ export default function AdminClient() {
       {activeTab === "productividad" && (
         <div className="space-y-6 animate-in fade-in duration-300">
           
-          {/* Ranking Banner Upload Section */}
+          {/* Ranking Banner Upload & Criterion Section */}
           <Card className="border shadow-sm bg-gradient-to-br from-amber-50 to-orange-50/30">
             <CardHeader className="py-4 border-b bg-white/50">
-              <CardTitle className="text-sm font-black text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
-                <Award className="h-4.5 w-4.5" /> Campaña de Premiación (Ranking #1)
-              </CardTitle>
-              <CardDescription className="text-xs">
-                Sube una imagen para incentivar a los agentes. Se mostrará en la parte superior de su pantalla de Ranking.
-              </CardDescription>
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+                <div>
+                  <CardTitle className="text-sm font-black text-amber-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <Award className="h-4.5 w-4.5" /> Configuración del Ranking y Campaña de Premiación (#1)
+                  </CardTitle>
+                  <CardDescription className="text-xs">
+                    Elige el criterio oficial para ordenar el Ranking de tu promotoría y sube tu campaña de incentivos.
+                  </CardDescription>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {([
+                    { id: "ADN" as RankingMetricMode, label: "🧬 Por ADN's" },
+                    { id: "POINTS_25" as RankingMetricMode, label: "⚡ 25 Puntos" },
+                    { id: "PRIMA_PAGADA" as RankingMetricMode, label: "💰 Primas Pagadas" },
+                    { id: "PRIMA_EMITIDA" as RankingMetricMode, label: "📈 Primas Emitidas" },
+                  ]).map((opt) => {
+                    const active = rankingMetricMode === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        disabled={savingRankingMetric}
+                        onClick={() => handleSaveRankingMetricMode(opt.id)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-extrabold transition-all cursor-pointer border ${
+                          active
+                            ? "bg-amber-600 text-white border-amber-600 shadow-sm"
+                            : "bg-white text-slate-700 border-amber-200 hover:border-amber-400 hover:bg-amber-50"
+                        }`}
+                      >
+                        {opt.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
             </CardHeader>
             <CardContent className="p-5">
               <div className="flex flex-col md:flex-row gap-6 items-center">

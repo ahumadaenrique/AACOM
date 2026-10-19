@@ -1598,7 +1598,78 @@ export async function getActivityHistory(targetUserId?: string) {
 // RANKING DE AGENTES & ADNs ACTIONS
 // ==========================================
 
-export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear?: number) {
+export type RankingMetricMode = 'ADN' | 'POINTS_25' | 'PRIMA_PAGADA' | 'PRIMA_EMITIDA';
+
+const VALID_RANKING_METRICS: RankingMetricMode[] = ['ADN', 'POINTS_25', 'PRIMA_PAGADA', 'PRIMA_EMITIDA'];
+
+export async function getAgencyRankingMetric(): Promise<{ success: boolean; metric: RankingMetricMode }> {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, metric: 'ADN' };
+
+        const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+        const agencyId = ((session?.user?.agencyId || user?.agencyId) as string) || 'aacom';
+
+        const setting = await prisma.setting.findUnique({
+            where: { key: `ranking_metric_${agencyId}` }
+        });
+
+        const metric = (setting?.value && VALID_RANKING_METRICS.includes(setting.value as RankingMetricMode))
+            ? (setting.value as RankingMetricMode)
+            : 'ADN';
+
+        return { success: true, metric };
+    } catch (error) {
+        console.error("Error fetching agency ranking metric:", error);
+        return { success: false, metric: 'ADN' };
+    }
+}
+
+export async function saveAgencyRankingMetric(metric: RankingMetricMode) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        enforceDemoSafety(session);
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        if (!VALID_RANKING_METRICS.includes(metric)) {
+            return { success: false, message: "Métrica de ranking no válida" };
+        }
+
+        const agencyId = ((session?.user?.agencyId || currentUser?.agencyId) as string) || 'aacom';
+        const key = `ranking_metric_${agencyId}`;
+
+        await prisma.setting.upsert({
+            where: { key },
+            update: { value: metric },
+            create: { key, value: metric }
+        });
+
+        revalidatePath('/ranking');
+        revalidatePath('/admin');
+
+        return { success: true, metric };
+    } catch (error: any) {
+        console.error("Error saving agency ranking metric:", error);
+        return { success: false, message: error.message || "Error al guardar configuración del ranking" };
+    }
+}
+
+export async function getMonthlyAdnRankings(
+    selectedMonth?: number,
+    selectedYear?: number,
+    overrideMetric?: RankingMetricMode
+) {
     try {
         const session = await auth();
         if (!session?.user?.email) return { success: false, rankings: [], rankingAd: null, message: "No autenticado" };
@@ -1609,39 +1680,34 @@ export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear
         });
         if (!user) return { success: false, rankings: [], rankingAd: null, message: "Usuario no encontrado" };
 
+        const agencyId = ((session?.user?.agencyId || user?.agencyId) as string) || 'aacom';
+        const isAdmin = user.role === 'ADMIN' || user.role === 'SUPER_ADMIN';
+
+        // Read agency's configured metric (defaults to 'ADN')
+        const metricSetting = await prisma.setting.findUnique({
+            where: { key: `ranking_metric_${agencyId}` }
+        });
+        const configuredMetric: RankingMetricMode =
+            (metricSetting?.value && VALID_RANKING_METRICS.includes(metricSetting.value as RankingMetricMode))
+                ? (metricSetting.value as RankingMetricMode)
+                : 'ADN';
+
+        const activeMetric: RankingMetricMode =
+            (overrideMetric && VALID_RANKING_METRICS.includes(overrideMetric))
+                ? overrideMetric
+                : configuredMetric;
+
         const now = new Date();
         const year = selectedYear !== undefined ? selectedYear : now.getFullYear();
         const month = selectedMonth !== undefined ? selectedMonth : now.getMonth(); // 0-indexed
 
-        // Mexico City Time Month Start and End
-        // We can do it safely by defining standard dates:
-        const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
-        const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
-
-        const diagnostics = await prisma.adnDiagnostic.findMany({
-            where: {
-                agencyId: ((session?.user?.agencyId || user?.agencyId) as string),
-                createdAt: {
-                    gte: startOfMonth,
-                    lte: endOfMonth
-                }
-            },
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        image: true,
-                        active: true
-                    }
-                }
-            }
-        });
-
-        // Fetch all active agents to initialize 0 points
+        // Fetch all active agents of this agency to initialize 0 points
         const allAgents = await prisma.user.findMany({
-            where: { agencyId: ((session?.user?.agencyId || user?.agencyId) as string), active: true, role: 'USER' },
+            where: {
+                agencyId,
+                active: true,
+                role: { in: ['USER', 'AGENTE', 'AGENTE_LITE'] }
+            },
             select: {
                 id: true,
                 name: true,
@@ -1650,7 +1716,11 @@ export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear
             }
         });
 
-        const counts: Record<string, { user: { id: string; name: string; email: string; image: string | null }; count: number }> = {};
+        const counts: Record<string, {
+            user: { id: string; name: string; email: string; image: string | null };
+            count: number;
+            secondaryCount: number;
+        }> = {};
 
         allAgents.forEach(agent => {
             counts[agent.id] = {
@@ -1658,31 +1728,146 @@ export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear
                     id: agent.id,
                     name: agent.name || agent.email.split('@')[0],
                     email: agent.email,
-                    image: agent.image // base64
+                    image: agent.image
                 },
-                count: 0
+                count: 0,
+                secondaryCount: 0
             };
         });
 
-        diagnostics.forEach(diag => {
-            if (counts[diag.userId]) {
-                counts[diag.userId].count += 1;
-            } else if (diag.user && diag.user.active) {
-                // If agent is not in the list for some reason but exists
-                counts[diag.userId] = {
+        if (activeMetric === 'ADN') {
+            const startOfMonth = new Date(year, month, 1, 0, 0, 0, 0);
+            const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999);
+
+            const diagnostics = await prisma.adnDiagnostic.findMany({
+                where: {
+                    agencyId,
+                    createdAt: {
+                        gte: startOfMonth,
+                        lte: endOfMonth
+                    }
+                },
+                include: {
                     user: {
-                        id: diag.userId,
-                        name: diag.user.name || diag.user.email.split('@')[0],
-                        email: diag.user.email,
-                        image: diag.user.image
-                    },
-                    count: 1
-                };
-            }
-        });
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            image: true,
+                            active: true
+                        }
+                    }
+                }
+            });
+
+            diagnostics.forEach(diag => {
+                if (counts[diag.userId]) {
+                    counts[diag.userId].count += 1;
+                } else if (diag.user && diag.user.active) {
+                    counts[diag.userId] = {
+                        user: {
+                            id: diag.userId,
+                            name: diag.user.name || diag.user.email.split('@')[0],
+                            email: diag.user.email,
+                            image: diag.user.image
+                        },
+                        count: 1,
+                        secondaryCount: 0
+                    };
+                }
+            });
+        } else if (activeMetric === 'POINTS_25') {
+            const monthOneIndexed = month + 1;
+            const monthPadded = String(monthOneIndexed).padStart(2, '0');
+            const startDateStr = `${year}-${monthPadded}-01`;
+            const endDateStr = `${year}-${monthPadded}-31`;
+
+            const activityLogs = await prisma.activityLog.findMany({
+                where: {
+                    agencyId,
+                    dateStr: {
+                        gte: startDateStr,
+                        lte: endDateStr
+                    }
+                },
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            image: true,
+                            active: true
+                        }
+                    }
+                }
+            });
+
+            activityLogs.forEach(log => {
+                const pts = Number(log.points) || 0;
+                if (counts[log.userId]) {
+                    counts[log.userId].count += pts;
+                    counts[log.userId].secondaryCount += 1;
+                } else if (log.user && log.user.active) {
+                    counts[log.userId] = {
+                        user: {
+                            id: log.userId,
+                            name: log.user.name || log.user.email.split('@')[0],
+                            email: log.user.email,
+                            image: log.user.image
+                        },
+                        count: pts,
+                        secondaryCount: 1
+                    };
+                }
+            });
+        } else if (activeMetric === 'PRIMA_PAGADA' || activeMetric === 'PRIMA_EMITIDA') {
+            const monthOneIndexed = month + 1; // AgentEmission stores month 1..12
+
+            const emissions = await prisma.agentEmission.findMany({
+                where: {
+                    agencyId,
+                    year,
+                    month: monthOneIndexed
+                },
+                include: {
+                    agent: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            image: true,
+                            active: true
+                        }
+                    }
+                }
+            });
+
+            emissions.forEach(em => {
+                const amount = activeMetric === 'PRIMA_PAGADA'
+                    ? (Number(em.primaPagada) || 0)
+                    : (Number(em.primaEmitida) || 0);
+
+                if (counts[em.agentId]) {
+                    counts[em.agentId].count += amount;
+                    counts[em.agentId].secondaryCount += 1;
+                } else if (em.agent && em.agent.active) {
+                    counts[em.agentId] = {
+                        user: {
+                            id: em.agentId,
+                            name: em.agent.name || em.agent.email.split('@')[0],
+                            email: em.agent.email,
+                            image: em.agent.image
+                        },
+                        count: amount,
+                        secondaryCount: 1
+                    };
+                }
+            });
+        }
 
         const rankings = Object.values(counts)
-            .sort((a, b) => b.count - a.count || a.user.name.localeCompare(b.user.name))
+            .sort((a, b) => b.count - a.count || b.secondaryCount - a.secondaryCount || a.user.name.localeCompare(b.user.name))
             .slice(0, 10);
 
         // Fetch the customizable admin campaign banner for Ranking page
@@ -1690,7 +1875,7 @@ export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear
             where: {
                 type: 'RANKING_AD',
                 active: true,
-                agencyId: ((session?.user?.agencyId || user?.agencyId) as string) || null
+                agencyId: agencyId || null
             },
             orderBy: {
                 createdAt: 'desc'
@@ -1701,10 +1886,13 @@ export async function getMonthlyAdnRankings(selectedMonth?: number, selectedYear
             success: true,
             rankings,
             rankingAd,
-            agencyName: user.agency?.name || 'la Agencia'
+            agencyName: user.agency?.name || 'la Agencia',
+            rankingMetric: activeMetric,
+            configuredMetric,
+            isAdmin
         };
     } catch (error: any) {
-        console.error("Error fetching monthly ADN rankings:", error);
+        console.error("Error fetching monthly rankings:", error);
         return { success: false, rankings: [], rankingAd: null, message: error.message };
     }
 }
