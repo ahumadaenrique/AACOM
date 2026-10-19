@@ -1,24 +1,17 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import Link from "next/link";
 import {
     Send,
     Loader2,
     Sparkles,
     RotateCcw,
-    BookOpen,
     CheckCircle2,
     Bot,
     Copy,
     Check,
-    Briefcase,
-    Trophy,
     FileText,
     MessageSquarePlus,
-    ChevronDown,
-    ChevronUp,
-    Settings,
     Mic,
     MicOff,
     ShieldCheck,
@@ -31,33 +24,23 @@ interface ChatMessage {
     parts: { text: string }[];
 }
 
-interface KnowledgeDocSummary {
-    id: string;
-    title: string;
-    isGlobalTemplate: boolean;
-}
-
 interface AssistantClientProps {
     agencyName?: string;
     userName?: string;
     isAdmin?: boolean;
-    activeDocs?: KnowledgeDocSummary[];
+    activeDocs?: any[];
     policiesCount?: number;
 }
 
 export default function AssistantClient({
     agencyName = "AACOM",
-    userName = "Agente",
-    isAdmin = false,
-    activeDocs = [],
-    policiesCount = 0
+    userName = "Agente"
 }: AssistantClientProps) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState("");
     const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
-    const [showDocsDrawer, setShowDocsDrawer] = useState(false);
     const [isListening, setIsListening] = useState(false);
 
     const chatEndRef = useRef<HTMLDivElement | null>(null);
@@ -88,7 +71,6 @@ export default function AssistantClient({
 
         setErrorMsg("");
         setInput("");
-        setShowDocsDrawer(false);
 
         const userMsg: ChatMessage = {
             role: "user",
@@ -230,24 +212,8 @@ export default function AssistantClient({
 
     const quickActionCards = [
         {
-            icon: Briefcase,
-            badge: "Cartera en Vivo",
-            title: "Mi Cartera y Renovaciones",
-            description: "Consulta pólizas próximas a vencer y clientes con mayor prima.",
-            colorClass: "text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/40 border-teal-200/70 dark:border-teal-900/50",
-            prompt: "¿Qué pólizas de mi cartera están próximas a renovar y quiénes son mis 5 clientes con mayor prima anual?"
-        },
-        {
-            icon: Trophy,
-            badge: "Incentivos",
-            title: "Cuaderno de Bonos y Metas",
-            description: `Reglas, porcentajes y bonos vigentes en ${agencyName}.`,
-            colorClass: "text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border-amber-200/70 dark:border-amber-900/50",
-            prompt: `Explícame de forma resumida cómo funciona el cuaderno de bonos, comisiones y metas vigentes de ${agencyName}.`
-        },
-        {
             icon: FileText,
-            badge: "Normativa",
+            badge: "Normativa y Procesos",
             title: "Lineamientos y Suscripción",
             description: "Políticas de emisión, renovación, conservación y productos.",
             colorClass: "text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border-indigo-200/70 dark:border-indigo-900/50",
@@ -255,22 +221,21 @@ export default function AssistantClient({
         },
         {
             icon: MessageSquarePlus,
-            badge: "Comunicación",
+            badge: "Comunicación Comercial",
             title: "Redactar WhatsApp a Cliente",
-            description: "Textos listos para cobrar recibos, agendar citas o renovar.",
+            description: "Textos ejecutivos listos para seguimiento, cobro o renovación.",
             colorClass: "text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border-emerald-200/70 dark:border-emerald-900/50",
             prompt: "Ayúdame a redactar un mensaje de WhatsApp cálido, ejecutivo y persuasivo para avisarle a un cliente que su póliza está próxima a renovar y agendar una breve llamada de revisión."
         }
     ];
 
     const followUpChips = [
-        "📊 ¿Qué renovaciones tengo este mes?",
         "💬 Redacta versión corta para WhatsApp",
-        "🏆 ¿Qué necesito para alcanzar el bono?",
-        "📋 Hazme una tabla comparativa"
+        "📋 Explícamelo paso a paso",
+        "💡 Dame argumentos para el cliente"
     ];
 
-    // Render structured markdown cleanly (headings, bullets, bold, tables)
+    // Render structured markdown cleanly (headings, bullets, bold)
     const renderFormattedText = (text: string) => {
         const lines = text.split("\n");
         return lines.map((line, lIdx) => {
@@ -339,9 +304,9 @@ export default function AssistantClient({
     };
 
     return (
-        <div className="flex flex-col w-full max-w-5xl mx-auto px-2 sm:px-4 md:px-0 py-1 md:py-2 h-[calc(100dvh-5.5rem)] md:h-[calc(100dvh-6rem)]">
-            {/* EXECUTIVE COMPACT HEADER */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-3 px-1 shrink-0">
+        <div className="flex flex-col w-full max-w-4xl mx-auto px-2 sm:px-4 md:px-0 py-1 md:py-2 h-[calc(100dvh-5.5rem)] md:h-[calc(100dvh-6rem)]">
+            {/* CLEAN MINIMALIST HEADER */}
+            <div className="flex items-center justify-between gap-3 pb-3 px-1 shrink-0">
                 <div className="flex items-center gap-3 min-w-0">
                     <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-teal-600 via-teal-500 to-indigo-600 flex items-center justify-center text-white shadow-md shadow-teal-600/20 shrink-0">
                         <Bot className="h-5 w-5" />
@@ -349,7 +314,7 @@ export default function AssistantClient({
                     <div className="min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
                             <h1 className="text-lg sm:text-xl font-black tracking-tight text-slate-900 dark:text-zinc-100 truncate">
-                                Copiloto IA {agencyName}
+                                Asistente {agencyName}
                             </h1>
                             <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/20">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
@@ -357,124 +322,48 @@ export default function AssistantClient({
                             </span>
                         </div>
                         <p className="text-xs text-slate-500 dark:text-zinc-400 truncate">
-                            Conectado a tus lineamientos comerciales y a tu cartera de pólizas en tiempo real
+                            Resuelve dudas sobre lineamientos, productos y comunicación con clientes al instante
                         </p>
                     </div>
                 </div>
 
-                {/* LIVE CONTEXT PILLS & ACTIONS */}
-                <div className="flex items-center gap-1.5 flex-wrap">
-                    <button
+                {messages.length > 0 && (
+                    <Button
                         type="button"
-                        onClick={() => setShowDocsDrawer(prev => !prev)}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 hover:bg-slate-200/80 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-slate-700 dark:text-zinc-200 transition-colors cursor-pointer border border-slate-200/80 dark:border-zinc-700"
-                        title="Ver documentos oficiales cargados en la IA"
+                        variant="outline"
+                        size="sm"
+                        onClick={handleResetChat}
+                        className="h-8 px-3 rounded-xl text-xs font-bold text-slate-600 hover:text-red-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 shrink-0"
+                        title="Iniciar nueva conversación"
                     >
-                        <BookOpen className="h-3.5 w-3.5 text-indigo-600 dark:text-indigo-400" />
-                        <span>{activeDocs.length} {activeDocs.length === 1 ? "Documento" : "Documentos"}</span>
-                        {showDocsDrawer ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                    </button>
-
-                    <button
-                        type="button"
-                        onClick={() => sendPrompt("Hazme un resumen ejecutivo de mi cartera actual: cuántas pólizas tengo, cuáles son las próximas en renovar y mis clientes principales.")}
-                        disabled={loading}
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-teal-50 hover:bg-teal-100/80 dark:bg-teal-950/40 dark:hover:bg-teal-900/50 text-teal-800 dark:text-teal-300 transition-colors cursor-pointer border border-teal-200/80 dark:border-teal-800/70"
-                        title="Consultar tu cartera en 1 clic"
-                    >
-                        <Briefcase className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-                        <span>{policiesCount} {policiesCount === 1 ? "Póliza" : "Pólizas"}</span>
-                    </button>
-
-                    {isAdmin && (
-                        <Link
-                            href="/admin"
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold bg-amber-50 hover:bg-amber-100 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200/80 dark:border-amber-800/60 transition-colors"
-                            title="Subir o administrar documentos de la Base de Conocimientos"
-                        >
-                            <Settings className="h-3.5 w-3.5" />
-                            <span className="hidden sm:inline">Entrenar IA</span>
-                        </Link>
-                    )}
-
-                    {messages.length > 0 && (
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleResetChat}
-                            className="h-8 px-2.5 rounded-xl text-xs font-bold text-slate-600 hover:text-red-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700"
-                            title="Iniciar nueva conversación"
-                        >
-                            <RotateCcw className="h-3.5 w-3.5 mr-1" />
-                            <span>Nueva consulta</span>
-                        </Button>
-                    )}
-                </div>
+                        <RotateCcw className="h-3.5 w-3.5 mr-1.5" />
+                        <span>Nueva consulta</span>
+                    </Button>
+                )}
             </div>
-
-            {/* COLLAPSIBLE ACTIVE DOCUMENTS DRAWER */}
-            {showDocsDrawer && (
-                <div className="mb-3 rounded-2xl border border-indigo-200/80 dark:border-indigo-900/60 bg-indigo-50/60 dark:bg-indigo-950/25 p-3.5 animate-in fade-in slide-in-from-top-1 duration-200 shrink-0">
-                    <div className="flex items-center justify-between gap-2 mb-2">
-                        <span className="text-xs font-black uppercase tracking-wider text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5">
-                            <BookOpen className="h-3.5 w-3.5 text-indigo-600" />
-                            Base de Conocimientos Activa en {agencyName}
-                        </span>
-                        <span className="text-[11px] text-slate-500 dark:text-zinc-400">
-                            Haz clic en cualquier documento para pedir un resumen al instante
-                        </span>
-                    </div>
-                    {activeDocs.length > 0 ? (
-                        <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto">
-                            {activeDocs.map((doc) => (
-                                <button
-                                    key={doc.id}
-                                    type="button"
-                                    onClick={() => sendPrompt(`Hazme un resumen ejecutivo con los puntos clave, reglas y cifras más importantes del documento "${doc.title}".`)}
-                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-zinc-900 hover:bg-indigo-600 hover:text-white text-slate-700 dark:text-zinc-200 border border-indigo-200/80 dark:border-zinc-700 shadow-xs transition-all cursor-pointer group"
-                                >
-                                    <FileText className="h-3.5 w-3.5 text-indigo-500 group-hover:text-white shrink-0" />
-                                    <span className="truncate max-w-[240px]">{doc.title}</span>
-                                    <ArrowUpRight className="h-3 w-3 opacity-60 group-hover:opacity-100 shrink-0" />
-                                </button>
-                            ))}
-                        </div>
-                    ) : (
-                        <p className="text-xs text-slate-600 dark:text-zinc-400">
-                            Aún no hay documentos oficiales cargados en esta promotoría.{" "}
-                            {isAdmin && (
-                                <Link href="/admin" className="font-bold text-indigo-600 underline">
-                                    Sube el primer PDF o lineamiento en Admin → Asistente IA.
-                                </Link>
-                            )}
-                        </p>
-                    )}
-                </div>
-            )}
 
             {/* MAIN WORKSPACE CONTAINER */}
             <div className="flex-1 min-h-0 bg-white dark:bg-zinc-950 rounded-2xl sm:rounded-3xl border border-slate-200/80 dark:border-zinc-800 shadow-sm flex flex-col overflow-hidden">
                 {messages.length === 0 ? (
-                    /* COMPACT, ZERO-FRICTION WELCOME SCREEN */
-                    <div className="flex-1 overflow-y-auto px-4 py-5 sm:px-8 sm:py-6 flex flex-col justify-between gap-5">
-                        <div className="max-w-3xl mx-auto w-full space-y-5 my-auto">
+                    /* CLEAN, BALANCED WELCOME SCREEN */
+                    <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8 flex flex-col items-center justify-center">
+                        <div className="max-w-2xl mx-auto w-full space-y-6">
                             {/* Hero Greeting */}
-                            <div className="text-center space-y-1.5">
-                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-teal-500/10 via-indigo-500/10 to-purple-500/10 border border-teal-500/20 text-teal-700 dark:text-teal-300 text-xs font-extrabold mb-1">
+                            <div className="text-center space-y-2">
+                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-teal-500/10 via-indigo-500/10 to-purple-500/10 border border-teal-500/20 text-teal-700 dark:text-teal-300 text-xs font-extrabold">
                                     <Sparkles className="h-3.5 w-3.5 text-teal-600 dark:text-teal-400" />
-                                    Copiloto Comercial y de Cartera
+                                    Asistente Inteligente
                                 </div>
                                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-zinc-100 tracking-tight">
-                                    ¡Hola, {firstName}! ¿Qué consultamos hoy?
+                                    ¡Hola, {firstName}! ¿En qué te apoyo hoy?
                                 </h2>
-                                <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 max-w-xl mx-auto">
-                                    Toca cualquiera de las tarjetas para consultar al instante o escribe tu pregunta abajo:
+                                <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400 max-w-md mx-auto">
+                                    Selecciona una opción rápida o escribe tu consulta directamente abajo:
                                 </p>
                             </div>
 
-                            {/* 2x2 Balanced Action Cards (1 Click = Immediate Send) */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            {/* 2 Clean Action Cards */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                 {quickActionCards.map((card, idx) => {
                                     const IconComponent = card.icon;
                                     return (
@@ -488,7 +377,7 @@ export default function AssistantClient({
                                             <div className={`h-10 w-10 rounded-xl border flex items-center justify-center shrink-0 transition-transform group-hover:scale-105 ${card.colorClass}`}>
                                                 <IconComponent className="h-5 w-5" />
                                             </div>
-                                            <div className="min-w-0 flex-1 space-y-0.5">
+                                            <div className="min-w-0 flex-1 space-y-1">
                                                 <div className="flex items-center justify-between gap-2">
                                                     <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-zinc-500">
                                                         {card.badge}
@@ -498,7 +387,7 @@ export default function AssistantClient({
                                                 <h3 className="text-sm font-extrabold text-slate-800 dark:text-zinc-100 group-hover:text-teal-700 dark:group-hover:text-teal-400 transition-colors">
                                                     {card.title}
                                                 </h3>
-                                                <p className="text-xs text-slate-500 dark:text-zinc-400 line-clamp-2 leading-relaxed">
+                                                <p className="text-xs text-slate-500 dark:text-zinc-400 leading-relaxed">
                                                     {card.description}
                                                 </p>
                                             </div>
@@ -506,40 +395,6 @@ export default function AssistantClient({
                                     );
                                 })}
                             </div>
-
-                            {/* Active Documents Strip for 1-Click Summary */}
-                            {activeDocs.length > 0 && (
-                                <div className="space-y-2 pt-1">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 dark:text-zinc-500 flex items-center gap-1.5">
-                                            <BookOpen className="h-3.5 w-3.5 text-indigo-500" />
-                                            Documentos oficiales disponibles para consulta directa ({activeDocs.length})
-                                        </span>
-                                    </div>
-                                    <div className="flex flex-wrap gap-2">
-                                        {activeDocs.slice(0, 6).map((doc) => (
-                                            <button
-                                                key={doc.id}
-                                                type="button"
-                                                onClick={() => sendPrompt(`Hazme un resumen ejecutivo con los puntos clave del documento "${doc.title}".`)}
-                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold bg-slate-100/90 hover:bg-indigo-50 dark:bg-zinc-900 dark:hover:bg-indigo-950/40 text-slate-700 hover:text-indigo-700 dark:text-zinc-300 dark:hover:text-indigo-300 border border-slate-200/80 dark:border-zinc-800 transition-colors cursor-pointer"
-                                            >
-                                                <FileText className="h-3.5 w-3.5 text-indigo-500 shrink-0" />
-                                                <span className="truncate max-w-[220px]">{doc.title}</span>
-                                            </button>
-                                        ))}
-                                        {activeDocs.length > 6 && (
-                                            <button
-                                                type="button"
-                                                onClick={() => setShowDocsDrawer(true)}
-                                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 hover:underline cursor-pointer"
-                                            >
-                                                +{activeDocs.length - 6} más
-                                            </button>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
                         </div>
                     </div>
                 ) : (
@@ -580,7 +435,7 @@ export default function AssistantClient({
                                             <div className="mt-3 pt-2 border-t border-slate-200/60 dark:border-zinc-800 flex items-center justify-between gap-2">
                                                 <span className="text-[11px] font-semibold text-slate-400 dark:text-zinc-500 flex items-center gap-1">
                                                     <CheckCircle2 className="h-3 w-3 text-teal-600" />
-                                                    Copiloto {agencyName}
+                                                    Asistente {agencyName}
                                                 </span>
                                                 <button
                                                     type="button"
@@ -615,7 +470,7 @@ export default function AssistantClient({
                                 <div className="bg-slate-50 dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 rounded-2xl rounded-tl-xs px-4 py-3 border border-slate-200/70 dark:border-zinc-800 flex items-center gap-2.5">
                                     <Loader2 className="h-4 w-4 animate-spin text-teal-600" />
                                     <span className="text-xs font-bold animate-pulse">
-                                        Consultando lineamientos y cartera...
+                                        Analizando tu consulta...
                                     </span>
                                 </div>
                             </div>
@@ -656,7 +511,7 @@ export default function AssistantClient({
                         <textarea
                             ref={textareaRef}
                             rows={1}
-                            placeholder={`Pregúntale a tu Copiloto sobre bonos, productos o tu cartera de clientes...`}
+                            placeholder="Escribe tu duda sobre lineamientos, productos o pide redactar un mensaje..."
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
                             onKeyDown={handleKeyDown}
@@ -692,7 +547,7 @@ export default function AssistantClient({
                         <span className="flex items-center gap-1 truncate">
                             <ShieldCheck className="h-3.5 w-3.5 text-teal-600 shrink-0" />
                             <span>
-                                Responde estrictamente con lineamientos oficiales de <strong>{agencyName}</strong> y tu cartera activa (sin inventar datos).
+                                Responde únicamente con los lineamientos y documentos que la dirección de <strong>{agencyName}</strong> ha cargado.
                             </span>
                         </span>
                         <span className="hidden md:inline shrink-0 ml-2">
