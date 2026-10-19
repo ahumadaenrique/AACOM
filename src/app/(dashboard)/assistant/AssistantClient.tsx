@@ -10,6 +10,7 @@ import {
     Bot,
     Copy,
     Check,
+    Briefcase,
     FileText,
     MessageSquarePlus,
     Mic,
@@ -212,6 +213,14 @@ export default function AssistantClient({
 
     const quickActionCards = [
         {
+            icon: Briefcase,
+            badge: "Cartera en Vivo",
+            title: "Mi Cartera y Renovaciones",
+            description: "Consulta pólizas próximas a vencer y clientes con mayor prima.",
+            colorClass: "text-teal-600 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/40 border-teal-200/70 dark:border-teal-900/50",
+            prompt: "¿Qué pólizas de mi cartera están próximas a renovar y quiénes son mis 5 clientes con mayor prima anual?"
+        },
+        {
             icon: FileText,
             badge: "Normativa y Procesos",
             title: "Lineamientos y Suscripción",
@@ -230,6 +239,7 @@ export default function AssistantClient({
     ];
 
     const followUpChips = [
+        "📊 ¿Qué renovaciones tengo este mes?",
         "💬 Redacta versión corta para WhatsApp",
         "📋 Explícamelo paso a paso",
         "💡 Dame argumentos para el cliente"
@@ -347,7 +357,7 @@ export default function AssistantClient({
                 {messages.length === 0 ? (
                     /* CLEAN, BALANCED WELCOME SCREEN */
                     <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-8 sm:py-8 flex flex-col items-center justify-center">
-                        <div className="max-w-2xl mx-auto w-full space-y-6">
+                        <div className="max-w-3xl mx-auto w-full space-y-6">
                             {/* Hero Greeting */}
                             <div className="text-center space-y-2">
                                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-teal-500/10 via-indigo-500/10 to-purple-500/10 border border-teal-500/20 text-teal-700 dark:text-teal-300 text-xs font-extrabold">
@@ -362,8 +372,8 @@ export default function AssistantClient({
                                 </p>
                             </div>
 
-                            {/* 2 Clean Action Cards */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                            {/* 3 Clean Action Cards */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
                                 {quickActionCards.map((card, idx) => {
                                     const IconComponent = card.icon;
                                     return (
