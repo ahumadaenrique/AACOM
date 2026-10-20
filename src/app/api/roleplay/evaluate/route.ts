@@ -283,8 +283,57 @@ ${badgesText}`;
     }
 
     if (moduleId === 'prospeccion') {
-      const p = rawObject.pilaresProspeccion;
-      const ef = rawObject.erroresFatalesProspeccion;
+      const p = rawObject.pilaresProspeccion || {
+        pilar1NombreAsesor: true,
+        pilar2NombreEmpresa: true,
+        pilar3OrigenContacto: true,
+        pilar4ExplicacionAsesoria: true,
+        pilar5DosHorarios: true
+      };
+      const ef = rawObject.erroresFatalesProspeccion || {
+        aceptoEnviarInfoWhatsAppOCorreo: false,
+        mencionoProductosTasasONumeros: false,
+        confundioNombreProspecto: false
+      };
+
+      // Auditoría determinista en servidor exclusivamente sobre lo que dijo el ASESOR (agentMessages)
+      const advisorText = userTurns.map((m: any) => (m.message || '')).join(' ');
+      const advisorLower = advisorText.toLowerCase();
+
+      // 1. Detectar si el asesor mencionó productos prohibidos, beneficios fiscales específicos, tasas o montos en Prospección
+      const forbiddenProductMatch = advisorText.match(/\b(ppr|plan(?:es)?\s+personal(?:es)?\s+de\s+retiro|plan(?:es)?\s+privado(?:s)?\s+de\s+retiro|plan(?:es)?\s+de\s+retiro|deducible(?:s)?\s+de\s+impuestos|deducir\s+impuestos|seguro\s+de\s+vida|seguro\s+de\s+hombre\s+clave|seguro\s+de\s+persona\s+clave|seguro\s+de\s+gastos\s+m[eé]dicos|insignia\s+life|metlife|allianz|gnp|monterrey\s+new\s+york)\b/i);
+      const forbiddenRateOrAmountMatch = advisorText.match(/\b(\d+(?:[.,]\d+)?\s*%|por\s+ciento|tasa\s+de(?:l)?\s+\d|rendimiento\s+de(?:l)?\s+\d|inter[eé]s\s+de(?:l)?\s+\d|\d+\s*mil\s*pesos|mill[oó]n\s+de\s+pesos|pesos\s+mensuales|pesos\s+al\s+mes|pesos\s+anuales|presupuesto\s+de\s+\d)/i);
+      const forbiddenPriorInfoMatch = advisorText.match(/\b(ya\s+te\s+mand[eé]\s+un|te\s+acabo\s+de\s+mandar\s+por\s+whatsapp|revisa\s+el\s+brochure|p[aá]same\s+tu\s+correo\s+para\s+mandarte|puedes\s+darme\s+tu\s+direcci[oó]n\s+de\s+correo)/i);
+
+      if (forbiddenProductMatch || forbiddenRateOrAmountMatch) {
+        ef.mencionoProductosTasasONumeros = true;
+        const snippet = (forbiddenProductMatch?.[0] || forbiddenRateOrAmountMatch?.[0] || '').trim();
+        if (!errores.some((e: string) => e.toLowerCase().includes(snippet.toLowerCase()))) {
+          errores.unshift(`Error Fatal: Mencionaste productos explícitamente, beneficios fiscales o tasas/montos previos a la cita ("${snippet}"). En la llamada de prospección está prohibido hablar de productos o números.`);
+        }
+      }
+
+      if (forbiddenPriorInfoMatch) {
+        ef.aceptoEnviarInfoWhatsAppOCorreo = true;
+        const snippet = forbiddenPriorInfoMatch[0].trim();
+        if (!errores.some((e: string) => e.toLowerCase().includes('whatsapp') || e.toLowerCase().includes('correo'))) {
+          errores.unshift(`Error Fatal: Cediste a enviar información previa antes de la cita ("${snippet}").`);
+        }
+      }
+
+      // 2. Verificar determinísticamente en la voz del ASESOR si dijo el origen del contacto (no vale si solo dijo "¿te acuerdas de mí?" y el prospecto lo completó)
+      const referidorName = (scenario?.referidor || '').toLowerCase().split(' ').filter((w: string) => w.length > 3);
+      const mentionedReferidor = referidorName.some((w: string) => advisorLower.includes(w));
+      const mentionedOriginKeywords = /\b(pas[oó]\s+tu\s+contacto|dio\s+tu\s+contacto|comparti[oó]\s+tu\s+contacto|recomend[oó]|habl[oó]\s+de\s+ti|desayuno|evento|conferencia|networking|dejaste\s+tus\s+datos|pediste\s+informes|solicitaste\s+informes|formulario|p[aá]gina|redes\s+sociales|internet|platicamos\s+hace)\b/i.test(advisorText);
+      if (!mentionedReferidor && !mentionedOriginKeywords && scenario?.origen?.tipo !== 'frio_total') {
+        p.pilar3OrigenContacto = false;
+      }
+
+      // 3. Verificar determinísticamente si el ASESOR explicó de qué trata la asesoría financiera
+      const mentionedAdvisoryConcept = /\b(asesor[ií]a\s+financiera|asesor[ií]as\s+financieras|asesor[ií]a\s+patrimonial|diagn[oó]stico|salud\s+financiera|m[eé]dicos\s+de\s+las\s+finanzas|doctores\s+de\s+las\s+finanzas|expertos\s+financieros|expertos\s+en\s+finanzas|asesor[ií]a\s+gratuita|orden\s+en\s+tus\s+finanzas|estrategia\s+financiera)\b/i.test(advisorText);
+      if (!mentionedAdvisoryConcept) {
+        p.pilar4ExplicacionAsesoria = false;
+      }
 
       if (ef?.aceptoEnviarInfoWhatsAppOCorreo) {
         cometioErrorFatal = true;
@@ -319,9 +368,10 @@ ${badgesText}`;
           }
         }
         if (!p.pilar3OrigenContacto) {
-          score = Math.max(0, score - 10);
-          if (!errores.some((e: string) => e.toLowerCase().includes('origen') || e.toLowerCase().includes('contacto') || e.toLowerCase().includes('datos'))) {
-            errores.push('Omitiste mencionar de dónde obtuviste los datos o el contacto del prospecto.');
+          score = Math.max(0, score - 15);
+          appointmentClosed = false;
+          if (!errores.some((e: string) => e.toLowerCase().includes('origen') || e.toLowerCase().includes('contacto') || e.toLowerCase().includes('datos') || e.toLowerCase().includes('conocen'))) {
+            errores.push('Omitiste mencionar explícitamente de dónde obtuviste sus datos o de dónde se conocen (decir solo "¿te acuerdas de mí?" sin mencionar el desayuno, referido o formulario es incorrecto).');
           }
         }
         if (!p.pilar4ExplicacionAsesoria) {

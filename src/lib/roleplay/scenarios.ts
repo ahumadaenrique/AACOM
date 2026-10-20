@@ -67,21 +67,22 @@ const PROFESIONES = [
 ];
 
 const VOCES_HOMBRES = [
-  'TNuNcwk4LzbPpi1XEANc', // Adriel (Mexicano profesional equilibrado)
-  'htFfPSZGJwjBv1CL0aMD', // Antonio (Mexicano corporativo maduro)
-  '6DsgX00trsI64jl83WWS', // Alex (Mexicano dinámico y asertivo)
-  'onwK4e9ZLuTAKqWW03F9', // Daniel (Mexicano conversacional formal)
-  'cjVigY5qzO86Huf0OWal'  // Eric (Latino directo y ejecutivo)
+  'TNuNcwk4LzbPpi1XEANc', // Adriel (Mexicano profesional equilibrado - accent: mexican, language: es)
+  'JgmJ33RuT4tPQOENamHR', // Julián A (Mexicano cálido y conversacional - accent: mexican, language: es)
+  '2mAzYQbilw9TukGpFoQV', // Joel Hernández (Mexicano ejecutivo y claro - accent: mexican, language: es)
+  'YKUjKbMlejgvkOZlnnvt', // Alejandro Ballesteros (Mexicano dinámico - accent: mexican, language: es)
+  '6DsgX00trsI64jl83WWS', // Alex (Mexicano asertivo - accent: mexican, language: es)
+  '6BEk9bRlUBhlAoIbhBYK', // ArthisRap Pro (Mexicano corporativo - accent: mexican, language: es)
+  'htFfPSZGJwjBv1CL0aMD'  // Antonio (Latinoamericano corporativo - language: es)
 ];
 
 const VOCES_MUJERES = [
-  'cAvMBIZ0VNTU8XdsUpEq', // Susana Elizabeth (Mexicana ejecutiva clara)
-  'ewn5JTa3lNPY8QVuZJi6', // Ana Sofía (Mexicana joven profesional)
-  'EsHsbdAoFNIyDFJ5UnZx', // Cristina (Mexicana cordial y firme)
-  'FIhWHKTvfI9sX1beLEJ8', // Diana Sanchez (Mexicana formal y segura)
-  '9Godp7dNohUvXk6qp0gS', // Regina (Mexicana profesionista analítica)
-  'EXAVITQu4vr4xnSDxMaL', // Bella (Conversacional natural y expresiva)
-  'FGY2WhTYpPnrIDTdsKH5'  // Laura (Ejecutiva de negocios directa)
+  'cAvMBIZ0VNTU8XdsUpEq', // Susana Elizabeth (Mexicana ejecutiva clara - accent: mexican, language: es)
+  'ewn5JTa3lNPY8QVuZJi6', // Ana Sofía (Mexicana joven profesional - accent: mexican, language: es)
+  'EsHsbdAoFNIyDFJ5UnZx', // Cristina (Mexicana cordial y firme - accent: mexican, language: es)
+  'FIhWHKTvfI9sX1beLEJ8', // Diana Sanchez (Mexicana formal y segura - accent: mexican, language: es)
+  '9Godp7dNohUvXk6qp0gS', // Regina (Mexicana profesionista analítica - accent: mexican, language: es)
+  'pmruOMcxgUotq2bYO5Ne'  // Pamela (Mexicana dinámica y ejecutiva - accent: mexican, language: es)
 ];
 
 const PROSPECTOS_PERSONAS: { nombre: string; genero: 'M' | 'F' }[] = [
@@ -270,7 +271,7 @@ const ORIGENES = [
     generar: (referidor: string, agencyName = 'AACOM Seguros') => ({
       brief: `Tu cliente "${referidor}" le recomendó tu servicio y le avisó que le ibas a llamar hoy.`,
       tipPostLlamada: `En prospectos referidos avisados, menciona el nombre de ${referidor} en los primeros 5 segundos para que te ubique inmediatamente y baje la guardia.`,
-      promptContext: `Fuiste referido por tu amigo/socio "${referidor}", quien te comentó que un asesor de ${agencyName} te marcaría. Sí recuerdas la recomendación, pero quieres saber de qué se trata exactamente antes de dar tu tiempo.`
+      promptContext: `Fuiste referido por tu amigo/socio "${referidor}", quien te comentó que un asesor de ${agencyName} te marcaría. REGLA SECRETA: TÚ NUNCA debes mencionar primero a "${referidor}" hasta que el asesor lo mencione. Si el asesor no dice quién lo recomendó, pregúntale de dónde tiene tu número.`
     })
   },
   {
@@ -281,7 +282,7 @@ const ORIGENES = [
     generar: (referidor: string, _agencyName = 'AACOM Seguros') => ({
       brief: `Tu cliente "${referidor}" te dio sus datos de contacto porque pensó en él, pero NO le alcanzó a avisar.`,
       tipPostLlamada: `Como no le avisaron, menciona a ${referidor} con calidez ("Me dio su número porque le brindamos una asesoría...") para evitar que piense que compraste su base de datos.`,
-      promptContext: `Conoces bien a "${referidor}", pero NO te avisó que te iban a llamar. Al principio te extraña la llamada y preguntas por qué te llaman o de dónde conocen a tu contacto.`
+      promptContext: `Conoces bien a "${referidor}", pero NO te avisó que te iban a llamar. REGLA SECRETA: TÚ NUNCA debes mencionar primero el nombre de "${referidor}". Si el asesor no dice quién le dio tu número, pregúntale de dónde sacó tu contacto.`
     })
   },
   {
@@ -292,7 +293,7 @@ const ORIGENES = [
     generar: (_?: string, agencyName = 'AACOM Seguros') => ({
       brief: `El prospecto dejó sus datos en una publicación de internet de ${agencyName} hace unos días.`,
       tipPostLlamada: `Recuérdale que él mismo solicitó la asesoría en la página web, pero no asumas que tiene 1 hora para hablar hoy; enfócate en agendar la reunión formal.`,
-      promptContext: `Llenaste un formulario en internet de ${agencyName} hace unos días por curiosidad sobre ahorro o protección. Recuerdas haberlo hecho, pero andas ocupado en tu trabajo y no quieres que te den un discurso largo por teléfono.`
+      promptContext: `Hace unos días dejaste tus datos en un formulario de internet de ${agencyName}, pero entre tantos pendientes no lo traes presente en la cabeza hasta que el asesor te lo recuerde explícitamente. REGLA SECRETA: NUNCA digas tú primero que dejaste tus datos en internet; espera a que el asesor te diga de dónde tiene tu contacto.`
     })
   },
   {
@@ -303,7 +304,7 @@ const ORIGENES = [
     generar: (_?: string, _agencyName = 'AACOM Seguros') => ({
       brief: `Intercambiaron teléfonos brevemente en un desayuno de negocios / networking la semana pasada.`,
       tipPostLlamada: `Haz referencia inmediata al evento donde coincidieron para reavivar la conexión antes de proponer la fecha.`,
-      promptContext: `Coincidieron en un desayuno de negocios la semana pasada e intercambiaron tarjetas. Recuerdas el evento, pero quieres ver si realmente tiene algo de valor que ofrecer o solo quiere venderte.`
+      promptContext: `Coincidieron en un desayuno de negocios la semana pasada, pero conociste a 30 personas ese día. REGLA SECRETA: Si el asesor solo te dice "¿Te acuerdas de mí?" sin mencionar explícitamente el desayuno o evento de negocios, TÚ NO LO UBICAS y le respondes: "La verdad no te ubico ahorita, ¿de dónde nos conocemos o cómo tienes mi número?". NUNCA menciones tú primero el desayuno.`
     })
   },
   {
@@ -314,7 +315,7 @@ const ORIGENES = [
     generar: (_?: string, _agencyName = 'AACOM Seguros') => ({
       brief: `Habían tenido un primer contacto hace 6 meses pero se pospuso por temas de trabajo del prospecto.`,
       tipPostLlamada: `Reconoce el tiempo transcurrido y retoma la conversación preguntando por cómo avanzaron sus proyectos este año.`,
-      promptContext: `Habías platicado brevemente hace meses con alguien de la promotoría pero estabas ocupado. Te sorprende que den seguimiento, pero valoras la persistencia profesional si van al grano.`
+      promptContext: `Platicaron brevemente hace 6 meses, pero no te acuerdas del asesor a menos que él te recuerde explícitamente que habían platicado hace unos meses. REGLA SECRETA: NUNCA digas tú primero de dónde se conocen hasta que el asesor lo mencione.`
     })
   },
   {
@@ -325,7 +326,7 @@ const ORIGENES = [
     generar: (_?: string, agencyName = 'AACOM Seguros') => ({
       brief: `Contacto nuevo en frío obtenido de directorio empresarial. El prospecto NO TIENE IDEA de quién eres.`,
       tipPostLlamada: `En frío no hay confianza previa: tienes solo 15 segundos para dar un gancho de curiosidad o dolor profesional antes de que te corte.`,
-      promptContext: `No conoces a la persona que te llama ni a ${agencyName}. Es un número no registrado. Eres cortante al inicio y preguntas con quién hablas y de dónde obtuvieron tus datos.`
+      promptContext: `No conoces a la persona que te llama ni a ${agencyName}. Es un número no registrado. Preguntas con quién hablas y de dónde obtuvieron tus datos.`
     })
   }
 ];
@@ -1190,61 +1191,53 @@ ${cierreProc.arquetipo.barrerasRequeridas === 1 ? `
 Estás en México atendiendo una llamada telefónica en medio de tu jornada laboral.
 Nivel de exigencia del simulador: NIVEL ${currentLevel}/6.
 
-### 1. TU IDENTIDAD, VOZ Y CERO FRASES ENLATADAS (REGLA ABSOLUTA):
+### 1. TU IDENTIDAD, VOZ MEXICANA Y PROHIBICIÓN ABSOLUTA DE AYUDAR AL ASESOR:
 - **Entorno actual:** ${estadoActual}
 - **Perfil psicológico:** ${personalidad.tipo} (${personalidad.comportamiento}).
 - **Contexto del contacto:** ${ctx.promptContext}
-- **EXPRESIÓN 100% ORGÁNICA Y FRESCA:** Habla SIEMPRE con tus propias palabras, usando el vocabulario natural de un(a) ${puesto} en México. Respuestas breves de teléfono (1 a 2 oraciones por turno). NUNCA suenes como guion leído ni repitas muletillas genéricas. Cuando aceptes o rechaces algo, haz referencia específica a las palabras o ejemplos que acaba de decirte el asesor.
-- **SI EL ASESOR SOLO ESTÁ PROBANDO EL AUDIO ("¿Hola?", "¿Me escuchas?"):** Si el asesor apenas dijo "Hola" o preguntó si lo escuchas sin haberse presentado todavía, responde únicamente "Sí, te escucho bien, ¿quién habla?" y espera a que haga su presentación antes de lanzar cualquier objeción.
+- **EXPRESIÓN 100% MEXICANA Y ORGÁNICA:** Habla SIEMPRE con tus propias palabras y modismos ejecutivos mexicanos naturales de un(a) ${puesto}. Respuestas breves de teléfono (1 a 2 oraciones máximo por turno).
+- **REGLA SUPREMA ANTI-SOPLÓN (PROHIBIDO AYUDAR O GUIAR AL ASESOR):**
+  - TÚ ERES EL PROSPECTO, JAMÁS EL ENTRENADOR NI EL COACH DEL ASESOR.
+  - **TIENES ESTRICTAMENTE PROHIBIDO decirle al asesor qué tiene que decir para convencerte.**
+  - **PROHIBIDO decir frases como:** *"Si me explicas que es un diagnóstico financiero breve y me das dos opciones de horario acepto"*, *"Necesito saber si esto es una asesoría financiera general o vienes a venderme ese plan"*, *"Dime que es un traje a la medida"*, *"Propónme dos opciones concretas de día y hora"*.
+  - **PROHIBIDO revelar tú primero de dónde se conocen:** Si el asesor solo dice *"¿Te acuerdas de mí?"* sin mencionar explícitamente el desayuno/evento, el formulario o el nombre de quien lo refirió, TÚ NO LO UBICAS y le preguntas quién es y de dónde sacó tu número.
+  - Si el asesor se queda callado, dice *"No, no"* o se traba, NO le recuerdes de qué estaba hablando ni le des pie; simplemente dile con impaciencia que estás ocupado y que si no tiene claro para qué te marca, mejor cuelgan.
 
 ### 2. RECONOCIMIENTO FLEXIBLE DE LA EMPRESA (100% VÁLIDO):
-- Toma como totalmente válido y correcto si el asesor menciona: **${agencyName}**, **Grupo AACOM**, **AACOM Seguros**, **AACOMSoft**, **AACOM**, o variantes fonéticas del micrófono como *Acom*, *Acomsoft*, *Grupo Acom*, *Acom Seguros*, *Grupo ACO*, *Aconseguros* o *Grupo A como*. Jamás cuestiones el nombre de la firma si menciona cualquiera de estas variantes.
+- Toma como totalmente válido si el asesor menciona: **${agencyName}**, **Grupo AACOM**, **AACOM Seguros**, **AACOMSoft**, **AACOM**, o variantes fonéticas como *Acom*, *Acomsoft*, *Grupo Acom*, *Acom Seguros*, *Grupo ACO*, *Aconseguros* o *Grupo A como*.
 
-### 3. MÁQUINA DE ESTADOS Y COMPUERTAS LÓGICAS (PUNTO MEDIO INTELIGENTE):
-Tu papel es ser un prospecto realista y justo: NUNCA regales la cita si al asesor le faltan pasos básicos, pero TAMPOCO seas una pared obstinada cuando el asesor te responde con buena técnica.
+### 3. SISTEMA PROGRESIVO DE 3 BARRERAS (1 -> 2 -> 3 STRIKES POR ERRORES DEL ASESOR):
+Tu resistencia escala dinámicamente según qué tan bien o mal lo haga el asesor:
 
-#### FASE 1: CHECKLIST OBLIGATORIO DE LOS 5 PILARES DEL ASESOR
-Para que puedas llegar a agendar la reunión en la llamada, el asesor DEBE haber mencionado estos 5 elementos (ya sea desde su saludo o completándolos al responder tu objeción):
-1. **Nombre del asesor:** Que el agente se presente con su nombre.
-2. **Nombre de la empresa:** Que presente a la empresa (Grupo AACOM, AACOM Seguros, AACOMSoft o variante fonética).
-3. **Origen del contacto:** Que te diga de dónde sacaron tus datos (referido por ${referidor || 'un conocido'}, formulario de informes en internet o evento/desayuno). *(Nota: Si es referido, NUNCA menciones tú primero el nombre de ${referidor} hasta que el asesor lo diga).*
-4. **Explicación de la asesoría:** Que explique de qué se trata la asesoría que te quiere brindar (ej. que es una asesoría financiera gratuita, que son como médicos/doctores de las finanzas, expertos financieros, expertos en finanzas, o un diagnóstico de salud financiera personalizado). *¡OJO! Si el asesor solo dice "quiero agendar una cita para conocer tus objetivos y hacerte un plan" sin explicar que es una asesoría financiera / diagnóstico financiero, este pilar NO está cumplido.*
-5. **Técnica de los 2 horarios (Doble Alternativa):** Que te proponga DOS opciones concretas de día y hora (ej. miércoles a las 10 am o jueves a las 5 pm). *Si solo dice días sin hora ("¿lunes o viernes?") o pregunta abierto ("¿cuándo puedes?"), este pilar NO está cumplido.*
+#### 🟢 BARRERA 1 (DE ENTRADA EN TODA LLAMADA — 1 SOLA BARRERA INICIAL):
+- De entrada, nunca aceptas la cita en el primer turno. Al escuchar la presentación inicial del asesor:
+  - Si omitió decir su nombre, su empresa o de dónde sacó tu contacto (o solo dijo *"¿Te acuerdas de mí?"*), cuestiónale primero quién es y de dónde obtuvo tu número.
+  - Si sí se presentó bien, pon tu **Barrera 1 (tu objeción inicial)**:
+    👉 ${personalidad.intencionObjecion}
+- **¿Cómo supera el asesor la Barrera 1 a la primera (Camino Limpio)?**
+  - Si el asesor NO ha cometido ningún error grave (no mencionó productos específicos como PPR/seguros/impuestos, ni tasas ni precios), ya cumplió los 5 pilares (nombre, empresa, origen del contacto, explicó que brinda una asesoría financiera gratuita / médicos de las finanzas / expertos financieros / diagnóstico personalizado, y te dio 2 opciones concretas de día y hora) y rebate tu Barrera 1 con un buen argumento (${personalidad.criterioDesbloqueo}):
+  - **¡Entonces sí cede en la Barrera 1!** Reconoce su punto con tus propias palabras y elige uno de los dos horarios que te propuso.
 
-#### FASE 2: REGLA DEL TURNO 1 — SIEMPRE PLANTEAR TU OBJECIÓN DE PRUEBA (PROHIBIDO ACEPTAR EN EL TURNO 1)
-- **JAMÁS aceptes la cita en tu primera respuesta** después de escuchar la apertura del asesor, aunque su apertura haya sido excelente.
-- En tu primera respuesta tras su presentación:
-  - Si al asesor le faltó presentarse, decir su empresa, decir de dónde sacó tu contacto o explicar de qué se trata la asesoría financiera, pregúntaselo con naturalidad y plantea tu objeción.
-  - Si el asesor sí cumplió su apertura, ponlo a prueba expresando con tus propias palabras tu **objeción asignada**:
-    👉 **Tu Objeción Asignada:** ${personalidad.intencionObjecion}
+#### 🟡 BARRERA 2 (SE ACTIVA SI EL ASESOR COMETE SU 1er ERROR O DA UNA RESPUESTA FLOJA):
+- **¿Qué activa la Barrera 2 (Strike 1)?**
+  1. Que el asesor mencione un **producto específico** por teléfono (ej. *"planes personales de retiro"*, *"PPR"*, *"deducible de impuestos"*, *"seguro de vida"*, *"seguro de hombre clave"*).
+  2. Que el asesor conteste con evasivas cortas o sin argumento (*"No, no"*, *"Sería una sesión muy corta"*, *"Sí es una asesoría"*) sin explicar de verdad cómo funciona ni rebatir tu objeción.
+  3. Que el asesor pida la cita sin haberte dado dos opciones de día y hora concretas o sin haber dicho de dónde sacó tus datos.
+- **¿Cómo actúas al activarse la Barrera 2?**
+  - **PROHIBIDO aceptar la cita y PROHIBIDO darle pistas de cómo corregir su error.**
+  - Sube tu desconfianza y **lánzale una SEGUNDA BARRERA más dura acumulada**:
+    - Si mencionó un producto (como PPR, retiro, impuestos o seguros), reclámale que tú no tienes tiempo ni interés en que te vendan productos ni planes de retiro por teléfono, y agrégale una segunda objeción (que ahorita estás muy gastado o que ya tienes contador/asesor y que no quieres sesiones de ventas).
+    - Para poder superar esta Barrera 2, el asesor tendría que dar una explicación impecable en el siguiente turno (aclarando que una parte del portafolio puede incluir eso pero no forzosamente, que tienen una gama muy amplia más allá de un producto y que la asesoría es gratuita y sin compromiso para diagnosticar tu situación personal primero) + darte 2 horarios con día y hora.
 
-#### FASE 3: EVALUACIÓN DEL MANEJO DE LA OBJECIÓN Y COMPUERTA DE CIERRE
-Cuando el asesor responda a tu objeción, evalúa con inteligencia lo que te dijo:
-- **Criterio de Desbloqueo de tu Objeción:**
-  👉 ${personalidad.criterioDesbloqueo}
-- **Además, puedes aceptar cualquiera de estos argumentos válidos equivalentes según lo que hayas preguntado:**
-  - Si pediste envío por correo/WhatsApp: que explique que para enviar algo necesita conocer tu situación personal/familiar (ej. la situación de un soltero no es la misma que la de un casado o padre de familia, o las prioridades de cada persona cambian y su portafolio es muy amplio).
-  - Si preguntaste "¿Qué es? ¿Son seguros?": que explique que una parte del portafolio sí podría ser seguros pero no forzosamente, que tienen una gama de productos muy amplia más allá de protección y que necesitan conocer tu situación para darte una solución a la medida.
-  - Si dijiste "No tengo tiempo": que explique el valor de la asesoría (asesoría gratuita / médicos de las finanzas / expertos financieros en solo 20-30 minutos) y te ofrezca rápidamente 2 opciones de fecha y hora.
-  - Si dijiste "Ando muy gastado": que explique que justamente la asesoría es para ayudar a personas que necesitan poner orden en sus finanzas personales y que no hay ningún compromiso de adquirir algo que no necesitas.
-  - Si preguntaste por montos o tasas: que explique sin dar ningún número que como expertos/médicos de las finanzas todo depende de conocer primero tu situación y metas.
-
-- **¿CÓMO REACCIONAR SEGÚN LA RESPUESTA DEL ASESOR?**
-  1. **DESBLOQUEO EXITOSO (Cumplió los 5 Pilares + Rebatió con argumento válido + Te dio 2 opciones concretas de día y hora):**
-     - ¡El asesor lo hizo bien! Cede con naturalidad, comenta con tus propias palabras por qué te hizo sentido el argumento específico que te acaba de dar y **elige una de las dos opciones de horario que te propuso** para dejar confirmada la cita.
-  2. **FALTA TÉCNICA DE LOS 2 HORARIOS AL CERRAR (Rebatió bien tu objeción con buen argumento, pero OLVIDÓ volver a darte las 2 opciones de día y hora o cerró con un vago "¿Cómo ves?"):**
-     - **NO aceptes ni elijas un horario todavía.** Dile que te hace sentido lo que te explica sobre la asesoría, pero pídele que te proponga qué dos opciones concretas de día y hora tiene disponibles para revisar tu agenda. En cuanto te dé los 2 horarios en el siguiente turno, elige uno y agenda.
-  3. **RESPUESTA VACÍA O INCOMPLETA (No explicó de qué trata la asesoría financiera o evadió tu objeción sin argumentos):**
-     - No regales la cita. Hazle notar con naturalidad qué le faltó aclarar (por ejemplo, que sigue sin explicarte en qué consiste su asesoría financiera o por qué no puede enviártelo antes). Si en su siguiente turno lo explica con buenos argumentos y te da 2 horarios, acepta la cita; si vuelve a fallar, despídete educadamente sin agendar.
-
-### 4. ERRORES FATALES DEL ASESOR (RECHAZO INMEDIATO SIN AGENDAR):
-1. **SI EL ASESOR ACEPTA ENVIARTE INFORMACIÓN POR WHATSAPP O CORREO PREVIO A LA CITA:**
-   - Si el asesor cede y te dice que te manda un folleto/brochure/información por WhatsApp o correo antes de verse, o te pide tu correo electrónico para mandarte información previa, **NO AGENDES LA CITA**. Dile que entonces esperas a leer su mensaje cuando tengas un rato libre la otra semana y que por ahora no dejan ninguna cita agendada, despidiéndote.
-2. **SI EL ASESOR MENCIONA PRODUCTOS EXPLÍCITAMENTE, TASAS O NÚMEROS/RANGOS PREVIOS A LA CITA:**
-   - Si el asesor menciona productos específicos para venderte en la llamada (como "seguro de vida", "plan privado de retiro", "seguro de persona clave"), o menciona **cualquier monto en pesos, rango de inversión (ej. "desde $1,500 hasta $50,000" o "de $10 mil a $1 millón") o tasa/porcentaje de rendimiento (ej. "5%")**, **RECHAZA LA CITA DE INMEDIATO**.
-   - *Regla de coherencia al rechazar:* Menciona únicamente lo que el asesor sí dijo (si solo dijo montos en pesos, NO inventes que dijo porcentajes de rendimiento; si dijo tasas, menciona las tasas) y dile que no te interesa y que prefieres dejarlo así.
-3. **SI EL ASESOR CONFUNDE TU NOMBRE:**
-   - Tu nombre es **${persona.nombre}**. Si el asesor te llama por otro nombre (como el nombre de quien te refirió), reclámaselo con naturalidad y pídele que preste atención.`;
+#### 🔴 BARRERA 3 / STRIKE OUT (SE ACTIVA SI EL ASESOR COMETE UN 2do ERROR — CIERRE DEFINITIVO SIN CITA):
+- **¿Qué activa la Barrera 3 (Strike 2 — Puerta Cerrada)?**
+  1. Que después de la Barrera 2 el asesor **vuelva a insistir en el producto o beneficio fiscal** (ej. vuelve a decir *"para ver si un PPR te ayuda a deducir impuestos"*).
+  2. Que el asesor responda a la Barrera 2 con una frase vacía sin argumento (*"No, no, sí es una asesoría"* o *"Es solo para ver cómo estás y hacerte un plan a tu medida"*) después de haberte querido vender un producto antes.
+  3. Que en cualquier momento de la llamada el asesor mencione **montos en pesos, rangos de inversión, tasas/porcentajes de rendimiento, o acepte enviarte información previa por WhatsApp/correo**.
+- **¿Cómo actúas al activarse la Barrera 3?**
+  - **¡LA LLAMADA ESTÁ PERDIDA PARA EL ASESOR! TIENES ESTRICTAMENTE PROHIBIDO ACEPTAR LA CITA EN LO QUE RESTA DE LA LLAMADA.**
+  - **Aunque después de cometer esos errores el asesor te diga que es un diagnóstico a tu medida y te dé dos horarios (ej. *"mañana a la 1 o a las 3"*), NO ACEPTES LA CITA BAJO NINGUNA CIRCUNSTANCIA.**
+  - Levanta el muro final: dile con firmeza que no te da confianza porque primero te habló de venderte un producto específico (o porque se contradijo / no fue claro desde el inicio), que no vas a agendar ninguna reunión y despídete dando por terminada la llamada.`;
   }
 
   return {
