@@ -66,6 +66,7 @@ import {
 } from "recharts"
 
 import AdminCotizadorSettings from './AdminCotizadorSettings'
+import AdminModulesSettings from './AdminModulesSettings'
 
 export default function AdminClient() {
 
@@ -90,7 +91,7 @@ export default function AdminClient() {
   const [adnYearFilter, setAdnYearFilter] = useState<string>(new Date().getFullYear().toString())
 
   // Admin Dashboard Tabs
-  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca" | "votaciones" | "encuestas" | "cotizador" | "satisfaccion" | "produccion">("productividad")
+  const [activeTab, setActiveTab] = useState<"historico" | "productividad" | "agentes" | "adn" | "comunicados" | "actividad" | "asistente" | "notificaciones" | "biblioteca" | "votaciones" | "encuestas" | "cotizador" | "satisfaccion" | "produccion" | "modulos">("productividad")
 
   // Chatbot Knowledge Base states
   const [knowledgeDocs, setKnowledgeDocs] = useState<any[]>([])
@@ -1032,7 +1033,7 @@ export default function AdminClient() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
       const tabParam = params.get('tab')
-      if (tabParam && ["historico", "productividad", "agentes", "adn", "comunicados", "actividad", "asistente", "notificaciones", "biblioteca", "votaciones"].includes(tabParam)) {
+      if (tabParam && ["historico", "productividad", "agentes", "adn", "comunicados", "actividad", "asistente", "notificaciones", "biblioteca", "votaciones", "modulos", "produccion", "satisfaccion"].includes(tabParam)) {
         setActiveTab(tabParam as any)
       }
     }
@@ -1347,7 +1348,7 @@ export default function AdminClient() {
               : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"
           }`}
         >
-          <Award className="h-4.5 w-4.5 text-teal-700 dark:text-teal-400" /> Producción & Primas
+          <Award className="h-4.5 w-4.5 text-teal-700 dark:text-teal-400" /> Producción & Primas</button><button onClick={() => setActiveTab("modulos")} className={`px-6 py-3 font-bold text-sm border-b-2 transition-all flex items-center gap-2 ${activeTab === "modulos" ? "border-teal-600 text-teal-600 dark:text-teal-400" : "border-transparent text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200"}`}><Settings className="h-4.5 w-4.5 text-teal-600" /> Módulos y Menús
         </button>
                 {currentUserRole === 'SUPER_ADMIN' && (
             <>
@@ -5343,6 +5344,12 @@ export default function AdminClient() {
       {activeTab === "produccion" && (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <AdminProduccion />
+        </div>
+      )}
+
+      {activeTab === "modulos" && (
+        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <AdminModulesSettings />
         </div>
       )}
 

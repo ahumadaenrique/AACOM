@@ -3,6 +3,7 @@ import { headers } from "next/headers"
 import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity, Newspaper, SmilePlus } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
+import { parseAgencyModulesConfig, isPathBlockedByModuleConfig } from "@/lib/agencyModules"
 import { resolveImageUrl } from "@/lib/utils"
 import PwaInstaller from "@/components/PwaInstaller"
 import { PushNotificationManager } from "@/components/PushNotificationManager"
@@ -133,10 +134,31 @@ export default async function DashboardLayout({
     const isLiteAgent = dbUser?.role === 'AGENTE_LITE';
     const isReferidor = dbUser?.role === 'REFERIDOR';
     const allowReferidores = agency?.allowReferidores ?? false;
+    const allowTipsModule = agency?.allowTipsModule ?? true;
+
+    const effectiveAgencyIdForModules = agency?.id || resolvedAgencyId || "aacom";
+    const modulesSetting = await prisma.setting.findUnique({
+        where: { key: `agency_modules_${effectiveAgencyIdForModules}` }
+    });
+    const modConfig = parseAgencyModulesConfig(modulesSetting?.value);
+    const hasVisibleTools =
+        modConfig.encuesta_satisfaccion ||
+        modConfig.documentacion ||
+        modConfig.cotizador ||
+        modConfig.adn ||
+        (modConfig.tips && allowTipsModule) ||
+        modConfig.plan_arranque ||
+        modConfig.academia;
 
     if (isSeller && pathname !== '/vendedor') {
         const { redirect } = await import("next/navigation");
         redirect("/vendedor");
+    }
+
+    // Si un agente o usuario no administrador intenta acceder por URL directa a un módulo desactivado por su promotoría, redirigir al inicio
+    if (!isAdmin && isPathBlockedByModuleConfig(pathname, modConfig)) {
+        const { redirect } = await import("next/navigation");
+        redirect("/");
     }
 
     const showNavLinks = (isSubscriptionActive || isSuperAdmin) && !isSeller;
@@ -191,15 +213,17 @@ export default async function DashboardLayout({
                         )}
                         {showNavLinks && (
                             <>
-                                <Link
-                                    href="/newsletters"
-                                    className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/newsletters') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                >
-                                    <Newspaper className={`h-4 w-4 ${pathname.startsWith('/newsletters') ? 'text-primary' : 'text-zinc-600 dark:text-zinc-400'}`} />
-                                    Newsletters
-                                    {pathname.startsWith('/newsletters') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                </Link>
-                                {!isLiteAgent && (
+                                {modConfig.newsletters && (
+                                    <Link
+                                        href="/newsletters"
+                                        className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/newsletters') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        <Newspaper className={`h-4 w-4 ${pathname.startsWith('/newsletters') ? 'text-primary' : 'text-zinc-600 dark:text-zinc-400'}`} />
+                                        Newsletters
+                                        {pathname.startsWith('/newsletters') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                    </Link>
+                                )}
+                                {!isLiteAgent && modConfig.activity && (
                                     <Link
                                         href="/activity"
                                         className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/activity') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
@@ -211,39 +235,47 @@ export default async function DashboardLayout({
                                 )}
                                 {!isReferidor && (
                                     <>
-                                        <Link
-                                            href="/pea-prp"
-                                            className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/pea-prp') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                        >
-                                            <Target className={`h-4 w-4 ${pathname.startsWith('/pea-prp') ? 'text-primary' : 'text-indigo-600'}`} />
-                                            PEA/PRP/JEP
-                                            {pathname.startsWith('/pea-prp') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                        </Link>
-                                        <Link
-                                            href="/cartera"
-                                            className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/cartera') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                        >
-                                            <Wallet className={`h-4 w-4 ${pathname.startsWith('/cartera') ? 'text-primary' : 'text-green-600'}`} />
-                                            Mi Cartera
-                                            {pathname.startsWith('/cartera') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                        </Link>
-                                        <Link
-                                            href="/team"
-                                            className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/team') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                        >
-                                            <Users className={`h-4 w-4 ${pathname.startsWith('/team') ? 'text-primary' : 'text-indigo-500'}`} />
-                                            Equipo
-                                            {pathname.startsWith('/team') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                        </Link>
-                                        <Link
-                                            href="/ranking"
-                                            className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/ranking') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
-                                        >
-                                            <Award className={`h-4 w-4 ${pathname.startsWith('/ranking') ? 'text-primary' : 'text-amber-500'}`} />
-                                            Ranking
-                                            {pathname.startsWith('/ranking') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                        </Link>
-                                        {!isLiteAgent && allowReferidores && (
+                                        {modConfig.pea_prp && (
+                                            <Link
+                                                href="/pea-prp"
+                                                className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/pea-prp') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                            >
+                                                <Target className={`h-4 w-4 ${pathname.startsWith('/pea-prp') ? 'text-primary' : 'text-indigo-600'}`} />
+                                                PEA/PRP/JEP
+                                                {pathname.startsWith('/pea-prp') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                            </Link>
+                                        )}
+                                        {modConfig.cartera && (
+                                            <Link
+                                                href="/cartera"
+                                                className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/cartera') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                            >
+                                                <Wallet className={`h-4 w-4 ${pathname.startsWith('/cartera') ? 'text-primary' : 'text-green-600'}`} />
+                                                Mi Cartera
+                                                {pathname.startsWith('/cartera') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                            </Link>
+                                        )}
+                                        {modConfig.team && (
+                                            <Link
+                                                href="/team"
+                                                className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/team') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                            >
+                                                <Users className={`h-4 w-4 ${pathname.startsWith('/team') ? 'text-primary' : 'text-indigo-500'}`} />
+                                                Equipo
+                                                {pathname.startsWith('/team') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                            </Link>
+                                        )}
+                                        {modConfig.ranking && (
+                                            <Link
+                                                href="/ranking"
+                                                className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/ranking') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                            >
+                                                <Award className={`h-4 w-4 ${pathname.startsWith('/ranking') ? 'text-primary' : 'text-amber-500'}`} />
+                                                Ranking
+                                                {pathname.startsWith('/ranking') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                            </Link>
+                                        )}
+                                        {!isLiteAgent && allowReferidores && modConfig.referidores && (
                                             <Link
                                                 href="/referidores"
                                                 className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/referidores') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
@@ -257,7 +289,7 @@ export default async function DashboardLayout({
                                 )}
 
                                 {/* Dropdown Herramientas */}
-                                {!isReferidor && (
+                                {!isReferidor && hasVisibleTools && (
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
                                             <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/documentacion', '/cotizador', '/adn', '/tips', '/academia', '/plan-arranque', '/encuesta-satisfaccion'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
@@ -267,70 +299,86 @@ export default async function DashboardLayout({
                                             </button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="w-56">
-                                            <DropdownMenuItem asChild>
-                                                <Link href="/encuesta-satisfaccion" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                    <SmilePlus className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                                                    Encuesta de satisfacción
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link href="/documentacion" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                    <Book className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                                                    Mi Biblioteca
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link href="/cotizador" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                    <Calculator className="h-4 w-4 text-teal-600 dark:text-teal-400" />
-                                                    Cotizador
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link href="/adn" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                    <HeartPulse className="h-4 w-4 text-red-500" />
-                                                    ADN
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link href="/tips" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                    <Target className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
-                                                    TIPS (Taller en Vivo)
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link href="/plan-arranque" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                    <Rocket className="h-4 w-4 text-orange-500" />
-                                                    Plan de Arranque
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link href="/academia" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                    <GraduationCap className="h-4 w-4 text-purple-500" />
-                                                    Academia
-                                                </Link>
-                                            </DropdownMenuItem>
+                                            {modConfig.encuesta_satisfaccion && (
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/encuesta-satisfaccion" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                        <SmilePlus className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                                                        Encuesta de satisfacción
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            )}
+                                            {modConfig.documentacion && (
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/documentacion" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                        <Book className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                                                        Mi Biblioteca
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            )}
+                                            {modConfig.cotizador && (
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/cotizador" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                        <Calculator className="h-4 w-4 text-teal-600 dark:text-teal-400" />
+                                                        Cotizador
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            )}
+                                            {modConfig.adn && (
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/adn" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                        <HeartPulse className="h-4 w-4 text-red-500" />
+                                                        ADN
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            )}
+                                            {modConfig.tips && allowTipsModule && (
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/tips" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                        <Target className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                                                        TIPS (Taller en Vivo)
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            )}
+                                            {modConfig.plan_arranque && (
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/plan-arranque" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                        <Rocket className="h-4 w-4 text-orange-500" />
+                                                        Plan de Arranque
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            )}
+                                            {modConfig.academia && (
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/academia" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                        <GraduationCap className="h-4 w-4 text-purple-500" />
+                                                        Academia
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            )}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 )}
 
                                 {/* Dropdown Inteligencia Artificial Avanzada */}
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${pathname.startsWith('/assistant') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                                            <Bot className={`h-4 w-4 ${pathname.startsWith('/assistant') ? 'text-primary' : 'text-indigo-500'}`} />
-                                            Inteligencia Artificial Avanzada
-                                            {pathname.startsWith('/assistant') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
-                                        </button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="start" className="w-52">
-                                        <DropdownMenuItem asChild>
-                                            <Link href="/assistant" className="flex items-center gap-2 cursor-pointer font-medium">
-                                                <MessageSquare className="h-4 w-4 text-pink-500" />
-                                                Asistente {shortAgencyName}
-                                            </Link>
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
+                                {modConfig.assistant && (
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${pathname.startsWith('/assistant') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                                                <Bot className={`h-4 w-4 ${pathname.startsWith('/assistant') ? 'text-primary' : 'text-indigo-500'}`} />
+                                                Inteligencia Artificial Avanzada
+                                                {pathname.startsWith('/assistant') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                            </button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="start" className="w-52">
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/assistant" className="flex items-center gap-2 cursor-pointer font-medium">
+                                                    <MessageSquare className="h-4 w-4 text-pink-500" />
+                                                    Asistente {shortAgencyName}
+                                                </Link>
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                )}
 
                                 {/* Dropdown Administración */}
                                 {isAdmin && (
@@ -365,6 +413,12 @@ export default async function DashboardLayout({
                                                 <Link href="/admin" className="flex items-center gap-2 cursor-pointer font-medium">
                                                     <Settings className="h-4 w-4" />
                                                     Dashboard Admin
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin?tab=modulos" className="flex items-center gap-2 cursor-pointer font-medium text-teal-700 dark:text-teal-400">
+                                                    <Settings className="h-4 w-4 text-teal-600" />
+                                                    Módulos y Menús
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
@@ -453,14 +507,16 @@ export default async function DashboardLayout({
                                 {showNavLinks && (
                                      <>
                                          {/* Root Links */}
-                                         <Link
-                                             href="/newsletters"
-                                             className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                         >
-                                             <Newspaper className="h-5 w-5 text-zinc-500" />
-                                             Newsletters
-                                         </Link>
-                                         {!isLiteAgent && (
+                                         {modConfig.newsletters && (
+                                             <Link
+                                                 href="/newsletters"
+                                                 className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                             >
+                                                 <Newspaper className="h-5 w-5 text-zinc-500" />
+                                                 Newsletters
+                                             </Link>
+                                         )}
+                                         {!isLiteAgent && modConfig.activity && (
                                              <Link
                                                  href="/activity"
                                                  className="text-muted-foreground hover:text-foreground flex items-center gap-2"
@@ -471,35 +527,43 @@ export default async function DashboardLayout({
                                          )}
                                          {!isReferidor && (
                                              <>
-                                                 <Link
-                                                     href="/pea-prp"
-                                                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                                 >
-                                                     <Target className="h-5 w-5 text-indigo-600" />
-                                                     PEA/PRP/JEP
-                                                 </Link>
-                                                 <Link
-                                                     href="/cartera"
-                                                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                                 >
-                                                     <Wallet className="h-5 w-5 text-green-600" />
-                                                     Mi Cartera
-                                                 </Link>
-                                                 <Link
-                                                     href="/team"
-                                                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                                 >
-                                                     <Users className="h-5 w-5 text-indigo-500" />
-                                                     Equipo
-                                                 </Link>
-                                                 <Link
-                                                     href="/ranking"
-                                                     className="text-muted-foreground hover:text-foreground flex items-center gap-2"
-                                                 >
-                                                     <Award className="h-5 w-5 text-amber-500" />
-                                                     Ranking
-                                                 </Link>
-                                                 {!isLiteAgent && allowReferidores && (
+                                                 {modConfig.pea_prp && (
+                                                     <Link
+                                                         href="/pea-prp"
+                                                         className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                                     >
+                                                         <Target className="h-5 w-5 text-indigo-600" />
+                                                         PEA/PRP/JEP
+                                                     </Link>
+                                                 )}
+                                                 {modConfig.cartera && (
+                                                     <Link
+                                                         href="/cartera"
+                                                         className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                                     >
+                                                         <Wallet className="h-5 w-5 text-green-600" />
+                                                         Mi Cartera
+                                                     </Link>
+                                                 )}
+                                                 {modConfig.team && (
+                                                     <Link
+                                                         href="/team"
+                                                         className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                                     >
+                                                         <Users className="h-5 w-5 text-indigo-500" />
+                                                         Equipo
+                                                     </Link>
+                                                 )}
+                                                 {modConfig.ranking && (
+                                                     <Link
+                                                         href="/ranking"
+                                                         className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                                     >
+                                                         <Award className="h-5 w-5 text-amber-500" />
+                                                         Ranking
+                                                     </Link>
+                                                 )}
+                                                 {!isLiteAgent && allowReferidores && modConfig.referidores && (
                                                      <Link
                                                          href="/referidores"
                                                          className="text-muted-foreground hover:text-foreground flex items-center gap-2"
@@ -512,44 +576,58 @@ export default async function DashboardLayout({
                                          )}
 
                                          {/* Herramientas Section */}
-                                         {!isReferidor && (
+                                         {!isReferidor && hasVisibleTools && (
                                              <div className="space-y-2.5">
                                              <div className="text-[10px] font-mono tracking-wider text-zinc-400 uppercase pt-2">Herramientas</div>
                                              <div className="pl-3 space-y-2.5 border-l border-zinc-200 dark:border-zinc-800">
-                                                 <Link href="/encuesta-satisfaccion" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
-                                                     <SmilePlus className="h-4.5 w-4.5 text-emerald-500" />
-                                                     Encuesta de satisfacción
-                                                 </Link>
-                                                 <Link href="/documentacion" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
-                                                     <Book className="h-4.5 w-4.5 text-teal-600" />
-                                                     Mi Biblioteca
-                                                 </Link>
-                                                 <Link href="/cotizador" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
-                                                     <Calculator className="h-4.5 w-4.5 text-teal-600" />
-                                                     Cotizador
-                                                 </Link>
-                                                 <Link href="/adn" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
-                                                     <HeartPulse className="h-4.5 w-4.5 text-red-500" />
-                                                     ADN
-                                                 </Link>
-                                                 <Link href="/tips" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2 font-semibold">
-                                                     <Target className="h-4.5 w-4.5 text-indigo-600" />
-                                                     TIPS (Taller en Vivo)
-                                                 </Link>
-                                                 <Link href="/plan-arranque" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
-                                                     <Rocket className="h-4.5 w-4.5 text-orange-500" />
-                                                     Plan de Arranque
-                                                 </Link>
-                                                 <Link href="/academia" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
-                                                     <GraduationCap className="h-4.5 w-4.5 text-purple-500" />
-                                                     Academia
-                                                 </Link>
+                                                 {modConfig.encuesta_satisfaccion && (
+                                                     <Link href="/encuesta-satisfaccion" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <SmilePlus className="h-4.5 w-4.5 text-emerald-500" />
+                                                         Encuesta de satisfacción
+                                                     </Link>
+                                                 )}
+                                                 {modConfig.documentacion && (
+                                                     <Link href="/documentacion" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Book className="h-4.5 w-4.5 text-teal-600" />
+                                                         Mi Biblioteca
+                                                     </Link>
+                                                 )}
+                                                 {modConfig.cotizador && (
+                                                     <Link href="/cotizador" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Calculator className="h-4.5 w-4.5 text-teal-600" />
+                                                         Cotizador
+                                                     </Link>
+                                                 )}
+                                                 {modConfig.adn && (
+                                                     <Link href="/adn" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <HeartPulse className="h-4.5 w-4.5 text-red-500" />
+                                                         ADN
+                                                     </Link>
+                                                 )}
+                                                 {modConfig.tips && allowTipsModule && (
+                                                     <Link href="/tips" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2 font-semibold">
+                                                         <Target className="h-4.5 w-4.5 text-indigo-600" />
+                                                         TIPS (Taller en Vivo)
+                                                     </Link>
+                                                 )}
+                                                 {modConfig.plan_arranque && (
+                                                     <Link href="/plan-arranque" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Rocket className="h-4.5 w-4.5 text-orange-500" />
+                                                         Plan de Arranque
+                                                     </Link>
+                                                 )}
+                                                 {modConfig.academia && (
+                                                     <Link href="/academia" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
+                                                         <GraduationCap className="h-4.5 w-4.5 text-purple-500" />
+                                                         Academia
+                                                     </Link>
+                                                 )}
                                              </div>
                                          </div>
                                          )}
 
                                          {/* IA Avanzada Section */}
-                                         {!isLiteAgent && (
+                                         {!isLiteAgent && modConfig.assistant && (
                                              <div className="space-y-2.5">
                                                  <div className="text-[10px] font-mono tracking-wider text-zinc-400 uppercase pt-2">IA Avanzada</div>
                                                  <div className="pl-3 space-y-2.5 border-l border-zinc-200 dark:border-zinc-800">
@@ -577,6 +655,10 @@ export default async function DashboardLayout({
                                                      <Link href="/admin" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
                                                          <Settings className="h-4.5 w-4.5 text-slate-500" />
                                                          Dashboard Admin
+                                                     </Link>
+                                                     <Link href="/admin?tab=modulos" className="text-teal-700 dark:text-teal-400 font-semibold hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Settings className="h-4.5 w-4.5 text-teal-600" />
+                                                         Módulos y Menús
                                                      </Link>
                                                      <Link href="/admin/plan-arranque" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
                                                          <Rocket className="h-4.5 w-4.5 text-orange-500" />
@@ -741,4 +823,3 @@ export default async function DashboardLayout({
         </div>
     )
 }
-

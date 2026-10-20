@@ -7,6 +7,7 @@ import { SALES_ACTIVITIES } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import webpush from "web-push";
+import { parseAgencyModulesConfig, DEFAULT_AGENCY_MODULES_CONFIG, type AgencyModulesConfig } from "@/lib/agencyModules";
 
 function enforceDemoSafety(session: any) {
     if (session?.user?.id === 'demo-user-id') {
@@ -1597,6 +1598,94 @@ export async function getActivityHistory(targetUserId?: string) {
 // ==========================================
 // RANKING DE AGENTES & ADNs ACTIONS
 // ==========================================
+
+export async function getAgencyModulesConfig(): Promise<{
+    success: boolean;
+    config: AgencyModulesConfig;
+    allowReferidores?: boolean;
+    allowTipsModule?: boolean;
+}> {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, config: { ...DEFAULT_AGENCY_MODULES_CONFIG } };
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            include: { agency: true }
+        });
+
+        const agencyId = ((session?.user?.agencyId || user?.agencyId) as string) || 'aacom';
+        const agency = user?.agency || await prisma.agency.findUnique({ where: { id: agencyId } });
+
+        const setting = await prisma.setting.findUnique({
+            where: { key: `agency_modules_${agencyId}` }
+        });
+
+        const config = parseAgencyModulesConfig(setting?.value);
+
+        return {
+            success: true,
+            config,
+            allowReferidores: agency?.allowReferidores ?? false,
+            allowTipsModule: agency?.allowTipsModule ?? true
+        };
+    } catch (error) {
+        console.error("Error fetching agency modules config:", error);
+        return { success: false, config: { ...DEFAULT_AGENCY_MODULES_CONFIG } };
+    }
+}
+
+export async function saveAgencyModulesConfig(
+    updates: Partial<AgencyModulesConfig>
+): Promise<{ success: boolean; config?: AgencyModulesConfig; message?: string }> {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        enforceDemoSafety(session);
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const agencyId = ((session?.user?.agencyId || currentUser?.agencyId) as string) || 'aacom';
+        const key = `agency_modules_${agencyId}`;
+
+        const existingSetting = await prisma.setting.findUnique({
+            where: { key }
+        });
+
+        const currentConfig = parseAgencyModulesConfig(existingSetting?.value);
+        const nextConfig: AgencyModulesConfig = {
+            ...currentConfig,
+            ...updates
+        };
+
+        const serialized = JSON.stringify(nextConfig);
+
+        await prisma.setting.upsert({
+            where: { key },
+            update: { value: serialized },
+            create: { key, value: serialized }
+        });
+
+        revalidatePath('/', 'layout');
+        revalidatePath('/admin');
+
+        return { success: true, config: nextConfig };
+    } catch (error: any) {
+        console.error("Error saving agency modules config:", error);
+        return { success: false, message: error.message || "Error al guardar visibilidad de módulos" };
+    }
+}
 
 export type RankingMetricMode = 'ADN' | 'POINTS_25' | 'PRIMA_PAGADA' | 'PRIMA_EMITIDA';
 
