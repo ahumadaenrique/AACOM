@@ -144,33 +144,52 @@ export async function POST(req: Request) {
       - Bajar la prima o suma asegurada de inmediato sin haber defendido el valor del proyecto primero.`;
     } else {
       evalInstructions = `
-      Módulo: Prospección Telefónica.
-      El asesor DEBE:
-      1. PRESENTACIÓN PROFESIONAL Y EMPRESA (FLEXIBLE CON VARIANTES Y FONÉTICA):
-         - Presentarse con su nombre y mencionar su empresa, promotoría o despacho.
-         - IMPORTANTE: Son 100% VÁLIDAS cualquiera de estas formas: "Grupo AACOM", "AACOM Seguros", "AACOM", "AACOMSoft", el nombre de su promotoría, o transcripciones fonéticas del reconocimiento de voz como "Acom", "Acomsoft", "Grupo Acom", "Acom Seguros". NUNCA penalices por cómo se transcribió el nombre de la empresa si mencionó alguna de estas variantes.
-      2. ORIGEN DEL CONTACTO:
-         - Si es referido, mencionar oportunamente el nombre de quien lo recomienda. Si es inbound, recordar que solicitó informes / dejó sus datos.
-      3. POSICIONAR EL VALOR DEL DIAGNÓSTICO PERSONALIZADO (VENDER LA CITA, JAMÁS EL PRODUCTO NI DAR NÚMEROS):
-         - Explicar que la reunión breve es para conocer sus necesidades, objetivos y diseñar un plan 100% personalizado a su medida.
-      4. MANEJO DE OBJECIONES DE NÚMEROS / TIEMPO:
-         - Si el prospecto pide precios, montos de inversión o tasas de rendimiento por teléfono, el asesor DEBE negarse con tacto consultivo explicando que todo plan es personalizado y que sería irresponsable dar números sin antes hacer un diagnóstico de sus necesidades.
-      5. CIERRE CON DOBLE ALTERNATIVA DE HORARIO:
-         - Proponer dos opciones específicas de día y hora (ej. "¿miércoles a las 10:00 am o jueves a las 5:00 pm?").
-      ERRORES FATALES (cometioErrorFatal = true y appointmentClosed = false):
-      - DAR RANGOS DE INVERSIÓN, MONTOS EN PESOS O TASAS DE RENDIMIENTO / INTERÉS POR TELÉFONO (ej. decir "nuestros planes van de $10,000 a $1 millón de pesos" o "con un interés/rendimiento aproximado del 5%"). ¡En prospección telefónica NUNCA se dan precios, rangos de inversión ni tasas de rendimiento! Si el asesor dio montos o tasas de rendimiento por teléfono, DEBES marcar cometioErrorFatal = true, appointmentClosed = false y señalarlo explícitamente en errores con la cita textual.
-      - Cotizar pólizas por teléfono, rogar por tiempo o aceptar pasivamente que el prospecto "le avise después".`;
+      Módulo: Prospección Telefónica (Llamada para Agendar).
+      Evalúa con precisión de auditoría consultiva los siguientes bloques:
+
+      A) LO QUE SÍ DEBE MENCIONAR EL ASESOR OBLIGATORIAMENTE (LOS 5 PILARES):
+      1. PRESENTARSE CON SU NOMBRE (pilar1NombreAsesor): Que el agente diga su nombre.
+      2. PRESENTAR A LA EMPRESA (pilar2NombreEmpresa): Son 100% VÁLIDAS cualquiera de estas formas: "Grupo AACOM", "AACOM Seguros", "AACOM", "AACOMSoft", el nombre de su promotoría, o transcripciones fonéticas del micrófono como "Acom", "Acomsoft", "Grupo Acom", "Acom Seguros", "Grupo ACO", "Aconseguros", "Grupo A como". NUNCA penalices por la transcripción fonética si dijo alguna de estas.
+      3. ORIGEN DEL CONTACTO (pilar3OrigenContacto): Que el agente diga de dónde sacaron sus datos y contacto (referido por alguien, dejó sus datos para informes en internet, o se conocieron en un desayuno/evento).
+      4. EXPLICAR DE QUÉ SE TRATA LA ASESORÍA (pilar4ExplicacionAsesoria): Que explique el concepto de la asesoría que le quiere brindar (podría decirle que es una asesoría gratuita, que somos como médicos/doctores de las finanzas, que somos expertos financieros, que somos expertos en finanzas, o que hacemos un diagnóstico de salud financiera y variantes de este estilo). ¡ATENCIÓN! Si el asesor solo dice "quiero agendar una reunión para conocer tus necesidades y hacerte un plan" sin explicar que es una asesoría financiera / diagnóstico financiero / expertos en finanzas, marca pilar4ExplicacionAsesoria = false.
+      5. TÉCNICA DE LOS 2 HORARIOS (pilar5DosHorarios): Que aplique la doble alternativa proponiendo dos opciones concretas con día y hora (ej. "¿miércoles a las 10:00 am o jueves a las 5:00 pm?"). Si solo dice días sin hora ("¿lunes o viernes?") o pregunta abierto ("¿cuándo puedes?"), marca pilar5DosHorarios = false.
+
+      B) LO QUE A TODA COSTA DEBE EVITAR (ERRORES FATALES -> cometioErrorFatal = true y appointmentClosed = false):
+      1. ENVIAR INFORMACIÓN POR WHATSAPP O CORREO PREVIO A LA CITA (aceptoEnviarInfoWhatsAppOCorreo = true): El asesor JAMÁS debe ceder a mandar folletos, brochures o información por WhatsApp o correo antes de la reunión (enviar un mensaje únicamente para confirmar la dirección/calendario DESPUÉS de que el prospecto ya aceptó el día y la hora SÍ es válido; lo prohibido es enviar información del producto o temario para que el prospecto decida).
+      2. MENCIONAR PRODUCTOS EXPLÍCITAMENTE, TASAS O NÚMEROS PREVIOS A LA CITA (mencionoProductosTasasONumeros = true): Está prohibido mencionar productos específicos por teléfono (ej. "seguro de vida", "plan privado de retiro", "seguro de persona clave"), mencionar tasas/porcentajes de rendimiento (ej. "5%"), o mencionar montos/rangos de dinero (ej. "de $1,500 a $50,000" o "de $10,000 a $1 millón").
+      3. QUE NO LE DEN LA REUNIÓN (appointmentClosed = false).
+
+      C) MANEJO INTELIGENTE DE OBJECIONES (rebatioObjecionConArgumentoYDosHorarios):
+      Verifica que cuando el prospecto lanzó su objeción, el asesor haya respondido con argumentos sólidos y vuelto a cerrar con los 2 horarios:
+      - Si dijo "Envíamelo por correo/WhatsApp": Explicar que para enviar algo necesitamos conocer su situación (ej. que la situación de un soltero no es la misma que la de un casado o padre de familia, o que las prioridades de una persona no son las mismas que las de otras) + 2 horarios.
+      - Si dijo "¿Qué es? ¿Son seguros?": Mencionar que una parte de nuestro portafolio sí podría ser seguros, pero no forzosamente; que tenemos una gama de productos tan amplia que la solución no solo está enfocada en protección, pero para determinarlo y darle una solución a su medida necesitamos conocer su situación + 2 horarios.
+      - Si dijo "No tengo tiempo": Explicar brevemente el valor de la asesoría (médicos de las finanzas / asesoría gratuita breve de 20-30 min) y ofrecer rápidamente 2 opciones de fecha y hora.
+      - Si dijo "Por el momento ando muy gastado": Mencionar que justamente nuestra asesoría es para ayudar a personas que necesitan poner orden en sus finanzas personales y que no se preocupe porque no hay ningún compromiso de tener que adquirir algo que no necesita + 2 horarios.
+      - Si pidió montos o tasas: Negarse con tacto consultivo explicando que como expertos/médicos de las finanzas todo depende de conocer primero su situación + 2 horarios.`;
     }
 
     const EvaluationSchema = z.object({
+      pilaresProspeccion: z.object({
+        pilar1NombreAsesor: z.boolean().describe('Verdadero si el agente se presentó con su nombre.'),
+        pilar2NombreEmpresa: z.boolean().describe('Verdadero si el agente presentó a la empresa (Grupo AACOM, AACOM Seguros, AACOMSoft o variante fonética).'),
+        pilar3OrigenContacto: z.boolean().describe('Verdadero si el agente dijo de dónde sacaron sus datos/contacto.'),
+        pilar4ExplicacionAsesoria: z.boolean().describe('Verdadero si explicó de qué se trata la asesoría financiera (asesoría gratuita, médicos de las finanzas, expertos financieros, diagnóstico de salud financiera). Falso si solo pidió cita sin explicar qué es la asesoría.'),
+        pilar5DosHorarios: z.boolean().describe('Verdadero si aplicó la técnica de los 2 horarios con día y hora específicos.')
+      }).optional(),
+      erroresFatalesProspeccion: z.object({
+        aceptoEnviarInfoWhatsAppOCorreo: z.boolean().describe('Verdadero si el asesor cedió a enviar información/brochure por WhatsApp o correo antes de agendar.'),
+        mencionoProductosTasasONumeros: z.boolean().describe('Verdadero si el asesor mencionó productos explícitamente (seguros específicos, plan de retiro), tasas de rendimiento (%) o montos/rangos de dinero previos a la cita.'),
+        confundioNombreProspecto: z.boolean().describe('Verdadero si el asesor llamó al prospecto por un nombre equivocado (ej. el nombre del referidor).')
+      }).optional(),
+      rebatioObjecionConArgumentoYDosHorarios: z.boolean().describe('En prospección: verdadero si el asesor rebatió la objeción del prospecto con argumentos sólidos de valor y volvió a ofrecer o confirmar los 2 horarios.').default(true),
       score: z.number().min(0).max(100).describe('Calificación del 0 al 100 basada en la calidad del desempeño del asesor.'),
       aciertos: z.array(z.string()).describe('Lista de 1 a 3 cosas que el asesor hizo muy bien.'),
-      errores: z.array(z.string()).describe('Lista de errores cometidos por el asesor. OBLIGATORIO: Debes incluir una cita textual (entre comillas) de la transcripción para demostrar exactamente en qué momento cometió el error.'),
-      cometioErrorFatal: z.boolean().describe('Verdadero si el asesor cometió un error crítico según las instrucciones del módulo (por ejemplo, dar rangos de inversión o tasas de rendimiento por teléfono en prospección).'),
-      appointmentClosed: z.boolean().describe('Verdadero SOLAMENTE si el asesor logró concretar explícitamente la agenda de la cita o el cierre mediante técnica profesional (ej. doble alternativa de horario) Y NO cometió un error fatal como dar rangos de inversión o tasas de rendimiento por teléfono. Debe ser FALSO si el asesor dio montos/tasas por teléfono en prospección, si el prospecto sugirió el horario por su cuenta, o si el prospecto dijo "yo te aviso".'),
+      errores: z.array(z.string()).describe('Lista de errores u omisiones cometidos por el asesor. OBLIGATORIO: incluye cita textual entre comillas de la transcripción o señala explícitamente qué pilar faltó.'),
+      cometioErrorFatal: z.boolean().describe('Verdadero si el asesor cometió un error fatal según las instrucciones del módulo (ej. enviar info previa por WhatsApp/correo o mencionar productos, tasas o montos en prospección).'),
+      appointmentClosed: z.boolean().describe('Verdadero SOLAMENTE si el asesor logró concretar explícitamente la agenda de la cita con día y hora mediante técnica profesional, cubrió la explicación de la asesoría y los 2 horarios, Y NO cometió ningún error fatal.'),
       aplicoTecnicaFord: z.boolean().describe('Verdadero si el asesor exploró activamente dimensiones de la vida del prospecto: Familia, Ocupación, Recreación o Sueños/Dinero (F.O.R.D.).').default(false),
       priorizoMetas: z.boolean().describe('Verdadero si el asesor le pidió explícitamente al prospecto ordenar o priorizar cuál es su meta o preocupación #1 en la vida.').default(false),
-      coachTip: z.string().describe('Un consejo breve y técnico.'),
+      coachTip: z.string().describe('Un consejo breve, accionable y técnico.'),
       insigniasGanadas: z.array(z.string()).describe('Lista de IDs de insignias desbloqueadas. COMO MÁXIMO 1 insignia por llamada, y SOLAMENTE si score >= 85 y la cita cerró con éxito. Si no califica o no cerró la cita, devuelve []')
     });
 
@@ -263,13 +282,77 @@ ${badgesText}`;
       }
     }
 
+    if (moduleId === 'prospeccion') {
+      const p = rawObject.pilaresProspeccion;
+      const ef = rawObject.erroresFatalesProspeccion;
+
+      if (ef?.aceptoEnviarInfoWhatsAppOCorreo) {
+        cometioErrorFatal = true;
+        if (!errores.some((e: string) => e.toLowerCase().includes('whatsapp') || e.toLowerCase().includes('correo'))) {
+          errores.push('Error Fatal: Aceptaste o prometiste enviar información previa por WhatsApp o correo antes de la cita.');
+        }
+      }
+      if (ef?.mencionoProductosTasasONumeros) {
+        cometioErrorFatal = true;
+        if (!errores.some((e: string) => e.toLowerCase().includes('tasa') || e.toLowerCase().includes('monto') || e.toLowerCase().includes('producto') || e.toLowerCase().includes('rango'))) {
+          errores.push('Error Fatal: Mencionaste productos explícitamente, tasas de rendimiento o números/rangos previos a la cita.');
+        }
+      }
+      if (ef?.confundioNombreProspecto) {
+        score = Math.max(0, score - 15);
+        if (!errores.some((e: string) => e.toLowerCase().includes('nombre'))) {
+          errores.push('Confundiste el nombre del prospecto durante la llamada (-15 pts).');
+        }
+      }
+
+      if (p) {
+        if (!p.pilar1NombreAsesor) {
+          score = Math.max(0, score - 10);
+          if (!errores.some((e: string) => e.toLowerCase().includes('present') || e.toLowerCase().includes('nombre'))) {
+            errores.push('Omitiste presentarte con tu nombre al inicio de la llamada.');
+          }
+        }
+        if (!p.pilar2NombreEmpresa) {
+          score = Math.max(0, score - 10);
+          if (!errores.some((e: string) => e.toLowerCase().includes('empresa') || e.toLowerCase().includes('aacom') || e.toLowerCase().includes('acom'))) {
+            errores.push('Omitiste presentar a la empresa (Grupo AACOM / AACOM Seguros / AACOMSoft).');
+          }
+        }
+        if (!p.pilar3OrigenContacto) {
+          score = Math.max(0, score - 10);
+          if (!errores.some((e: string) => e.toLowerCase().includes('origen') || e.toLowerCase().includes('contacto') || e.toLowerCase().includes('datos'))) {
+            errores.push('Omitiste mencionar de dónde obtuviste los datos o el contacto del prospecto.');
+          }
+        }
+        if (!p.pilar4ExplicacionAsesoria) {
+          score = Math.max(0, score - 15);
+          appointmentClosed = false;
+          if (!errores.some((e: string) => e.toLowerCase().includes('asesoría') || e.toLowerCase().includes('diagnóstico') || e.toLowerCase().includes('médicos'))) {
+            errores.push('Omitiste explicar de qué se trata la asesoría financiera (ej. asesoría gratuita, médicos de las finanzas o expertos financieros).');
+          }
+        }
+        if (!p.pilar5DosHorarios) {
+          score = Math.max(0, score - 15);
+          appointmentClosed = false;
+          if (!errores.some((e: string) => e.toLowerCase().includes('horario') || e.toLowerCase().includes('doble alternativa'))) {
+            errores.push('No aplicaste correctamente la técnica de los 2 horarios concretos con día y hora.');
+          }
+        }
+      }
+
+      if (rawObject.rebatioObjecionConArgumentoYDosHorarios === false) {
+        score = Math.min(score, 68);
+        appointmentClosed = false;
+      }
+    }
+
     if (cometioErrorFatal) {
       score = Math.max(0, score - 50);
       appointmentClosed = false;
     }
-    
-    if (!appointmentClosed && score > 80) {
-      score = 75;
+
+    if (!appointmentClosed && score > 78) {
+      score = 72;
     }
 
     // Validación estricta en servidor de insignias ganadas:

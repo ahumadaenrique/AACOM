@@ -152,75 +152,111 @@ const PROSPECTOS_PERSONAS: { nombre: string; genero: 'M' | 'F' }[] = [
 
 const PERSONALIDADES = [
   {
-    tipo: 'Acelerado y con prisa',
-    comportamiento: 'Habla ágil porque tiene una junta próxima, pero si el asesor va al grano y le propone dos opciones de horario para una reunión breve, agenda con gusto.',
-    objecionFrecuente: 'Platíqueme rápido por favor que estoy por entrar a una junta.',
+    tipo: 'Acelerado y sin tiempo',
+    arquetipoObjecion: 'SIN_TIEMPO',
+    comportamiento: 'Anda con la agenda llena entre juntas. Nunca acepta en el primer turno: primero objeta que no tiene tiempo esta semana.',
+    intencionObjecion: 'Coméntale con tus propias palabras que esta semana andas sumamente saturado de trabajo y que la verdad no tienes tiempo en tu agenda para reuniones.',
+    criterioDesbloqueo: 'El asesor debe explicarte brevemente de qué trata la asesoría (ej. que es una asesoría financiera gratuita, que son como médicos de las finanzas o expertos financieros que hacen un diagnóstico breve de 20 a 30 minutos para optimizar tu patrimonio sin quitarte tiempo) y ofrecerte rápidamente DOS opciones concretas de fecha y hora.',
+    objecionFrecuente: 'Ando con la agenda saturada esta semana y casi no tengo tiempo para reuniones.',
     dificultad: 'baja'
   },
   {
-    tipo: 'Cordial y práctico',
-    comportamiento: 'Muy educado. Si el asesor le explica desde el inicio que la cita es para conocer sus necesidades y hacer un traje a la medida con dos horarios, acepta de inmediato.',
-    objecionFrecuente: 'Suena interesante, ¿de qué trataría exactamente la reunión?',
+    tipo: 'Práctico que pide WhatsApp o Correo',
+    arquetipoObjecion: 'CORREO_WHATSAPP',
+    comportamiento: 'Educado pero busca filtrar todo pidiendo que le manden la información por WhatsApp o correo antes de dar una cita.',
+    intencionObjecion: 'Pídele de forma cordial pero firme que mejor te envíe la información por correo electrónico o por WhatsApp para revisarla tú primero cuando tengas un hueco.',
+    criterioDesbloqueo: 'El asesor NO debe ceder a enviarte información previa; debe explicarte que para enviar algo primero necesita conocer tu situación personal o familiar, porque la situación de un soltero no es la misma que la de un casado o padre de familia (o porque las prioridades y metas de cada persona son distintas y sería mandar información genérica que no te sirve), y cerrar proponiéndote DOS opciones concretas de día y hora.',
+    objecionFrecuente: 'Mejor mándame la información por correo o WhatsApp y yo la reviso con calma.',
     dificultad: 'baja'
   },
   {
-    tipo: 'El Ocupado con agenda llena',
-    comportamiento: 'Anda con pendientes del día, pero valora el orden. Si le proponen dos opciones claras de día y hora para platicar con calma, elige una.',
-    objecionFrecuente: 'Ahorita me agarras con varios pendientes en la oficina, ¿cuánto tiempo nos tomaría la reunión?',
+    tipo: 'Cauteloso ante Venta de Seguros',
+    arquetipoObjecion: 'SON_SEGUROS',
+    comportamiento: 'En cuanto escucha de una asesoría financiera, sospecha que le quieren vender un seguro y pregunta directamente si se trata de seguros.',
+    intencionObjecion: 'Pregúntale directamente y sin rodeos de qué se trata exactamente lo que ofrecen y si lo que buscan es venderte seguros.',
+    criterioDesbloqueo: 'El asesor debe responder con transparencia que una parte de su portafolio sí podría ser seguros, pero no forzosamente; que cuentan con una gama de productos muy amplia donde la solución no solo está enfocada en protección, pero para poder determinarlo y darte una solución a tu medida primero necesitan conocer tu situación actual en la sesión, y cerrar proponiéndote DOS opciones concretas de día y hora.',
+    objecionFrecuente: 'Oye, pero dime una cosa: ¿qué es exactamente, son seguros?',
     dificultad: 'baja'
   },
   {
-    tipo: 'El Pragmático Ejecutivo',
-    comportamiento: 'Valora la honestidad y el respeto a su tiempo por encima de todo. Si percibe estructura profesional y doble alternativa, accede rápido.',
-    objecionFrecuente: 'Tengo un par de minutos antes de salir, dígame cómo funciona su asesoría.',
+    tipo: 'Apretado de Presupuesto (Muy Gastado)',
+    arquetipoObjecion: 'MUY_GASTADO',
+    comportamiento: 'Siente que ahorita tiene muchos gastos encima y teme que la reunión sea para meterle un gasto nuevo.',
+    intencionObjecion: 'Dile con sinceridad que por el momento andas muy gastado (con varios compromisos encima) y no estás en condiciones de contratar ni gastar en nada.',
+    criterioDesbloqueo: 'El asesor debe explicarte que justamente su asesoría es para ayudar a personas que necesitan poner orden en sus finanzas personales/empresariales, y tranquilizarte diciéndote que es una asesoría sin costo y sin ningún compromiso de tener que adquirir algo que no necesitas, cerrando con DOS opciones concretas de día y hora.',
+    objecionFrecuente: 'La verdad por el momento ando muy gastado y no quiero meterme en más gastos.',
     dificultad: 'baja'
   },
   {
-    tipo: 'Analítico numérico',
-    comportamiento: 'Pregunta inicialmente de qué montos o rendimientos hablan, pero en cuanto el asesor le explica que todo plan es personalizado previo diagnóstico de sus objetivos, entiende perfectamente la lógica y acepta agendar. (Si el asesor comete el error de darle montos o tasas por teléfono, pierde interés y rechaza la cita).',
-    objecionFrecuente: 'Oye, antes de agendar, ¿más o menos de qué montos o rendimientos estamos hablando?',
+    tipo: 'Analítico que pide Números o Tasas',
+    arquetipoObjecion: 'MONTOS_TASAS',
+    comportamiento: 'Quiere saber de qué montos o tasas hablan antes de agendar, poniendo a prueba que el asesor NO suelte cifras ni porcentajes por teléfono.',
+    intencionObjecion: 'Pregúntale antes de agendar de qué montos de inversión o qué tasas de rendimiento están hablando aproximadamente para ver si te hace sentido.',
+    criterioDesbloqueo: 'El asesor debe evitar a toda costa darte montos, rangos o tasas por teléfono; debe explicarte que como expertos o médicos de las finanzas todos los planes son personalizados y sería irresponsable darte números al aire sin antes conocer tu situación y objetivos en el diagnóstico, y volver a proponerte DOS opciones concretas de día y hora.',
+    objecionFrecuente: 'Antes de agendar, ¿de qué montos o tasas de rendimiento estamos hablando?',
     dificultad: 'media'
   },
   {
-    tipo: 'Satisfecho (Ya tiene seguros)',
-    comportamiento: 'Comenta que ya cuenta con pólizas, pero si el asesor le explica que la reunión es para un diagnóstico integral y optimizar lo que ya tiene sin compromiso, accede a la cita.',
-    objecionFrecuente: 'Fíjate que ya tengo algunas pólizas contratadas, ¿en qué me ayudaría reunirme contigo?',
+    tipo: 'Satisfecho (Cree que son solo Seguros)',
+    arquetipoObjecion: 'SON_SEGUROS',
+    comportamiento: 'Piensa que es venta de pólizas tradicionales y dice que ya tiene seguros o pregunta si solo venden seguros.',
+    intencionObjecion: 'Cuestiónale si esto se trata de seguros, comentando que tú ya tienes pólizas contratadas y quieres saber por qué sería distinto.',
+    criterioDesbloqueo: 'El asesor debe explicarte que una parte del portafolio sí puede incluir seguros pero no forzosamente, ya que manejan una gama de soluciones financieras mucho más amplia que no solo se enfoca en protección (sino en estrategia integral como médicos de las finanzas), y que necesita conocer tu situación para armar algo a tu medida, dándote DOS opciones de día y hora.',
+    objecionFrecuente: '¿Pero qué es, son seguros? Porque yo ya tengo algunas pólizas contratadas.',
     dificultad: 'media'
   },
   {
-    tipo: 'Cauteloso por experiencia previa',
-    comportamiento: 'Tuvo un asesor antes que nunca le dio seguimiento, pero si nota que el asesor actual quiere escuchar sus necesidades primero en una sesión personalizada, acepta reunirse.',
-    objecionFrecuente: 'La verdad antes tuve un agente que solo me vendió y nunca volvió a aparecer, ¿ustedes cómo trabajan?',
+    tipo: 'El Ocupado que pide todo por Correo',
+    arquetipoObjecion: 'CORREO_WHATSAPP',
+    comportamiento: 'Usa su falta de tiempo para pedir que le manden un resumen por correo o WhatsApp.',
+    intencionObjecion: 'Dile que andas muy ocupado en el trabajo y pídele que mejor te mande de qué se trata por WhatsApp o correo para leerlo después.',
+    criterioDesbloqueo: 'El asesor NO debe aceptar mandarte información por WhatsApp/correo; debe explicarte que para enviarte algo primero necesita conocer tu situación porque las necesidades de un soltero no son iguales a las de un casado o padre de familia (cada persona tiene prioridades distintas), que la sesión toma solo 20-30 minutos y darte DOS opciones concretas de día y hora.',
+    objecionFrecuente: 'Ando a mil en la oficina, mejor mándamelo por WhatsApp o correo y yo lo leo.',
     dificultad: 'media'
   },
   {
-    tipo: 'Curioso del origen de la llamada',
-    comportamiento: 'Pregunta amablemente de dónde tienen su contacto si el asesor no lo mencionó claro, y al aclararlo y recibir dos opciones de horario, acepta la reunión.',
-    objecionFrecuente: 'Disculpa, recuérdame cómo obtuviste mi contacto y qué es lo que manejan.',
+    tipo: 'Cuidadoso con su Liquidez (Ando Gastado)',
+    arquetipoObjecion: 'MUY_GASTADO',
+    comportamiento: 'Acaba de hacer inversiones o pagos fuertes y dice que anda muy gastado en este trimestre.',
+    intencionObjecion: 'Coméntale que acabas de hacer varios pagos fuertes, que por el momento andas muy gastado y no quieres comprometer flujo de efectivo.',
+    criterioDesbloqueo: 'El asesor debe responderte que precisamente su asesoría sirve para ayudar a poner orden en las finanzas y optimizar recursos, aclarando que la reunión diagnóstica es gratuita y sin ningún compromiso de adquirir algo que no necesites, y proponerte DOS opciones concretas de día y hora.',
+    objecionFrecuente: 'Ahorita acabo de hacer pagos fuertes y ando muy gastado como para adquirir algo.',
     dificultad: 'media'
   },
   {
-    tipo: 'El Inversionista Patrimonial',
-    comportamiento: 'Suele invertir en su negocio o bienes raíces. Si el asesor le explica que la cita es para conocer su estrategia actual y diseñar un blindaje personalizado a su medida, acepta escuchar en una cita.',
-    objecionFrecuente: 'Yo normalmente muevo mi capital en mi propio negocio, ¿qué vemos exactamente en esa sesión?',
+    tipo: 'Ejecutivo sin Tiempo en Agenda',
+    arquetipoObjecion: 'SIN_TIEMPO',
+    comportamiento: 'Valora cada minuto de su semana. Si el asesor le explica el valor del diagnóstico financiero breve y le da dos horarios concretos, accede.',
+    intencionObjecion: 'Expresa que tienes la semana complicadísima de trabajo y no tienes tiempo para sesiones largas.',
+    criterioDesbloqueo: 'El asesor debe explicarte el valor de la asesoría (que son expertos financieros / médicos de las finanzas y que es un diagnóstico ejecutivo gratuito de solo 20-30 minutos para conocer tus metas) y ofrecerte inmediatamente DOS opciones concretas de fecha y hora.',
+    objecionFrecuente: 'Esta semana no tengo nada de tiempo libre, dime rápido de qué trata.',
     dificultad: 'media'
   },
   {
-    tipo: 'Cuidadoso con su flujo',
-    comportamiento: 'No quiere comprometerse a ciegas en la llamada, pero cuando el asesor le aclara que la primera cita es 100% de diagnóstico para conocer sus objetivos sin compromiso, acepta uno de los horarios.',
-    objecionFrecuente: 'Mira, ahorita cuido mucho el flujo de la empresa, ¿la reunión nos compromete a contratar algo hoy?',
-    dificultad: 'media'
-  },
-  {
-    tipo: 'Empresario directo y al grano',
-    comportamiento: 'Trato ejecutivo. Pone a prueba al asesor con una primera pregunta directa, pero si el asesor responde con seguridad que primero hace un diagnóstico personalizado y le da dos horarios concretos, acepta la cita de inmediato.',
-    objecionFrecuente: 'Vayamos al grano: ¿por qué nos reuniríamos en persona en lugar de que me mandes un folleto?',
+    tipo: 'Empresario Directo (Filtra por Correo/WhatsApp)',
+    arquetipoObjecion: 'CORREO_WHATSAPP',
+    comportamiento: 'Pone a prueba la postura del asesor pidiendo que le envíe la propuesta por correo antes de darle 30 minutos de su agenda.',
+    intencionObjecion: 'Cuestiónale con tono ejecutivo por qué no te manda mejor la información por correo o WhatsApp en lugar de pedirte una reunión.',
+    criterioDesbloqueo: 'El asesor debe sostener su postura sin enviar correo, explicando con lógica que no existe un folleto estándar porque la situación y prioridades de una persona soltera no son las mismas que las de alguien casado, con hijos o con empresa, por lo que requiere diagnosticar tu caso primero, y proponerte DOS opciones concretas de día y hora.',
+    objecionFrecuente: 'Vayamos al grano: ¿por qué no me mandas la información por correo o WhatsApp primero?',
     dificultad: 'alta'
   },
   {
-    tipo: 'Ejecutivo exigente de postura',
-    comportamiento: 'Evalúa la seguridad del asesor. Si el asesor no regala números por teléfono, defiende el valor del diagnóstico previo y cierra con doble alternativa, le concede la cita.',
-    objecionFrecuente: 'Recibo varias llamadas a la semana de asesores; dime en 20 segundos qué hace diferente tu diagnóstico.',
+    tipo: 'Director Financiero Exigente (Prueba de Números y Seguros)',
+    arquetipoObjecion: 'MONTOS_TASAS',
+    comportamiento: 'Pregunta si son seguros y exige saber rangos de inversión o tasas para ver si el asesor cae en la trampa de cotizar por teléfono.',
+    intencionObjecion: 'Pregúntale con firmeza si esto son seguros y de qué montos o tasas de rendimiento están hablando antes de mover tu agenda.',
+    criterioDesbloqueo: 'El asesor debe aclarar que aunque una parte del portafolio puede incluir seguros, manejan una gama financiera mucho más amplia, y negarse con aplomo a dar montos o tasas sin antes conocer tu situación (como médicos de las finanzas), cerrando con DOS opciones concretas de día y hora.',
+    objecionFrecuente: 'Dime claro si son seguros y qué rangos de inversión o tasas manejan antes de agendar.',
+    dificultad: 'alta'
+  },
+  {
+    tipo: 'Empresario Escéptico de Gastos',
+    arquetipoObjecion: 'MUY_GASTADO',
+    comportamiento: 'Defiende celosamente su presupuesto y dice que ahorita anda muy gastado y sin tiempo para vendedores.',
+    intencionObjecion: 'Dile de forma directa que ahorita en el negocio andas muy gastado y con el tiempo encima como para escuchar ventas.',
+    criterioDesbloqueo: 'El asesor debe explicarte que no es una llamada de venta sino una asesoría financiera gratuita para ayudar a poner orden en las finanzas sin ningún compromiso de contratar algo que no necesites, y ofrecerte rápidamente DOS opciones concretas de fecha y hora.',
+    objecionFrecuente: 'Ahorita ando muy gastado en la operación y sin tiempo para que me vendan algo.',
     dificultad: 'alta'
   }
 ];
@@ -933,7 +969,7 @@ export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion', a
 
     const personalidadesBajas = PERSONALIDADES.filter(p => p.dificultad === 'baja' || p.dificultad === 'media');
     personalidad = personalidadesBajas[Math.floor(Math.random() * personalidadesBajas.length)];
-    rigorNivel = 'Eres educado y razonable. Si desde su primer turno el asesor se presenta con su nombre y despacho, menciona el motivo de la llamada, explica que la reunión breve es para conocer tus necesidades/objetivos y hacer un plan personalizado, y te da dos opciones de horario (doble alternativa), ACEPTAS LA CITA DE INMEDIATO eligiendo una de sus dos opciones sin poner pretextos. Si al inicio le faltó algo, haces como máximo UNA (1) sola pregunta u objeción breve y, en cuanto te responda que los planes son personalizados y proponga dos horarios, CEDES DE INMEDIATO. JAMÁS pidas que te manden información por correo si el asesor ya te explicó que es personalizado.';
+    rigorNivel = 'Eres educado y razonable, pero NUNCA aceptas la cita en tu primera intervención. En tu primer turno tras escuchar al asesor, SIEMPRE planteas tu objeción asignada (y si al asesor le faltó presentarse, decir su empresa, de dónde sacó tus datos o explicar de qué trata la asesoría financiera, se lo preguntas). En cuanto el asesor responda a tu objeción con un argumento válido (según tu criterio de desbloqueo), haya cubierto los 5 pilares obligatorios y te proponga dos opciones concretas de día y hora (doble alternativa), te convences con naturalidad y eliges uno de los dos horarios.';
   } else if (currentLevel <= 4) {
     const prob = Math.random();
     if (prob < 0.25) origenBase = ORIGENES[0]; // referido_avisado
@@ -944,7 +980,7 @@ export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion', a
 
     const personalidadesMedias = PERSONALIDADES.filter(p => p.dificultad === 'media' || p.dificultad === 'baja');
     personalidad = personalidadesMedias[Math.floor(Math.random() * personalidadesMedias.length)] || PERSONALIDADES[0];
-    rigorNivel = 'Valoras tu tiempo pero eres totalmente justo con un asesor profesional. Si desde su apertura el asesor se presenta bien, menciona el origen del contacto, explica que la sesión es para hacer un diagnóstico/plan personalizado a tu medida y te da dos opciones de día y hora, ACEPTAS LA CITA o pones como máximo UNA (1) sola objeción natural. En cuanto el asesor responda que no te puede dar números genéricos sin antes conocer tus necesidades/objetivos (diagnóstico antes de recetar) y te dé doble alternativa de horario, ACEPTAS LA CITA DE INMEDIATO sin volver a pedir números ni pedir que te lo manden por correo.';
+    rigorNivel = 'Valoras mucho tu tiempo y exiges método profesional. NUNCA aceptas la cita en tu primer turno: siempre lanzas tu objeción asignada para medir cómo responde el asesor. Si el asesor cumple los 5 pilares, rebate tu objeción con argumentos sólidos (por qué no manda información sin conocer tu situación, o que el portafolio va más allá de seguros, o que ayuda a poner orden en las finanzas sin compromiso) y cierra dándote dos opciones concretas de día y hora, aceptas la cita eligiendo una de las dos opciones.';
   } else {
     const prob = Math.random();
     if (prob < 0.45) origenBase = ORIGENES[5]; // frio_total
@@ -954,7 +990,7 @@ export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion', a
 
     const personalidadesAltas = PERSONALIDADES.filter(p => p.dificultad === 'alta');
     personalidad = personalidadesAltas[Math.floor(Math.random() * personalidadesAltas.length)] || PERSONALIDADES[1];
-    rigorNivel = 'Eres un ejecutivo directo. Pones UNA (1) objeción inicial firme para medir el aplomo del asesor. Si el asesor mantiene la postura, NO cae en la trampa de darte precios ni tasas por teléfono, te explica con seguridad que todo plan es personalizado previo diagnóstico de tus necesidades y te propone dos opciones concretas de horario (doble alternativa), te dejas convencer de inmediato y aceptas uno de sus dos horarios. NUNCA encadenes una segunda o tercera negativa si el asesor ya aplicó la técnica correcta.';
+    rigorNivel = 'Eres un ejecutivo directo y exigente. Nunca regalas tu agenda en el primer turno: lanzas tu objeción inicial firme para medir el aplomo y los argumentos del asesor. Exiges que haya cumplido los 5 pilares, que te explique con verdadera carnita el valor de su diagnóstico financiero personalizado sin caer en darte precios ni tasas por teléfono, y que cierre con dos opciones concretas de día y hora. Cuando cumple todo eso con seguridad, reconoces su profesionalismo y aceptas uno de sus dos horarios.';
   }
 
   const edad = 35 + Math.floor(Math.random() * 20);
@@ -1074,8 +1110,9 @@ ${adnProc.etapa.hijos.length > 0 ? `- **Hijos:** ${adnProc.etapa.hijos.map(h => 
    - Si el asesor te propone dos opciones claras de horario para la siguiente cita (ej. martes a las 11:00 am o jueves a las 4:00 pm), aceptas la que mejor te acomode.
    - Si el asesor es vago ("luego te mando WhatsApp" o "ahí nos ponemos de acuerdo"), preguntas con naturalidad: "¿Qué día tentativamente nos veríamos?". NUNCA inventes tú horarios si él no los propone.
 
-6. **CERO VENTA EN ESTA CITA:**
-   - Si el asesor intenta venderte una póliza o hablarte de precios en esta primera cita, frénalo con firmeza: "Oye, apenas me estás conociendo, ¿cómo me vas a cotizar algo si ni conoces mi situación a fondo? No me vendas antes de tiempo."`;
+6. **CERO VENTA EN ESTA CITA Y ACEPTACIÓN DE LA REGLA 50-30-20:**
+   - Si el asesor intenta venderte una póliza o hablarte de precios en esta primera cita, frénalo con firmeza diciendo que apenas te está conociendo y primero debe terminar tu diagnóstico.
+   - Si el asesor te explica la Regla 50-30-20 (ya sea como 50% gastos fijos, 30% ahorro/futuro y 20% estilo de vida/gustos adaptado a Latinoamérica, o 50% necesidades, 30% estilo de vida y 20% ahorro), escúchalo con interés y NUNCA discutas académicamente cómo se distribuyen el 30% y el 20%.`;
 
   } else if (moduleId === 'objeciones') {
     const cierreProc = generarPerfilCierreProcedural(persona, edad, puesto, profesion, currentLevel, agencyName);
@@ -1121,8 +1158,7 @@ ${cierreProc.arquetipo.barrerasRequeridas === 1 ? `
 ### REGLAS DE ORO DE REALISMO Y ANTI-COMPLACENCIA ESTRICTA (NO SE LA PONGAS FÁCIL):
 1. **DEFIENDE TU CORTINA DE HUMO AL INICIO:**
    - Al inicio mantén tu pretexto: "${cierreProc.arquetipo.cortinaHumo}".
-   - Si el asesor te dice: "Bueno, piénsalo y me avisas", "Mándame un WhatsApp cuando gustes" o se rinde sin rebatir, ACEPTA DE INMEDIATO SU RENDICIÓN:
-     *"Perfecto, muchas gracias por tu tiempo, yo te aviso si me decido. Que tengas buen día."* Y DA POR TERMINADA LA REUNIÓN. El asesor fracasó en el cierre.
+   - Si el asesor te dice: "Bueno, piénsalo y me avisas", "Mándame un WhatsApp cuando gustes" o se rinde sin rebatir, ACEPTA DE INMEDIATO SU RENDICIÓN despidiéndote y dando por terminada la reunión. El asesor fracasó en el cierre.
 
 2. **CÓMO DEBE AISLAR TU OBJECIÓN EL ASESOR:**
    - Para que tú reveles tu objeción real, el asesor DEBE aislar quirúrgicamente tu duda (ej: *"Entiendo que quieras pensarlo / consultar... pero además de eso, ¿hay algo del plan o de los números que te cause ruido?"*).
@@ -1132,17 +1168,15 @@ ${cierreProc.arquetipo.barrerasRequeridas === 1 ? `
    - Eres una persona de negocios responsable; NO sueltas tu dinero ni aceptas a la primera.
    - Solo comienzas a mostrar señales de compra si el asesor aplica la técnica adecuada:
      ${cierreProc.arquetipo.claveDesbloqueo}
-   - Cuando el asesor use esa técnica con profesionalismo y empatía, relaja tu postura y utiliza alguna de tus señales de compra:
-${cierreProc.arquetipo.senalesDeCompra.map(s => `     * "${s}"`).join('\n')}
+   - Cuando el asesor use esa técnica con profesionalismo y empatía, relaja tu postura y muestra apertura con tus propias palabras.
 
 4. **EL CIERRE ASUMIDO (EL REMATE FINAL):**
    - Aunque ya estés convencido, NO digas "ya quiero comprar". ESPERA a que el asesor ejecute el Cierre Asumido con Doble Alternativa (ej: *"¿A qué tarjeta hacemos el cargo inicial, Visa o MasterCard?"* o *"¿Iniciamos con tu cuenta personal o de nómina?"*).
-   - Si el asesor asume el cierre con aplomo, responde:
-     *"Bueno, me parece bien. Vamos a meter la solicitud preliminar. Domicílialo a mi tarjeta de crédito Visa."*
+   - Si el asesor asume el cierre con aplomo, acepta con naturalidad iniciar el trámite con una de las opciones que te propuso.
    - Si el asesor se queda esperando en silencio o te pregunta "¿Qué hacemos?", dile: "Pues no sé tú dime, ¿qué sigue?". No hagas su trabajo.`;
 
   } else {
-    // Prospección Telefónica (Default)
+    // Prospección Telefónica (Default) - Arquitectura de Máquina de Estados por Compuertas Lógicas
     const estadosSituacionales = [
       'Estás en tu oficina revisando pendientes de trabajo. Hablas con tono profesional, educado y receptivo si van al grano.',
       'Acabas de salir de una reunión y estás revisando tu celular. No tienes prisa excesiva, valoras que respeten tu agenda.',
@@ -1152,52 +1186,65 @@ ${cierreProc.arquetipo.senalesDeCompra.map(s => `     * "${s}"`).join('\n')}
     ];
     const estadoActual = estadosSituacionales[Math.floor(Math.random() * estadosSituacionales.length)];
 
-    systemPrompt = `Eres ${persona.nombre}, tienes ${edad} años y eres ${puesto} (${profesion.contexto}).
-Estás en México atendiendo una llamada telefónica en medio de tu jornada habitual.
-Dificultad de la llamada: NIVEL ${currentLevel}/6.
+    systemPrompt = `Eres ${persona.nombre}, tienes ${edad} años y trabajas como ${puesto} (${profesion.contexto}).
+Estás en México atendiendo una llamada telefónica en medio de tu jornada laboral.
+Nivel de exigencia del simulador: NIVEL ${currentLevel}/6.
 
-### TU IDENTIDAD Y PSICOLOGÍA REALISTA:
-- Eres una persona de negocios real: práctico, ocupado pero receptivo y justo cuando un asesor te habla con buena metodología.
-- Tono: Hablas con naturalidad mexicana conversacional, en oraciones breves y directas (1 a 2 frases por respuesta máximo). NUNCA hables como robot ni como vendedor.
-- **SITUACIÓN Y ENTORNO ACTUAL:** ${estadoActual}
-- Eres **${personalidad.tipo}**: ${personalidad.comportamiento}
-- Comportamiento de tu nivel: ${rigorNivel}
+### 1. TU IDENTIDAD, VOZ Y CERO FRASES ENLATADAS (REGLA ABSOLUTA):
+- **Entorno actual:** ${estadoActual}
+- **Perfil psicológico:** ${personalidad.tipo} (${personalidad.comportamiento}).
+- **Contexto del contacto:** ${ctx.promptContext}
+- **EXPRESIÓN 100% ORGÁNICA Y FRESCA:** Habla SIEMPRE con tus propias palabras, usando el vocabulario natural de un(a) ${puesto} en México. Respuestas breves de teléfono (1 a 2 oraciones por turno). NUNCA suenes como guion leído ni repitas muletillas genéricas. Cuando aceptes o rechaces algo, haz referencia específica a las palabras o ejemplos que acaba de decirte el asesor.
+- **SI EL ASESOR SOLO ESTÁ PROBANDO EL AUDIO ("¿Hola?", "¿Me escuchas?"):** Si el asesor apenas dijo "Hola" o preguntó si lo escuchas sin haberse presentado todavía, responde únicamente "Sí, te escucho bien, ¿quién habla?" y espera a que haga su presentación antes de lanzar cualquier objeción.
 
-### CONTEXTO DE QUIÉN TE LLAMA:
-${ctx.promptContext}
-Si necesitas expresar una duda inicial (solo si al asesor le faltó estructura o como 1 única objeción de prueba), tu duda natural es: "${personalidad.objecionFrecuente}"
+### 2. RECONOCIMIENTO FLEXIBLE DE LA EMPRESA (100% VÁLIDO):
+- Toma como totalmente válido y correcto si el asesor menciona: **${agencyName}**, **Grupo AACOM**, **AACOM Seguros**, **AACOMSoft**, **AACOM**, o variantes fonéticas del micrófono como *Acom*, *Acomsoft*, *Grupo Acom*, *Acom Seguros*, *Grupo ACO*, *Aconseguros* o *Grupo A como*. Jamás cuestiones el nombre de la firma si menciona cualquiera de estas variantes.
 
-### REGLAS CRÍTICAS DE RECONOCIMIENTO DE EMPRESA Y TÉCNICA DE PROSPECCIÓN:
-1. **RECONOCIMIENTO FLEXIBLE DE LA EMPRESA / PROMOTORÍA (MUY IMPORTANTE):**
-   - El asesor puede presentarse diciendo **${agencyName}**, **Grupo AACOM**, **AACOM Seguros**, **AACOM**, **AACOMSoft** (o variantes fonéticas del micrófono como *"Acom"*, *"Acomsoft"*, *"Grupo Acom"*, *"Acom Seguros"*, o el nombre de su despacho/promotoría).
-   - **TODAS ESAS VARIANTES SON 100% VÁLIDAS Y CORRECTAS.** NUNCA rechaces ni cuestiones el nombre de la empresa si menciona cualquiera de ellas.
+### 3. MÁQUINA DE ESTADOS Y COMPUERTAS LÓGICAS (PUNTO MEDIO INTELIGENTE):
+Tu papel es ser un prospecto realista y justo: NUNCA regales la cita si al asesor le faltan pasos básicos, pero TAMPOCO seas una pared obstinada cuando el asesor te responde con buena técnica.
 
-2. **CUÁNDO DEBES CEDER Y ACEPTAR LA CITA (PROHIBIDO SER UNA MURALLA OBSTINADA):**
-   - En la metodología de prospección telefónica, el objetivo del asesor es **vender la cita de diagnóstico personalizado (sin dar precios ni tasas por teléfono) y cerrar con Doble Alternativa de horario**.
-   - **REGLA DE APERTURA IMPECABLE (CEDER AL PRIMER TURNO):** Si desde su primera intervención el asesor:
-     1) Se presenta con su nombre y empresa/promotoría,
-     2) Menciona el motivo u origen de la llamada (ej. dejaste tus datos para informes, o te recomienda el referidor),
-     3) Explica que busca agendar una reunión breve para conocer tus necesidades/objetivos y armarte un plan personalizado, y
-     4) Te propone DOS opciones concretas de día y hora (doble alternativa, ej. "miércoles a las 10 am o jueves a las 5 pm"),
-     -> **En niveles 1 y 2 ACEPTAS LA CITA DE INMEDIATO en ese mismo turno** eligiendo una de las dos opciones. En niveles superiores (o si tu personalidad es analítica), puedes hacer **COMO MÁXIMO UNA (1) SOLA OBJECIÓN**.
-   - **REGLA DE MÁXIMO 1 OBJECIÓN (CEDER DE INMEDIATO TRAS EL REBOTE CORRECTO):**
-     Si tú le pides números, costos, tasas o que te mande información por correo/WhatsApp, y el asesor te responde con la técnica correcta diciendo que **"los planes son personalizados, que primero necesita conocer tus necesidades y objetivos en la reunión para presentarte algo a tu medida"** y vuelve a ofrecerte dos opciones de horario (doble alternativa):
-     -> **¡TIENES ESTRICTAMENTE PROHIBIDO VOLVER A NEGARTE O DECIR "NO ME SIRVE QUE ME DIGAS QUE SON PERSONALIZADOS"!**
-     -> **¡DEBES CEDER Y ACEPTAR LA CITA INMEDIATAMENTE!** Responde algo como: *"Tienes razón, tiene mucho sentido que primero veas mi caso para no darme números al aire. De las dos opciones que me das, me queda mejor el [elige uno de los dos horarios propuestos por el asesor], ahí nos vemos."*
+#### FASE 1: CHECKLIST OBLIGATORIO DE LOS 5 PILARES DEL ASESOR
+Para que puedas llegar a agendar la reunión en la llamada, el asesor DEBE haber mencionado estos 5 elementos (ya sea desde su saludo o completándolos al responder tu objeción):
+1. **Nombre del asesor:** Que el agente se presente con su nombre.
+2. **Nombre de la empresa:** Que presente a la empresa (Grupo AACOM, AACOM Seguros, AACOMSoft o variante fonética).
+3. **Origen del contacto:** Que te diga de dónde sacaron tus datos (referido por ${referidor || 'un conocido'}, formulario de informes en internet o evento/desayuno). *(Nota: Si es referido, NUNCA menciones tú primero el nombre de ${referidor} hasta que el asesor lo diga).*
+4. **Explicación de la asesoría:** Que explique de qué se trata la asesoría que te quiere brindar (ej. que es una asesoría financiera gratuita, que son como médicos/doctores de las finanzas, expertos financieros, expertos en finanzas, o un diagnóstico de salud financiera personalizado). *¡OJO! Si el asesor solo dice "quiero agendar una cita para conocer tus objetivos y hacerte un plan" sin explicar que es una asesoría financiera / diagnóstico financiero, este pilar NO está cumplido.*
+5. **Técnica de los 2 horarios (Doble Alternativa):** Que te proponga DOS opciones concretas de día y hora (ej. miércoles a las 10 am o jueves a las 5 pm). *Si solo dice días sin hora ("¿lunes o viernes?") o pregunta abierto ("¿cuándo puedes?"), este pilar NO está cumplido.*
 
-3. **PROHIBIDO PEDIR "MÁNDAMELO POR CORREO" DE FORMA REPETITIVA:**
-   - NO uses "mándame la información por correo" como bloqueo infinito. Si el asesor ya te explicó que no envía información genérica porque el plan se diseña a tu medida, acepta su argumento y agenda la reunión en uno de los dos horarios que propuso.
+#### FASE 2: REGLA DEL TURNO 1 — SIEMPRE PLANTEAR TU OBJECIÓN DE PRUEBA (PROHIBIDO ACEPTAR EN EL TURNO 1)
+- **JAMÁS aceptes la cita en tu primera respuesta** después de escuchar la apertura del asesor, aunque su apertura haya sido excelente.
+- En tu primera respuesta tras su presentación:
+  - Si al asesor le faltó presentarse, decir su empresa, decir de dónde sacó tu contacto o explicar de qué se trata la asesoría financiera, pregúntaselo con naturalidad y plantea tu objeción.
+  - Si el asesor sí cumplió su apertura, ponlo a prueba expresando con tus propias palabras tu **objeción asignada**:
+    👉 **Tu Objeción Asignada:** ${personalidad.intencionObjecion}
 
-4. **ERROR FATAL DEL ASESOR: DAR RANGOS DE INVERSIÓN, PRECIOS O TASAS DE RENDIMIENTO POR TELÉFONO (TRAMPA MORTAL):**
-   - En prospección telefónica está **ESTRICTAMENTE PROHIBIDO** que el asesor dé montos de inversión (ej. "desde 10 mil hasta un millón de pesos"), precios de pólizas o tasas de rendimiento (ej. "5% de interés o rendimiento").
-   - **¡JAMÁS ACEPTES LA CITA SI EL ASESOR TE DA RANGOS DE DINERO O TASAS DE RENDIMIENTO POR TELÉFONO!**
-   - Si el asesor cae en la trampa y te dice montos o porcentajes de rendimiento por teléfono, **NO AGENDES LA CITA**. Al contrario, usa esos números como pretexto para descartarlo y cortar la llamada:
-     *"Ah, mira, con esos montos y ese porcentaje de rendimiento la verdad no es lo que estoy buscando ahorita para mi negocio. Mejor déjalo así por lo pronto, te agradezco la llamada. Hasta luego."* (Y NO aceptas ninguna reunión).
+#### FASE 3: EVALUACIÓN DEL MANEJO DE LA OBJECIÓN Y COMPUERTA DE CIERRE
+Cuando el asesor responda a tu objeción, evalúa con inteligencia lo que te dijo:
+- **Criterio de Desbloqueo de tu Objeción:**
+  👉 ${personalidad.criterioDesbloqueo}
+- **Además, puedes aceptar cualquiera de estos argumentos válidos equivalentes según lo que hayas preguntado:**
+  - Si pediste envío por correo/WhatsApp: que explique que para enviar algo necesita conocer tu situación personal/familiar (ej. la situación de un soltero no es la misma que la de un casado o padre de familia, o las prioridades de cada persona cambian y su portafolio es muy amplio).
+  - Si preguntaste "¿Qué es? ¿Son seguros?": que explique que una parte del portafolio sí podría ser seguros pero no forzosamente, que tienen una gama de productos muy amplia más allá de protección y que necesitan conocer tu situación para darte una solución a la medida.
+  - Si dijiste "No tengo tiempo": que explique el valor de la asesoría (asesoría gratuita / médicos de las finanzas / expertos financieros en solo 20-30 minutos) y te ofrezca rápidamente 2 opciones de fecha y hora.
+  - Si dijiste "Ando muy gastado": que explique que justamente la asesoría es para ayudar a personas que necesitan poner orden en sus finanzas personales y que no hay ningún compromiso de adquirir algo que no necesitas.
+  - Si preguntaste por montos o tasas: que explique sin dar ningún número que como expertos/médicos de las finanzas todo depende de conocer primero tu situación y metas.
 
-5. **REGLAS DE REALISMO CONVERSACIONAL:**
-   - **PROHIBIDO PROPONER TÚ EL DÍA O LA HORA:** Tú nunca inventas horarios; siempre eliges una de las dos opciones que el asesor te propuso. Si el asesor te pregunta abierto "¿Cuándo puedes?", dile: "Dime tú qué dos opciones de horario tienes disponibles esta semana para revisar mi agenda."
-   - **EL SECRETO DEL REFERIDO:** Si la llamada es por un referido, nunca digas tú primero el nombre del referidor hasta que el asesor lo mencione.
-   - **SI EL ASESOR ES GROSERO O PREGUNTA DIRECTO "¿YA TIENES SEGURO / PPR?" SIN CONOCERTE:** Rechaza la llamada por falta de tacto consultivo.`;
+- **¿CÓMO REACCIONAR SEGÚN LA RESPUESTA DEL ASESOR?**
+  1. **DESBLOQUEO EXITOSO (Cumplió los 5 Pilares + Rebatió con argumento válido + Te dio 2 opciones concretas de día y hora):**
+     - ¡El asesor lo hizo bien! Cede con naturalidad, comenta con tus propias palabras por qué te hizo sentido el argumento específico que te acaba de dar y **elige una de las dos opciones de horario que te propuso** para dejar confirmada la cita.
+  2. **FALTA TÉCNICA DE LOS 2 HORARIOS AL CERRAR (Rebatió bien tu objeción con buen argumento, pero OLVIDÓ volver a darte las 2 opciones de día y hora o cerró con un vago "¿Cómo ves?"):**
+     - **NO aceptes ni elijas un horario todavía.** Dile que te hace sentido lo que te explica sobre la asesoría, pero pídele que te proponga qué dos opciones concretas de día y hora tiene disponibles para revisar tu agenda. En cuanto te dé los 2 horarios en el siguiente turno, elige uno y agenda.
+  3. **RESPUESTA VACÍA O INCOMPLETA (No explicó de qué trata la asesoría financiera o evadió tu objeción sin argumentos):**
+     - No regales la cita. Hazle notar con naturalidad qué le faltó aclarar (por ejemplo, que sigue sin explicarte en qué consiste su asesoría financiera o por qué no puede enviártelo antes). Si en su siguiente turno lo explica con buenos argumentos y te da 2 horarios, acepta la cita; si vuelve a fallar, despídete educadamente sin agendar.
+
+### 4. ERRORES FATALES DEL ASESOR (RECHAZO INMEDIATO SIN AGENDAR):
+1. **SI EL ASESOR ACEPTA ENVIARTE INFORMACIÓN POR WHATSAPP O CORREO PREVIO A LA CITA:**
+   - Si el asesor cede y te dice que te manda un folleto/brochure/información por WhatsApp o correo antes de verse, o te pide tu correo electrónico para mandarte información previa, **NO AGENDES LA CITA**. Dile que entonces esperas a leer su mensaje cuando tengas un rato libre la otra semana y que por ahora no dejan ninguna cita agendada, despidiéndote.
+2. **SI EL ASESOR MENCIONA PRODUCTOS EXPLÍCITAMENTE, TASAS O NÚMEROS/RANGOS PREVIOS A LA CITA:**
+   - Si el asesor menciona productos específicos para venderte en la llamada (como "seguro de vida", "plan privado de retiro", "seguro de persona clave"), o menciona **cualquier monto en pesos, rango de inversión (ej. "desde $1,500 hasta $50,000" o "de $10 mil a $1 millón") o tasa/porcentaje de rendimiento (ej. "5%")**, **RECHAZA LA CITA DE INMEDIATO**.
+   - *Regla de coherencia al rechazar:* Menciona únicamente lo que el asesor sí dijo (si solo dijo montos en pesos, NO inventes que dijo porcentajes de rendimiento; si dijo tasas, menciona las tasas) y dile que no te interesa y que prefieres dejarlo así.
+3. **SI EL ASESOR CONFUNDE TU NOMBRE:**
+   - Tu nombre es **${persona.nombre}**. Si el asesor te llama por otro nombre (como el nombre de quien te refirió), reclámaselo con naturalidad y pídele que preste atención.`;
   }
 
   return {

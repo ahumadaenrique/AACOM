@@ -216,49 +216,51 @@ export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }
               {/* Regla de Oro Prospección */}
               <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2">
                 <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
-                  <AlertTriangle className="h-4 w-4" /> REGLA DE ORO DE LA LLAMADA TELEFÓNICA
+                  <AlertTriangle className="h-4 w-4" /> LO QUE A TODA COSTA DEBES EVITAR (ERRORES FATALES)
                 </div>
                 <p className="text-xs text-amber-200/90 leading-relaxed">
-                  <strong>El teléfono es exclusivamente para &quot;vender la cita&quot;, JAMÁS para vender la póliza, cotizar ni dar rangos o tasas.</strong> Está estrictamente prohibido mencionar montos o rangos de inversión (ej. <em>&quot;de $10,000 a $1 millón&quot;</em>) o tasas de interés/rendimiento (ej. <em>&quot;5%&quot;</em>). Si das cifras o porcentajes por teléfono, cometerás un <strong>Error Fatal</strong> y perderás la cita.
+                  <strong>1) Enviar información previa por WhatsApp o correo:</strong> Jamás cedas a mandar folletos antes de la cita.<br />
+                  <strong>2) Mencionar productos explícitamente, tasas o números previos a la cita:</strong> Prohibido hablar de pólizas específicas, montos/rangos (ej. <em>&quot;de $1,500 a $50,000&quot;</em>) o tasas de rendimiento (ej. <em>&quot;5%&quot;</em>).<br />
+                  <strong>3) Colgar sin lograr la reunión:</strong> Siempre cierra con la técnica de los 2 horarios.
                 </p>
               </div>
 
-              {/* Los 4 Pilares */}
+              {/* Los 5 Pilares Obligatorios */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 
                 <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/50 space-y-2">
                   <div className="flex items-center gap-2 text-emerald-400 font-semibold text-xs">
-                    <CheckCircle2 className="h-4 w-4" /> 1. Identificación y Posicionamiento
+                    <CheckCircle2 className="h-4 w-4" /> 1. Nombre, Empresa y Origen
                   </div>
                   <p className="text-xs text-slate-300">
-                    Preséntate con tu nombre y tu empresa (<strong>Grupo AACOM</strong>, <strong>AACOM Seguros</strong>, <strong>AACOMSoft</strong> o tu promotoría), menciona el origen del contacto (referido o solicitud de informes) y ofrece una <em>asesoría personalizada</em>.
+                    Preséntate con tu nombre, menciona a la empresa (<strong>Grupo AACOM</strong>, <strong>AACOM Seguros</strong> o <strong>AACOMSoft</strong>) y di claramente <strong>de dónde sacaste sus datos/contacto</strong> (referido, desayuno o solicitud de informes).
                   </p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/50 space-y-2">
                   <div className="flex items-center gap-2 text-cyan-400 font-semibold text-xs">
-                    <ShieldCheck className="h-4 w-4" /> 2. Diagnóstico Antes de Recetar
+                    <ShieldCheck className="h-4 w-4" /> 2. Explicar de qué trata la Asesoría
                   </div>
                   <p className="text-xs text-slate-300">
-                    Tu escudo contra la objeción <em>&quot;¿De qué números o tasas estamos hablando?&quot;</em>: <strong>&quot;Todos nuestros planes son 100% personalizados; sería irresponsable darle números o tasas sin antes conocer sus necesidades y objetivos en una breve reunión.&quot;</strong>
+                    Explica el valor de la sesión: que es una <strong>asesoría financiera gratuita</strong>, que somos como <strong>médicos de las finanzas</strong> o <strong>expertos en finanzas</strong> realizando un diagnóstico personalizado.
                   </p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/50 space-y-2">
                   <div className="flex items-center gap-2 text-purple-400 font-semibold text-xs">
-                    <Zap className="h-4 w-4" /> 3. Doble Alternativa de Cierre
+                    <Zap className="h-4 w-4" /> 3. Técnica de los 2 Horarios
                   </div>
                   <p className="text-xs text-slate-300">
-                    Nunca preguntes <em>&quot;¿Cuándo podría?&quot;</em>. Da dos opciones cerradas: <strong>&quot;¿Le queda mejor el miércoles a las 10:00 am o el jueves a las 5:00 pm?&quot;</strong>
+                    Nunca preguntes abierto <em>&quot;¿Cuándo puedes?&quot;</em> ni des días sin hora. Aplica siempre dos opciones con día y hora: <strong>&quot;¿Te queda mejor el miércoles a las 10:00 am o el jueves a las 5:00 pm?&quot;</strong>
                   </p>
                 </div>
 
                 <div className="p-4 rounded-2xl bg-slate-800/60 border border-slate-700/50 space-y-2">
                   <div className="flex items-center gap-2 text-amber-400 font-semibold text-xs">
-                    <CheckCircle2 className="h-4 w-4" /> 4. Tiempo Estipulado (20-30 min)
+                    <CheckCircle2 className="h-4 w-4" /> 4. Rebote + Volver a dar 2 Horarios
                   </div>
                   <p className="text-xs text-slate-300">
-                    Garantiza que la reunión será ejecutiva y sin compromiso. Pide <strong>20 a 30 minutos</strong> para conocer sus metas y diseñarle un traje a la medida.
+                    El prospecto siempre pondrá al menos <strong>1 objeción realista</strong>. Rebátela con argumentos sólidos y <strong>vuelve a cerrar proponiendo tus 2 opciones de horario</strong>.
                   </p>
                 </div>
 
@@ -266,29 +268,33 @@ export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }
 
               {/* Manejo de Objeciones Frecuentes */}
               <div className="space-y-3 pt-2">
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Respuestas Maestras a Objeciones</h3>
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Manejo Maestro de las Objeciones</h3>
                 
                 <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800 space-y-1">
-                  <div className="text-xs font-bold text-red-400">Objeción: &quot;Mándamelo por WhatsApp / Correo y yo lo checo&quot;</div>
+                  <div className="text-xs font-bold text-red-400">Objeción: &quot;Envíamelo por correo / WhatsApp&quot;</div>
                   <div className="text-xs text-slate-300 italic">
-                    &quot;Con gusto le compartiría información, pero como todos nuestros planes se diseñan a la medida, no existe un folleto genérico que le haga justicia a lo que usted busca. Solo nos tomará 20 minutos platicar sobre sus objetivos para armarle una propuesta exacta. ¿Le queda mejor el miércoles a las 10:00 am o el jueves a las 5:00 pm?&quot;
+                    &quot;Para poder enviarte algo primero necesitamos conocer tu situación, porque la situación de un soltero no es la misma que la de un casado o un padre de familia, y las prioridades de cada persona son distintas. En una breve sesión de 20 minutos hacemos tu diagnóstico a la medida. ¿Te queda mejor miércoles a las 10:00 am o jueves a las 5:00 pm?&quot;
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800 space-y-1">
-                  <div className="text-xs font-bold text-red-400">Objeción: &quot;Ya tengo seguros con otra compañía / con mi banco&quot;</div>
+                  <div className="text-xs font-bold text-red-400">Objeción: &quot;¿Qué es? ¿Son seguros?&quot;</div>
                   <div className="text-xs text-slate-300 italic">
-                    &quot;Excelente, lo felicito por esa previsión. Justamente la reunión no es para venderle un producto encimado, sino para conocer qué objetivos busca proteger hoy y ver cómo complementar o hacer más eficiente su estrategia actual. ¿Le queda mejor miércoles a las 10:00 am o jueves a las 5:00 pm?&quot;
+                    &quot;Una parte de nuestro portafolio sí podría ser seguros, pero no forzosamente; tenemos una gama de productos tan amplia que la solución no solamente está enfocada en protección. Para poder determinarlo y darte una solución a tu medida, necesitaríamos conocer primero tu situación. ¿Te queda mejor miércoles a las 10:00 am o jueves a las 5:00 pm?&quot;
                   </div>
                 </div>
 
                 <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800 space-y-1">
-                  <div className="text-xs font-bold text-red-400">Objeción: &quot;Dígame rápido de cuánto dinero al mes o qué tasa de rendimiento ofrecen&quot;</div>
+                  <div className="text-xs font-bold text-red-400">Objeción: &quot;Por el momento ando muy gastado&quot;</div>
                   <div className="text-xs text-slate-300 italic">
-                    &quot;Precisamente porque cada estrategia es un traje a la medida, no manejamos tarifas ni tasas fijas por teléfono sin antes entender sus metas y su horizonte. En una sesión ejecutiva de 20 minutos revisamos su caso y le presento números exactos y personalizados. ¿Qué le queda mejor, miércoles a las 10:00 am o jueves a las 5:00 pm?&quot;
+                    &quot;No te preocupes, justamente nuestra asesoría es para ayudar a personas que necesitan poner orden en sus finanzas personales, y es totalmente gratuita y sin ningún compromiso de tener que adquirir algo que no necesitas. ¿Qué horario te acomoda mejor, miércoles a las 10:00 am o jueves a las 5:00 pm?&quot;
                   </div>
-                  <div className="text-[11px] text-rose-400 font-medium pt-1">
-                    ⚠️ Prohibido caer en la trampa de dar rangos (&quot;de $10 mil a $1 millón&quot;) o tasas (&quot;5% de interés&quot;).
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-slate-950/40 border border-slate-800 space-y-1">
+                  <div className="text-xs font-bold text-red-400">Objeción: &quot;No tengo tiempo&quot; / &quot;¿De qué montos o tasas hablamos?&quot;</div>
+                  <div className="text-xs text-slate-300 italic">
+                    &quot;Somos como médicos de las finanzas: sería irresponsable darte números al aire sin antes diagnosticar tu caso. Es una asesoría ejecutiva y gratuita de solo 20 a 30 minutos para ir directo al grano. ¿Te queda mejor miércoles a las 10:00 am o jueves a las 5:00 pm?&quot;
                   </div>
                 </div>
 
