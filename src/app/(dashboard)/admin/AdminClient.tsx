@@ -2267,17 +2267,18 @@ export default function AdminClient() {
                                         >
                                           Eliminar
                                         </Button>
-                                        {currentUserRole === 'SUPER_ADMIN' && (
-                                          <Button
-                                            onClick={() => handlePurgePortfolio(user.id, user.name || user.email)}
-                                            variant="outline"
-                                            size="sm"
-                                            className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 font-bold text-[10px] h-7 px-2.5 border-purple-200 ml-1"
-                                          >
-                                            Purgar Cartera
-                                          </Button>
-                                        )}
                                       </>
+                                    )}
+                                    {currentUserRole === 'SUPER_ADMIN' && (
+                                      <Button
+                                        onClick={() => handlePurgePortfolio(user.id, user.name || user.email)}
+                                        variant="outline"
+                                        size="sm"
+                                        className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 font-bold text-[10px] h-7 px-2.5 border-purple-200 ml-1"
+                                        title="Eliminar todas las pólizas y clientes de este usuario"
+                                      >
+                                        Purgar Cartera
+                                      </Button>
                                     )}
                                   </div>
                                 )}
