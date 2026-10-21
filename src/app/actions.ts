@@ -3401,7 +3401,7 @@ export async function getMarketCgAdminSummary() {
 
         const saasGlobalEnabled = saasSetting ? saasSetting.value !== "false" : true;
 
-        const allInsurerNames = [
+        const baseInsurerNames = [
             "Allianz México",
             "AXA Seguros México",
             "GNP Seguros",
@@ -3414,6 +3414,11 @@ export async function getMarketCgAdminSummary() {
             "MetLife México",
         ];
 
+        const dynamicInsurerSet = new Set<string>(baseInsurerNames);
+        for (const d of documents) {
+            if (d.aseguradora) dynamicInsurerSet.add(d.aseguradora);
+        }
+        const allInsurerNames = Array.from(dynamicInsurerSet);
         const settingMap = new Map<string, string[]>();
         for (const s of agencySettings) {
             const agId = s.key.replace("market_cg_agency_insurers_", "");
@@ -3554,5 +3559,146 @@ export async function toggleMarketCgDocumentStatus(
     } catch (error: any) {
         console.error("Error in toggleMarketCgDocumentStatus:", error);
         return { success: false, message: error.message || "Error al actualizar documento" };
+    }
+}
+
+export async function saveMarketCgDocumentFromAdmin(payload: {
+    id?: string;
+    aseguradora: string;
+    ramo: string;
+    producto: string;
+    year: number;
+    downloadUrl?: string;
+    productPageUrl?: string;
+    notes?: string;
+    extractedText?: string;
+}) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email.toLowerCase() }
+        });
+        if (!currentUser || currentUser.role !== "SUPER_ADMIN") {
+            return { success: false, message: "Acceso exclusivo para Super Administrador" };
+        }
+
+        const aseguradora = (payload.aseguradora || "").trim();
+        const ramo = (payload.ramo || "Otro").trim();
+        const producto = (payload.producto || "").trim();
+        const year = Number(payload.year) || new Date().getFullYear();
+
+        if (!aseguradora || !producto) {
+            return { success: false, message: "Aseguradora y Nombre del Producto son obligatorios." };
+        }
+
+        const slug = `${aseguradora}_${ramo}_${producto}_${year}`
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[^a-z0-9]+/g, "_")
+            .replace(/^_+|_+$/g, "")
+            .slice(0, 90);
+
+        const docId = payload.id || `cg_custom_${slug}_${Date.now().toString(36)}`;
+        const fileKey = `manual/${aseguradora}/${ramo}/${producto}_${year}.pdf`;
+
+        const rawText = (payload.extractedText || "").trim();
+        const fullText =
+            rawText.length >= 40
+                ? rawText
+                : `[${aseguradora} | ${ramo} | ${producto} (${year})]\nCondiciones Generales oficiales de ${producto} (${aseguradora}). ${payload.notes || ""}`;
+
+        // Dividir en fragmentos de ~3,500 caracteres con traslape de 250 caracteres
+        const chunks: string[] = [];
+        const CHUNK_SIZE = 3500;
+        const OVERLAP = 250;
+        if (fullText.length <= CHUNK_SIZE) {
+            chunks.push(fullText);
+        } else {
+            let start = 0;
+            while (start < fullText.length && chunks.length < 150) {
+                const slice = fullText.slice(start, start + CHUNK_SIZE);
+                chunks.push(`[${aseguradora} - ${producto} (${year})]\n${slice}`);
+                start += CHUNK_SIZE - OVERLAP;
+            }
+        }
+
+        const savedDoc = await prisma.marketCgDocument.upsert({
+            where: { fileKey },
+            update: {
+                aseguradora,
+                ramo,
+                producto,
+                year,
+                downloadUrl: payload.downloadUrl?.trim() || null,
+                productPageUrl: payload.productPageUrl?.trim() || null,
+                notes: payload.notes?.trim() || null,
+                charCount: fullText.length,
+                chunkCount: chunks.length,
+                active: true,
+                isGlobalAuthorized: true,
+            },
+            create: {
+                id: docId,
+                fileKey,
+                aseguradora,
+                ramo,
+                producto,
+                year,
+                downloadUrl: payload.downloadUrl?.trim() || null,
+                productPageUrl: payload.productPageUrl?.trim() || null,
+                notes: payload.notes?.trim() || null,
+                charCount: fullText.length,
+                chunkCount: chunks.length,
+                active: true,
+                isGlobalAuthorized: true,
+            },
+        });
+
+        await prisma.marketCgChunk.deleteMany({ where: { documentId: savedDoc.id } });
+        await prisma.marketCgChunk.createMany({
+            data: chunks.map((content, idx) => ({
+                id: `${savedDoc.id}_c${idx}`,
+                documentId: savedDoc.id,
+                chunkIndex: idx,
+                aseguradora,
+                ramo,
+                producto,
+                year,
+                content,
+            })),
+            skipDuplicates: true,
+        });
+
+        return {
+            success: true,
+            document: savedDoc,
+            chunkCount: chunks.length,
+        };
+    } catch (error: any) {
+        console.error("Error in saveMarketCgDocumentFromAdmin:", error);
+        return { success: false, message: error.message || "Error al guardar Condición General" };
+    }
+}
+
+export async function deleteMarketCgDocumentFromAdmin(docId: string) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email.toLowerCase() }
+        });
+        if (!currentUser || currentUser.role !== "SUPER_ADMIN") {
+            return { success: false, message: "Acceso exclusivo para Super Administrador" };
+        }
+
+        await prisma.marketCgDocument.delete({ where: { id: docId } });
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error in deleteMarketCgDocumentFromAdmin:", error);
+        return { success: false, message: error.message || "Error al eliminar documento" };
     }
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useMemo } from "react"
+import { put } from "@vercel/blob/client"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -18,6 +19,10 @@ import {
     Layers,
     Check,
     Crown,
+    UploadCloud,
+    PlusCircle,
+    Trash2,
+    Sparkles,
 } from "lucide-react"
 import {
     getMarketCgAdminSummary,
@@ -25,6 +30,8 @@ import {
     toggleMarketCgInsurerStatus,
     toggleMarketCgDocumentStatus,
     saveAgencyMarketInsurers,
+    saveMarketCgDocumentFromAdmin,
+    deleteMarketCgDocumentFromAdmin,
 } from "@/app/actions"
 
 interface MarketCgDocItem {
@@ -63,6 +70,54 @@ const DEFAULT_INSURERS = [
     "MetLife México",
 ]
 
+const RAMO_OPTIONS = [
+    "Gastos Médicos",
+    "Vida",
+    "Autos",
+    "Daños",
+    "Accidentes y Enfermedades",
+    "Ahorro / Retiro",
+    "Otro",
+]
+
+async function extractTextFromPdfFileInBrowser(file: File): Promise<string> {
+    try {
+        const w = window as any
+        if (!w.pdfjsLib) {
+            await new Promise<void>((resolve, reject) => {
+                const script = document.createElement("script")
+                script.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"
+                script.async = true
+                script.onload = () => resolve()
+                script.onerror = () => reject(new Error("No se pudo cargar el lector PDF"))
+                document.head.appendChild(script)
+            })
+        }
+        const pdfjsLib = (window as any).pdfjsLib
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"
+
+        const arrayBuffer = await file.arrayBuffer()
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise
+        const maxPages = Math.min(pdf.numPages, 250)
+        const pageTexts: string[] = []
+
+        for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+            const page = await pdf.getPage(pageNum)
+            const content = await page.getTextContent()
+            const strings = (content.items || []).map((it: any) => it.str || "")
+            const pageText = strings.join(" ").replace(/\s+/g, " ").trim()
+            if (pageText) {
+                pageTexts.push(`[Página ${pageNum}]\n${pageText}`)
+            }
+        }
+        return pageTexts.join("\n\n")
+    } catch (err) {
+        console.warn("Advertencia extrayendo texto del PDF en navegador:", err)
+        return ""
+    }
+}
+
 export default function AdminMarketCgManager() {
     const [loading, setLoading] = useState<boolean>(true)
     const [saasGlobalEnabled, setSaasGlobalEnabled] = useState<boolean>(true)
@@ -73,7 +128,19 @@ export default function AdminMarketCgManager() {
     const [searchQuery, setSearchQuery] = useState<string>("")
     const [statusMsg, setStatusMsg] = useState<string>("")
     const [busyKey, setBusyKey] = useState<string | null>(null)
-    const [viewMode, setViewMode] = useState<"agencies" | "catalog">("agencies")
+    const [viewMode, setViewMode] = useState<"agencies" | "catalog" | "upload">("agencies")
+
+    // Estado del formulario para subir nueva Condición General
+    const [insurerChoice, setInsurerChoice] = useState<string>(DEFAULT_INSURERS[0])
+    const [customInsurerName, setCustomInsurerName] = useState<string>("")
+    const [formRamo, setFormRamo] = useState<string>("Gastos Médicos")
+    const [formProducto, setFormProducto] = useState<string>("")
+    const [formYear, setFormYear] = useState<number>(new Date().getFullYear())
+    const [formNotes, setFormNotes] = useState<string>("")
+    const [formExternalUrl, setFormExternalUrl] = useState<string>("")
+    const [selectedFile, setSelectedFile] = useState<File | null>(null)
+    const [uploadingCg, setUploadingCg] = useState<boolean>(false)
+    const [uploadStepText, setUploadStepText] = useState<string>("")
 
     const loadSummary = async () => {
         setLoading(true)
@@ -263,6 +330,107 @@ export default function AdminMarketCgManager() {
         }
     }
 
+    const handleDeleteDoc = async (doc: MarketCgDocItem) => {
+        const ok = window.confirm(
+            `¿Seguro que deseas eliminar la Condición General «${doc.producto}» (${doc.aseguradora})?`
+        )
+        if (!ok) return
+
+        setBusyKey(`del_${doc.id}`)
+        try {
+            const res = await deleteMarketCgDocumentFromAdmin(doc.id)
+            if (res.success) {
+                setDocuments((prev) => prev.filter((d) => d.id !== doc.id))
+                setStatusMsg(`✓ Se eliminó «${doc.producto}» del catálogo.`)
+                setTimeout(() => setStatusMsg(""), 3500)
+            }
+        } finally {
+            setBusyKey(null)
+        }
+    }
+
+    const handleUploadNewCg = async (e: React.FormEvent) => {
+        e.preventDefault()
+        const finalInsurer =
+            insurerChoice === "__NEW__" ? customInsurerName.trim() : insurerChoice.trim()
+
+        if (!finalInsurer) {
+            alert("Por favor indica el nombre de la aseguradora.")
+            return
+        }
+        if (!formProducto.trim()) {
+            alert("Por favor escribe el nombre comercial del producto o póliza.")
+            return
+        }
+        if (!selectedFile && !formExternalUrl.trim()) {
+            alert("Por favor selecciona un archivo PDF o pega la liga directa del PDF oficial.")
+            return
+        }
+
+        setUploadingCg(true)
+        try {
+            let downloadUrl = formExternalUrl.trim()
+            let extractedText = ""
+
+            if (selectedFile) {
+                setUploadStepText("1/3 Extrayendo texto de todas las páginas del PDF para IA...")
+                extractedText = await extractTextFromPdfFileInBrowser(selectedFile)
+
+                setUploadStepText("2/3 Subiendo PDF oficial a la Biblioteca en la nube...")
+                const tokenRes = await fetch("/api/cartera/blob-token", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ filename: selectedFile.name }),
+                })
+                const tokenData = await tokenRes.json()
+                if (!tokenRes.ok || !tokenData.clientToken) {
+                    throw new Error(tokenData.error || "No se pudo obtener permiso para subir el PDF")
+                }
+
+                const blob = await put(tokenData.pathname, selectedFile, {
+                    access: "public",
+                    token: tokenData.clientToken,
+                })
+                downloadUrl = blob.url
+            }
+
+            setUploadStepText("3/3 Indexando fragmentos en PostgreSQL para el Asistente IA...")
+            const saveRes = await saveMarketCgDocumentFromAdmin({
+                aseguradora: finalInsurer,
+                ramo: formRamo,
+                producto: formProducto.trim(),
+                year: Number(formYear) || new Date().getFullYear(),
+                downloadUrl,
+                notes: formNotes.trim() || undefined,
+                extractedText,
+            })
+
+            if (!saveRes.success) {
+                throw new Error(saveRes.message || "Error al guardar la Condición General")
+            }
+
+            setStatusMsg(
+                `✓ Póliza «${formProducto.trim()}» (${finalInsurer}) publicada en Mi Biblioteca e indexada en el Asistente IA (${saveRes.chunkCount} fragmentos).`
+            )
+            setFormProducto("")
+            setFormNotes("")
+            setFormExternalUrl("")
+            setSelectedFile(null)
+            if (insurerChoice === "__NEW__") {
+                setInsurerChoice(finalInsurer)
+                setCustomInsurerName("")
+            }
+            await loadSummary()
+            setViewMode("catalog")
+            setSelectedInsurer(finalInsurer)
+        } catch (err: any) {
+            alert(err?.message || "Error al subir Condición General")
+        } finally {
+            setUploadingCg(false)
+            setUploadStepText("")
+        }
+    }
+
     return (
         <Card className="border-2 border-indigo-200 dark:border-indigo-900 shadow-md overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-indigo-950 via-slate-900 to-teal-950 text-white p-6">
@@ -276,7 +444,7 @@ export default function AdminMarketCgManager() {
                             Banco Maestro de Condiciones Generales del Mercado (RAG)
                         </CardTitle>
                         <CardDescription className="text-slate-300 text-xs max-w-2xl">
-                            Tú tienes acceso a las 10 aseguradoras completas, y aquí mismo puedes elegir exactamente qué aseguradoras (ej. 2 o 3 compañías) puede consultar cada promotoría en su Asistente de IA.
+                            Tú tienes acceso a todas las aseguradoras, puedes configurar qué compañías ve cada promotoría y subir nuevas Condiciones Generales (PDF) en cualquier momento.
                         </CardDescription>
                     </div>
 
@@ -297,6 +465,14 @@ export default function AdminMarketCgManager() {
                                 Fragmentos Indexados
                             </div>
                         </div>
+                        <Button
+                            type="button"
+                            onClick={() => setViewMode("upload")}
+                            className="bg-emerald-500 hover:bg-emerald-600 text-white font-black text-xs h-10 rounded-xl shadow-sm"
+                        >
+                            <UploadCloud className="h-4 w-4 mr-1.5" />
+                            + Subir PDF / Aseguradora
+                        </Button>
                         <Button
                             variant="secondary"
                             size="sm"
@@ -361,7 +537,7 @@ export default function AdminMarketCgManager() {
                     </div>
                 )}
 
-                {/* Selector de Vista: 1) Asignar Aseguradoras por Promotoría vs 2) Ver Catálogo de las 604 Pólizas */}
+                {/* Selector de Vista */}
                 <div className="flex flex-wrap items-center gap-2 border-b pb-3">
                     <button
                         type="button"
@@ -387,13 +563,207 @@ export default function AdminMarketCgManager() {
                         <Layers className="h-4 w-4" />
                         2. Catálogo de Pólizas por Aseguradora ({documents.length} PDFs)
                     </button>
+                    <button
+                        type="button"
+                        onClick={() => setViewMode("upload")}
+                        className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 ${
+                            viewMode === "upload"
+                                ? "bg-emerald-600 text-white shadow-sm"
+                                : "bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 hover:bg-emerald-100"
+                        }`}
+                    >
+                        <PlusCircle className="h-4 w-4" />
+                        3. Subir Nueva Condición General / Aseguradora
+                    </button>
                 </div>
+
+                {/* VISTA 3: CARGADOR DE NUEVAS CONDICIONES GENERALES */}
+                {viewMode === "upload" && (
+                    <form
+                        onSubmit={handleUploadNewCg}
+                        className="rounded-2xl border-2 border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/20 dark:bg-emerald-950/10 p-6 space-y-5"
+                    >
+                        <div className="flex items-start justify-between gap-4 border-b pb-4">
+                            <div>
+                                <h3 className="text-base font-black text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                                    <Sparkles className="h-5 w-5 text-emerald-600" />
+                                    Agregar o Actualizar Condición General (Auto-Indexado IA + Biblioteca)
+                                </h3>
+                                <p className="text-xs text-slate-500 mt-1">
+                                    Sube el PDF oficial desde tu computadora. El sistema extraerá automáticamente todo su articulado para el Asistente IA y publicará el PDF descargable en Mi Biblioteca.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            {/* Aseguradora */}
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                    Aseguradora *
+                                </label>
+                                <select
+                                    value={insurerChoice}
+                                    onChange={(e) => setInsurerChoice(e.target.value)}
+                                    className="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800"
+                                >
+                                    {allInsurers.map((ins) => (
+                                        <option key={ins} value={ins}>
+                                            {ins}
+                                        </option>
+                                    ))}
+                                    <option value="__NEW__">+ Agregar Nueva Aseguradora...</option>
+                                </select>
+                                {insurerChoice === "__NEW__" && (
+                                    <Input
+                                        value={customInsurerName}
+                                        onChange={(e) => setCustomInsurerName(e.target.value)}
+                                        placeholder="Ej. Mapfre México, Bupa, Chubb..."
+                                        className="mt-2 h-9 text-xs bg-white"
+                                        required
+                                    />
+                                )}
+                            </div>
+
+                            {/* Ramo */}
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                    Ramo *
+                                </label>
+                                <select
+                                    value={formRamo}
+                                    onChange={(e) => setFormRamo(e.target.value)}
+                                    className="w-full h-10 rounded-lg border border-slate-300 bg-white px-3 text-xs font-semibold text-slate-800"
+                                >
+                                    {RAMO_OPTIONS.map((r) => (
+                                        <option key={r} value={r}>
+                                            {r}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Nombre del Producto */}
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                    Nombre del Producto / Póliza *
+                                </label>
+                                <Input
+                                    value={formProducto}
+                                    onChange={(e) => setFormProducto(e.target.value)}
+                                    placeholder="Ej. Alfa Medical Flex, Bupa Global Select..."
+                                    className="h-10 text-xs bg-white"
+                                    required
+                                />
+                            </div>
+
+                            {/* Año */}
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                    Año / Versión *
+                                </label>
+                                <Input
+                                    type="number"
+                                    min={2015}
+                                    max={2035}
+                                    value={formYear}
+                                    onChange={(e) => setFormYear(Number(e.target.value))}
+                                    className="h-10 text-xs bg-white font-mono"
+                                    required
+                                />
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Subir Archivo PDF */}
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                    Archivo PDF de Condiciones Generales (Recomendado)
+                                </label>
+                                <div className="rounded-xl border-2 border-dashed border-emerald-300 bg-white p-4 flex flex-col items-center justify-center text-center">
+                                    <UploadCloud className="h-6 w-6 text-emerald-600 mb-1" />
+                                    <input
+                                        type="file"
+                                        accept="application/pdf,.pdf"
+                                        onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
+                                        className="text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer"
+                                    />
+                                    {selectedFile && (
+                                        <p className="text-[11px] font-bold text-emerald-700 mt-1.5">
+                                            Seleccionado: {selectedFile.name} (
+                                            {(selectedFile.size / (1024 * 1024)).toFixed(2)} MB)
+                                        </p>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Notas y Liga opcional */}
+                            <div className="space-y-3">
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                        Notas o Registro CNSF (Opcional)
+                                    </label>
+                                    <Input
+                                        value={formNotes}
+                                        onChange={(e) => setFormNotes(e.target.value)}
+                                        placeholder="Ej. Registro CNSF PPAQ-S0012-0045-2026 / Versión vigente"
+                                        className="h-9 text-xs bg-white"
+                                    />
+                                </div>
+                                <div className="space-y-1">
+                                    <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                                        O pegar Liga Directa al PDF Oficial (solo si no subes archivo)
+                                    </label>
+                                    <Input
+                                        value={formExternalUrl}
+                                        onChange={(e) => setFormExternalUrl(e.target.value)}
+                                        placeholder="https://..."
+                                        className="h-9 text-xs bg-white"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center justify-between pt-2 border-t">
+                            <div className="text-xs font-semibold text-emerald-800">
+                                {uploadingCg && uploadStepText ? uploadStepText : ""}
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => setViewMode("catalog")}
+                                    disabled={uploadingCg}
+                                    className="text-xs h-9"
+                                >
+                                    Cancelar
+                                </Button>
+                                <Button
+                                    type="submit"
+                                    disabled={uploadingCg}
+                                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs h-9 px-5"
+                                >
+                                    {uploadingCg ? (
+                                        <>
+                                            <RefreshCw className="h-3.5 w-3.5 mr-2 animate-spin" />
+                                            Procesando e Indexando...
+                                        </>
+                                    ) : (
+                                        <>
+                                            <UploadCloud className="h-4 w-4 mr-1.5" />
+                                            Guardar e Indexar en IA + Biblioteca
+                                        </>
+                                    )}
+                                </Button>
+                            </div>
+                        </div>
+                    </form>
+                )}
 
                 {/* VISTA 1: MATRIZ DE ASEGURADORAS POR PROMOTORÍA */}
                 {viewMode === "agencies" && (
                     <div className="space-y-4">
                         <div className="bg-indigo-50/50 dark:bg-indigo-950/20 border border-indigo-100 dark:border-indigo-900/50 rounded-xl p-3.5 text-xs text-slate-700 dark:text-slate-300">
-                            <strong>¿Cómo funciona?</strong> Haz clic sobre los botones de cada aseguradora para encenderlos (verde) o apagarlos (gris) en cada promotoría. Si a una promotoría le dejas encendidas solo <strong>2 o 3 aseguradoras</strong>, el Asistente de IA de sus agentes únicamente responderá sobre esas compañías y no verá el resto.
+                            <strong>¿Cómo funciona?</strong> Haz clic sobre los botones de cada aseguradora para encenderlos (verde) o apagarlos (gris) en cada promotoría. Las promotorías nuevas nacen con <strong>0 aseguradoras</strong> por defecto hasta que tú las actives aquí.
                         </div>
 
                         <div className="space-y-3">
@@ -432,7 +802,7 @@ export default function AdminMarketCgManager() {
                                                     </div>
                                                     <div className="text-[11px] text-muted-foreground">
                                                         {isMainAacom
-                                                            ? "Tu Promotoría Principal — Acceso Total Garantizado a las 10 Aseguradoras"
+                                                            ? `Tu Promotoría Principal — Acceso Total Garantizado a las ${allInsurers.length} Aseguradoras`
                                                             : `${ag.allowedInsurers.length} de ${allInsurers.length} aseguradoras autorizadas para sus agentes`}
                                                     </div>
                                                 </div>
@@ -451,7 +821,7 @@ export default function AdminMarketCgManager() {
                                                         }
                                                         className="h-7 text-[11px] font-bold px-2.5"
                                                     >
-                                                        Todas (10)
+                                                        Todas ({allInsurers.length})
                                                     </Button>
                                                     <Button
                                                         type="button"
@@ -649,6 +1019,9 @@ export default function AdminMarketCgManager() {
                                             <th className="py-2.5 px-3 font-black text-slate-600 dark:text-slate-300 text-center">
                                                 Global SaaS
                                             </th>
+                                            <th className="py-2.5 px-3 font-black text-slate-600 dark:text-slate-300 text-center">
+                                                Acciones
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y">
@@ -721,12 +1094,23 @@ export default function AdminMarketCgManager() {
                                                         className="h-4 w-4 accent-indigo-600 rounded cursor-pointer"
                                                     />
                                                 </td>
+                                                <td className="py-2.5 px-3 text-center">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleDeleteDoc(doc)}
+                                                        disabled={busyKey === `del_${doc.id}`}
+                                                        title="Eliminar Condición General"
+                                                        className="p-1 rounded hover:bg-red-50 text-slate-400 hover:text-red-600 transition-colors"
+                                                    >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                    </button>
+                                                </td>
                                             </tr>
                                         ))}
                                         {filteredDocs.length === 0 && !loading && (
                                             <tr>
                                                 <td
-                                                    colSpan={6}
+                                                    colSpan={7}
                                                     className="py-8 text-center text-slate-400 font-medium"
                                                 >
                                                     No se encontraron condiciones generales con ese filtro.
