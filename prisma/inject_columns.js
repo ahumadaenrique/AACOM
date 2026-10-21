@@ -521,16 +521,16 @@ async function injectColumns() {
     const initFlagRes = await client.query(`SELECT "value" FROM "Setting" WHERE "key" = 'market_cg_existing_agencies_insignia_init_v1';`);
     if (initFlagRes.rows.length === 0) {
       await client.query(`
-        INSERT INTO "Setting" ("key", "value", "updatedAt")
-        SELECT 'market_cg_agency_insurers_' || a."id", '["Insignia Life"]', CURRENT_TIMESTAMP
+        INSERT INTO "Setting" ("key", "value")
+        SELECT 'market_cg_agency_insurers_' || a."id", '["Insignia Life"]'
         FROM "Agency" a
         WHERE a."id" <> 'aacom' AND COALESCE(a."slug", '') <> 'aacom'
-        ON CONFLICT ("key") DO UPDATE SET "value" = '["Insignia Life"]', "updatedAt" = CURRENT_TIMESTAMP;
+        ON CONFLICT ("key") DO UPDATE SET "value" = '["Insignia Life"]';
       `);
       await client.query(`
-        INSERT INTO "Setting" ("key", "value", "updatedAt")
-        VALUES ('market_cg_existing_agencies_insignia_init_v1', 'true', CURRENT_TIMESTAMP)
-        ON CONFLICT ("key") DO UPDATE SET "value" = 'true', "updatedAt" = CURRENT_TIMESTAMP;
+        INSERT INTO "Setting" ("key", "value")
+        VALUES ('market_cg_existing_agencies_insignia_init_v1', 'true')
+        ON CONFLICT ("key") DO UPDATE SET "value" = 'true';
       `);
       console.log('Initialized existing non-AACOM agencies with ["Insignia Life"].');
     }
