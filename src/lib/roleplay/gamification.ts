@@ -108,3 +108,36 @@ export function checkAndApplyInactivityPenalty(stats: {
 
   return { newXp: stats.xp, newStreak: stats.streak, penalizedDays: 0, penaltyXp: 0 };
 }
+
+/**
+ * Calcula la racha real de días hábiles consecutivos (ignorando sábados y domingos)
+ * a partir de las fechas locales ('YYYY-MM-DD') en las que el asesor realizó llamadas válidas.
+ */
+export function calculateConsecutiveBusinessDaysStreak(
+  activeDateStrings: Iterable<string>,
+  todayStr: string = getLocalDateString()
+): number {
+  const activeSet = new Set(activeDateStrings);
+  if (activeSet.size === 0) return 0;
+
+  const cur = parseLocalDate(todayStr);
+  let streakCount = 0;
+
+  for (let i = 0; i < 60; i++) {
+    const dStr = getLocalDateString(cur);
+    if (activeSet.has(dStr)) {
+      streakCount++;
+    } else if (dStr === todayStr) {
+      // Si aún no ha hecho llamada hoy pero estamos consultando al abrir sesión,
+      // revisamos hacia atrás desde el día anterior para ver si trae racha viva.
+    } else if (!isBusinessDay(cur)) {
+      // Sábado o domingo sin llamada no rompe la racha de días hábiles
+    } else {
+      // Día hábil pasado sin llamadas: termina el conteo consecutivo
+      break;
+    }
+    cur.setDate(cur.getDate() - 1);
+  }
+
+  return streakCount;
+}

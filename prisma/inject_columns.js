@@ -243,59 +243,48 @@ async function injectColumns() {
       `UPDATE "User" SET "role" = 'AGENTE', "linkedAgentId" = NULL WHERE LOWER("email") = 'cdcc6190@gmail.com';`,
       `UPDATE "RoleplayCall" SET "engine" = 'ELEVENLABS' WHERE "callAudioUrl" IS NULL AND "conversationId" IS NOT NULL AND ("createdAt" < '2026-10-10 23:59:59' OR "engine" IS NULL);`,
       `UPDATE "RoleplayCall"
-       SET "score" = CASE
-             WHEN "durationSeconds" >= 180 THEN 88
-             WHEN "durationSeconds" >= 90 THEN 82
-             WHEN "durationSeconds" >= 30 THEN 78
-             ELSE 72
-           END,
-           "xpEarned" = CASE
-             WHEN "durationSeconds" >= 180 THEN 180
-             WHEN "durationSeconds" >= 90 THEN 140
-             WHEN "durationSeconds" >= 30 THEN 100
-             ELSE 60
-           END,
-           "appointmentClosed" = CASE
-             WHEN "durationSeconds" >= 90 THEN true
-             ELSE "appointmentClosed"
-           END,
-           "errores" = ARRAY[]::TEXT[],
-           "aciertos" = ARRAY['Interacción telefónica completada con éxito', 'Fluidez en la llamada y desenvolvimiento']::TEXT[],
-           "coachTip" = 'Excelente práctica y fluidez en el diálogo. Sigue reforzando el cierre de la cita con doble alternativa de horario.'
-       WHERE "score" = 0 AND "durationSeconds" >= 15 AND "createdAt" >= '2026-10-10 00:00:00';`,
-      `INSERT INTO "RoleplayStats" ("id", "userId", "xp", "level", "streak", "todayXp", "totalCalls", "closedCalls", "lastActiveDate", "todayDate", "updatedAt")
-       SELECT 'rs_' || u."id", u."id", 2450, 2, 4, 500, 32, 17, TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'), TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'), NOW()
-       FROM "User" u
-       WHERE LOWER(u."email") = 'alejandra.ahumada@aacommx.com'
-       ON CONFLICT ("userId") DO UPDATE
-       SET "xp" = GREATEST(COALESCE("RoleplayStats"."xp", 0), 2450),
-           "level" = 2,
-           "streak" = GREATEST(COALESCE("RoleplayStats"."streak", 0), 4),
-           "todayXp" = 500,
-           "totalCalls" = GREATEST(COALESCE("RoleplayStats"."totalCalls", 0), 32),
-           "closedCalls" = GREATEST(COALESCE("RoleplayStats"."closedCalls", 0), 17),
-           "lastActiveDate" = TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'),
-           "todayDate" = TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'),
-           "updatedAt" = NOW();`,
+       SET "xpEarned" = LEAST(500, FLOOR("score" * 1.5)::INTEGER + CASE WHEN "appointmentClosed" = true THEN 50 ELSE 0 END)
+       WHERE "score" > 0
+         AND COALESCE("xpEarned", 0) = 0
+         AND ("createdAt" AT TIME ZONE 'America/Mexico_City')::date = (NOW() AT TIME ZONE 'America/Mexico_City')::date;`,
       `UPDATE "RoleplayStats" rs
-       SET "xp" = GREATEST(COALESCE(rs."xp", 0), 950),
-           "level" = 2,
-           "streak" = GREATEST(COALESCE(rs."streak", 0), 3),
-           "todayXp" = GREATEST(COALESCE(rs."todayXp", 0), 350),
-           "lastActiveDate" = TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'),
-           "todayDate" = TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD'),
-           "updatedAt" = NOW()
-       FROM "User" u
-       WHERE rs."userId" = u."id" AND (LOWER(u."email") LIKE '%galvan%' OR LOWER(u."email") LIKE '%ricgaljua%');`,
+       SET "todayXp" = LEAST(500, COALESCE(today_summary.xp_today, 0)),
+           "todayCallsCount" = COALESCE(today_summary.calls_today, 0),
+           "todayDate" = TO_CHAR(NOW() AT TIME ZONE 'America/Mexico_City', 'YYYY-MM-DD')
+       FROM (
+         SELECT u."id" AS "userId",
+                SUM(COALESCE(rc."xpEarned", 0)) FILTER (
+                  WHERE (rc."createdAt" AT TIME ZONE 'America/Mexico_City')::date = (NOW() AT TIME ZONE 'America/Mexico_City')::date
+                )::INTEGER AS xp_today,
+                COUNT(rc."id") FILTER (
+                  WHERE (rc."createdAt" AT TIME ZONE 'America/Mexico_City')::date = (NOW() AT TIME ZONE 'America/Mexico_City')::date
+                )::INTEGER AS calls_today
+         FROM "User" u
+         LEFT JOIN "RoleplayCall" rc ON rc."userId" = u."id"
+         GROUP BY u."id"
+       ) today_summary
+       WHERE rs."userId" = today_summary."userId";`,
       `UPDATE "RoleplayStats" rs
        SET "totalCalls" = counts.c_total,
-           "closedCalls" = GREATEST(rs."closedCalls", counts.c_closed)
+           "closedCalls" = GREATEST(rs."closedCalls", counts.c_closed),
+           "xp" = GREATEST(rs."xp", counts.total_xp),
+           "streak" = CASE
+             WHEN counts.active_days > rs."streak" THEN counts.active_days
+             WHEN rs."streak" = 0 AND counts.c_total > 0 THEN 1
+             ELSE rs."streak"
+           END
        FROM (
-         SELECT "userId", COUNT(*) as c_total, COUNT(*) FILTER (WHERE "appointmentClosed" = true) as c_closed
+         SELECT "userId",
+                COUNT(*)::INTEGER as c_total,
+                COUNT(*) FILTER (WHERE "appointmentClosed" = true)::INTEGER as c_closed,
+                COALESCE(SUM("xpEarned"), 0)::INTEGER as total_xp,
+                COUNT(DISTINCT ("createdAt" AT TIME ZONE 'America/Mexico_City')::date) FILTER (
+                  WHERE "createdAt" >= NOW() - INTERVAL '7 days' AND "durationSeconds" >= 15
+                )::INTEGER as active_days
          FROM "RoleplayCall"
          GROUP BY "userId"
        ) counts
-       WHERE rs."userId" = counts."userId" AND rs."totalCalls" < counts.c_total;`,
+       WHERE rs."userId" = counts."userId";`,
       `ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "rfc" TEXT;`,
       `ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "curp" TEXT;`,
       `ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "notes" TEXT;`,

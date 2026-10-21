@@ -5,7 +5,8 @@ import {
   calculateLevelFromXp,
   getLocalDateString,
   DAILY_XP_CAP,
-  checkAndApplyInactivityPenalty
+  checkAndApplyInactivityPenalty,
+  calculateConsecutiveBusinessDaysStreak
 } from '@/lib/roleplay/gamification';
 import { BADGES } from '@/lib/roleplay/badges';
 import { generateObject } from 'ai';
@@ -218,24 +219,34 @@ ${badgesText}`;
 
     let rawObject: any = null;
     try {
-      const { object } = await generateObject({
-        model: google('gemini-3.8-flash'),
-        schema: EvaluationSchema,
-        prompt: promptText
-      });
-      rawObject = object as any;
+      let evalResult;
+      try {
+        evalResult = await generateObject({
+          model: google('gemini-3.8-flash'),
+          schema: EvaluationSchema,
+          prompt: promptText
+        });
+      } catch (_primaryErr) {
+        evalResult = await generateObject({
+          model: google('gemini-2.5-flash'),
+          schema: EvaluationSchema,
+          prompt: promptText
+        });
+      }
+      rawObject = evalResult.object as any;
     } catch (aiErr) {
       console.warn('[Evaluate] Fallback a evaluación heurística local:', aiErr);
       const transcriptList = Array.isArray(transcript) ? transcript : [];
-      const fullText = transcriptList.map((t: any) => t.message || '').join(' ').toLowerCase();
+      const aiUtterances = transcriptList.filter((t: any) => t.source === 'ai').map((t: any) => t.message || '').join(' ').toLowerCase();
       const userUtterances = transcriptList.filter((t: any) => t.source === 'user').map((t: any) => t.message || '').join(' ').toLowerCase();
 
-      const hasDoubleAlt = userUtterances.includes('martes') || userUtterances.includes('jueves') || userUtterances.includes('mañana') || userUtterances.includes('tarde') || userUtterances.includes('11') || userUtterances.includes('4') || userUtterances.includes('opciones');
+      const hasDoubleAlt = /\b(lunes|martes|mi[eé]rcoles|jueves|viernes|ma[nñ]ana)\b/i.test(userUtterances) && /\b(\d{1,2}|diez|once|doce|una|dos|tres|cuatro|cinco|seis|siete|ocho|nueve)\b/i.test(userUtterances);
       const hasFord = userUtterances.includes('familia') || userUtterances.includes('hijo') || userUtterances.includes('trabajo') || userUtterances.includes('meta') || userUtterances.includes('ahorro');
-      const hasClosingAgreement = fullText.includes('nos vemos') || fullText.includes('quedamos') || fullText.includes('agendado') || fullText.includes('perfecto') || fullText.includes('confirmad');
+      const hasClosingAgreement = /\b(nos\s+vemos|quedamos\s+entonces|anotado|lo\s+anoto|me\s+queda\s+mejor|agendamos\s+para)\b/i.test(aiUtterances);
+      const hasProspectRejection = /\b(no\s+agendo|no\s+voy\s+a\s+agendar|mejor\s+ni\s+agendamos|mejor\s+no\s+agendo|no\s+me\s+da\s+confianza|cuelgo|perd[ií]o\s+para\s+m[ií])\b/i.test(aiUtterances);
 
-      const appointmentAchieved = hasDoubleAlt && (hasClosingAgreement || durationSeconds >= 120);
-      const computedScore = appointmentAchieved ? 85 : (transcriptList.length >= 6 ? 75 : 55);
+      const appointmentAchieved = hasDoubleAlt && hasClosingAgreement && !hasProspectRejection;
+      const computedScore = appointmentAchieved ? 88 : (transcriptList.length >= 6 ? 68 : 50);
 
       rawObject = {
         score: computedScore,
@@ -244,14 +255,14 @@ ${badgesText}`;
           hasDoubleAlt ? 'Manejo de alternativas concretas de horario para la reunión.' : 'Cordialidad y respeto por los tiempos del prospecto.'
         ],
         errores: [
-          !hasDoubleAlt ? 'Asegurar siempre el uso de doble alternativa de horario al agendar.' : 'Profundizar más en las preguntas de descubrimiento y detección de necesidades.'
-        ],
+          !hasDoubleAlt ? 'Asegurar siempre el uso de doble alternativa de horario al agendar.' : (!appointmentAchieved ? 'No se concretó el acuerdo final de fecha y hora con el prospecto.' : '')
+        ].filter(Boolean),
         cometioErrorFatal: false,
         appointmentClosed: appointmentAchieved,
         coachTip: appointmentAchieved 
           ? '¡Gran trabajo! Lograste una sesión estructurada y una cita confirmada.' 
-          : 'Enfócate en guiar la conversación con preguntas claras y cerrar ofreciendo dos horarios específicos.',
-        insigniasGanadas: appointmentAchieved && computedScore >= 85 ? ['primera_cita'] : [],
+          : 'Enfócate en responder directamente la duda del prospecto y cerrar ofreciendo dos horarios específicos.',
+        insigniasGanadas: appointmentAchieved && computedScore >= 85 ? ['p_doble_alt'] : [],
         aplicoTecnicaFord: hasFord,
         priorizoMetas: userUtterances.includes('prioridad') || userUtterances.includes('importante') || userUtterances.includes('principal')
       };
@@ -434,39 +445,53 @@ ${badgesText}`;
     }
 
     let currentXp = stats?.xp || 0;
-    let todayXp = stats?.todayXp || 0;
-    let todayCallsCount = stats?.todayCallsCount || 0;
     let closedCalls = stats?.closedCalls || 0;
     let streak = stats?.streak || 0;
     const lastActiveDate = stats?.lastActiveDate || '';
-    if (lastActiveDate !== todayStr) {
-      const { newStreak, newXp: xpAfterPenalty } = checkAndApplyInactivityPenalty(stats || { xp: 0, streak: 0, lastActiveDate: '' });
-      streak = newStreak;
-      currentXp = xpAfterPenalty;
-      todayXp = 0;
-      todayCallsCount = 0;
-    }
 
-    // CONTROL ESTRICTO: Límite de 500 XP diaria verificado contra llamadas reales del día
+    // CONTROL ESTRICTO: Límite de 500 XP diaria y Racha verificados contra llamadas reales en BD
     const recentCalls = await prisma.roleplayCall.findMany({
       where: {
         userId,
-        createdAt: { gte: new Date(Date.now() - 36 * 60 * 60 * 1000) }
+        createdAt: { gte: new Date(Date.now() - 35 * 24 * 60 * 60 * 1000) }
       },
-      select: { xpEarned: true, createdAt: true }
+      select: { xpEarned: true, durationSeconds: true, score: true, createdAt: true }
     });
 
-    const xpEarnedTodayFromCalls = recentCalls
-      .filter(c => getLocalDateString(c.createdAt) === todayStr)
-      .reduce((sum, c) => sum + (c.xpEarned || 0), 0);
+    const todayRealCalls = recentCalls.filter(
+      c => getLocalDateString(c.createdAt) === todayStr && (c.durationSeconds >= 8 || (c.score || 0) > 0)
+    );
+    const xpEarnedTodayFromCalls = todayRealCalls.reduce((sum, c) => sum + (c.xpEarned || 0), 0);
 
-    const effectiveTodayXp = Math.max(todayXp, xpEarnedTodayFromCalls);
+    const activeDateStrings = recentCalls
+      .filter(c => c.durationSeconds >= 15 || (c.score || 0) > 0)
+      .map(c => getLocalDateString(c.createdAt));
+    if (durationSeconds >= 15 || score > 0) {
+      activeDateStrings.push(todayStr);
+    }
+    const historyStreak = calculateConsecutiveBusinessDaysStreak(activeDateStrings, todayStr);
+
+    if (lastActiveDate !== todayStr) {
+      const { newStreak, newXp: xpAfterPenalty } = checkAndApplyInactivityPenalty(
+        stats || { xp: 0, streak: 0, lastActiveDate: '' }
+      );
+      currentXp = xpAfterPenalty;
+      // Al completar su primera llamada válida del día, incrementa la racha en +1
+      streak = score > 0 || durationSeconds >= 15
+        ? Math.max(newStreak + 1, historyStreak)
+        : Math.max(newStreak, historyStreak);
+    } else {
+      streak = Math.max(streak, historyStreak, score > 0 || durationSeconds >= 15 ? 1 : 0);
+    }
+
+    // La única fuente de verdad del tope diario (500 XP) son las llamadas reales de hoy
+    const effectiveTodayXp = Math.min(DAILY_XP_CAP, xpEarnedTodayFromCalls);
     const remainingDailyXp = Math.max(0, DAILY_XP_CAP - effectiveTodayXp);
     const actualXpToAdd = Math.min(xpEarned, remainingDailyXp);
 
     currentXp += actualXpToAdd;
-    todayXp = Math.min(DAILY_XP_CAP, effectiveTodayXp + actualXpToAdd);
-    todayCallsCount += 1;
+    const todayXp = Math.min(DAILY_XP_CAP, effectiveTodayXp + actualXpToAdd);
+    const todayCallsCount = todayRealCalls.length + 1;
 
     if (appointmentClosed) {
       closedCalls += 1;
@@ -493,7 +518,7 @@ ${badgesText}`;
         xp: currentXp,
         level: currentLevel,
         badges: mergedBadges,
-        streak: score > 30 ? 1 : 0,
+        streak: Math.max(1, historyStreak),
         todayXp,
         todayDate: todayStr,
         todayCallsCount: 1,

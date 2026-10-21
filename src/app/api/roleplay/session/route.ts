@@ -5,6 +5,7 @@ import { generarEscenarioAleatorio } from '@/lib/roleplay/scenarios';
 import {
   calculateLevelFromXp,
   checkAndApplyInactivityPenalty,
+  calculateConsecutiveBusinessDaysStreak,
   DAILY_XP_CAP,
   LEVELS_CONFIG,
   BADGES_CATALOG,
@@ -68,27 +69,77 @@ export async function POST(req: Request) {
       });
     }
 
+    // Load recent calls to verify today's real XP, call count, and consecutive business-day streak
+    const recentUserCallsForStats = await prisma.roleplayCall.findMany({
+      where: { userId },
+      take: 60,
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        score: true,
+        xpEarned: true,
+        appointmentClosed: true,
+        durationSeconds: true,
+        createdAt: true
+      }
+    });
+
+    // Auto-heal any calls from today that got 0 XP despite score > 0 due to stale daily cap
+    let recoveredXpToday = 0;
+    for (const c of recentUserCallsForStats) {
+      if (getLocalDateString(c.createdAt) === todayStr && (c.score || 0) > 0 && (c.xpEarned || 0) === 0) {
+        const expectedXp = Math.floor((c.score || 0) * 1.5) + (c.appointmentClosed ? 50 : 0);
+        c.xpEarned = expectedXp;
+        recoveredXpToday += expectedXp;
+        await prisma.roleplayCall.update({
+          where: { id: c.id },
+          data: { xpEarned: expectedXp }
+        }).catch(() => {});
+      }
+    }
+
+    const todayRealCalls = recentUserCallsForStats.filter(
+      c => getLocalDateString(c.createdAt) === todayStr && (c.durationSeconds >= 8 || (c.score || 0) > 0)
+    );
+    const realTodayXp = Math.min(
+      DAILY_XP_CAP,
+      todayRealCalls.reduce((sum, c) => sum + (c.xpEarned || 0), 0)
+    );
+    const realTodayCallsCount = todayRealCalls.length;
+
+    const validActiveDates = recentUserCallsForStats
+      .filter(c => c.durationSeconds >= 15 || (c.score || 0) > 0)
+      .map(c => getLocalDateString(c.createdAt));
+    const historyStreak = calculateConsecutiveBusinessDaysStreak(validActiveDates, todayStr);
+
     // Check penalty for missed business days
     const penaltyCheck = checkAndApplyInactivityPenalty({
-      xp: stats.xp,
+      xp: stats.xp + recoveredXpToday,
       lastActiveDate: stats.lastActiveDate,
       streak: stats.streak
     });
 
     let currentXp = penaltyCheck.newXp;
-    let currentStreak = penaltyCheck.newStreak;
-    let currentTodayXp = stats.todayXp;
-    let currentTodayCalls = stats.todayCallsCount;
-
-    // Reset daily counters if day changed
-    if (stats.todayDate !== todayStr) {
-      currentTodayXp = 0;
-      currentTodayCalls = 0;
-    }
+    let currentStreak = penaltyCheck.penalizedDays > 0
+      ? Math.max(0, historyStreak)
+      : Math.max(penaltyCheck.newStreak, historyStreak);
+    let currentTodayXp = realTodayXp;
+    let currentTodayCalls = realTodayCallsCount;
 
     const currentLevel = calculateLevelFromXp(currentXp);
+    const newLastActiveDate = todayRealCalls.length > 0
+      ? todayStr
+      : (penaltyCheck.penalizedDays > 0 ? null : stats.lastActiveDate);
 
-    if (penaltyCheck.penalizedDays > 0 || stats.todayDate !== todayStr || currentLevel !== stats.level) {
+    if (
+      penaltyCheck.penalizedDays > 0 ||
+      recoveredXpToday > 0 ||
+      stats.todayDate !== todayStr ||
+      stats.todayXp !== currentTodayXp ||
+      stats.todayCallsCount !== currentTodayCalls ||
+      stats.streak !== currentStreak ||
+      currentLevel !== stats.level
+    ) {
       stats = await prisma.roleplayStats.update({
         where: { userId },
         data: {
@@ -98,6 +149,7 @@ export async function POST(req: Request) {
           todayXp: currentTodayXp,
           todayDate: todayStr,
           todayCallsCount: currentTodayCalls,
+          lastActiveDate: newLastActiveDate,
           unlockedBenefits: DEFAULT_BENEFITS[currentLevel] || []
         }
       });
