@@ -3360,13 +3360,13 @@ export async function getMarketCgAdminSummary() {
         if (!session?.user?.email) return { success: false, message: "No autenticado" };
 
         const currentUser = await prisma.user.findUnique({
-            where: { email: session.user.email }
+            where: { email: session.user.email.toLowerCase() }
         });
         if (!currentUser || currentUser.role !== "SUPER_ADMIN") {
             return { success: false, message: "Acceso exclusivo para Super Administrador" };
         }
 
-        const [saasSetting, documents] = await Promise.all([
+        const [saasSetting, documents, agencies, agencySettings] = await Promise.all([
             prisma.setting.findUnique({ where: { key: "market_cg_saas_enabled" } }),
             prisma.marketCgDocument.findMany({
                 orderBy: [{ aseguradora: "asc" }, { year: "desc" }, { producto: "asc" }],
@@ -3386,18 +3386,90 @@ export async function getMarketCgAdminSummary() {
                     isGlobalAuthorized: true,
                 },
             }),
+            prisma.agency.findMany({
+                where: { active: true },
+                orderBy: { name: "asc" },
+                select: { id: true, name: true, slug: true },
+            }),
+            prisma.setting.findMany({
+                where: { key: { startsWith: "market_cg_agency_insurers_" } },
+            }),
         ]);
 
         const saasGlobalEnabled = saasSetting ? saasSetting.value !== "false" : true;
+
+        const allInsurerNames = [
+            "Allianz México",
+            "AXA Seguros México",
+            "GNP Seguros",
+            "La Latinoamericana Seguros",
+            "Seguros Monterrey New York Life",
+            "GMX Seguros",
+            "Insignia Life",
+            "Plan Seguro",
+            "Quálitas",
+            "MetLife México",
+        ];
+
+        const settingMap = new Map<string, string[]>();
+        for (const s of agencySettings) {
+            const agId = s.key.replace("market_cg_agency_insurers_", "");
+            try {
+                const parsed = JSON.parse(s.value);
+                if (Array.isArray(parsed)) {
+                    settingMap.set(agId, parsed);
+                }
+            } catch {
+                // ignore malformed json
+            }
+        }
+
+        const agenciesWithInsurers = agencies.map((ag) => ({
+            id: ag.id,
+            name: ag.name,
+            slug: ag.slug,
+            allowedInsurers:
+                ag.id === "aacom" || ag.slug === "aacom"
+                    ? allInsurerNames
+                    : settingMap.get(ag.id) ?? allInsurerNames,
+        }));
 
         return {
             success: true,
             saasGlobalEnabled,
             documents,
+            agencies: agenciesWithInsurers,
+            allInsurerNames,
         };
     } catch (error: any) {
         console.error("Error in getMarketCgAdminSummary:", error);
         return { success: false, message: error.message || "Error al consultar banco de Condiciones Generales" };
+    }
+}
+
+export async function saveAgencyMarketInsurers(agencyId: string, insurers: string[]) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email.toLowerCase() }
+        });
+        if (!currentUser || currentUser.role !== "SUPER_ADMIN") {
+            return { success: false, message: "Acceso exclusivo para Super Administrador" };
+        }
+
+        const settingKey = `market_cg_agency_insurers_${agencyId}`;
+        await prisma.setting.upsert({
+            where: { key: settingKey },
+            update: { value: JSON.stringify(insurers) },
+            create: { key: settingKey, value: JSON.stringify(insurers) },
+        });
+
+        return { success: true, allowedInsurers: insurers };
+    } catch (error: any) {
+        console.error("Error in saveAgencyMarketInsurers:", error);
+        return { success: false, message: error.message || "Error al guardar aseguradoras de la promotoría" };
     }
 }
 

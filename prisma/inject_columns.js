@@ -482,6 +482,42 @@ async function injectColumns() {
       console.log(`Executed: ${q}`);
     }
 
+    const cgCountRes = await client.query('SELECT COUNT(*)::int AS cnt FROM "market_cg_documents";');
+    if ((cgCountRes.rows[0]?.cnt || 0) === 0) {
+      const fs = require('fs');
+      const path = require('path');
+      const catalogPath = path.join(__dirname, 'market_cg_catalog.json');
+      if (fs.existsSync(catalogPath)) {
+        console.log('Seeding 604 Market Condiciones Generales into empty branch DB...');
+        const catalog = JSON.parse(fs.readFileSync(catalogPath, 'utf8'));
+        const BATCH = 40;
+        for (let i = 0; i < catalog.length; i += BATCH) {
+          const slice = catalog.slice(i, i + BATCH);
+          const vals = [];
+          const ph = [];
+          let p = 1;
+          for (const d of slice) {
+            ph.push(`($${p++}, $${p++}, $${p++}, $${p++}, $${p++}, $${p++}, $${p++}, $${p++}, $${p++}, $${p++}, $${p++}, true, true, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`);
+            vals.push(d.id, d.fileKey, d.aseguradora, d.ramo, d.producto, d.year || 2025, d.productPageUrl || null, d.downloadUrl || null, d.notes || null, d.charCount || 0, d.chunkCount || 1);
+          }
+          await client.query(`INSERT INTO "market_cg_documents" ("id", "fileKey", "aseguradora", "ramo", "producto", "year", "productPageUrl", "downloadUrl", "notes", "charCount", "chunkCount", "active", "isGlobalAuthorized", "createdAt", "updatedAt") VALUES ${ph.join(', ')} ON CONFLICT ("fileKey") DO NOTHING;`, vals);
+
+          const cVals = [];
+          const cPh = [];
+          let cp = 1;
+          for (const d of slice) {
+            if (d.previewChunk) {
+              cPh.push(`($${cp++}, $${cp++}, 0, $${cp++}, $${cp++}, $${cp++}, $${cp++}, $${cp++}, CURRENT_TIMESTAMP)`);
+              cVals.push(`${d.id}_c0`, d.id, d.aseguradora, d.ramo, d.producto, d.year || 2025, d.previewChunk);
+            }
+          }
+          if (cPh.length > 0) {
+            await client.query(`INSERT INTO "market_cg_chunks" ("id", "documentId", "chunkIndex", "aseguradora", "ramo", "producto", "year", "content", "createdAt") VALUES ${cPh.join(', ')} ON CONFLICT ("id") DO NOTHING;`, cVals);
+          }
+        }
+        console.log('Seeded 604 Market Condiciones Generales successfully.');
+      }
+    }
     console.log("Column injection completed successfully.");
   } catch (error) {
     console.warn("⚠️  inject_columns: Could not connect to DB or columns may already exist. Continuing build...");

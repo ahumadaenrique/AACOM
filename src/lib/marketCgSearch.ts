@@ -14,6 +14,19 @@ export interface MarketCgChunkMatch {
     rank: number;
 }
 
+export const ALL_MARKET_INSURERS = [
+    "Allianz México",
+    "AXA Seguros México",
+    "GNP Seguros",
+    "La Latinoamericana Seguros",
+    "Seguros Monterrey New York Life",
+    "GMX Seguros",
+    "Insignia Life",
+    "Plan Seguro",
+    "Quálitas",
+    "MetLife México",
+] as const;
+
 const INSURER_ALIASES: { canonical: string; patterns: RegExp[] }[] = [
     {
         canonical: "GNP Seguros",
@@ -96,8 +109,46 @@ function extractSearchTerms(query: string): string[] {
 }
 
 /**
+ * Obtiene la lista de aseguradoras autorizadas para una agencia específica.
+ * - AACOM ("aacom") o Super Admin tiene acceso a TODAS las aseguradoras activas.
+ * - Otras promotorías tienen acceso únicamente a las aseguradoras que el Super Admin les haya encendido
+ *   en `market_cg_agency_insurers_${agencyId}` (por defecto todas las marcadas como Global si aún no se personaliza).
+ */
+export async function getAllowedInsurersForAgency(
+    agencyId: string,
+    isSuperAdmin: boolean = false
+): Promise<string[] | "ALL"> {
+    if (agencyId === "aacom" || isSuperAdmin) {
+        return "ALL";
+    }
+
+    const [scopeSetting, agencySetting] = await Promise.all([
+        prisma.setting.findUnique({ where: { key: "market_cg_saas_enabled" } }),
+        prisma.setting.findUnique({ where: { key: `market_cg_agency_insurers_${agencyId}` } }),
+    ]);
+
+    const allowForAllSaas = scopeSetting ? scopeSetting.value !== "false" : true;
+    if (!allowForAllSaas) {
+        return [];
+    }
+
+    if (agencySetting && agencySetting.value) {
+        try {
+            const parsed = JSON.parse(agencySetting.value);
+            if (Array.isArray(parsed)) {
+                return parsed.filter((x) => typeof x === "string");
+            }
+        } catch {
+            // fallback below
+        }
+    }
+
+    return "ALL";
+}
+
+/**
  * Busca los fragmentos más relevantes del Banco de Condiciones Generales del Mercado
- * respetando la autorización configurada por el Super Admin.
+ * respetando las aseguradoras asignadas por el Super Admin a cada promotoría.
  */
 export async function searchMarketConditionsForAssistant(params: {
     prompt: string;
@@ -109,31 +160,44 @@ export async function searchMarketConditionsForAssistant(params: {
     const { prompt, recentHistoryText = "", agencyId, isSuperAdmin = false, limit = 8 } = params;
 
     try {
-        // 1. Verificar configuración global de Super Admin para otras promotorías
         const isMainAgency = agencyId === "aacom" || isSuperAdmin;
-        const scopeSetting = await prisma.setting.findUnique({
-            where: { key: "market_cg_saas_enabled" }
-        });
-        // Por defecto activo para AACOM; para otras agencias depende de market_cg_saas_enabled (default true si isGlobalAuthorized=true)
-        const allowForAllSaas = scopeSetting ? scopeSetting.value !== "false" : true;
+        const allowedInsurers = await getAllowedInsurersForAgency(agencyId, isSuperAdmin);
 
-        if (!isMainAgency && !allowForAllSaas) {
+        if (Array.isArray(allowedInsurers) && allowedInsurers.length === 0) {
             return [];
         }
 
         const combinedContextText = `${prompt} ${recentHistoryText}`.trim();
-        const mentionedInsurers = detectMentionedInsurers(combinedContextText);
-        const terms = extractSearchTerms(prompt);
+        let mentionedInsurers = detectMentionedInsurers(combinedContextText);
 
+        // Si la promotoría tiene una lista restringida de aseguradoras (ej. solo 2 o 3 compañías),
+        // intersectamos cualquier mención con sus aseguradoras autorizadas.
+        if (Array.isArray(allowedInsurers)) {
+            if (mentionedInsurers.length > 0) {
+                mentionedInsurers = mentionedInsurers.filter((ins) => allowedInsurers.includes(ins));
+                if (mentionedInsurers.length === 0) {
+                    // Preguntó por una aseguradora que esta promotoría NO tiene contratada/autorizada
+                    return [];
+                }
+            }
+        }
+
+        const terms = extractSearchTerms(prompt);
         if (terms.length === 0 && mentionedInsurers.length === 0) {
             return [];
         }
 
-        // Construir expresión tsquery OR/AND ponderada en español
         const tsQueryOr = terms.length > 0 ? terms.join(" | ") : "cobertura | espera | deducible";
 
-        // Si el usuario mencionó aseguradoras específicas, filtramos prioritariamente esas aseguradoras
-        if (mentionedInsurers.length > 0) {
+        // Filtro efectivo de aseguradoras para la consulta SQL
+        const targetInsurers =
+            mentionedInsurers.length > 0
+                ? mentionedInsurers
+                : Array.isArray(allowedInsurers)
+                ? allowedInsurers
+                : null;
+
+        if (targetInsurers && targetInsurers.length > 0) {
             const rows = await prisma.$queryRawUnsafe<MarketCgChunkMatch[]>(
                 `
                 SELECT
@@ -165,16 +229,16 @@ export async function searchMarketConditionsForAssistant(params: {
                 `,
                 tsQueryOr,
                 isMainAgency,
-                mentionedInsurers,
+                targetInsurers,
                 limit
             );
 
-            if (rows.length > 0) {
+            if (rows.length > 0 || Array.isArray(allowedInsurers)) {
                 return rows;
             }
         }
 
-        // Búsqueda abierta en todas las aseguradoras autorizadas si no hubo match por aseguradora específica o si fue una pregunta comparativa de mercado
+        // Búsqueda abierta en todas las aseguradoras autorizadas (cuando allowedInsurers === "ALL")
         if (terms.length > 0) {
             const openRows = await prisma.$queryRawUnsafe<MarketCgChunkMatch[]>(
                 `
