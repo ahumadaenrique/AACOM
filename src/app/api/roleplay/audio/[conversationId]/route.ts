@@ -53,8 +53,17 @@ export async function GET(
       return NextResponse.redirect(call.callAudioUrl, 307);
     }
 
-    // 2. Fetch audio from ElevenLabs (checking agency BYOK key or fallback env key)
-    const apiKey = call.user?.agency?.elevenLabsApiKey || process.env.ELEVENLABS_API_KEY;
+    // 2. Fetch audio from ElevenLabs (checking agency BYOK key with decrypt, or fallback env key)
+    let apiKey = process.env.ELEVENLABS_API_KEY;
+    if (call.user?.agency?.elevenLabsApiKey) {
+      try {
+        const { decrypt } = await import('@/lib/encryption');
+        const decrypted = decrypt(call.user.agency.elevenLabsApiKey);
+        if (decrypted) apiKey = decrypted;
+      } catch (decErr) {
+        console.warn('Error decrypting agency ElevenLabs key for audio retrieval:', decErr);
+      }
+    }
     if (!apiKey) {
       return new NextResponse('Grabación no disponible.', { status: 404 });
     }
