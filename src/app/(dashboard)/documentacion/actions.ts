@@ -296,13 +296,40 @@ export async function getLibraryData() {
         });
 
         // Calculo de almacenamiento
-        const { usedBytes, maxBytes } = await getAgencyStorageUsage(((session?.user?.agencyId || user.agencyId) as string));
+        const effectiveAgencyId = ((session?.user?.agencyId || user.agencyId) as string);
+        const { usedBytes, maxBytes } = await getAgencyStorageUsage(effectiveAgencyId);
+        const { ensureMarketCgSeeded, getAllowedInsurersForAgency } = await import("@/lib/marketCgSearch");
+        await ensureMarketCgSeeded();
+        const isMainAgencyContext = effectiveAgencyId === "aacom";
+        const allowedInsurers = await getAllowedInsurersForAgency(effectiveAgencyId, isMainAgencyContext && isSuperAdmin);
+        let marketCgDocs: any[] = [];
+        if (allowedInsurers === "ALL" || (Array.isArray(allowedInsurers) && allowedInsurers.length > 0)) {
+            marketCgDocs = await prisma.marketCgDocument.findMany({
+                where: {
+                    active: true,
+                    ...(isMainAgencyContext ? {} : { isGlobalAuthorized: true }),
+                    ...(Array.isArray(allowedInsurers) ? { aseguradora: { in: allowedInsurers } } : {}),
+                },
+                orderBy: [{ aseguradora: "asc" }, { ramo: "asc" }, { year: "desc" }, { producto: "asc" }],
+                select: {
+                    id: true,
+                    aseguradora: true,
+                    ramo: true,
+                    producto: true,
+                    year: true,
+                    downloadUrl: true,
+                    productPageUrl: true,
+                    notes: true,
+                },
+            });
+        }
 
         return {
             success: true,
             allPacks, // Lista completa (Sirve para Super Admin, y para Admin para prender/apagar)
             enabledPacksList: Array.from(enabledPacksMap), // Cuales packs encendió la agencia
             agencyDocs, // Documentos privados
+            marketCgDocs, // Condiciones Generales de Aseguradoras autorizadas para la agencia
             storage: { usedBytes, maxBytes },
             role: user.role
         };

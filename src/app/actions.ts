@@ -3366,6 +3366,9 @@ export async function getMarketCgAdminSummary() {
             return { success: false, message: "Acceso exclusivo para Super Administrador" };
         }
 
+        const { ensureMarketCgSeeded } = await import("@/lib/marketCgSearch");
+        await ensureMarketCgSeeded();
+
         const [saasSetting, documents, agencies, agencySettings] = await Promise.all([
             prisma.setting.findUnique({ where: { key: "market_cg_saas_enabled" } }),
             prisma.marketCgDocument.findMany({

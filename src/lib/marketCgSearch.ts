@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+import fs from "fs";
+import path from "path";
 
 export interface MarketCgChunkMatch {
     chunkId: string;
@@ -26,6 +28,75 @@ export const ALL_MARKET_INSURERS = [
     "Quálitas",
     "MetLife México",
 ] as const;
+
+let seedCheckPromise: Promise<void> | null = null;
+
+/**
+ * Garantiza que la tabla market_cg_documents esté sembrada en cualquier rama de base de datos (Dev o Prod).
+ */
+export async function ensureMarketCgSeeded(): Promise<void> {
+    if (seedCheckPromise) return seedCheckPromise;
+
+    seedCheckPromise = (async () => {
+        try {
+            const count = await prisma.marketCgDocument.count();
+            if (count > 0) return;
+
+            const catalogPath = path.join(process.cwd(), "prisma", "market_cg_catalog.json");
+            if (!fs.existsSync(catalogPath)) return;
+
+            const raw = fs.readFileSync(catalogPath, "utf8");
+            const catalog = JSON.parse(raw);
+            if (!Array.isArray(catalog) || catalog.length === 0) return;
+
+            const docRows = catalog.map((d: any) => ({
+                id: d.id,
+                fileKey: d.fileKey,
+                aseguradora: d.aseguradora,
+                ramo: d.ramo,
+                producto: d.producto,
+                year: d.year || 2025,
+                productPageUrl: d.productPageUrl || null,
+                downloadUrl: d.downloadUrl || null,
+                notes: d.notes || null,
+                charCount: d.charCount || 0,
+                chunkCount: d.chunkCount || 1,
+                active: true,
+                isGlobalAuthorized: true,
+            }));
+
+            await prisma.marketCgDocument.createMany({
+                data: docRows,
+                skipDuplicates: true,
+            });
+
+            const chunkRows = catalog
+                .filter((d: any) => d.previewChunk)
+                .map((d: any) => ({
+                    id: `${d.id}_c0`,
+                    documentId: d.id,
+                    chunkIndex: 0,
+                    aseguradora: d.aseguradora,
+                    ramo: d.ramo,
+                    producto: d.producto,
+                    year: d.year || 2025,
+                    content: d.previewChunk,
+                }));
+
+            if (chunkRows.length > 0) {
+                await prisma.marketCgChunk.createMany({
+                    data: chunkRows,
+                    skipDuplicates: true,
+                });
+            }
+        } catch (err) {
+            console.error("Error in ensureMarketCgSeeded:", err);
+            seedCheckPromise = null;
+        }
+    })();
+
+    return seedCheckPromise;
+}
 
 const INSURER_ALIASES: { canonical: string; patterns: RegExp[] }[] = [
     {
@@ -160,6 +231,8 @@ export async function searchMarketConditionsForAssistant(params: {
     const { prompt, recentHistoryText = "", agencyId, isSuperAdmin = false, limit = 8 } = params;
 
     try {
+        await ensureMarketCgSeeded();
+
         const isMainAgency = agencyId === "aacom" || isSuperAdmin;
         const allowedInsurers = await getAllowedInsurersForAgency(agencyId, isSuperAdmin);
 
