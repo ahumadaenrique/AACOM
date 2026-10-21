@@ -518,6 +518,23 @@ async function injectColumns() {
         console.log('Seeded 604 Market Condiciones Generales successfully.');
       }
     }
+    const initFlagRes = await client.query(`SELECT "value" FROM "Setting" WHERE "key" = 'market_cg_existing_agencies_insignia_init_v1';`);
+    if (initFlagRes.rows.length === 0) {
+      await client.query(`
+        INSERT INTO "Setting" ("key", "value", "updatedAt")
+        SELECT 'market_cg_agency_insurers_' || a."id", '["Insignia Life"]', CURRENT_TIMESTAMP
+        FROM "Agency" a
+        WHERE a."id" <> 'aacom' AND COALESCE(a."slug", '') <> 'aacom'
+        ON CONFLICT ("key") DO UPDATE SET "value" = '["Insignia Life"]', "updatedAt" = CURRENT_TIMESTAMP;
+      `);
+      await client.query(`
+        INSERT INTO "Setting" ("key", "value", "updatedAt")
+        VALUES ('market_cg_existing_agencies_insignia_init_v1', 'true', CURRENT_TIMESTAMP)
+        ON CONFLICT ("key") DO UPDATE SET "value" = 'true', "updatedAt" = CURRENT_TIMESTAMP;
+      `);
+      console.log('Initialized existing non-AACOM agencies with ["Insignia Life"].');
+    }
+
     console.log("Column injection completed successfully.");
   } catch (error) {
     console.warn("⚠️  inject_columns: Could not connect to DB or columns may already exist. Continuing build...");

@@ -39,6 +39,31 @@ export async function ensureMarketCgSeeded(): Promise<void> {
 
     seedCheckPromise = (async () => {
         try {
+            // Inicializar por única vez las promotorías existentes con sólo ["Insignia Life"] (excepto aacom).
+            // Las promotorías nuevas creadas en el futuro no tendrán registro y su default será [] (0 compañías).
+            const initFlag = await prisma.setting.findUnique({
+                where: { key: "market_cg_existing_agencies_insignia_init_v1" },
+            });
+            if (!initFlag) {
+                const existingAgencies = await prisma.agency.findMany({
+                    select: { id: true, slug: true },
+                });
+                for (const ag of existingAgencies) {
+                    if (ag.id === "aacom" || ag.slug === "aacom") continue;
+                    const key = `market_cg_agency_insurers_${ag.id}`;
+                    await prisma.setting.upsert({
+                        where: { key },
+                        update: { value: JSON.stringify(["Insignia Life"]) },
+                        create: { key, value: JSON.stringify(["Insignia Life"]) },
+                    });
+                }
+                await prisma.setting.upsert({
+                    where: { key: "market_cg_existing_agencies_insignia_init_v1" },
+                    update: { value: "true" },
+                    create: { key: "market_cg_existing_agencies_insignia_init_v1", value: "true" },
+                });
+            }
+
             const count = await prisma.marketCgDocument.count();
             if (count > 0) return;
 
@@ -214,7 +239,8 @@ export async function getAllowedInsurersForAgency(
         }
     }
 
-    return "ALL";
+    // Promotorías nuevas sin configuración explícita tienen 0 compañías por defecto
+    return [];
 }
 
 /**

@@ -3434,7 +3434,7 @@ export async function getMarketCgAdminSummary() {
             allowedInsurers:
                 ag.id === "aacom" || ag.slug === "aacom"
                     ? allInsurerNames
-                    : settingMap.get(ag.id) ?? allInsurerNames,
+                    : settingMap.get(ag.id) ?? [],
         }));
 
         return {
