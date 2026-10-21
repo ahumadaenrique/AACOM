@@ -438,7 +438,43 @@ async function injectColumns() {
       `CREATE INDEX IF NOT EXISTS "tips_participants_agencyId_idx" ON "tips_participants"("agencyId");`,
       `CREATE INDEX IF NOT EXISTS "tips_participants_phone_idx" ON "tips_participants"("phone");`,
       `CREATE INDEX IF NOT EXISTS "tips_participants_email_idx" ON "tips_participants"("email");`,
-      `CREATE INDEX IF NOT EXISTS "tips_participants_linkedClientId_idx" ON "tips_participants"("linkedClientId");`
+      `CREATE INDEX IF NOT EXISTS "tips_participants_linkedClientId_idx" ON "tips_participants"("linkedClientId");`,
+      `CREATE TABLE IF NOT EXISTS "market_cg_documents" (
+        "id" TEXT PRIMARY KEY,
+        "fileKey" TEXT UNIQUE NOT NULL,
+        "aseguradora" TEXT NOT NULL,
+        "ramo" TEXT NOT NULL,
+        "producto" TEXT NOT NULL,
+        "year" INTEGER NOT NULL DEFAULT 2025,
+        "productPageUrl" TEXT,
+        "downloadUrl" TEXT,
+        "notes" TEXT,
+        "charCount" INTEGER NOT NULL DEFAULT 0,
+        "chunkCount" INTEGER NOT NULL DEFAULT 0,
+        "active" BOOLEAN NOT NULL DEFAULT true,
+        "isGlobalAuthorized" BOOLEAN NOT NULL DEFAULT true,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+      );`,
+      `CREATE INDEX IF NOT EXISTS "market_cg_documents_aseguradora_idx" ON "market_cg_documents"("aseguradora");`,
+      `CREATE INDEX IF NOT EXISTS "market_cg_documents_ramo_idx" ON "market_cg_documents"("ramo");`,
+      `CREATE INDEX IF NOT EXISTS "market_cg_documents_active_idx" ON "market_cg_documents"("active");`,
+      `CREATE INDEX IF NOT EXISTS "market_cg_documents_isGlobalAuthorized_idx" ON "market_cg_documents"("isGlobalAuthorized");`,
+      `CREATE TABLE IF NOT EXISTS "market_cg_chunks" (
+        "id" TEXT PRIMARY KEY,
+        "documentId" TEXT NOT NULL,
+        "chunkIndex" INTEGER NOT NULL DEFAULT 0,
+        "aseguradora" TEXT NOT NULL,
+        "ramo" TEXT NOT NULL,
+        "producto" TEXT NOT NULL,
+        "year" INTEGER NOT NULL DEFAULT 2025,
+        "content" TEXT NOT NULL,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "market_cg_chunks_documentId_fkey" FOREIGN KEY ("documentId") REFERENCES "market_cg_documents"("id") ON DELETE CASCADE ON UPDATE CASCADE
+      );`,
+      `CREATE INDEX IF NOT EXISTS "market_cg_chunks_documentId_idx" ON "market_cg_chunks"("documentId");`,
+      `CREATE INDEX IF NOT EXISTS "market_cg_chunks_aseguradora_idx" ON "market_cg_chunks"("aseguradora");`,
+      `CREATE INDEX IF NOT EXISTS "market_cg_chunks_fts_idx" ON "market_cg_chunks" USING GIN (to_tsvector('spanish', "aseguradora" || ' ' || "producto" || ' ' || "content"));`
     ];
 
     for (const q of queries) {

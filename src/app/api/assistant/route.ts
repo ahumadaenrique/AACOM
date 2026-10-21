@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { searchMarketConditionsForAssistant } from "@/lib/marketCgSearch";
 
 export async function POST(req: Request) {
     try {
@@ -25,8 +25,10 @@ export async function POST(req: Request) {
         }
         
         const agencyName = user.agency.name || "SYSGPYA";
+        const isSuperAdmin = user.role === "SUPER_ADMIN" || user.role === "SUPERADMIN";
+        const isAdmin = isSuperAdmin || user.role === "ADMIN";
 
-        // 1. Fetch active knowledge documents
+        // 1. Fetch active local/global knowledge documents (short agency guidelines)
         const activeDocs = await prisma.knowledgeDocument.findMany({
             where: { 
                 active: true,
@@ -38,8 +40,23 @@ export async function POST(req: Request) {
             select: { title: true, content: true, isGlobalTemplate: true }
         });
 
-        // 2. Fetch agent's portfolio (Cartera)
-        const isAdmin = user.role === 'ADMIN' || user.role === 'SUPERADMIN' || user.role === 'SUPER_ADMIN';
+        // 2. Smart RAG search on the 640+ Market Condiciones Generales (only top matching fragments)
+        const recentHistoryText = Array.isArray(messages)
+            ? messages
+                  .slice(-4)
+                  .map((m: any) => (m?.parts || []).map((p: any) => p?.text || "").join(" "))
+                  .join(" ")
+            : "";
+
+        const marketChunks = await searchMarketConditionsForAssistant({
+            prompt: String(prompt || ""),
+            recentHistoryText,
+            agencyId: user.agencyId,
+            isSuperAdmin,
+            limit: 8,
+        });
+
+        // 3. Fetch agent's portfolio (Cartera)
         const policyWhereClause = isAdmin && user.agencyId ? { agencyId: user.agencyId } : { userId: user.id };
 
         const agentPolicies = await prisma.policy.findMany({
@@ -62,34 +79,45 @@ export async function POST(req: Request) {
             });
         }
 
-        // 3. Format knowledge context
+        // 4. Format knowledge context
         let knowledgeContext = "BASE DE CONOCIMIENTOS OFICIAL:\n";
         if (activeDocs.length > 0) {
             activeDocs.forEach((doc, idx) => {
                 knowledgeContext += `\n--- DOCUMENTO ${idx + 1} ${doc.isGlobalTemplate ? '(PLANTILLA GLOBAL)' : '(REGLA LOCAL DE AGENCIA)'}: ${doc.title} ---\n${doc.content}\n`;
             });
         } else {
-            knowledgeContext += "(No hay documentos cargados. Responde con conocimientos generales sobre seguros pero aclara que no hay directivas internas activas.)\n";
+            knowledgeContext += "(No hay directivas internas locales cargadas.)\n";
         }
 
-        // 4. Define rigid system instruction
-        const systemInstruction = `Eres "Asistente ${agencyName}", el copiloto inteligente de la promotoría de seguros de vida, gastos médicos y ahorro.
-Tu objetivo es dar soporte rápido, amigable y muy profesional a los agentes de seguros sobre lineamientos comerciales, cuadernos de bonos, adendums, condiciones generales de productos (como el Vitalicio o el Universal) Y brindar información de su Cartera de clientes.
+        let marketCgContext = "";
+        if (marketChunks.length > 0) {
+            marketCgContext = "\nBANCO OFICIAL DE CONDICIONES GENERALES DEL MERCADO ASEGURADOR (FRAGMENTOS RELEVANTES):\n";
+            marketCgContext += "Usa estos fragmentos contractuales oficiales de las aseguradoras para responder dudas sobre coberturas, períodos de espera, exclusiones, deducibles o cláusulas. Si citas un producto y tiene URL de descarga oficial, compártela al final en formato Markdown [Descargar Condiciones Generales Oficiales](URL).\n\n";
+            marketChunks.forEach((chunk, i) => {
+                const linkInfo = chunk.downloadUrl ? ` | PDF Oficial: ${chunk.downloadUrl}` : "";
+                const notesInfo = chunk.notes ? ` | Registro/Notas: ${chunk.notes}` : "";
+                marketCgContext += `\n[FRAGMENTO CG #${i + 1} — Aseguradora: ${chunk.aseguradora} | Ramo: ${chunk.ramo} | Producto: ${chunk.producto} (${chunk.year})${linkInfo}${notesInfo}]\n${chunk.content}\n`;
+            });
+        }
+
+        // 5. Define system instruction
+        const systemInstruction = `Eres "Asistente ${agencyName}", el copiloto inteligente de la promotoría de seguros de vida, gastos médicos, autos, daños y ahorro.
+Tu objetivo es dar soporte rápido, amigable y muy profesional a los agentes de seguros sobre lineamientos comerciales, condiciones generales de productos de las aseguradoras del mercado Y brindar información de su Cartera de clientes.
 
 REGLAS ABSOLUTAS:
-1. Basar tus respuestas de la manera más directa y estricta posible en la "BASE DE CONOCIMIENTOS OFICIAL" y en la "BASE DE DATOS DE CARTERA DEL AGENTE" que se te proveen más abajo.
-2. REGLA DE ORO DE JERARQUÍA: Verás que algunos documentos están marcados como '(REGLA LOCAL DE AGENCIA)' y otros como '(PLANTILLA GLOBAL)'. Si hay CUALQUIER contradicción entre una regla local y una global, SIEMPRE dale prioridad y aplica la '(REGLA LOCAL DE AGENCIA)'. La regla local tiene autoridad absoluta.
-3. Si te preguntan sobre su cartera, clientes, pólizas o renovaciones, busca exhaustivamente en la sección "BASE DE DATOS DE CARTERA DEL AGENTE" y dales la información precisa.
-4. Si la respuesta a la pregunta del agente no está contenida en la Base de Conocimientos ni en su Cartera de Clientes, responde textualmente:
-"Lo lamento, no cuento con esa información en mis registros ni lineamientos comerciales en este momento. Por favor, consulta directamente con la dirección o el equipo administrativo."
-Bajo ninguna circunstancia debes inventar porcentajes de comisiones, montos de bonos, plazos de productos o políticas comerciales.
-5. Sé conciso y estructurado. Si respondes tablas o cifras, usa formato Markdown para que la lectura móvil sea impecable.
-6. Responde en español de México.
+1. Basar tus respuestas de la manera más directa y estricta posible en la "BASE DE CONOCIMIENTOS OFICIAL", en el "BANCO OFICIAL DE CONDICIONES GENERALES DEL MERCADO ASEGURADOR" y en la "BASE DE DATOS DE CARTERA DEL AGENTE" que se te proveen más abajo.
+2. REGLA DE ORO DE JERARQUÍA: Verás que algunos documentos están marcados como '(REGLA LOCAL DE AGENCIA)' y otros como '(PLANTILLA GLOBAL)' o '[FRAGMENTO CG]'. Si hay CUALQUIER contradicción sobre políticas internas de la promotoría, SIEMPRE dale prioridad a la '(REGLA LOCAL DE AGENCIA)'.
+3. Cuando respondas sobre Condiciones Generales de una aseguradora (períodos de espera, exclusiones, coberturas, edades de aceptación, etc.), indica claramente la **Aseguradora**, el **Producto** y el **Año/Versión** del documento que estás citando. Si el fragmento incluye "PDF Oficial: https://...", incluye al final un enlace clicable para que el agente pueda descargar las Condiciones Generales completas.
+4. Si te preguntan sobre su cartera, clientes, pólizas o renovaciones, busca exhaustivamente en la sección "BASE DE DATOS DE CARTERA DEL AGENTE" y dales la información precisa.
+5. Bajo ninguna circunstancia debes inventar porcentajes de comisiones, montos de bonos, plazos de productos o políticas comerciales que no estén respaldados por los documentos provistos.
+6. Sé conciso y estructurado. Si respondes tablas o cifras, usa formato Markdown para que la lectura móvil sea impecable.
+7. Responde en español de México.
 
 ${knowledgeContext}
+${marketCgContext}
 ${portfolioContext}`;
 
-        // 4. Form contents array
+        // 6. Form contents array
         const contents = [
             ...messages,
             {
@@ -98,7 +126,7 @@ ${portfolioContext}`;
             }
         ];
 
-        // 5. Call Gemini API endpoint with STREAMING and resilient model fallback
+        // 7. Call Gemini API endpoint with STREAMING and resilient model fallback
         const candidateModels = [
             "gemini-3.8-flash",
             "gemini-2.5-flash",

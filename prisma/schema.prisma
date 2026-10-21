@@ -1180,4 +1180,47 @@ model TipsParticipant {
   @@map("tips_participants")
 }
 
+model MarketCgDocument {
+  id                 String          @id @default(cuid())
+  fileKey            String          @unique
+  aseguradora        String
+  ramo               String
+  producto           String
+  year               Int             @default(2025)
+  productPageUrl     String?
+  downloadUrl        String?
+  notes              String?
+  charCount          Int             @default(0)
+  chunkCount         Int             @default(0)
+  active             Boolean         @default(true)
+  isGlobalAuthorized Boolean         @default(true)
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+  chunks             MarketCgChunk[]
+
+  @@index([aseguradora])
+  @@index([ramo])
+  @@index([active])
+  @@index([isGlobalAuthorized])
+  @@map("market_cg_documents")
+}
+
+model MarketCgChunk {
+  id          String           @id @default(cuid())
+  documentId  String
+  chunkIndex  Int              @default(0)
+  aseguradora String
+  ramo        String
+  producto    String
+  year        Int              @default(2025)
+  content     String
+  createdAt   DateTime         @default(now())
+  document    MarketCgDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+  @@index([aseguradora])
+  @@map("market_cg_chunks")
+
+}
+
 

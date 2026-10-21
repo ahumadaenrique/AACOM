@@ -67,6 +67,7 @@ import {
 
 import AdminCotizadorSettings from './AdminCotizadorSettings'
 import AdminModulesSettings from './AdminModulesSettings'
+import AdminMarketCgManager from './AdminMarketCgManager'
 
 export default function AdminClient() {
 
@@ -3411,6 +3412,7 @@ export default function AdminClient() {
         <div className="space-y-6 animate-in fade-in duration-300">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             
+            {currentUserRole === 'SUPER_ADMIN' && <div className="lg:col-span-3"><AdminMarketCgManager /></div>}
             {/* Left Column: Form to upload/paste new document */}
             <Card className="border shadow-sm bg-gradient-to-br from-white to-slate-50/30">
               <CardHeader className="py-4 border-b bg-slate-50/50">

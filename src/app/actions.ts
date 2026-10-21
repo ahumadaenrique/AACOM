@@ -3348,3 +3348,136 @@ export async function purgeAgentPortfolio(agentId: string) {
         return { success: false, message: error.message || "Error interno al purgar cartera" };
     }
 }
+
+
+// ==========================================
+// BANCO DE CONDICIONES GENERALES DEL MERCADO (SUPER ADMIN)
+// ==========================================
+
+export async function getMarketCgAdminSummary() {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+        if (!currentUser || currentUser.role !== "SUPER_ADMIN") {
+            return { success: false, message: "Acceso exclusivo para Super Administrador" };
+        }
+
+        const [saasSetting, documents] = await Promise.all([
+            prisma.setting.findUnique({ where: { key: "market_cg_saas_enabled" } }),
+            prisma.marketCgDocument.findMany({
+                orderBy: [{ aseguradora: "asc" }, { year: "desc" }, { producto: "asc" }],
+                select: {
+                    id: true,
+                    fileKey: true,
+                    aseguradora: true,
+                    ramo: true,
+                    producto: true,
+                    year: true,
+                    downloadUrl: true,
+                    productPageUrl: true,
+                    notes: true,
+                    charCount: true,
+                    chunkCount: true,
+                    active: true,
+                    isGlobalAuthorized: true,
+                },
+            }),
+        ]);
+
+        const saasGlobalEnabled = saasSetting ? saasSetting.value !== "false" : true;
+
+        return {
+            success: true,
+            saasGlobalEnabled,
+            documents,
+        };
+    } catch (error: any) {
+        console.error("Error in getMarketCgAdminSummary:", error);
+        return { success: false, message: error.message || "Error al consultar banco de Condiciones Generales" };
+    }
+}
+
+export async function toggleMarketCgSaasGlobal(enabled: boolean) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+        if (!currentUser || currentUser.role !== "SUPER_ADMIN") {
+            return { success: false, message: "Acceso exclusivo para Super Administrador" };
+        }
+
+        await prisma.setting.upsert({
+            where: { key: "market_cg_saas_enabled" },
+            update: { value: enabled ? "true" : "false" },
+            create: { key: "market_cg_saas_enabled", value: enabled ? "true" : "false" },
+        });
+
+        return { success: true, saasGlobalEnabled: enabled };
+    } catch (error: any) {
+        console.error("Error in toggleMarketCgSaasGlobal:", error);
+        return { success: false, message: error.message || "Error al actualizar alcance global" };
+    }
+}
+
+export async function toggleMarketCgInsurerStatus(
+    aseguradora: string,
+    field: "active" | "isGlobalAuthorized",
+    value: boolean
+) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+        if (!currentUser || currentUser.role !== "SUPER_ADMIN") {
+            return { success: false, message: "Acceso exclusivo para Super Administrador" };
+        }
+
+        await prisma.marketCgDocument.updateMany({
+            where: { aseguradora },
+            data: { [field]: value },
+        });
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error in toggleMarketCgInsurerStatus:", error);
+        return { success: false, message: error.message || "Error al actualizar aseguradora" };
+    }
+}
+
+export async function toggleMarketCgDocumentStatus(
+    docId: string,
+    field: "active" | "isGlobalAuthorized",
+    value: boolean
+) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) return { success: false, message: "No autenticado" };
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email }
+        });
+        if (!currentUser || currentUser.role !== "SUPER_ADMIN") {
+            return { success: false, message: "Acceso exclusivo para Super Administrador" };
+        }
+
+        await prisma.marketCgDocument.update({
+            where: { id: docId },
+            data: { [field]: value },
+        });
+
+        return { success: true };
+    } catch (error: any) {
+        console.error("Error in toggleMarketCgDocumentStatus:", error);
+        return { success: false, message: error.message || "Error al actualizar documento" };
+    }
+}
