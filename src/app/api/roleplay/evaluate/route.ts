@@ -6,7 +6,8 @@ import {
   getLocalDateString,
   DAILY_XP_CAP,
   checkAndApplyInactivityPenalty,
-  calculateConsecutiveBusinessDaysStreak
+  calculateConsecutiveBusinessDaysStreak,
+  LEVELS_CONFIG
 } from '@/lib/roleplay/gamification';
 import { BADGES } from '@/lib/roleplay/badges';
 import { generateObject } from 'ai';
@@ -97,17 +98,35 @@ export async function POST(req: Request) {
         aciertos: [],
         errores: ['Colgaste la llamada sin interactuar con el prospecto (0 Puntos).'],
         coachTip: scenario?.origen?.tipPostLlamada || 'Practica abrir la llamada con confianza y presentarte con calma.',
+        insigniasNuevas: [],
         stats: stats ? {
           xp: stats.xp,
           level: stats.level,
+          levelInfo: LEVELS_CONFIG[stats.level],
           streak: stats.streak,
           todayXp: stats.todayXp,
-          todayCallsCount: stats.todayCallsCount
+          dailyCap: DAILY_XP_CAP,
+          todayCallsCount: stats.todayCallsCount,
+          totalCalls: stats.totalCalls,
+          closedCalls: stats.closedCalls,
+          badges: stats.badges,
+          unlockedBenefits: stats.unlockedBenefits
         } : null
       });
     }
 
-    // 2. EVALUACIÓN CON IA (LLM-as-a-Judge)
+    // 2. OBTENER STATS ACTUALES PARA EVALUACIÓN INTELIGENTE DE INSIGNIAS
+    const stats = await prisma.roleplayStats.findUnique({ where: { userId } });
+    const currentBadges: string[] = stats?.badges || [];
+
+    // Filtrar insignias que el asesor aún tiene pendientes en este módulo
+    const moduleBadges = BADGES.filter(b => (b.moduleId === moduleId || b.moduleId === 'general') && b.id !== 'c_maestro');
+    const availableBadges = moduleBadges.filter(b => !currentBadges.includes(b.id));
+    const badgesText = availableBadges.length > 0
+      ? availableBadges.map(b => `- ${b.id}: ${b.name} (${b.description})`).join('\n')
+      : '(El asesor ya ha desbloqueado todas las insignias de este módulo)';
+
+    // 3. EVALUACIÓN CON IA (LLM-as-a-Judge)
     let transcriptText = transcript.map((m: any) => `${m.source === 'user' ? 'Asesor' : 'Prospecto'}: ${m.message}`).join('\n');
     if (!transcriptText || userTurns.length === 0) {
       transcriptText = `[Sesión telefónica completada por el Asesor con una duración de ${durationSeconds} segundos con el prospecto ${scenario?.prospecto?.nombre || 'Prospecto'}. El asesor dialogó y sostuvo la llamada activamente por voz.]\n` + (transcriptText || '');
@@ -194,8 +213,6 @@ export async function POST(req: Request) {
       insigniasGanadas: z.array(z.string()).describe('Lista de IDs de insignias desbloqueadas. COMO MÁXIMO 1 insignia por llamada, y SOLAMENTE si score >= 85 y la cita cerró con éxito. Si no califica o no cerró la cita, devuelve []')
     });
 
-    const moduleBadges = BADGES.filter(b => b.moduleId === moduleId || b.moduleId === 'general');
-    const badgesText = moduleBadges.map(b => `- ${b.id}: ${b.name} (${b.description})`).join('\n');
 
     const promptText = `Eres un Master Coach de Ventas de Seguros evaluando una simulación de rol entre un Asesor y un Prospecto.
 Evalúa la siguiente transcripción basándote estrictamente en esta rúbrica:
@@ -206,16 +223,19 @@ ${evalInstructions}
 ${transcriptText}
 </transcripcion>
 
-Extrae la calificación, aciertos, errores, si hubo error fatal y si se logró la cita. Sé un juez imparcial y estricto.
+Extrae la calificación, aciertos, errores, si hubo error fatal y si se logró la cita. Sé un juez imparcial y profesional.
 
-### REGLAS ESTRICTAS PARA CONCESIÓN DE INSIGNIAS (DIFICULTAD MÁXIMA - RETO DE 30 DÍAS):
-- Las insignias son trofeos de élite y no se regalan. Para mantener una progresión que le tome a los asesores cerca de 1 mes:
-1. CONDICIÓN PREVIA OBLIGATORIA: Si appointmentClosed es false, o si score es menor a 85, o si la llamada no concluyó el proceso completo, TIENES ESTRICTAMENTE PROHIBIDO OTORGAR INSIGNIAS. Devuelve insigniasGanadas: [].
-2. LÍMITE DE 1 INSIGNIA: Incluso en una sesión sobresaliente (score >= 85 y cita cerrada), el asesor puede recibir COMO MÁXIMO UNA (1) SOLA INSIGNIA en toda la llamada. Selecciona únicamente la insignia que mejor demuestre su técnica más destacada.
-3. NUNCA devuelvas más de una insignia por intento.
+### CATÁLOGO DE INSIGNIAS A EVALUAR:
+- Insignias que el asesor YA POSEE (PROHIBIDO volver a otorgar cualquiera de estas):
+${currentBadges.length > 0 ? currentBadges.join(', ') : 'Ninguna (el asesor aún no tiene insignias)'}
 
-Catálogo disponible:
-${badgesText}`;
+- Insignias DISPONIBLES que el asesor aún puede desbloquear en esta sesión:
+${badgesText}
+
+### REGLAS PARA CONCESIÓN DE INSIGNIA:
+1. Si el asesor cometió una falta grave/fatal, DEVUELVE insigniasGanadas: [].
+2. Si el asesor demostró con claridad la técnica de ALGUNA de las insignias disponibles (ej. romper el hielo, aislar objeción, técnica F.O.R.D., doble alternativa, resistir el filtro sin ceder info, etc.), indícala en insigniasGanadas (máximo 1).
+3. Si no demostró el mérito específico de ninguna insignia disponible, devuelve insigniasGanadas: [].`;
 
     let rawObject: any = null;
     try {
@@ -416,19 +436,54 @@ ${badgesText}`;
       score = 72;
     }
 
-    // Validación estricta en servidor de insignias ganadas:
-    // Requiere cita lograda, score >= 85 y máximo 1 insignia por llamada para progresión paulatina de 1 mes
-    if (!appointmentClosed || score < 85) {
-      insigniasGanadas = [];
-    } else {
-      insigniasGanadas = insigniasGanadas.slice(0, 1);
+    // Insignias deterministas automáticas por mérito comprobable (si no hubo falta fatal):
+    if (!cometioErrorFatal) {
+      // 1. Ninja del tiempo: Concluyó la cita en 90 segundos o menos con buena técnica
+      if (durationSeconds > 0 && durationSeconds <= 90 && appointmentClosed && score >= 75 && !currentBadges.includes('p_ninja_tiempo')) {
+        if (!insigniasGanadas.includes('p_ninja_tiempo')) insigniasGanadas.push('p_ninja_tiempo');
+      }
+      // 2. Impecable: 100 de calificación en Prospección
+      if (score === 100 && moduleId === 'prospeccion' && !currentBadges.includes('p_impecable')) {
+        if (!insigniasGanadas.includes('p_impecable')) insigniasGanadas.push('p_impecable');
+      }
+      // 3. Estratega F.O.R.D. en ADN:
+      if (aplicoTecnicaFord && score >= 75 && !currentBadges.includes('a_ford')) {
+        if (!insigniasGanadas.includes('a_ford')) insigniasGanadas.push('a_ford');
+      }
+      // 4. Experto en Prioridades en ADN:
+      if (priorizoMetas && score >= 75 && !currentBadges.includes('a_prioridades')) {
+        if (!insigniasGanadas.includes('a_prioridades')) insigniasGanadas.push('a_prioridades');
+      }
+      // 5. Diagnóstico Perfecto: 100 de calificación en ADN
+      if (score === 100 && moduleId === 'adn' && !currentBadges.includes('a_perfecto')) {
+        if (!insigniasGanadas.includes('a_perfecto')) insigniasGanadas.push('a_perfecto');
+      }
+      // 6. Contacto Frío Exitoso:
+      if (scenario?.origen?.tipo === 'frio' && appointmentClosed && score >= 75 && !currentBadges.includes('p_frio_exitoso')) {
+        if (!insigniasGanadas.includes('p_frio_exitoso')) insigniasGanadas.push('p_frio_exitoso');
+      }
     }
 
-    const stats = await prisma.roleplayStats.findUnique({ where: { userId } });
-    // Deduplicar insignias
-    const currentBadges = stats?.badges || [];
-    const uniqueNewBadges = insigniasGanadas.filter((b: string) => !currentBadges.includes(b));
-    const mergedBadges = [...currentBadges, ...uniqueNewBadges];
+    // Regla de salvaguarda: si hubo falta grave o score reprobatorio (< 70), anular cualquier insignia
+    if (cometioErrorFatal || score < 70) {
+      insigniasGanadas = [];
+    }
+
+    // Deduplicar, filtrar solo las válidas no obtenidas y limitar a máx 1 nueva por llamada
+    const validCatalogIds = new Set(BADGES.map(b => b.id));
+    const candidateNewBadges = insigniasGanadas.filter(
+      (b: string) => validCatalogIds.has(b) && !currentBadges.includes(b) && b !== 'c_maestro'
+    );
+    const uniqueNewBadges = candidateNewBadges.slice(0, 1);
+    let mergedBadges = [...currentBadges, ...uniqueNewBadges];
+
+    // Otorgar automáticamente la insignia final c_maestro si completó las 34 anteriores
+    const regularCatalog = BADGES.filter(b => b.id !== 'c_maestro');
+    const regularCompleted = regularCatalog.filter(b => mergedBadges.includes(b.id));
+    if (regularCompleted.length >= regularCatalog.length && !mergedBadges.includes('c_maestro')) {
+      mergedBadges.push('c_maestro');
+      uniqueNewBadges.push('c_maestro');
+    }
 
     // Ponderación de XP por módulo: ADN y Cierre reciben +25% por mayor duración y profundidad (15-20 min vs 3 min)
     const isHighDurationModule = moduleId === 'adn' || moduleId === 'objeciones';

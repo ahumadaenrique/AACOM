@@ -1,3 +1,4 @@
+import { BADGES } from '@/lib/roleplay/badges';
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
@@ -386,7 +387,7 @@ export async function POST(req: Request) {
         amount: userWithAgency?.agency?.roleplayRewardAmount ?? 1500,
         title: userWithAgency?.agency?.roleplayRewardTitle || 'Bono por Álbum Completo'
       },
-      badgesCatalog: BADGES_CATALOG
+      badgesCatalog: BADGES
     });
   } catch (error: any) {
     console.error("Error in roleplay session endpoint:", error);

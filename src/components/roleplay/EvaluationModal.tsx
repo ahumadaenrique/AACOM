@@ -1,7 +1,8 @@
 'use client';
 
 import React from 'react';
-import { Award, CheckCircle2, XCircle, Lightbulb, Zap, ArrowRight, Flame, Volume2, AlertCircle } from 'lucide-react';
+import { Award, CheckCircle2, XCircle, Lightbulb, Zap, ArrowRight, Flame, Volume2, AlertCircle, Trophy } from 'lucide-react';
+import { BADGES } from '@/lib/roleplay/badges';
 import confetti from 'canvas-confetti';
 
 interface EvaluationModalProps {

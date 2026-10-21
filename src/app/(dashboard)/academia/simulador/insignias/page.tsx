@@ -31,12 +31,21 @@ export default async function InsigniasPage() {
     const rewardAmount = agency?.roleplayRewardAmount ?? 1500;
     const rewardTitle = agency?.roleplayRewardTitle || 'Bono por Álbum Completo';
 
-    const unlockedIds = stats?.badges || [];
+    const rawUnlockedIds = stats?.badges || [];
+    const validCatalogMap = new Map(BADGES.map(b => [b.id, b]));
+    const unlockedSet = new Set(rawUnlockedIds.filter((id: string) => validCatalogMap.has(id)));
+    
+    // Si completó las 34 regulares, califica para c_maestro
+    const regularBadges = BADGES.filter(b => b.id !== 'c_maestro');
+    const regularUnlockedCount = regularBadges.filter(b => unlockedSet.has(b.id)).length;
+    if (regularUnlockedCount >= regularBadges.length) {
+      unlockedSet.add('c_maestro');
+    }
+    
     const totalBadges = BADGES.length;
-    const unlockedCount = unlockedIds.length;
-    const isMaster = unlockedCount >= 34; // Needs all except the final one to get it (or all 35)
-
-    const progressPct = Math.round((unlockedCount / totalBadges) * 100);
+    const unlockedCount = unlockedSet.size;
+    const isMaster = unlockedSet.has('c_maestro');
+    const progressPct = Math.min(100, Math.round((unlockedCount / totalBadges) * 100));
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 py-6">
@@ -106,7 +115,7 @@ export default async function InsigniasPage() {
               <h3 className="text-lg font-bold text-slate-800 border-b pb-2">{moduleTitle}</h3>
               <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {moduleBadges.map((badge) => {
-                  const isUnlocked = unlockedIds.includes(badge.id) || (badge.id === 'c_maestro' && isMaster);
+                  const isUnlocked = unlockedSet.has(badge.id);
                   
                   return (
                     <div 
