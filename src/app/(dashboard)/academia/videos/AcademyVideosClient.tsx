@@ -585,7 +585,8 @@ export function AcademyVideosClient({
                 <iframe
                   src={getYouTubeEmbedUrl(activeVideo.youtubeId)}
                   title={activeVideo.title}
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
                   allowFullScreen
                   className="w-full h-full border-0"
                 />

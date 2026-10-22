@@ -35,5 +35,5 @@ export function getYouTubeThumbnail(youtubeId: string, quality: "hq" | "maxres" 
 }
 
 export function getYouTubeEmbedUrl(youtubeId: string): string {
-  return `https://www.youtube-nocookie.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`;
+  return `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1&playsinline=1`;
 }
