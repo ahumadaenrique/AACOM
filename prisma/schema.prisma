@@ -52,6 +52,7 @@ model Agency {
   whatsAppPlannerPhones String?
   allowReferidores      Boolean              @default(false)
   allowRoleplaySimulator Boolean?            @default(false)
+  maxAdmins             Int                  @default(2)
   voiceEngine           String?              @default("GEMINI_LIVE")
   byokActive            Boolean?             @default(true)
   voiceSecondsBalance   Int                  @default(0)

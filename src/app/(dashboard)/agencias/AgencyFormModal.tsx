@@ -60,6 +60,7 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
       adminName: formData.get("adminName") as string || undefined,
       adminEmail: formData.get("adminEmail") as string || undefined,
       adminPassword: formData.get("adminPassword") as string || undefined,
+      maxAdmins: formData.get("maxAdmins") ? Number(formData.get("maxAdmins")) : 2,
     };
 
     try {
@@ -135,6 +136,25 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
               <p className="text-xs text-muted-foreground">Este color reemplazará el branding de toda la aplicación.</p>
             </div>
 
+            <div className="grid gap-2">
+              <Label htmlFor="maxAdmins">Cupo Máximo de Administradores Autorizados</Label>
+              <select
+                id="maxAdmins"
+                name="maxAdmins"
+                defaultValue={agency?.maxAdmins || 2}
+                className="w-full text-xs font-semibold bg-white border border-slate-200 rounded-md px-3 py-2 text-slate-800"
+              >
+                <option value={1}>1 Administrador</option>
+                <option value={2}>2 Administradores (Default)</option>
+                <option value={3}>3 Administradores</option>
+                <option value={4}>4 Administradores</option>
+                <option value={5}>5 Administradores</option>
+                <option value={6}>6 Administradores</option>
+                <option value={8}>8 Administradores</option>
+                <option value={10}>10 Administradores</option>
+              </select>
+              <p className="text-[11px] text-muted-foreground">Por defecto 2. Puedes aumentarlo hasta 10 para agencias grandes.</p>
+            </div>
             <div className="grid gap-2">
               <Label htmlFor="logoUrl">URL del Logo (Opcional)</Label>
               <Input id="logoUrl" name="logoUrl" defaultValue={agency?.logoUrl || ""} placeholder="https://..." />

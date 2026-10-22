@@ -15,6 +15,7 @@ async function injectColumns() {
     console.log("Connected to database. Injecting columns if they don't exist...");
 
     const queries = [
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "maxAdmins" INTEGER DEFAULT 2;`,
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "quoterLifeCompany" TEXT DEFAULT 'Insignia Life';`,
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "quoterEnableVPL" BOOLEAN DEFAULT true;`,
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "quoterEnableVPLPPR" BOOLEAN DEFAULT true;`,

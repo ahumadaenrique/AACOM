@@ -24,6 +24,7 @@ const agencySchema = z.object({
   adminName: z.string().optional(),
   adminEmail: z.string().email().optional().or(z.literal("")),
   adminPassword: z.string().optional(),
+  maxAdmins: z.coerce.number().optional(),
 });
 
 export async function getAgencyAgents(agencyId: string) {
@@ -123,6 +124,7 @@ export async function createAgency(data: z.infer<typeof agencySchema>) {
       enableWhatsAppPlanner: parsed.enableWhatsAppPlanner ?? false,
       whatsAppPlannerPhones: parsed.whatsAppPlannerPhones,
       whatsAppPlannerAgents: parsed.whatsAppPlannerAgents,
+      maxAdmins: parsed.maxAdmins ?? 2,
     },
   });
 
@@ -693,4 +695,23 @@ export async function getAgencyUsageStats(agencyId?: string) {
     elevenMinutes,
     estimatedCostMxn
   };
+}
+
+export async function updateAgencyMaxAdmins(agencyId: string, maxAdmins: number) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Solo el Super Administrador puede modificar el cupo de administradores.");
+
+  const safeCount = Math.max(1, Math.min(20, Math.floor(maxAdmins)));
+
+  const updated = await prisma.agency.update({
+    where: { id: agencyId },
+    data: { maxAdmins: safeCount }
+  });
+
+  revalidatePath("/agencias");
+  revalidatePath("/admin");
+  return { success: true, maxAdmins: updated.maxAdmins };
 }

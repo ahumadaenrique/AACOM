@@ -4,10 +4,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { differenceInCalendarDays, format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ShieldAlert, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff, Bot, Sparkles, BookOpen, Coins } from "lucide-react";
+import { ShieldAlert, ShieldCheck, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff, Bot, Sparkles, BookOpen, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { deleteAgency, getAgencyUsers, toggleAgencyRoleplay } from "./actions";
-import { useState } from "react";
+import { deleteAgency, getAgencyUsers, toggleAgencyRoleplay, updateAgencyMaxAdmins } from "./actions";
+import { useState, useEffect } from "react";
 import { GiftModal } from "./GiftModal";
 import { AgencyAiSettingsModal } from "./AgencyAiSettingsModal";
 
@@ -21,6 +21,25 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
   const [isGiftModalOpen, setIsGiftModalOpen] = useState(false);
   const [giftInitialTab, setGiftInitialTab] = useState<string>("saas");
   const [loadingUsers, setLoadingUsers] = useState(false);
+  const [updatingMaxAdminsId, setUpdatingMaxAdminsId] = useState<string | null>(null);
+  const [localAgencies, setLocalAgencies] = useState<any[]>(agencies);
+
+  // Sync if prop updates
+  useEffect(() => {
+    setLocalAgencies(agencies);
+  }, [agencies]);
+
+  const handleMaxAdminsChange = async (agencyId: string, value: number) => {
+    try {
+      setUpdatingMaxAdminsId(agencyId);
+      await updateAgencyMaxAdmins(agencyId, value);
+      setLocalAgencies(prev => prev.map(a => a.id === agencyId ? { ...a, maxAdmins: value } : a));
+    } catch (e: any) {
+      alert("Error al actualizar cupo de administradores: " + (e.message || "Error"));
+    } finally {
+      setUpdatingMaxAdminsId(null);
+    }
+  };
 
   // AI Modal States
   const [aiAgencyId, setAiAgencyId] = useState<string>("");
@@ -89,7 +108,7 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {agencies.map((agency) => {
+            {localAgencies.map((agency) => {
               const admin = agency.users && agency.users.length > 0 ? agency.users[0] : null;
               
               const endDate = agency.subscriptionEndDate ? new Date(agency.subscriptionEndDate) : null;
@@ -188,6 +207,29 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                     ) : (
                       <span className="text-xs text-slate-400 italic">No asignado</span>
                     )}
+                    <div className="mt-2 flex items-center gap-1.5">
+                      <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 flex-shrink-0" />
+                      <span className="text-[10px] font-semibold text-slate-500">Cupo Admins:</span>
+                      <select
+                        value={agency.maxAdmins ?? 2}
+                        onChange={(e) => handleMaxAdminsChange(agency.id, Number(e.target.value))}
+                        disabled={updatingMaxAdminsId === agency.id}
+                        className="text-[11px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-0.5 text-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                        title="Límite máximo de administradores autorizados por el Super Admin para esta promotoría"
+                      >
+                        <option value={1}>1 Admin</option>
+                        <option value={2}>2 Admins (Default)</option>
+                        <option value={3}>3 Admins</option>
+                        <option value={4}>4 Admins</option>
+                        <option value={5}>5 Admins</option>
+                        <option value={6}>6 Admins</option>
+                        <option value={8}>8 Admins</option>
+                        <option value={10}>10 Admins</option>
+                      </select>
+                      {updatingMaxAdminsId === agency.id && (
+                        <span className="text-[10px] text-indigo-500 animate-pulse font-medium">...</span>
+                      )}
+                    </div>
                   </TableCell>
                   
                   <TableCell className="text-center">

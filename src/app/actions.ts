@@ -727,17 +727,27 @@ export async function createAgentUser(data: { name: string; email: string; role:
             return { success: false, message: "Solo el administrador principal (Enrique Ahumada) estÃ¡ facultado para dar de alta cuentas administrativas." };
         }
 
-        // RestricciÃ³n adicional: lÃ­mite de mÃ¡ximo 2 ADMINS por Agencia/PromotorÃ­a
+        // Restricción adicional: límite dinámico de ADMINS por Agencia/Promotoría (default: 2, configurable por SUPER_ADMIN)
         if (data.role === 'ADMIN' && ((session?.user?.agencyId || currentUser?.agencyId) as string)) {
+            const targetAgencyId = ((session?.user?.agencyId || currentUser?.agencyId) as string);
+            const agencyRecord = await prisma.agency.findUnique({
+                where: { id: targetAgencyId },
+                select: { maxAdmins: true, name: true }
+            });
+            const maxAllowedAdmins = agencyRecord?.maxAdmins || 2;
+
             const activeAdminsCount = await prisma.user.count({
                 where: {
-                    agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string),
+                    agencyId: targetAgencyId,
                     role: 'ADMIN',
                     active: true
                 }
             });
-            if (activeAdminsCount >= 2) {
-                return { success: false, message: "LÃ­mite alcanzado: solo se permiten un mÃ¡ximo de 2 administradores activos por Agencia/PromotorÃ­a." };
+            if (activeAdminsCount >= maxAllowedAdmins) {
+                return { 
+                    success: false, 
+                    message: `Límite alcanzado: la promotoría ${agencyRecord?.name || ''} tiene autorizado un cupo de máximo ${maxAllowedAdmins} administradores activos. Para ampliar este cupo, contacta al Super Administrador.` 
+                };
             }
         }
 
@@ -2168,6 +2178,33 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
         if (data.active !== undefined && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) updateData.active = data.active;
         
         if (data.role !== undefined && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) {
+            if (data.role === 'ADMIN' && data.role !== targetUser.role) {
+                if (!(process.env.SUPER_ADMIN_EMAILS || "enrique.ahumada@aacommx.com").includes(currentUser.email)) {
+                    return { success: false, message: "Solo el administrador principal (Enrique Ahumada) está facultado para promover cuentas a nivel Administrador." };
+                }
+                const targetAgencyId = targetUser.agencyId || ((session?.user?.agencyId || currentUser?.agencyId) as string);
+                if (targetAgencyId) {
+                    const agencyRecord = await prisma.agency.findUnique({
+                        where: { id: targetAgencyId },
+                        select: { maxAdmins: true, name: true }
+                    });
+                    const maxAllowedAdmins = agencyRecord?.maxAdmins || 2;
+
+                    const activeAdminsCount = await prisma.user.count({
+                        where: {
+                            agencyId: targetAgencyId,
+                            role: 'ADMIN',
+                            active: true
+                        }
+                    });
+                    if (activeAdminsCount >= maxAllowedAdmins) {
+                        return { 
+                            success: false, 
+                            message: `Límite alcanzado: esta agencia tiene un límite autorizado de máximo ${maxAllowedAdmins} administradores activos.` 
+                        };
+                    }
+                }
+            }
             if (data.role === 'AGENTE_LITE' && currentUser.agency && !currentUser.agency.allowLiteAgents) {
                 return { success: false, message: "Tu agencia no tiene habilitada la función de Agentes Limitados." };
             }
