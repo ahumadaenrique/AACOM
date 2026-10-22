@@ -4,9 +4,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { differenceInCalendarDays, format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ShieldAlert, ShieldCheck, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff, Bot, Sparkles, BookOpen, Coins } from "lucide-react";
+import { ShieldAlert, ShieldCheck, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff, Bot, Sparkles, BookOpen, Coins, Video, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { deleteAgency, getAgencyUsers, toggleAgencyRoleplay, updateAgencyMaxAdmins } from "./actions";
+import { deleteAgency, getAgencyUsers, toggleAgencyRoleplay, updateAgencyMaxAdmins, toggleAgencyAcademyModule, toggleAgencyShareAacomVideos } from "./actions";
 import { useState, useEffect } from "react";
 import { GiftModal } from "./GiftModal";
 import { AgencyAiSettingsModal } from "./AgencyAiSettingsModal";
@@ -22,6 +22,32 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
   const [giftInitialTab, setGiftInitialTab] = useState<string>("saas");
   const [loadingUsers, setLoadingUsers] = useState(false);
   const [updatingMaxAdminsId, setUpdatingMaxAdminsId] = useState<string | null>(null);
+  const [togglingAcademyId, setTogglingAcademyId] = useState<string | null>(null);
+  const [togglingShareAacomId, setTogglingShareAacomId] = useState<string | null>(null);
+
+  const handleToggleAcademy = async (agencyId: string, current: boolean) => {
+    try {
+      setTogglingAcademyId(agencyId);
+      await toggleAgencyAcademyModule(agencyId, !current);
+      setLocalAgencies(prev => prev.map(a => a.id === agencyId ? { ...a, allowAcademyModule: !current } : a));
+    } catch (e: any) {
+      alert("Error al cambiar estado de Academia de Videos: " + (e.message || "Error"));
+    } finally {
+      setTogglingAcademyId(null);
+    }
+  };
+
+  const handleToggleShareAacom = async (agencyId: string, current: boolean) => {
+    try {
+      setTogglingShareAacomId(agencyId);
+      await toggleAgencyShareAacomVideos(agencyId, !current);
+      setLocalAgencies(prev => prev.map(a => a.id === agencyId ? { ...a, shareAacomAcademyVideos: !current } : a));
+    } catch (e: any) {
+      alert("Error al cambiar compartir videos de AACOM: " + (e.message || "Error"));
+    } finally {
+      setTogglingShareAacomId(null);
+    }
+  };
   const [localAgencies, setLocalAgencies] = useState<any[]>(agencies);
 
   // Sync if prop updates
@@ -309,7 +335,33 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
 
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                                            {/* Academia de Videos (Mini YouTube) */}
                       <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleToggleAcademy(agency.id, agency.allowAcademyModule ?? false)}
+                        disabled={togglingAcademyId === agency.id}
+                        className={`text-xs h-7 px-2 border ${(agency.allowAcademyModule ?? false) ? 'border-red-300 text-red-700 bg-red-50 hover:bg-red-100 font-bold' : 'border-slate-200 text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
+                        title={(agency.allowAcademyModule ?? false) ? "Academia de Videos HABILITADA (Click para Ocultar)" : "Academia de Videos OCULTA (Click para Habilitar)"}
+                      >
+                        <Video className={`h-3.5 w-3.5 ${(agency.allowAcademyModule ?? false) ? 'text-red-600' : 'text-slate-400'}`} />
+                      </Button>
+
+                      {/* Compartir Videos AACOM Oficiales */}
+                      {agency.id !== "aacom" && agency.slug !== "aacom" && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => handleToggleShareAacom(agency.id, agency.shareAacomAcademyVideos ?? false)}
+                          disabled={togglingShareAacomId === agency.id}
+                          className={`text-xs h-7 px-2 border ${(agency.shareAacomAcademyVideos ?? false) ? 'border-indigo-300 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 font-bold' : 'border-slate-200 text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
+                          title={(agency.shareAacomAcademyVideos ?? false) ? "Videos de AACOM COMPARTIDOS con esta agencia (Click para Dejar de Compartir)" : "Videos de AACOM NO COMPARTIDOS con esta agencia (Click para Compartir)"}
+                        >
+                          <Share2 className={`h-3.5 w-3.5 ${(agency.shareAacomAcademyVideos ?? false) ? 'text-indigo-600' : 'text-slate-400'}`} />
+                        </Button>
+                      )}
+
+<Button 
                         variant="outline" 
                         size="sm" 
                         onClick={() => handleToggleRoleplay(agency.id, agency.allowRoleplaySimulator ?? false)}

@@ -517,6 +517,40 @@ export async function toggleAgencyRoleplay(agencyId: string, allow: boolean) {
   return { success: true, allowRoleplaySimulator: updated.allowRoleplaySimulator };
 }
 
+export async function toggleAgencyAcademyModule(agencyId: string, allow: boolean) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Solo el Super Administrador puede habilitar o deshabilitar la Academia de Videos.");
+
+  const updated = await prisma.agency.update({
+    where: { id: agencyId },
+    data: { allowAcademyModule: allow }
+  });
+
+  revalidatePath("/agencias");
+  revalidatePath("/academia");
+  revalidatePath("/academia/videos");
+  return { success: true, allowAcademyModule: updated.allowAcademyModule };
+}
+
+export async function toggleAgencyShareAacomVideos(agencyId: string, share: boolean) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") throw new Error("Solo el Super Administrador puede activar o desactivar el compartir los videos de AACOM.");
+
+  const updated = await prisma.agency.update({
+    where: { id: agencyId },
+    data: { shareAacomAcademyVideos: share }
+  });
+
+  revalidatePath("/agencias");
+  revalidatePath("/academia");
+  revalidatePath("/academia/videos");
+  return { success: true, shareAacomAcademyVideos: updated.shareAacomAcademyVideos };
+}
+
 export async function giftAcademiaMinutes(agencyId: string, minutes: number, userEmail?: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("No autorizado");

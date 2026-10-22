@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity, Newspaper, SmilePlus } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity, Newspaper, SmilePlus, Youtube } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { parseAgencyModulesConfig, isPathBlockedByModuleConfig } from "@/lib/agencyModules"
@@ -352,6 +352,14 @@ export default async function DashboardLayout({
                                                     <Link href="/academia" className="flex items-center gap-2 cursor-pointer font-medium">
                                                         <GraduationCap className="h-4 w-4 text-purple-500" />
                                                         Academia
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            )}
+                                            {(isSuperAdmin || Boolean(agency?.allowAcademyModule)) && (
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/academia/videos" className="flex items-center gap-2 cursor-pointer font-semibold text-rose-600 dark:text-rose-400">
+                                                        <Youtube className="h-4 w-4 text-red-600" />
+                                                        Academia de Videos
                                                     </Link>
                                                 </DropdownMenuItem>
                                             )}

@@ -52,6 +52,8 @@ model Agency {
   whatsAppPlannerPhones String?
   allowReferidores      Boolean              @default(false)
   allowRoleplaySimulator Boolean?            @default(false)
+  allowAcademyModule    Boolean              @default(false)
+  shareAacomAcademyVideos Boolean            @default(false)
   maxAdmins             Int                  @default(2)
   voiceEngine           String?              @default("GEMINI_LIVE")
   byokActive            Boolean?             @default(true)
@@ -103,6 +105,7 @@ model Agency {
   agentMonthlyBudgets   AgentMonthlyBudget[]
   tipsCreditPurchases   TipsCreditPurchase[]
   tipsSessions          TipsSession[]
+  academyVideos         AcademyVideo[]
   tipsParticipants      TipsParticipant[]
 
   @@index([referredById])
@@ -204,6 +207,7 @@ model User {
   agentMonthlyBudgets  AgentMonthlyBudget[]
   tipsCreditPurchases  TipsCreditPurchase[]
   tipsSessions         TipsSession[]
+  createdAcademyVideos AcademyVideo[]           @relation("UserCreatedAcademyVideos")
 
   @@index([agencyId])
   @@index([reportsToId])
@@ -1225,3 +1229,30 @@ model MarketCgChunk {
 }
 
 
+
+model AcademyVideo {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  youtubeUrl      String
+  youtubeId       String
+  thumbnailUrl    String?
+  category        String   @default("General")
+  duration        String?
+  order           Int      @default(0)
+  active          Boolean  @default(true)
+  isAacomOfficial Boolean  @default(false)
+
+  agencyId        String
+  agency          Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  createdById     String?
+  createdBy       User?    @relation("UserCreatedAcademyVideos", fields: [createdById], references: [id], onDelete: SetNull)
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([agencyId])
+  @@index([category])
+  @@index([createdAt])
+}
