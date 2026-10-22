@@ -359,7 +359,7 @@ export default async function DashboardLayout({
                                                 <DropdownMenuItem asChild>
                                                     <Link href="/academia/videos" className="flex items-center gap-2 cursor-pointer font-semibold text-rose-600 dark:text-rose-400">
                                                         <Youtube className="h-4 w-4 text-red-600" />
-                                                        Academia de Videos
+                                                        E-Learning
                                                     </Link>
                                                 </DropdownMenuItem>
                                             )}

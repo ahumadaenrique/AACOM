@@ -155,7 +155,7 @@ export default async function AcademiaPage() {
         </div>
 
         
-        {/* Card 4: Academia de Conocimientos (Mini YouTube E-Learning) */}
+        {/* Card 4: E-Learning (Videos YouTube) */}
         {isAcademyAllowed && (
           <div className="flex flex-col justify-between p-8 rounded-3xl bg-gradient-to-br from-rose-950/20 to-slate-900/40 border border-rose-500/20 backdrop-blur-md shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 relative overflow-hidden group">
             <div className="absolute top-0 right-0 w-32 h-32 bg-rose-500/10 rounded-full blur-2xl group-hover:bg-rose-500/20 transition-all duration-500"></div>
@@ -167,10 +167,10 @@ export default async function AcademiaPage() {
               
               <div className="space-y-2">
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 dark:bg-rose-950/30 dark:text-rose-400 border border-rose-200/50">
-                  <Play className="h-3 w-3 fill-rose-600" /> Mini YouTube • E-Learning
+                  <Play className="h-3 w-3 fill-rose-600" /> Videos de Capacitación • YouTube
                 </span>
                 <h2 className="text-2xl font-black text-slate-800 dark:text-slate-200 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">
-                  Academia de Videos
+                  E-Learning
                 </h2>
               </div>
 
@@ -198,7 +198,7 @@ export default async function AcademiaPage() {
               href="/academia/videos" 
               className="mt-8 flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold text-sm transition-all duration-200 shadow-md shadow-rose-900/20"
             >
-              Ver Videos de Capacitación <ArrowRight className="h-4 w-4" />
+              Entrar a E-Learning <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
         )}

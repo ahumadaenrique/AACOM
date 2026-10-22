@@ -281,14 +281,14 @@ export function AcademyVideosClient({
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/20 backdrop-blur-md text-white border border-white/30">
                 <Youtube className="w-4 h-4 text-red-300" />
-                Academia E-Learning
+                Videos & Capacitación
               </span>
               <span className="text-xs text-white/80 font-semibold">
                 • {agencyName}
               </span>
             </div>
             <h1 className="text-2xl md:text-4xl font-black tracking-tight text-white flex items-center gap-2">
-              Academia de Conocimientos
+              E-Learning
             </h1>
             <p className="text-sm md:text-base text-white/90 max-w-2xl font-medium">
               Videos oficiales, cápsulas de capacitación y mejores prácticas para el éxito de tus asesores.
@@ -362,7 +362,7 @@ export function AcademyVideosClient({
               }`}
             >
               <ShieldCheck className="w-3.5 h-3.5 text-indigo-600" />
-              AACOM Oficial ({videos.filter((v) => v.isAacomOfficial).length})
+              Biblioteca Compartida ({videos.filter((v) => v.isAacomOfficial).length})
             </button>
           </div>
         )}
@@ -472,7 +472,7 @@ export function AcademyVideosClient({
                   {video.isAacomOfficial && (
                     <div className="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-indigo-600/90 backdrop-blur-md text-[10px] font-black text-white flex items-center gap-1 shadow">
                       <ShieldCheck className="w-3 h-3" />
-                      Oficial AACOM
+                      Contenido Compartido
                     </div>
                   )}
 
@@ -600,7 +600,7 @@ export function AcademyVideosClient({
                     </Badge>
                     {activeVideo.isAacomOfficial && (
                       <Badge className="bg-indigo-600 text-white font-bold border-0 flex items-center gap-1">
-                        <ShieldCheck className="w-3 h-3" /> Oficial AACOM
+                        <ShieldCheck className="w-3 h-3" /> Contenido Compartido
                       </Badge>
                     )}
                     {activeVideo.duration && (
@@ -645,7 +645,7 @@ export function AcademyVideosClient({
           <DialogHeader>
             <DialogTitle className="text-xl font-black text-slate-900 dark:text-white flex items-center gap-2">
               <Youtube className="w-6 h-6 text-red-600" />
-              {editingVideo ? "Editar Video de la Academia" : "Subir Nuevo Video a la Academia"}
+              {editingVideo ? "Editar Video de E-Learning" : "Subir Nuevo Video a E-Learning"}
             </DialogTitle>
             <DialogDescription className="text-xs text-slate-500">
               Por políticas de almacenamiento, todos los videos deben provenir de tu canal de YouTube (públicos u ocultos/unlisted).
@@ -760,10 +760,10 @@ export function AcademyVideosClient({
                 <div className="space-y-0.5">
                   <span className="text-xs font-bold text-indigo-900 dark:text-indigo-300 flex items-center gap-1.5">
                     <ShieldCheck className="w-4 h-4 text-indigo-600" />
-                    Video Oficial de AACOM
+                    Contenido Compartido con Otras Agencias
                   </span>
                   <p className="text-[10px] text-indigo-600 dark:text-indigo-400">
-                    Si se marca, estará disponible para las promotorías a las que autorices compartir los videos de AACOM.
+                    Si se marca, estará disponible en la biblioteca compartida para las promotorías autorizadas.
                   </p>
                 </div>
                 <input

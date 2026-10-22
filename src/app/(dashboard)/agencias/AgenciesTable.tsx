@@ -31,7 +31,7 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
       await toggleAgencyAcademyModule(agencyId, !current);
       setLocalAgencies(prev => prev.map(a => a.id === agencyId ? { ...a, allowAcademyModule: !current } : a));
     } catch (e: any) {
-      alert("Error al cambiar estado de Academia de Videos: " + (e.message || "Error"));
+      alert("Error al cambiar estado de E-Learning: " + (e.message || "Error"));
     } finally {
       setTogglingAcademyId(null);
     }
@@ -342,7 +342,7 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                         onClick={() => handleToggleAcademy(agency.id, agency.allowAcademyModule ?? false)}
                         disabled={togglingAcademyId === agency.id}
                         className={`text-xs h-7 px-2 border ${(agency.allowAcademyModule ?? false) ? 'border-red-300 text-red-700 bg-red-50 hover:bg-red-100 font-bold' : 'border-slate-200 text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
-                        title={(agency.allowAcademyModule ?? false) ? "Academia de Videos HABILITADA (Click para Ocultar)" : "Academia de Videos OCULTA (Click para Habilitar)"}
+                        title={(agency.allowAcademyModule ?? false) ? "Módulo E-Learning HABILITADO (Click para Ocultar)" : "Módulo E-Learning OCULTO (Click para Habilitar)"}
                       >
                         <Video className={`h-3.5 w-3.5 ${(agency.allowAcademyModule ?? false) ? 'text-red-600' : 'text-slate-400'}`} />
                       </Button>
@@ -355,7 +355,7 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                           onClick={() => handleToggleShareAacom(agency.id, agency.shareAacomAcademyVideos ?? false)}
                           disabled={togglingShareAacomId === agency.id}
                           className={`text-xs h-7 px-2 border ${(agency.shareAacomAcademyVideos ?? false) ? 'border-indigo-300 text-indigo-700 bg-indigo-50 hover:bg-indigo-100 font-bold' : 'border-slate-200 text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
-                          title={(agency.shareAacomAcademyVideos ?? false) ? "Videos de AACOM COMPARTIDOS con esta agencia (Click para Dejar de Compartir)" : "Videos de AACOM NO COMPARTIDOS con esta agencia (Click para Compartir)"}
+                          title={(agency.shareAacomAcademyVideos ?? false) ? "Videos Compartidos ACTIVOS con esta agencia (Click para Dejar de Compartir)" : "Videos Compartidos DESACTIVADOS con esta agencia (Click para Compartir)"}
                         >
                           <Share2 className={`h-3.5 w-3.5 ${(agency.shareAacomAcademyVideos ?? false) ? 'text-indigo-600' : 'text-slate-400'}`} />
                         </Button>
