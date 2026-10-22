@@ -29,7 +29,17 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
     setLocalAgencies(agencies);
   }, [agencies]);
 
-  const handleMaxAdminsChange = async (agencyId: string, value: number) => {
+  const handleMaxAdminsChange = async (agencyId: string, value: number, activeAdmins: number) => {
+    if (value < activeAdmins) {
+      alert(
+        `⚠️ ACCIÓN NO PERMITIDA: No puedes reducir el cupo a ${value} administradores.\n\n` +
+        `Esta promotoría cuenta actualmente con ${activeAdmins} administradores activos.\n\n` +
+        `Para poder reducir el límite, primero debes esperar a que en la promotoría degraden o cambien el rol de al menos ${activeAdmins - value} administrador(es).`
+      );
+      setLocalAgencies(prev => [...prev]);
+      return;
+    }
+
     try {
       setUpdatingMaxAdminsId(agencyId);
       await updateAgencyMaxAdmins(agencyId, value);
@@ -110,6 +120,7 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
           <TableBody>
             {localAgencies.map((agency) => {
               const admin = agency.users && agency.users.length > 0 ? agency.users[0] : null;
+              const activeAdminsCount = agency.activeAdminsCount ?? agency.users?.length ?? (admin ? 1 : 0);
               
               const endDate = agency.subscriptionEndDate ? new Date(agency.subscriptionEndDate) : null;
               const now = new Date();
@@ -201,33 +212,50 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                   <TableCell>
                     {admin ? (
                       <div className="flex flex-col">
-                        <span className="text-sm text-slate-700 font-medium">{admin.name || 'Sin Nombre'}</span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="text-sm text-slate-800 font-bold">{admin.name || 'Sin Nombre'}</span>
+                          {activeAdminsCount > 1 && (
+                            <span 
+                              className="text-[10px] px-1.5 py-0.2 rounded-full bg-indigo-100 text-indigo-700 font-bold border border-indigo-200"
+                              title={`Esta agencia tiene ${activeAdminsCount} administradores activos en total`}
+                            >
+                              +{activeAdminsCount - 1} más
+                            </span>
+                          )}
+                        </div>
                         <span className="text-xs text-slate-500">{admin.email}</span>
                       </div>
                     ) : (
                       <span className="text-xs text-slate-400 italic">No asignado</span>
                     )}
-                    <div className="mt-2 flex items-center gap-1.5">
-                      <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 flex-shrink-0" />
-                      <span className="text-[10px] font-semibold text-slate-500">Cupo Admins:</span>
-                      <select
-                        value={agency.maxAdmins ?? 2}
-                        onChange={(e) => handleMaxAdminsChange(agency.id, Number(e.target.value))}
-                        disabled={updatingMaxAdminsId === agency.id}
-                        className="text-[11px] font-bold bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg px-2 py-0.5 text-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
-                        title="Límite máximo de administradores autorizados por el Super Admin para esta promotoría"
-                      >
-                        <option value={1}>1 Admin</option>
-                        <option value={2}>2 Admins (Default)</option>
-                        <option value={3}>3 Admins</option>
-                        <option value={4}>4 Admins</option>
-                        <option value={5}>5 Admins</option>
-                        <option value={6}>6 Admins</option>
-                        <option value={8}>8 Admins</option>
-                        <option value={10}>10 Admins</option>
-                      </select>
+                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                      <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100 border border-slate-200">
+                        <ShieldCheck className="w-3.5 h-3.5 text-indigo-600 flex-shrink-0" />
+                        <span className="text-[11px] font-semibold text-slate-600">
+                          Admins: <strong className="text-indigo-700 font-black">{activeAdminsCount}</strong> / {agency.maxAdmins ?? 2}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <span className="text-[10px] text-slate-400 font-medium">Cupo:</span>
+                        <select
+                          value={agency.maxAdmins ?? 2}
+                          onChange={(e) => handleMaxAdminsChange(agency.id, Number(e.target.value), activeAdminsCount)}
+                          disabled={updatingMaxAdminsId === agency.id}
+                          className="text-[11px] font-bold bg-white hover:bg-slate-50 border border-slate-200 rounded-lg px-2 py-0.5 text-indigo-700 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer shadow-sm"
+                          title="Límite máximo de administradores autorizados por el Super Admin para esta promotoría"
+                        >
+                          <option value={1}>1 Admin</option>
+                          <option value={2}>2 Admins (Default)</option>
+                          <option value={3}>3 Admins</option>
+                          <option value={4}>4 Admins</option>
+                          <option value={5}>5 Admins</option>
+                          <option value={6}>6 Admins</option>
+                          <option value={8}>8 Admins</option>
+                          <option value={10}>10 Admins</option>
+                        </select>
+                      </div>
                       {updatingMaxAdminsId === agency.id && (
-                        <span className="text-[10px] text-indigo-500 animate-pulse font-medium">...</span>
+                        <span className="text-[10px] text-indigo-500 animate-pulse font-medium">Guardando...</span>
                       )}
                     </div>
                   </TableCell>

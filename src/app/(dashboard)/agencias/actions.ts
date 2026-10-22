@@ -63,8 +63,9 @@ export async function getAgencies() {
     prisma.agency.findMany({
       include: {
         users: {
-          where: { role: "ADMIN" },
-          take: 1,
+          where: { role: "ADMIN", active: true },
+          select: { id: true, name: true, email: true, active: true },
+          orderBy: { createdAt: "asc" }
         },
         _count: {
           select: { users: true, clients: true, policies: true }
@@ -94,6 +95,7 @@ export async function getAgencies() {
 
     return {
       ...agency,
+      activeAdminsCount: agency.users?.length ?? 0,
       cedulaDaysBalance,
       academiaProMinutes: Math.floor((agency.voiceSecondsBalance || 0) / 60),
       tipsCreditsBalance: agency.tipsCreditsBalance || 0,
@@ -706,6 +708,21 @@ export async function updateAgencyMaxAdmins(agencyId: string, maxAdmins: number)
 
   const safeCount = Math.max(1, Math.min(20, Math.floor(maxAdmins)));
 
+  // Validar cuántos administradores activos tiene la promotoría actualmente
+  const currentActiveAdmins = await prisma.user.count({
+    where: {
+      agencyId,
+      role: "ADMIN",
+      active: true
+    }
+  });
+
+  if (safeCount < currentActiveAdmins) {
+    throw new Error(
+      `No es posible reducir el cupo a ${safeCount} administradores: la promotoría actualmente cuenta con ${currentActiveAdmins} administradores activos. Para reducir el cupo, primero se debe degradar o cambiar el rol de al menos ${currentActiveAdmins - safeCount} administrador(es) en la promotoría.`
+    );
+  }
+
   const updated = await prisma.agency.update({
     where: { id: agencyId },
     data: { maxAdmins: safeCount }
@@ -713,5 +730,5 @@ export async function updateAgencyMaxAdmins(agencyId: string, maxAdmins: number)
 
   revalidatePath("/agencias");
   revalidatePath("/admin");
-  return { success: true, maxAdmins: updated.maxAdmins };
+  return { success: true, maxAdmins: updated.maxAdmins, activeAdmins: currentActiveAdmins };
 }
