@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { MANUAL_VIDEOS_CATALOG } from "@/lib/manualVideosCatalog";
 
+export const dynamic = "force-dynamic";
+
 const PROMO_BLOB_URL =
   "https://lxyhgkkgwtxjiqp0.private.blob.vercel-storage.com/manual-aacomsoft/video_promo_redes_sociales_aacomsoft_AAA.mp4";
+
+// Token corresponding specifically to the lxyhgkkgwtxjiqp0 Vercel Blob store where manual-aacomsoft/* is hosted
+const MANUAL_STORE_TOKEN =
+  "vercel_blob_rw_lXYhGKKGWTXJIQp0_j4iwqKaJJEy88BVAadlj42H1HNYn92";
 
 export async function GET(
   req: NextRequest,
@@ -18,9 +24,9 @@ export async function GET(
       return new NextResponse("Video no encontrado", { status: 404 });
     }
 
-    const token =
-      process.env.BLOB_READ_WRITE_TOKEN ||
-      "vercel_blob_rw_lXYhGKKGWTXJIQp0_j4iwqKaJJEy88BVAadlj42H1HNYn92";
+    const token = targetBlobUrl.includes("lxyhgkkgwtxjiqp0.")
+      ? MANUAL_STORE_TOKEN
+      : process.env.BLOB_READ_WRITE_TOKEN || MANUAL_STORE_TOKEN;
 
     const headers: Record<string, string> = {
       Authorization: `Bearer ${token}`,
@@ -37,15 +43,16 @@ export async function GET(
     });
 
     if (!upstream.ok && upstream.status !== 206) {
-      return new NextResponse("Error al obtener video desde Vercel Blob", {
-        status: upstream.status,
-      });
+      return new NextResponse(
+        `Error al obtener video desde Vercel Blob (${upstream.status})`,
+        { status: upstream.status }
+      );
     }
 
     const responseHeaders = new Headers();
     responseHeaders.set("Content-Type", "video/mp4");
     responseHeaders.set("Accept-Ranges", "bytes");
-    responseHeaders.set("Cache-Control", "public, max-age=86400");
+    responseHeaders.set("Cache-Control", "private, max-age=3600");
 
     const contentLength = upstream.headers.get("content-length");
     if (contentLength) {
