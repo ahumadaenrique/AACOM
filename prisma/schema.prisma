@@ -106,6 +106,8 @@ model Agency {
   tipsCreditPurchases   TipsCreditPurchase[]
   tipsSessions          TipsSession[]
   academyVideos         AcademyVideo[]
+  project200Contacts    Project200Contact[]
+  project200Logs        Project200Log[]
   tipsParticipants      TipsParticipant[]
 
   @@index([referredById])
@@ -208,6 +210,8 @@ model User {
   tipsCreditPurchases  TipsCreditPurchase[]
   tipsSessions         TipsSession[]
   createdAcademyVideos AcademyVideo[]           @relation("UserCreatedAcademyVideos")
+  project200Contacts   Project200Contact[]
+  project200Logs       Project200Log[]
 
   @@index([agencyId])
   @@index([reportsToId])
@@ -1254,5 +1258,61 @@ model AcademyVideo {
 
   @@index([agencyId])
   @@index([category])
+  @@index([createdAt])
+}
+
+
+model Project200Contact {
+  id                     String          @id @default(cuid())
+  userId                 String
+  agencyId               String?
+  fullName               String
+  phone                  String
+  relationship           String
+  estimatedSalary        Float           @default(0)
+  closingProbability     String          @default("MEDIA")
+  classification         String          @default("PROSPECTO")
+  disqualificationReason String?
+  status                 String          @default("POR_CONTACTAR")
+  priorityScore          Int             @default(50)
+  attemptsCount          Int             @default(0)
+  lastAttemptAt          DateTime?
+  nextActionAt           DateTime?       @default(now())
+  scheduledMeetingAt     DateTime?
+  source                 String          @default("EXCEL")
+  referredByName         String?
+  surveyReferralId       String?
+  notes                  String?
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  user                   User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency                 Agency?         @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  logs                   Project200Log[]
+
+  @@index([userId])
+  @@index([agencyId])
+  @@index([classification])
+  @@index([status])
+  @@index([priorityScore])
+}
+
+model Project200Log {
+  id          String            @id @default(cuid())
+  contactId   String
+  userId      String
+  agencyId    String?
+  actionType  String
+  outcome     String
+  notes       String?
+  createdAt   DateTime          @default(now())
+
+  contact     Project200Contact @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency      Agency?           @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+
+  @@index([contactId])
+  @@index([userId])
+  @@index([agencyId])
   @@index([createdAt])
 }

@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity, Newspaper, SmilePlus, Youtube } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity, Newspaper, SmilePlus, Youtube, Flame } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { parseAgencyModulesConfig, isPathBlockedByModuleConfig } from "@/lib/agencyModules"
@@ -142,6 +142,7 @@ export default async function DashboardLayout({
     });
     const modConfig = parseAgencyModulesConfig(modulesSetting?.value);
     const hasVisibleTools =
+        modConfig.proyecto_200 ||
         modConfig.encuesta_satisfaccion ||
         modConfig.documentacion ||
         modConfig.cotizador ||
@@ -292,13 +293,21 @@ export default async function DashboardLayout({
                                 {!isReferidor && hasVisibleTools && (
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/documentacion', '/cotizador', '/adn', '/tips', '/academia', '/plan-arranque', '/encuesta-satisfaccion'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
-                                                <Sparkles className={`h-4 w-4 ${['/documentacion', '/cotizador', '/adn', '/tips', '/academia', '/plan-arranque', '/encuesta-satisfaccion'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-pink-500'}`} />
+                                            <button className={`relative py-5 transition-colors font-semibold flex items-center gap-1 outline-none ${['/proyecto-200', '/documentacion', '/cotizador', '/adn', '/tips', '/academia', '/plan-arranque', '/encuesta-satisfaccion'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                                                <Sparkles className={`h-4 w-4 ${['/proyecto-200', '/documentacion', '/cotizador', '/adn', '/tips', '/academia', '/plan-arranque', '/encuesta-satisfaccion'].some(p => pathname.startsWith(p)) ? 'text-primary' : 'text-pink-500'}`} />
                                                 Herramientas
-                                                {['/documentacion', '/cotizador', '/adn', '/tips', '/academia', '/plan-arranque', '/encuesta-satisfaccion'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                                {['/proyecto-200', '/documentacion', '/cotizador', '/adn', '/tips', '/academia', '/plan-arranque', '/encuesta-satisfaccion'].some(p => pathname.startsWith(p)) && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                             </button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="w-56">
+                                            {modConfig.proyecto_200 && (
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/proyecto-200" className="flex items-center gap-2 cursor-pointer font-bold text-orange-600 dark:text-orange-400">
+                                                        <Flame className="h-4 w-4 text-orange-500" />
+                                                        Proyecto 200
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            )}
                                             {modConfig.encuesta_satisfaccion && (
                                                 <DropdownMenuItem asChild>
                                                     <Link href="/encuesta-satisfaccion" className="flex items-center gap-2 cursor-pointer font-medium">
@@ -433,6 +442,12 @@ export default async function DashboardLayout({
                                                 <Link href="/admin/plan-arranque" className="flex items-center gap-2 cursor-pointer font-medium">
                                                     <Rocket className="h-4 w-4 text-orange-500" />
                                                     Admin P. Arranque
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/proyecto-200?tab=admin" className="flex items-center gap-2 cursor-pointer font-bold text-orange-600 dark:text-orange-400">
+                                                    <Flame className="h-4 w-4 text-orange-500" />
+                                                    Dashboard Proyecto 200
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
@@ -588,6 +603,12 @@ export default async function DashboardLayout({
                                              <div className="space-y-2.5">
                                              <div className="text-[10px] font-mono tracking-wider text-zinc-400 uppercase pt-2">Herramientas</div>
                                              <div className="pl-3 space-y-2.5 border-l border-zinc-200 dark:border-zinc-800">
+                                                 {modConfig.proyecto_200 && (
+                                                     <Link href="/proyecto-200" className="text-orange-600 dark:text-orange-400 font-bold hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Flame className="h-4.5 w-4.5 text-orange-500" />
+                                                         Proyecto 200
+                                                     </Link>
+                                                 )}
                                                  {modConfig.encuesta_satisfaccion && (
                                                      <Link href="/encuesta-satisfaccion" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
                                                          <SmilePlus className="h-4.5 w-4.5 text-emerald-500" />
@@ -671,6 +692,10 @@ export default async function DashboardLayout({
                                                      <Link href="/admin/plan-arranque" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
                                                          <Rocket className="h-4.5 w-4.5 text-orange-500" />
                                                          Admin P. Arranque
+                                                     </Link>
+                                                     <Link href="/proyecto-200?tab=admin" className="text-orange-600 dark:text-orange-400 font-bold hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Flame className="h-4.5 w-4.5 text-orange-500" />
+                                                         Dashboard Proyecto 200
                                                      </Link>
                                                      <Link href="/reportes" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
                                                          <ClipboardCheck className="h-4.5 w-4.5 text-slate-500" />

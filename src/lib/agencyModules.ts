@@ -6,6 +6,7 @@ export type AgencyModuleKey =
   | "team"
   | "ranking"
   | "referidores"
+  | "proyecto_200"
   | "encuesta_satisfaccion"
   | "documentacion"
   | "cotizador"
@@ -87,6 +88,14 @@ export const AGENCY_MODULE_DEFINITIONS: AgencyModuleDefinition[] = [
 
   // Menú Herramientas
   {
+    key: "proyecto_200",
+    label: "Proyecto 200",
+    description: "CRM de prospección inicial, calificación de 200 contactos y piloto automático de llamadas.",
+    pathPrefix: "/proyecto-200",
+    group: "tools",
+    emoji: "🔥",
+  },
+  {
     key: "encuesta_satisfaccion",
     label: "Encuesta de Satisfacción",
     description: "Cuestionario de calidad de servicio y captación de referidos.",
@@ -162,6 +171,7 @@ export const DEFAULT_AGENCY_MODULES_CONFIG: AgencyModulesConfig = {
   team: true,
   ranking: true,
   referidores: true,
+  proyecto_200: true,
   encuesta_satisfaccion: true,
   documentacion: true,
   cotizador: true,
