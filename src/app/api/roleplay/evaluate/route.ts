@@ -148,20 +148,34 @@ export async function POST(req: Request) {
     } else if (moduleId === 'objeciones') {
       evalInstructions = `
       Módulo: Cierre de Ventas y Manejo de Objeciones - Metodología Consultiva.
+      El asesor se encuentra en la Cita de Presentación y Cierre de la Propuesta Patrimonial.
       El asesor DEBE:
-      1. VALIDACIÓN EMPÁTICA: Recibir la resistencia o cortina de humo inicial del prospecto ("déjame pensarlo", "está caro", "lo consulto con mi esposa") con serenidad y empatía profesional. Jamás confrontar ni molestarse.
+      1. VALIDACIÓN EMPÁTICA: Recibir la resistencia o cortina de humo inicial del prospecto ("déjame pensarlo", "está caro", "lo consulto con mi esposa/socio") con serenidad y empatía profesional. Jamás confrontar ni molestarse.
       2. AISLAMIENTO QUIRÚRGICO DE LA OBJECIÓN: Preguntar con precisión si además de ese tiempo para pensar o consultar existe alguna otra inquietud sobre el plan, sumas aseguradas o costos, para despejar la cortina de humo y llegar a la objeción de raíz.
       3. TÉCNICA DE REBOTE Y VALOR: Desmantelar la duda de fondo utilizando técnicas reconocidas de la industria:
          - Técnica del Boomerang (convertir la misma objeción en la razón primordial para contratar hoy).
          - Siente - Sentían - Comprobaron (validar casos de éxito de clientes similares).
-         - Reducción al Absurdo / Costo Diario (dividir la prima en un costo diario accesible de $100-$200 pesos vs un café/comida).
+         - Reducción al Absurdo / Costo Diario (dividir la prima en un costo diario accesible de $100-$200 pesos vs un café/comida, gastos hormiga).
          - Costo de la Inacción (recordar que la edad y la salud no se congelan y el riesgo corre desde hoy).
          - Blindaje vs Inversión (separar ahorro garantizado con indemnización por fallecimiento/invalidez de instrumentos especulativos como CETES o bienes raíces).
+         - Anclaje al Diagnóstico (recordar los acuerdos del ADN previo: fondo educativo de hijos, retiro digno, tranquilidad familiar).
       4. CIERRE ASUMIDO CON DOBLE ALTERNATIVA: Al percibir la apertura o resolución de dudas, no quedarse pasivo esperando que el cliente compre solo; debe empujar el cierre con doble alternativa de trámite o método de pago (ej: "¿Te queda mejor domiciliarlo a tarjeta de crédito para acumular puntos o con cuenta de débito?", "¿Iniciamos con tu RFC personal o facturamos a la empresa?").
-      ERRORES FATALES:
-      - Rendirse y decir frases pasivas como "Bueno, piénsalo y me avisas", "Mándame un WhatsApp cuando gustes" o dejar la decisión abierta sin rebatir.
-      - Discutir, pelear o decirle al prospecto que está equivocado.
-      - Bajar la prima o suma asegurada de inmediato sin haber defendido el valor del proyecto primero.`;
+
+      CRITERIOS DE CALIFICACIÓN Y CLASIFICACIÓN DE ERRORES:
+      - ERRORES FATALES (ÚNICAMENTE si el asesor destruye la venta por abandono o falta de respeto -> score <= 35, cometioErrorFatal = true, appointmentClosed = false):
+        * Rendirse o tirar la toalla de inmediato sin intentar rebatir ("Bueno, piénsalo y luego me avisas", "Mándame un WhatsApp cuando gustes").
+        * Insultar, agredir verbalmente o faltar al respeto al cliente.
+        * Colgar o abandonar la sesión intencionalmente.
+
+      - ÁREAS DE MEJORA TÉCNICA (Son errores de negociación comunes; penalizan puntos pero NUNCA son errores fatales ni ponen 0 puntos, cometioErrorFatal = false):
+        * Bajar la prima o sugerir un monto menor antes de defender el valor del proyecto original (-15 a -20 pts).
+        * Invalidar o debatir con rigidez la preocupación del cliente en vez de validar empáticamente (-10 a -15 pts).
+        * Vacilar, congelarse o usar muletillas en el cierre asumido cuando el cliente pregunta sobre la forma de pago o da señales de compra (-10 a -15 pts).
+
+      - EVALUACIÓN DEL CIERRE DE VENTA (appointmentClosed) Y RÚBRICA DE PUNTAJE:
+        * Si el cliente aceptó contratar, preguntó por formas de pago (ej. "¿Visa o MasterCard?", "¿dónde firmo?"), o acordó iniciar la emisión, marca appointmentClosed = true.
+        * Si el asesor logró cerrar la venta pero cometió errores técnicos (por ejemplo, sugirió reducir la prima pero luego rescató la objeción con reducción al absurdo del café y recordó el ADN escolar), la calificación DEBE ubicarse entre 65 y 80 puntos (NUNCA 0 ni reprobatoria), reconociendo sus técnicas en "aciertos" y señalando sus fallas en "errores".
+        * Solo asigna calificación reprobatoria (< 50) si el cliente NO cerró la venta o si el asesor se rindió sin presentar batalla consultiva.`;
     } else {
       evalInstructions = `
       Módulo: Prospección Telefónica (Llamada para Agendar).
@@ -205,8 +219,8 @@ export async function POST(req: Request) {
       score: z.number().min(0).max(100).describe('Calificación del 0 al 100 basada en la calidad del desempeño del asesor.'),
       aciertos: z.array(z.string()).describe('Lista de 1 a 3 cosas que el asesor hizo muy bien.'),
       errores: z.array(z.string()).describe('Lista de errores u omisiones cometidos por el asesor. OBLIGATORIO: incluye cita textual entre comillas de la transcripción o señala explícitamente qué pilar faltó.'),
-      cometioErrorFatal: z.boolean().describe('Verdadero si el asesor cometió un error fatal según las instrucciones del módulo (ej. enviar info previa por WhatsApp/correo o mencionar productos, tasas o montos en prospección).'),
-      appointmentClosed: z.boolean().describe('Verdadero SOLAMENTE si el asesor logró concretar explícitamente la agenda de la cita con día y hora mediante técnica profesional, cubrió la explicación de la asesoría y los 2 horarios, Y NO cometió ningún error fatal.'),
+      cometioErrorFatal: z.boolean().describe('Verdadero ÚNICAMENTE si cometió una falta crítica destructiva: en Prospección (enviar info previa por WhatsApp/correo o dar catálogo de productos/tasas/montos); en ADN (vender o cotizar pólizas durante el diagnóstico); en Cierres/Objeciones (rendirse sin rebatir o agredir al cliente). NUNCA marques error fatal por fallas técnicas como reducir la prima o dudar en el cierre.'),
+      appointmentClosed: z.boolean().describe('Para Prospección: Verdadero si agendó cita con día y hora y 5 pilares sin errores fatales. Para ADN: Verdadero si agendó la 2da cita con doble alternativa sin cotizar en la sesión. Para Cierre/Objeciones: Verdadero si el cliente aceptó contratar, acordó método de pago o avanzó al trámite de emisión, demostrando que se concretó la venta.'),
       aplicoTecnicaFord: z.boolean().describe('Verdadero si el asesor exploró activamente dimensiones de la vida del prospecto: Familia, Ocupación, Recreación o Sueños/Dinero (F.O.R.D.).').default(false),
       priorizoMetas: z.boolean().describe('Verdadero si el asesor le pidió explícitamente al prospecto ordenar o priorizar cuál es su meta o preocupación #1 en la vida.').default(false),
       coachTip: z.string().describe('Un consejo breve, accionable y técnico.'),
@@ -428,8 +442,13 @@ ${badgesText}
     }
 
     if (cometioErrorFatal) {
-      score = Math.max(0, score - 50);
+      score = Math.min(score, 35);
       appointmentClosed = false;
+    }
+
+    // En Cierres / Objeciones: si el cliente cerró y no hubo falta fatal, garantizar piso de desempeño meritorio
+    if (moduleId === 'objeciones' && appointmentClosed && !cometioErrorFatal) {
+      score = Math.max(score, 65);
     }
 
     if (!appointmentClosed && score > 78) {
