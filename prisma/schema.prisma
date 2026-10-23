@@ -53,6 +53,7 @@ model Agency {
   allowReferidores      Boolean              @default(false)
   allowRoleplaySimulator Boolean?            @default(false)
   allowAcademyModule    Boolean              @default(true)
+  allowProyecto200Module Boolean             @default(false)
   shareAacomAcademyVideos Boolean            @default(false)
   maxAdmins             Int                  @default(2)
   voiceEngine           String?              @default("GEMINI_LIVE")

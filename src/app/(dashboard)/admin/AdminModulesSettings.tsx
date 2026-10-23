@@ -19,6 +19,7 @@ export default function AdminModulesSettings() {
     const [loading, setLoading] = useState<boolean>(true)
     const [savingKey, setSavingKey] = useState<string | null>(null)
     const [statusMsg, setStatusMsg] = useState<string>("")
+    const [allowProyecto200, setAllowProyecto200] = useState<boolean>(false)
 
     const loadConfig = async () => {
         setLoading(true)
@@ -26,6 +27,7 @@ export default function AdminModulesSettings() {
             const res = await getAgencyModulesConfig()
             if (res.success && res.config) {
                 setConfig(res.config)
+                if (typeof (res as any).allowProyecto200Module === "boolean") setAllowProyecto200((res as any).allowProyecto200Module)
             }
         } catch (err) {
             console.error("Error loading agency modules config:", err)
@@ -51,6 +53,7 @@ export default function AdminModulesSettings() {
             const res = await saveAgencyModulesConfig({ [key]: nextValue })
             if (res.success && res.config) {
                 setConfig(res.config)
+                if (typeof (res as any).allowProyecto200Module === "boolean") setAllowProyecto200((res as any).allowProyecto200Module)
                 setStatusMsg("✓ Configuración actualizada. El menú de tu promotoría se actualizó al instante.")
                 router.refresh()
                 setTimeout(() => setStatusMsg(""), 4000)
@@ -76,6 +79,7 @@ export default function AdminModulesSettings() {
             const res = await saveAgencyModulesConfig({ ...DEFAULT_AGENCY_MODULES_CONFIG })
             if (res.success && res.config) {
                 setConfig(res.config)
+                if (typeof (res as any).allowProyecto200Module === "boolean") setAllowProyecto200((res as any).allowProyecto200Module)
                 setStatusMsg("✓ Todos los módulos y menús están activos y visibles.")
                 router.refresh()
                 setTimeout(() => setStatusMsg(""), 4000)
@@ -121,8 +125,10 @@ export default function AdminModulesSettings() {
         },
     ]
 
-    const totalModules = AGENCY_MODULE_DEFINITIONS.length
-    const activeModulesCount = AGENCY_MODULE_DEFINITIONS.filter((m) => config[m.key]).length
+    const visibleDefinitions = AGENCY_MODULE_DEFINITIONS.filter((m) => m.key !== "proyecto_200" || allowProyecto200)
+    const totalModules = visibleDefinitions.length
+    const activeModulesCount = visibleDefinitions.filter((m) => config[m.key]).length
+
 
     return (
         <div className="space-y-6 animate-in fade-in duration-300">
@@ -188,7 +194,7 @@ export default function AdminModulesSettings() {
             ) : (
                 <div className="space-y-6">
                     {groups.map((group) => {
-                        const items = AGENCY_MODULE_DEFINITIONS.filter((m) => m.group === group.id)
+                        const items = visibleDefinitions.filter((m) => m.group === group.id)
                         return (
                             <Card key={group.id} className="border shadow-sm overflow-hidden">
                                 <CardHeader className={`py-4 border-b bg-gradient-to-r ${group.accentClass}`}>

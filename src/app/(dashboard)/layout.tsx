@@ -136,6 +136,7 @@ export default async function DashboardLayout({
     const isReferidor = dbUser?.role === 'REFERIDOR';
     const allowReferidores = agency?.allowReferidores ?? false;
     const allowTipsModule = agency?.allowTipsModule ?? true;
+    const allowProyecto200Module = agency?.allowProyecto200Module ?? (agency?.id === "aacom" || agency?.slug === "aacom");
 
     const effectiveAgencyIdForModules = agency?.id || resolvedAgencyId || "aacom";
     const modulesSetting = await prisma.setting.findUnique({
@@ -143,7 +144,7 @@ export default async function DashboardLayout({
     });
     const modConfig = parseAgencyModulesConfig(modulesSetting?.value);
     const hasVisibleTools =
-        modConfig.proyecto_200 ||
+        (modConfig.proyecto_200 && allowProyecto200Module) ||
         modConfig.encuesta_satisfaccion ||
         modConfig.documentacion ||
         modConfig.cotizador ||
@@ -156,6 +157,12 @@ export default async function DashboardLayout({
     if (isSeller && pathname !== '/vendedor') {
         const { redirect } = await import("next/navigation");
         redirect("/vendedor");
+    }
+
+    // Si una promotoría tiene desactivado Proyecto 200 a nivel Super Admin, bloquear acceso a todos sus usuarios (incluyendo ADMIN de esa agencia)
+    if (!isSuperAdmin && !allowProyecto200Module && pathname.startsWith('/proyecto-200')) {
+        const { redirect } = await import("next/navigation");
+        redirect("/");
     }
 
     // Si un agente o usuario no administrador intenta acceder por URL directa a un módulo desactivado por su promotoría, redirigir al inicio
@@ -302,7 +309,7 @@ export default async function DashboardLayout({
                                             </button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="w-56">
-                                            {modConfig.proyecto_200 && (
+                                            {allowProyecto200Module && modConfig.proyecto_200 && (
                                                 <DropdownMenuItem asChild>
                                                     <Link href="/proyecto-200" className="flex items-center gap-2 cursor-pointer font-bold text-orange-600 dark:text-orange-400">
                                                         <Flame className="h-4 w-4 text-orange-500" />
@@ -447,7 +454,7 @@ export default async function DashboardLayout({
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
-                                                <Link href="/proyecto-200?tab=admin" className="flex items-center gap-2 cursor-pointer font-bold text-orange-600 dark:text-orange-400">
+                                                <Link href="/proyecto-200?tab=admin" className={`flex items-center gap-2 cursor-pointer font-bold text-orange-600 dark:text-orange-400 ${!(isSuperAdmin || allowProyecto200Module) ? 'hidden' : ''}`}>
                                                     <Flame className="h-4 w-4 text-orange-500" />
                                                     Dashboard Proyecto 200
                                                 </Link>
@@ -605,7 +612,7 @@ export default async function DashboardLayout({
                                              <div className="space-y-2.5">
                                              <div className="text-[10px] font-mono tracking-wider text-zinc-400 uppercase pt-2">Herramientas</div>
                                              <div className="pl-3 space-y-2.5 border-l border-zinc-200 dark:border-zinc-800">
-                                                 {modConfig.proyecto_200 && (
+                                                 {allowProyecto200Module && modConfig.proyecto_200 && (
                                                      <Link href="/proyecto-200" className="text-orange-600 dark:text-orange-400 font-bold hover:text-foreground text-sm flex items-center gap-2">
                                                          <Flame className="h-4.5 w-4.5 text-orange-500" />
                                                          Proyecto 200
@@ -701,7 +708,7 @@ export default async function DashboardLayout({
                                                          <Rocket className="h-4.5 w-4.5 text-orange-500" />
                                                          Admin P. Arranque
                                                      </Link>
-                                                     <Link href="/proyecto-200?tab=admin" className="text-orange-600 dark:text-orange-400 font-bold hover:text-foreground text-sm flex items-center gap-2">
+                                                     <Link href="/proyecto-200?tab=admin" className={`text-orange-600 dark:text-orange-400 font-bold hover:text-foreground text-sm flex items-center gap-2 ${!(isSuperAdmin || allowProyecto200Module) ? 'hidden' : ''}`}>
                                                          <Flame className="h-4.5 w-4.5 text-orange-500" />
                                                          Dashboard Proyecto 200
                                                      </Link>

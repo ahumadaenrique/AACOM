@@ -54,6 +54,7 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
       allowLiteAgents: formData.get("allowLiteAgents") === "on",
       allowReferidores: formData.get("allowReferidores") === "on",
       allowRoleplaySimulator: formData.get("allowRoleplaySimulator") === "on",
+      allowProyecto200Module: formData.get("allowProyecto200Module") === "on",
       enableWhatsAppPlanner: formData.get("enableWhatsAppPlanner") === "on",
       whatsAppPlannerPhones: formData.get("whatsAppPlannerPhones") as string || undefined,
       whatsAppPlannerAgents: selectedAgents.length > 0 ? selectedAgents.join(",") : undefined,
@@ -209,6 +210,14 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
                 <p className="text-xs text-purple-700">Activa o bloquea el acceso a las llamadas telefónicas con IA y gamificación para los agentes de esta agencia.</p>
               </div>
               <Switch id="allowRoleplaySimulator" name="allowRoleplaySimulator" defaultChecked={agency ? (agency.allowRoleplaySimulator ?? false) : false} />
+            </div>
+
+            <div className="flex items-center justify-between p-3 border border-orange-200 rounded-lg bg-orange-50/30">
+              <div className="space-y-0.5">
+                <Label htmlFor="allowProyecto200Module" className="text-base font-semibold text-orange-900">Permitir Módulo Proyecto 200</Label>
+                <p className="text-xs text-orange-700">Activa u oculta por completo el CRM y Piloto Automático de Proyecto 200 para esta promotoría.</p>
+              </div>
+              <Switch id="allowProyecto200Module" name="allowProyecto200Module" defaultChecked={agency ? (agency.allowProyecto200Module ?? (agency.id === "aacom" || agency.slug === "aacom")) : false} />
             </div>
 
             <div className="flex flex-col p-3 border border-green-200 rounded-lg bg-green-50/30 gap-3">

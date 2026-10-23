@@ -549,7 +549,8 @@ async function injectColumns() {
       );`,
       `CREATE INDEX IF NOT EXISTS "market_cg_chunks_documentId_idx" ON "market_cg_chunks"("documentId");`,
       `CREATE INDEX IF NOT EXISTS "market_cg_chunks_aseguradora_idx" ON "market_cg_chunks"("aseguradora");`,
-      `CREATE INDEX IF NOT EXISTS "market_cg_chunks_fts_idx" ON "market_cg_chunks" USING GIN (to_tsvector('spanish', "aseguradora" || ' ' || "producto" || ' ' || "content"));`
+      `CREATE INDEX IF NOT EXISTS "market_cg_chunks_fts_idx" ON "market_cg_chunks" USING GIN (to_tsvector('spanish', "aseguradora" || ' ' || "producto" || ' ' || "content"));`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "allowProyecto200Module" BOOLEAN NOT NULL DEFAULT false;`
     ];
 
     for (const q of queries) {
@@ -610,6 +611,12 @@ async function injectColumns() {
       console.log('Initialized existing non-AACOM agencies with ["Insignia Life"].');
     }
 
+    const p200InitRes = await client.query(`SELECT "value" FROM "Setting" WHERE "key" = 'proyecto_200_aacom_only_init_v1';`);
+    if (p200InitRes.rows.length === 0) {
+      await client.query(`UPDATE "Agency" SET "allowProyecto200Module" = CASE WHEN "id" = 'aacom' OR COALESCE("slug", '') = 'aacom' THEN true ELSE false END;`);
+      await client.query(`INSERT INTO "Setting" ("key", "value") VALUES ('proyecto_200_aacom_only_init_v1', 'true') ON CONFLICT ("key") DO UPDATE SET "value" = 'true';`);
+      console.log('Initialized allowProyecto200Module = true ONLY for AACOM, false for all other agencies.');
+    }
     console.log("Column injection completed successfully.");
   } catch (error) {
     console.warn("⚠️  inject_columns: Could not connect to DB or columns may already exist. Continuing build...");

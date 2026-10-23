@@ -4,9 +4,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { differenceInCalendarDays, format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ShieldAlert, ShieldCheck, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff, Bot, Sparkles, BookOpen, Coins, Video, Share2 } from "lucide-react";
+import { ShieldAlert, ShieldCheck, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff, Bot, Sparkles, BookOpen, Coins, Video, Share2, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { deleteAgency, getAgencyUsers, toggleAgencyRoleplay, updateAgencyMaxAdmins, toggleAgencyAcademyModule, toggleAgencyShareAacomVideos } from "./actions";
+import { deleteAgency, getAgencyUsers, toggleAgencyRoleplay, updateAgencyMaxAdmins, toggleAgencyAcademyModule, toggleAgencyShareAacomVideos, toggleAgencyProyecto200Module } from "./actions";
 import { useState, useEffect } from "react";
 import { GiftModal } from "./GiftModal";
 import { AgencyAiSettingsModal } from "./AgencyAiSettingsModal";
@@ -24,6 +24,19 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
   const [updatingMaxAdminsId, setUpdatingMaxAdminsId] = useState<string | null>(null);
   const [togglingAcademyId, setTogglingAcademyId] = useState<string | null>(null);
   const [togglingShareAacomId, setTogglingShareAacomId] = useState<string | null>(null);
+  const [togglingProyecto200Id, setTogglingProyecto200Id] = useState<string | null>(null);
+
+  const handleToggleProyecto200 = async (agencyId: string, current: boolean) => {
+    try {
+      setTogglingProyecto200Id(agencyId);
+      await toggleAgencyProyecto200Module(agencyId, !current);
+      setLocalAgencies(prev => prev.map(a => a.id === agencyId ? { ...a, allowProyecto200Module: !current } : a));
+    } catch (e: any) {
+      alert("Error al cambiar estado de Proyecto 200: " + (e.message || "Error"));
+    } finally {
+      setTogglingProyecto200Id(null);
+    }
+  };
 
   const handleToggleAcademy = async (agencyId: string, current: boolean) => {
     try {
@@ -335,6 +348,18 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
 
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      {/* Proyecto 200 (CRM y Piloto Automático) */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleToggleProyecto200(agency.id, agency.allowProyecto200Module ?? (agency.id === "aacom" || agency.slug === "aacom"))}
+                        disabled={togglingProyecto200Id === agency.id}
+                        className={`text-xs h-7 px-2 border ${(agency.allowProyecto200Module ?? (agency.id === "aacom" || agency.slug === "aacom")) ? 'border-orange-300 text-orange-700 bg-orange-50 hover:bg-orange-100 font-bold' : 'border-slate-200 text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
+                        title={(agency.allowProyecto200Module ?? (agency.id === "aacom" || agency.slug === "aacom")) ? "Módulo Proyecto 200 HABILITADO (Click para Ocultar/Desactivar)" : "Módulo Proyecto 200 OCULTO/DESACTIVADO (Click para Habilitar)"}
+                      >
+                        <Flame className={`h-3.5 w-3.5 ${(agency.allowProyecto200Module ?? (agency.id === "aacom" || agency.slug === "aacom")) ? 'text-orange-600' : 'text-slate-400'}`} />
+                      </Button>
+
                                             {/* Academia de Videos (Mini YouTube) */}
                       <Button 
                         variant="outline" 

@@ -31,7 +31,9 @@ export default async function Proyecto200Page(props: {
       agency: {
         select: {
           id: true,
+          slug: true,
           name: true,
+          allowProyecto200Module: true,
         },
       },
     },
@@ -39,6 +41,15 @@ export default async function Proyecto200Page(props: {
 
   if (!dbUser) {
     redirect("/login");
+  }
+
+  const isSuperAdmin = dbUser.role === "SUPER_ADMIN";
+  const allowProyecto200Module =
+    dbUser.agency?.allowProyecto200Module ??
+    (dbUser.agencyId === "aacom" || dbUser.agency?.slug === "aacom");
+
+  if (!isSuperAdmin && !allowProyecto200Module) {
+    redirect("/");
   }
 
   const resolvedSearchParams = props.searchParams ? await props.searchParams : {};

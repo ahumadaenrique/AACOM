@@ -16,6 +16,7 @@ const agencySchema = z.object({
   allowLiteAgents: z.boolean().optional(),
   allowReferidores: z.boolean().optional(),
   allowRoleplaySimulator: z.boolean().optional(),
+  allowProyecto200Module: z.boolean().optional(),
   // WhatsApp Planner Config
   enableWhatsAppPlanner: z.boolean().optional(),
   whatsAppPlannerPhones: z.string().optional(),
@@ -123,6 +124,7 @@ export async function createAgency(data: z.infer<typeof agencySchema>) {
       allowLiteAgents: parsed.allowLiteAgents ?? false,
       allowReferidores: parsed.allowReferidores ?? false,
       allowRoleplaySimulator: parsed.allowRoleplaySimulator ?? false,
+      allowProyecto200Module: parsed.allowProyecto200Module ?? false,
       enableWhatsAppPlanner: parsed.enableWhatsAppPlanner ?? false,
       whatsAppPlannerPhones: parsed.whatsAppPlannerPhones,
       whatsAppPlannerAgents: parsed.whatsAppPlannerAgents,
@@ -532,6 +534,26 @@ export async function toggleAgencyAcademyModule(agencyId: string, allow: boolean
   revalidatePath("/academia");
   revalidatePath("/academia/videos");
   return { success: true, allowAcademyModule: updated.allowAcademyModule };
+}
+
+export async function toggleAgencyProyecto200Module(agencyId: string, allow: boolean) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") {
+    throw new Error("Solo el Super Administrador puede habilitar o deshabilitar el módulo Proyecto 200.");
+  }
+
+  const updated = await prisma.agency.update({
+    where: { id: agencyId },
+    data: { allowProyecto200Module: allow }
+  });
+
+  revalidatePath("/agencias");
+  revalidatePath("/proyecto-200");
+  revalidatePath("/admin");
+  revalidatePath("/", "layout");
+  return { success: true, allowProyecto200Module: updated.allowProyecto200Module };
 }
 
 export async function toggleAgencyShareAacomVideos(agencyId: string, share: boolean) {
