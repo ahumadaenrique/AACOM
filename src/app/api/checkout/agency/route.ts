@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+import { getOrCreateBimonthlyAgencyPrice } from "@/lib/stripe-pricing";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { plan, promoCode } = body; // '3M', '6M', '12M'
+    const { plan, promoCode } = body; // '2M', '3M', '6M', '12M'
 
     // Validación de cupón o referidos
     let stripeCoupon = null;
@@ -47,16 +48,23 @@ export async function POST(req: NextRequest) {
     // Determinar el Price ID según el plan
     let priceId = "";
     let monthsToAdd = 0;
+    let daysToAdd = 0;
 
-    if (plan === "3M") {
+    if (plan === "2M" || plan === "bimestral") {
+      priceId = await getOrCreateBimonthlyAgencyPrice();
+      daysToAdd = 60;
+    } else if (plan === "3M" || plan === "trimestral") {
       priceId = process.env.STRIPE_PLAN_3M_PRICE_ID || "";
       monthsToAdd = 3;
-    } else if (plan === "6M") {
+      daysToAdd = 90;
+    } else if (plan === "6M" || plan === "semiannual") {
       priceId = process.env.STRIPE_PLAN_6M_PRICE_ID || "";
       monthsToAdd = 6;
-    } else if (plan === "12M") {
+      daysToAdd = 180;
+    } else if (plan === "12M" || plan === "annual") {
       priceId = process.env.STRIPE_PLAN_12M_PRICE_ID || "";
       monthsToAdd = 12;
+      daysToAdd = 365;
     }
 
     if (!priceId) {
@@ -120,14 +128,16 @@ export async function POST(req: NextRequest) {
       metadata: {
         agencyId: agency.id,
         isMainLicense: "true",
-        monthsToAdd: monthsToAdd.toString(),
+        daysToAdd: daysToAdd.toString(),
+        ...(monthsToAdd > 0 ? { monthsToAdd: monthsToAdd.toString() } : {}),
         discountCodeStr: discountCodeStr || ""
       },
       subscription_data: {
         metadata: {
           agencyId: agency.id,
           isMainLicense: "true",
-          monthsToAdd: monthsToAdd.toString(),
+          daysToAdd: daysToAdd.toString(),
+          ...(monthsToAdd > 0 ? { monthsToAdd: monthsToAdd.toString() } : {}),
         }
       }
     });

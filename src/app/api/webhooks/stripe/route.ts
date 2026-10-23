@@ -57,9 +57,12 @@ export async function POST(req: Request) {
         } else if (months >= 6) {
           subscriptionPlan = "SEMIANNUAL";
           studyTokens = 25;
-        } else {
+        } else if (months >= 3) {
           subscriptionPlan = "QUARTERLY";
           studyTokens = 12;
+        } else {
+          subscriptionPlan = "BIMONTHLY";
+          studyTokens = 8;
         }
       } else if (daysToAddStr) {
         const days = parseInt(daysToAddStr, 10);
@@ -69,9 +72,12 @@ export async function POST(req: Request) {
         } else if (days >= 150) {
           subscriptionPlan = "SEMIANNUAL";
           studyTokens = 25;
-        } else {
+        } else if (days >= 80) {
           subscriptionPlan = "QUARTERLY";
           studyTokens = 12;
+        } else {
+          subscriptionPlan = "BIMONTHLY";
+          studyTokens = 8;
         }
       }
 

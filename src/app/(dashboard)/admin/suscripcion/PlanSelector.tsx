@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Check, Zap } from "lucide-react";
+import { Loader2, Zap } from "lucide-react";
 import { createCheckoutSession } from "./actions";
 
 interface Plan {
@@ -18,6 +18,14 @@ interface Plan {
 }
 
 const plans: Plan[] = [
+  {
+    id: "bimestral",
+    name: "Bimestral",
+    description: "Flexibilidad total para operar por 60 días.",
+    price: "$5,200 MXN",
+    monthlyPrice: "Equivalente a $2,600 / mes (60 días)",
+    days: 60,
+  },
   {
     id: "trimestral",
     name: "Trimestral",
@@ -76,7 +84,7 @@ export default function PlanSelector({ isSubscribed }: { isSubscribed: boolean }
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
         {plans.map((plan) => (
           <Card 
             key={plan.id}
@@ -88,7 +96,7 @@ export default function PlanSelector({ isSubscribed }: { isSubscribed: boolean }
             }`}
           >
             {plan.popular && (
-              <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm">
+              <div className="absolute top-0 right-1/2 translate-x-1/2 -translate-y-1/2 bg-indigo-600 text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full shadow-sm whitespace-nowrap">
                 Más Popular
               </div>
             )}
@@ -97,11 +105,13 @@ export default function PlanSelector({ isSubscribed }: { isSubscribed: boolean }
               <CardDescription className="text-xs h-8">{plan.description}</CardDescription>
             </CardHeader>
             <CardContent className="text-center pb-6">
-              <div className="text-3xl font-black text-indigo-900">{plan.price}</div>
+              <div className="text-2xl lg:text-3xl font-black text-indigo-900">{plan.price}</div>
               {plan.monthlyPrice && (
-                <div className="text-sm font-bold text-emerald-600 mt-1.5">{plan.monthlyPrice}</div>
+                <div className="text-xs lg:text-sm font-bold text-emerald-600 mt-1.5">{plan.monthlyPrice}</div>
               )}
-              <div className="text-xs text-slate-500 font-medium mt-2">Suscripción recurrente</div>
+              <div className="text-xs text-slate-500 font-medium mt-2">
+                Suscripción recurrente ({plan.days} días)
+              </div>
             </CardContent>
             <div className={`h-1.5 w-full absolute bottom-0 left-0 ${selectedPlanId === plan.id ? 'bg-indigo-600' : 'bg-transparent'}`} />
           </Card>

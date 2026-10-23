@@ -3,6 +3,7 @@
  * - Anual (12M): 52 días
  * - Semestral (6M): 25 días
  * - Trimestral (3M): 12 días
+ * - Bimestral (2M / 60 días): 8 días
  */
 export function getAgencyStudyDaysLimit(agency?: {
   slug?: string | null;
@@ -20,6 +21,7 @@ export function getAgencyStudyDaysLimit(agency?: {
   if (plan && ['ANNUAL', 'ANUAL', '12M', 'YEARLY', 'ANUAL_12M'].includes(plan)) return 52;
   if (plan && ['SEMIANNUAL', 'SEMESTRAL', '6M', 'SEMESTRAL_6M'].includes(plan)) return 25;
   if (plan && ['QUARTERLY', 'TRIMESTRAL', '3M', 'TRIMESTRAL_3M'].includes(plan)) return 12;
+  if (plan && ['BIMONTHLY', 'BIMESTRAL', '2M', '60D', 'BIMESTRAL_2M'].includes(plan)) return 8;
 
   // Si no tiene plan explícito pero tiene fecha de fin de suscripción:
   if (agency.subscriptionEndDate) {
@@ -28,7 +30,8 @@ export function getAgencyStudyDaysLimit(agency?: {
     const daysRemaining = (end - now) / (1000 * 60 * 60 * 24);
     if (daysRemaining > 200) return 52;
     if (daysRemaining > 100) return 25;
-    return 12;
+    if (daysRemaining > 65) return 12;
+    return 8;
   }
 
   return 12;

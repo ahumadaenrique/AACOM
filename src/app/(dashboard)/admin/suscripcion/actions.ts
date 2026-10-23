@@ -3,7 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import { redirect } from "next/navigation";
+import { getOrCreateBimonthlyAgencyPrice } from "@/lib/stripe-pricing";
 import { headers } from "next/headers";
 
 export async function createCheckoutSession(
@@ -33,9 +33,11 @@ export async function createCheckoutSession(
     const protocol = host.includes("localhost") ? "http" : "https";
     const origin = `${protocol}://${host}`;
 
-    // Map planId to real Stripe price ID from server env variables
+    // Map planId to real Stripe price ID from server env variables or auto-create Bimonthly
     let actualPriceId = "";
-    if (planId === "trimestral") {
+    if (planId === "bimestral" || planId === "2M") {
+      actualPriceId = await getOrCreateBimonthlyAgencyPrice();
+    } else if (planId === "trimestral") {
       actualPriceId = process.env.STRIPE_PLAN_3M_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_PRICE_MONTHLY || "";
     } else if (planId === "semiannual") {
       actualPriceId = process.env.STRIPE_PLAN_6M_PRICE_ID || process.env.NEXT_PUBLIC_STRIPE_PRICE_SEMIANNUAL || "";

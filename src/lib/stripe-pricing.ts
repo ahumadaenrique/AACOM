@@ -92,3 +92,53 @@ export async function getOrCreateIndividualPremiumPrice(): Promise<string> {
 
   return price.id;
 }
+
+/**
+ * Busca o crea el precio para el Plan Bimestral de Promotoría ($5,200 MXN cada 60 días).
+ */
+export async function getOrCreateBimonthlyAgencyPrice(): Promise<string> {
+  if (process.env.STRIPE_PLAN_2M_PRICE_ID) {
+    return process.env.STRIPE_PLAN_2M_PRICE_ID;
+  }
+
+  const prices = await stripe.prices.list({
+    active: true,
+    limit: 100,
+  });
+
+  const existingPrice = prices.data.find(
+    (p) =>
+      p.metadata?.isBimonthlyAgencyPrice === "true" &&
+      p.unit_amount === 520000 &&
+      p.currency === "mxn"
+  );
+
+  if (existingPrice) {
+    return existingPrice.id;
+  }
+
+  console.log("Creando producto y precio Bimestral ($5,200 MXN / 60 días) en Stripe...");
+  const product = await stripe.products.create({
+    name: "Licencia Corporativa Promotoría - Plan Bimestral (60 días)",
+    description: "Suscripción bimestral (60 días) a la plataforma completa para promotoría.",
+    metadata: {
+      isBimonthlyAgencyProduct: "true",
+    },
+  });
+
+  const price = await stripe.prices.create({
+    product: product.id,
+    currency: "mxn",
+    recurring: {
+      interval: "day",
+      interval_count: 60,
+    },
+    unit_amount: 520000, // $5,200.00 MXN
+    metadata: {
+      isBimonthlyAgencyPrice: "true",
+      daysToAdd: "60",
+    },
+  });
+
+  return price.id;
+}
