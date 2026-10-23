@@ -141,7 +141,7 @@ export default function PlanSelector({ isSubscribed }: { isSubscribed: boolean }
           ) : (
             <Zap className="w-4 h-4 mr-2" />
           )}
-          {isSubscribed ? "Renovar / Cambiar Plan" : "Continuar al Pago"}
+          Continuar al pago
         </Button>
       </div>
     </div>
