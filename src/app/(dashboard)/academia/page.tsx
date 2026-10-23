@@ -17,7 +17,7 @@ export default async function AcademiaPage() {
   const isTrial = dbUser?.agency?.subscriptionStatus === "trialing"
   const isPromoter = dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN'
   const isSimulatorAllowed = dbUser?.role === 'SUPER_ADMIN' || (dbUser?.agency ? (dbUser.agency.allowRoleplaySimulator ?? true) : true)
-  const isAcademyAllowed = dbUser?.role === 'SUPER_ADMIN' || Boolean(dbUser?.agency?.allowAcademyModule)
+  const isAcademyAllowed = dbUser?.role === 'SUPER_ADMIN' || (dbUser?.agency ? (dbUser.agency.allowAcademyModule ?? true) : true)
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto pb-16 px-4 md:px-6">

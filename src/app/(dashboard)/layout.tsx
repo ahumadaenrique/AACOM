@@ -149,7 +149,8 @@ export default async function DashboardLayout({
         modConfig.adn ||
         (modConfig.tips && allowTipsModule) ||
         modConfig.plan_arranque ||
-        modConfig.academia;
+        modConfig.academia ||
+        (agency?.allowAcademyModule ?? true);
 
     if (isSeller && pathname !== '/vendedor') {
         const { redirect } = await import("next/navigation");
@@ -364,7 +365,7 @@ export default async function DashboardLayout({
                                                     </Link>
                                                 </DropdownMenuItem>
                                             )}
-                                            {(isSuperAdmin || Boolean(agency?.allowAcademyModule)) && (
+                                            {(isSuperAdmin || (agency?.allowAcademyModule ?? true)) && (
                                                 <DropdownMenuItem asChild>
                                                     <Link href="/academia/videos" className="flex items-center gap-2 cursor-pointer font-semibold text-rose-600 dark:text-rose-400">
                                                         <Youtube className="h-4 w-4 text-red-600" />
@@ -649,6 +650,12 @@ export default async function DashboardLayout({
                                                      <Link href="/academia" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
                                                          <GraduationCap className="h-4.5 w-4.5 text-purple-500" />
                                                          Academia
+                                                     </Link>
+                                                 )}
+                                                 {(isSuperAdmin || (agency?.allowAcademyModule ?? true)) && (
+                                                     <Link href="/academia/videos" className="text-rose-600 dark:text-rose-400 font-semibold hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Youtube className="h-4.5 w-4.5 text-red-600" />
+                                                         E-Learning
                                                      </Link>
                                                  )}
                                              </div>

@@ -7,17 +7,24 @@ import bcrypt from "bcryptjs"
 export async function requestPasswordReset(email: string) {
   try {
     const emailLower = email.toLowerCase().trim()
-    const user = await prisma.user.findUnique({
+    let user = await prisma.user.findUnique({
       where: { email: emailLower },
       include: { agency: true }
     })
+
+    if (!user) {
+      user = await prisma.user.findFirst({
+        where: { email: { equals: emailLower, mode: 'insensitive' } },
+        include: { agency: true }
+      })
+    }
 
     if (!user) {
       // Security: do not disclose if user exists
       return { success: true, message: "Si el correo está registrado, recibirás un enlace para restablecer tu contraseña." }
     }
 
-    const agencyName = user.agency?.name || "AACOMSOFT"
+    const agencyName = (user.agency?.name || "AACOMSOFT").replace(/[<>"'\r\n]/g, "").trim() || "AACOMSOFT"
 
     const token = crypto.randomBytes(32).toString("hex")
     const tokenExpiry = new Date(Date.now() + 3600000) // 1 hour expiration

@@ -27,8 +27,8 @@ export async function getAcademyVideosData() {
   const agency = dbUser.agency || (await prisma.agency.findUnique({ where: { id: userAgencyId } }));
 
   // Validación de acceso al módulo:
-  // Super Admin siempre tiene acceso. Para el resto de promotorías, solo si el Super Admin lo activó.
-  const isModuleAllowed = isSuperAdmin || Boolean(agency?.allowAcademyModule);
+  // Super Admin siempre tiene acceso. Para el resto de promotorías, activo por defecto a menos que se restrinja explícitamente.
+  const isModuleAllowed = isSuperAdmin || (agency ? (agency.allowAcademyModule ?? true) : true);
 
   if (!isModuleAllowed) {
     return {

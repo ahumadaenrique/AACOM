@@ -64,7 +64,9 @@ async function injectColumns() {
       `CREATE INDEX IF NOT EXISTS "Project200Log_agencyId_idx" ON "Project200Log"("agencyId");`,
       `CREATE INDEX IF NOT EXISTS "Project200Log_createdAt_idx" ON "Project200Log"("createdAt");`,
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "maxAdmins" INTEGER DEFAULT 2;`,
-      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "allowAcademyModule" BOOLEAN DEFAULT false;`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "allowAcademyModule" BOOLEAN DEFAULT true;`,
+      `ALTER TABLE "Agency" ALTER COLUMN "allowAcademyModule" SET DEFAULT true;`,
+      `UPDATE "Agency" SET "allowAcademyModule" = true WHERE "allowAcademyModule" = false OR "allowAcademyModule" IS NULL;`,
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "shareAacomAcademyVideos" BOOLEAN DEFAULT false;`,
       `CREATE TABLE IF NOT EXISTS "AcademyVideo" (
         "id" TEXT PRIMARY KEY,

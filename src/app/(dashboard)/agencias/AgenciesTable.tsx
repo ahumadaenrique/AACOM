@@ -339,12 +339,12 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                       <Button 
                         variant="outline" 
                         size="sm" 
-                        onClick={() => handleToggleAcademy(agency.id, agency.allowAcademyModule ?? false)}
+                        onClick={() => handleToggleAcademy(agency.id, agency.allowAcademyModule ?? true)}
                         disabled={togglingAcademyId === agency.id}
-                        className={`text-xs h-7 px-2 border ${(agency.allowAcademyModule ?? false) ? 'border-red-300 text-red-700 bg-red-50 hover:bg-red-100 font-bold' : 'border-slate-200 text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
-                        title={(agency.allowAcademyModule ?? false) ? "Módulo E-Learning HABILITADO (Click para Ocultar)" : "Módulo E-Learning OCULTO (Click para Habilitar)"}
+                        className={`text-xs h-7 px-2 border ${(agency.allowAcademyModule ?? true) ? 'border-red-300 text-red-700 bg-red-50 hover:bg-red-100 font-bold' : 'border-slate-200 text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
+                        title={(agency.allowAcademyModule ?? true) ? "Módulo E-Learning HABILITADO (Click para Ocultar)" : "Módulo E-Learning OCULTO (Click para Habilitar)"}
                       >
-                        <Video className={`h-3.5 w-3.5 ${(agency.allowAcademyModule ?? false) ? 'text-red-600' : 'text-slate-400'}`} />
+                        <Video className={`h-3.5 w-3.5 ${(agency.allowAcademyModule ?? true) ? 'text-red-600' : 'text-slate-400'}`} />
                       </Button>
 
                       {/* Compartir Videos AACOM Oficiales */}
