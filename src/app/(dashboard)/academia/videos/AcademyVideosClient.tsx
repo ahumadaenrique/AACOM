@@ -436,12 +436,24 @@ export function AcademyVideosClient({
                 >
                   <img
                     src={thumb}
-                    alt={video.title}
+                    alt=""
+                    aria-hidden="true"
+                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                     loading="lazy"
                     onError={(e) => {
-                      // Fallback a thumbnail estándar si falla
-                      (e.target as HTMLImageElement).src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+                      const img = e.currentTarget;
+                      const current = img.src || "";
+                      if (!current.includes("i.ytimg.com")) {
+                        img.src = `https://i.ytimg.com/vi/${video.youtubeId}/hqdefault.jpg`;
+                      } else if (!current.includes("mqdefault")) {
+                        img.src = `https://i.ytimg.com/vi/${video.youtubeId}/mqdefault.jpg`;
+                      } else if (!current.includes("img.youtube.com")) {
+                        img.src = `https://img.youtube.com/vi/${video.youtubeId}/hqdefault.jpg`;
+                      } else {
+                        // Si YouTube no tiene miniatura, ocultar limpiamente la imagen rota para evitar textos desbordados
+                        img.style.display = "none";
+                      }
                     }}
                   />
 
@@ -677,7 +689,14 @@ export function AcademyVideosClient({
                 <img
                   src={getYouTubeThumbnail(detectedYoutubeId, "hq")}
                   alt="Vista previa"
+                  referrerPolicy="no-referrer"
                   className="w-20 aspect-video object-cover rounded-lg shadow-sm"
+                  onError={(e) => {
+                    const img = e.currentTarget;
+                    if (!img.src.includes("img.youtube.com")) {
+                      img.src = `https://img.youtube.com/vi/${detectedYoutubeId}/hqdefault.jpg`;
+                    }
+                  }}
                 />
                 <div className="min-w-0 flex-1">
                   <span className="text-[11px] font-bold text-emerald-700 dark:text-emerald-400 flex items-center gap-1">

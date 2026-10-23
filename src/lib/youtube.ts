@@ -29,9 +29,9 @@ export function extractYouTubeId(url: string): string | null {
 
 export function getYouTubeThumbnail(youtubeId: string, quality: "hq" | "maxres" = "hq"): string {
   if (quality === "maxres") {
-    return `https://img.youtube.com/vi/${youtubeId}/maxresdefault.jpg`;
+    return `https://i.ytimg.com/vi/${youtubeId}/maxresdefault.jpg`;
   }
-  return `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`;
+  return `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`;
 }
 
 export function getYouTubeEmbedUrl(youtubeId: string): string {
