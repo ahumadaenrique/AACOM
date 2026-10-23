@@ -10,6 +10,7 @@ import { Loader2, CheckCircle2, ChevronRight, Building2, User, CreditCard, Alert
 import { checkSlugAvailability, processRegistration, validateCode } from "./actions";
 import { sendVerificationSms, checkVerificationCode } from "./verify-actions";
 import { signOut } from "next-auth/react";
+import { ModuleHowItWorksBanner } from "@/components/ModuleHowItWorksBanner";
 
 // Planes eliminados del flujo inicial (Freemium activado)
 
@@ -215,6 +216,9 @@ export default function RegisterPage() {
         )}
       </div>
 
+      <div className="w-full max-w-2xl mb-6 text-left">
+        <ModuleHowItWorksBanner />
+      </div>
       <div className="w-full max-w-xl">
         <div className="flex items-center justify-between mb-8 relative">
           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-200 -z-10 rounded-full overflow-hidden">

@@ -25,6 +25,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import DigitalCardModalButton from "@/components/DigitalCardModalButton"
 import { MobileNavigation } from "@/components/MobileNavigation"
 import { GamificationProgressWidget } from "@/components/roleplay/GamificationProgressWidget"
+import { ModuleHowItWorksBanner } from "@/components/ModuleHowItWorksBanner"
 
 export const dynamic = 'force-dynamic';
 
@@ -854,6 +855,7 @@ export default async function DashboardLayout({
             </header>
             <main className="flex min-h-[calc(100vh_-_theme(spacing.16))] flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
                 <SubscriptionBlocker isActive={isSubscriptionActive} isSuperAdmin={isSuperAdmin}>
+                    <ModuleHowItWorksBanner />
                     {children}
                 </SubscriptionBlocker>
                 <PwaInstaller agencyName={agencyName} />

@@ -13,6 +13,8 @@ import {
   ManualStepGroup
 } from "./manualData";
 import { ManualMockupPreview } from "./ManualMockupPreview";
+import { MANUAL_VIDEOS_CATALOG, getManualVideosForChapter, ManualVideoItem } from "@/lib/manualVideosCatalog";
+import { ManualVideoCinemaModal } from "@/components/ModuleHowItWorksBanner";
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,7 +53,9 @@ import {
   BookMarked,
   Clock,
   ArrowUpRight,
-  Filter
+  Filter,
+  Play,
+  Film
 } from "lucide-react";
 
 const CHAPTER_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
@@ -95,18 +99,26 @@ interface UserTicket {
   createdAt: string;
 }
 
-export function HelpCenterClient({ defaultTab = "manual" }: { defaultTab?: "manual" | "glosario" | "ticket" }) {
+export function HelpCenterClient({ defaultTab = "manual" }: { defaultTab?: "manual" | "aprende" | "glosario" | "ticket" }) {
   const searchParams = useSearchParams();
   const initialTabParam = searchParams?.get("tab");
   const initialChapterParam = searchParams?.get("chapter");
+  const initialVideoParam = searchParams?.get("video");
 
-  const [activeTab, setActiveTab] = useState<"manual" | "glosario" | "ticket">(
+  const [activeTab, setActiveTab] = useState<"manual" | "aprende" | "glosario" | "ticket">(
     initialTabParam === "ticket"
       ? "ticket"
       : initialTabParam === "glosario"
       ? "glosario"
+      : initialTabParam === "aprende"
+      ? "aprende"
       : defaultTab
   );
+
+  const [activeCinemaVideo, setActiveCinemaVideo] = useState<ManualVideoItem | null>(
+    initialVideoParam ? MANUAL_VIDEOS_CATALOG.find((v) => v.key === initialVideoParam) || null : null
+  );
+  const [videoRoleFilter, setVideoRoleFilter] = useState<"ALL" | "Agente" | "Admin">("ALL");
 
   const [activeChapterId, setActiveChapterId] = useState<string>(
     initialChapterParam && MANUAL_CHAPTERS.some((c) => c.id === initialChapterParam)
@@ -137,10 +149,15 @@ export function HelpCenterClient({ defaultTab = "manual" }: { defaultTab?: "manu
   useEffect(() => {
     if (initialTabParam === "ticket") setActiveTab("ticket");
     else if (initialTabParam === "glosario") setActiveTab("glosario");
+    else if (initialTabParam === "aprende") setActiveTab("aprende");
     if (initialChapterParam && MANUAL_CHAPTERS.some((c) => c.id === initialChapterParam)) {
       setActiveChapterId(initialChapterParam);
     }
-  }, [initialTabParam, initialChapterParam]);
+    if (initialVideoParam) {
+      const found = MANUAL_VIDEOS_CATALOG.find((v) => v.key === initialVideoParam);
+      if (found) setActiveCinemaVideo(found);
+    }
+  }, [initialTabParam, initialChapterParam, initialVideoParam]);
 
   // Keyboard shortcut Ctrl+K / Cmd+K for search and Esc for lightbox
   useEffect(() => {
@@ -597,7 +614,19 @@ export function HelpCenterClient({ defaultTab = "manual" }: { defaultTab?: "manu
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 bg-slate-950/50 p-1.5 rounded-xl border border-white/10 self-start md:self-auto">
+          <div className="flex flex-wrap items-center gap-1.5 bg-slate-950/50 p-1.5 rounded-xl border border-white/10 self-start md:self-auto">
+            <button
+              type="button"
+              onClick={() => setActiveTab("aprende")}
+              className={`px-3.5 py-2 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all ${
+                activeTab === "aprende"
+                  ? "bg-teal-500 text-slate-950 shadow font-black"
+                  : "text-teal-200 hover:bg-white/10"
+              }`}
+            >
+              <Play className="w-4 h-4 fill-current" />
+              Aprende tú mismo ({MANUAL_VIDEOS_CATALOG.length} Videos)
+            </button>
             <button
               type="button"
               onClick={() => setActiveTab("manual")}
@@ -718,6 +747,158 @@ export function HelpCenterClient({ defaultTab = "manual" }: { defaultTab?: "manu
             )}
           </CardContent>
         </Card>
+      )}
+
+      {/* TAB 0: APRENDE TÚ MISMO (VIDEOTECA MULTIMEDIA DE MÓDULOS) */}
+      {activeTab === "aprende" && (
+        <div className="space-y-6">
+          <Card className="border-slate-200 dark:border-zinc-800 shadow-sm overflow-hidden">
+            <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-teal-950 text-white p-6 md:p-8 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800">
+              <div className="space-y-1.5">
+                <span className="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-wider text-teal-300 bg-teal-500/20 border border-teal-400/30 px-2.5 py-1 rounded-lg">
+                  <Film className="w-3.5 h-3.5" /> Videoteca Oficial · Aprende tú mismo
+                </span>
+                <h2 className="text-2xl md:text-3xl font-black">
+                  Aprende tú mismo: Videos «Así funciono» por Módulo
+                </h2>
+                <p className="text-sm text-slate-300 max-w-3xl">
+                  Domina cada pantalla de aacomsoft en menos de 2 minutos con nuestros recorridos guiados paso a paso. Haz clic en cualquier episodio para reproducirlo en pantalla completa.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-1.5 bg-white/5 p-1.5 rounded-xl border border-white/10 shrink-0 self-start md:self-auto">
+                {(["ALL", "Agente", "Admin"] as const).map((r) => (
+                  <button
+                    key={r}
+                    type="button"
+                    onClick={() => setVideoRoleFilter(r)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                      videoRoleFilter === r
+                        ? "bg-teal-500 text-slate-950 font-black"
+                        : "text-slate-200 hover:bg-white/10"
+                    }`}
+                  >
+                    {r === "ALL" ? "Todos (15)" : r === "Agente" ? "Para Agentes" : "Promotor / Admin"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {MANUAL_VIDEOS_CATALOG.filter((v) => {
+                  const matchesRole =
+                    videoRoleFilter === "ALL" ||
+                    (videoRoleFilter === "Agente" && (v.roleBadge === "Todos" || v.roleBadge === "Agente")) ||
+                    (videoRoleFilter === "Admin" && v.roleBadge === "Admin");
+                  const q = searchQuery.trim().toLowerCase();
+                  const matchesSearch =
+                    !q ||
+                    v.title.toLowerCase().includes(q) ||
+                    v.subtitle.toLowerCase().includes(q) ||
+                    v.shortModuleTitle.toLowerCase().includes(q) ||
+                    v.highlights.some((h) => h.toLowerCase().includes(q));
+                  return matchesRole && matchesSearch;
+                }).map((vid) => (
+                  <div
+                    key={vid.key}
+                    className="group rounded-2xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden shadow-sm hover:shadow-xl hover:border-teal-500/60 transition-all flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Thumbnail with Play Overlay */}
+                      <div
+                        onClick={() => setActiveCinemaVideo(vid)}
+                        className="relative aspect-video bg-slate-950 overflow-hidden cursor-pointer"
+                      >
+                        <img
+                          src={vid.posterUrl}
+                          alt={vid.title}
+                          className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-300"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/25 to-transparent" />
+
+                        <div className="absolute top-3 left-3 flex items-center gap-1.5">
+                          <span className="px-2.5 py-1 rounded-lg bg-slate-950/85 border border-teal-400/40 text-teal-300 text-[11px] font-black backdrop-blur-sm">
+                            EP {vid.episodeNumber}
+                          </span>
+                          <span
+                            className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase backdrop-blur-sm ${
+                              vid.roleBadge === "Admin"
+                                ? "bg-amber-500/90 text-slate-950"
+                                : "bg-teal-500/90 text-slate-950"
+                            }`}
+                          >
+                            {vid.roleBadge === "Admin" ? "Promotor / Admin" : "Agentes y Admin"}
+                          </span>
+                        </div>
+
+                        <span className="absolute top-3 right-3 px-2 py-1 rounded-lg bg-slate-950/85 text-white font-mono text-xs font-bold border border-white/15 backdrop-blur-sm flex items-center gap-1">
+                          <Clock className="w-3 h-3 text-teal-400" />
+                          {vid.duration}
+                        </span>
+
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-14 h-14 rounded-full bg-teal-500/95 text-slate-950 flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform">
+                            <Play className="w-6 h-6 fill-slate-950 ml-0.5" />
+                          </div>
+                        </div>
+
+                        <div className="absolute bottom-3 left-3 right-3">
+                          <span className="text-[11px] font-bold text-teal-300 uppercase tracking-wider block">
+                            {vid.shortModuleTitle}
+                          </span>
+                          <h3 className="text-sm font-black text-white line-clamp-1">
+                            {vid.title}
+                          </h3>
+                        </div>
+                      </div>
+
+                      {/* Card Body */}
+                      <div className="p-4 space-y-3">
+                        <p className="text-xs text-slate-600 dark:text-zinc-400 leading-relaxed">
+                          {vid.subtitle}
+                        </p>
+
+                        <ul className="space-y-1.5 pt-1">
+                          {vid.highlights.slice(0, 3).map((h, i) => (
+                            <li
+                              key={i}
+                              className="text-[11px] text-slate-700 dark:text-zinc-300 flex items-start gap-1.5"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5 text-teal-600 dark:text-teal-400 shrink-0 mt-0.5" />
+                              <span className="line-clamp-1">{h}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+
+                    {/* Card Footer */}
+                    <div className="px-4 py-3 bg-slate-50 dark:bg-zinc-900/60 border-t border-slate-100 dark:border-zinc-800 flex items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setActiveCinemaVideo(vid)}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-teal-600 hover:bg-teal-500 text-white font-black text-xs transition-all shadow-sm"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        Ver video ({vid.duration})
+                      </button>
+
+                      <Link
+                        href={vid.quickLink}
+                        className="inline-flex items-center gap-1 text-xs font-bold text-slate-600 dark:text-zinc-400 hover:text-teal-600 dark:hover:text-teal-400"
+                      >
+                        Ir al módulo
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {/* TAB 1: MANUAL INTERACTIVO Y GUÍAS */}
@@ -877,6 +1058,46 @@ export function HelpCenterClient({ defaultTab = "manual" }: { defaultTab?: "manu
               </div>
 
               <CardContent className="p-6 md:p-8 space-y-8">
+                {/* Chapter-level Video Banner ("Así funciono") */}
+                {getManualVideosForChapter(activeChapter.id).length > 0 && (
+                  <div className="space-y-2.5">
+                    {getManualVideosForChapter(activeChapter.id).map((vid) => (
+                      <div
+                        key={vid.key}
+                        className="rounded-2xl bg-gradient-to-r from-slate-900 via-slate-900 to-teal-950 text-white p-4 border border-teal-500/30 flex flex-wrap items-center justify-between gap-4 shadow-md"
+                      >
+                        <div className="flex items-center gap-3.5 min-w-0">
+                          <button
+                            type="button"
+                            onClick={() => setActiveCinemaVideo(vid)}
+                            className="w-11 h-11 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 flex items-center justify-center shrink-0 shadow transition-transform hover:scale-105"
+                          >
+                            <Play className="w-5 h-5 fill-slate-950 ml-0.5" />
+                          </button>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-400/30">
+                                🎬 Así funciono · Ep. {vid.episodeNumber}
+                              </span>
+                              <span className="text-xs font-mono text-slate-300">{vid.duration} min</span>
+                            </div>
+                            <h4 className="text-sm font-black text-white truncate mt-1">{vid.title}</h4>
+                            <p className="text-xs text-slate-300 truncate">{vid.subtitle}</p>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setActiveCinemaVideo(vid)}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs transition-all shrink-0 shadow"
+                        >
+                          <Play className="w-3.5 h-3.5 fill-slate-950" />
+                          Reproducir video ({vid.duration})
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 {/* Chapter-level Purpose & HowToReach */}
                 {(activeChapter.purpose || (activeChapter.howToReach && activeChapter.howToReach.length > 0)) && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1346,6 +1567,14 @@ export function HelpCenterClient({ defaultTab = "manual" }: { defaultTab?: "manu
             </Card>
           </div>
         </div>
+      )}
+
+      {/* CINEMA MODAL FOR "APRENDE TÚ MISMO" / "ASÍ FUNCIONO" VIDEOS */}
+      {activeCinemaVideo && (
+        <ManualVideoCinemaModal
+          video={activeCinemaVideo}
+          onClose={() => setActiveCinemaVideo(null)}
+        />
       )}
 
       {/* LIGHTBOX MODAL FOR FULL-SCREEN SCREENSHOTS */}
