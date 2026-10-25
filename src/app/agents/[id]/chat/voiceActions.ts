@@ -595,7 +595,14 @@ ${rawTranscriptText}
 Responde únicamente con la minuta estructurada en Markdown. Sé conciso y profesional, evita introducciones o saludos.`;
 
           const { text } = await generateText({
-            model: google('gemini-3.8-flash'),
+            model: google('gemini-3.5-flash-lite'),
+            providerOptions: {
+              google: {
+                thinkingConfig: {
+                  thinkingLevel: 'minimal'
+                }
+              }
+            },
             prompt,
           });
           

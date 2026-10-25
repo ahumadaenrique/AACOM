@@ -122,7 +122,11 @@ export default function AssistantClient({
 
                         try {
                             const data = JSON.parse(dataStr);
-                            const textPart = data.candidates?.[0]?.content?.parts?.[0]?.text;
+                            const parts = data.candidates?.[0]?.content?.parts || [];
+                            const textPart = parts
+                                .filter((p: any) => !p?.thought && typeof p?.text === "string")
+                                .map((p: any) => p.text)
+                                .join("");
                             if (textPart) {
                                 accumulatedText += textPart;
 

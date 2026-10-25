@@ -30,11 +30,16 @@ export const ALL_MARKET_INSURERS = [
 ] as const;
 
 let seedCheckPromise: Promise<void> | null = null;
+let isSeeded = false;
+
+const allowedInsurersCache = new Map<string, { value: string[] | "ALL"; expiresAt: number }>();
+const ALLOWED_INSURERS_TTL_MS = 60_000;
 
 /**
  * Garantiza que la tabla market_cg_documents esté sembrada en cualquier rama de base de datos (Dev o Prod).
  */
 export async function ensureMarketCgSeeded(): Promise<void> {
+    if (isSeeded) return;
     if (seedCheckPromise) return seedCheckPromise;
 
     seedCheckPromise = (async () => {
@@ -65,7 +70,10 @@ export async function ensureMarketCgSeeded(): Promise<void> {
             }
 
             const count = await prisma.marketCgDocument.count();
-            if (count > 0) return;
+            if (count > 0) {
+                isSeeded = true;
+                return;
+            }
 
             const catalogPath = path.join(process.cwd(), "prisma", "market_cg_catalog.json");
             if (!fs.existsSync(catalogPath)) return;
@@ -114,6 +122,7 @@ export async function ensureMarketCgSeeded(): Promise<void> {
                     skipDuplicates: true,
                 });
             }
+            isSeeded = true;
         } catch (err) {
             console.error("Error in ensureMarketCgSeeded:", err);
             seedCheckPromise = null;
@@ -218,6 +227,13 @@ export async function getAllowedInsurersForAgency(
         return "ALL";
     }
 
+    const cacheKey = `agency:${agencyId}`;
+    const cached = allowedInsurersCache.get(cacheKey);
+    const now = Date.now();
+    if (cached && cached.expiresAt > now) {
+        return cached.value;
+    }
+
     const [scopeSetting, agencySetting] = await Promise.all([
         prisma.setting.findUnique({ where: { key: "market_cg_saas_enabled" } }),
         prisma.setting.findUnique({ where: { key: `market_cg_agency_insurers_${agencyId}` } }),
@@ -225,6 +241,7 @@ export async function getAllowedInsurersForAgency(
 
     const allowForAllSaas = scopeSetting ? scopeSetting.value !== "false" : true;
     if (!allowForAllSaas) {
+        allowedInsurersCache.set(cacheKey, { value: [], expiresAt: now + ALLOWED_INSURERS_TTL_MS });
         return [];
     }
 
@@ -232,7 +249,9 @@ export async function getAllowedInsurersForAgency(
         try {
             const parsed = JSON.parse(agencySetting.value);
             if (Array.isArray(parsed)) {
-                return parsed.filter((x) => typeof x === "string");
+                const result = parsed.filter((x) => typeof x === "string");
+                allowedInsurersCache.set(cacheKey, { value: result, expiresAt: now + ALLOWED_INSURERS_TTL_MS });
+                return result;
             }
         } catch {
             // fallback below
@@ -240,6 +259,7 @@ export async function getAllowedInsurersForAgency(
     }
 
     // Promotorías nuevas sin configuración explícita tienen 0 compañías por defecto
+    allowedInsurersCache.set(cacheKey, { value: [], expiresAt: now + ALLOWED_INSURERS_TTL_MS });
     return [];
 }
 

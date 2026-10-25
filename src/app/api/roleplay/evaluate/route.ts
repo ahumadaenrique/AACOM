@@ -20,14 +20,14 @@ const google = createGoogleGenerativeAI({
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
+    const [session, body] = await Promise.all([auth(), req.json()]);
     if (!session?.user?.id && !session?.user?.email) {
       return NextResponse.json({ error: 'No autorizado.' }, { status: 401 });
     }
 
     let userId = session.user.id;
     if (!userId && session.user.email) {
-      const u = await prisma.user.findUnique({ where: { email: session.user.email } });
+      const u = await prisma.user.findUnique({ where: { email: session.user.email }, select: { id: true } });
       if (u) userId = u.id;
     }
 
@@ -35,7 +35,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Usuario no encontrado' }, { status: 404 });
     }
 
-    const body = await req.json();
     const {
       transcript = [],
       durationSeconds = 0,
@@ -46,10 +45,13 @@ export async function POST(req: Request) {
       callAudioUrl = null
     } = body;
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { id: true, agencyId: true, voiceSecondsBalance: true }
-    });
+    const [user, stats] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: userId },
+        select: { id: true, agencyId: true, voiceSecondsBalance: true }
+      }),
+      prisma.roleplayStats.findUnique({ where: { userId } })
+    ]);
     const agencyId = user?.agencyId || null;
 
     const userTurns = transcript.filter((m: any) => m.source === 'user');
@@ -86,8 +88,6 @@ export async function POST(req: Request) {
         }
       });
 
-      const stats = await prisma.roleplayStats.findUnique({ where: { userId } });
-
       return NextResponse.json({
         success: true,
         callId: emptyCall.id,
@@ -116,7 +116,6 @@ export async function POST(req: Request) {
     }
 
     // 2. OBTENER STATS ACTUALES PARA EVALUACIÓN INTELIGENTE DE INSIGNIAS
-    const stats = await prisma.roleplayStats.findUnique({ where: { userId } });
     const currentBadges: string[] = stats?.badges || [];
 
     // Filtrar insignias que el asesor aún tiene pendientes en este módulo
@@ -257,12 +256,26 @@ ${badgesText}
       try {
         evalResult = await generateObject({
           model: google('gemini-3.8-flash'),
+          providerOptions: {
+            google: {
+              thinkingConfig: {
+                thinkingLevel: 'low'
+              }
+            }
+          },
           schema: EvaluationSchema,
           prompt: promptText
         });
       } catch (_primaryErr) {
         evalResult = await generateObject({
-          model: google('gemini-2.5-flash'),
+          model: google('gemini-3.5-flash-lite'),
+          providerOptions: {
+            google: {
+              thinkingConfig: {
+                thinkingLevel: 'minimal'
+              }
+            }
+          },
           schema: EvaluationSchema,
           prompt: promptText
         });

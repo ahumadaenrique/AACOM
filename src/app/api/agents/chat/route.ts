@@ -194,7 +194,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const body = await req.json()
+    const [body, session] = await Promise.all([req.json(), auth()])
     const messages = body.messages
     const url = new URL(req.url)
     const agentId = body.agentId || url.searchParams.get('agentId')
@@ -203,46 +203,40 @@ export async function POST(req: Request) {
       return new Response('Agent ID is required', { status: 400 })
     }
 
-    // 1. Fetch Agent
-    const agent = await prisma.aIAgent.findUnique({
-      where: { id: agentId }
-    })
+    if (!session?.user?.email) {
+      return new Response('Unauthorized', { status: 401 });
+    }
+
+    // 1. Fetch Agent & Knowledge in parallel
+    const [agent, knowledgeAssets] = await Promise.all([
+      prisma.aIAgent.findUnique({ where: { id: agentId } }),
+      prisma.knowledgeAsset.findMany({ where: { agentId } })
+    ])
 
     if (!agent) {
       return new Response('Agent not found', { status: 404 })
     }
 
-    // 1.5 Fetch agent's owner/user to know their agency
-    const dbUser = await prisma.user.findUnique({
-      where: { id: agent.userId }
-    })
+    // 1.5 Fetch agent's owner/user and CompanyProfile in parallel
+    const [dbUser, companyProfile] = await Promise.all([
+      prisma.user.findUnique({ where: { id: agent.userId } }),
+      prisma.companyProfile.findUnique({ where: { userId: agent.userId } })
+    ])
 
     if (!dbUser) {
       return new Response('User not found', { status: 404 });
-    }
-
-    const session = await auth();
-    if (!session?.user?.email) {
-      return new Response('Unauthorized', { status: 401 });
     }
 
     if (dbUser?.email !== session.user.email && session.user.role !== 'SUPER_ADMIN') {
       return new Response('Forbidden: You do not own this agent.', { status: 403 });
     }
 
-    // 2. Fetch CompanyProfile (Identity) belonging specifically to this user
-    const companyProfile = await prisma.companyProfile.findUnique({
-      where: { userId: dbUser.id }
-    })
-
-    // 3. Fetch Knowledge
-    const knowledgeAssets = await prisma.knowledgeAsset.findMany({ where: { agentId: agent.id } })
-
     // Get Agency Name
     let agencyName = "AACOM"
     if (dbUser?.agencyId) {
       const agency = await prisma.agency.findUnique({
-        where: { id: dbUser.agencyId }
+        where: { id: dbUser.agencyId },
+        select: { name: true }
       })
       if (agency?.name) {
         agencyName = agency.name
@@ -1572,76 +1566,17 @@ Fecha Límite: ${task.dueDate || 'Sin fecha'}`
 
     const coreMessages = convertUiMessagesToModelMessages(messages)
 
-    let currentMessages = [...coreMessages]
-
-    let loopCount = 0
-    const maxLoops = 3
-    let hasMoreSearchCalls = true
-
-    while (hasMoreSearchCalls && loopCount < maxLoops) {
-      loopCount++
-      
-      const response = await generateText({
-        model: google('gemini-3.8-flash'),
-        system: systemPrompt,
-        messages: currentMessages,
-        tools: tools as any,
-      })
-
-      if (response.toolCalls && response.toolCalls.length > 0) {
-        const hasWebSearch = response.toolCalls.some(tc => tc.toolName === 'webSearch')
-        const hasOtherTools = response.toolCalls.some(tc => tc.toolName !== 'webSearch')
-
-        if (hasWebSearch && !hasOtherTools) {
-          // Construct assistant message with tool calls
-          const assistantParts: any[] = []
-          if (response.text) {
-            assistantParts.push({ type: 'text', text: response.text })
-          }
-          for (const tc of response.toolCalls) {
-            assistantParts.push({
-              type: 'tool-call',
-              toolCallId: tc.toolCallId,
-              toolName: tc.toolName,
-              input: tc.input
-            })
-          }
-          currentMessages.push({
-            role: 'assistant',
-            content: assistantParts
-          })
-
-          // Execute search tool calls
-          const toolResultParts: any[] = []
-          for (const tc of response.toolCalls) {
-            if (tc.toolName === 'webSearch') {
-              const result = await tools.webSearch.execute(tc.input, { toolCallId: tc.toolCallId, messages: currentMessages })
-              toolResultParts.push({
-                type: 'tool-result',
-                toolCallId: tc.toolCallId,
-                toolName: tc.toolName,
-                output: { type: 'text', value: result }
-              })
-            }
-          }
-          currentMessages.push({
-            role: 'tool',
-            content: toolResultParts
-          })
-        } else {
-          // If it has non-webSearch tools (or mixed), we break and let streamText handle it
-          hasMoreSearchCalls = false
-        }
-      } else {
-        // No tool calls, break and stream the final response
-        hasMoreSearchCalls = false
-      }
-    }
-
     const result = await streamText({
       model: google('gemini-3.8-flash'),
+      providerOptions: {
+        google: {
+          thinkingConfig: {
+            thinkingLevel: 'low',
+          },
+        },
+      },
       system: systemPrompt,
-      messages: currentMessages,
+      messages: coreMessages,
       tools: tools as any,
       stopWhen: isStepCount(5),
       async onFinish(eventArgs) {

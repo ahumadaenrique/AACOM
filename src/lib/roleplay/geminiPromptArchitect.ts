@@ -42,7 +42,14 @@ ${scenario.systemPrompt}
 Devuelve ÚNICAMENTE el texto limpio del System Prompt sin bloques markdown.`;
 
       const result = await generateText({
-        model: google('gemini-3.8-flash'),
+        model: google('gemini-3.5-flash-lite'),
+        providerOptions: {
+          google: {
+            thinkingConfig: {
+              thinkingLevel: 'minimal'
+            }
+          }
+        },
         prompt: metaInstruction
       });
 

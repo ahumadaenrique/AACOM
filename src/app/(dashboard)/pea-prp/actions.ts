@@ -32,22 +32,23 @@ export async function getCurrentMonthStats() {
         const startStr = format(start, 'yyyy-MM-dd');
         const endStr = format(now, 'yyyy-MM-dd');
 
-        // Sumar puntos
-        const logs = await prisma.activityLog.findMany({
-            where: {
-                userId,
-                dateStr: { gte: startStr, lte: endStr }
-            }
-        });
+        // Sumar puntos y contar ADNs en paralelo
+        const [logs, adnsCount] = await Promise.all([
+            prisma.activityLog.findMany({
+                where: {
+                    userId,
+                    dateStr: { gte: startStr, lte: endStr }
+                },
+                select: { points: true }
+            }),
+            prisma.adnDiagnostic.count({
+                where: {
+                    userId,
+                    createdAt: { gte: start, lte: now }
+                }
+            })
+        ]);
         const totalPoints = logs.reduce((acc, log) => acc + log.points, 0);
-
-        // Contar ADNs
-        const adnsCount = await prisma.adnDiagnostic.count({
-            where: {
-                userId,
-                createdAt: { gte: start, lte: now }
-            }
-        });
 
         return { success: true, points: totalPoints, adns: adnsCount, expectedPoints, expectedAdns };
     } catch (e: any) {
@@ -134,27 +135,45 @@ Tono: Exigente, analítico, enfocado en el crecimiento profesional y la excelenc
 No uses markdown (\`\`\`), devuelve únicamente el HTML exacto con las clases de Tailwind especificadas.
 `;
 
-        const apiKey = process.env.GEMINI_API_KEY;
+        const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
         let aiResultHTML = "";
 
         if (apiKey) {
-            const apiRes = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=" + apiKey, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    contents: [{ role: "user", parts: [{ text: systemInstruction }] }],
-                    generationConfig: { temperature: 0.3 }
-                })
-            });
+            const candidateModels = ["gemini-3.5-flash-lite", "gemini-3.8-flash"];
+            let apiRes: Response | null = null;
 
-            if (apiRes.ok) {
+            for (const modelName of candidateModels) {
+                const res = await fetch(
+                    `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
+                    {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            contents: [{ role: "user", parts: [{ text: systemInstruction }] }],
+                            generationConfig: {
+                                temperature: 0.3,
+                                thinkingConfig: { thinkingLevel: "LOW" }
+                            }
+                        })
+                    }
+                );
+                if (res.ok) {
+                    apiRes = res;
+                    break;
+                }
+            }
+
+            if (apiRes && apiRes.ok) {
                 const apiData = await apiRes.json();
-                if (apiData.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    aiResultHTML = apiData.candidates[0].content.parts[0].text;
-                    aiResultHTML = aiResultHTML.replace(/\`\`\`html/g, "").replace(/\`\`\`/g, "").trim();
+                const parts = apiData.candidates?.[0]?.content?.parts || [];
+                const rawText = parts
+                    .filter((p: any) => !p?.thought && typeof p?.text === "string")
+                    .map((p: any) => p.text)
+                    .join("");
+                if (rawText) {
+                    aiResultHTML = rawText.replace(/```html/g, "").replace(/```/g, "").trim();
                 }
             } else {
-                console.error("Gemini Error:", await apiRes.text());
                 aiResultHTML = "<p><em>Error al procesar el dictamen con IA. Los datos fueron guardados.</em></p>";
             }
         } else {
