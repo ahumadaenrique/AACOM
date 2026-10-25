@@ -28,14 +28,20 @@ interface ChatMessage {
 interface AssistantClientProps {
     agencyName?: string;
     userName?: string;
+    userKey?: string;
     isAdmin?: boolean;
     activeDocs?: any[];
     policiesCount?: number;
 }
 
+const SESSION_TTL_MS = 15 * 60 * 1000; // 15 minutos de persistencia efímera
+const MAX_STORED_MESSAGES = 20;
+const MAX_API_CONTEXT_MESSAGES = 6;
+
 export default function AssistantClient({
     agencyName = "AACOM",
-    userName = "Agente"
+    userName = "Agente",
+    userKey = "default"
 }: AssistantClientProps) {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState("");
@@ -43,16 +49,98 @@ export default function AssistantClient({
     const [errorMsg, setErrorMsg] = useState("");
     const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
     const [isListening, setIsListening] = useState(false);
+    const [hydrated, setHydrated] = useState(false);
 
     const chatEndRef = useRef<HTMLDivElement | null>(null);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
     const recognitionRef = useRef<any>(null);
 
+    const storageKey = `aacom_assistant_chat_v1_${userKey}`;
     const firstName = userName.trim().split(" ")[0] || "Agente";
 
     const scrollToBottom = () => {
         chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
     };
+
+    // 1. Restaurar conversación activa si no han pasado más de 15 minutos
+    useEffect(() => {
+        if (typeof window === "undefined") return;
+        try {
+            const raw = window.localStorage.getItem(storageKey);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                const updatedAt = Number(parsed?.updatedAt || 0);
+                if (updatedAt && Date.now() - updatedAt < SESSION_TTL_MS) {
+                    if (Array.isArray(parsed.messages)) {
+                        const validMessages = parsed.messages.filter(
+                            (m: any) =>
+                                m &&
+                                (m.role === "user" || m.role === "model") &&
+                                Array.isArray(m.parts) &&
+                                typeof m.parts[0]?.text === "string" &&
+                                m.parts[0].text.trim().length > 0
+                        );
+                        if (validMessages.length > 0) {
+                            setMessages(validMessages.slice(-MAX_STORED_MESSAGES));
+                        }
+                    }
+                    if (typeof parsed.draftInput === "string" && parsed.draftInput.trim()) {
+                        setInput(parsed.draftInput);
+                    }
+                } else {
+                    window.localStorage.removeItem(storageKey);
+                }
+            }
+        } catch {
+            // Ignorar errores de lectura de storage
+        } finally {
+            setHydrated(true);
+        }
+    }, [storageKey]);
+
+    // 2. Guardar cambios en mensajes o borrador renovando el TTL de 15 minutos
+    useEffect(() => {
+        if (!hydrated || typeof window === "undefined") return;
+        try {
+            const nonEmptyMessages = messages.filter(
+                (m) => m?.parts?.[0]?.text && m.parts[0].text.trim().length > 0
+            );
+            if (nonEmptyMessages.length === 0 && !input.trim()) {
+                window.localStorage.removeItem(storageKey);
+                return;
+            }
+            const payload = {
+                messages: nonEmptyMessages.slice(-MAX_STORED_MESSAGES),
+                draftInput: input,
+                updatedAt: Date.now()
+            };
+            window.localStorage.setItem(storageKey, JSON.stringify(payload));
+        } catch {
+            // Ignorar si storage está lleno o bloqueado
+        }
+    }, [messages, input, hydrated, storageKey]);
+
+    // 3. Limpieza automática si la pestaña queda inactiva más de 15 minutos
+    useEffect(() => {
+        if (!hydrated || typeof window === "undefined" || messages.length === 0) return;
+        const intervalId = window.setInterval(() => {
+            try {
+                const raw = window.localStorage.getItem(storageKey);
+                if (!raw) return;
+                const parsed = JSON.parse(raw);
+                const updatedAt = Number(parsed?.updatedAt || 0);
+                if (!updatedAt || Date.now() - updatedAt >= SESSION_TTL_MS) {
+                    window.localStorage.removeItem(storageKey);
+                    setMessages([]);
+                    setInput("");
+                }
+            } catch {
+                // ignore
+            }
+        }, 30_000);
+
+        return () => window.clearInterval(intervalId);
+    }, [hydrated, messages.length, storageKey]);
 
     useEffect(() => {
         scrollToBottom();
@@ -78,7 +166,10 @@ export default function AssistantClient({
             parts: [{ text: trimmed }]
         };
 
-        const historyForApi = [...messages];
+        // Enviar solo los últimos 6 mensajes al servidor para no inflar el contexto ni la memoria
+        const historyForApi = messages
+            .filter(m => m?.parts?.[0]?.text && m.parts[0].text.trim().length > 0)
+            .slice(-MAX_API_CONTEXT_MESSAGES);
         setMessages(prev => [...prev, userMsg]);
         setLoading(true);
 
@@ -178,6 +269,13 @@ export default function AssistantClient({
         setMessages([]);
         setErrorMsg("");
         setInput("");
+        if (typeof window !== "undefined") {
+            try {
+                window.localStorage.removeItem(storageKey);
+            } catch {
+                // ignore
+            }
+        }
     };
 
     const toggleVoiceDictation = () => {

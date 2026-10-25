@@ -29,11 +29,13 @@ export default async function AssistantPage() {
   
   const agencyName = agency?.name || 'AACOM';
   const userName = user?.name || session?.user?.name || 'Agente';
+  const userKey = `${agency?.id || 'aacom'}_${user?.id || session?.user?.email || 'anon'}`;
   
   return (
     <AssistantClient
       agencyName={agencyName}
       userName={userName}
+      userKey={userKey}
     />
   );
 }
