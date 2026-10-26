@@ -2737,7 +2737,7 @@ export default function Proyecto200Client({
                       }`}
                     >
                       <SlidersHorizontal className="h-3.5 w-3.5" />
-                      Activar / Ocultar Agentes ({visibleAgentSummaries.length} en seguimiento
+                      Gestionar Agentes Visibles ({visibleAgentSummaries.length} en seguimiento
                       {hiddenAgentIds.length > 0
                         ? ` · ${hiddenAgentIds.length} ocultos`
                         : ""}
@@ -3056,7 +3056,7 @@ export default function Proyecto200Client({
                               title="Ocultar asesor de este tablero de seguimiento (conserva su cuenta activa)"
                               className="inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-800 text-[11px] font-bold transition"
                             >
-                              <EyeOff className="h-3 w-3" /> Ocultar
+                              <EyeOff className="h-3 w-3" /> Ocultar del seguimiento
                             </button>
                             <button
                               type="button"
@@ -3170,16 +3170,28 @@ export default function Proyecto200Client({
                             {formatDateTime(ag.lastActivityAt)}
                           </td>
                           <td className="py-3.5 px-4 text-right">
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setAdminSelectedAgentId(ag.agentId);
-                                setAdminSubView("contactos");
-                              }}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition"
-                            >
-                              <Eye className="h-3.5 w-3.5" /> Auditar Contactos
-                            </button>
+                            <div className="inline-flex items-center justify-end gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  handleToggleAgentTracking(ag.agentId, true)
+                                }
+                                title="Ocultar del seguimiento (mantiene su cuenta activa)"
+                                className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-800 text-xs font-bold transition"
+                              >
+                                <EyeOff className="h-3.5 w-3.5" /> Ocultar del seguimiento
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAdminSelectedAgentId(ag.agentId);
+                                  setAdminSubView("contactos");
+                                }}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition"
+                              >
+                                <Eye className="h-3.5 w-3.5" /> Auditar Contactos
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
