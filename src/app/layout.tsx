@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { FooterWrapper } from "@/components/FooterWrapper";
+import { StitchPreviewBanner } from "@/components/StitchPreviewBanner";
 import { auth } from "@/auth";
 
 // const inter = Inter({ subsets: ["latin"] });
@@ -153,11 +154,12 @@ export default async function RootLayout({
     }
 
     return (
-        <html lang="es-MX">
+        <html lang="es-MX" data-stitch-mode="stitch">
             <body className={`min-h-screen bg-background font-sans antialiased flex flex-col`}>
                 {agencyColor && (
                     <style dangerouslySetInnerHTML={{ __html: `:root { --primary: ${agencyColor}; }` }} />
                 )}
+                <StitchPreviewBanner />
                 <div className="flex-1 flex flex-col">
                     {children}
                 </div>
