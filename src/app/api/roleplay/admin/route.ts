@@ -35,6 +35,16 @@ export async function GET(request: NextRequest) {
       ? { user: { agencyId: effectiveAgencyId } }
       : {};
 
+    // Limpiar llamadas fantasma de 0-2 segundos con 0 puntos (cortes técnicos de red/WebSocket antes de hablar)
+    await prisma.roleplayCall.deleteMany({
+      where: {
+        ...agencyFilter,
+        durationSeconds: { lte: 2 },
+        score: 0,
+        appointmentClosed: false
+      }
+    }).catch(() => {});
+
     // Load recent calls (paginated), total count, and leaderboard
     const [calls, totalCallsCount, rawAgentStats] = await Promise.all([
       prisma.roleplayCall.findMany({

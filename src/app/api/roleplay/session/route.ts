@@ -14,21 +14,35 @@ import {
   getLocalDateString
 } from '@/lib/roleplay/gamification';
 
+// Voces que tienen Live Moderation activado en ElevenLabs y causan desconexión 1008 en ConvAI
+const RESTRICTED_MODERATION_VOICES = new Set([
+  'JgmJ33RuT4tPQOENamHR',
+  '2mAzYQbilw9TukGpFoQV',
+  'YKUjKbMlejgvkOZlnnvt',
+  '6BEk9bRlUBhlAoIbhBYK',
+  'pmruOMcxgUotq2bYO5Ne',
+  'aLFUti4k8YKvtQGXv0UO'
+]);
+
 export async function POST(req: Request) {
   try {
-    let body = {};
-    try { body = await req.json(); } catch(e) {}
-    const moduleId = (body as any).moduleId || 'prospeccion';
+    let body: any = {};
+    try { body = await req.json(); } catch (e) {}
+    const moduleId = body.moduleId || 'prospeccion';
+    const preserveScenario = body.preserveScenario || null;
+    const forceSafeVoice = !!body.forceSafeVoice;
 
     const session = await auth();
     if (!session?.user?.id && !session?.user?.email) {
       return NextResponse.json({ error: 'No autorizado. Inicia sesión en AACOM.' }, { status: 401 });
     }
 
-    // Resolve user ID
+    // Resolve user ID (case-insensitive email fallback)
     let userId = session.user.id;
     if (!userId && session.user.email) {
-      const u = await prisma.user.findUnique({ where: { email: session.user.email } });
+      const u = await prisma.user.findFirst({
+        where: { email: { equals: session.user.email.trim(), mode: 'insensitive' } }
+      });
       if (u) userId = u.id;
     }
 
@@ -44,6 +58,16 @@ export async function POST(req: Request) {
     if (userWithAgency?.role !== 'SUPER_ADMIN' && userWithAgency?.agency && userWithAgency.agency.allowRoleplaySimulator === false) {
       return NextResponse.json({ error: 'El simulador de prospección telefónica no está habilitado para tu agencia.' }, { status: 403 });
     }
+
+    // Limpiar llamadas fantasma de 0-2 segundos con 0 puntos causadas por cortes técnicos de red/WebSocket
+    await prisma.roleplayCall.deleteMany({
+      where: {
+        userId,
+        durationSeconds: { lte: 2 },
+        score: 0,
+        appointmentClosed: false
+      }
+    }).catch(() => {});
 
     const todayStr = getLocalDateString();
 
@@ -159,23 +183,38 @@ export async function POST(req: Request) {
     // White-label: Usar el nombre de la agencia del asesor si existe
     const agencyName = userWithAgency?.agency?.name?.trim() || 'AACOM Seguros';
 
-    // Generate scenario tailored to current level, selected module, and dynamic white-label agency
-    const scenario = generarEscenarioAleatorio(stats.level, moduleId, agencyName);
+    // Si el cliente solicita refrescar el token conservando el prospecto en pantalla, respetarlo
+    let scenario = preserveScenario && preserveScenario.prospecto
+      ? preserveScenario
+      : generarEscenarioAleatorio(stats.level, moduleId, agencyName);
 
-    // Optimizar y blindar la psicología del prospecto con Gemini Prompt Architect (Gemini 3.8 Flash)
-    try {
-      const { enhanceScenarioPromptWithGemini } = await import('@/lib/roleplay/geminiPromptArchitect');
-      const enhancedPrompt = await enhanceScenarioPromptWithGemini({
-        scenario,
-        moduleId,
-        agencyName,
-        currentLevel: stats.level
-      });
-      if (enhancedPrompt) {
-        scenario.systemPrompt = enhancedPrompt;
+    if (!preserveScenario) {
+      // Optimizar y blindar la psicología del prospecto con Gemini Prompt Architect (Gemini 3.8 Flash)
+      try {
+        const { enhanceScenarioPromptWithGemini } = await import('@/lib/roleplay/geminiPromptArchitect');
+        const enhancedPrompt = await enhanceScenarioPromptWithGemini({
+          scenario,
+          moduleId,
+          agencyName,
+          currentLevel: stats.level
+        });
+        if (enhancedPrompt) {
+          scenario.systemPrompt = enhancedPrompt;
+        }
+      } catch (enhancerErr) {
+        console.warn('[Session] Fallback a motor procedural local:', enhancerErr);
       }
-    } catch (enhancerErr) {
-      console.warn('[Session] Fallback a motor procedural local:', enhancerErr);
+    }
+
+    // Sanitizar voiceId contra voces con Live Moderation o si se pidió voz base segura
+    const isFemaleProspect = scenario?.prospecto?.genero === 'F';
+    const defaultSafeVoice = isFemaleProspect ? 'cAvMBIZ0VNTU8XdsUpEq' : 'TNuNcwk4LzbPpi1XEANc';
+    if (
+      forceSafeVoice ||
+      !scenario?.prospecto?.voiceId ||
+      RESTRICTED_MODERATION_VOICES.has(scenario.prospecto.voiceId)
+    ) {
+      scenario.prospecto.voiceId = defaultSafeVoice;
     }
 
     // 1. Determinar motor de voz (Gemini Live vs ElevenLabs)
@@ -183,7 +222,7 @@ export async function POST(req: Request) {
     const configuredEngine = userWithAgency?.agency?.voiceEngine;
     const isByokActive = userWithAgency?.agency?.byokActive ?? true;
     const hasAgencyByokKey = !!userWithAgency?.agency?.elevenLabsApiKey && isByokActive;
-    
+
     let effectiveEngine: 'GEMINI_LIVE' | 'ELEVENLABS' = 'GEMINI_LIVE';
     if (configuredEngine === 'GEMINI_LIVE') {
       effectiveEngine = 'GEMINI_LIVE';
@@ -217,54 +256,17 @@ export async function POST(req: Request) {
     let voiceName = null;
 
     if (effectiveEngine === 'GEMINI_LIVE') {
-      const geminiApiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_GENERATIVE_AI_API_KEY;
       if (!geminiApiKey) {
         return NextResponse.json({ error: 'Configuración de Gemini incompleta en el servidor.' }, { status: 500 });
       }
 
-      const isFemale = scenario.prospecto.genero === 'F';
-      voiceName = isFemale ? 'Aoede' : 'Puck';
-
-      // Solicitar Token Efímero a Google (short-lived auth token)
-      // Esto permite que el navegador se conecte por WebSocket seguro sin exponer la API key
-      try {
-        const tokenResp = await fetch('https://generativelanguage.googleapis.com/v1beta/auth_tokens', {
-          method: 'POST',
-          headers: {
-            'x-goog-api-key': geminiApiKey,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            uses: 1,
-            expireTime: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutos de vigencia
-          })
-        });
-
-        if (tokenResp.ok) {
-          const tokenData = await tokenResp.json();
-          const ephemeralToken = tokenData.token;
-          if (ephemeralToken) {
-            // Conectar al endpoint protegido con el token efímero
-            wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained?access_token=${ephemeralToken}`;
-          } else {
-            console.warn('[Gemini Live] Token response did not contain token field:', tokenData);
-            wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${geminiApiKey}`;
-          }
-        } else {
-          const errText = await tokenResp.text();
-          console.error('[Gemini Live] Error generating ephemeral token:', tokenResp.status, errText);
-          // Fallback a URL con key por si acaso
-          wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${geminiApiKey}`;
-        }
-      } catch (tokenErr) {
-        console.error('[Gemini Live] Failed to create auth token:', tokenErr);
-        wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${geminiApiKey}`;
-      }
+      voiceName = isFemaleProspect ? 'Aoede' : 'Puck';
+      wsUrl = `wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${geminiApiKey}`;
     } else {
       // ELEVENLABS ENGINE
-      let agentId = process.env.ELEVENLABS_AGENT_ID;
+      let agentId = process.env.ELEVENLABS_AGENT_ID || 'agent_7501m3spq973f8htvjwa344k80c1';
       let apiKey = process.env.ELEVENLABS_API_KEY; // Fallback for SUPER_ADMIN or global testing
-      
+
       // Check for Agency BYOK
       if (userWithAgency?.agency?.elevenLabsApiKey && isByokActive) {
         try {
@@ -296,13 +298,32 @@ export async function POST(req: Request) {
       }
 
       try {
-        await fetch(`https://api.elevenlabs.io/v1/convai/agents/${agentId}`, {
+        const patchResp = await fetch(`https://api.elevenlabs.io/v1/convai/agents/${agentId}`, {
           method: 'PATCH',
           headers: {
             'xi-api-key': apiKey,
             'Content-Type': 'application/json'
           },
           body: JSON.stringify({
+            platform_settings: {
+              overrides: {
+                conversation_config_override: {
+                  tts: {
+                    voice_id: true,
+                    speed: true,
+                    stability: true,
+                    similarity_boost: true
+                  },
+                  agent: {
+                    first_message: true,
+                    language: true,
+                    prompt: {
+                      prompt: true
+                    }
+                  }
+                }
+              }
+            },
             conversation_config: {
               conversation: {
                 max_duration_seconds: moduleId === 'adn' ? 1800 : moduleId === 'objeciones' ? 1500 : 600
@@ -316,7 +337,7 @@ export async function POST(req: Request) {
                 max_duration_seconds: moduleId === 'adn' ? 1800 : moduleId === 'objeciones' ? 1500 : 600
               },
               tts: {
-                voice_id: scenario.prospecto.voiceId || 'TNuNcwk4LzbPpi1XEANc',
+                voice_id: scenario.prospecto.voiceId || defaultSafeVoice,
                 model_id: 'eleven_turbo_v2_5',
                 stability: 0.75,
                 similarity_boost: 0.85,
@@ -326,6 +347,31 @@ export async function POST(req: Request) {
             }
           })
         });
+
+        if (!patchResp.ok) {
+          console.warn('[ElevenLabs] PATCH agent returned status', patchResp.status, '- retrying with safe fallback voice:', defaultSafeVoice);
+          scenario.prospecto.voiceId = defaultSafeVoice;
+          await fetch(`https://api.elevenlabs.io/v1/convai/agents/${agentId}`, {
+            method: 'PATCH',
+            headers: {
+              'xi-api-key': apiKey,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              conversation_config: {
+                agent: {
+                  prompt: { prompt: scenario.systemPrompt },
+                  first_message: scenario.firstMessage,
+                  language: 'es'
+                },
+                tts: {
+                  voice_id: defaultSafeVoice,
+                  model_id: 'eleven_turbo_v2_5'
+                }
+              }
+            })
+          }).catch(() => {});
+        }
 
         const resp = await fetch(
           `https://api.elevenlabs.io/v1/convai/conversation/get_signed_url?agent_id=${agentId}`,

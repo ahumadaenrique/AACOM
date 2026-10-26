@@ -68,11 +68,11 @@ const PROFESIONES = [
 
 const VOCES_HOMBRES = [
   'TNuNcwk4LzbPpi1XEANc', // Adriel (Mexicano profesional equilibrado - accent: mexican, language: es)
-  'JgmJ33RuT4tPQOENamHR', // Julián A (Mexicano cálido y conversacional - accent: mexican, language: es)
-  '2mAzYQbilw9TukGpFoQV', // Joel Hernández (Mexicano ejecutivo y claro - accent: mexican, language: es)
-  'YKUjKbMlejgvkOZlnnvt', // Alejandro Ballesteros (Mexicano dinámico - accent: mexican, language: es)
+  'cC2HCyBtLLo2jChYbOlq', // Don Trejo (Mexicano ejecutivo claro - live_moderation: false)
+  '4rOzDieCbHQQyo9tzqZv', // Diego (Mexicano cálido y conversacional - live_moderation: false)
+  'gncXGfeB8V1Weu7l6QUg', // Mario (Mexicano norteño empresarial - live_moderation: false)
   '6DsgX00trsI64jl83WWS', // Alex (Mexicano asertivo - accent: mexican, language: es)
-  '6BEk9bRlUBhlAoIbhBYK', // ArthisRap Pro (Mexicano corporativo - accent: mexican, language: es)
+  'G0i2vdf60PiSodEVC261', // Octavio (Mexicano serio y profundo - live_moderation: false)
   'htFfPSZGJwjBv1CL0aMD'  // Antonio (Latinoamericano corporativo - language: es)
 ];
 
@@ -82,7 +82,7 @@ const VOCES_MUJERES = [
   'EsHsbdAoFNIyDFJ5UnZx', // Cristina (Mexicana cordial y firme - accent: mexican, language: es)
   'FIhWHKTvfI9sX1beLEJ8', // Diana Sanchez (Mexicana formal y segura - accent: mexican, language: es)
   '9Godp7dNohUvXk6qp0gS', // Regina (Mexicana profesionista analítica - accent: mexican, language: es)
-  'pmruOMcxgUotq2bYO5Ne'  // Pamela (Mexicana dinámica y ejecutiva - accent: mexican, language: es)
+  'fuVibWsnIUtzBVjB2PCa'  // Ximena (Mexicana ejecutiva y segura - live_moderation: false)
 ];
 
 const PROSPECTOS_PERSONAS: { nombre: string; genero: 'M' | 'F' }[] = [

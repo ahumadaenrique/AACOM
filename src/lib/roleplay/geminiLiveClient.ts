@@ -210,6 +210,7 @@ export class GeminiLiveSession {
           }
         },
         outputAudioTranscription: {},
+        inputAudioTranscription: {},
         systemInstruction: {
           parts: [
             {
@@ -451,13 +452,18 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
         if (err.error !== 'no-speech' && err.error !== 'aborted') {
           console.warn('[Gemini Live SpeechRecognition Error]:', err.error);
         }
+        // En Android/iOS, si MediaRecorder ya ocupa el micrófono, SpeechRecognition lanza audio-capture o service-not-allowed.
+        // En ese caso conmutamos automáticamente al stream PCM directo hacia Gemini Live.
+        if (err.error === 'audio-capture' || err.error === 'service-not-allowed') {
+          console.log('[Gemini Live] Switching to raw PCM mic stream after SpeechRecognition conflict:', err.error);
+          try { this.recognition?.stop(); } catch (_) {}
+          this.recognition = null;
+          this.startRawPcmMicStream();
+          return;
+        }
         if (err.error === 'not-allowed') {
           if (this.config.onMicStatus) {
             this.config.onMicStatus('error', 'Permiso de micrófono no otorgado en el navegador.');
-          }
-        } else if (err.error === 'audio-capture') {
-          if (this.config.onMicStatus) {
-            this.config.onMicStatus('error', 'No se detecta señal en tu micrófono. Revisa tu dispositivo.');
           }
         }
       };
@@ -477,10 +483,10 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
         }
 
         // Automatically restart speech recognition while call is active
-        if (this.isConnected && !this.isIntentionallyClosed && this.isListeningActive) {
+        if (this.isConnected && !this.isIntentionallyClosed && this.isListeningActive && this.recognition) {
           try {
             setTimeout(() => {
-              if (this.isConnected && !this.isIntentionallyClosed && this.isListeningActive) {
+              if (this.isConnected && !this.isIntentionallyClosed && this.isListeningActive && this.recognition) {
                 this.recognition?.start();
               }
             }, 120);
@@ -496,19 +502,23 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
   }
 
   private async startRawPcmMicStream(): Promise<void> {
-    if (!this.audioCtx) return;
+    if (!this.audioCtx || this.processor) return;
 
     try {
-      const micConstraints: MediaStreamConstraints = {
-        audio: {
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true,
-          autoGainControl: true,
-          ...(this.config.inputDeviceId ? { deviceId: { exact: this.config.inputDeviceId } } : {})
-        }
-      };
-      this.mediaStream = await navigator.mediaDevices.getUserMedia(micConstraints);
+      if (this.recordingMicStream && this.recordingMicStream.active) {
+        this.mediaStream = this.recordingMicStream;
+      } else {
+        const micConstraints: MediaStreamConstraints = {
+          audio: {
+            channelCount: 1,
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+            ...(this.config.inputDeviceId ? { deviceId: { exact: this.config.inputDeviceId } } : {})
+          }
+        };
+        this.mediaStream = await navigator.mediaDevices.getUserMedia(micConstraints);
+      }
       this.micSource = this.audioCtx.createMediaStreamSource(this.mediaStream);
       this.processor = this.audioCtx.createScriptProcessor(2048, 1, 1);
 
@@ -647,6 +657,19 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
         return;
       }
 
+      // Extract input audio transcription if sent by Gemini (when using raw PCM mic stream)
+      const inputTranscriptionText =
+        json.serverContent?.inputTranscription?.text ||
+        json.serverContent?.inputAudioTranscription?.text ||
+        json.inputTranscription?.text;
+
+      if (inputTranscriptionText && !this.recognition) {
+        this.pendingInterimText = (this.pendingInterimText + ' ' + inputTranscriptionText).trim();
+        if (this.config.onInterimSpeech) {
+          this.config.onInterimSpeech(this.pendingInterimText);
+        }
+      }
+
       // Extract output audio transcription if sent by Gemini
       const outputTranscriptionText =
         json.serverContent?.outputTranscription?.text ||
@@ -655,6 +678,17 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
         json.outputAudioTranscription?.text;
 
       if (outputTranscriptionText) {
+        if (this.pendingInterimText && !this.recognition) {
+          const userSpoken = this.pendingInterimText.trim();
+          this.pendingInterimText = '';
+          if (this.config.onInterimSpeech) this.config.onInterimSpeech('');
+          if (userSpoken) {
+            this.currentTranscript.push({ source: 'user', message: userSpoken });
+            if (this.config.onMessage) {
+              this.config.onMessage({ source: 'user', message: userSpoken });
+            }
+          }
+        }
         this.currentAiTextBuffer += outputTranscriptionText;
       }
 

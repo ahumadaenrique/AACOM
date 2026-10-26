@@ -77,6 +77,25 @@ export async function getOrProvisionAgencyAgent(agencyId: string, apiKey: string
       },
       body: JSON.stringify({
         name: `${agencyName} Academia PRO`,
+        platform_settings: {
+          overrides: {
+            conversation_config_override: {
+              tts: {
+                voice_id: true,
+                speed: true,
+                stability: true,
+                similarity_boost: true
+              },
+              agent: {
+                first_message: true,
+                language: true,
+                prompt: {
+                  prompt: true
+                }
+              }
+            }
+          }
+        },
         conversation_config: {
           agent: {
             prompt: {
