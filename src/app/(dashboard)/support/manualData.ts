@@ -11,7 +11,8 @@ export type ManualMockupType =
   | "admin-votaciones"
   | "mi-membresia"
   | "mi-tarjeta-digital"
-  | "ayuda-soporte";
+  | "ayuda-soporte"
+  | "proyecto-200";
 
 export interface ManualTable {
   headers: string[];
@@ -208,7 +209,7 @@ export const MANUAL_CHAPTERS: ManualChapter[] = [
               ["Equipo", "Directorio de los miembros de tu promotoría."],
               ["Ranking", "Clasificación de agentes por diagnósticos ADN completados."],
               ["Mis Referidores", "Tus referidores registrados."],
-              ["Herramientas ▾", "Encuesta de satisfacción, Mi Biblioteca, Cotizador, ADN, TIPS, Plan de Arranque y Academia."],
+              ["Herramientas ▾", "Proyecto 200, Encuesta de satisfacción, Mi Biblioteca, Cotizador, ADN, TIPS, Plan de Arranque y Academia."],
               ["Inteligencia Artificial Avanzada ▾", "Asistente de inteligencia artificial."],
               [
                 "Admin ▾ (solo administradores)",
@@ -1425,6 +1426,93 @@ export const MANUAL_CHAPTERS: ManualChapter[] = [
             ]
           }
         ]
+      },
+      {
+        id: "proyecto-200",
+        number: "12.8",
+        title: "Proyecto 200 (CRM, Piloto Automático de Prospección y Tanques de Gasolina)",
+        quickLink: "/proyecto-200",
+        quickPath: "Herramientas › Proyecto 200",
+        purpose:
+          "Es el sistema vivo de prospección y ejecución secuencial de tu promotoría (metodología LIMRA / MDRT Project 200). Permite construir tu inventario inicial de 200 contactos, mantener siempre tu Tanque de Gasolina Comercial con al menos 100 prospectos calificados activos y ejecutar llamadas diarias en modo Piloto Automático con la regla «Teléfono Primero».",
+        howToReach: ["En el menú superior, haz clic en Herramientas › Proyecto 200 (o accede directamente a /proyecto-200)."],
+        description: [
+          "Proyecto 200 transforma la tradicional lista estática de Excel en un motor inteligente que ordena tu cola de llamadas según el sueldo estimado, la probabilidad de cierre y el origen del referido.",
+          "Cuenta con dos termómetros superiores en tiempo real: 1) Inventario Total (Meta 200 contactos registrados) y 2) Tanque de Gasolina Comercial (Meta mínima de 100 prospectos calificados y no descalificados vivos, combinando Contactos Base + Referidos)."
+        ],
+        figures: [
+          {
+            mockup: "proyecto-200",
+            caption: "Vista interactiva: Módulo Proyecto 200 con Tanques de Gasolina Comercial, Piloto Automático de Llamadas y Candado Anti-WhatsApp."
+          }
+        ],
+        tables: [
+          {
+            headers: ["Pestaña del módulo", "Para qué sirve"],
+            rows: [
+              [
+                "1. Piloto Automático de Prospección",
+                "Estación de llamadas uno por uno. Te presenta al prospecto de mayor prioridad, su guion personalizado y el botón Llamar Ahora. Incluye el candado «Teléfono Primero» que bloquea WhatsApp en el 1er toque hasta haber marcado por teléfono."
+              ],
+              [
+                "2. Directorio & CRM (200)",
+                "Tabla completa de tus contactos con filtros por clasificación (Prospecto, Centro de Influencia / Referidor, Descalificado), estatus y buscador rápido."
+              ],
+              [
+                "3. Carga Masiva Excel",
+                "Descarga la plantilla oficial .xlsx y sube tus 200 contactos de golpe con validación automática y prevención de teléfonos duplicados."
+              ],
+              [
+                "4. Guiones & Reglas de Oro",
+                "Manual práctico de prospección telefónica, manejo de objeciones en vivo y guion para desarrollar Centros de Influencia (Referidores)."
+              ],
+              [
+                "5. Auditoría Dirección (solo Admin)",
+                "Tablero ejecutivo con los Tanques de Gasolina Comercial de cada asesor, barra de Contactos Base vs. Referidos vs. Descalificados, semáforo de uso Teléfono vs. WhatsApp y selector para activar u ocultar agentes del seguimiento."
+              ]
+            ]
+          }
+        ],
+        screenElements: [
+          {
+            groupTitle: "Reglas de Oro del Customer Journey en Proyecto 200",
+            items: [
+              {
+                label: "Regla Teléfono Primero (Candado Anti-WhatsApp en 1er toque)",
+                text: "En el primer contacto está bloqueado el envío de mensajes en frío por WhatsApp. Primero debes hacer clic en Llamar Ahora; solo si el prospecto no contesta se habilita el botón «WhatsApp de Rescate (Doble Toque)» para acordar una llamada de 2 minutos."
+              },
+              {
+                label: "Puente automático con Encuesta de Satisfacción (4 SÍes)",
+                text: "Los referidos capturados en Herramientas › Encuesta de satisfacción aparecen automáticamente en un banner superior dentro de Proyecto 200 listos para calificarse e inyectarse al tope de tu cola de llamadas."
+              },
+              {
+                label: "Sincronización con 25 Puntos y Agenda",
+                text: "Cada llamada o cita agendada desde el Piloto Automático suma puntos automáticamente en tu módulo de Actividad 25 Puntos y crea el evento en tu agenda."
+              },
+              {
+                label: "Tablero de Tanques de Gasolina Comercial (Dirección)",
+                text: "Muestra el nivel de combustible de cada asesor sobre 100 prospectos calificados: 🟢 Óptimo (≥100 calificados, 4-5 semanas de ritmo), 🟡 Medio (65-99, momento de pedir referidos), 🟠 En Reserva (35-64, menos de 10 días) y 🔴 Peligro de Paro (<35). Además permite activar u ocultar agentes del tablero sin desactivar su cuenta."
+              }
+            ]
+          }
+        ],
+        stepGroups: [
+          {
+            title: "Paso a paso: cargar tus 200 contactos y usar el Piloto Automático",
+            steps: [
+              "Abre Herramientas › Proyecto 200 y entra a la pestaña Carga Masiva Excel para descargar la plantilla oficial o agrega contactos con + Nuevo Contacto.",
+              "Sube tu archivo Excel; el sistema calculará automáticamente el puntaje de prioridad (0 a 100) de cada contacto.",
+              "Ve a la pestaña Piloto Automático de Prospección, haz clic en Llamar Ahora y utiliza el guion en pantalla.",
+              "Al colgar, registra el resultado en el panel derecho (¡Cita de Diagnóstico Agendada!, No Contestó / Buzón, Rescate por WhatsApp tras llamada, Clasificar como Referidor o Descalificar con motivo obligatorio) para avanzar automáticamente al siguiente prospecto."
+            ]
+          }
+        ],
+        tips: [
+          {
+            type: "CONSEJO",
+            text: "Por cada prospecto que descalifiques o cierres, pide al menos 2 referidos nuevos para que tu Tanque de Gasolina Comercial nunca baje de 100 prospectos calificados activos."
+          }
+        ]
       }
     ]
   },
@@ -2187,6 +2275,18 @@ export const GLOSSARY_ITEMS: GlossaryItem[] = [
     meaning: "Planeación Recurrente de Productividad.",
     category: "Métricas y Procesos",
     relatedChapterId: "pea-prp-jep"
+  },
+  {
+    term: "Proyecto 200",
+    meaning: "Sistema vivo de prospección y CRM secuencial (Herramientas › Proyecto 200) donde el asesor construye su inventario de 200 contactos, mantiene su Tanque de Gasolina con al menos 100 calificados activos y ejecuta llamadas en Piloto Automático bajo la regla Teléfono Primero.",
+    category: "Módulos",
+    relatedChapterId: "herramientas"
+  },
+  {
+    term: "Tanque de Gasolina Comercial",
+    meaning: "Indicador de Proyecto 200 que mide cuántos prospectos calificados y no descalificados (Contactos Base + Referidos) tiene activos un asesor sobre la meta mínima de 100 para sostener su ritmo de citas.",
+    category: "Métricas y Procesos",
+    relatedChapterId: "herramientas"
   },
   {
     term: "RDA",

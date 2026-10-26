@@ -458,5 +458,58 @@ export function ManualMockupPreview({ type }: { type: ManualMockupType }) {
           </div>
         </BrowserChrome>
       );
+
+    case "proyecto-200":
+      return (
+        <BrowserChrome title="Herramientas › Proyecto 200 (CRM, Piloto Automático y Tanques de Gasolina)" badge="Sistema Vivo de Prospección">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="bg-slate-900 text-white p-4 rounded-xl border border-indigo-500/30">
+                <div className="flex items-center justify-between text-[11px] text-indigo-300 font-bold uppercase">
+                  <span>1. Inventario Total (Meta 200)</span>
+                  <span className="text-emerald-400">¡Meta 200!</span>
+                </div>
+                <div className="text-xl font-black mt-1">200 / 200 registrados</div>
+                <p className="text-[11px] text-slate-300 mt-1">
+                  Carga inicial por Excel + Referidos de Encuesta de Satisfacción (4 SÍes).
+                </p>
+              </div>
+
+              <div className="bg-slate-900 text-white p-4 rounded-xl border border-emerald-500/30">
+                <div className="flex items-center justify-between text-[11px] text-amber-300 font-bold uppercase">
+                  <span>⛽ 2. Tanque de Gasolina Comercial</span>
+                  <span className="text-emerald-400">🟢 Tanque Lleno (≥100)</span>
+                </div>
+                <div className="text-xl font-black mt-1">118 / 100 calificados vivos</div>
+                <p className="text-[11px] text-slate-300 mt-1">
+                  Base: 82 · Referidos/COI: 36 · Ritmo óptimo para 4–5 semanas.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-indigo-100 text-indigo-800">
+                  Estación Piloto Automático · Prioridad #1 (95 pts)
+                </span>
+                <h5 className="text-sm font-black text-slate-900 dark:text-white mt-1">
+                  Ing. Alejandro Villarreal · Sueldo Est. $85,000/mes
+                </h5>
+                <p className="text-[11px] text-slate-500">
+                  📞 Regla de Oro Teléfono Primero: En el 1er contacto debes marcar por teléfono antes de desbloquear WhatsApp de rescate.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className="px-3 py-2 rounded-xl bg-emerald-600 text-white text-xs font-black">
+                  📞 Llamar Ahora
+                </span>
+                <span className="px-3 py-2 rounded-xl bg-slate-100 text-slate-500 border border-slate-200 text-xs font-bold">
+                  🔒 WhatsApp (1er toque)
+                </span>
+              </div>
+            </div>
+          </div>
+        </BrowserChrome>
+      );
   }
 }

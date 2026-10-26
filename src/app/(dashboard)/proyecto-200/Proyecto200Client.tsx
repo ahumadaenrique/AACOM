@@ -34,6 +34,8 @@ import {
   Briefcase,
   RefreshCw,
   Eye,
+  EyeOff,
+  SlidersHorizontal,
   Trash2,
   Edit3,
   History,
@@ -53,6 +55,7 @@ import {
   recordGuidedProspectingAction,
   deleteProject200Contact,
   getAdminProject200Analytics,
+  toggleProject200AgentTracking,
 } from "./actions";
 
 interface Proyecto200ClientProps {
@@ -252,6 +255,12 @@ export default function Proyecto200Client({
   const [adminSubView, setAdminSubView] = useState<
     "agentes" | "contactos" | "bitacora"
   >("agentes");
+  const [hiddenAgentIds, setHiddenAgentIds] = useState<string[]>(
+    initialAdminData?.hiddenAgentIds || []
+  );
+  const [showAgentVisibilityDrawer, setShowAgentVisibilityDrawer] =
+    useState<boolean>(false);
+  const [togglingAgentId, setTogglingAgentId] = useState<string | null>(null);
 
   // Estado Anti-WhatsApp en Piloto Automático: rastrea si el agente ya intentó llamar por teléfono al contacto actual
   const [dialedContactIds, setDialedContactIds] = useState<
@@ -283,6 +292,9 @@ export default function Proyecto200Client({
       }
       if (adm?.success) {
         setAdminData(adm);
+        if (Array.isArray(adm.hiddenAgentIds)) {
+          setHiddenAgentIds(adm.hiddenAgentIds);
+        }
       }
     } catch (err) {
       console.error("Error refreshing Proyecto 200:", err);
@@ -888,8 +900,45 @@ export default function Proyecto200Client({
     return logs.filter((l: any) => l.userId === adminSelectedAgentId);
   }, [adminData, adminSelectedAgentId]);
 
+  const handleToggleAgentTracking = async (
+    targetAgentId: string,
+    hideFromDashboard: boolean
+  ) => {
+    setTogglingAgentId(targetAgentId);
+    // Actualización optimista inmediata
+    setHiddenAgentIds((prev) =>
+      hideFromDashboard
+        ? Array.from(new Set([...prev, targetAgentId]))
+        : prev.filter((id) => id !== targetAgentId)
+    );
+    try {
+      const res = await toggleProject200AgentTracking(
+        targetAgentId,
+        hideFromDashboard
+      );
+      if (res.success && Array.isArray(res.hiddenAgentIds)) {
+        setHiddenAgentIds(res.hiddenAgentIds);
+        showToast(
+          "info",
+          hideFromDashboard
+            ? `${res.agentName || "Agente"} fue ocultado del tablero de seguimiento (su cuenta sigue activa).`
+            : `${res.agentName || "Agente"} fue activado nuevamente en el tablero de Tanques de Gasolina.`
+        );
+      } else if (!res.success) {
+        showToast("error", res.error || "No se pudo actualizar visibilidad.");
+      }
+    } finally {
+      setTogglingAgentId(null);
+    }
+  };
+
+  const visibleAgentSummaries = useMemo(() => {
+    const all = adminData?.agentSummaries || [];
+    return all.filter((ag: any) => !hiddenAgentIds.includes(ag.agentId));
+  }, [adminData, hiddenAgentIds]);
+
   const adminExecutiveKpis = useMemo(() => {
-    const summaries = adminData?.agentSummaries || [];
+    const summaries = visibleAgentSummaries;
     const totalAgents = summaries.length;
     const agentsAt200 = summaries.filter((a: any) => a.hasReached200).length;
     const agentsOptimalFuel = summaries.filter(
@@ -2674,30 +2723,125 @@ export default function Proyecto200Client({
                     </p>
                   </div>
 
-                  {/* Leyenda de Semáforo de Gasolina */}
-                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">
-                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
-                      ≥100 Óptimo (4-5 sem)
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-50 text-amber-800 border border-amber-200">
-                      <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
-                      65–99 Medio (Recargar)
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-orange-50 text-orange-800 border border-orange-200">
-                      <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
-                      35–64 Reserva (&lt;10 días)
-                    </span>
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-rose-50 text-rose-800 border border-rose-200">
-                      <span className="h-2.5 w-2.5 rounded-full bg-rose-600" />
-                      &lt;35 Peligro de Paro
-                    </span>
+                  {/* Leyenda de Semáforo de Gasolina + Botón Gestionar Agentes Visibles */}
+                  <div className="flex flex-col items-start lg:items-end gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setShowAgentVisibilityDrawer((prev) => !prev)
+                      }
+                      className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-black border transition shadow-xs ${
+                        showAgentVisibilityDrawer
+                          ? "bg-slate-900 text-white border-slate-900"
+                          : "bg-indigo-50 hover:bg-indigo-100 text-indigo-950 border-indigo-200"
+                      }`}
+                    >
+                      <SlidersHorizontal className="h-3.5 w-3.5" />
+                      Activar / Ocultar Agentes ({visibleAgentSummaries.length} en seguimiento
+                      {hiddenAgentIds.length > 0
+                        ? ` · ${hiddenAgentIds.length} ocultos`
+                        : ""}
+                      )
+                    </button>
+
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                        ≥100 Óptimo (4-5 sem)
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-50 text-amber-800 border border-amber-200">
+                        <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                        65–99 Medio (Recargar)
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-orange-50 text-orange-800 border border-orange-200">
+                        <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
+                        35–64 Reserva (&lt;10 días)
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-rose-50 text-rose-800 border border-rose-200">
+                        <span className="h-2.5 w-2.5 rounded-full bg-rose-600" />
+                        &lt;35 Peligro de Paro
+                      </span>
+                    </div>
                   </div>
                 </div>
 
+                {/* Gaveta Desplegable para Activar / Desactivar Agentes del Tablero de Seguimiento */}
+                {showAgentVisibilityDrawer && (
+                  <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div>
+                        <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                          Selector de Agentes en Seguimiento Cercano (Proyecto 200)
+                        </h4>
+                        <p className="text-xs text-slate-600">
+                          Los agentes desactivados aquí <strong>conservan su cuenta activa</strong> en la plataforma, pero se ocultan del Tablero de Tanques de Gasolina y no alteran los KPIs de tu promotoría hasta que decidas volver a activarlos.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowAgentVisibilityDrawer(false)}
+                        className="text-xs font-bold text-slate-500 hover:text-slate-900 self-end sm:self-center"
+                      >
+                        Cerrar panel ✕
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5 pt-1">
+                      {(adminData?.agentSummaries || []).map((ag: any) => {
+                        const isHidden = hiddenAgentIds.includes(ag.agentId);
+                        const isBusy = togglingAgentId === ag.agentId;
+                        return (
+                          <div
+                            key={ag.agentId}
+                            className={`flex items-center justify-between gap-2 p-2.5 rounded-xl border transition ${
+                              isHidden
+                                ? "bg-slate-100/80 border-slate-200 opacity-75"
+                                : "bg-white border-emerald-200 shadow-2xs"
+                            }`}
+                          >
+                            <div className="min-w-0">
+                              <div className="text-xs font-bold text-slate-900 truncate">
+                                {ag.name}
+                              </div>
+                              <div className="text-[10px] text-slate-500 truncate">
+                                {ag.totalContacts}/200 contactos ·{" "}
+                                {ag.qualifiedCount ??
+                                  ag.prospectosCount + ag.referidoresCount}{" "}
+                                calificados
+                              </div>
+                            </div>
+                            <button
+                              type="button"
+                              disabled={isBusy}
+                              onClick={() =>
+                                handleToggleAgentTracking(ag.agentId, !isHidden)
+                              }
+                              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-black transition shrink-0 ${
+                                isHidden
+                                  ? "bg-slate-200 hover:bg-emerald-600 text-slate-700 hover:text-white"
+                                  : "bg-emerald-100 hover:bg-rose-100 text-emerald-900 hover:text-rose-800 border border-emerald-300"
+                              }`}
+                            >
+                              {isHidden ? (
+                                <>
+                                  <Eye className="h-3 w-3" /> Activar
+                                </>
+                              ) : (
+                                <>
+                                  <EyeOff className="h-3 w-3" /> Ocultar
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Grid de Tanques por Asesor */}
                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                  {(adminData?.agentSummaries || []).map((ag: any) => {
+                  {visibleAgentSummaries.map((ag: any) => {
                     const qualifiedCount =
                       ag.qualifiedCount ??
                       ag.prospectosCount + ag.referidoresCount;
@@ -2903,16 +3047,28 @@ export default function Proyecto200Client({
                             )}
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setAdminSelectedAgentId(ag.agentId);
-                              setAdminSubView("contactos");
-                            }}
-                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-[11px] font-bold transition shrink-0"
-                          >
-                            <Eye className="h-3 w-3" /> Auditar ({ag.citasAgendadasCount} citas)
-                          </button>
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleToggleAgentTracking(ag.agentId, true)
+                              }
+                              title="Ocultar asesor de este tablero de seguimiento (conserva su cuenta activa)"
+                              className="inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-800 text-[11px] font-bold transition"
+                            >
+                              <EyeOff className="h-3 w-3" /> Ocultar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAdminSelectedAgentId(ag.agentId);
+                                setAdminSubView("contactos");
+                              }}
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-[11px] font-bold transition"
+                            >
+                              <Eye className="h-3 w-3" /> Auditar ({ag.citasAgendadasCount} citas)
+                            </button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -2951,7 +3107,7 @@ export default function Proyecto200Client({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-sm">
-                    {(adminData?.agentSummaries || []).map((ag: any) => {
+                    {visibleAgentSummaries.map((ag: any) => {
                       const pct = Math.min(
                         100,
                         Math.round((ag.totalContacts / 200) * 100)

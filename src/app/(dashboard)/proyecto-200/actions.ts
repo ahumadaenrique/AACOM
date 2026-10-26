@@ -789,8 +789,9 @@ export async function getAdminProject200Analytics() {
 
     // Regla de Oro SaaS Multi-Tenancy: aislamiento estricto por agencyId
     const effectiveAgencyId = user.agencyId || "aacom";
+    const hiddenSettingKey = `proyecto200_hidden_agents_${effectiveAgencyId}`;
 
-    const [agencyAgents, allContacts, recentLogs, actionCountsByAgent] = await Promise.all([
+    const [agencyAgents, allContacts, recentLogs, actionCountsByAgent, hiddenSetting] = await Promise.all([
       prisma.user.findMany({
         where: {
           agencyId: effectiveAgencyId,
@@ -840,7 +841,22 @@ export async function getAdminProject200Analytics() {
         where: { agencyId: effectiveAgencyId },
         _count: { _all: true },
       }),
+      prisma.setting.findUnique({
+        where: { key: hiddenSettingKey },
+      }),
     ]);
+
+    let hiddenAgentIds: string[] = [];
+    if (hiddenSetting?.value) {
+      try {
+        const parsed = JSON.parse(hiddenSetting.value);
+        if (Array.isArray(parsed)) {
+          hiddenAgentIds = parsed.map((id) => String(id));
+        }
+      } catch {
+        hiddenAgentIds = [];
+      }
+    }
 
     const agentMap = new Map<
       string,
@@ -1032,6 +1048,7 @@ export async function getAdminProject200Analytics() {
       success: true,
       agencyId: effectiveAgencyId,
       agentSummaries,
+      hiddenAgentIds,
       allContacts,
       recentLogs,
     };
@@ -1040,6 +1057,87 @@ export async function getAdminProject200Analytics() {
     return {
       success: false,
       error: error.message || "Error al cargar el tablero ejecutivo de Proyecto 200.",
+    };
+  }
+}
+
+export async function toggleProject200AgentTracking(
+  targetAgentId: string,
+  hideFromDashboard: boolean
+) {
+  try {
+    const user = await getAuthenticatedUser();
+    const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+
+    if (!isAdmin) {
+      return {
+        success: false,
+        error: "Solo administradores de la promotoría pueden gestionar agentes en seguimiento.",
+      };
+    }
+
+    const effectiveAgencyId = user.agencyId || "aacom";
+
+    // Verificar que el agente pertenezca a la misma agencia (Aislamiento Multi-Tenant)
+    const targetAgent = await prisma.user.findFirst({
+      where: {
+        id: targetAgentId,
+        agencyId: effectiveAgencyId,
+      },
+      select: { id: true, name: true, email: true },
+    });
+
+    if (!targetAgent) {
+      return {
+        success: false,
+        error: "Agente no encontrado en tu promotoría.",
+      };
+    }
+
+    const hiddenSettingKey = `proyecto200_hidden_agents_${effectiveAgencyId}`;
+    const existing = await prisma.setting.findUnique({
+      where: { key: hiddenSettingKey },
+    });
+
+    let currentHidden: string[] = [];
+    if (existing?.value) {
+      try {
+        const parsed = JSON.parse(existing.value);
+        if (Array.isArray(parsed)) {
+          currentHidden = parsed.map((id) => String(id));
+        }
+      } catch {
+        currentHidden = [];
+      }
+    }
+
+    const hiddenSet = new Set(currentHidden);
+    if (hideFromDashboard) {
+      hiddenSet.add(targetAgentId);
+    } else {
+      hiddenSet.delete(targetAgentId);
+    }
+
+    const updatedHidden = Array.from(hiddenSet);
+
+    await prisma.setting.upsert({
+      where: { key: hiddenSettingKey },
+      update: { value: JSON.stringify(updatedHidden) },
+      create: { key: hiddenSettingKey, value: JSON.stringify(updatedHidden) },
+    });
+
+    revalidatePath("/proyecto-200");
+
+    return {
+      success: true,
+      hiddenAgentIds: updatedHidden,
+      agentName: targetAgent.name || targetAgent.email,
+    };
+  } catch (error: any) {
+    console.error("Error in toggleProject200AgentTracking:", error);
+    return {
+      success: false,
+      error: error.message || "Error al actualizar visibilidad del agente.",
     };
   }
 }
