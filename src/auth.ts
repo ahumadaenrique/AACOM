@@ -15,18 +15,37 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             },
             authorize: async (credentials) => {
                 const parsedCredentials = z
-                    .object({ email: z.string().email(), password: z.string().min(6) })
+                    .object({ email: z.string().trim().email(), password: z.string().min(6) })
                     .safeParse(credentials);
 
                 if (parsedCredentials.success) {
                     try {
                         const { email, password } = parsedCredentials.data;
-                        console.log("\n[AUTH] Attempting login for:", email);
+                        const cleanEmail = email.trim().toLowerCase();
+                        console.log("\n[AUTH] Attempting login for:", cleanEmail);
 
-                        const user = await prisma.user.findUnique({ where: { email } });
+                        let user = await prisma.user.findUnique({ where: { email: cleanEmail } });
+                        if (!user) {
+                            user = await prisma.user.findFirst({
+                                where: { email: { equals: cleanEmail, mode: 'insensitive' } }
+                            });
+                        }
                         console.log("[AUTH] User found:", !!user);
 
                         if (!user) return null;
+
+                        // Normalize stored email to lowercase if it was saved with uppercase characters
+                        if (user.email !== cleanEmail) {
+                            try {
+                                await prisma.user.update({
+                                    where: { id: user.id },
+                                    data: { email: cleanEmail }
+                                });
+                                user.email = cleanEmail;
+                            } catch {
+                                // Ignore if another record somehow collides
+                            }
+                        }
 
                         // Check if the account is suspended
                         if (user.active === false) {

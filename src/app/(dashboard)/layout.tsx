@@ -41,6 +41,11 @@ export default async function DashboardLayout({
         dbUser = await prisma.user.findUnique({
             where: { email: session.user.email.toLowerCase() }
         });
+        if (!dbUser) {
+            dbUser = await prisma.user.findFirst({
+                where: { email: { equals: session.user.email.trim(), mode: 'insensitive' } }
+            });
+        }
     }
 
     const isAdmin = dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN';

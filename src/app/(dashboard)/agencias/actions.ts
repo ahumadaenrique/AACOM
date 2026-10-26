@@ -133,13 +133,14 @@ export async function createAgency(data: z.infer<typeof agencySchema>) {
   });
 
   if (parsed.adminEmail && parsed.adminName && parsed.adminPassword) {
-    const existingUser = await prisma.user.findUnique({ where: { email: parsed.adminEmail } });
+    const cleanAdminEmail = parsed.adminEmail.trim().toLowerCase();
+    const existingUser = await prisma.user.findFirst({ where: { email: { equals: cleanAdminEmail, mode: 'insensitive' } } });
     if (!existingUser) {
-        const hashedPassword = await bcrypt.hash(parsed.adminPassword, 10);
+        const hashedPassword = await bcrypt.hash(parsed.adminPassword.trim(), 10);
         await prisma.user.create({
             data: {
-                name: parsed.adminName,
-                email: parsed.adminEmail,
+                name: parsed.adminName.trim(),
+                email: cleanAdminEmail,
                 password: hashedPassword,
                 role: "ADMIN",
                 agencyId: agency.id,

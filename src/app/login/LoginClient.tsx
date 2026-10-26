@@ -16,9 +16,10 @@ export default function LoginPage({ agencyName = "Tu Agencia", agencyLogo = "/lo
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault()
+        setError("")
         try {
             const res = await signIn("credentials", {
-                email,
+                email: email.trim().toLowerCase(),
                 password,
                 redirect: false,
             })

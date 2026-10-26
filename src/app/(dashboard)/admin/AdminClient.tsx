@@ -386,16 +386,21 @@ export default function AdminClient() {
 
   // Update user password
   const handleUpdatePassword = async (id: string) => {
-    if (!newPasswordInput.trim()) {
+    const cleanPass = newPasswordInput.trim()
+    if (!cleanPass) {
       alert("La contraseña no puede estar vacía")
       return
     }
+    if (cleanPass.length < 6) {
+      alert("La contraseña debe tener al menos 6 caracteres")
+      return
+    }
     try {
-      const res = await updateUserPassword(id, newPasswordInput.trim())
+      const res = await updateUserPassword(id, cleanPass)
       if (res.success) {
         setEditingUserPasswordId(null)
         setNewPasswordInput("")
-        alert("Contraseña actualizada con éxito")
+        alert(`Contraseña actualizada con éxito a: "${cleanPass}". El usuario ya puede ingresar directamente.`)
         fetchUsersList()
       } else {
         alert(res.message || "Error al actualizar contraseña")
@@ -2200,11 +2205,17 @@ export default function AdminClient() {
                                 {editingUserPasswordId === user.id ? (
                                   <div className="flex items-center justify-center gap-1.5 min-w-[200px] animate-in slide-in-from-right-1 duration-150">
                                     <Input
-                                      type="password"
-                                      placeholder="Nueva contraseña"
+                                      type="text"
+                                      placeholder="Mín. 6 caracteres"
                                       value={newPasswordInput}
                                       onChange={(e) => setNewPasswordInput(e.target.value)}
-                                      className="text-xs h-7 w-28 px-1.5 py-0.5 border-teal-400 focus-visible:ring-teal-400"
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter") {
+                                          e.preventDefault()
+                                          handleUpdatePassword(user.id)
+                                        }
+                                      }}
+                                      className="text-xs h-7 w-32 px-1.5 py-0.5 border-teal-400 focus-visible:ring-teal-400 font-mono"
                                     />
                                     <Button
                                       onClick={() => handleUpdatePassword(user.id)}

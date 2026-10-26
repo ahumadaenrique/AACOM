@@ -47,8 +47,10 @@ export async function processRegistration(data: any) {
   try {
     const { name, email, phone, password, agencyName, agencySlug, agencyColor, priceId, daysToAdd, refSlug } = data;
 
+    const normalizedEmail = email.trim().toLowerCase();
+
     // Validate email
-    const existingUser = await prisma.user.findUnique({ where: { email } });
+    const existingUser = await prisma.user.findFirst({ where: { email: { equals: normalizedEmail, mode: 'insensitive' } } });
     if (existingUser) {
       return { success: false, message: "El correo electrónico ya está registrado." };
     }
@@ -107,9 +109,9 @@ export async function processRegistration(data: any) {
     // Create the Admin User
     const newUser = await prisma.user.create({
       data: {
-        name,
-        email,
-        password, // Using plain text to match existing auth logic
+        name: name.trim(),
+        email: normalizedEmail,
+        password: password.trim(), // Using plain text to match existing auth logic
         phone,
         phoneVerified: true, // We verified it in step 1.5
         role: "ADMIN",

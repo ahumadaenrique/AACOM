@@ -751,8 +751,9 @@ export async function createAgentUser(data: { name: string; email: string; role:
             }
         }
 
-        const existingUser = await prisma.user.findUnique({
-            where: { email: data.email }
+        const normalizedEmail = data.email.trim().toLowerCase();
+        const existingUser = await prisma.user.findFirst({
+            where: { email: { equals: normalizedEmail, mode: 'insensitive' } }
         });
 
         if (existingUser) {
@@ -778,19 +779,19 @@ export async function createAgentUser(data: { name: string; email: string; role:
             }
         }
 
-        const plainPassword = data.password || "password123";
+        const plainPassword = (data.password || "password123").trim();
         const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
         const newUser = await prisma.user.create({
             data: {
-                name: data.name,
-                email: data.email,
+                name: data.name.trim(),
+                email: normalizedEmail,
                 role: data.role,
                 agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string),
                 phone: data.phone || null,
                 active: data.active !== undefined ? data.active : true,
                 password: hashedPassword,
-                mustChangePassword: true // Bloqueo temporal para obligar a que cambie su contraseÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±a
+                mustChangePassword: true
             }
         });
 
@@ -866,21 +867,35 @@ export async function updateUserPassword(id: string, newPassword: string) {
             return { success: false, message: "No autenticado" };
         }
 
-        const currentUser = await prisma.user.findUnique({
-            where: { email: session.user.email }
+        const cleanPassword = (newPassword || "").trim();
+        if (cleanPassword.length < 6) {
+            return { success: false, message: "La contraseña debe tener al menos 6 caracteres." };
+        }
+
+        const currentUser = await prisma.user.findFirst({
+            where: { email: { equals: session.user.email.trim(), mode: 'insensitive' } }
         });
 
         if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
             return { success: false, message: "Permisos insuficientes" };
         }
 
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const targetUser = await prisma.user.findUnique({ where: { id } });
+        if (!targetUser) {
+            return { success: false, message: "Usuario no encontrado" };
+        }
+
+        const hashedPassword = await bcrypt.hash(cleanPassword, 10);
 
         const updatedUser = await prisma.user.update({
             where: { id },
             data: { 
+                email: targetUser.email.trim().toLowerCase(),
                 password: hashedPassword,
-                mustChangePassword: true 
+                mustChangePassword: false,
+                resetToken: null,
+                resetTokenExpiry: null,
+                active: true
             }
         });
 
@@ -888,7 +903,7 @@ export async function updateUserPassword(id: string, newPassword: string) {
         return { success: true, user: updatedUser };
     } catch (error: any) {
         console.error("Error updating user password:", error);
-        return { success: false, message: error.message || "Error al actualizar contraseÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â±a" };
+        return { success: false, message: error.message || "Error al actualizar contraseña" };
     }
 }
 
