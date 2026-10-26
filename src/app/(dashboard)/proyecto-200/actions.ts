@@ -157,9 +157,37 @@ export async function getProject200DashboardData() {
     const referidoresCount = contacts.filter((c) => c.classification === "REFERIDOR").length;
     const descalificadosCount = contacts.filter((c) => c.classification === "DESCALIFICADO").length;
 
+    const qualifiedCount = prospectosCount + referidoresCount;
+    const qualifiedGoalThreshold = 100;
+    const missingFor100Qualified = Math.max(0, qualifiedGoalThreshold - qualifiedCount);
+    const fuelLevelPct = Math.min(100, Math.round((qualifiedCount / qualifiedGoalThreshold) * 100));
+    const fuelStatus: "OPTIMO" | "MEDIO" | "RESERVA" | "CRITICO" =
+      qualifiedCount >= 100
+        ? "OPTIMO"
+        : qualifiedCount >= 65
+        ? "MEDIO"
+        : qualifiedCount >= 35
+        ? "RESERVA"
+        : "CRITICO";
+
+    const referralsOriginCount = contacts.filter(
+      (c) =>
+        c.classification !== "DESCALIFICADO" &&
+        (c.source === "ENCUESTA_SATISFACCION" ||
+          c.source === "REFERIDO_DIRECTO" ||
+          c.classification === "REFERIDOR" ||
+          (c.relationship || "").toLowerCase().includes("referid"))
+    ).length;
+    const baseContactsCount = Math.max(0, qualifiedCount - referralsOriginCount);
+
     const porContactarCount = contacts.filter((c) => c.status === "POR_CONTACTAR").length;
     const enSeguimientoCount = contacts.filter((c) => c.status === "EN_SEGUIMIENTO").length;
     const citasAgendadasCount = contacts.filter((c) => c.status === "CITA_AGENDADA").length;
+    const activeCallableCount = contacts.filter(
+      (c) =>
+        c.classification !== "DESCALIFICADO" &&
+        (c.status === "POR_CONTACTAR" || c.status === "EN_SEGUIMIENTO")
+    ).length;
 
     const totalAttempts = contacts.reduce((acc, c) => acc + (c.attemptsCount || 0), 0);
     const estimatedMarketValue = contacts
@@ -176,6 +204,14 @@ export async function getProject200DashboardData() {
       prospectosCount,
       referidoresCount,
       descalificadosCount,
+      qualifiedCount,
+      qualifiedGoalThreshold,
+      missingFor100Qualified,
+      fuelLevelPct,
+      fuelStatus,
+      referralsOriginCount,
+      baseContactsCount,
+      activeCallableCount,
       porContactarCount,
       enSeguimientoCount,
       citasAgendadasCount,
@@ -754,7 +790,7 @@ export async function getAdminProject200Analytics() {
     // Regla de Oro SaaS Multi-Tenancy: aislamiento estricto por agencyId
     const effectiveAgencyId = user.agencyId || "aacom";
 
-    const [agencyAgents, allContacts, recentLogs] = await Promise.all([
+    const [agencyAgents, allContacts, recentLogs, actionCountsByAgent] = await Promise.all([
       prisma.user.findMany({
         where: {
           agencyId: effectiveAgencyId,
@@ -799,6 +835,11 @@ export async function getAdminProject200Analytics() {
         orderBy: { createdAt: "desc" },
         take: 150,
       }),
+      prisma.project200Log.groupBy({
+        by: ["userId", "actionType"],
+        where: { agencyId: effectiveAgencyId },
+        _count: { _all: true },
+      }),
     ]);
 
     const agentMap = new Map<
@@ -815,10 +856,20 @@ export async function getAdminProject200Analytics() {
         prospectosCount: number;
         referidoresCount: number;
         descalificadosCount: number;
+        qualifiedCount: number;
+        missingFor100Qualified: number;
+        fuelLevelPct: number;
+        fuelStatus: "OPTIMO" | "MEDIO" | "RESERVA" | "CRITICO";
+        referralsOriginCount: number;
+        baseContactsCount: number;
+        activeCallableCount: number;
         porContactarCount: number;
         enSeguimientoCount: number;
         citasAgendadasCount: number;
         totalAttempts: number;
+        phoneTouchesCount: number;
+        whatsappTouchesCount: number;
+        whatsappRatioPct: number;
         estimatedMarketSalarySum: number;
         lastActivityAt: Date | null;
       }
@@ -837,10 +888,20 @@ export async function getAdminProject200Analytics() {
         prospectosCount: 0,
         referidoresCount: 0,
         descalificadosCount: 0,
+        qualifiedCount: 0,
+        missingFor100Qualified: 100,
+        fuelLevelPct: 0,
+        fuelStatus: "CRITICO",
+        referralsOriginCount: 0,
+        baseContactsCount: 0,
+        activeCallableCount: 0,
         porContactarCount: 0,
         enSeguimientoCount: 0,
         citasAgendadasCount: 0,
         totalAttempts: 0,
+        phoneTouchesCount: 0,
+        whatsappTouchesCount: 0,
+        whatsappRatioPct: 0,
         estimatedMarketSalarySum: 0,
         lastActivityAt: null,
       });
@@ -861,10 +922,20 @@ export async function getAdminProject200Analytics() {
           prospectosCount: 0,
           referidoresCount: 0,
           descalificadosCount: 0,
+          qualifiedCount: 0,
+          missingFor100Qualified: 100,
+          fuelLevelPct: 0,
+          fuelStatus: "CRITICO",
+          referralsOriginCount: 0,
+          baseContactsCount: 0,
+          activeCallableCount: 0,
           porContactarCount: 0,
           enSeguimientoCount: 0,
           citasAgendadasCount: 0,
           totalAttempts: 0,
+          phoneTouchesCount: 0,
+          whatsappTouchesCount: 0,
+          whatsappRatioPct: 0,
           estimatedMarketSalarySum: 0,
           lastActivityAt: null,
         };
@@ -885,9 +956,26 @@ export async function getAdminProject200Analytics() {
           entry.descalificadosCount += 1;
         }
 
+        const isReferralOrigin =
+          c.classification !== "DESCALIFICADO" &&
+          (c.source === "ENCUESTA_SATISFACCION" ||
+            c.source === "REFERIDO_DIRECTO" ||
+            c.classification === "REFERIDOR" ||
+            (c.relationship || "").toLowerCase().includes("referid"));
+        if (isReferralOrigin) {
+          entry.referralsOriginCount += 1;
+        }
+
         if (c.status === "POR_CONTACTAR") entry.porContactarCount += 1;
         else if (c.status === "EN_SEGUIMIENTO") entry.enSeguimientoCount += 1;
         else if (c.status === "CITA_AGENDADA") entry.citasAgendadasCount += 1;
+
+        if (
+          c.classification !== "DESCALIFICADO" &&
+          (c.status === "POR_CONTACTAR" || c.status === "EN_SEGUIMIENTO")
+        ) {
+          entry.activeCallableCount += 1;
+        }
 
         entry.totalAttempts += c.attemptsCount || 0;
 
@@ -898,8 +986,46 @@ export async function getAdminProject200Analytics() {
       }
     }
 
+    for (const grp of actionCountsByAgent) {
+      const entry = agentMap.get(grp.userId);
+      if (!entry) continue;
+      const cnt = grp._count._all || 0;
+      if (grp.actionType === "SEGUIMIENTO_WHATSAPP") {
+        entry.whatsappTouchesCount += cnt;
+      } else if (
+        grp.actionType === "CITA_AGENDADA" ||
+        grp.actionType === "NO_CONTESTO" ||
+        grp.actionType === "CONVERTIR_REFERIDOR" ||
+        grp.actionType === "DESCALIFICAR" ||
+        grp.actionType === "VOLVER_PROSPECTO"
+      ) {
+        entry.phoneTouchesCount += cnt;
+      }
+    }
+
+    for (const entry of Array.from(agentMap.values())) {
+      entry.qualifiedCount = entry.prospectosCount + entry.referidoresCount;
+      entry.missingFor100Qualified = Math.max(0, 100 - entry.qualifiedCount);
+      entry.baseContactsCount = Math.max(0, entry.qualifiedCount - entry.referralsOriginCount);
+      entry.fuelLevelPct = Math.min(100, Math.round((entry.qualifiedCount / 100) * 100));
+      entry.fuelStatus =
+        entry.qualifiedCount >= 100
+          ? "OPTIMO"
+          : entry.qualifiedCount >= 65
+          ? "MEDIO"
+          : entry.qualifiedCount >= 35
+          ? "RESERVA"
+          : "CRITICO";
+
+      const totalLoggedTouches = entry.phoneTouchesCount + entry.whatsappTouchesCount;
+      entry.whatsappRatioPct =
+        totalLoggedTouches > 0
+          ? Math.round((entry.whatsappTouchesCount / totalLoggedTouches) * 100)
+          : 0;
+    }
+
     const agentSummaries = Array.from(agentMap.values()).sort(
-      (a, b) => b.totalContacts - a.totalContacts || b.citasAgendadasCount - a.citasAgendadasCount
+      (a, b) => b.qualifiedCount - a.qualifiedCount || b.totalContacts - a.totalContacts
     );
 
     return {

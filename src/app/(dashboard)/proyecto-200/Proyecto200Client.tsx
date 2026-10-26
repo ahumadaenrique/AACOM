@@ -41,6 +41,9 @@ import {
   Check,
   Info,
   HelpCircle,
+  Lock,
+  Flame,
+  Zap,
 } from "lucide-react";
 import {
   getProject200DashboardData,
@@ -249,6 +252,11 @@ export default function Proyecto200Client({
   const [adminSubView, setAdminSubView] = useState<
     "agentes" | "contactos" | "bitacora"
   >("agentes");
+
+  // Estado Anti-WhatsApp en Piloto Automático: rastrea si el agente ya intentó llamar por teléfono al contacto actual
+  const [dialedContactIds, setDialedContactIds] = useState<
+    Record<string, boolean>
+  >({});
 
   const showToast = (
     type: "success" | "error" | "info",
@@ -674,6 +682,18 @@ export default function Proyecto200Client({
   ) => {
     if (!currentPilotoContact) return;
 
+    const hasAttemptedCall =
+      (currentPilotoContact.attemptsCount || 0) >= 1 ||
+      Boolean(dialedContactIds[currentPilotoContact.id]);
+
+    if (actionType === "SEGUIMIENTO_WHATSAPP" && !hasAttemptedCall) {
+      showToast(
+        "error",
+        "Regla Teléfono Primero: En el 1er contacto debes marcar por teléfono antes de enviarlo a seguimiento por WhatsApp."
+      );
+      return;
+    }
+
     const finalDisqReason =
       disqPreset === "OTRO"
         ? disqReasonInput.trim()
@@ -872,8 +892,25 @@ export default function Proyecto200Client({
     const summaries = adminData?.agentSummaries || [];
     const totalAgents = summaries.length;
     const agentsAt200 = summaries.filter((a: any) => a.hasReached200).length;
+    const agentsOptimalFuel = summaries.filter(
+      (a: any) =>
+        (a.qualifiedCount ?? a.prospectosCount + a.referidoresCount) >= 100
+    ).length;
+    const agentsLowFuel = summaries.filter(
+      (a: any) =>
+        (a.qualifiedCount ?? a.prospectosCount + a.referidoresCount) < 65
+    ).length;
     const totalContacts = summaries.reduce(
       (acc: number, a: any) => acc + a.totalContacts,
+      0
+    );
+    const totalQualified = summaries.reduce(
+      (acc: number, a: any) =>
+        acc + (a.qualifiedCount ?? a.prospectosCount + a.referidoresCount),
+      0
+    );
+    const totalReferralsOrigin = summaries.reduce(
+      (acc: number, a: any) => acc + (a.referralsOriginCount ?? a.referidoresCount),
       0
     );
     const totalCitas = summaries.reduce(
@@ -896,7 +933,11 @@ export default function Proyecto200Client({
     return {
       totalAgents,
       agentsAt200,
+      agentsOptimalFuel,
+      agentsLowFuel,
       totalContacts,
+      totalQualified,
+      totalReferralsOrigin,
       totalCitas,
       totalTouches,
       totalDescalificados,
@@ -948,62 +989,145 @@ export default function Proyecto200Client({
             </p>
           </div>
 
-          {/* Tarjeta de Meta 200 Contactos */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-5 min-w-[290px] lg:min-w-[340px]">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-indigo-200">
-                Meta Oficial de Arranque
-              </span>
-              {stats.hasReached200 ? (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                  <CheckCircle2 className="h-3.5 w-3.5" /> ¡Meta 200 Cumplida!
+          {/* Tarjetas Duales: Inventario 200 + Tanque de Gasolina (100 Calificados Activos) */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 w-full lg:w-auto lg:min-w-[620px]">
+            {/* Tarjeta 1: Meta 200 Contactos */}
+            <div className="bg-white/10 backdrop-blur-md border border-white/15 rounded-2xl p-4">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-indigo-200">
+                  1. Inventario Total (Meta 200)
                 </span>
-              ) : (
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
-                  <AlertTriangle className="h-3.5 w-3.5" /> Faltan{" "}
-                  {stats.missingFor200} contactos
-                </span>
-              )}
-            </div>
+                {stats.hasReached200 ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                    <CheckCircle2 className="h-3 w-3" /> ¡Meta 200!
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-400/30">
+                    <AlertTriangle className="h-3 w-3" /> Faltan{" "}
+                    {stats.missingFor200}
+                  </span>
+                )}
+              </div>
 
-            <div className="flex items-baseline justify-between mb-2">
-              <div className="text-3xl font-black text-white">
-                {stats.totalContacts}{" "}
-                <span className="text-base font-semibold text-slate-300">
-                  / 200 contactos válidos
+              <div className="flex items-baseline justify-between mb-2">
+                <div className="text-2xl font-black text-white">
+                  {stats.totalContacts}{" "}
+                  <span className="text-xs font-semibold text-slate-300">
+                    / 200 registrados
+                  </span>
+                </div>
+                <span className="text-xs font-bold text-indigo-300">
+                  {stats.progressPercentage}%
                 </span>
               </div>
-              <span className="text-sm font-bold text-indigo-300">
-                {stats.progressPercentage}%
-              </span>
-            </div>
 
-            <div className="w-full h-3 bg-slate-800 rounded-full overflow-hidden mb-2.5">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${
-                  stats.hasReached200
-                    ? "bg-gradient-to-r from-emerald-400 to-teal-500"
-                    : "bg-gradient-to-r from-amber-400 via-orange-500 to-indigo-500"
-                }`}
-                style={{ width: `${stats.progressPercentage}%` }}
-              />
-            </div>
+              <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden mb-2">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    stats.hasReached200
+                      ? "bg-gradient-to-r from-emerald-400 to-teal-500"
+                      : "bg-gradient-to-r from-amber-400 via-orange-500 to-indigo-500"
+                  }`}
+                  style={{ width: `${stats.progressPercentage}%` }}
+                />
+              </div>
 
-            {!stats.hasReached200 ? (
-              <p className="text-xs text-amber-200/90 leading-snug">
-                Aún te faltan{" "}
-                <strong className="text-white underline">
-                  {stats.missingFor200} contactos completos
+              <p className="text-[11px] text-slate-300 leading-snug">
+                Descalificados quemados:{" "}
+                <strong className="text-rose-300">
+                  {stats.descalificadosCount}
                 </strong>{" "}
-                para llegar a los 200 requeridos para iniciar formalmente el
-                programa.
+                · Citas agendadas:{" "}
+                <strong className="text-emerald-300">
+                  {stats.citasAgendadasCount}
+                </strong>
               </p>
-            ) : (
-              <p className="text-xs text-emerald-200/90 leading-snug">
-                ¡Tienes tu inventario completo! Mantén vivo tu Proyecto 200
-                sumando nuevos referidos cada semana.
-              </p>
-            )}
+            </div>
+
+            {/* Tarjeta 2: Mi Tanque de Gasolina Comercial (Mínimo 100 Calificados No Descalificados) */}
+            {(() => {
+              const qualifiedCount =
+                stats.qualifiedCount ??
+                stats.prospectosCount + stats.referidoresCount;
+              const fuelPct = Math.min(100, Math.round((qualifiedCount / 100) * 100));
+              const referralsCount =
+                stats.referralsOriginCount ?? stats.referidoresCount;
+              const baseCount = Math.max(0, qualifiedCount - referralsCount);
+              const isOptimal = qualifiedCount >= 100;
+              const isMedium = qualifiedCount >= 65 && qualifiedCount < 100;
+              const isReserve = qualifiedCount >= 35 && qualifiedCount < 65;
+
+              const badgeStyle = isOptimal
+                ? "bg-emerald-500/20 text-emerald-300 border-emerald-400/40"
+                : isMedium
+                ? "bg-amber-500/20 text-amber-300 border-amber-400/40"
+                : isReserve
+                ? "bg-orange-500/25 text-orange-300 border-orange-400/40"
+                : "bg-rose-500/30 text-rose-200 border-rose-400/50 animate-pulse";
+
+              const barStyle = isOptimal
+                ? "bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500"
+                : isMedium
+                ? "bg-gradient-to-r from-amber-400 to-yellow-500"
+                : isReserve
+                ? "bg-gradient-to-r from-orange-500 to-amber-500"
+                : "bg-gradient-to-r from-rose-600 to-orange-500";
+
+              const statusLabel = isOptimal
+                ? "🟢 Tanque Lleno · Ritmo Óptimo"
+                : isMedium
+                ? "🟡 Medio Tanque · Recargar"
+                : isReserve
+                ? "🟠 En Reserva (< 10 días)"
+                : "🔴 ¡Peligro de Paro!";
+
+              return (
+                <div className="bg-slate-950/55 backdrop-blur-md border border-indigo-400/30 rounded-2xl p-4">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-amber-300">
+                      <Flame className="h-3.5 w-3.5 text-amber-400" />
+                      2. Tanque de Gasolina (Calificados)
+                    </span>
+                    <span
+                      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black border ${badgeStyle}`}
+                    >
+                      {statusLabel}
+                    </span>
+                  </div>
+
+                  <div className="flex items-baseline justify-between mb-2">
+                    <div className="text-2xl font-black text-white">
+                      {qualifiedCount}{" "}
+                      <span className="text-xs font-semibold text-slate-300">
+                        / 100 calificados vivos
+                      </span>
+                    </div>
+                    <span className="text-xs font-black text-amber-300">
+                      {fuelPct}%
+                    </span>
+                  </div>
+
+                  <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden mb-2">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${barStyle}`}
+                      style={{ width: `${fuelPct}%` }}
+                    />
+                  </div>
+
+                  <p className="text-[11px] text-slate-300 leading-snug">
+                    Base:{" "}
+                    <strong className="text-indigo-200">{baseCount}</strong> ·
+                    Referidos/COI:{" "}
+                    <strong className="text-amber-300">{referralsCount}</strong>{" "}
+                    {qualifiedCount < 100 && (
+                      <span className="text-amber-200 font-bold">
+                        (Suma +{100 - qualifiedCount} calificados)
+                      </span>
+                    )}
+                  </p>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>
@@ -1281,32 +1405,63 @@ export default function Proyecto200Client({
                         </p>
                       </div>
 
-                      {/* Botones de Acción Telefónica Directa */}
-                      <div className="flex flex-wrap items-center gap-2.5">
-                        <a
-                          href={`tel:${currentPilotoContact.phone}`}
-                          className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-md shadow-emerald-600/20 transition"
-                        >
-                          <Phone className="h-4 w-4" />
-                          Llamar ({currentPilotoContact.phone})
-                        </a>
-                        <a
-                          href={`https://wa.me/52${
-                            currentPilotoContact.phone
-                          }?text=${encodeURIComponent(
-                            `¡Hola ${
-                              currentPilotoContact.fullName.split(" ")[0]
-                            }! ¿Cómo estás? Te escribe ${
-                              currentUser.name.split(" ")[0]
-                            }, te marqué hace un momento para saludarte brevemente.`
-                          )}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-teal-600 hover:bg-teal-700 text-white font-bold text-sm shadow-sm transition"
-                        >
-                          <MessageCircle className="h-4 w-4" />
-                          WhatsApp
-                        </a>
+                      {/* Botones de Acción Telefónica Directa (Metodología Teléfono Primero / Anti-WhatsApp) */}
+                      <div className="flex flex-col items-end gap-1.5">
+                        <div className="flex flex-wrap items-center gap-2.5">
+                          <a
+                            href={`tel:${currentPilotoContact.phone}`}
+                            onClick={() =>
+                              setDialedContactIds((prev) => ({
+                                ...prev,
+                                [currentPilotoContact.id]: true,
+                              }))
+                            }
+                            className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-md shadow-emerald-600/20 transition"
+                          >
+                            <Phone className="h-4 w-4" />
+                            Llamar Ahora ({currentPilotoContact.phone})
+                          </a>
+
+                          {(currentPilotoContact.attemptsCount || 0) >= 1 ||
+                          dialedContactIds[currentPilotoContact.id] ||
+                          currentPilotoContact.status === "CITA_AGENDADA" ? (
+                            <a
+                              href={`https://wa.me/52${
+                                currentPilotoContact.phone
+                              }?text=${encodeURIComponent(
+                                `¡Hola ${
+                                  currentPilotoContact.fullName.split(" ")[0]
+                                }! Te escribe ${
+                                  currentUser.name.split(" ")[0]
+                                }. Te marqué hace un momento por teléfono y no logré localizarte. No quiero quitarte tiempo por mensaje, ¿a qué hora del día de hoy o mañana te puedo marcar 2 minutos?`
+                              )}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-300 font-bold text-xs shadow-xs transition"
+                            >
+                              <MessageCircle className="h-4 w-4 text-teal-600" />
+                              WhatsApp de Rescate (Doble Toque)
+                            </a>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                showToast(
+                                  "info",
+                                  "Regla de Oro Proyecto 200: En el 1er contacto primero marca por teléfono. El botón de WhatsApp se desbloquea automáticamente como rescate si no te contestan."
+                                )
+                              }
+                              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-slate-100 text-slate-500 border border-slate-200 font-bold text-xs cursor-not-allowed"
+                              title="En el 1er contacto debes llamar primero por teléfono"
+                            >
+                              <Lock className="h-3.5 w-3.5 text-slate-400" />
+                              WhatsApp bloqueado en 1er toque (Llama primero)
+                            </button>
+                          )}
+                        </div>
+                        <span className="text-[11px] font-semibold text-slate-500">
+                          📞 Regla de Oro: Nunca prospectes en frío por texto. Usa WhatsApp solo si no contestó tu llamada.
+                        </span>
                       </div>
                     </div>
 
@@ -1599,13 +1754,26 @@ export default function Proyecto200Client({
                       onClick={() =>
                         handlePilotoOutcome("SEGUIMIENTO_WHATSAPP")
                       }
-                      className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200 font-bold text-sm transition"
+                      className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl border font-bold text-sm transition ${
+                        (currentPilotoContact.attemptsCount || 0) >= 1 ||
+                        dialedContactIds[currentPilotoContact.id]
+                          ? "bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border-indigo-200"
+                          : "bg-slate-50 hover:bg-slate-100 text-slate-500 border-slate-200"
+                      }`}
                     >
-                      <span className="flex items-center gap-2.5">
-                        <MessageCircle className="h-4 w-4 text-indigo-600" />
-                        En Seguimiento / Pedirá Horario por WhatsApp
+                      <span className="flex items-center gap-2.5 text-left">
+                        {(currentPilotoContact.attemptsCount || 0) >= 1 ||
+                        dialedContactIds[currentPilotoContact.id] ? (
+                          <MessageCircle className="h-4 w-4 text-indigo-600 shrink-0" />
+                        ) : (
+                          <Lock className="h-4 w-4 text-slate-400 shrink-0" />
+                        )}
+                        <span>
+                          Rescate por WhatsApp tras llamada (Acordar horario de
+                          llamada)
+                        </span>
                       </span>
-                      <ArrowRight className="h-4 w-4 text-indigo-600" />
+                      <ArrowRight className="h-4 w-4 text-indigo-600 shrink-0" />
                     </button>
 
                     <button
@@ -2438,19 +2606,31 @@ export default function Proyecto200Client({
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5">
                 <div className="text-[11px] text-amber-300 font-bold uppercase">
-                  Con Meta 200 Lista
+                  Inventario 200 Listo
                 </div>
                 <div className="text-2xl font-black text-emerald-400 mt-0.5">
                   {adminExecutiveKpis.agentsAt200} /{" "}
                   {adminExecutiveKpis.totalAgents}
                 </div>
               </div>
+              <div className="bg-emerald-500/10 border border-emerald-400/30 rounded-2xl p-3.5">
+                <div className="text-[11px] text-emerald-300 font-bold uppercase">
+                  ⛽ Tanque Lleno (≥100 Calif.)
+                </div>
+                <div className="text-2xl font-black text-emerald-400 mt-0.5">
+                  {adminExecutiveKpis.agentsOptimalFuel} /{" "}
+                  {adminExecutiveKpis.totalAgents}
+                </div>
+              </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5">
-                <div className="text-[11px] text-slate-400 font-bold uppercase">
-                  Contactos Totales
+                <div className="text-[11px] text-indigo-300 font-bold uppercase">
+                  Calificados Vivos / Total
                 </div>
                 <div className="text-2xl font-black text-white mt-0.5">
-                  {adminExecutiveKpis.totalContacts}
+                  {adminExecutiveKpis.totalQualified}{" "}
+                  <span className="text-xs font-semibold text-slate-400">
+                    / {adminExecutiveKpis.totalContacts}
+                  </span>
                 </div>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5">
@@ -2462,16 +2642,8 @@ export default function Proyecto200Client({
                 </div>
               </div>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5">
-                <div className="text-[11px] text-indigo-300 font-bold uppercase">
-                  Toques Ejecutados
-                </div>
-                <div className="text-2xl font-black text-indigo-300 mt-0.5">
-                  {adminExecutiveKpis.totalTouches}
-                </div>
-              </div>
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5">
                 <div className="text-[11px] text-rose-300 font-bold uppercase">
-                  Descalificados
+                  Quemados / Descalif.
                 </div>
                 <div className="text-2xl font-black text-rose-400 mt-0.5">
                   {adminExecutiveKpis.totalDescalificados}
@@ -2480,9 +2652,276 @@ export default function Proyecto200Client({
             </div>
           </div>
 
-          {/* Subvista 1: Tabla Ejecutiva de Avance por Agente */}
+          {/* Subvista 1: Tablero de Tanques de Gasolina + Tabla Ejecutiva por Agente */}
           {adminSubView === "agentes" && (
-            <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="space-y-6">
+              {/* TABLERO VISUAL DE TANQUES DE GASOLINA COMERCIAL POR ASESOR */}
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-5 md:p-6 space-y-5">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                  <div className="space-y-1">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[11px] font-black uppercase tracking-wider">
+                      <Flame className="h-3.5 w-3.5 text-amber-600" />
+                      Metodología LIMRA / MDRT 200 Totales · 100 Calificados Vivos
+                    </div>
+                    <h3 className="text-lg font-black text-slate-900">
+                      ⛽ Tanques de Gasolina Comercial por Asesor (Ritmo y Combustible Activo)
+                    </h3>
+                    <p className="text-xs text-slate-600 max-w-3xl">
+                      Todo asesor debe tener <strong>200 prospectos registrados</strong>, pero su ritmo real depende de mantener siempre al menos{" "}
+                      <strong className="text-emerald-700">100 prospectos calificados (no descalificados)</strong> combinando{" "}
+                      <span className="font-bold text-indigo-700">Contactos Base</span> +{" "}
+                      <span className="font-bold text-amber-700">Referidos (Octanaje Premium)</span>. Si el tanque baja de 65 calificados, debe recargar pidiendo referidos de inmediato.
+                    </p>
+                  </div>
+
+                  {/* Leyenda de Semáforo de Gasolina */}
+                  <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      <span className="h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                      ≥100 Óptimo (4-5 sem)
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-amber-50 text-amber-800 border border-amber-200">
+                      <span className="h-2.5 w-2.5 rounded-full bg-amber-500" />
+                      65–99 Medio (Recargar)
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-orange-50 text-orange-800 border border-orange-200">
+                      <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
+                      35–64 Reserva (&lt;10 días)
+                    </span>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-rose-50 text-rose-800 border border-rose-200">
+                      <span className="h-2.5 w-2.5 rounded-full bg-rose-600" />
+                      &lt;35 Peligro de Paro
+                    </span>
+                  </div>
+                </div>
+
+                {/* Grid de Tanques por Asesor */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {(adminData?.agentSummaries || []).map((ag: any) => {
+                    const qualifiedCount =
+                      ag.qualifiedCount ??
+                      ag.prospectosCount + ag.referidoresCount;
+                    const referralsCount =
+                      ag.referralsOriginCount ?? ag.referidoresCount;
+                    const baseCount =
+                      ag.baseContactsCount ??
+                      Math.max(0, qualifiedCount - referralsCount);
+                    const disqualifiedCount = ag.descalificadosCount || 0;
+                    const fuelPct = Math.min(
+                      100,
+                      Math.round((qualifiedCount / 100) * 100)
+                    );
+
+                    const isOptimal = qualifiedCount >= 100;
+                    const isMedium =
+                      qualifiedCount >= 65 && qualifiedCount < 100;
+                    const isReserve =
+                      qualifiedCount >= 35 && qualifiedCount < 65;
+
+                    const cardBorder = isOptimal
+                      ? "border-emerald-200 bg-gradient-to-br from-emerald-50/40 via-white to-white"
+                      : isMedium
+                      ? "border-amber-200 bg-gradient-to-br from-amber-50/40 via-white to-white"
+                      : isReserve
+                      ? "border-orange-300 bg-gradient-to-br from-orange-50/50 via-white to-white"
+                      : "border-rose-300 bg-gradient-to-br from-rose-50/60 via-white to-white";
+
+                    const tankFillStyle = isOptimal
+                      ? "bg-gradient-to-t from-emerald-600 via-emerald-500 to-teal-400"
+                      : isMedium
+                      ? "bg-gradient-to-t from-amber-600 via-amber-500 to-yellow-400"
+                      : isReserve
+                      ? "bg-gradient-to-t from-orange-600 via-orange-500 to-amber-400"
+                      : "bg-gradient-to-t from-rose-700 via-rose-600 to-orange-500";
+
+                    const badgeStyle = isOptimal
+                      ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+                      : isMedium
+                      ? "bg-amber-100 text-amber-900 border-amber-300"
+                      : isReserve
+                      ? "bg-orange-100 text-orange-900 border-orange-300"
+                      : "bg-rose-100 text-rose-900 border-rose-300 animate-pulse";
+
+                    const statusText = isOptimal
+                      ? "🟢 Tanque Lleno · Ritmo Sano (4–5 sem)"
+                      : isMedium
+                      ? `🟡 Medio Tanque · Faltan ${100 - qualifiedCount} calif.`
+                      : isReserve
+                      ? `🟠 En Reserva (<10 días) · Urgente +${100 - qualifiedCount} ref.`
+                      : `🔴 ¡Peligro de Paro! Solo ${qualifiedCount} calificados`;
+
+                    // Porcentajes sobre la meta de 200 para la barra de composición de contactos + referidos
+                    const baseBarPct = Math.min(
+                      100,
+                      Math.round((baseCount / 200) * 100)
+                    );
+                    const refBarPct = Math.min(
+                      100 - baseBarPct,
+                      Math.round((referralsCount / 200) * 100)
+                    );
+                    const disqBarPct = Math.min(
+                      100 - baseBarPct - refBarPct,
+                      Math.round((disqualifiedCount / 200) * 100)
+                    );
+
+                    const totalLoggedTouches =
+                      (ag.phoneTouchesCount || 0) +
+                      (ag.whatsappTouchesCount || 0);
+                    const waRatio = ag.whatsappRatioPct || 0;
+                    const phoneRatio =
+                      totalLoggedTouches > 0 ? 100 - waRatio : 100;
+                    const hasExcessWhatsapp =
+                      totalLoggedTouches >= 3 && waRatio > 30;
+
+                    return (
+                      <div
+                        key={ag.agentId}
+                        className={`rounded-2xl border p-4 shadow-xs transition hover:shadow-md flex flex-col justify-between gap-3.5 ${cardBorder}`}
+                      >
+                        {/* Encabezado de Asesor + Tanque Vertical Visual */}
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2">
+                              <h4 className="text-sm font-black text-slate-900 truncate">
+                                {ag.name}
+                              </h4>
+                              {ag.hasReached200 && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-black">
+                                  200/200
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 truncate">
+                              {ag.email}
+                            </p>
+                            <div className="mt-2">
+                              <span
+                                className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-black border ${badgeStyle}`}
+                              >
+                                {statusText}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Cilindro Visual de Tanque de Gasolina */}
+                          <div className="flex flex-col items-center shrink-0">
+                            <div className="w-5 h-1.5 bg-slate-300 rounded-t-sm" />
+                            <div className="relative w-12 h-20 rounded-xl border-2 border-slate-700 bg-slate-900 overflow-hidden flex flex-col justify-end shadow-inner">
+                              {/* Marcas de medición del tanque (Full, 3/4, 1/2, R) */}
+                              <div className="absolute inset-x-0 top-[25%] border-t border-dashed border-white/20 z-10" />
+                              <div className="absolute inset-x-0 top-[50%] border-t border-dashed border-white/25 z-10" />
+                              <div className="absolute inset-x-0 top-[75%] border-t border-dashed border-rose-400/40 z-10" />
+                              <div
+                                className={`w-full transition-all duration-700 ${tankFillStyle}`}
+                                style={{ height: `${Math.max(6, fuelPct)}%` }}
+                              />
+                              <div className="absolute inset-0 flex flex-col items-center justify-center z-20 pointer-events-none">
+                                <span className="text-xs font-black text-white drop-shadow">
+                                  {fuelPct}%
+                                </span>
+                                <span className="text-[9px] font-bold text-white/80 uppercase">
+                                  {qualifiedCount}/100
+                                </span>
+                              </div>
+                            </div>
+                            <span className="text-[10px] font-bold text-slate-500 mt-1">
+                              Calificados
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Barra de Composición: Contactos Base vs Referidos vs Descalificados (sobre 200) */}
+                        <div className="space-y-1.5 bg-white/90 rounded-xl p-3 border border-slate-200/80">
+                          <div className="flex items-center justify-between text-[11px] font-bold">
+                            <span className="text-slate-700">
+                              Composición de Inventario ({ag.totalContacts} / 200)
+                            </span>
+                            <span className="text-emerald-700 font-black">
+                              {qualifiedCount} Vivos · {disqualifiedCount} Quemados
+                            </span>
+                          </div>
+
+                          {/* Barra apilada de Contactos + Referidos + Quemados */}
+                          <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden flex">
+                            {baseBarPct > 0 && (
+                              <div
+                                className="h-full bg-indigo-600 transition-all"
+                                style={{ width: `${baseBarPct}%` }}
+                                title={`Contactos Base Calificados: ${baseCount}`}
+                              />
+                            )}
+                            {refBarPct > 0 && (
+                              <div
+                                className="h-full bg-amber-500 transition-all"
+                                style={{ width: `${refBarPct}%` }}
+                                title={`Referidos y Centros de Influencia: ${referralsCount}`}
+                              />
+                            )}
+                            {disqBarPct > 0 && (
+                              <div
+                                className="h-full bg-rose-400 transition-all"
+                                style={{ width: `${disqBarPct}%` }}
+                                title={`Descalificados (Quemados): ${disqualifiedCount}`}
+                              />
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-1 pt-1 text-[10px] font-bold">
+                            <div className="flex items-center gap-1 text-indigo-900">
+                              <span className="h-2 w-2 rounded-full bg-indigo-600 shrink-0" />
+                              Base: <strong>{baseCount}</strong>
+                            </div>
+                            <div className="flex items-center gap-1 text-amber-900">
+                              <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
+                              Referidos: <strong>{referralsCount}</strong>
+                            </div>
+                            <div className="flex items-center gap-1 text-rose-800">
+                              <span className="h-2 w-2 rounded-full bg-rose-400 shrink-0" />
+                              Descalif.: <strong>{disqualifiedCount}</strong>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Pie de Tarjeta: Ratio Teléfono vs WhatsApp + Botón Auditar */}
+                        <div className="flex items-center justify-between gap-2 pt-1">
+                          <div className="text-[11px]">
+                            {totalLoggedTouches > 0 ? (
+                              <span
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg font-bold ${
+                                  hasExcessWhatsapp
+                                    ? "bg-rose-100 text-rose-800 border border-rose-200"
+                                    : "bg-slate-100 text-slate-700"
+                                }`}
+                              >
+                                📞 {phoneRatio}% Tel · 💬 {waRatio}% WA
+                                {hasExcessWhatsapp && " ⚠️ Exceso WA"}
+                              </span>
+                            ) : (
+                              <span className="text-slate-400 font-semibold">
+                                Sin llamadas registradas aún
+                              </span>
+                            )}
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAdminSelectedAgentId(ag.agentId);
+                              setAdminSubView("contactos");
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-[11px] font-bold transition shrink-0"
+                          >
+                            <Eye className="h-3 w-3" /> Auditar ({ag.citasAgendadasCount} citas)
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Tabla Ejecutiva Detallada */}
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
               <div className="p-5 border-b border-slate-200 flex items-center justify-between">
                 <div>
                   <h3 className="text-base font-black text-slate-900">
@@ -2591,6 +3030,7 @@ export default function Proyecto200Client({
                     })}
                   </tbody>
                 </table>
+              </div>
               </div>
             </div>
           )}
