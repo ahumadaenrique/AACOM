@@ -330,6 +330,27 @@ export const MANUAL_VIDEOS_CATALOG: ManualVideoItem[] = [
       "Notificaciones Push con PIN de seguridad y fábrica de reactivos con IA",
       "Mi Agencia SaaS, Mi Membresía Stripe y Tickets de Soporte pegando capturas con Ctrl+V"
     ]
+  },
+  {
+    key: "mod15",
+    episodeNumber: "15",
+    title: "Módulo Proyecto 200: CRM y Piloto Automático de Prospección",
+    shortModuleTitle: "Proyecto 200 (Piloto Automático)",
+    subtitle: "Audita tus 200 contactos válidos de arranque, conecta tus Encuestas de Satisfacción y ejecuta llamadas secuenciales con Priority Score.",
+    duration: "2:36",
+    roleBadge: "Todos",
+    videoUrl: "/api/manual-video/mod15",
+    blobUrl: "https://lxyhgkkgwtxjiqp0.private.blob.vercel-storage.com/manual-aacomsoft/video_mod15_proyecto_200_crm_piloto_AAA.mp4",
+    posterUrl: "/manual/posters/mod15.png",
+    quickLink: "/proyecto-200",
+    modulePaths: ["/proyecto-200"],
+    manualChapterIds: ["herramientas-comerciales", "prospeccion-y-referidos"],
+    highlights: [
+      "Termómetro Oficial de Arranque (200 contactos válidos) y puente con Encuesta de Satisfacción",
+      "Importador Excel/CSV con Validador Inteligente de 5 campos obligatorios y exclusión automática",
+      "Piloto Automático Secuencial (Score 1–100 pts), Guion de 5 Pilares y Escudo Anti-Objeciones",
+      "Candado de Resolución (Cita Agendada con confeti), Tabla CRM y Torre Ejecutiva para el Promotor"
+    ]
   }
 ];
 
