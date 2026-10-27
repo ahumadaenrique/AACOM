@@ -46,6 +46,8 @@ import {
   Lock,
   Flame,
   Zap,
+  Bell,
+  FileText,
 } from "lucide-react";
 import {
   getProject200DashboardData,
@@ -53,6 +55,7 @@ import {
   createProject200Contact,
   updateProject200Contact,
   recordGuidedProspectingAction,
+  addProject200ContactLogAndSchedule,
   deleteProject200Contact,
   getAdminProject200Analytics,
   toggleProject200AgentTracking,
@@ -97,7 +100,38 @@ const OBJECTION_GUIDES = [
     response:
       "«Con mayor razón vale la pena que nos sentemos. La asesoría es 100% gratuita y sin ningún compromiso de contratar algo hoy; al contrario, te ayuda a poner orden en tu flujo financiero y detectar fugas de dinero para que tengas mayor liquidez. ¿Nos vemos este miércoles a las 6:00 PM o el viernes a las 11:00 AM?»",
   },
+  {
+    id: "diciembre",
+    label: "🎄 «Ahorita no, búscame en Diciembre / Más adelante»",
+    response:
+      "«¡Excelente que ya tengas en mente revisar tus finanzas en esa fecha! Si quieres, podemos hacer hoy el diagnóstico gratuito de 15 minutos para que llegues a ese mes con el plan claro, o bien dime qué día exacto te marco para dejar agendado tu recordatorio prioritario desde ahorita.»",
+  },
 ];
+
+function computePresetDateString(
+  preset: "1W" | "15D" | "NEXT_MONTH" | "DEC"
+): string {
+  const now = new Date();
+  if (preset === "1W") {
+    const d = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return d.toISOString().split("T")[0];
+  }
+  if (preset === "15D") {
+    const d = new Date(now.getTime() + 15 * 24 * 60 * 60 * 1000);
+    return d.toISOString().split("T")[0];
+  }
+  if (preset === "NEXT_MONTH") {
+    const d = new Date(now.getFullYear(), now.getMonth() + 1, 2, 12, 0, 0);
+    return d.toISOString().split("T")[0];
+  }
+  // DEC: 2 de diciembre del año en curso (o del siguiente si ya estamos en diciembre avanzado)
+  const targetYear =
+    now.getMonth() === 11 && now.getDate() >= 15
+      ? now.getFullYear() + 1
+      : now.getFullYear();
+  const decDate = new Date(targetYear, 11, 2, 12, 0, 0);
+  return decDate.toISOString().split("T")[0];
+}
 
 const COMMON_DISQUALIFICATION_REASONS = [
   "Número telefónico inexistente o fuera de servicio definitivemente",
@@ -195,13 +229,18 @@ export default function Proyecto200Client({
   const [callSeconds, setCallSeconds] = useState<number>(0);
   const [actionNotes, setActionNotes] = useState<string>("");
   const [pilotoActionModal, setPilotoActionModal] = useState<
-    null | "CITA" | "DESCALIFICAR"
+    null | "CITA" | "RECORDATORIO" | "DESCALIFICAR"
   >(null);
   const [scheduledDate, setScheduledDate] = useState<string>(() => {
     const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
     return tomorrow.toISOString().split("T")[0];
   });
   const [scheduledTime, setScheduledTime] = useState<string>("17:00");
+  const [reminderDate, setReminderDate] = useState<string>(() =>
+    computePresetDateString("15D")
+  );
+  const [reminderTime, setReminderTime] = useState<string>("10:00");
+  const [reminderReasonInput, setReminderReasonInput] = useState<string>("");
   const [disqReasonInput, setDisqReasonInput] = useState<string>("");
   const [disqPreset, setDisqPreset] = useState<string>("");
   const [submittingAction, setSubmittingAction] = useState<boolean>(false);
@@ -238,8 +277,18 @@ export default function Proyecto200Client({
   const [crmDisqReason, setCrmDisqReason] = useState<string>("");
   const [crmDisqPreset, setCrmDisqPreset] = useState<string>("");
 
-  // Modal de Historial de Contacto
+  // Modal Expediente 360° y Bitácora Interactiva de Contacto
   const [historyContact, setHistoryContact] = useState<any | null>(null);
+  const [drawerMode, setDrawerMode] = useState<
+    "NOTA" | "RECORDATORIO" | "CITA"
+  >("NOTA");
+  const [drawerNoteInput, setDrawerNoteInput] = useState<string>("");
+  const [drawerScheduledDate, setDrawerScheduledDate] = useState<string>(() =>
+    computePresetDateString("15D")
+  );
+  const [drawerScheduledTime, setDrawerScheduledTime] =
+    useState<string>("10:00");
+  const [savingDrawerAction, setSavingDrawerAction] = useState<boolean>(false);
 
   // Estado Importador Excel / CSV
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -303,23 +352,56 @@ export default function Proyecto200Client({
     }
   };
 
+  // Recordatorios programados cuya fecha ya llegó (hoy o vencidos)
+  const remindersDueToday = useMemo(() => {
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    return contacts.filter(
+      (c) =>
+        c.classification !== "DESCALIFICADO" &&
+        c.status === "RECORDATORIO_PROGRAMADO" &&
+        c.nextActionAt &&
+        new Date(c.nextActionAt) <= endOfToday
+    );
+  }, [contacts]);
+
   // Cola priorizada para el Piloto Automático de Prospección
   const activeQueue = useMemo(() => {
     const now = new Date();
-    const eligible = contacts.filter(
-      (c) =>
-        c.classification !== "DESCALIFICADO" &&
-        c.status !== "DESCARTADO" &&
-        c.status !== "CITA_AGENDADA"
-    );
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    // Contactos elegibles hoy: excluye descalificados, citas agendadas y recordatorios futuros que aún no vencen
+    const eligible = contacts.filter((c) => {
+      if (
+        c.classification === "DESCALIFICADO" ||
+        c.status === "DESCARTADO" ||
+        c.status === "CITA_AGENDADA"
+      ) {
+        return false;
+      }
+      if (c.status === "RECORDATORIO_PROGRAMADO") {
+        // Solo entran a la cola hoy si su fecha de recordatorio ya llegó
+        return Boolean(c.nextActionAt && new Date(c.nextActionAt) <= endOfToday);
+      }
+      return true;
+    });
 
     const readyNow = eligible.filter(
-      (c) => !c.nextActionAt || new Date(c.nextActionAt) <= now
+      (c) =>
+        c.status === "RECORDATORIO_PROGRAMADO" ||
+        !c.nextActionAt ||
+        new Date(c.nextActionAt) <= now
     );
 
     const listToSort = readyNow.length > 0 ? readyNow : eligible;
 
     return [...listToSort].sort((a, b) => {
+      const aIsDueReminder = a.status === "RECORDATORIO_PROGRAMADO" ? 1 : 0;
+      const bIsDueReminder = b.status === "RECORDATORIO_PROGRAMADO" ? 1 : 0;
+      if (bIsDueReminder !== aIsDueReminder) {
+        return bIsDueReminder - aIsDueReminder;
+      }
       if (b.priorityScore !== a.priorityScore) {
         return b.priorityScore - a.priorityScore;
       }
@@ -329,17 +411,20 @@ export default function Proyecto200Client({
 
   const currentPilotoContact = useMemo(() => {
     if (selectedQueueContactId) {
-      const found = activeQueue.find((c) => c.id === selectedQueueContactId);
+      const found =
+        activeQueue.find((c) => c.id === selectedQueueContactId) ||
+        contacts.find((c) => c.id === selectedQueueContactId);
       if (found) return found;
     }
     return activeQueue[0] || null;
-  }, [activeQueue, selectedQueueContactId]);
+  }, [activeQueue, contacts, selectedQueueContactId]);
 
   // Cronómetro en vivo por tarjeta en Piloto Automático
   useEffect(() => {
     setCallSeconds(0);
     setActionNotes("");
     setPilotoActionModal(null);
+    setReminderReasonInput("");
     setDisqReasonInput("");
     setDisqPreset("");
   }, [currentPilotoContact?.id]);
@@ -687,6 +772,7 @@ export default function Proyecto200Client({
   const handlePilotoOutcome = async (
     actionType:
       | "CITA_AGENDADA"
+      | "RECORDATORIO_PROGRAMADO"
       | "NO_CONTESTO"
       | "SEGUIMIENTO_WHATSAPP"
       | "CONVERTIR_REFERIDOR"
@@ -719,18 +805,43 @@ export default function Proyecto200Client({
       return;
     }
 
+    const combinedNotesForReminder =
+      reminderReasonInput.trim() || actionNotes.trim();
+
+    if (
+      actionType === "RECORDATORIO_PROGRAMADO" &&
+      combinedNotesForReminder.length < 3
+    ) {
+      showToast(
+        "error",
+        "Es obligatorio escribir qué te comentó el prospecto y por qué pidió que le llames en esa fecha (ej. 'Búscame en diciembre con el aguinaldo')."
+      );
+      return;
+    }
+
     setSubmittingAction(true);
     try {
       const res = await recordGuidedProspectingAction({
         contactId: currentPilotoContact.id,
         actionType,
         scheduledDate:
-          actionType === "CITA_AGENDADA" ? scheduledDate : undefined,
+          actionType === "CITA_AGENDADA"
+            ? scheduledDate
+            : actionType === "RECORDATORIO_PROGRAMADO"
+            ? reminderDate
+            : undefined,
         scheduledTime:
-          actionType === "CITA_AGENDADA" ? scheduledTime : undefined,
+          actionType === "CITA_AGENDADA"
+            ? scheduledTime
+            : actionType === "RECORDATORIO_PROGRAMADO"
+            ? reminderTime
+            : undefined,
         disqualificationReason:
           actionType === "DESCALIFICAR" ? finalDisqReason : undefined,
-        notes: actionNotes.trim() || undefined,
+        notes:
+          actionType === "RECORDATORIO_PROGRAMADO"
+            ? combinedNotesForReminder
+            : actionNotes.trim() || undefined,
       });
 
       if (!res.success) {
@@ -743,6 +854,11 @@ export default function Proyecto200Client({
         showToast(
           "success",
           `¡Excelente! Cita agendada con ${currentPilotoContact.fullName}. Cargando siguiente contacto prioritario...`
+        );
+      } else if (actionType === "RECORDATORIO_PROGRAMADO") {
+        showToast(
+          "success",
+          `⏰ Recordatorio programado para ${currentPilotoContact.fullName} el ${reminderDate}. El sistema te avisará puntualmente ese día.`
         );
       } else if (actionType === "NO_CONTESTO") {
         showToast(
@@ -768,9 +884,89 @@ export default function Proyecto200Client({
 
       setSelectedQueueContactId(null);
       setPilotoActionModal(null);
+      setReminderReasonInput("");
       await refreshAllData();
     } finally {
       setSubmittingAction(false);
+    }
+  };
+
+  // Abrir Expediente 360° y Bitácora Interactiva de cualquier prospecto
+  const openContactHistoryModal = (
+    contact: any,
+    initialMode: "NOTA" | "RECORDATORIO" | "CITA" = "NOTA"
+  ) => {
+    setHistoryContact(contact);
+    setDrawerMode(initialMode);
+    setDrawerNoteInput("");
+    if (contact.nextActionAt) {
+      const d = new Date(contact.nextActionAt);
+      if (!isNaN(d.getTime()) && d > new Date()) {
+        setDrawerScheduledDate(d.toISOString().split("T")[0]);
+      } else {
+        setDrawerScheduledDate(computePresetDateString("15D"));
+      }
+    } else {
+      setDrawerScheduledDate(computePresetDateString("15D"));
+    }
+    setDrawerScheduledTime("10:00");
+  };
+
+  // Guardar nota, recordatorio o cita directamente desde el Expediente 360° en el CRM
+  const handleSaveDrawerAction = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!historyContact) return;
+
+    setSavingDrawerAction(true);
+    try {
+      const res = await addProject200ContactLogAndSchedule({
+        contactId: historyContact.id,
+        mode: drawerMode,
+        notes: drawerNoteInput,
+        scheduledDate:
+          drawerMode === "RECORDATORIO" || drawerMode === "CITA"
+            ? drawerScheduledDate
+            : undefined,
+        scheduledTime:
+          drawerMode === "RECORDATORIO" || drawerMode === "CITA"
+            ? drawerScheduledTime
+            : undefined,
+      });
+
+      if (!res.success) {
+        showToast(
+          "error",
+          res.error || "No se pudo guardar en la bitácora del prospecto."
+        );
+        return;
+      }
+
+      if (res.contact) {
+        setHistoryContact(res.contact);
+      }
+      setDrawerNoteInput("");
+
+      if (drawerMode === "RECORDATORIO") {
+        showToast(
+          "success",
+          `⏰ Recordatorio agendado para ${historyContact.fullName} el ${drawerScheduledDate} (${drawerScheduledTime} hrs).`
+        );
+      } else if (drawerMode === "CITA") {
+        confetti({ particleCount: 65, spread: 60, origin: { y: 0.65 } });
+        showToast(
+          "success",
+          `📅 Cita agendada con ${historyContact.fullName} el ${drawerScheduledDate} a las ${drawerScheduledTime}.`
+        );
+      } else {
+        showToast(
+          "success",
+          `📝 Comentario guardado en la bitácora de ${historyContact.fullName}.`
+        );
+      }
+
+      await refreshAllData();
+    } finally {
+      setSavingDrawerAction(false);
     }
   };
 
@@ -1082,13 +1278,17 @@ export default function Proyecto200Client({
               </div>
 
               <p className="text-[11px] text-slate-300 leading-snug">
-                Descalificados quemados:{" "}
+                Descalificados:{" "}
                 <strong className="text-rose-300">
                   {stats.descalificadosCount}
                 </strong>{" "}
-                · Citas agendadas:{" "}
+                · Citas:{" "}
                 <strong className="text-emerald-300">
                   {stats.citasAgendadasCount}
+                </strong>{" "}
+                · Posicionados a futuro:{" "}
+                <strong className="text-amber-300">
+                  {stats.recordatoriosProgramadosCount || 0}
                 </strong>
               </p>
             </div>
@@ -1240,6 +1440,89 @@ export default function Proyecto200Client({
                 >
                   + Calificar e Integrar
                 </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Radar Automático de Recordatorios Programados para Hoy / Vencidos */}
+      {remindersDueToday.length > 0 && (
+        <div className="rounded-2xl bg-gradient-to-r from-indigo-950 via-slate-900 to-indigo-950 text-white border border-amber-400/50 p-4 md:p-5 shadow-md space-y-3">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 rounded-xl bg-amber-400 text-slate-950 shadow-sm shrink-0">
+                <Bell className="h-5 w-5 animate-bounce" />
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-black uppercase tracking-wider mb-1">
+                  Radar de Seguimiento Puntual Proyecto 200
+                </div>
+                <h3 className="text-sm md:text-base font-black text-white">
+                  ¡Hoy toca contactar a {remindersDueToday.length} prospecto(s)
+                  que te pidieron buscarlos en esta fecha!
+                </h3>
+                <p className="text-xs text-slate-300">
+                  Estos prospectos ya fueron colocados automáticamente hasta
+                  arriba de tu Piloto Automático con la nota exacta que dejaste
+                  en su bitácora.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedQueueContactId(remindersDueToday[0].id);
+                setActiveTab("piloto");
+              }}
+              className="px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 text-xs font-black shrink-0 transition shadow-sm"
+            >
+              📞 Atender Recordatorios Ahora
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5">
+            {remindersDueToday.slice(0, 6).map((rem: any) => (
+              <div
+                key={rem.id}
+                className="bg-white/10 backdrop-blur-xs rounded-xl p-3 border border-white/15 flex items-center justify-between gap-2.5"
+              >
+                <div className="min-w-0">
+                  <div className="font-bold text-xs text-white truncate">
+                    {rem.fullName}{" "}
+                    <span className="text-amber-300 font-mono">
+                      ({rem.phone})
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-amber-200 font-semibold">
+                    ⏰ Programado: {formatDateTime(rem.nextActionAt)}
+                  </div>
+                  {rem.notes && (
+                    <div className="text-[11px] text-slate-300 italic truncate mt-0.5">
+                      «{rem.notes}»
+                    </div>
+                  )}
+                </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => openContactHistoryModal(rem, "NOTA")}
+                    className="px-2.5 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 text-white text-[11px] font-bold transition"
+                    title="Abrir Bitácora 360°"
+                  >
+                    📋 Bitácora
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedQueueContactId(rem.id);
+                      setActiveTab("piloto");
+                    }}
+                    className="px-2.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white text-[11px] font-black transition"
+                  >
+                    Llamar
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -1407,6 +1690,38 @@ export default function Proyecto200Client({
                   </div>
 
                   <div className="p-6 space-y-6">
+                    {currentPilotoContact.status === "RECORDATORIO_PROGRAMADO" && (
+                      <div className="rounded-2xl bg-amber-50 border-2 border-amber-400 p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div className="flex items-start gap-2.5">
+                          <Bell className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                          <div className="text-xs text-amber-950">
+                            <strong className="font-black block">
+                              🔔 RECORDATORIO PROGRAMADO PARA HOY (
+                              {formatDateTime(currentPilotoContact.nextActionAt)}
+                              )
+                            </strong>
+                            <span>
+                              Este prospecto te pidió que lo volvieras a buscar
+                              en esta fecha. Revisa su bitácora abajo antes de
+                              marcarle.
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            openContactHistoryModal(
+                              currentPilotoContact,
+                              "NOTA"
+                            )
+                          }
+                          className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black shrink-0 transition"
+                        >
+                          📋 Ver Bitácora ({currentPilotoContact.logs?.length || 0})
+                        </button>
+                      </div>
+                    )}
+
                     <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
                       <div className="space-y-1.5">
                         <div className="flex flex-wrap items-center gap-2">
@@ -1441,6 +1756,19 @@ export default function Proyecto200Client({
                               ⭐ Referido Encuesta
                             </span>
                           )}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openContactHistoryModal(
+                                currentPilotoContact,
+                                "NOTA"
+                              )
+                            }
+                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-900 border border-slate-300 transition"
+                          >
+                            <History className="h-3 w-3" /> Bitácora 360° (
+                            {currentPilotoContact.logs?.length || 0})
+                          </button>
                         </div>
 
                         <h2 className="text-2xl md:text-3xl font-black text-slate-900">
@@ -1784,6 +2112,155 @@ export default function Proyecto200Client({
                       </div>
                     )}
 
+                    {/* Botón: Posponer / Agendar Recordatorio Futuro ("Ahorita no, pero en Diciembre / X fecha") */}
+                    <button
+                      type="button"
+                      disabled={submittingAction}
+                      onClick={() =>
+                        setPilotoActionModal(
+                          pilotoActionModal === "RECORDATORIO"
+                            ? null
+                            : "RECORDATORIO"
+                        )
+                      }
+                      className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-700 text-white font-black text-sm shadow-sm shadow-indigo-500/20 transition"
+                    >
+                      <span className="flex items-center gap-2.5 text-left">
+                        <Bell className="h-4 w-4 text-amber-300 shrink-0" />
+                        <span>
+                          ⏰ Posponer / Agendar Recordatorio («En Diciembre / Otra
+                          Fecha»)
+                        </span>
+                      </span>
+                      <ChevronRight className="h-4 w-4 shrink-0" />
+                    </button>
+
+                    {/* Sub-panel para programar Recordatorio Futuro con Atajos de 1 Clic */}
+                    {pilotoActionModal === "RECORDATORIO" && (
+                      <div className="p-4 rounded-2xl bg-indigo-50 border-2 border-indigo-300 space-y-3">
+                        <div className="text-xs font-black text-indigo-950">
+                          ¿Cuándo te pidió {currentPilotoContact.fullName} que lo
+                          vuelvas a buscar?
+                        </div>
+
+                        {/* Atajos rápidos de 1 clic */}
+                        <div className="grid grid-cols-2 gap-1.5">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setReminderDate(computePresetDateString("1W"));
+                              if (!reminderReasonInput) {
+                                setReminderReasonInput(
+                                  "Pidió que le llame la próxima semana."
+                                );
+                              }
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-indigo-100 border border-indigo-200 text-[11px] font-bold text-indigo-900 transition text-left"
+                          >
+                            📅 En 1 semana
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setReminderDate(computePresetDateString("15D"));
+                              if (!reminderReasonInput) {
+                                setReminderReasonInput(
+                                  "Pidió que lo contacte en 15 días (quincena)."
+                                );
+                              }
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-indigo-100 border border-indigo-200 text-[11px] font-bold text-indigo-900 transition text-left"
+                          >
+                            📆 En 15 días
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setReminderDate(
+                                computePresetDateString("NEXT_MONTH")
+                              );
+                              if (!reminderReasonInput) {
+                                setReminderReasonInput(
+                                  "Pidió hablar a inicios del próximo mes."
+                                );
+                              }
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-indigo-100 border border-indigo-200 text-[11px] font-bold text-indigo-900 transition text-left"
+                          >
+                            🗓️ Inicio próx. mes
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setReminderDate(computePresetDateString("DEC"));
+                              if (!reminderReasonInput) {
+                                setReminderReasonInput(
+                                  "Me dijo «Ahorita no, búscame en diciembre con el aguinaldo»."
+                                );
+                              }
+                            }}
+                            className="px-2.5 py-1.5 rounded-xl bg-amber-100 hover:bg-amber-200 border border-amber-300 text-[11px] font-black text-amber-950 transition text-left"
+                          >
+                            🎄 En Diciembre (Aguinaldo)
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[11px] font-bold text-indigo-900 mb-1">
+                              Fecha Exacta del Recordatorio *
+                            </label>
+                            <input
+                              type="date"
+                              value={reminderDate}
+                              onChange={(e) => setReminderDate(e.target.value)}
+                              className="w-full rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-xs font-bold"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-indigo-900 mb-1">
+                              Hora sugerida
+                            </label>
+                            <input
+                              type="time"
+                              value={reminderTime}
+                              onChange={(e) => setReminderTime(e.target.value)}
+                              className="w-full rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-xs font-bold"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-black text-indigo-950 mb-1">
+                            ¿Qué sucedió y qué debes recordar ese día? (Obligatorio
+                            en Bitácora) *
+                          </label>
+                          <textarea
+                            rows={2}
+                            value={reminderReasonInput}
+                            onChange={(e) =>
+                              setReminderReasonInput(e.target.value)
+                            }
+                            placeholder="Ej. Me comentó que ahorita está pagando colegiaturas pero en diciembre recibe su aguinaldo y quiere revisar ahorro..."
+                            className="w-full rounded-xl border border-indigo-300 bg-white px-3 py-2 text-xs text-slate-900"
+                          />
+                        </div>
+
+                        <button
+                          type="button"
+                          disabled={submittingAction}
+                          onClick={() =>
+                            handlePilotoOutcome("RECORDATORIO_PROGRAMADO")
+                          }
+                          className="w-full py-2.5 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white text-xs font-black uppercase tracking-wider transition"
+                        >
+                          {submittingAction
+                            ? "Guardando Recordatorio..."
+                            : "Guardar Recordatorio en Bitácora y Pasar al Siguiente →"}
+                        </button>
+                      </div>
+                    )}
+
                     <button
                       type="button"
                       disabled={submittingAction}
@@ -2013,10 +2490,13 @@ export default function Proyecto200Client({
                 className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 bg-slate-50"
               >
                 <option value="ALL">Todos los Estatus</option>
-                <option value="POR_CONTACTAR">Por Contactar</option>
-                <option value="EN_SEGUIMIENTO">En Seguimiento</option>
-                <option value="CITA_AGENDADA">Cita Agendada</option>
-                <option value="DESCARTADO">Descartado</option>
+                <option value="POR_CONTACTAR">🆕 Por Contactar</option>
+                <option value="EN_SEGUIMIENTO">⏳ En Seguimiento</option>
+                <option value="RECORDATORIO_PROGRAMADO">
+                  ⏰ Recordatorio Programado
+                </option>
+                <option value="CITA_AGENDADA">📅 Cita Agendada</option>
+                <option value="DESCARTADO">🚫 Descartado</option>
               </select>
             </div>
           </div>
@@ -2062,12 +2542,34 @@ export default function Proyecto200Client({
                         </td>
 
                         <td className="py-3.5 px-4">
-                          <div className="font-bold text-slate-900">
-                            {contact.fullName}
-                          </div>
-                          <div className="text-xs text-slate-500 font-mono flex items-center gap-2 mt-0.5">
-                            <span>📞 {contact.phone}</span>
-                          </div>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openContactHistoryModal(contact, "NOTA")
+                            }
+                            className="text-left group focus:outline-none"
+                            title="Haz clic para abrir el Expediente 360°, revisar su bitácora o agendar un recordatorio"
+                          >
+                            <div className="font-bold text-slate-900 group-hover:text-indigo-600 transition flex items-center gap-1.5">
+                              <span className="underline decoration-slate-300 group-hover:decoration-indigo-500 underline-offset-2">
+                                {contact.fullName}
+                              </span>
+                              <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-[10px] font-black">
+                                📋 {contact.logs?.length || 0}
+                              </span>
+                            </div>
+                            <div className="text-xs text-slate-500 font-mono flex items-center gap-2 mt-0.5">
+                              <span>📞 {contact.phone}</span>
+                              <span className="text-[10px] font-sans font-bold text-indigo-600 opacity-80 group-hover:opacity-100">
+                                Ver bitácora / Agendar →
+                              </span>
+                            </div>
+                            {contact.notes && (
+                              <div className="mt-1 text-[11px] text-slate-600 bg-amber-50/70 border border-amber-200/70 rounded-lg px-2 py-0.5 max-w-xs truncate italic">
+                                💬 «{contact.notes}»
+                              </div>
+                            )}
+                          </button>
                         </td>
 
                         <td className="py-3.5 px-4">
@@ -2175,6 +2677,8 @@ export default function Proyecto200Client({
                             className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
                               contact.status === "CITA_AGENDADA"
                                 ? "bg-emerald-100 text-emerald-800"
+                                : contact.status === "RECORDATORIO_PROGRAMADO"
+                                ? "bg-indigo-100 text-indigo-900 border border-indigo-300"
                                 : contact.status === "EN_SEGUIMIENTO"
                                 ? "bg-amber-100 text-amber-800"
                                 : contact.status === "DESCARTADO"
@@ -2184,6 +2688,8 @@ export default function Proyecto200Client({
                           >
                             {contact.status === "CITA_AGENDADA"
                               ? "📅 Cita Agendada"
+                              : contact.status === "RECORDATORIO_PROGRAMADO"
+                              ? "⏰ Recordatorio Programado"
                               : contact.status === "EN_SEGUIMIENTO"
                               ? "⏳ En Seguimiento"
                               : contact.status === "DESCARTADO"
@@ -2192,9 +2698,15 @@ export default function Proyecto200Client({
                           </span>
                           <div className="text-[11px] text-slate-500 mt-1">
                             {contact.attemptsCount} toques •{" "}
-                            {contact.scheduledMeetingAt
+                            {contact.status === "CITA_AGENDADA" &&
+                            contact.scheduledMeetingAt
                               ? `Cita: ${formatDateTime(
                                   contact.scheduledMeetingAt
+                                )}`
+                              : contact.status === "RECORDATORIO_PROGRAMADO" &&
+                                contact.nextActionAt
+                              ? `🔔 Toca llamar: ${formatDateTime(
+                                  contact.nextActionAt
                                 )}`
                               : formatDateTime(contact.lastAttemptAt)}
                           </div>
@@ -2217,11 +2729,23 @@ export default function Proyecto200Client({
                             )}
                             <button
                               type="button"
-                              onClick={() => setHistoryContact(contact)}
-                              className="p-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition"
-                              title="Ver historial de llamadas y notas"
+                              onClick={() =>
+                                openContactHistoryModal(contact, "RECORDATORIO")
+                              }
+                              className="p-1.5 rounded-lg bg-amber-50 text-amber-800 hover:bg-amber-100 border border-amber-200 transition"
+                              title="Agendar recordatorio futuro (ej. Búscame en diciembre)"
                             >
-                              <History className="h-4 w-4" />
+                              <Bell className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                openContactHistoryModal(contact, "NOTA")
+                              }
+                              className="px-2.5 py-1.5 rounded-lg bg-slate-900 text-white hover:bg-indigo-700 text-xs font-bold inline-flex items-center gap-1 transition"
+                              title="Abrir Expediente 360° y Bitácora de comentarios"
+                            >
+                              <History className="h-3.5 w-3.5" /> Bitácora
                             </button>
                             <button
                               type="button"
@@ -3010,14 +3534,21 @@ export default function Proyecto200Client({
                             )}
                           </div>
 
-                          <div className="grid grid-cols-3 gap-1 pt-1 text-[10px] font-bold">
+                          <div className="grid grid-cols-4 gap-1 pt-1 text-[10px] font-bold">
                             <div className="flex items-center gap-1 text-indigo-900">
                               <span className="h-2 w-2 rounded-full bg-indigo-600 shrink-0" />
                               Base: <strong>{baseCount}</strong>
                             </div>
                             <div className="flex items-center gap-1 text-amber-900">
                               <span className="h-2 w-2 rounded-full bg-amber-500 shrink-0" />
-                              Referidos: <strong>{referralsCount}</strong>
+                              Ref.: <strong>{referralsCount}</strong>
+                            </div>
+                            <div className="flex items-center gap-1 text-purple-900">
+                              <span className="h-2 w-2 rounded-full bg-purple-500 shrink-0" />
+                              Futuro:{" "}
+                              <strong>
+                                {ag.recordatoriosProgramadosCount || 0}
+                              </strong>
                             </div>
                             <div className="flex items-center gap-1 text-rose-800">
                               <span className="h-2 w-2 rounded-full bg-rose-400 shrink-0" />
@@ -3240,10 +3771,13 @@ export default function Proyecto200Client({
                     className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700"
                   >
                     <option value="ALL">Todos los Estatus</option>
-                    <option value="POR_CONTACTAR">Por Contactar</option>
-                    <option value="EN_SEGUIMIENTO">En Seguimiento</option>
-                    <option value="CITA_AGENDADA">Cita Agendada</option>
-                    <option value="DESCARTADO">Descartado</option>
+                    <option value="POR_CONTACTAR">🆕 Por Contactar</option>
+                    <option value="EN_SEGUIMIENTO">⏳ En Seguimiento</option>
+                    <option value="RECORDATORIO_PROGRAMADO">
+                      ⏰ Recordatorio Programado
+                    </option>
+                    <option value="CITA_AGENDADA">📅 Cita Agendada</option>
+                    <option value="DESCARTADO">🚫 Descartado</option>
                   </select>
                 </div>
 
@@ -3296,12 +3830,29 @@ export default function Proyecto200Client({
                               </div>
                             </td>
                             <td className="py-3.5 px-4">
-                              <div className="font-bold text-slate-900">
-                                {c.fullName}
-                              </div>
-                              <div className="text-xs text-slate-500 font-mono">
-                                📞 {c.phone}
-                              </div>
+                              <button
+                                type="button"
+                                onClick={() => openContactHistoryModal(c, "NOTA")}
+                                className="text-left group focus:outline-none"
+                                title="Haz clic para abrir el Expediente 360° y Bitácora de este contacto"
+                              >
+                                <div className="font-bold text-slate-900 group-hover:text-indigo-600 transition flex items-center gap-1.5">
+                                  <span className="underline decoration-slate-300 group-hover:decoration-indigo-500 underline-offset-2">
+                                    {c.fullName}
+                                  </span>
+                                  <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-black">
+                                    📋 {c.logs?.length || 0}
+                                  </span>
+                                </div>
+                                <div className="text-xs text-slate-500 font-mono">
+                                  📞 {c.phone}
+                                </div>
+                                {c.notes && (
+                                  <div className="mt-1 text-[11px] text-slate-600 bg-amber-50/70 border border-amber-200/70 rounded-lg px-2 py-0.5 max-w-xs truncate italic">
+                                    💬 «{c.notes}»
+                                  </div>
+                                )}
+                              </button>
                             </td>
                             <td className="py-3.5 px-4">
                               <div className="text-xs font-semibold text-slate-800">
@@ -3341,11 +3892,18 @@ export default function Proyecto200Client({
                             </td>
                             <td className="py-3.5 px-4">
                               <div className="text-xs font-bold text-slate-900">
-                                {c.status}
+                                {c.status === "RECORDATORIO_PROGRAMADO"
+                                  ? "⏰ Recordatorio Programado"
+                                  : c.status}
                               </div>
                               <div className="text-[11px] text-slate-500">
-                                {c.attemptsCount} intentos • Último:{" "}
-                                {formatDateTime(c.lastAttemptAt)}
+                                {c.attemptsCount} intentos •{" "}
+                                {c.status === "RECORDATORIO_PROGRAMADO" &&
+                                c.nextActionAt
+                                  ? `🔔 Toca llamar: ${formatDateTime(
+                                      c.nextActionAt
+                                    )}`
+                                  : `Último: ${formatDateTime(c.lastAttemptAt)}`}
                               </div>
                             </td>
                           </tr>
@@ -3669,64 +4227,410 @@ export default function Proyecto200Client({
       )}
 
       {/* =====================================================================
-          MODAL: HISTORIAL DE ACTIVIDAD DE UN CONTACTO
+          MODAL EXPEDIENTE 360° Y BITÁCORA VIVA DEL PROSPECTO
       ===================================================================== */}
       {historyContact && (
-        <div className="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[85vh] overflow-y-auto">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-base font-black text-slate-900">
-                  Bitácora de Seguimiento: {historyContact.fullName}
-                </h3>
-                <p className="text-xs text-slate-500">
-                  📞 {historyContact.phone} • {historyContact.relationship}
-                </p>
+        <div className="fixed inset-0 z-50 bg-slate-950/65 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden max-h-[92vh] flex flex-col">
+            {/* Encabezado 360° del Prospecto */}
+            <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-5 md:p-6">
+              <div className="flex items-start justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="px-2 py-0.5 rounded-full bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 text-[10px] font-black uppercase tracking-wider">
+                      Expediente 360° y Bitácora Viva
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black">
+                      {historyContact.priorityScore} pts · Prob.{" "}
+                      {historyContact.closingProbability}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-bold">
+                      {historyContact.classification}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-black text-white">
+                    {historyContact.fullName}
+                  </h3>
+                  <div className="text-xs text-slate-300 flex flex-wrap items-center gap-x-3 gap-y-1">
+                    <a
+                      href={`tel:${historyContact.phone}`}
+                      className="font-mono font-bold text-emerald-300 hover:underline"
+                    >
+                      📞 {historyContact.phone}
+                    </a>
+                    <span>• {historyContact.relationship}</span>
+                    <span>
+                      • Sueldo est.:{" "}
+                      <strong className="text-white">
+                        {formatCurrencyMXN(historyContact.estimatedSalary)}/mes
+                      </strong>
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setHistoryContact(null)}
+                  className="text-slate-400 hover:text-white transition"
+                >
+                  <XCircle className="h-6 w-6" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setHistoryContact(null)}
-                className="text-slate-400 hover:text-slate-700"
-              >
-                <XCircle className="h-5 w-5" />
-              </button>
+
+              {/* Cinta de Estatus Actual / Fecha de Recordatorio o Cita + Acciones Rápidas */}
+              <div className="mt-4 pt-3 border-t border-white/15 flex flex-wrap items-center justify-between gap-2">
+                <div className="text-xs">
+                  {historyContact.status === "RECORDATORIO_PROGRAMADO" &&
+                  historyContact.nextActionAt ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-amber-400/20 border border-amber-400/40 text-amber-200 font-bold">
+                      <Bell className="h-3.5 w-3.5 text-amber-300" />⏰
+                      Recordatorio Programado:{" "}
+                      {formatDateTime(historyContact.nextActionAt)}
+                    </span>
+                  ) : historyContact.status === "CITA_AGENDADA" &&
+                    historyContact.scheduledMeetingAt ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 font-bold">
+                      <Calendar className="h-3.5 w-3.5 text-emerald-300" />📅
+                      Cita Agendada:{" "}
+                      {formatDateTime(historyContact.scheduledMeetingAt)}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/10 text-slate-200 font-semibold">
+                      Estatus: <strong>{historyContact.status}</strong> ·{" "}
+                      {historyContact.attemptsCount || 0} toques
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {historyContact.classification !== "DESCALIFICADO" && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setSelectedQueueContactId(historyContact.id);
+                        setHistoryContact(null);
+                        setActiveTab("piloto");
+                      }}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-black transition"
+                    >
+                      <PhoneForwarded className="h-3.5 w-3.5" /> Atender en
+                      Piloto
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const target = historyContact;
+                      setHistoryContact(null);
+                      openEditContactModal(target);
+                    }}
+                    className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition"
+                  >
+                    <Edit3 className="h-3.5 w-3.5" /> Editar Datos
+                  </button>
+                </div>
+              </div>
             </div>
 
-            {historyContact.notes && (
-              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-950">
-                <strong>Notas acumuladas:</strong> {historyContact.notes}
-              </div>
-            )}
+            {/* Cuerpo scrollable del Expediente 360° */}
+            <div className="p-5 md:p-6 overflow-y-auto space-y-5 flex-1">
+              {/* Bloque Interactivo: Registrar Comentario, Agendar Recordatorio Futuro o Cita */}
+              <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 space-y-3.5">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="text-xs font-black uppercase tracking-wider text-slate-700">
+                    ¿Qué deseas registrar o programar para este prospecto?
+                  </span>
+                  <div className="inline-flex rounded-xl bg-slate-200/80 p-1 gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setDrawerMode("NOTA")}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                        drawerMode === "NOTA"
+                          ? "bg-slate-900 text-white shadow-2xs"
+                          : "text-slate-700 hover:text-slate-900"
+                      }`}
+                    >
+                      📝 Anotar Comentario
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDrawerMode("RECORDATORIO")}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                        drawerMode === "RECORDATORIO"
+                          ? "bg-indigo-600 text-white shadow-2xs"
+                          : "text-slate-700 hover:text-indigo-900"
+                      }`}
+                    >
+                      ⏰ Agendar Recordatorio
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDrawerMode("CITA")}
+                      className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
+                        drawerMode === "CITA"
+                          ? "bg-emerald-600 text-white shadow-2xs"
+                          : "text-slate-700 hover:text-emerald-900"
+                      }`}
+                    >
+                      📅 Agendar Cita
+                    </button>
+                  </div>
+                </div>
 
-            <div className="space-y-2">
-              <div className="text-xs font-black uppercase text-slate-400">
-                Historial de Toques ({historyContact.logs?.length || 0})
-              </div>
-              {!historyContact.logs || historyContact.logs.length === 0 ? (
-                <p className="text-xs text-slate-500 py-4 text-center">
-                  Aún no se han registrado toques telefónicos para este
-                  contacto.
-                </p>
-              ) : (
-                <div className="divide-y divide-slate-100">
-                  {historyContact.logs.map((l: any) => (
-                    <div key={l.id} className="py-2.5 text-xs space-y-0.5">
-                      <div className="flex items-center justify-between">
-                        <span className="font-bold text-slate-900">
-                          {l.actionType}
-                        </span>
-                        <span className="text-slate-400 font-mono">
-                          {formatDateTime(l.createdAt)}
-                        </span>
+                <form onSubmit={handleSaveDrawerAction} className="space-y-3">
+                  {drawerMode === "RECORDATORIO" && (
+                    <div className="space-y-2.5 p-3 rounded-xl bg-indigo-50/80 border border-indigo-200">
+                      <div className="text-[11px] font-bold text-indigo-950">
+                        Atajos rápidos («Ahorita no, búscame en...»):
                       </div>
-                      <div className="text-slate-700">{l.outcome}</div>
-                      {l.notes && (
-                        <div className="text-slate-500 italic">«{l.notes}»</div>
-                      )}
+                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDrawerScheduledDate(computePresetDateString("1W"));
+                            if (!drawerNoteInput) {
+                              setDrawerNoteInput(
+                                "Pidió que lo contacte en 1 semana."
+                              );
+                            }
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-indigo-100 border border-indigo-200 text-[11px] font-bold text-indigo-900 transition"
+                        >
+                          📅 En 1 semana
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDrawerScheduledDate(
+                              computePresetDateString("15D")
+                            );
+                            if (!drawerNoteInput) {
+                              setDrawerNoteInput(
+                                "Pidió que le marque en 15 días (quincena)."
+                              );
+                            }
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-indigo-100 border border-indigo-200 text-[11px] font-bold text-indigo-900 transition"
+                        >
+                          📆 En 15 días
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDrawerScheduledDate(
+                              computePresetDateString("NEXT_MONTH")
+                            );
+                            if (!drawerNoteInput) {
+                              setDrawerNoteInput(
+                                "Pidió hablar a inicios del próximo mes."
+                              );
+                            }
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg bg-white hover:bg-indigo-100 border border-indigo-200 text-[11px] font-bold text-indigo-900 transition"
+                        >
+                          🗓️ Próx. mes
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setDrawerScheduledDate(computePresetDateString("DEC"));
+                            if (!drawerNoteInput) {
+                              setDrawerNoteInput(
+                                "Me dijo «Ahorita no, búscame en diciembre con el aguinaldo»."
+                              );
+                            }
+                          }}
+                          className="px-2.5 py-1.5 rounded-lg bg-amber-100 hover:bg-amber-200 border border-amber-300 text-[11px] font-black text-amber-950 transition"
+                        >
+                          🎄 En Diciembre
+                        </button>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2 pt-1">
+                        <div>
+                          <label className="block text-[11px] font-bold text-indigo-900 mb-1">
+                            Fecha para Contactarlo *
+                          </label>
+                          <input
+                            type="date"
+                            required
+                            value={drawerScheduledDate}
+                            onChange={(e) =>
+                              setDrawerScheduledDate(e.target.value)
+                            }
+                            className="w-full rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-xs font-bold"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[11px] font-bold text-indigo-900 mb-1">
+                            Hora del Recordatorio
+                          </label>
+                          <input
+                            type="time"
+                            value={drawerScheduledTime}
+                            onChange={(e) =>
+                              setDrawerScheduledTime(e.target.value)
+                            }
+                            className="w-full rounded-lg border border-indigo-300 bg-white px-2.5 py-1.5 text-xs font-bold"
+                          />
+                        </div>
+                      </div>
                     </div>
-                  ))}
+                  )}
+
+                  {drawerMode === "CITA" && (
+                    <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-emerald-50 border border-emerald-200">
+                      <div>
+                        <label className="block text-[11px] font-bold text-emerald-900 mb-1">
+                          Fecha de la Cita *
+                        </label>
+                        <input
+                          type="date"
+                          required
+                          value={drawerScheduledDate}
+                          onChange={(e) =>
+                            setDrawerScheduledDate(e.target.value)
+                          }
+                          className="w-full rounded-lg border border-emerald-300 bg-white px-2.5 py-1.5 text-xs font-bold"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] font-bold text-emerald-900 mb-1">
+                          Hora Acordada *
+                        </label>
+                        <input
+                          type="time"
+                          required
+                          value={drawerScheduledTime}
+                          onChange={(e) =>
+                            setDrawerScheduledTime(e.target.value)
+                          }
+                          className="w-full rounded-lg border border-emerald-300 bg-white px-2.5 py-1.5 text-xs font-bold"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1">
+                      {drawerMode === "RECORDATORIO"
+                        ? "¿Por qué pidió que lo busques en esa fecha y qué debes recordar? *"
+                        : drawerMode === "CITA"
+                        ? "Notas o acuerdos para la cita (opcional):"
+                        : "Escribe tu nota o comentario para la bitácora (¿Qué sucedió?): *"}
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={drawerNoteInput}
+                      onChange={(e) => setDrawerNoteInput(e.target.value)}
+                      placeholder={
+                        drawerMode === "RECORDATORIO"
+                          ? "Ej. Me pidió llamarle en diciembre cuando reciba su aguinaldo y fondo de ahorro..."
+                          : "Ej. Platicamos hoy, está interesado en plan de retiro pero revisará presupuesto con su esposa..."
+                      }
+                      className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs text-slate-900 focus:border-indigo-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      disabled={savingDrawerAction}
+                      className={`px-4 py-2 rounded-xl text-white text-xs font-black uppercase tracking-wider transition shadow-xs ${
+                        drawerMode === "RECORDATORIO"
+                          ? "bg-indigo-600 hover:bg-indigo-700"
+                          : drawerMode === "CITA"
+                          ? "bg-emerald-600 hover:bg-emerald-700"
+                          : "bg-slate-900 hover:bg-slate-800"
+                      }`}
+                    >
+                      {savingDrawerAction
+                        ? "Guardando..."
+                        : drawerMode === "RECORDATORIO"
+                        ? "⏰ Guardar Recordatorio en Bitácora"
+                        : drawerMode === "CITA"
+                        ? "📅 Confirmar Cita Agendada"
+                        : "📝 Guardar Comentario en Bitácora"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Resumen de Notas Acumuladas */}
+              {historyContact.notes && (
+                <div className="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200 text-xs text-amber-950 space-y-1">
+                  <div className="font-black uppercase tracking-wider text-[10px] text-amber-800">
+                    Resumen de Notas y Contexto del Prospecto:
+                  </div>
+                  <div className="leading-relaxed font-medium">
+                    {historyContact.notes}
+                  </div>
                 </div>
               )}
+
+              {/* Línea de Tiempo Cronológica — Bitácora Histórica Completa */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="text-xs font-black uppercase tracking-wider text-slate-500">
+                    Línea de Tiempo Cronológica ({historyContact.logs?.length || 0}{" "}
+                    registros en bitácora)
+                  </div>
+                </div>
+
+                {!historyContact.logs || historyContact.logs.length === 0 ? (
+                  <div className="rounded-2xl border border-dashed border-slate-200 p-6 text-center text-xs text-slate-500">
+                    Aún no se han registrado llamadas ni notas en la bitácora de
+                    este prospecto. Usa el panel superior para anotar un
+                    comentario o programar un recordatorio.
+                  </div>
+                ) : (
+                  <div className="space-y-2.5">
+                    {historyContact.logs.map((l: any) => {
+                      const isReminder =
+                        l.actionType === "RECORDATORIO_PROGRAMADO";
+                      const isCita = l.actionType === "CITA_AGENDADA";
+                      const isNote = l.actionType === "NOTA_BITACORA";
+                      const isDisq = l.actionType === "DESCALIFICAR";
+
+                      const badgeClass = isCita
+                        ? "bg-emerald-100 text-emerald-900 border-emerald-300"
+                        : isReminder
+                        ? "bg-indigo-100 text-indigo-900 border-indigo-300"
+                        : isNote
+                        ? "bg-amber-100 text-amber-900 border-amber-300"
+                        : isDisq
+                        ? "bg-rose-100 text-rose-900 border-rose-300"
+                        : "bg-slate-100 text-slate-800 border-slate-200";
+
+                      return (
+                        <div
+                          key={l.id}
+                          className="p-3.5 rounded-2xl border border-slate-200 bg-white shadow-2xs space-y-1.5 text-xs"
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <span
+                              className={`px-2 py-0.5 rounded-md text-[10px] font-black border ${badgeClass}`}
+                            >
+                              {l.actionType}
+                            </span>
+                            <span className="text-slate-400 font-mono text-[11px]">
+                              {formatDateTime(l.createdAt)}
+                            </span>
+                          </div>
+                          <div className="font-semibold text-slate-800">
+                            {l.outcome}
+                          </div>
+                          {l.notes && (
+                            <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200/80 text-slate-700 italic">
+                              «{l.notes}»
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

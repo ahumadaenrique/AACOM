@@ -97,7 +97,7 @@ export async function getProject200DashboardData() {
         include: {
           logs: {
             orderBy: { createdAt: "desc" },
-            take: 8,
+            take: 50,
           },
         },
         orderBy: [
@@ -183,10 +183,28 @@ export async function getProject200DashboardData() {
     const porContactarCount = contacts.filter((c) => c.status === "POR_CONTACTAR").length;
     const enSeguimientoCount = contacts.filter((c) => c.status === "EN_SEGUIMIENTO").length;
     const citasAgendadasCount = contacts.filter((c) => c.status === "CITA_AGENDADA").length;
+    const recordatoriosProgramadosCount = contacts.filter(
+      (c) => c.status === "RECORDATORIO_PROGRAMADO"
+    ).length;
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    const recordatoriosParaHoyCount = contacts.filter(
+      (c) =>
+        c.classification !== "DESCALIFICADO" &&
+        c.status === "RECORDATORIO_PROGRAMADO" &&
+        c.nextActionAt &&
+        new Date(c.nextActionAt) <= endOfToday
+    ).length;
+
     const activeCallableCount = contacts.filter(
       (c) =>
         c.classification !== "DESCALIFICADO" &&
-        (c.status === "POR_CONTACTAR" || c.status === "EN_SEGUIMIENTO")
+        (c.status === "POR_CONTACTAR" ||
+          c.status === "EN_SEGUIMIENTO" ||
+          (c.status === "RECORDATORIO_PROGRAMADO" &&
+            c.nextActionAt &&
+            new Date(c.nextActionAt) <= endOfToday))
     ).length;
 
     const totalAttempts = contacts.reduce((acc, c) => acc + (c.attemptsCount || 0), 0);
@@ -215,6 +233,8 @@ export async function getProject200DashboardData() {
       porContactarCount,
       enSeguimientoCount,
       citasAgendadasCount,
+      recordatoriosProgramadosCount,
+      recordatoriosParaHoyCount,
       totalAttempts,
       estimatedMarketValue,
       estimatedMonthlySavingsPotential,
@@ -635,6 +655,7 @@ export async function recordGuidedProspectingAction(input: {
   contactId: string;
   actionType:
     | "CITA_AGENDADA"
+    | "RECORDATORIO_PROGRAMADO"
     | "NO_CONTESTO"
     | "SEGUIMIENTO_WHATSAPP"
     | "CONVERTIR_REFERIDOR"
@@ -689,6 +710,25 @@ export async function recordGuidedProspectingAction(input: {
       nextStatus = "CITA_AGENDADA";
       nextActionAt = scheduledMeetingAt;
       outcomeText = `¡Cita Agendada! (${input.scheduledDate} a las ${input.scheduledTime})`;
+    } else if (input.actionType === "RECORDATORIO_PROGRAMADO") {
+      if (!input.scheduledDate) {
+        return {
+          success: false,
+          error: "Debes seleccionar la fecha en la que el prospecto te pidió volver a contactarlo.",
+        };
+      }
+      const noteContext = String(input.notes || "").trim();
+      if (noteContext.length < 3) {
+        return {
+          success: false,
+          error: "Es obligatorio anotar en la bitácora qué sucedió o por qué te pidió llamarle en esa fecha (ej. 'Búscame en diciembre con el aguinaldo').",
+        };
+      }
+      const timeStr = input.scheduledTime || "10:00";
+      const reminderDate = new Date(`${input.scheduledDate}T${timeStr}:00`);
+      nextActionAt = isNaN(reminderDate.getTime()) ? now : reminderDate;
+      nextStatus = "RECORDATORIO_PROGRAMADO";
+      outcomeText = `⏰ Recordatorio programado para el ${input.scheduledDate} a las ${timeStr} hrs`;
     } else if (input.actionType === "NO_CONTESTO") {
       nextStatus = "EN_SEGUIMIENTO";
       // Programar siguiente toque automático en 4 horas para rotar la cola inmediatamente
@@ -755,6 +795,134 @@ export async function recordGuidedProspectingAction(input: {
   }
 }
 
+export async function addProject200ContactLogAndSchedule(input: {
+  contactId: string;
+  mode: "NOTA" | "RECORDATORIO" | "CITA" | "REACTIVAR_COLA";
+  notes?: string;
+  scheduledDate?: string;
+  scheduledTime?: string;
+}) {
+  try {
+    const user = await getAuthenticatedUser();
+    const effectiveAgencyId = user.agencyId || "aacom";
+    const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+
+    const contact = await prisma.project200Contact.findUnique({
+      where: { id: input.contactId },
+    });
+
+    if (
+      !contact ||
+      (contact.userId !== user.id &&
+        !(isAdmin && contact.agencyId === effectiveAgencyId))
+    ) {
+      return {
+        success: false,
+        error: "Contacto no encontrado o sin permisos.",
+      };
+    }
+
+    const now = new Date();
+    const cleanNote = String(input.notes || "").trim();
+
+    let nextStatus = contact.status;
+    let nextActionAt: Date | null = contact.nextActionAt;
+    let scheduledMeetingAt: Date | null = contact.scheduledMeetingAt;
+    let actionType = "NOTA_BITACORA";
+    let outcomeText = "📝 Comentario registrado en bitácora";
+
+    if (input.mode === "NOTA") {
+      if (cleanNote.length < 2) {
+        return {
+          success: false,
+          error: "Escribe el comentario o nota que deseas guardar en la bitácora del prospecto.",
+        };
+      }
+      actionType = "NOTA_BITACORA";
+      outcomeText = "📝 Comentario / acuerdo registrado en bitácora";
+    } else if (input.mode === "RECORDATORIO") {
+      if (!input.scheduledDate) {
+        return {
+          success: false,
+          error: "Debes elegir la fecha del recordatorio para volver a contactar al prospecto.",
+        };
+      }
+      if (cleanNote.length < 3) {
+        return {
+          success: false,
+          error: "Es obligatorio anotar por qué el prospecto pidió ser contactado en esa fecha (ej. 'Llamar en diciembre cuando reciba aguinaldo').",
+        };
+      }
+      const timeStr = input.scheduledTime || "10:00";
+      const reminderDate = new Date(`${input.scheduledDate}T${timeStr}:00`);
+      nextActionAt = isNaN(reminderDate.getTime()) ? now : reminderDate;
+      nextStatus = "RECORDATORIO_PROGRAMADO";
+      actionType = "RECORDATORIO_PROGRAMADO";
+      outcomeText = `⏰ Recordatorio programado para el ${input.scheduledDate} a las ${timeStr} hrs`;
+    } else if (input.mode === "CITA") {
+      if (!input.scheduledDate || !input.scheduledTime) {
+        return {
+          success: false,
+          error: "Indica la fecha y hora de la cita agendada.",
+        };
+      }
+      const meetingDate = new Date(
+        `${input.scheduledDate}T${input.scheduledTime}:00`
+      );
+      scheduledMeetingAt = isNaN(meetingDate.getTime()) ? now : meetingDate;
+      nextActionAt = scheduledMeetingAt;
+      nextStatus = "CITA_AGENDADA";
+      actionType = "CITA_AGENDADA";
+      outcomeText = `¡Cita Agendada desde CRM! (${input.scheduledDate} a las ${input.scheduledTime})`;
+    } else if (input.mode === "REACTIVAR_COLA") {
+      nextStatus = "EN_SEGUIMIENTO";
+      nextActionAt = now;
+      actionType = "REACTIVAR_COLA";
+      outcomeText = "⚡ Prospecto reactivado para llamada inmediata hoy";
+    }
+
+    await prisma.project200Log.create({
+      data: {
+        contactId: contact.id,
+        userId: user.id,
+        agencyId: effectiveAgencyId,
+        actionType,
+        outcome: outcomeText,
+        notes: cleanNote || null,
+      },
+    });
+
+    const updated = await prisma.project200Contact.update({
+      where: { id: contact.id },
+      data: {
+        status: nextStatus,
+        nextActionAt,
+        scheduledMeetingAt,
+        notes: cleanNote
+          ? contact.notes
+            ? `${contact.notes} | ${cleanNote}`
+            : cleanNote
+          : contact.notes,
+      },
+      include: {
+        logs: {
+          orderBy: { createdAt: "desc" },
+          take: 50,
+        },
+      },
+    });
+
+    revalidatePath("/proyecto-200");
+    return { success: true, contact: updated };
+  } catch (error: any) {
+    console.error("Error in addProject200ContactLogAndSchedule:", error);
+    return {
+      success: false,
+      error: error.message || "Error al guardar en la bitácora del contacto.",
+    };
+  }
+}
+
 export async function deleteProject200Contact(contactId: string) {
   try {
     const user = await getAuthenticatedUser();
@@ -813,6 +981,10 @@ export async function getAdminProject200Analytics() {
         include: {
           user: {
             select: { id: true, name: true, email: true },
+          },
+          logs: {
+            orderBy: { createdAt: "desc" },
+            take: 30,
           },
         },
         orderBy: [{ priorityScore: "desc" }, { updatedAt: "desc" }],
@@ -882,6 +1054,7 @@ export async function getAdminProject200Analytics() {
         porContactarCount: number;
         enSeguimientoCount: number;
         citasAgendadasCount: number;
+        recordatoriosProgramadosCount: number;
         totalAttempts: number;
         phoneTouchesCount: number;
         whatsappTouchesCount: number;
@@ -914,6 +1087,7 @@ export async function getAdminProject200Analytics() {
         porContactarCount: 0,
         enSeguimientoCount: 0,
         citasAgendadasCount: 0,
+        recordatoriosProgramadosCount: 0,
         totalAttempts: 0,
         phoneTouchesCount: 0,
         whatsappTouchesCount: 0,
@@ -948,6 +1122,7 @@ export async function getAdminProject200Analytics() {
           porContactarCount: 0,
           enSeguimientoCount: 0,
           citasAgendadasCount: 0,
+          recordatoriosProgramadosCount: 0,
           totalAttempts: 0,
           phoneTouchesCount: 0,
           whatsappTouchesCount: 0,
@@ -985,6 +1160,8 @@ export async function getAdminProject200Analytics() {
         if (c.status === "POR_CONTACTAR") entry.porContactarCount += 1;
         else if (c.status === "EN_SEGUIMIENTO") entry.enSeguimientoCount += 1;
         else if (c.status === "CITA_AGENDADA") entry.citasAgendadasCount += 1;
+        else if (c.status === "RECORDATORIO_PROGRAMADO")
+          entry.recordatoriosProgramadosCount += 1;
 
         if (
           c.classification !== "DESCALIFICADO" &&
@@ -1010,6 +1187,7 @@ export async function getAdminProject200Analytics() {
         entry.whatsappTouchesCount += cnt;
       } else if (
         grp.actionType === "CITA_AGENDADA" ||
+        grp.actionType === "RECORDATORIO_PROGRAMADO" ||
         grp.actionType === "NO_CONTESTO" ||
         grp.actionType === "CONVERTIR_REFERIDOR" ||
         grp.actionType === "DESCALIFICAR" ||
