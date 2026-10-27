@@ -1,4 +1,9 @@
-# Reglas del Proyecto AACOM
+# Reglas del Proyecto AACOMSoft
+
+## Identidad de Marca SaaS (`AACOMSoft` — NUNCA `AACOM`)
+- **NUNCA, bajo ninguna circunstancia, digas ni escribas «AACOM» a secas** en guiones de video, locuciones (TTS), subtítulos, capturas de interfaz, manuales, correos o textos comerciales para referirse al software.
+- «AACOM» es el nombre de una promotoría; mencionarlo hace que otras promotorías y agencias nos perciban como competencia directa.
+- **SIEMPRE menciona y escribe «AACOMSoft»** (y en URLs de ejemplo usa `app.aacomsoft.com`, nunca `app.aacom.mx`).
 
 ## Desarrollo y Ambientes
 - Siempre que vayamos a desarrollar una funcionalidad nueva, pregunta explícitamente al usuario si se realiza en **Dev** o en **Producción** (a menos que pida explícitamente corregir un error crítico directamente en producción).
