@@ -156,7 +156,7 @@ export function ManualMockupPreview({ type }: { type: ManualMockupType }) {
                 <h4 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Users className="w-4 h-4 text-emerald-600" /> Mis Referidores Asignados
                 </h4>
-                <p className="text-xs text-slate-500">Aliados comerciales dados de alta por el administrador en Admin › Referidores</p>
+                <p className="text-xs text-slate-500">Gestiona hasta 5 referidores (sin ocupar asientos SaaS), registra cómo calcularás su bono de referencia de prospectos y monitorea sus 15 puntos diarios</p>
               </div>
               <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300">
                 2 Activos
@@ -164,8 +164,8 @@ export function ManualMockupPreview({ type }: { type: ManualMockupType }) {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {[
-                { nombre: "Lic. Roberto Gómez (Contador aliado)", estado: "Activo", prospectos: "6 prospectos referidos este mes" },
-                { nombre: "Dra. Elena Martínez (Médico especialista)", estado: "Activo", prospectos: "3 prospectos referidos este mes" }
+                { nombre: "Lic. Roberto Gómez (Contador aliado)", estado: "Activo", prospectos: "Meta hoy: 15 / 15 pts • Bono Ref.: 40% Base • 10% Adic." },
+                { nombre: "Dra. Elena Martínez (Médico especialista)", estado: "Activo", prospectos: "Meta hoy: 12 / 15 pts • Bono Ref.: 30% Base • 0% Adic." }
               ].map((ref, idx) => (
                 <div key={idx} className="p-3.5 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-950 flex items-center justify-between">
                   <div>

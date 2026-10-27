@@ -64,7 +64,7 @@ export function ReferidorDetailClient({ referidorId }: { referidorId: string }) 
             setEditingAgreement(false);
             await loadData();
         } else {
-            alert(res.error || "Error al actualizar acuerdo");
+            alert(res.error || "Error al actualizar cálculo de bono por referencia");
         }
         setSaving(false);
     };
@@ -246,13 +246,13 @@ export function ReferidorDetailClient({ referidorId }: { referidorId: string }) 
                         </CardContent>
                     </Card>
 
-                    {/* Tarjeta 2: Record Privado de Negociación */}
+                    {/* Tarjeta 2: Cálculo de Bono por Referencia de Prospectos */}
                     <Card className="border-indigo-200 bg-indigo-50/30 shadow-xs">
                         <CardHeader className="pb-2">
                             <div className="flex items-center justify-between">
-                                <CardTitle className="text-sm font-black uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
-                                    <Percent className="w-4 h-4 text-indigo-600" />
-                                    Record de Negociación
+                                <CardTitle className="text-xs font-black uppercase tracking-wider text-indigo-900 flex items-center gap-1.5">
+                                    <Percent className="w-4 h-4 text-indigo-600 shrink-0" />
+                                    Bono de Referencia de Prospectos
                                 </CardTitle>
                                 {!editingAgreement && (
                                     <Button
@@ -266,7 +266,7 @@ export function ReferidorDetailClient({ referidorId }: { referidorId: string }) 
                                 )}
                             </div>
                             <CardDescription className="text-[11px] text-indigo-700/80">
-                                Privado (solo visible para ti y Administración)
+                                ¿Cómo calcularás el bono de referencia de prospectos para tu referidor? (Privado)
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-3">
@@ -274,7 +274,7 @@ export function ReferidorDetailClient({ referidorId }: { referidorId: string }) 
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="bg-white rounded-xl p-3 border border-indigo-100 text-center">
                                         <span className="text-[10px] font-bold uppercase text-indigo-500 block">
-                                            % Comisión
+                                            % Base Referencia
                                         </span>
                                         <span className="text-2xl font-black text-indigo-900">
                                             {referidor.commissionPct ?? 30}%
@@ -283,7 +283,7 @@ export function ReferidorDetailClient({ referidorId }: { referidorId: string }) 
                                     </div>
                                     <div className="bg-white rounded-xl p-3 border border-indigo-100 text-center">
                                         <span className="text-[10px] font-bold uppercase text-indigo-500 block">
-                                            % Bonos
+                                            % Bono Adicional
                                         </span>
                                         <span className="text-2xl font-black text-indigo-900">
                                             {referidor.bonusPct ?? 0}%
@@ -295,7 +295,7 @@ export function ReferidorDetailClient({ referidorId }: { referidorId: string }) 
                                 <div className="space-y-3 bg-white p-3 rounded-xl border border-indigo-200">
                                     <div className="space-y-1">
                                         <Label className="text-xs font-bold">
-                                            % Comisión (30% a 50%)
+                                            % Base para bono de referencia (30% a 50%)
                                         </Label>
                                         <Input
                                             type="number"
@@ -311,7 +311,7 @@ export function ReferidorDetailClient({ referidorId }: { referidorId: string }) 
                                     </div>
                                     <div className="space-y-1">
                                         <Label className="text-xs font-bold">
-                                            % Bonos (0% a 50%)
+                                            % Adicional por metas (0% a 50%)
                                         </Label>
                                         <Input
                                             type="number"

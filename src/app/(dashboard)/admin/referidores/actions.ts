@@ -162,11 +162,11 @@ export async function createReferidor(data: {
         const bonusPct = Number(data.bonusPct ?? 0);
 
         if (isNaN(commissionPct) || commissionPct < 30 || commissionPct > 50) {
-            throw new Error("El % de comisión compartida debe estar entre 30% y 50%.");
+            throw new Error("El % base para calcular el bono de referencia de prospectos debe estar entre 30% y 50%.");
         }
 
         if (isNaN(bonusPct) || bonusPct < 0 || bonusPct > 50) {
-            throw new Error("El % de bonos compartidos debe estar entre 0% y 50%.");
+            throw new Error("El % adicional para el cálculo del bono de referencia debe estar entre 0% y 50%.");
         }
 
         // Verificar que el agente asignado no supere los 5 referidores

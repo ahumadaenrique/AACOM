@@ -77,7 +77,7 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
         bonusPct: 0
     });
 
-    // Modal Editar Acuerdo Comercial
+    // Modal Editar Cálculo de Bono por Referencia
     const [editingReferidor, setEditingReferidor] = useState<any | null>(null);
     const [editForm, setEditForm] = useState({
         name: "",
@@ -198,7 +198,7 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
             setEditingReferidor(null);
             await loadData();
         } else {
-            setEditError(res.error || "Error al guardar el acuerdo comercial.");
+            setEditError(res.error || "Error al guardar el cálculo del bono por referencia.");
         }
         setSavingEdit(false);
     };
@@ -283,7 +283,7 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                         </span>
                     </div>
                     <p className="text-xs sm:text-sm text-slate-500 dark:text-zinc-400">
-                        Da de alta hasta <strong>{maxAllowed} referidores</strong>, lleva el record privado de su % de comisión y bonos, y monitorea su meta de <strong>15 puntos diarios</strong>.
+                        Da de alta hasta <strong>{maxAllowed} referidores</strong>, lleva el registro privado de cómo calcularás su <strong>bono de referencia de prospectos</strong> y monitorea su meta de <strong>15 puntos diarios</strong>.
                     </p>
                 </div>
 
@@ -459,7 +459,7 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                                                         <MoreVertical className="h-4 w-4 text-slate-500" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end" className="w-56">
+                                                <DropdownMenuContent align="end" className="w-60">
                                                     <DropdownMenuLabel className="text-xs">
                                                         Gestionar a {ref.name}
                                                     </DropdownMenuLabel>
@@ -475,7 +475,7 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                                                         className="cursor-pointer text-xs font-medium flex items-center gap-2"
                                                     >
                                                         <Percent className="w-4 h-4 text-indigo-600" />
-                                                        Editar % Comisión y Bonos
+                                                        Configurar Bono por Referencia
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem
                                                         onClick={() => {
@@ -518,25 +518,30 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                                     </CardHeader>
 
                                     <CardContent className="pt-4 pb-4 space-y-4">
-                                        {/* Record Privado de Negociación */}
+                                        {/* Record Privado de Cálculo de Bono por Referencia */}
                                         <div className="bg-indigo-50/60 dark:bg-indigo-950/25 border border-indigo-100 dark:border-indigo-900/40 rounded-xl p-2.5 flex items-center justify-between gap-2">
-                                            <div className="flex items-center gap-3">
-                                                <div>
-                                                    <span className="text-[10px] font-bold uppercase text-indigo-500 block">
-                                                        Comisión
-                                                    </span>
-                                                    <span className="text-sm font-black text-indigo-900 dark:text-indigo-200">
-                                                        {ref.commissionPct ?? 30}%
-                                                    </span>
-                                                </div>
-                                                <div className="h-6 w-px bg-indigo-200 dark:bg-indigo-800" />
-                                                <div>
-                                                    <span className="text-[10px] font-bold uppercase text-indigo-500 block">
-                                                        Bonos
-                                                    </span>
-                                                    <span className="text-sm font-black text-indigo-900 dark:text-indigo-200">
-                                                        {ref.bonusPct ?? 0}%
-                                                    </span>
+                                            <div className="space-y-0.5">
+                                                <span className="text-[10px] font-extrabold uppercase tracking-wide text-indigo-700 dark:text-indigo-300 block">
+                                                    Bono por Referencia de Prospectos
+                                                </span>
+                                                <div className="flex items-center gap-3">
+                                                    <div>
+                                                        <span className="text-[10px] font-semibold text-indigo-500 block">
+                                                            Factor Base
+                                                        </span>
+                                                        <span className="text-sm font-black text-indigo-900 dark:text-indigo-200">
+                                                            {ref.commissionPct ?? 30}%
+                                                        </span>
+                                                    </div>
+                                                    <div className="h-6 w-px bg-indigo-200 dark:bg-indigo-800" />
+                                                    <div>
+                                                        <span className="text-[10px] font-semibold text-indigo-500 block">
+                                                            Bono Adicional
+                                                        </span>
+                                                        <span className="text-sm font-black text-indigo-900 dark:text-indigo-200">
+                                                            {ref.bonusPct ?? 0}%
+                                                        </span>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <Button
@@ -546,7 +551,7 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                                                 onClick={() => handleOpenEditAgreement(ref)}
                                                 className="h-7 px-2 text-[11px] font-bold text-indigo-700 hover:text-indigo-900 hover:bg-indigo-100/70"
                                             >
-                                                Editar %
+                                                Ajustar
                                             </Button>
                                         </div>
 
@@ -632,7 +637,7 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                 </div>
             )}
 
-            {/* MODAL 1: ALTA DE REFERIDOR + ACUERDO COMERCIAL + INVITACIÓN WHATSAPP */}
+            {/* MODAL 1: ALTA DE REFERIDOR + CÁLCULO DE BONO DE REFERENCIA + INVITACIÓN WHATSAPP */}
             <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
                 <DialogContent className="sm:max-w-lg">
                     {!createdSuccessData ? (
@@ -643,7 +648,7 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                                     Dar de Alta Nuevo Referidor
                                 </DialogTitle>
                                 <DialogDescription className="text-xs sm:text-sm">
-                                    Crea su cuenta de acceso y registra el acuerdo comercial negociado. Ocupará 1 de tus {maxAllowed} espacios disponibles ({totalCount}/{maxAllowed} en uso).
+                                    Crea su cuenta de acceso y registra cómo calcularás su bono de referencia de prospectos. Ocupará 1 de tus {maxAllowed} espacios disponibles ({totalCount}/{maxAllowed} en uso).
                                 </DialogDescription>
                             </DialogHeader>
 
@@ -723,25 +728,23 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                                     </p>
                                 </div>
 
-                                {/* Bloque Record de Negociación */}
+                                {/* Bloque Cálculo de Bono por Referencia de Prospectos */}
                                 <div className="bg-indigo-50/70 dark:bg-indigo-950/30 border border-indigo-200/80 dark:border-indigo-900 rounded-xl p-4 space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <div>
-                                            <h4 className="text-xs font-black uppercase tracking-wider text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
-                                                <Percent className="w-3.5 h-3.5 text-indigo-600" />
-                                                Record de Acuerdo Comercial
-                                            </h4>
-                                            <p className="text-[11px] text-indigo-700/80 dark:text-indigo-300/80">
-                                                Registro privado de tu negociación con este referidor.
-                                            </p>
-                                        </div>
+                                    <div className="space-y-1">
+                                        <h4 className="text-xs font-black text-indigo-900 dark:text-indigo-200 flex items-center gap-1.5">
+                                            <Percent className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                            ¿Cómo calcularás el bono de referencia de prospectos para tu referidor?
+                                        </h4>
+                                        <p className="text-[11px] text-indigo-700/80 dark:text-indigo-300/80 leading-relaxed">
+                                            Registro privado de tus parámetros internos para calcular su <strong>bono por referencia de prospectos</strong> (solo visible para ti y Administración).
+                                        </p>
                                     </div>
 
-                                    {/* % Comisión: 30% a 50% */}
+                                    {/* % Factor Base: 30% a 50% */}
                                     <div className="space-y-1.5">
                                         <div className="flex items-center justify-between">
                                             <Label className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                                                % de Comisión Compartida (Mín. 30% - Máx. 50%)
+                                                % Base para cálculo del bono por referencia (Mín. 30% - Máx. 50%)
                                             </Label>
                                             <div className="flex items-center gap-1">
                                                 <Input
@@ -777,11 +780,11 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                                         </div>
                                     </div>
 
-                                    {/* % Bonos: 0% a 50% */}
+                                    {/* % Bono Adicional: 0% a 50% */}
                                     <div className="space-y-1.5 pt-1 border-t border-indigo-200/60">
                                         <div className="flex items-center justify-between">
                                             <Label className="text-xs font-bold text-slate-800 dark:text-zinc-200">
-                                                % de Bonos Compartidos (Mín. 0% - Máx. 50%)
+                                                % Adicional por metas / productividad (Mín. 0% - Máx. 50%)
                                             </Label>
                                             <div className="flex items-center gap-1">
                                                 <Input
@@ -811,7 +814,7 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                                             className="w-full accent-indigo-600 cursor-pointer"
                                         />
                                         <div className="flex justify-between text-[10px] font-bold text-indigo-500">
-                                            <span>0% (Sin bonos)</span>
+                                            <span>0% (Sin adicional)</span>
                                             <span>25%</span>
                                             <span>50% (Máximo)</span>
                                         </div>
@@ -865,9 +868,9 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                                     </span>
                                 </div>
                                 <div className="flex justify-between pt-2 border-t border-slate-200/80">
-                                    <span className="text-slate-500 font-medium">Acuerdo registrado (Privado):</span>
+                                    <span className="text-slate-500 font-medium">Bono por referencia (Privado):</span>
                                     <span className="font-bold text-indigo-700">
-                                        {createdSuccessData.commissionPct}% Comisión • {createdSuccessData.bonusPct}% Bonos
+                                        {createdSuccessData.commissionPct}% Base • {createdSuccessData.bonusPct}% Adicional
                                     </span>
                                 </div>
                             </div>
@@ -910,16 +913,16 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                 </DialogContent>
             </Dialog>
 
-            {/* MODAL 2: EDITAR ACUERDO COMERCIAL (% COMISIÓN Y BONOS) */}
+            {/* MODAL 2: CONFIGURAR CÁLCULO DE BONO DE REFERENCIA DE PROSPECTOS */}
             <Dialog open={!!editingReferidor} onOpenChange={(open) => !open && setEditingReferidor(null)}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle className="flex items-center gap-2 font-black">
-                            <Percent className="w-5 h-5 text-indigo-600" />
-                            Acuerdo Comercial con {editingReferidor?.name}
+                        <DialogTitle className="flex items-center gap-2 font-black text-base">
+                            <Percent className="w-5 h-5 text-indigo-600 shrink-0" />
+                            ¿Cómo calcularás el bono de referencia de prospectos para {editingReferidor?.name}?
                         </DialogTitle>
                         <DialogDescription className="text-xs">
-                            Actualiza el record de porcentajes de comisión (30% - 50%) y bonos (0% - 50%) pactados con este referidor.
+                            Actualiza tu registro privado de parámetros para calcular el bono por referencia de prospectos (Base: 30% a 50% y Adicional: 0% a 50%).
                         </DialogDescription>
                     </DialogHeader>
 
@@ -953,7 +956,7 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                             <div className="space-y-1.5">
                                 <div className="flex items-center justify-between">
                                     <Label className="text-xs font-bold text-slate-800">
-                                        % de Comisión (30% a 50%)
+                                        % Base para bono de referencia (30% a 50%)
                                     </Label>
                                     <div className="flex items-center gap-1">
                                         <Input
@@ -988,7 +991,7 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                             <div className="space-y-1.5 pt-2 border-t border-indigo-200/60">
                                 <div className="flex items-center justify-between">
                                     <Label className="text-xs font-bold text-slate-800">
-                                        % de Bonos (0% a 50%)
+                                        % Adicional por metas (0% a 50%)
                                     </Label>
                                     <div className="flex items-center gap-1">
                                         <Input
@@ -1036,7 +1039,7 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
                                 disabled={savingEdit}
                             >
                                 {savingEdit && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                                Guardar Acuerdo
+                                Guardar Cálculo de Bono
                             </Button>
                         </DialogFooter>
                     </form>

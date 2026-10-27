@@ -3094,7 +3094,7 @@ export default function AdminClient() {
                                     Agente: <strong>{refUser.linkedAgent?.name || "Sin asignar"}</strong>
                                   </span>
                                   <span className="text-[10px] font-bold text-indigo-600 block">
-                                    Acuerdo: {refUser.referidorCommissionPct ?? 30}% Com. • {refUser.referidorBonusPct ?? 0}% Bonos
+                                    Bono Ref.: {refUser.referidorCommissionPct ?? 30}% Base • {refUser.referidorBonusPct ?? 0}% Adic.
                                   </span>
                                 </div>
                                 <div className="text-right shrink-0">

@@ -4,8 +4,7 @@ import React, { useState, useEffect } from "react";
 import { getReferidoresConActividad, getAgentesParaSelect, createReferidor } from "./actions";
 import {
     toggleMyReferidorStatus,
-    deleteMyReferidor,
-    updateMyReferidorAgreement
+    deleteMyReferidor
 } from "../../referidores/actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -369,16 +368,16 @@ export default function AdminReferidoresClient() {
                                 </div>
                             </div>
 
-                            {/* Acuerdo Comercial */}
+                            {/* Cálculo de Bono por Referencia de Prospectos */}
                             <div className="bg-indigo-50/70 border border-indigo-200 rounded-xl p-3.5 space-y-3">
-                                <span className="text-xs font-black uppercase text-indigo-900 flex items-center gap-1.5">
-                                    <Percent className="w-3.5 h-3.5 text-indigo-600" />
-                                    Record de Acuerdo Comercial (Comisión y Bonos)
+                                <span className="text-xs font-black text-indigo-900 flex items-center gap-1.5">
+                                    <Percent className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
+                                    ¿Cómo calcularás el bono de referencia de prospectos para tu referidor?
                                 </span>
                                 <div className="grid grid-cols-2 gap-3">
                                     <div className="space-y-1">
                                         <Label className="text-xs font-bold">
-                                            % Comisión (30% a 50%)
+                                            % Base Referencia (30% a 50%)
                                         </Label>
                                         <Input
                                             type="number"
@@ -399,7 +398,7 @@ export default function AdminReferidoresClient() {
                                     </div>
                                     <div className="space-y-1">
                                         <Label className="text-xs font-bold">
-                                            % Bonos (0% a 50%)
+                                            % Bono Adicional (0% a 50%)
                                         </Label>
                                         <Input
                                             type="number"
@@ -451,7 +450,7 @@ export default function AdminReferidoresClient() {
                         <TableRow className="bg-slate-50 hover:bg-slate-50">
                             <TableHead className="font-bold text-slate-700">Referidor</TableHead>
                             <TableHead className="font-bold text-slate-700">Agente Titular</TableHead>
-                            <TableHead className="font-bold text-slate-700">Acuerdo (% Com / Bono)</TableHead>
+                            <TableHead className="font-bold text-slate-700">Cálculo Bono Referencia</TableHead>
                             <TableHead className="font-bold text-slate-700">Uso de App / Últ. Act.</TableHead>
                             <TableHead className="font-bold text-slate-700">Estado</TableHead>
                             <TableHead className="text-right font-bold text-slate-700">
@@ -501,9 +500,9 @@ export default function AdminReferidoresClient() {
                                         </TableCell>
                                         <TableCell>
                                             <div className="inline-flex items-center gap-1.5 bg-indigo-50 text-indigo-800 border border-indigo-200/80 px-2.5 py-1 rounded-lg text-xs font-bold">
-                                                <span>Com: {ref.commissionPct ?? 30}%</span>
+                                                <span>Base: {ref.commissionPct ?? 30}%</span>
                                                 <span className="text-indigo-300">•</span>
-                                                <span>Bonos: {ref.bonusPct ?? 0}%</span>
+                                                <span>Adic: {ref.bonusPct ?? 0}%</span>
                                             </div>
                                         </TableCell>
                                         <TableCell>

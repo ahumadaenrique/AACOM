@@ -117,6 +117,10 @@ export const MANUAL_CHAPTERS: ManualChapter[] = [
               [
                 "Administrador de la promotoría",
                 "Además de lo anterior, ve el menú Admin para dar de alta usuarios, revisar la producción, los reportes y la actividad del equipo, y configurar la plataforma de la promotoría (marca, banners, notificaciones, biblioteca, cotizador, Plan de Arranque, etc.)."
+              ],
+              [
+                "Referidor de prospectos",
+                "Aliado vinculado a un agente (máximo 5 por agente, sin consumir asientos SaaS de la promotoría). Su menú está enfocado exclusivamente en la prospección y desarrollo: Inicio, Newsletters, 25 puntos (con meta diaria de 15 puntos), E-Learning (sin Cédula A/B ni simuladores), Proyecto 200 e Inteligencia Artificial Avanzada."
               ]
             ]
           }
@@ -917,12 +921,63 @@ export const MANUAL_CHAPTERS: ManualChapter[] = [
     id: "mis-referidores",
     number: "11",
     title: "Mis Referidores",
-    subtitle: "Consulta las personas asignadas que te refieren prospectos comerciales.",
+    subtitle: "Da de alta hasta 5 referidores, registra cómo calcularás su bono de referencia de prospectos y monitorea sus 15 puntos diarios.",
     iconName: "Network",
     roleBadge: "Agente",
     quickLink: "/referidores",
     quickPath: "Menú superior › Mis Referidores",
-    purpose: "Lista las personas que te refieren prospectos (referidores) y que tienes asignadas.",
+    purpose: "Permite a cada agente dar de alta y gestionar de forma autónoma hasta 5 referidores de prospectos (sin ocupar asientos SaaS de la promotoría), llevar un registro privado de cómo calculará el bono por referencia de prospectos para cada uno, suspenderlos o darlos de baja, y auditar su cumplimiento diario de 15 puntos y su lista de Proyecto 200.",
+    introParagraphs: [
+      "Un Referidor es un aliado estratégico que identifica, califica y refiere prospectos comerciales al agente titular utilizando la metodología de trabajo diaria de la plataforma (meta de 15 puntos diarios y lista de Proyecto 200).",
+      "Importante sobre normatividad (CNSF): Por ley, un agente de seguros no puede compartir comisiones de seguros con terceros sin cédula. Sin embargo, sí está permitido otorgar un Bono por Referencia de Prospectos. Por ello, en este módulo registras de manera privada cómo calcularás el bono de referencia de prospectos para cada referidor (con un factor base del 30% al 50% y un factor adicional por metas del 0% al 50%) exclusivamente como control interno entre tú y tu referidor.",
+      "Los referidores que des de alta tienen un entorno enfocado únicamente en las herramientas que necesitan para prospectar y capacitarse: Inicio, Newsletters, 25 puntos (ajustado a su meta diaria de 15 puntos), E-Learning (videos formativos, sin examen de Cédula A/B ni simuladores de roleplay), Proyecto 200 e Inteligencia Artificial Avanzada."
+    ],
+    screenElements: [
+      {
+        groupTitle: "Qué hay en la pantalla",
+        items: [
+          {
+            label: "Indicador de Cupo (X / 5 registrados)",
+            text: "muestra cuántos espacios de referidor tienes en uso de tu máximo de 5 permitidos. Los referidores no consumen asientos de licencia de la promotoría."
+          },
+          {
+            label: "Botón + Dar de Alta Referidor",
+            text: "abre el formulario para crear la cuenta de tu referidor, definir su contraseña temporal y registrar cómo calcularás su bono de referencia de prospectos."
+          },
+          {
+            label: "Filtros de estado",
+            text: "Todos, Activos y Suspendidos para ubicar rápidamente a tu equipo."
+          },
+          {
+            label: "Tarjetas de Referidores",
+            text: "cada tarjeta muestra el nombre, correo, estatus (Activo o Suspendido), prospectos cargados en Proyecto 200, el recuadro privado de Bono por Referencia de Prospectos (Factor Base 30–50% y Bono Adicional 0–50%) y la barra de progreso de su Meta Diaria (15 Puntos)."
+          },
+          {
+            label: "Menú de acciones (⋮) por referidor",
+            text: "Ver Actividad y Prospectos (bitácora de 15 puntos y contactos de Proyecto 200), Configurar Bono por Referencia, Asignar Nueva Contraseña, Suspender / Reactivar Acceso y Dar de Baja (Liberar espacio)."
+          }
+        ]
+      }
+    ],
+    stepGroups: [
+      {
+        title: "Paso a paso: dar de alta a un referidor y enviarle sus accesos por WhatsApp",
+        steps: [
+          "En Mis Referidores, haz clic en el botón Dar de Alta Referidor.",
+          "Captura su Nombre Completo, Correo Electrónico, WhatsApp (10 dígitos) y verifica o genera una Contraseña Temporal.",
+          "En la sección «¿Cómo calcularás el bono de referencia de prospectos para tu referidor?», ajusta el % Base para cálculo del bono por referencia (mínimo 30% y máximo 50%) y el % Adicional por metas / productividad (mínimo 0% y máximo 50%). Este registro es privado y solo lo ven tú y la Administración.",
+          "Haz clic en Crear Cuenta de Referidor.",
+          "En la ventana de confirmación, haz clic en Enviar Accesos por WhatsApp para mandarle en un clic su enlace de ingreso, usuario y contraseña temporal."
+        ]
+      },
+      {
+        title: "Paso a paso: suspender o dar de baja a un referidor",
+        steps: [
+          "Si deseas pausar temporalmente el acceso de un referidor sin perder su historial ni liberar su espacio, abre el menú (⋮) de su tarjeta y elige Suspender Acceso (puedes reactivarlo cuando quieras).",
+          "Si ya alcanzaste tus 5 referidores y necesitas reemplazar a uno, abre el menú (⋮) y selecciona Dar de Baja (Liberar espacio). Al confirmar, se eliminará la cuenta y recuperarás inmediatamente 1 espacio disponible en tu contador (X/5)."
+        ]
+      }
+    ],
     howToReach: ["En el menú superior, haz clic en Mis Referidores."],
     figures: [
       {
@@ -933,7 +988,7 @@ export const MANUAL_CHAPTERS: ManualChapter[] = [
     tips: [
       {
         type: "NOTA",
-        text: "Muestra tus referidores registrados. Si no tienes ninguno, aparece un mensaje de lista vacía. Los referidores los da de alta el administrador desde Admin › Referidores (ver 14.2)."
+        text: "Por disposición legal de la CNSF, un agente no puede compartir comisiones; utiliza siempre el concepto de Bono por Referencia de Prospectos. Recuerda que puedes tener hasta 5 referidores activos o suspendidos simultáneamente sin costo de asiento para la promotoría."
       }
     ]
   },
@@ -1652,7 +1707,9 @@ export const MANUAL_CHAPTERS: ManualChapter[] = [
             items: [
               { label: "Total Referidores", text: "contador." },
               { label: "Alta de Referidor", text: "da de alta un referidor y lo asigna a un agente." },
-              { label: "Columnas", text: "Referidor, Agente Asignado, Estado y Pts. Hoy." }
+              { label: "KPIs de Adopción", text: "Referidores Activos (sin ocupar asientos SaaS), Usando la App Hoy, Meta 15 Pts Cumplida Hoy y Puntos de Referidores Hoy." },
+              { label: "Alta de Referidor", text: "permite al Administrador dar de alta un referidor asignándolo a un agente (respetando el tope de 5 por agente) y registrar cómo se calculará su bono de referencia de prospectos (Base 30–50% y Adicional 0–50%)." },
+              { label: "Columnas", text: "Referidor, Agente Titular, Cálculo Bono Referencia (Base / Adic), Uso de App / Últ. Act., Estado (Activo / Suspendido), Meta Hoy (15 Pts) y Acciones (ver bitácora, suspender/reactivar o dar de baja)." }
             ]
           }
         ],
@@ -1783,7 +1840,7 @@ export const MANUAL_CHAPTERS: ManualChapter[] = [
           {
             groupTitle: "14.4.6 Actividad 25",
             items: [
-              { label: "Reporte de actividad comercial 25", text: "audita la actividad diaria, llamadas y prospectos de tus agentes." },
+              { label: "Reporte de actividad comercial 25 (y 15 pts de Referidores)", text: "audita la actividad diaria, llamadas y prospectos tanto de tus agentes (meta 25 puntos) como de los referidores dados de alta (meta 15 puntos), con botones rápidos Todos, Agentes 25 Pts y Referidores 15 Pts." },
               { label: "Filtros e indicadores", text: "Filtrar por agente, Fecha inicio, Fecha fin; Total puntos sumados, Días con actividad y Promedio de puntos diario." },
               { label: "Desglose por agente", text: "citas efectivas, citas agendadas y puntos; despliega cada fila para ver el detalle." }
             ]
@@ -2296,7 +2353,7 @@ export const GLOSSARY_ITEMS: GlossaryItem[] = [
   },
   {
     term: "Referidor",
-    meaning: "Persona que refiere prospectos a un agente; se registra en Admin › Referidores.",
+    meaning: "Aliado comercial que refiere prospectos a un agente titular (hasta 5 por agente, sin ocupar asientos SaaS). Tiene una meta diaria de 15 puntos y recibe un Bono por Referencia de Prospectos (nunca comisión compartida, en apego a la normatividad CNSF).",
     category: "Módulos",
     relatedChapterId: "mis-referidores"
   },
