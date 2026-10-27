@@ -148,7 +148,7 @@ export default function ReferidoresClient({ agentName = "Agente" }: { agentName?
     };
 
     const buildInviteMessage = (refData: any) => {
-        const origin = typeof window !== "undefined" ? window.location.origin : "https://app.aacom.mx";
+        const origin = typeof window !== "undefined" ? window.location.origin : "https://app.aacomsoft.com";
         return `¡Hola ${refData.name}! 👋\n\nTe he dado de alta como Referidor en nuestra plataforma de *${agentName}* para llevar juntos el seguimiento de tus *15 puntos diarios*, capacitaciones E-Learning y tu lista de Proyecto 200.\n\n🔗 *Enlace de acceso:* ${origin}/login\n📧 *Usuario:* ${refData.email}\n🔑 *Contraseña temporal:* ${refData.tempPassword}\n\n*(Al ingresar por primera vez el sistema te pedirá elegir tu propia contraseña personal).*`;
     };
 

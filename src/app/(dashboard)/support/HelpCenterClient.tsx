@@ -762,7 +762,7 @@ export function HelpCenterClient({ defaultTab = "manual" }: { defaultTab?: "manu
                   Aprende tú mismo: Videos «Así funciono» por Módulo
                 </h2>
                 <p className="text-sm text-slate-300 max-w-3xl">
-                  Domina cada pantalla de aacomsoft en menos de 2 minutos con nuestros recorridos guiados paso a paso. Haz clic en cualquier episodio para reproducirlo en pantalla completa.
+                  Domina cada pantalla de AACOMSoft en pocos minutos con nuestros recorridos guiados paso a paso. Haz clic en cualquier episodio para reproducirlo en pantalla completa.
                 </p>
               </div>
 
@@ -778,7 +778,7 @@ export function HelpCenterClient({ defaultTab = "manual" }: { defaultTab?: "manu
                         : "text-slate-200 hover:bg-white/10"
                     }`}
                   >
-                    {r === "ALL" ? "Todos (15)" : r === "Agente" ? "Para Agentes" : "Promotor / Admin"}
+                    {r === "ALL" ? `Todos (${MANUAL_VIDEOS_CATALOG.length})` : r === "Agente" ? "Para Agentes" : "Promotor / Admin"}
                   </button>
                 ))}
               </div>
