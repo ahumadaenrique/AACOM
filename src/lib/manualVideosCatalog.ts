@@ -166,22 +166,22 @@ export const MANUAL_VIDEOS_CATALOG: ManualVideoItem[] = [
   {
     key: "mod07",
     episodeNumber: "07",
-    title: "Encuesta de Satisfacción (4 SÍes) y Mis Referidores",
-    shortModuleTitle: "Encuesta 4 SÍes y Referidores",
-    subtitle: "Multiplica tus recomendados al terminar cada cita con la técnica de los 4 SÍes y gestiona tu red de aliados.",
+    title: "Encuesta de Satisfacción (4 SÍes) y Mis Referidos",
+    shortModuleTitle: "Encuesta 4 SÍes y Referidos",
+    subtitle: "Multiplica tus recomendados al terminar cada cita con la técnica de los 4 SÍes y gestiona tu histórico de referidos.",
     duration: "1:23",
     roleBadge: "Todos",
     videoUrl: "/api/manual-video/mod07",
     blobUrl: "https://lxyhgkkgwtxjiqp0.private.blob.vercel-storage.com/manual-aacomsoft/video_mod07_encuesta_referidores_AAA.mp4",
     posterUrl: "/manual/posters/mod07.png",
     quickLink: "/encuesta-satisfaccion",
-    modulePaths: ["/encuesta-satisfaccion", "/referidores", "/admin/referidores"],
-    manualChapterIds: ["encuesta-satisfaccion", "mis-referidores"],
+    modulePaths: ["/encuesta-satisfaccion"],
+    manualChapterIds: ["encuesta-satisfaccion"],
     highlights: [
       "Técnica psicológica de los 4 SÍes frente al cliente",
       "Botón salvavidas «Ver 6 preguntas de ayuda» para destrabar la memoria",
       "Pestaña «Mis Referidos e Histórico» para llamar en tu Hora Dorada",
-      "Portal de Mis Referidores con meta de 15 puntos para tus aliados"
+      "Conexión directa de tus referidos calificados con el CRM de Proyecto 200"
     ]
   },
   {
@@ -350,6 +350,27 @@ export const MANUAL_VIDEOS_CATALOG: ManualVideoItem[] = [
       "Importador Excel/CSV con Validador Inteligente de 5 campos obligatorios y exclusión automática",
       "Piloto Automático Secuencial (Score 1–100 pts), Guion de 5 Pilares y Escudo Anti-Objeciones",
       "Candado de Resolución (Cita Agendada con confeti), Tabla CRM y Torre Ejecutiva para el Promotor"
+    ]
+  },
+  {
+    key: "mod16",
+    episodeNumber: "16",
+    title: "Módulo Mis Referidores: Autogestión de 5 Referidores, Bono CNSF y 15 Puntos",
+    shortModuleTitle: "Mis Referidores (Cupo 5 y Bono CNSF)",
+    subtitle: "Da de alta hasta 5 referidores sin costo de asiento SaaS, registra su Bono por Referencia de Prospectos (CNSF) y audita su meta diaria de 15 puntos.",
+    duration: "2:38",
+    roleBadge: "Todos",
+    videoUrl: "/api/manual-video/mod16",
+    blobUrl: "https://lxyhgkkgwtxjiqp0.private.blob.vercel-storage.com/manual-aacomsoft/video_mod16_mis_referidores_aacomsoft_AAA.mp4",
+    posterUrl: "/manual/posters/mod16.png",
+    quickLink: "/referidores",
+    modulePaths: ["/referidores", "/admin/referidores"],
+    manualChapterIds: ["mis-referidores", "administracion-promotoria"],
+    highlights: [
+      "Autogestión del Agente: cupo de hasta 5 referidores activos sin ocupar asientos SaaS de la promotoría",
+      "Cumplimiento CNSF: registro privado de Bono por Referencia (% Base 30–50% y % Adicional 0–50%) y envío por WhatsApp en 1 clic",
+      "Portal enfocado del Referidor: meta diaria de 15 puntos, Proyecto 200 propio, Videos E-Learning e IA sin examen CNSF",
+      "Bitácora detallada nombre por nombre, menú (⋮) para Suspender o Dar de Baja (liberar espacio) y Torre Admin con filtro en Actividad 25"
     ]
   }
 ];
