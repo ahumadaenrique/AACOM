@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { SITE_CONFIG } from '@/config/site';
+import { MANUAL_VIDEOS_CATALOG, ManualVideoItem } from '@/lib/manualVideosCatalog';
 import { DemoForm } from '@/components/public/DemoForm';
 import { WhatsAppFloatingButton } from '@/components/public/WhatsAppFloatingButton';
 import { BrandLogo } from '@/components/public/BrandLogo';
@@ -40,11 +41,60 @@ import {
   Presentation,
   Target,
   Building2,
-  UserCheck
+  UserCheck,
+  Play,
+  Film,
+  Rocket
 } from 'lucide-react';
+
+const PROMO_VIDEO_ITEM: ManualVideoItem = {
+  key: 'promo',
+  episodeNumber: 'PROMO',
+  title: 'Recorrido Ejecutivo Completo de AACOMSoft en 90 Segundos',
+  shortModuleTitle: 'Presentación Ejecutiva AACOMSoft',
+  subtitle: 'Descubre cómo sincronizar dirección, gerencia, coaching, fuerza de ventas y referidores bajo la marca de tu promotoría.',
+  duration: '1:35',
+  roleBadge: 'Todos',
+  videoUrl: '/api/manual-video/promo?v=2',
+  blobUrl: 'https://lxyhgkkgwtxjiqp0.private.blob.vercel-storage.com/manual-aacomsoft/video_promo_redes_sociales_aacomsoft_AAA.mp4',
+  posterUrl: '/manual/posters/promo.png',
+  quickLink: '/registro',
+  modulePaths: ['/inicio'],
+  manualChapterIds: ['introduccion'],
+  highlights: [
+    'Arquitectura Multi-Rol: Promotor, Gerencia, Coach, Agente y Referidor',
+    'Proyecto 200 con Piloto Automático, Diagnóstico ADN y Talleres TIPS con QR',
+    'Academia PRO con Simuladores CNSF Cédula A/B y Roleplay por Voz con IA',
+    'Mi Cartera 360° con lector IA de pólizas PDF y Marca Blanca para tu agencia'
+  ]
+};
+
+const LANDING_VIDEOS_LIST: ManualVideoItem[] = [
+  PROMO_VIDEO_ITEM,
+  ...MANUAL_VIDEOS_CATALOG,
+];
+
+type VideoCategoryFilter = 'ALL' | 'DIRECCION' | 'VENTAS' | 'CARTERA_IA';
+
+const DIRECCION_KEYS = new Set(['promo', 'ep00', 'mod01', 'mod04', 'mod06', 'mod14']);
+const VENTAS_KEYS = new Set(['mod02', 'mod03', 'mod07', 'mod08', 'mod09', 'mod10', 'mod15', 'mod16']);
+const CARTERA_IA_KEYS = new Set(['mod05', 'mod11', 'mod12', 'mod13']);
 
 export default function InicioPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [videoCategory, setVideoCategory] = useState<VideoCategoryFilter>('ALL');
+  const [activeVideoKey, setActiveVideoKey] = useState<string>('promo');
+
+  const filteredVideos = useMemo(() => {
+    if (videoCategory === 'ALL') return LANDING_VIDEOS_LIST;
+    if (videoCategory === 'DIRECCION') return LANDING_VIDEOS_LIST.filter((v) => DIRECCION_KEYS.has(v.key));
+    if (videoCategory === 'VENTAS') return LANDING_VIDEOS_LIST.filter((v) => VENTAS_KEYS.has(v.key));
+    return LANDING_VIDEOS_LIST.filter((v) => CARTERA_IA_KEYS.has(v.key));
+  }, [videoCategory]);
+
+  const activeVideo = useMemo(() => {
+    return LANDING_VIDEOS_LIST.find((v) => v.key === activeVideoKey) || LANDING_VIDEOS_LIST[0];
+  }, [activeVideoKey]);
 
   // Headlines A/B testable via SITE_CONFIG
   const headlines = {
@@ -83,10 +133,10 @@ export default function InicioPage() {
         mainEntity: [
           {
             '@type': 'Question',
-            name: '¿aacomsoft es una promotoría?',
+            name: '¿AACOMSoft es una promotoría?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'No. aacomsoft es una plataforma tecnológica B2B creada para la operación de promotorías y agencias de seguros. No intermedia ni comercializa pólizas al público; los agentes, prospectos y la cartera pertenecen exclusivamente a cada promotoría bajo convenio de confidencialidad firmado por escrito.'
+              text: 'No. AACOMSoft es una plataforma tecnológica B2B creada para la operación de promotorías y agencias de seguros. No intermedia ni comercializa pólizas al público; los agentes, prospectos y la cartera pertenecen exclusivamente a cada promotoría bajo convenio de confidencialidad firmado por escrito.'
             }
           },
           {
@@ -115,10 +165,10 @@ export default function InicioPage() {
           },
           {
             '@type': 'Question',
-            name: '¿Se requiere tarjeta de crédito para agendar la sesión demostrativa?',
+            name: '¿Se requiere tarjeta de crédito para probar la plataforma o agendar la sesión demostrativa?',
             acceptedAnswer: {
               '@type': 'Answer',
-              text: 'No. La sesión demostrativa es una presentación ejecutiva de 20 minutos por videollamada, sin costo y sin compromiso comercial.'
+              text: 'No. Puedes crear tu cuenta gratis por 5 días sin tarjeta de crédito y aprender con los botones interactivos «Así funciono» en cada módulo, o bien agendar una sesión demostrativa de 20 minutos sin compromiso comercial.'
             }
           }
         ]
@@ -138,37 +188,41 @@ export default function InicioPage() {
       <header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl transition-all">
         <div className="container mx-auto px-4 h-18 flex items-center justify-between">
           
-          {/* Logo aacomsoft Oficial */}
+          {/* Logo AACOMSoft Oficial */}
           <BrandLogo href="/" size="md" />
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-400">
+          <nav className="hidden md:flex items-center gap-7 text-sm font-semibold text-slate-400">
             <a href="#roles" className="hover:text-teal-400 transition-colors">Roles</a>
             <a href="#funciones" className="hover:text-teal-400 transition-colors">Módulos</a>
+            <a href="#videos" className="text-teal-400 hover:text-teal-300 transition-colors flex items-center gap-1.5 font-bold">
+              <Film className="w-4 h-4" />
+              Videos ({LANDING_VIDEOS_LIST.length})
+            </a>
             <a href="#seguridad" className="hover:text-teal-400 transition-colors">Seguridad</a>
             <a href="#precios" className="hover:text-teal-400 transition-colors">Inversión</a>
             <a href="#faq" className="hover:text-teal-400 transition-colors">Preguntas</a>
           </nav>
 
           {/* Right Action Buttons */}
-          <div className="hidden md:flex items-center gap-4">
-            <Link href="/login" className="text-sm font-semibold text-slate-300 hover:text-white transition-colors">
+          <div className="hidden md:flex items-center gap-3">
+            <Link href="/login" className="text-sm font-semibold text-slate-300 hover:text-white transition-colors px-2">
               Iniciar sesión
             </Link>
-            <a href="#demo">
-              <Button className="bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-teal-950/40 transition-all hover:scale-105">
-                Agendar demo
+            <Link href="/registro">
+              <Button className="bg-teal-500 hover:bg-teal-400 text-slate-950 font-black px-5 py-2.5 rounded-xl shadow-lg shadow-teal-950/40 transition-all hover:scale-105">
+                Prueba 5 días gratis
               </Button>
-            </a>
+            </Link>
           </div>
 
-          {/* Mobile Hamburger & Always-visible Demo Button */}
+          {/* Mobile Hamburger & Always-visible CTA Button */}
           <div className="flex md:hidden items-center gap-2.5">
-            <a href="#demo">
+            <Link href="/registro">
               <Button size="sm" className="bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs px-3.5 py-1.5 rounded-lg shadow-md">
-                Agendar demo
+                5 días gratis
               </Button>
-            </a>
+            </Link>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white"
@@ -186,6 +240,12 @@ export default function InicioPage() {
             <nav className="flex flex-col space-y-3 text-sm font-semibold text-slate-300">
               <a href="#roles" onClick={() => setMobileMenuOpen(false)} className="py-2 hover:text-teal-400">Roles</a>
               <a href="#funciones" onClick={() => setMobileMenuOpen(false)} className="py-2 hover:text-teal-400">Módulos</a>
+              <a href="#videos" onClick={() => setMobileMenuOpen(false)} className="py-2 text-teal-400 font-bold flex items-center gap-1.5">
+                <Film className="w-4 h-4" /> Videos explicativos ({LANDING_VIDEOS_LIST.length})
+              </a>
+              <a href="#prueba-gratis" onClick={() => setMobileMenuOpen(false)} className="py-2 text-emerald-400 font-bold">
+                Prueba gratis 5 días
+              </a>
               <a href="#seguridad" onClick={() => setMobileMenuOpen(false)} className="py-2 hover:text-teal-400">Seguridad</a>
               <a href="#precios" onClick={() => setMobileMenuOpen(false)} className="py-2 hover:text-teal-400">Inversión</a>
               <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-2 hover:text-teal-400">Preguntas</a>
@@ -228,28 +288,24 @@ export default function InicioPage() {
 
           {/* Hero CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-            <a href="#demo" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-base font-bold bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-2xl shadow-xl shadow-teal-950/60 transition-all hover:scale-105">
-                <span>Agendar sesión demostrativa (20 min)</span>
+            <Link href="/registro" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-base font-black bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-2xl shadow-xl shadow-teal-950/60 transition-all hover:scale-105">
+                <Rocket className="w-5 h-5 mr-2" />
+                <span>Crear cuenta y usarla gratis 5 días</span>
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
-            </a>
+            </Link>
             
-            <a
-              href={SITE_CONFIG.whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto"
-            >
+            <a href="#demo" className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-base font-bold rounded-2xl bg-slate-900/60 hover:bg-slate-800 text-white border-slate-700/80 backdrop-blur-md transition-all">
-                <span>Contacto directo por WhatsApp</span>
+                <span>O agendar sesión demostrativa (20 min)</span>
               </Button>
             </a>
           </div>
 
           {/* Sin compromiso / Sin tarjeta */}
           <p className="text-xs sm:text-sm text-slate-400 font-medium">
-            Sesión ejecutiva de 20 minutos con entorno real de demostración. Sin compromiso comercial.
+            Prueba gratis durante 5 días sin tarjeta de crédito con guías interactivas «Así funciono» en cada módulo, o agenda una demostración en vivo.
           </p>
 
           {/* Interactive SaaS Browser Mockup */}
@@ -518,7 +574,7 @@ export default function InicioPage() {
               </div>
             </div>
 
-            {/* Pilar 2 — Productividad Diaria y Prospección Interactiva (REGLA LEGAL: "método de actividad por puntos", CERO "25 puntos") */}
+            {/* Pilar 2 — Productividad Diaria y Prospección Interactiva */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center p-8 sm:p-12 rounded-3xl bg-slate-900 border border-slate-800 shadow-xl">
               <div className="lg:col-span-7 space-y-6">
                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20">
@@ -626,6 +682,202 @@ export default function InicioPage() {
 
           </div>
 
+        </div>
+      </section>
+
+      {/* 6.5. Galería Interactiva en Modo Cine: ¿Qué puedes hacer con AACOMSoft? (#videos) */}
+      <section id="videos" className="py-24 bg-gradient-to-b from-slate-950 via-slate-900/90 to-slate-950 border-t border-slate-800">
+        <div className="container mx-auto px-4 max-w-6xl space-y-12">
+          <div className="text-center space-y-4">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-teal-500/15 text-teal-300 border border-teal-500/30">
+              <Film className="w-3.5 h-3.5" />
+              <span>Videoteca Oficial «Así funciono» • {LANDING_VIDEOS_LIST.length} Videos Explicativos en HD</span>
+            </div>
+            <h2 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+              ¿Qué puedes hacer con {SITE_CONFIG.brandName}?
+            </h2>
+            <p className="text-slate-300 max-w-3xl mx-auto text-sm sm:text-base leading-relaxed">
+              Explora en video cada módulo de <strong>{SITE_CONFIG.brandName}</strong> antes de registrarte. Estos mismos videos están integrados arriba de cada pantalla en el botón interactivo <strong>«Así funciono»</strong> para que tú y tus agentes aprendan a usar cada herramienta paso a paso.
+            </p>
+
+            {/* Category Filters */}
+            <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+              {([
+                { id: 'ALL', label: `Todos (${LANDING_VIDEOS_LIST.length})` },
+                { id: 'DIRECCION', label: 'Dirección y Promotoría' },
+                { id: 'VENTAS', label: 'Prospección y Ventas' },
+                { id: 'CARTERA_IA', label: 'Cartera, CNSF e IA' },
+              ] as const).map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setVideoCategory(cat.id)}
+                  className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all cursor-pointer ${
+                    videoCategory === cat.id
+                      ? 'bg-teal-500 text-slate-950 shadow-lg shadow-teal-500/25'
+                      : 'bg-slate-900/90 text-slate-300 border border-slate-800 hover:border-teal-500/40 hover:text-white'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Active Cinema Player Stage */}
+          <div className="rounded-3xl bg-slate-950 border-2 border-teal-500/40 overflow-hidden shadow-2xl">
+            <div className="px-6 py-4 bg-gradient-to-r from-slate-900 via-slate-900 to-teal-950 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="px-3 py-1 rounded-lg bg-teal-500 text-slate-950 text-xs font-black shrink-0">
+                  {activeVideo.episodeNumber === 'PROMO' ? '🎬 PROMO OFICIAL' : `🎬 EPISODIO ${activeVideo.episodeNumber}`}
+                </span>
+                <div className="min-w-0">
+                  <h3 className="text-base sm:text-lg font-black text-white truncate">
+                    {activeVideo.title}
+                  </h3>
+                  <p className="text-xs text-slate-300 truncate hidden sm:block">
+                    {activeVideo.subtitle}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3 shrink-0">
+                <span className="inline-flex items-center gap-1.5 text-xs font-mono bg-white/10 text-teal-300 px-3 py-1.5 rounded-lg border border-white/10">
+                  <Clock className="w-3.5 h-3.5" />
+                  {activeVideo.duration} min
+                </span>
+                <Link href="/registro">
+                  <Button size="sm" className="bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs rounded-xl">
+                    Probar gratis 5 días →
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12">
+              <div className="lg:col-span-8 bg-black aspect-video flex items-center justify-center relative">
+                <video
+                  key={activeVideo.videoUrl}
+                  src={activeVideo.videoUrl}
+                  poster={activeVideo.posterUrl}
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+
+              <div className="lg:col-span-4 p-6 bg-slate-900/95 border-t lg:border-t-0 lg:border-l border-slate-800 flex flex-col justify-between space-y-6">
+                <div className="space-y-4">
+                  <div>
+                    <span className="text-[11px] font-black uppercase tracking-wider text-teal-400 block mb-1">
+                      {activeVideo.shortModuleTitle}
+                    </span>
+                    <h4 className="text-lg font-black text-white leading-snug">
+                      Lo que verás en este recorrido:
+                    </h4>
+                  </div>
+
+                  <ul className="space-y-3">
+                    {activeVideo.highlights.map((h, idx) => (
+                      <li key={idx} className="text-xs sm:text-sm text-slate-200 flex items-start gap-2.5 leading-relaxed">
+                        <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+                        <span>{h}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="pt-4 border-t border-slate-800 space-y-3">
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Este video está integrado directamente dentro de <strong>{SITE_CONFIG.brandName}</strong> en el botón superior <strong>«Así funciono»</strong>.
+                  </p>
+                  <Link href="/registro" className="block">
+                    <Button className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs sm:text-sm h-11 rounded-xl shadow-lg shadow-teal-950/50">
+                      <Rocket className="w-4 h-4 mr-1.5" />
+                      Crear mi cuenta y usarla gratis 5 días
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Grid of 18 Interactive Video Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {filteredVideos.map((vid) => {
+              const isSelected = vid.key === activeVideo.key;
+              return (
+                <div
+                  key={vid.key}
+                  onClick={() => {
+                    setActiveVideoKey(vid.key);
+                    const el = document.getElementById('videos');
+                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }}
+                  className={`group rounded-2xl border overflow-hidden transition-all cursor-pointer flex flex-col justify-between ${
+                    isSelected
+                      ? 'bg-slate-900 border-teal-400 ring-2 ring-teal-500/40 shadow-xl'
+                      : 'bg-slate-900/70 border-slate-800 hover:border-teal-500/50 hover:bg-slate-900'
+                  }`}
+                >
+                  <div>
+                    <div className="relative aspect-video bg-slate-950 overflow-hidden">
+                      <img
+                        src={vid.posterUrl}
+                        alt={vid.title}
+                        loading="lazy"
+                        className="w-full h-full object-cover opacity-90 group-hover:scale-105 group-hover:opacity-100 transition-all duration-300"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-slate-950/20 to-transparent" />
+
+                      <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                        <span className="px-2.5 py-0.5 rounded-md bg-slate-950/90 border border-teal-400/40 text-teal-300 text-[10px] font-black">
+                          {vid.episodeNumber === 'PROMO' ? 'PROMO' : `EP ${vid.episodeNumber}`}
+                        </span>
+                        <span className="px-2 py-0.5 rounded-md bg-teal-500/90 text-slate-950 text-[10px] font-black uppercase">
+                          {vid.roleBadge === 'Admin' ? 'Promotor / Admin' : 'Agentes y Admin'}
+                        </span>
+                      </div>
+
+                      <span className="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-md bg-slate-950/90 text-white font-mono text-[11px] font-bold border border-white/15">
+                        {vid.duration}
+                      </span>
+
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className={`w-12 h-12 rounded-full flex items-center justify-center shadow-xl transition-transform group-hover:scale-110 ${
+                          isSelected ? 'bg-teal-400 text-slate-950' : 'bg-teal-500/90 text-slate-950'
+                        }`}>
+                          <Play className="w-5 h-5 fill-slate-950 ml-0.5" />
+                        </div>
+                      </div>
+
+                      <div className="absolute bottom-2.5 left-3 right-3">
+                        <span className="text-[10px] font-black text-teal-300 uppercase tracking-wider block">
+                          {vid.shortModuleTitle}
+                        </span>
+                        <h4 className="text-xs sm:text-sm font-black text-white line-clamp-1">
+                          {vid.title}
+                        </h4>
+                      </div>
+                    </div>
+
+                    <div className="p-4 space-y-2">
+                      <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
+                        {vid.subtitle}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="px-4 py-2.5 bg-slate-950/60 border-t border-slate-800/80 flex items-center justify-between text-xs font-bold">
+                    <span className={isSelected ? 'text-teal-400 font-black' : 'text-slate-300 group-hover:text-teal-400'}>
+                      {isSelected ? '▶ Reproduciendo arriba' : '▶ Reproducir video'}
+                    </span>
+                    <span className="text-slate-500 font-mono text-[11px]">{vid.duration} min</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -774,9 +1026,9 @@ export default function InicioPage() {
               <div className="w-12 h-12 rounded-2xl bg-teal-500 text-slate-950 font-black text-xl flex items-center justify-center mx-auto shadow-lg shadow-teal-500/20">
                 1
               </div>
-              <h3 className="text-xl font-bold text-white">Sesión de 20 minutos</h3>
+              <h3 className="text-xl font-bold text-white">5 días gratis o Demo</h3>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Recorrido ejecutivo por los módulos y roles de la plataforma para evaluar el ajuste con la operación de la promotoría.
+                Crea tu cuenta gratuita por 5 días en 2 minutos o agenda un recorrido ejecutivo de 20 minutos por videollamada.
               </p>
             </div>
 
@@ -859,11 +1111,16 @@ export default function InicioPage() {
                 </ul>
               </div>
 
-              <a href="#demo" className="pt-6">
-                <Button className="w-full h-12 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-sm shadow-lg shadow-teal-950/40">
-                  Agendar sesión demostrativa
-                </Button>
-              </a>
+              <div className="pt-6 space-y-2.5">
+                <Link href="/registro" className="block">
+                  <Button className="w-full h-12 rounded-xl bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-sm shadow-lg shadow-teal-950/40">
+                    Comenzar 5 días gratis sin tarjeta
+                  </Button>
+                </Link>
+                <a href="#demo" className="block text-center text-xs font-bold text-slate-400 hover:text-teal-400">
+                  O agendar sesión demostrativa →
+                </a>
+              </div>
             </div>
 
             {/* Asiento adicional */}
@@ -934,10 +1191,10 @@ export default function InicioPage() {
             
             <AccordionItem value="item-1" className="border border-slate-800 rounded-2xl bg-slate-900/80 px-6">
               <AccordionTrigger className="text-sm sm:text-base font-bold text-white hover:text-teal-400 text-left py-5">
-                ¿aacomsoft es una promotoría?
+                ¿{SITE_CONFIG.brandName} es una promotoría?
               </AccordionTrigger>
               <AccordionContent className="text-xs sm:text-sm text-slate-400 leading-relaxed pb-5">
-                No. aacomsoft es una plataforma tecnológica B2B creada para la operación de promotorías y agencias de seguros. No intermedia ni comercializa pólizas al público; los agentes, prospectos y la cartera son propiedad exclusiva de cada promotoría y quedan resguardados bajo convenio de confidencialidad firmado por escrito.
+                No. {SITE_CONFIG.brandName} es una plataforma tecnológica B2B creada para la operación de promotorías y agencias de seguros. No intermedia ni comercializa pólizas al público; los agentes, prospectos y la cartera son propiedad exclusiva de cada promotoría y quedan resguardados bajo convenio de confidencialidad firmado por escrito.
               </AccordionContent>
             </AccordionItem>
 
@@ -970,10 +1227,10 @@ export default function InicioPage() {
 
             <AccordionItem value="item-5" className="border border-slate-800 rounded-2xl bg-slate-900/80 px-6">
               <AccordionTrigger className="text-sm sm:text-base font-bold text-white hover:text-teal-400 text-left py-5">
-                ¿Se requiere tarjeta de crédito para agendar la sesión demostrativa?
+                ¿Necesito agendar forzosamente una demo o puedo probar la plataforma hoy mismo?
               </AccordionTrigger>
               <AccordionContent className="text-xs sm:text-sm text-slate-400 leading-relaxed pb-5">
-                No. La demostración es una sesión ejecutiva personalizada de 20 minutos por videollamada, sin costo y sin compromiso de contratación.
+                No necesitas esperar a una cita en agenda: puedes crear tu cuenta gratis hoy mismo en 2 minutos, personalizar el logotipo y color de tu promotoría y usar toda la plataforma gratis durante 5 días sin tarjeta de crédito. Dentro de cada pantalla encontrarás el botón interactivo «Así funciono» y la videoteca «Aprende tú mismo» que te guían paso a paso.
               </AccordionContent>
             </AccordionItem>
 
@@ -1006,6 +1263,120 @@ export default function InicioPage() {
 
           </Accordion>
 
+        </div>
+      </section>
+
+      {/* 11.5. NUEVA SECCIÓN ANTES DE #demo: Pruébala hoy mismo sin esperar demo (5 Días Gratis) */}
+      <section id="prueba-gratis" className="py-24 bg-gradient-to-br from-slate-950 via-teal-950/35 to-slate-950 border-t border-teal-500/30 relative overflow-hidden">
+        <div className="container mx-auto px-4 max-w-6xl relative z-10">
+          <div className="rounded-3xl bg-slate-900/95 border-2 border-teal-500/50 p-6 sm:p-10 lg:p-12 shadow-2xl">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+              
+              {/* Left Column: Message + Benefits + Primary CTA to /registro */}
+              <div className="lg:col-span-6 space-y-6">
+                <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-teal-500/20 text-teal-300 border border-teal-400/40">
+                  <Zap className="w-3.5 h-3.5" />
+                  <span>Acceso Inmediato • Sin Esperar Agenda • Sin Tarjeta</span>
+                </div>
+
+                <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+                  No necesitas agendar forzosamente una demo: <span className="text-teal-400">crea tu cuenta y úsala gratis durante 5 días</span>
+                </h2>
+
+                <p className="text-sm sm:text-base text-slate-300 leading-relaxed">
+                  Hoy mismo puedes activar la cuenta de tu promotoría o agencia en <strong>{SITE_CONFIG.brandName}</strong>, personalizar tu logotipo y color institucional y navegar toda la plataforma gratis durante <strong>5 días</strong>. Además, dentro de cada módulo ya tienes integrados los botones interactivos <strong>«Así funciono»</strong> y la videoteca <strong>«Aprende tú mismo»</strong> que te explican paso a paso cómo usar cada herramienta a tu propio ritmo.
+                </p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+                  <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+                    <div className="text-xs text-slate-200">
+                      <strong className="block text-white font-bold">5 días gratis sin tarjeta</strong>
+                      Explora todos los roles y módulos en vivo hoy mismo.
+                    </div>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+                    <div className="text-xs text-slate-200">
+                      <strong className="block text-white font-bold">Marca Blanca en 2 minutos</strong>
+                      Sube tu logotipo y elige el color de tu promotoría.
+                    </div>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+                    <div className="text-xs text-slate-200">
+                      <strong className="block text-white font-bold">Botón «Así funciono»</strong>
+                      Video tutorial integrado arriba de cada pantalla.
+                    </div>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800 flex items-start gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0 mt-0.5" />
+                    <div className="text-xs text-slate-200">
+                      <strong className="block text-white font-bold">Videoteca «Aprende tú mismo»</strong>
+                      18 episodios guiados paso a paso para tu equipo.
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-2">
+                  <Link href="/registro" className="w-full sm:w-auto">
+                    <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-base font-black bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-2xl shadow-xl shadow-teal-950/60 transition-all hover:scale-105">
+                      <Rocket className="w-5 h-5 mr-2" />
+                      <span>Crear mi cuenta gratis por 5 días</span>
+                      <ArrowRight className="w-5 h-5 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+
+                <p className="text-xs text-slate-400">
+                  ¿Prefieres que un especialista te muestre la plataforma en videollamada?{' '}
+                  <a href="#demo" className="text-teal-400 font-bold hover:underline">
+                    Agenda tu sesión demostrativa abajo ↓
+                  </a>
+                </p>
+              </div>
+
+              {/* Right Column: New 3D Video Player (prueba-gratis) */}
+              <div className="lg:col-span-6 space-y-4">
+                <div className="rounded-2xl bg-slate-950 border-2 border-teal-500/50 overflow-hidden shadow-2xl">
+                  <div className="px-4 py-3 bg-gradient-to-r from-slate-900 to-teal-950 border-b border-slate-800 flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="px-2.5 py-0.5 rounded-md bg-teal-500 text-slate-950 text-[11px] font-black shrink-0">
+                        🎬 VIDEO OFICIAL
+                      </span>
+                      <span className="text-xs font-bold text-white truncate">
+                        Cómo crear tu cuenta gratis por 5 días y aprender con «Así funciono»
+                      </span>
+                    </div>
+                    <span className="text-xs font-mono text-teal-300 bg-white/10 px-2 py-0.5 rounded shrink-0">
+                      1:10
+                    </span>
+                  </div>
+
+                  <div className="bg-black aspect-video w-full relative flex items-center justify-center">
+                    <video
+                      src="/api/manual-video/prueba-gratis?v=2"
+                      poster="/manual/posters/prueba-gratis.png?v=2"
+                      controls
+                      playsInline
+                      preload="metadata"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+
+                  <div className="p-4 bg-slate-900/90 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+                    <span className="text-slate-300 font-semibold">
+                      ✨ Recorrido en 3D por <code className="text-teal-300">/registro</code>, botones <strong>«Así funciono»</strong> y <strong>«Aprende tú mismo»</strong>
+                    </span>
+                    <Link href="/registro" className="text-teal-400 font-black hover:underline">
+                      Ir a /registro →
+                    </Link>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
         </div>
       </section>
 
@@ -1082,22 +1453,17 @@ export default function InicioPage() {
             Infraestructura ejecutiva para escalar el crecimiento de la promotoría
           </h2>
           <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
-            Conozca en 20 minutos cómo sincronizar la actividad comercial, acelerar la certificación de agentes y proteger la conservación de la cartera en una única plataforma.
+            Activa hoy mismo tus 5 días gratis sin tarjeta y aprende paso a paso con los botones «Así funciono», o agenda una sesión demostrativa de 20 minutos.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-            <a href="#demo" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-base font-bold bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-2xl shadow-xl transition-all">
-                Agendar sesión demostrativa
+            <Link href="/registro" className="w-full sm:w-auto">
+              <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-base font-black bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-2xl shadow-xl transition-all">
+                Crear mi cuenta gratis por 5 días
               </Button>
-            </a>
-            <a
-              href={SITE_CONFIG.whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full sm:w-auto"
-            >
+            </Link>
+            <a href="#demo" className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-base font-bold rounded-2xl bg-slate-900 hover:bg-slate-800 text-white border-slate-700">
-                Contacto directo por WhatsApp
+                Agendar sesión demostrativa
               </Button>
             </a>
           </div>
@@ -1123,6 +1489,8 @@ export default function InicioPage() {
               <ul className="space-y-2">
                 <li><a href="#roles" className="hover:text-teal-400 transition-colors">Arquitectura por roles</a></li>
                 <li><a href="#funciones" className="hover:text-teal-400 transition-colors">Módulos principales</a></li>
+                <li><a href="#videos" className="hover:text-teal-400 transition-colors">Videos «Así funciono» (18)</a></li>
+                <li><Link href="/registro" className="hover:text-teal-400 transition-colors">Prueba gratis 5 días</Link></li>
                 <li><a href="#seguridad" className="hover:text-teal-400 transition-colors">Seguridad y NDA</a></li>
                 <li><a href="#precios" className="hover:text-teal-400 transition-colors">Inversión</a></li>
                 <li><a href="#faq" className="hover:text-teal-400 transition-colors">Preguntas frecuentes</a></li>

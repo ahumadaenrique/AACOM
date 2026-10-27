@@ -4,14 +4,14 @@
  */
 
 export const SITE_CONFIG = {
-  brandName: 'aacomsoft',
+  brandName: 'AACOMSoft',
   brandMode: (process.env.NEXT_PUBLIC_BRAND_MODE as 'A' | 'B') || 'A', // 'A' = Marca independiente neutral, 'B' = Con respaldo
   
   // Contacto y Teléfono Real
   phone: '+52 (55) 1501 5502',
   phoneRaw: '+525515015502',
   whatsappNumber: '525515015502',
-  whatsappMessage: 'Hola, solicito información y agendar una sesión demostrativa de aacomsoft para promotoría.',
+  whatsappMessage: 'Hola, solicito información y agendar una sesión demostrativa de AACOMSoft para promotoría.',
   get whatsappUrl() {
     return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(this.whatsappMessage)}`;
   },

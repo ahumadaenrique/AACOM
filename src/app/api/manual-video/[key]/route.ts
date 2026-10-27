@@ -6,6 +6,9 @@ export const dynamic = "force-dynamic";
 const PROMO_BLOB_URL =
   "https://lxyhgkkgwtxjiqp0.private.blob.vercel-storage.com/manual-aacomsoft/video_promo_redes_sociales_aacomsoft_AAA.mp4";
 
+const PRUEBA_GRATIS_BLOB_URL =
+  "https://lxyhgkkgwtxjiqp0.private.blob.vercel-storage.com/manual-aacomsoft/video_prueba_gratis_5_dias_aacomsoft_AAA.mp4";
+
 // Token corresponding specifically to the lxyhgkkgwtxjiqp0 Vercel Blob store where manual-aacomsoft/* is hosted
 const MANUAL_STORE_TOKEN =
   "vercel_blob_rw_lXYhGKKGWTXJIQp0_j4iwqKaJJEy88BVAadlj42H1HNYn92";
@@ -18,7 +21,11 @@ export async function GET(
     const key = params.key;
     const item = MANUAL_VIDEOS_CATALOG.find((v) => v.key === key);
     const targetBlobUrl =
-      key === "promo" ? PROMO_BLOB_URL : item?.blobUrl;
+      key === "promo"
+        ? PROMO_BLOB_URL
+        : key === "prueba-gratis"
+        ? PRUEBA_GRATIS_BLOB_URL
+        : item?.blobUrl;
 
     if (!targetBlobUrl) {
       return new NextResponse("Video no encontrado", { status: 404 });
