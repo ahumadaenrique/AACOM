@@ -164,10 +164,12 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
               const endDate = agency.subscriptionEndDate ? new Date(agency.subscriptionEndDate) : null;
               const now = new Date();
               const daysLeft = endDate ? differenceInCalendarDays(endDate, now) : 0;
+              const SUBSCRIPTION_GRACE_MS = 36 * 60 * 60 * 1000;
+              const isWithinGrace = endDate ? endDate.getTime() + SUBSCRIPTION_GRACE_MS >= now.getTime() : true;
               
-              const isActive = agency.subscriptionStatus === "active" && (!endDate || daysLeft >= 0);
-              const isWarning = isActive && endDate && daysLeft <= 7 && daysLeft > 0;
-              const isExpired = endDate && daysLeft < 0;
+              const isActive = (agency.subscriptionStatus === "active" || agency.subscriptionStatus === "trialing") && (!endDate || daysLeft >= 0 || isWithinGrace);
+              const isWarning = isActive && endDate && daysLeft <= 7;
+              const isExpired = Boolean(endDate && !isActive && daysLeft < 0);
 
               const cedulaDays = agency.cedulaDaysBalance ?? 0;
               const academiaMinutes = agency.academiaProMinutes ?? Math.floor((agency.voiceSecondsBalance || 0) / 60);
@@ -310,7 +312,7 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                       isWarning ? (
                         <div className="flex items-center gap-1.5 text-amber-600 text-sm font-semibold">
                           <ShieldAlert className="w-4 h-4" />
-                          <span>Por vencer ({daysLeft} días)</span>
+                          <span>{daysLeft <= 0 ? "En cobro hoy" : `Por vencer (${daysLeft} días)`}</span>
                         </div>
                       ) : (
                         <div className="flex items-center gap-1.5 text-emerald-600 text-sm font-semibold">

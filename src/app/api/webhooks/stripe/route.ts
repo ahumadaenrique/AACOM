@@ -24,28 +24,62 @@ export async function POST(req: Request) {
   }
 
   // Función auxiliar para procesar el pago y extender la suscripción
-  const processSubscriptionPayment = async (agencyId: string, daysToAddStr?: string, monthsToAddStr?: string) => {
+  const processSubscriptionPayment = async (
+    agencyId: string,
+    daysToAddStr?: string,
+    monthsToAddStr?: string,
+    stripePeriodEndUnix?: number
+  ) => {
     const agency = await prisma.agency.findUnique({
       where: { id: agencyId },
     });
 
     if (agency) {
       const now = new Date();
-      const currentEndDate = agency.subscriptionEndDate && agency.subscriptionEndDate > now 
-          ? agency.subscriptionEndDate 
-          : now;
-      
-      const newEndDate = new Date(currentEndDate);
+      // Si la agencia tiene más de 3 días acumulados a futuro (ej. por bonos de Refiere y Gana o renovación anticipada),
+      // respetamos esa base; si está vencida o dentro de la ventana de corte (<= 3 días), partimos de hoy.
+      const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+      const hasAccumulatedFutureDays =
+        agency.subscriptionEndDate && agency.subscriptionEndDate > threeDaysFromNow;
+
+      const baseDate = hasAccumulatedFutureDays
+        ? new Date(agency.subscriptionEndDate!)
+        : new Date(now);
+
+      const newEndDate = new Date(baseDate);
       let daysToAdd = 365;
-      
+      let inferredMonths: number | null = null;
+
       if (monthsToAddStr) {
-        const months = parseInt(monthsToAddStr, 10);
-        daysToAdd = months * 30; // Approximated days for referral check
-        newEndDate.setMonth(newEndDate.getMonth() + months);
+        inferredMonths = parseInt(monthsToAddStr, 10);
+      } else if (daysToAddStr) {
+        const parsedDays = parseInt(daysToAddStr, 10);
+        if (parsedDays === 60) inferredMonths = 2;
+        else if (parsedDays === 90) inferredMonths = 3;
+        else if (parsedDays === 180) inferredMonths = 6;
+        else if (parsedDays === 365) inferredMonths = 12;
+      }
+
+      if (inferredMonths && inferredMonths > 0) {
+        daysToAdd = inferredMonths * 30; // Aproximación para la validación de Refiere y Gana
+        newEndDate.setMonth(newEndDate.getMonth() + inferredMonths);
       } else {
-        daysToAdd = daysToAddStr ? parseInt(daysToAddStr, 10) : 365; // Default 365 if not found
+        daysToAdd = daysToAddStr ? parseInt(daysToAddStr, 10) : 365;
         newEndDate.setDate(newEndDate.getDate() + daysToAdd);
       }
+
+      // Si Stripe nos provee el current_period_end real de la suscripción y es mayor a la fecha calculada
+      // (o si es una renovación normal sin meses extra acumulados), sincronizamos con el corte real de Stripe.
+      if (stripePeriodEndUnix) {
+        const stripeEndDate = new Date(stripePeriodEndUnix * 1000);
+        if (!hasAccumulatedFutureDays || stripeEndDate > newEndDate) {
+          newEndDate.setTime(stripeEndDate.getTime());
+        }
+      }
+
+      // Fijamos el vencimiento al final del día (23:59:59.999 UTC) para evitar cortes matutinos
+      // antes de la hora en que Stripe ejecuta sus cobros automáticos.
+      newEndDate.setUTCHours(23, 59, 59, 999);
 
       let subscriptionPlan = "QUARTERLY";
       let studyTokens = 12;
@@ -455,7 +489,16 @@ export async function POST(req: Request) {
         const sellerId = session.metadata?.sellerId || null;
         
         if (agencyId) {
-          await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr);
+          let stripePeriodEndUnix: number | undefined = undefined;
+          if (session.subscription && typeof session.subscription === "string") {
+            try {
+              const sub = await stripe.subscriptions.retrieve(session.subscription);
+              stripePeriodEndUnix = (sub as any).current_period_end;
+            } catch (e) {
+              console.error("Error retrieving subscription period end on checkout:", e);
+            }
+          }
+          await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr, stripePeriodEndUnix);
 
           await logCommission(
             sellerId, 
@@ -491,9 +534,10 @@ export async function POST(req: Request) {
         const agencyId = subscription.metadata?.agencyId;
         const daysToAddStr = subscription.metadata?.daysToAdd;
         const monthsToAddStr = subscription.metadata?.monthsToAdd;
+        const stripePeriodEndUnix = (subscription as any).current_period_end as number | undefined;
         
         if (agencyId) {
-            await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr);
+            await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr, stripePeriodEndUnix);
 
             await logCommission(
               null, 

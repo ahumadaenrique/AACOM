@@ -138,7 +138,11 @@ export default async function DashboardLayout({
 
     const endDate = agency?.subscriptionEndDate ? new Date(agency.subscriptionEndDate) : null;
     const now = new Date();
-    const isSubscriptionActive = (agency?.subscriptionStatus === "active" || agency?.subscriptionStatus === "trialing") && (!endDate || endDate >= now);
+    // Margen de gracia de 36 horas para absorber cobros vespertinos de Stripe, la hora de facturación y diferencias de huso horario
+    const SUBSCRIPTION_GRACE_MS = 36 * 60 * 60 * 1000;
+    const isSubscriptionActive =
+        (agency?.subscriptionStatus === "active" || agency?.subscriptionStatus === "trialing") &&
+        (!endDate || endDate.getTime() + SUBSCRIPTION_GRACE_MS >= now.getTime());
     
     const isSeller = dbUser?.role === 'SELLER';
     const isLiteAgent = dbUser?.role === 'AGENTE_LITE';

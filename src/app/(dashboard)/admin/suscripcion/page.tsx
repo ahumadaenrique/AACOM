@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CreditCard, Gift, ShieldCheck, Zap, Copy, CheckCircle2, AlertCircle, Calendar } from "lucide-react";
 import { createCheckoutSession } from "./actions";
-import { differenceInDays, format } from "date-fns";
+import { differenceInCalendarDays, format } from "date-fns";
 import { es } from "date-fns/locale";
 import PlanSelector from "./PlanSelector";
 import CopyLinkButton from "./CopyLinkButton";
@@ -43,9 +43,12 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
 
   if (!agency) return <div className="p-10 text-red-500">Error: agencyId {agencyId} no existe en la BD y no hay agencias disponibles para auto-asignar.</div>;
 
-  const isSubscribed = agency.subscriptionStatus === "active";
+  const SUBSCRIPTION_GRACE_MS = 36 * 60 * 60 * 1000;
   const endDate = agency.subscriptionEndDate;
-  const daysLeft = endDate ? differenceInDays(endDate, new Date()) : 0;
+  const isSubscribed =
+    (agency.subscriptionStatus === "active" || agency.subscriptionStatus === "trialing") &&
+    (!endDate || new Date(endDate).getTime() + SUBSCRIPTION_GRACE_MS >= Date.now());
+  const daysLeft = endDate ? differenceInCalendarDays(endDate, new Date()) : 0;
     // El enlace de referido debe usar el 'slug' (el nombre corto de la plataforma), no el ID de base de datos
   const referralLink = `https://aacomsoft.com/registro?ref=${agency.slug}`;
 

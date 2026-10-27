@@ -335,6 +335,7 @@ export async function addAgencySaaSDays(agencyId: string, days: number) {
     newDate = new Date(agency.subscriptionEndDate);
   }
   newDate.setDate(newDate.getDate() + days);
+  newDate.setUTCHours(23, 59, 59, 999);
 
   await prisma.agency.update({
     where: { id: agencyId },

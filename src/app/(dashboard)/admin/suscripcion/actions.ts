@@ -99,6 +99,15 @@ export async function createCheckoutSession(
       return { success: false, message: "ID de producto no válido." };
     }
 
+    const monthsToAdd =
+      planId === "bimestral" || planId === "2M" || daysToAdd === 60
+        ? 2
+        : planId === "trimestral" || daysToAdd === 90
+          ? 3
+          : planId === "semiannual" || daysToAdd === 180
+            ? 6
+            : 12;
+
     const checkoutSession = await stripe.checkout.sessions.create({
       customer: stripeCustomerId,
       mode: "subscription",
@@ -115,12 +124,14 @@ export async function createCheckoutSession(
       metadata: {
         agencyId: agency.id,
         daysToAdd: daysToAdd.toString(),
+        monthsToAdd: monthsToAdd.toString(),
         discountCodeStr: discountCodeStr || "",
       },
       subscription_data: {
         metadata: {
           agencyId: agency.id,
           daysToAdd: daysToAdd.toString(),
+          monthsToAdd: monthsToAdd.toString(),
           discountCodeStr: discountCodeStr || "",
         }
       }

@@ -22,7 +22,10 @@ export async function POST(req: Request) {
 
         const endDate = agency.subscriptionEndDate ? new Date(agency.subscriptionEndDate) : null;
         const now = new Date();
-        const isSubscriptionActive = (agency.subscriptionStatus === "active" || agency.subscriptionStatus === "trialing") && (!endDate || endDate >= now);
+        const SUBSCRIPTION_GRACE_MS = 36 * 60 * 60 * 1000;
+        const isSubscriptionActive =
+            (agency.subscriptionStatus === "active" || agency.subscriptionStatus === "trialing") &&
+            (!endDate || endDate.getTime() + SUBSCRIPTION_GRACE_MS >= now.getTime());
 
         if (!isSubscriptionActive) {
             return NextResponse.json({ error: "La agencia que te invitó tiene su suscripción suspendida. No es posible unirse en este momento." }, { status: 403 });
