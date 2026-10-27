@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { SITE_CONFIG } from '@/config/site';
 import { MANUAL_VIDEOS_CATALOG, ManualVideoItem } from '@/lib/manualVideosCatalog';
@@ -44,8 +44,33 @@ import {
   UserCheck,
   Play,
   Film,
-  Rocket
+  Rocket,
+  CreditCard,
+  SkipForward,
+  Compass
 } from 'lucide-react';
+
+const PRUEBA_GRATIS_VIDEO_ITEM: ManualVideoItem = {
+  key: 'prueba-gratis',
+  episodeNumber: '5 DÍAS GRATIS',
+  title: 'No necesitas agendar demo: Crea tu cuenta y úsala gratis 5 días',
+  shortModuleTitle: 'Prueba Gratis 5 Días + «Así funciono»',
+  subtitle: 'Activa hoy mismo la cuenta de tu promotoría sin tarjeta de crédito y aprende a tu ritmo con los videos integrados en cada pantalla.',
+  duration: '1:10',
+  roleBadge: 'Todos',
+  videoUrl: '/api/manual-video/prueba-gratis?v=2',
+  blobUrl: 'https://lxyhgkkgwtxjiqp0.private.blob.vercel-storage.com/manual-aacomsoft/video_prueba_gratis_5_dias_aacomsoft_AAA.mp4',
+  posterUrl: '/manual/posters/prueba-gratis.png?v=2',
+  quickLink: '/registro',
+  modulePaths: ['/inicio', '/registro'],
+  manualChapterIds: ['introduccion'],
+  highlights: [
+    'Acceso inmediato por 5 días gratis sin ingresar tarjeta de crédito ($0 MXN hoy)',
+    'Personaliza tu logotipo, color institucional y subdominio en menos de 2 minutos',
+    'Botón interactivo «Así funciono» arriba de cada módulo con explicación en video',
+    'Videoteca «Aprende tú mismo» con los 18 episodios listos para ti y tus agentes'
+  ]
+};
 
 const PROMO_VIDEO_ITEM: ManualVideoItem = {
   key: 'promo',
@@ -70,20 +95,32 @@ const PROMO_VIDEO_ITEM: ManualVideoItem = {
 };
 
 const LANDING_VIDEOS_LIST: ManualVideoItem[] = [
+  PRUEBA_GRATIS_VIDEO_ITEM,
   PROMO_VIDEO_ITEM,
   ...MANUAL_VIDEOS_CATALOG,
 ];
 
 type VideoCategoryFilter = 'ALL' | 'DIRECCION' | 'VENTAS' | 'CARTERA_IA';
+type HeroStageMode = 'video-5dias' | 'mockup' | 'video-promo';
 
-const DIRECCION_KEYS = new Set(['promo', 'ep00', 'mod01', 'mod04', 'mod06', 'mod14']);
+const DIRECCION_KEYS = new Set(['prueba-gratis', 'promo', 'ep00', 'mod01', 'mod04', 'mod06', 'mod14']);
 const VENTAS_KEYS = new Set(['mod02', 'mod03', 'mod07', 'mod08', 'mod09', 'mod10', 'mod15', 'mod16']);
 const CARTERA_IA_KEYS = new Set(['mod05', 'mod11', 'mod12', 'mod13']);
 
 export default function InicioPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [videoCategory, setVideoCategory] = useState<VideoCategoryFilter>('ALL');
-  const [activeVideoKey, setActiveVideoKey] = useState<string>('promo');
+  const [activeVideoKey, setActiveVideoKey] = useState<string>('prueba-gratis');
+  const [heroStageMode, setHeroStageMode] = useState<HeroStageMode>('video-5dias');
+  const [showStickyCta, setShowStickyCta] = useState(false);
+
+  useEffect(() => {
+    const onScroll = () => {
+      setShowStickyCta(window.scrollY > 560);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   const filteredVideos = useMemo(() => {
     if (videoCategory === 'ALL') return LANDING_VIDEOS_LIST;
@@ -95,6 +132,12 @@ export default function InicioPage() {
   const activeVideo = useMemo(() => {
     return LANDING_VIDEOS_LIST.find((v) => v.key === activeVideoKey) || LANDING_VIDEOS_LIST[0];
   }, [activeVideoKey]);
+
+  const handleNextVideo = () => {
+    const currentIndex = filteredVideos.findIndex((v) => v.key === activeVideo.key);
+    const nextIndex = currentIndex >= 0 && currentIndex + 1 < filteredVideos.length ? currentIndex + 1 : 0;
+    setActiveVideoKey(filteredVideos[nextIndex].key);
+  };
 
   // Headlines A/B testable via SITE_CONFIG
   const headlines = {
@@ -289,27 +332,119 @@ export default function InicioPage() {
           {/* Hero CTAs */}
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
             <Link href="/registro" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-base font-black bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-2xl shadow-xl shadow-teal-950/60 transition-all hover:scale-105">
+              <Button size="lg" className="w-full sm:w-auto h-14 px-8 text-base font-black bg-teal-500 hover:bg-teal-400 text-slate-950 rounded-2xl shadow-xl shadow-teal-950/60 transition-all hover:scale-105 active:translate-y-0.5">
                 <Rocket className="w-5 h-5 mr-2" />
                 <span>Crear cuenta y usarla gratis 5 días</span>
                 <ArrowRight className="w-5 h-5 ml-2" />
               </Button>
             </Link>
             
-            <a href="#demo" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 text-base font-bold rounded-2xl bg-slate-900/60 hover:bg-slate-800 text-white border-slate-700/80 backdrop-blur-md transition-all">
-                <span>O agendar sesión demostrativa (20 min)</span>
+            <a href="#videos" className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-7 text-base font-bold rounded-2xl bg-slate-900/75 hover:bg-slate-800 text-white border-slate-700/80 backdrop-blur-md transition-all">
+                <Play className="w-4 h-4 mr-2 text-teal-400 fill-teal-400" />
+                <span>Ver {LANDING_VIDEOS_LIST.length} videos de cómo funciona</span>
               </Button>
             </a>
           </div>
 
-          {/* Sin compromiso / Sin tarjeta */}
-          <p className="text-xs sm:text-sm text-slate-400 font-medium">
-            Prueba gratis durante 5 días sin tarjeta de crédito con guías interactivas «Así funciono» en cada módulo, o agenda una demostración en vivo.
-          </p>
+          {/* 3 Píldoras de Cero Fricción (Risk Reversal para Tráfico de Redes Sociales) */}
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 pt-1">
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs font-bold text-slate-200">
+              <CreditCard className="w-3.5 h-3.5 text-teal-400" />
+              $0 MXN hoy · Sin tarjeta de crédito
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs font-bold text-slate-200">
+              <Zap className="w-3.5 h-3.5 text-teal-400" />
+              Lista en 2 min con tu logotipo y color
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-xs font-bold text-slate-200">
+              <Compass className="w-3.5 h-3.5 text-teal-400" />
+              Botón «Así funciono» con video en cada pantalla
+            </span>
+          </div>
 
-          {/* Interactive SaaS Browser Mockup */}
-          <HeroProductMockup />
+          {/* Conmutador Interactivo del Escenario Principal (Video 5 Días Gratis vs Simulador Interactivo vs Promo 90s) */}
+          <div className="pt-4 space-y-4">
+            <div className="inline-flex flex-wrap items-center justify-center gap-1.5 p-1.5 rounded-2xl bg-slate-900/90 border border-slate-800 backdrop-blur-md">
+              <button
+                type="button"
+                onClick={() => setHeroStageMode('video-5dias')}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 cursor-pointer ${
+                  heroStageMode === 'video-5dias'
+                    ? 'bg-teal-500 text-slate-950 shadow-md'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>Video: Prueba 5 días sin esperar demo (1:10)</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setHeroStageMode('mockup')}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 cursor-pointer ${
+                  heroStageMode === 'mockup'
+                    ? 'bg-teal-500 text-slate-950 shadow-md'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                <Laptop className="w-3.5 h-3.5" />
+                <span>Vista Interactiva por Módulo</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setHeroStageMode('video-promo')}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center gap-2 cursor-pointer ${
+                  heroStageMode === 'video-promo'
+                    ? 'bg-teal-500 text-slate-950 shadow-md'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+              >
+                <Film className="w-3.5 h-3.5" />
+                <span>Recorrido Ejecutivo Completo (1:35)</span>
+              </button>
+            </div>
+
+            {heroStageMode === 'mockup' ? (
+              <HeroProductMockup />
+            ) : (
+              <div className="max-w-4xl mx-auto rounded-3xl bg-slate-950 border-2 border-teal-500/40 overflow-hidden shadow-2xl text-left">
+                <div className="px-5 py-3.5 bg-slate-900 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="px-2.5 py-0.5 rounded-md bg-teal-500 text-slate-950 text-[11px] font-black shrink-0">
+                      {heroStageMode === 'video-5dias' ? '5 DÍAS GRATIS' : 'RECORRIDO 360°'}
+                    </span>
+                    <span className="text-xs sm:text-sm font-bold text-white truncate">
+                      {heroStageMode === 'video-5dias'
+                        ? 'No necesitas agendar demo: Crea tu cuenta en 2 min y aprende con «Así funciono»'
+                        : 'Presentación Ejecutiva de AACOMSoft en 90 segundos'}
+                    </span>
+                  </div>
+                  <Link href="/registro" className="text-xs font-black text-teal-400 hover:text-teal-300 shrink-0">
+                    Iniciar mis 5 días gratis →
+                  </Link>
+                </div>
+                <div className="bg-black aspect-video w-full relative">
+                  <video
+                    key={heroStageMode}
+                    src={
+                      heroStageMode === 'video-5dias'
+                        ? '/api/manual-video/prueba-gratis?v=2'
+                        : '/api/manual-video/promo?v=2'
+                    }
+                    poster={
+                      heroStageMode === 'video-5dias'
+                        ? '/manual/posters/prueba-gratis.png?v=2'
+                        : '/manual/posters/promo.png'
+                    }
+                    controls
+                    playsInline
+                    preload="metadata"
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
       </section>
 
@@ -332,6 +467,79 @@ export default function InicioPage() {
             <div className="flex items-center justify-center gap-2.5 py-1">
               <Building2 className="w-4 h-4 text-teal-400 shrink-0" />
               <span>Operación Multi-Aseguradora</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 3.5. Ruta de Autogestión sin Tarjeta: ¿Cómo funcionan tus 5 días gratis? */}
+      <section className="py-16 bg-slate-950 border-b border-slate-900">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="rounded-3xl bg-slate-900/80 border border-slate-800 p-6 sm:p-10">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 mb-10">
+              <div className="space-y-2 max-w-2xl">
+                <span className="text-xs font-black uppercase tracking-wider text-teal-400">
+                  Acceso Directo Sin Fricción · Product-Led Onboarding
+                </span>
+                <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
+                  Pruébala hoy mismo a tu ritmo antes de ingresar cualquier tarjeta
+                </h2>
+                <p className="text-sm text-slate-400 leading-relaxed">
+                  Diseñamos {SITE_CONFIG.brandName} para que cualquier promotor o agente pueda entrar hoy mismo, configurar su marca y dominar cada módulo con guías en video integradas.
+                </p>
+              </div>
+              <Link href="/registro" className="shrink-0">
+                <Button className="w-full sm:w-auto h-12 px-6 bg-teal-500 hover:bg-teal-400 text-slate-950 font-black rounded-xl shadow-lg shadow-teal-950/40">
+                  <Rocket className="w-4 h-4 mr-2" />
+                  Activar mis 5 días gratis ahora
+                </Button>
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
+              <div className="md:col-span-4 p-6 rounded-2xl bg-slate-950 border border-slate-800/90 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="px-2.5 py-1 rounded-lg bg-teal-500/15 text-teal-400 font-mono text-xs font-black border border-teal-500/30">
+                    HOY · MINUTO 02
+                  </span>
+                  <span className="text-xs font-bold text-slate-400">$0 MXN · Sin tarjeta</span>
+                </div>
+                <h3 className="text-lg font-black text-white">
+                  1. Crea tu cuenta marca blanca
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  Registra tus datos, verifica tu WhatsApp, elige el color corporativo de tu promotoría y activa tu propio subdominio <code className="text-teal-300 font-mono">tuagencia.aacomsoft.com</code> al instante.
+                </p>
+              </div>
+
+              <div className="md:col-span-5 p-6 rounded-2xl bg-slate-950 border border-teal-500/40 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="px-2.5 py-1 rounded-lg bg-teal-500 text-slate-950 font-mono text-xs font-black">
+                    DÍAS 1 AL 5 · ACCESO TOTAL
+                  </span>
+                  <span className="text-xs font-bold text-teal-400">18 Videos Integrados</span>
+                </div>
+                <h3 className="text-lg font-black text-white">
+                  2. Navega con el botón «Así funciono»
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Usa todos los módulos reales (Proyecto 200, Actividad 25 Puntos, ADN, Cotizador, Cartera 360°, Simuladores CNSF y Mis Referidores). En la parte superior de cada pantalla tienes el botón <strong>«Así funciono»</strong> que te explica en 90 segundos cómo sacarle provecho.
+                </p>
+              </div>
+
+              <div className="md:col-span-3 p-6 rounded-2xl bg-slate-950 border border-slate-800/90 space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-900 text-slate-300 font-mono text-xs font-black border border-slate-700">
+                    DÍA 5 · TÚ DECIDES
+                  </span>
+                </div>
+                <h3 className="text-lg font-black text-white">
+                  3. Cero cargos sorpresa
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                  Como no pedimos tarjeta para iniciar, jamás habrá cobros automáticos sorpresa. Solo cuando estés convencido activas tu plan desde tu panel.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -729,7 +937,11 @@ export default function InicioPage() {
             <div className="px-6 py-4 bg-gradient-to-r from-slate-900 via-slate-900 to-teal-950 border-b border-slate-800 flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center gap-3 min-w-0">
                 <span className="px-3 py-1 rounded-lg bg-teal-500 text-slate-950 text-xs font-black shrink-0">
-                  {activeVideo.episodeNumber === 'PROMO' ? '🎬 PROMO OFICIAL' : `🎬 EPISODIO ${activeVideo.episodeNumber}`}
+                  {activeVideo.episodeNumber === 'PROMO'
+                    ? 'PROMO OFICIAL'
+                    : activeVideo.episodeNumber === '5 DÍAS GRATIS'
+                      ? '5 DÍAS GRATIS'
+                      : `EPISODIO ${activeVideo.episodeNumber}`}
                 </span>
                 <div className="min-w-0">
                   <h3 className="text-base sm:text-lg font-black text-white truncate">
@@ -740,12 +952,20 @@ export default function InicioPage() {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-3 shrink-0">
+              <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                 <span className="inline-flex items-center gap-1.5 text-xs font-mono bg-white/10 text-teal-300 px-3 py-1.5 rounded-lg border border-white/10">
                   <Clock className="w-3.5 h-3.5" />
                   {activeVideo.duration} min
                 </span>
-                <Link href="/registro">
+                <button
+                  type="button"
+                  onClick={handleNextVideo}
+                  className="inline-flex items-center gap-1.5 text-xs font-bold bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-xl border border-slate-700 transition-colors cursor-pointer"
+                >
+                  <span>Siguiente video</span>
+                  <SkipForward className="w-3.5 h-3.5 text-teal-400" />
+                </button>
+                <Link href={`/registro?modulo=${activeVideo.key}`}>
                   <Button size="sm" className="bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs rounded-xl">
                     Probar gratis 5 días →
                   </Button>
@@ -762,6 +982,7 @@ export default function InicioPage() {
                   controls
                   playsInline
                   preload="metadata"
+                  onEnded={handleNextVideo}
                   className="w-full h-full object-contain"
                 />
               </div>
@@ -791,10 +1012,10 @@ export default function InicioPage() {
                   <p className="text-xs text-slate-400 leading-relaxed">
                     Este video está integrado directamente dentro de <strong>{SITE_CONFIG.brandName}</strong> en el botón superior <strong>«Así funciono»</strong>.
                   </p>
-                  <Link href="/registro" className="block">
+                  <Link href={`/registro?modulo=${activeVideo.key}`} className="block">
                     <Button className="w-full bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs sm:text-sm h-11 rounded-xl shadow-lg shadow-teal-950/50">
                       <Rocket className="w-4 h-4 mr-1.5" />
-                      Crear mi cuenta y usarla gratis 5 días
+                      Probar {activeVideo.shortModuleTitle} gratis 5 días
                     </Button>
                   </Link>
                 </div>
@@ -1366,7 +1587,7 @@ export default function InicioPage() {
 
                   <div className="p-4 bg-slate-900/90 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3 text-xs">
                     <span className="text-slate-300 font-semibold">
-                      ✨ Recorrido en 3D por <code className="text-teal-300">/registro</code>, botones <strong>«Así funciono»</strong> y <strong>«Aprende tú mismo»</strong>
+                      Recorrido en 3D por <code className="text-teal-300">/registro</code>, botones <strong>«Así funciono»</strong> y <strong>«Aprende tú mismo»</strong>
                     </span>
                     <Link href="/registro" className="text-teal-400 font-black hover:underline">
                       Ir a /registro →
@@ -1375,6 +1596,51 @@ export default function InicioPage() {
                 </div>
               </div>
 
+            </div>
+
+            {/* Comparativa de Decisión: Camino A (5 Días Gratis Hoy) vs Camino B (Agendar Demo) */}
+            <div className="mt-10 pt-8 border-t border-slate-800 grid grid-cols-1 md:grid-cols-12 gap-6 items-stretch">
+              <div className="md:col-span-7 p-6 rounded-2xl bg-slate-950 border-2 border-teal-500/50 flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="px-3 py-1 rounded-full bg-teal-500 text-slate-950 text-[11px] font-black uppercase tracking-wider">
+                      Opción 1 · Recomendada para empezar hoy
+                    </span>
+                    <span className="text-xs font-mono font-bold text-teal-400">$0 MXN · Sin tarjeta</span>
+                  </div>
+                  <h3 className="text-lg sm:text-xl font-black text-white">
+                    Crear mi cuenta gratis por 5 días y aprender con «Así funciono»
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                    Ideal si quieres entrar ahora mismo desde tu computadora o celular, subir tu logotipo, probar el CRM Proyecto 200, el Diagnóstico ADN, el Cotizador y ver cómo cada pantalla te guía con su propio video.
+                  </p>
+                </div>
+                <Link href="/registro" className="block pt-1">
+                  <Button className="w-full h-12 bg-teal-500 hover:bg-teal-400 text-slate-950 font-black rounded-xl text-sm">
+                    <Rocket className="w-4 h-4 mr-2" />
+                    Activar mis 5 días gratis ahora →
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="md:col-span-5 p-6 rounded-2xl bg-slate-950/70 border border-slate-800 flex flex-col justify-between space-y-4">
+                <div className="space-y-2">
+                  <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-[11px] font-bold uppercase tracking-wider inline-block">
+                    Opción 2 · Sesión en videollamada
+                  </span>
+                  <h3 className="text-lg font-bold text-white">
+                    Agendar sesión demostrativa de 20 min
+                  </h3>
+                  <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                    Ideal si prefieres coordinar una fecha en agenda para revisar con un especialista el convenio de confidencialidad o esquemas corporativos para más de 20 usuarios.
+                  </p>
+                </div>
+                <a href="#demo" className="block pt-1">
+                  <Button variant="outline" className="w-full h-12 bg-slate-900 hover:bg-slate-800 text-white border-slate-700 font-bold rounded-xl text-sm">
+                    Ir al formulario de sesión abajo ↓
+                  </Button>
+                </a>
+              </div>
             </div>
           </div>
         </div>
@@ -1546,6 +1812,40 @@ export default function InicioPage() {
 
         </div>
       </footer>
+
+      {/* Barra Flotante de Autogestión (Sticky Self-Service Bar al hacer scroll) */}
+      {showStickyCta && (
+        <div className="fixed bottom-4 left-4 right-4 md:left-1/2 md:-translate-x-1/2 md:max-w-3xl z-40 rounded-2xl bg-slate-900/95 border-2 border-teal-500/50 backdrop-blur-xl px-4 py-3 shadow-2xl flex items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-md bg-teal-500 text-slate-950 text-[10px] font-black uppercase shrink-0">
+                5 Días Gratis
+              </span>
+              <span className="text-xs sm:text-sm font-black text-white truncate">
+                Pruébala hoy sin tarjeta de crédito
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-300 truncate hidden sm:block mt-0.5">
+              Activa tu agencia en 2 minutos y aprende con los botones «Así funciono» en cada pantalla.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <a
+              href="#videos"
+              className="hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-bold border border-slate-700 transition-colors"
+            >
+              <Play className="w-3.5 h-3.5 text-teal-400 fill-teal-400" />
+              <span>Videos</span>
+            </a>
+            <Link href="/registro">
+              <Button size="sm" className="h-10 px-4 bg-teal-500 hover:bg-teal-400 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg">
+                <span>Crear cuenta gratis</span>
+                <ArrowRight className="w-4 h-4 ml-1.5" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Floating WhatsApp Action Button */}
       <WhatsAppFloatingButton />
