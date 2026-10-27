@@ -15,6 +15,10 @@ export default async function AcademiaPage() {
   }
 
   const isTrial = dbUser?.agency?.subscriptionStatus === "trialing"
+  if (dbUser?.role === "REFERIDOR") {
+    const { redirect } = await import("next/navigation")
+    redirect("/academia/videos")
+  }
   const isPromoter = dbUser?.role === 'ADMIN' || dbUser?.role === 'SUPER_ADMIN'
   const isSimulatorAllowed = dbUser?.role === 'SUPER_ADMIN' || (dbUser?.agency ? (dbUser.agency.allowRoleplaySimulator ?? true) : true)
   const isAcademyAllowed = dbUser?.role === 'SUPER_ADMIN' || (dbUser?.agency ? (dbUser.agency.allowAcademyModule ?? true) : true)

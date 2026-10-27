@@ -99,9 +99,13 @@ export default async function DashboardLayout({
                     <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
                         <Building2 className="w-10 h-10" />
                     </div>
-                    <h1 className="text-2xl font-extrabold text-slate-800 mb-2">Agencia No Disponible</h1>
+                    <h1 className="text-2xl font-extrabold text-slate-800 mb-2">
+                        {dbUser && dbUser.active === false && !isAgencyInactive ? "Cuenta Suspendida Temporalmente" : "Agencia No Disponible"}
+                    </h1>
                     <p className="text-slate-600 mb-8 leading-relaxed">
-                        La agencia a la que pertenece esta cuenta ha sido desactivada o eliminada permanentemente del sistema. Por seguridad, tu acceso ha sido revocado.
+                        {dbUser && dbUser.active === false && !isAgencyInactive
+                            ? "Tu acceso a la plataforma ha sido pausado temporalmente. Contacta a tu Agente titular o al Administrador de tu promotoría para reactivar tu cuenta."
+                            : "La agencia a la que pertenece esta cuenta ha sido desactivada o eliminada permanentemente del sistema. Por seguridad, tu acceso ha sido revocado."}
                         <br />
                         <span className="text-[10px] text-muted-foreground block mt-2 font-mono">
                           Debug: email={session?.user?.email} role={dbUser?.role} orphan={isOrphan ? "yes" : "no"} agencyInactive={isAgencyInactive ? "yes" : "no"} active={dbUser?.active ? "yes" : "no"} deleted={isDeletedUser ? "yes" : "no"} agencyId={dbUser?.agencyId} agency={agency ? "found" : "missing"}
@@ -176,6 +180,18 @@ export default async function DashboardLayout({
         redirect("/");
     }
 
+    if (isReferidor) {
+        const allowedReferidorPrefixes = ['/newsletters', '/activity', '/academia/videos', '/proyecto-200', '/assistant', '/support'];
+        const isAllowedForReferidor =
+            pathname === '/' ||
+            pathname === '' ||
+            allowedReferidorPrefixes.some(prefix => pathname === prefix || pathname.startsWith(prefix + '/'));
+        if (!isAllowedForReferidor) {
+            const { redirect } = await import("next/navigation");
+            redirect("/");
+        }
+    }
+
     const showNavLinks = (isSubscriptionActive || isSuperAdmin) && !isSeller;
 
     // Server-side native logout action
@@ -244,7 +260,7 @@ export default async function DashboardLayout({
                                         className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/activity') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
                                     >
                                         <ClipboardCheck className={`h-4 w-4 ${pathname.startsWith('/activity') ? 'text-primary' : 'text-teal-600 dark:text-teal-400'}`} />
-                                        {isReferidor ? "Mi Actividad" : "25 puntos"}
+                                        25 puntos
                                         {pathname.startsWith('/activity') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                     </Link>
                                 )}
@@ -298,6 +314,32 @@ export default async function DashboardLayout({
                                                 <Network className={`h-4 w-4 ${pathname.startsWith('/referidores') ? 'text-primary' : 'text-emerald-500'}`} />
                                                 Mis Referidores
                                                 {pathname.startsWith('/referidores') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                            </Link>
+                                        )}
+                                    </>
+                                )}
+
+                                {/* Accesos Directos de Herramientas Autorizadas para Referidor (E-Learning y Proyecto 200, sin Cédula ni Simuladores) */}
+                                {isReferidor && (
+                                    <>
+                                        {(agency?.allowAcademyModule ?? true) && (
+                                            <Link
+                                                href="/academia/videos"
+                                                className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/academia/videos') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                            >
+                                                <Youtube className={`h-4 w-4 ${pathname.startsWith('/academia/videos') ? 'text-primary' : 'text-red-600'}`} />
+                                                E-Learning
+                                                {pathname.startsWith('/academia/videos') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                            </Link>
+                                        )}
+                                        {allowProyecto200Module && modConfig.proyecto_200 && (
+                                            <Link
+                                                href="/proyecto-200"
+                                                className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/proyecto-200') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                            >
+                                                <Flame className={`h-4 w-4 ${pathname.startsWith('/proyecto-200') ? 'text-primary' : 'text-orange-500'}`} />
+                                                Proyecto 200
+                                                {pathname.startsWith('/proyecto-200') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                             </Link>
                                         )}
                                     </>
@@ -559,7 +601,7 @@ export default async function DashboardLayout({
                                                  className="text-muted-foreground hover:text-foreground flex items-center gap-2"
                                              >
                                                  <ClipboardCheck className="h-5 w-5 text-teal-600" />
-                                                 {isReferidor ? "Mi Actividad" : "25 puntos"}
+                                                 25 puntos
                                              </Link>
                                          )}
                                          {!isReferidor && (
@@ -607,6 +649,30 @@ export default async function DashboardLayout({
                                                      >
                                                          <Network className="h-5 w-5 text-emerald-500" />
                                                          Mis Referidores
+                                                     </Link>
+                                                 )}
+                                             </>
+                                         )}
+
+                                         {/* Accesos Directos Móvil para Referidor */}
+                                         {isReferidor && (
+                                             <>
+                                                 {(agency?.allowAcademyModule ?? true) && (
+                                                     <Link
+                                                         href="/academia/videos"
+                                                         className="text-muted-foreground hover:text-foreground flex items-center gap-2"
+                                                     >
+                                                         <Youtube className="h-5 w-5 text-red-600" />
+                                                         E-Learning
+                                                     </Link>
+                                                 )}
+                                                 {allowProyecto200Module && modConfig.proyecto_200 && (
+                                                     <Link
+                                                         href="/proyecto-200"
+                                                         className="text-orange-600 dark:text-orange-400 font-bold hover:text-foreground flex items-center gap-2"
+                                                     >
+                                                         <Flame className="h-5 w-5 text-orange-500" />
+                                                         Proyecto 200
                                                      </Link>
                                                  )}
                                              </>
@@ -761,7 +827,7 @@ export default async function DashboardLayout({
 
                 {/* Header User Menu */}
                 <div className="flex items-center gap-4">
-                    {dbUser && agency?.allowRoleplaySimulator && <GamificationProgressWidget userId={dbUser.id} />}
+                    {dbUser && !isReferidor && agency?.allowRoleplaySimulator && <GamificationProgressWidget userId={dbUser.id} />}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button variant="secondary" size="icon" className="rounded-full overflow-hidden border border-slate-200 dark:border-zinc-800 shadow-sm relative shrink-0">

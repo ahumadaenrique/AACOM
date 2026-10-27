@@ -173,7 +173,9 @@ model User {
   cedulaValidUntil     DateTime?
   promotoriaJoinDate   DateTime?
   rcPolicyValidUntil   DateTime?
-  linkedAgentId        String?
+  linkedAgentId          String?
+  referidorCommissionPct Float?                    @default(30)
+  referidorBonusPct      Float?                    @default(0)
   aiAgents             AIAgent[]
   activityLogs         ActivityLog[]
   adnDiagnostics       AdnDiagnostic[]

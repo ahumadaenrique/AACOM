@@ -34,7 +34,7 @@ export default async function AcademyVideosPage() {
             </p>
           </div>
           <Button asChild className="rounded-xl w-full bg-slate-800 hover:bg-slate-700 text-white font-bold">
-            <Link href="/academia">
+            <Link href="/">
               <ArrowLeft className="w-4 h-4 mr-2" /> Volver a la Academia
             </Link>
           </Button>

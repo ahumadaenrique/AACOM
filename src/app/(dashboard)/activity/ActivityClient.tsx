@@ -125,7 +125,7 @@ export default function ActivityPage({ agencyName = "Tu Agencia", isReferidor = 
                 badge: "¡Meta Cumplida! 🎉",
                 label: "Excelente desempeño, meta superada."
             };
-        } else if (points >= 16) {
+        } else if (points >= (isReferidor ? 9 : 16)) {
             return {
                 color: "amber",
                 strokeClass: "stroke-amber-500 dark:stroke-amber-400",

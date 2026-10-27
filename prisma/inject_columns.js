@@ -550,7 +550,9 @@ async function injectColumns() {
       `CREATE INDEX IF NOT EXISTS "market_cg_chunks_documentId_idx" ON "market_cg_chunks"("documentId");`,
       `CREATE INDEX IF NOT EXISTS "market_cg_chunks_aseguradora_idx" ON "market_cg_chunks"("aseguradora");`,
       `CREATE INDEX IF NOT EXISTS "market_cg_chunks_fts_idx" ON "market_cg_chunks" USING GIN (to_tsvector('spanish', "aseguradora" || ' ' || "producto" || ' ' || "content"));`,
-      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "allowProyecto200Module" BOOLEAN NOT NULL DEFAULT false;`
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "allowProyecto200Module" BOOLEAN NOT NULL DEFAULT false;`,
+      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "referidorCommissionPct" DOUBLE PRECISION DEFAULT 30;`,
+      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "referidorBonusPct" DOUBLE PRECISION DEFAULT 0;`
     ];
 
     for (const q of queries) {

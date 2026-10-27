@@ -763,7 +763,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
         // Limit Check
         if (((session?.user?.agencyId || currentUser?.agencyId) as string)) {
             const premiumUsersCount = await prisma.user.count({
-                where: { agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string), active: true, role: { not: 'AGENTE_LITE' } }
+                where: { agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string), active: true, role: { notIn: ['AGENTE_LITE', 'REFERIDOR'] } }
             });
             const liteUsersCount = await prisma.user.count({
                 where: { agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string), active: true, role: 'AGENTE_LITE' }
@@ -771,7 +771,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
             const activeUsersCount = premiumUsersCount + (liteUsersCount * 0.20);
             
             const limit = ['aacom', 'aacomsoft'].includes(currentUser.agency?.slug || '') ? Infinity : 20 + (currentUser.agency?.purchasedSeats || 0);
-            if (activeUsersCount >= limit) {
+            if (data.role !== 'REFERIDOR' && activeUsersCount >= limit) {
                 return { 
                     success: false, 
                     message: `Límite alcanzado (${limit} asientos ocupados. Tienes ${premiumUsersCount} premium y ${liteUsersCount} limitados). Adquiere más licencias en tu Portal de Pagos o envíale a este agente una invitación para que pague su propia cuenta.` 
@@ -846,7 +846,17 @@ export async function getUsers() {
                 agencyId: true,
                 mustChangePassword: true,
                 phoneVerified: true,
-                isSelfPaid: true
+                isSelfPaid: true,
+                linkedAgentId: true,
+                referidorCommissionPct: true,
+                referidorBonusPct: true,
+                linkedAgent: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true
+                    }
+                }
             },
             orderBy: {
                 createdAt: 'desc'
@@ -2144,7 +2154,35 @@ export async function getAdminActivityReport(userId?: string, startDate?: string
             ]
         });
 
-        return { success: true, logs };
+        const logsWithRole = await prisma.activityLog.findMany({
+            where: whereClause,
+            include: {
+                user: {
+                    select: {
+                        id: true,
+                        name: true,
+                        email: true,
+                        role: true,
+                        active: true,
+                        linkedAgentId: true,
+                        referidorCommissionPct: true,
+                        referidorBonusPct: true,
+                        linkedAgent: {
+                            select: {
+                                id: true,
+                                name: true,
+                                email: true
+                            }
+                        }
+                    }
+                }
+            },
+            orderBy: [
+                { dateStr: 'desc' },
+                { createdAt: 'desc' }
+            ]
+        });
+        return { success: true, logs: logsWithRole };
     } catch (error: any) {
         console.error("Error fetching admin activity report:", error);
         return { success: false, message: error.message, logs: [] };

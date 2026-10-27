@@ -159,6 +159,7 @@ export default function AdminClient() {
   const [activityLogs, setActivityLogs] = useState<any[]>([])
   const [loadingActivityLogs, setLoadingActivityLogs] = useState<boolean>(false)
   const [reportAgentFilter, setReportAgentFilter] = useState<string>("ALL")
+  const [reportRoleFilter, setReportRoleFilter] = useState<"ALL" | "AGENTE" | "REFERIDOR">("ALL")
   
   // Default to current month (1st day to today) to optimize initial load
   const [reportStartDate, setReportStartDate] = useState<string>(() => {
@@ -2025,7 +2026,7 @@ export default function AdminClient() {
                     <div className="flex flex-col items-start md:items-end gap-1.5 bg-white p-3 rounded-xl border border-slate-200 shadow-sm w-full md:w-auto">
                       <div className="flex items-center gap-2 text-xs font-black text-slate-700">
                         <Users className="h-4 w-4 text-indigo-500" />
-                        Capacidad: {usersList.length} / {['aacom', 'aacomsoft'].includes(currentUserData.agency.slug) ? 'Ilimitada' : (20 + (currentUserData.agency.purchasedSeats || 0))}
+                        Capacidad: {usersList.filter(u => u.role !== 'REFERIDOR').length} / {['aacom', 'aacomsoft'].includes(currentUserData.agency.slug) ? 'Ilimitada' : (20 + (currentUserData.agency.purchasedSeats || 0))}
                       </div>
                       <p className="text-[10px] text-muted-foreground font-semibold">
                         {['aacom', 'aacomsoft'].includes(currentUserData.agency.slug) ? '(Beneficio de cuenta fundadora)' : `(20 lugares base + ${currentUserData.agency.purchasedSeats || 0} extra)`}
@@ -2185,7 +2186,7 @@ export default function AdminClient() {
                                     ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                     : "bg-blue-50 text-blue-700 border-blue-200"
                                 }`}>
-                                  {user.role === 'AGENTE_LITE' ? "Agente Limitado" : user.role === 'REFERIDOR' ? "Referidor" : user.role === 'ADMIN' ? "Administrador" : user.role}
+                                  {user.role === 'AGENTE_LITE' ? "Agente Limitado" : user.role === 'REFERIDOR' ? `Referidor (${user.linkedAgent?.name || 'Sin Agente'} • ${user.referidorCommissionPct ?? 30}% Com / ${user.referidorBonusPct ?? 0}% Bono)` : user.role === 'ADMIN' ? "Administrador" : user.role}
                                 </span>
                               </TableCell>
                               
@@ -2931,7 +2932,7 @@ export default function AdminClient() {
           <Card className="border shadow-sm">
             <CardHeader className="py-4 border-b bg-slate-50/50">
               <CardTitle className="text-sm font-black text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <ClipboardCheck className="h-4.5 w-4.5 text-teal-600" /> Reporte de Actividad Comercial 25
+                <ClipboardCheck className="h-4.5 w-4.5 text-teal-600" /> Reporte de Actividad Comercial (25 Pts Agentes / 15 Pts Referidores)
               </CardTitle>
               <CardDescription className="text-xs">
                 Audita y visualiza a nivel detallado la actividad incremental diaria, llamadas y prospectos ingresados por tus agentes.
@@ -2941,7 +2942,42 @@ export default function AdminClient() {
               {/* Filters Area */}
               <div className="flex flex-col md:flex-row gap-4 items-center bg-slate-50/40 dark:bg-zinc-900/30 p-4 rounded-xl border border-slate-100">
                 <div className="w-full md:w-56 space-y-1">
-                  <label className="text-[10px] font-bold text-slate-500 uppercase block">Filtrar por Agente</label>
+                  <div className="mb-3 flex flex-wrap items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => setReportRoleFilter("ALL")}
+                      className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase border transition-all ${
+                        reportRoleFilter === "ALL"
+                          ? "bg-teal-600 text-white border-teal-600"
+                          : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      Todos ({usersList.length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setReportRoleFilter("AGENTE")}
+                      className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase border transition-all ${
+                        reportRoleFilter === "AGENTE"
+                          ? "bg-teal-600 text-white border-teal-600"
+                          : "bg-white text-slate-600 border-slate-200 hover:bg-slate-50"
+                      }`}
+                    >
+                      Agentes 25 Pts ({usersList.filter(u => u.role !== 'REFERIDOR').length})
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setReportRoleFilter("REFERIDOR")}
+                      className={`px-2.5 py-1 rounded-md text-[10px] font-black uppercase border transition-all ${
+                        reportRoleFilter === "REFERIDOR"
+                          ? "bg-emerald-600 text-white border-emerald-600"
+                          : "bg-white text-emerald-700 border-emerald-200 hover:bg-emerald-50"
+                      }`}
+                    >
+                      Referidores 15 Pts ({usersList.filter(u => u.role === 'REFERIDOR').length})
+                    </button>
+                  </div>
+                  <label className="text-[10px] font-bold text-slate-500 uppercase block">Filtrar por Agente o Referidor</label>
                   <select
                     value={reportAgentFilter}
                     onChange={(e) => setReportAgentFilter(e.target.value)}
@@ -3000,6 +3036,99 @@ export default function AdminClient() {
                   )}
                 </div>
               </div>
+
+              {/* Panel de Monitoreo de Uso y 15 Puntos de Referidores Dados de Alta */}
+              {(reportRoleFilter === "ALL" || reportRoleFilter === "REFERIDOR") && usersList.some(u => u.role === "REFERIDOR") && (
+                (() => {
+                  const referidoresUsers = usersList.filter(u => u.role === "REFERIDOR");
+                  const todayCdmx = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
+                  return (
+                    <div className="bg-emerald-50/40 dark:bg-emerald-950/10 border border-emerald-200/80 dark:border-emerald-900/40 rounded-2xl p-4 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <h4 className="text-xs font-black uppercase tracking-wider text-emerald-900 dark:text-emerald-300 flex items-center gap-1.5">
+                            <Users className="w-4 h-4 text-emerald-600" />
+                            Monitoreo de Referidores Dados de Alta ({referidoresUsers.length}) — Meta Diaria: 15 Puntos
+                          </h4>
+                          <p className="text-[11px] text-emerald-700/80">
+                            Supervisa qué referidores están utilizando la app y llenando sus 15 puntos diarios.
+                          </p>
+                        </div>
+                        <a
+                          href="/admin/referidores"
+                          className="text-xs font-bold text-teal-700 hover:underline shrink-0"
+                        >
+                          Gestionar Referidores →
+                        </a>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {referidoresUsers.map((refUser) => {
+                          const refLogs = activityLogs.filter(l => l.userId === refUser.id);
+                          const todayPts = refLogs
+                            .filter(l => l.dateStr === todayCdmx)
+                            .reduce((sum, l) => sum + l.points, 0);
+                          const totalPeriodPts = refLogs.reduce((sum, l) => sum + l.points, 0);
+                          const activeDaysCount = new Set(refLogs.map(l => l.dateStr)).size;
+                          const lastLog = refLogs[0];
+                          const achieved15 = todayPts >= 15;
+                          const mid15 = todayPts >= 9 && todayPts < 15;
+
+                          return (
+                            <div
+                              key={refUser.id}
+                              onClick={() => setReportAgentFilter(refUser.id)}
+                              className="bg-white dark:bg-zinc-900 border border-emerald-200/70 rounded-xl p-3 shadow-2xs hover:shadow-sm transition-all cursor-pointer flex flex-col justify-between gap-2"
+                            >
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-extrabold text-xs text-slate-800 dark:text-zinc-100 truncate">
+                                      {refUser.name || refUser.email}
+                                    </span>
+                                    <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold ${refUser.active ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-800'}`}>
+                                      {refUser.active ? 'Activo' : 'Suspendido'}
+                                    </span>
+                                  </div>
+                                  <span className="text-[10px] text-slate-500 block truncate">
+                                    Agente: <strong>{refUser.linkedAgent?.name || "Sin asignar"}</strong>
+                                  </span>
+                                  <span className="text-[10px] font-bold text-indigo-600 block">
+                                    Acuerdo: {refUser.referidorCommissionPct ?? 30}% Com. • {refUser.referidorBonusPct ?? 0}% Bonos
+                                  </span>
+                                </div>
+                                <div className="text-right shrink-0">
+                                  <span className={`text-sm font-black block ${achieved15 ? 'text-teal-600' : mid15 ? 'text-amber-600' : 'text-rose-600'}`}>
+                                    {todayPts} / 15 pts
+                                  </span>
+                                  <span className="text-[9px] text-slate-400 font-bold uppercase block">Hoy</span>
+                                </div>
+                              </div>
+
+                              <div className="space-y-1">
+                                <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full ${achieved15 ? 'bg-teal-500' : mid15 ? 'bg-amber-400' : 'bg-rose-400'}`}
+                                    style={{ width: `${Math.min(100, (todayPts / 15) * 100)}%` }}
+                                  />
+                                </div>
+                                <div className="flex items-center justify-between text-[10px] text-slate-500">
+                                  <span>
+                                    {lastLog ? `Últ. uso: ${lastLog.dateStr}` : "Sin uso en periodo"}
+                                  </span>
+                                  <span className="font-bold text-slate-700">
+                                    {totalPeriodPts} pts ({activeDaysCount} d)
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()
+              )}
 
               {/* Statistics Panel */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -3177,7 +3306,14 @@ export default function AdminClient() {
                         monthCitasAgendadasCount: number;
                       }> = {};
 
-                      activityLogs.forEach(log => {
+                      activityLogs
+                        .filter(log => {
+                          const role = log.user?.role || usersList.find(u => u.id === log.userId)?.role || "AGENTE";
+                          if (reportRoleFilter === "AGENTE") return role !== "REFERIDOR";
+                          if (reportRoleFilter === "REFERIDOR") return role === "REFERIDOR";
+                          return true;
+                        })
+                        .forEach(log => {
                         const userId = log.userId;
                         const name = log.user?.name || log.user?.email || "Agente";
                         const email = log.user?.email || "";
@@ -3250,6 +3386,19 @@ export default function AdminClient() {
 
                                   <div className="flex flex-wrap items-center gap-2">
                                     {/* Monthly metrics badges */}
+                                    {(() => {
+                                      const uObj = usersList.find(u => u.id === agentGroup.agentId);
+                                      const isRef = uObj?.role === "REFERIDOR";
+                                      return isRef ? (
+                                        <span className="text-[9px] font-black bg-indigo-50 text-indigo-700 border border-indigo-200 px-2 py-1 rounded-full uppercase tracking-wider">
+                                          Referidor (15 pts) • De: {uObj?.linkedAgent?.name || "Agente"}
+                                        </span>
+                                      ) : (
+                                        <span className="text-[9px] font-bold bg-slate-100 text-slate-600 border border-slate-200 px-2 py-1 rounded-full uppercase tracking-wider">
+                                          Agente (25 pts)
+                                        </span>
+                                      );
+                                    })()}
                                     <span className="text-[9px] font-black bg-emerald-50 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-400 border border-emerald-200 px-2 py-1 rounded-full uppercase tracking-wider">
                                       {monthCitasEfectivasCount} Citas Efectivas
                                     </span>
@@ -3326,7 +3475,7 @@ export default function AdminClient() {
                                                   {dateGroup.logs.length} act
                                                 </span>
                                                 <span className="text-[10px] font-black text-teal-700 dark:text-teal-400">
-                                                  +{dateGroup.totalPoints} pts
+                                                  +{dateGroup.totalPoints} / {usersList.find(u => u.id === agentGroup.agentId)?.role === "REFERIDOR" ? 15 : 25} pts
                                                 </span>
                                                 <svg 
                                                   xmlns="http://www.w3.org/2000/svg" 
