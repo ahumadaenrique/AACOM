@@ -646,7 +646,8 @@ ${badgesText}
           where: { id: agencyId },
           select: { id: true, voiceSecondsBalance: true, byokActive: true, elevenLabsApiKey: true }
         });
-        const isUsingByok = engine === 'ELEVENLABS' && (agency?.byokActive ?? true) && agency?.elevenLabsApiKey;
+        const isPrimaryAgencyWithEnvKey = agency?.id === 'aacom' && !!process.env.ELEVENLABS_API_KEY;
+        const isUsingByok = engine === 'ELEVENLABS' && (agency?.byokActive ?? true) && (!!agency?.elevenLabsApiKey || isPrimaryAgencyWithEnvKey);
         
         if (!isUsingByok) {
           if (agency && agency.voiceSecondsBalance > 0) {

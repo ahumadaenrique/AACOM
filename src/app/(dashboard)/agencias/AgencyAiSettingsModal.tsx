@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Bot, Key, KeyRound, Loader2, Save, ExternalLink, Sparkles, Cpu, PhoneCall, Award } from "lucide-react";
+import { Bot, CheckCircle2, Loader2, Save, Sparkles, Cpu, PhoneCall, Award, Trash2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 
 interface AgencyAiSettingsModalProps {
@@ -19,6 +19,8 @@ export function AgencyAiSettingsModal({ isOpen, onClose, agencyId, agencyName }:
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [apiKey, setApiKey] = useState("");
+  const [savedMaskedKey, setSavedMaskedKey] = useState<string | null>(null);
+  const [clearApiKey, setClearApiKey] = useState(false);
   const [voiceId, setVoiceId] = useState("");
   const [voiceEngine, setVoiceEngine] = useState("GEMINI_LIVE");
   const [byokActive, setByokActive] = useState(true);
@@ -35,6 +37,8 @@ export function AgencyAiSettingsModal({ isOpen, onClose, agencyId, agencyName }:
       loadSettings();
     } else {
       setApiKey("");
+      setSavedMaskedKey(null);
+      setClearApiKey(false);
       setVoiceId("");
       setVoiceEngine("GEMINI_LIVE");
       setByokActive(true);
@@ -56,7 +60,10 @@ export function AgencyAiSettingsModal({ isOpen, onClose, agencyId, agencyName }:
       if (!res.ok) throw new Error("Error al cargar configuración");
       const data = await res.json();
       
-      setApiKey(data.elevenLabsApiKey || "");
+      const currentMasked = data.elevenLabsApiKey || data.maskedKey || null;
+      setSavedMaskedKey(currentMasked);
+      setApiKey("");
+      setClearApiKey(false);
       setVoiceId(data.elevenLabsVoiceId || "");
       setVoiceEngine(data.voiceEngine || "GEMINI_LIVE");
       setByokActive(data.byokActive ?? true);
@@ -82,7 +89,8 @@ export function AgencyAiSettingsModal({ isOpen, onClose, agencyId, agencyName }:
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          elevenLabsApiKey: apiKey,
+          ...(apiKey.trim() ? { elevenLabsApiKey: apiKey.trim() } : {}),
+          ...(clearApiKey && !apiKey.trim() ? { clearApiKey: true } : {}),
           elevenLabsVoiceId: voiceId,
           voiceEngine,
           byokActive,
@@ -131,7 +139,7 @@ export function AgencyAiSettingsModal({ isOpen, onClose, agencyId, agencyName }:
               <div className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-purple-600" />
                 <div>
-                  <p className="text-xs font-semibold text-slate-800">Bolsa de Minutos AACOM</p>
+                  <p className="text-xs font-semibold text-slate-800">Bolsa de Minutos AACOMSoft</p>
                   <p className="text-[11px] text-slate-500">Minutos de cortesía o paquetes prepagados asignados a esta agencia.</p>
                 </div>
               </div>
@@ -210,20 +218,56 @@ export function AgencyAiSettingsModal({ isOpen, onClose, agencyId, agencyName }:
 
               {!byokActive && (
                 <div className="p-2.5 bg-amber-50 border border-amber-200/60 rounded-lg text-xs text-amber-800">
-                  ⚠️ <strong>API Apagada:</strong> Tus agentes solo podrán usar el simulador si cuentas con saldo de minutos en AACOM. Si el saldo es 0, el módulo se bloqueará para ellos.
+                  ⚠️ <strong>API Apagada:</strong> Tus agentes solo podrán usar el simulador si cuentas con saldo de minutos en AACOMSoft. Si el saldo es 0, el módulo se bloqueará para ellos.
                 </div>
               )}
 
               {byokActive && (
                 <div className="space-y-3 pt-2 border-t border-slate-100">
+                  {savedMaskedKey && !clearApiKey && (
+                    <div className="flex items-center justify-between p-2.5 bg-emerald-50 border border-emerald-200 rounded-lg">
+                      <div className="flex items-center gap-2 text-xs text-emerald-800">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>
+                          Llave activa en bóveda: <strong className="font-mono">{savedMaskedKey}</strong>
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setClearApiKey(true)}
+                        className="inline-flex items-center gap-1 text-[11px] font-semibold text-red-600 hover:text-red-700"
+                      >
+                        <Trash2 className="w-3 h-3" /> Desvincular
+                      </button>
+                    </div>
+                  )}
+
+                  {clearApiKey && (
+                    <div className="flex items-center justify-between p-2.5 bg-amber-50 border border-amber-200 rounded-lg text-xs text-amber-800">
+                      <span>Se desvinculará la llave actual al guardar.</span>
+                      <button
+                        type="button"
+                        onClick={() => setClearApiKey(false)}
+                        className="font-semibold underline hover:text-amber-950"
+                      >
+                        Conservar llave
+                      </button>
+                    </div>
+                  )}
+
                   <div className="space-y-1.5">
-                    <Label htmlFor="apiKey" className="text-xs font-semibold text-slate-700">ElevenLabs API Key</Label>
+                    <Label htmlFor="apiKey" className="text-xs font-semibold text-slate-700">
+                      {savedMaskedKey && !clearApiKey ? "Reemplazar ElevenLabs API Key (Opcional)" : "ElevenLabs API Key"}
+                    </Label>
                     <Input
                       id="apiKey"
                       type="password"
-                      placeholder="sk_..."
+                      placeholder={savedMaskedKey && !clearApiKey ? "Deja vacío para conservar tu llave actual..." : "sk_..."}
                       value={apiKey}
-                      onChange={(e) => setApiKey(e.target.value)}
+                      onChange={(e) => {
+                        setApiKey(e.target.value);
+                        if (e.target.value.trim()) setClearApiKey(false);
+                      }}
                       className="font-mono text-xs h-9"
                     />
                     <p className="text-[11px] text-slate-400">

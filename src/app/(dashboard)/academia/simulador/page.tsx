@@ -69,13 +69,14 @@ export default async function SimuladorHubPage() {
 
   // Validación de BYOK y Minutos Disponibles
   const agencyByokActive = dbUser.agency?.byokActive ?? true;
-  const hasByokKey = !!dbUser.agency?.elevenLabsApiKey && agencyByokActive;
+  const isPrimaryAgencyWithEnvKey = dbUser.agency?.id === 'aacom' && !!process.env.ELEVENLABS_API_KEY;
+  const hasByokKey = (!!dbUser.agency?.elevenLabsApiKey || isPrimaryAgencyWithEnvKey) && agencyByokActive;
   const hasAgencyMinutes = (dbUser.agency?.voiceSecondsBalance || 0) > 0;
   const hasUserMinutes = (dbUser.voiceSecondsBalance || 0) > 0;
   const hasAccess = isSuperAdmin || hasByokKey || hasAgencyMinutes || hasUserMinutes;
 
   if (!hasAccess) {
-    const isByokTurnedOff = !!dbUser.agency?.elevenLabsApiKey && !agencyByokActive;
+    const isByokTurnedOff = (!!dbUser.agency?.elevenLabsApiKey || isPrimaryAgencyWithEnvKey) && !agencyByokActive;
 
     return (
       <div className="max-w-xl mx-auto my-16 p-8 rounded-3xl bg-slate-900 border border-slate-800 text-center space-y-5 shadow-2xl">

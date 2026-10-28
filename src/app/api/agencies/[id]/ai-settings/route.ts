@@ -27,7 +27,7 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
     const agency = await prisma.agency.findUnique({ where: { id } });
     if (!agency) return NextResponse.json({ error: 'Agencia no encontrada' }, { status: 404 });
 
-    // Return masked key if it exists
+    // Return masked key if it exists in DB or if primary agency has server env fallback
     let maskedKey = null;
     if (agency.elevenLabsApiKey) {
       try {
@@ -38,13 +38,17 @@ export async function GET(req: Request, { params }: { params: { id: string } }) 
           maskedKey = 'sk-...****';
         }
       } catch (e) {
-        maskedKey = 'sk-... (Invalid/Corrupted)';
+        maskedKey = 'sk-...****';
       }
+    } else if (agency.id === 'aacom' && process.env.ELEVENLABS_API_KEY) {
+      const envKey = process.env.ELEVENLABS_API_KEY;
+      maskedKey = envKey.length > 8 ? `sk-...${envKey.substring(envKey.length - 4)}` : 'sk-...****';
     }
 
     return NextResponse.json({
       elevenLabsApiKey: maskedKey,
-      elevenLabsVoiceId: agency.elevenLabsVoiceId || '',
+      hasSavedKey: Boolean(maskedKey),
+      elevenLabsVoiceId: agency.elevenLabsVoiceId || (agency.id === 'aacom' ? process.env.ELEVENLABS_AGENT_ID || '' : ''),
       voiceEngine: agency.voiceEngine || 'GEMINI_LIVE',
       byokActive: agency.byokActive ?? true,
       voiceSecondsBalance: agency.voiceSecondsBalance || 0,
@@ -71,6 +75,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
     const body = await req.json();
     const {
       elevenLabsApiKey,
+      clearApiKey,
       elevenLabsVoiceId,
       voiceEngine,
       byokActive,
@@ -90,7 +95,7 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
     const updateData: any = {};
 
-    // SuperAdmin can configure voice engine (GEMINI_LIVE vs ELEVENLABS)
+    // SuperAdmin or agency admin can configure voice engine (GEMINI_LIVE vs ELEVENLABS)
     if (voiceEngine !== undefined && (isSuperAdmin || user.agencyId === id)) {
       updateData.voiceEngine = voiceEngine === 'ELEVENLABS' ? 'ELEVENLABS' : 'GEMINI_LIVE';
     }
@@ -111,17 +116,21 @@ export async function POST(req: Request, { params }: { params: { id: string } })
       updateData.roleplayRewardTitle = String(roleplayRewardTitle).trim() || 'Bono por Álbum Completo';
     }
 
-    // Only update API Key if a new non-masked value is provided
-    if (elevenLabsApiKey !== undefined) {
-      if (elevenLabsApiKey === '') {
-        // Clear the key
-        updateData.elevenLabsApiKey = null;
-        updateData.elevenLabsVoiceId = null;
-      } else if (!elevenLabsApiKey.startsWith('sk-...')) {
-        const rawKey = elevenLabsApiKey.trim();
+    // Only clear key if explicitly requested via clearApiKey flag
+    if (clearApiKey === true) {
+      updateData.elevenLabsApiKey = null;
+      updateData.elevenLabsVoiceId = null;
+    } else if (typeof elevenLabsApiKey === 'string') {
+      const trimmed = elevenLabsApiKey.trim();
+      const isMaskedPlaceholder =
+        trimmed === '' ||
+        trimmed.startsWith('sk-...') ||
+        trimmed.includes('...') ||
+        trimmed.includes('•');
 
+      if (!isMaskedPlaceholder) {
         // 1. Validar la llave contra la API de ElevenLabs
-        const validation = await validateElevenLabsKey(rawKey);
+        const validation = await validateElevenLabsKey(trimmed);
         if (!validation.valid) {
           return NextResponse.json({ 
             error: validation.error || 'La API Key de ElevenLabs no es válida. Verifica que esté copiada completa.' 
@@ -130,19 +139,22 @@ export async function POST(req: Request, { params }: { params: { id: string } })
 
         // 2. Auto-aprovisionar de forma 100% plug & play el agente Conversational AI en su cuenta con marca blanca
         const targetAgency = await prisma.agency.findUnique({ where: { id }, select: { name: true } });
-        const agencyName = targetAgency?.name || 'AACOM Seguros';
-        const provisionedAgentId = await getOrProvisionAgencyAgent(id, rawKey, agencyName);
+        const agencyName = targetAgency?.name || 'AACOMSoft';
+        const provisionedAgentId = await getOrProvisionAgencyAgent(id, trimmed, agencyName);
         if (provisionedAgentId) {
           updateData.elevenLabsVoiceId = provisionedAgentId;
         }
 
         // 3. Encriptar la nueva llave para almacenamiento seguro
-        updateData.elevenLabsApiKey = encrypt(rawKey);
+        updateData.elevenLabsApiKey = encrypt(trimmed);
       }
     }
 
-    if (elevenLabsVoiceId !== undefined && !updateData.elevenLabsVoiceId) {
-      updateData.elevenLabsVoiceId = elevenLabsVoiceId.trim() || null;
+    if (elevenLabsVoiceId !== undefined && !updateData.elevenLabsVoiceId && clearApiKey !== true) {
+      const trimmedVoiceId = String(elevenLabsVoiceId).trim();
+      if (trimmedVoiceId) {
+        updateData.elevenLabsVoiceId = trimmedVoiceId;
+      }
     }
 
     if (Object.keys(updateData).length === 0) {

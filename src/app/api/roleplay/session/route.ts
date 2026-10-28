@@ -221,7 +221,8 @@ export async function POST(req: Request) {
     // Respetar estrictamente la configuración elegida por el administrador de la agencia
     const configuredEngine = userWithAgency?.agency?.voiceEngine;
     const isByokActive = userWithAgency?.agency?.byokActive ?? true;
-    const hasAgencyByokKey = !!userWithAgency?.agency?.elevenLabsApiKey && isByokActive;
+    const isPrimaryAgencyWithEnvKey = userWithAgency?.agency?.id === 'aacom' && !!process.env.ELEVENLABS_API_KEY;
+    const hasAgencyByokKey = (!!userWithAgency?.agency?.elevenLabsApiKey || isPrimaryAgencyWithEnvKey) && isByokActive;
 
     let effectiveEngine: 'GEMINI_LIVE' | 'ELEVENLABS' = 'GEMINI_LIVE';
     if (configuredEngine === 'GEMINI_LIVE') {
@@ -271,9 +272,10 @@ export async function POST(req: Request) {
       if (userWithAgency?.agency?.elevenLabsApiKey && isByokActive) {
         try {
           const { decrypt } = await import('@/lib/encryption');
-          apiKey = decrypt(userWithAgency.agency.elevenLabsApiKey);
+          const decryptedKey = decrypt(userWithAgency.agency.elevenLabsApiKey);
 
-          if (apiKey) {
+          if (decryptedKey) {
+            apiKey = decryptedKey;
             if (userWithAgency.agency.elevenLabsVoiceId) {
               agentId = userWithAgency.agency.elevenLabsVoiceId;
             } else {
