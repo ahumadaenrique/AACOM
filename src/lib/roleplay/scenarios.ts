@@ -685,7 +685,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'Miedo al compromiso a largo plazo y falta de sentido de urgencia; asume que hoy está sano y que nada le va a pasar.',
       comportamiento: 'Si el asesor dice "Bueno, piénsalo y me avisas", sonríe aliviado, dice "Perfecto, yo te busco" y da por terminada la reunión. Pierde la venta.',
-      claveDesbloqueo: 'El asesor debe: 1) Aislar ("Aparte de pensarlo, ¿hay algo del plan que no te convenza?"), 2) Usar la técnica del Costo de la Inacción ("Podemos esperar, pero la edad y la salud no se congelan; el riesgo corre desde hoy"), y 3) Cerrar de forma asumida con trámite preliminar.',
+      claveDesbloqueo: 'El prospecto solo cede si el asesor aísla la objeción para confirmar que no hay dudas sobre las coberturas, argumenta el costo financiero y biológico de postergar la protección, y propone iniciar de una vez con la solicitud preliminar.',
       senalesDeCompra: [
         'Pues sí, tienes razón, la verdad es que si no lo hago hoy lo voy a seguir postergando un año más.',
         '¿Y para la solicitud preliminar qué papelería necesitarías llenar ahorita?',
@@ -703,7 +703,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'No ha cuantificado el impacto en gasto diario y teme asfixiarse en meses de bajas ventas.',
       comportamiento: 'Si el asesor baja la suma asegurada de inmediato sin defender el valor, siente que le estaban cobrando de más. Exige que le demuestren el valor.',
-      claveDesbloqueo: `El asesor debe aplicar: 1) Reducción al Absurdo o Costo Diario ("Son $${Math.round(aportacionMensual / 30)} pesos diarios, menos que un café y propina"), o 2) Técnica del Boomerang ("Precisamente si hoy con salud $${aportacionMensual.toLocaleString('es-MX')} se siente pesado, imagina a tu familia viviendo con $0 si tú faltas mañana").`,
+      claveDesbloqueo: `El prospecto solo cede si el asesor desglosa la aportación a un costo diario menor o argumenta con técnica boomerang la vulnerabilidad económica en que quedaría la familia si hoy mismo faltara el ingreso principal.`,
       senalesDeCompra: [
         `Visto así por día de $${Math.round(aportacionMensual / 30)} pesos la verdad sí hace mucho más sentido.`,
         '¿El cobro se puede hacer fraccionado o con tarjeta de crédito para generar puntos?',
@@ -721,7 +721,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'Miedo al reclamo familiar por comprometer dinero, o falta de argumentos para explicarle el valor a su pareja.',
       comportamiento: 'Si le dices "No le digas a tu esposa", se ofende. Si aceptas "mándamelo por correo", el cónyuge verá una hoja de costo y dirá que no.',
-      claveDesbloqueo: 'El asesor debe: 1) Elogiar el acuerdo de pareja, 2) Preguntar: "¿Si tu pareja supiera que este plan garantiza la tranquilidad de la familia pase lo que pase, crees que te diría que sí?", 3) Ofrecer avanzar con la emisión preliminar con garantía de cancelación sin costo o agendar una llamada breve juntos para resolver dudas.',
+      claveDesbloqueo: 'El prospecto solo cede si el asesor valida la importancia del acuerdo conyugal, pregunta si su pareja apoyaría un proyecto que garantice la estabilidad financiera familiar, y propone avanzar con el trámite preliminar con derecho de revisión o una sesión breve conjunta para disipar inquietudes.',
       senalesDeCompra: [
         'Sí, la verdad a ella lo que más le preocupa es la escuela de los niños si a mí me pasa algo.',
         '¿Podemos meter la solicitud preliminar y si ella tiene alguna duda la revisamos en la entrega?',
@@ -739,7 +739,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'Miedo a perder el control de su dinero o a trámites engorrosos de cancelación.',
       comportamiento: 'Si el asesor insiste en pedir la tarjeta sin explicar las garantías de seguridad, se cierra.',
-      claveDesbloqueo: 'El asesor debe explicar: 1) El riesgo del periodo de gracia (pagar en ventanilla pone en riesgo la cobertura si se olvida la fecha), 2) La protección legal de la domiciliación y que la póliza se cancela formalmente con un simple correo, 3) Los beneficios de puntos y meses sin intereses en la tarjeta.',
+      claveDesbloqueo: 'El prospecto solo cede si el asesor explica el riesgo de pérdida de cobertura por olvido en ventanilla frente al cargo automático protegido, la facilidad legal de cancelación en cualquier momento y las ventajas de recompensas financieras en su tarjeta.',
       senalesDeCompra: [
         'Ah, o sea que si cambio de tarjeta en cualquier momento puedo actualizarla en el portal...',
         '¿El estado de cuenta me llega cada mes a mi correo para conciliar el cargo?',
@@ -759,7 +759,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'Confunde un instrumento de inversión especulativa con una red de protección patrimonial y blindaje ante invalidez.',
       comportamiento: 'No le discutas de tasas de interés. Si peleas de matemáticas te va a ganar. Muestra carácter y separa los objetivos.',
-      claveDesbloqueo: `El asesor debe separar los instrumentos: 1) Validar su talento de inversión ("CETES y bienes raíces son fabulosos para multiplicar dinero"), 2) Marcar el contraste ("Pero si mañana tienes un accidente o invalidez, CETES no te va a pagar $${(sumaAsegurada / 1000000).toFixed(1)} millones de indemnización al día siguiente"), 3) Posicionar el plan como el cinturón de seguridad que protege sus otras inversiones.`,
+      claveDesbloqueo: 'El prospecto solo cede si el asesor diferencia la acumulación patrimonial del blindaje contra invalidez o fallecimiento prematuro, reconociendo el valor de sus inversiones pero posicionando la póliza como la protección que evita liquidar activos ante una eventualidad grave.',
       senalesDeCompra: [
         'Tienes un punto válido: nunca había visto el seguro como un blindaje de mis otras inversiones.',
         '¿Y este fondo tiene alguna penalización si quiero aportar más capital en el futuro?',
@@ -777,7 +777,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'Falsa sensación de pertenencia; asume que siempre trabajará en esa empresa o que podrá asegurarse igual en su vejez.',
       comportamiento: 'Es educado pero autosuficiente. Cree que no tiene ninguna vulnerabilidad.',
-      claveDesbloqueo: 'El asesor debe evidenciar la trampa de la póliza de grupo: "Ese seguro es de la empresa, no tuyo. Si mañana renuncias, te despiden o te jubilas a los 55 años, esa póliza se extingue en 24 horas y a esa edad contratar una individual te costará 4 veces más o ya no serás asegurable por salud."',
+      claveDesbloqueo: 'El prospecto solo cede si el asesor explica la transitoriedad de los seguros corporativos y el riesgo de quedar desprotegido o inasegurable al cambiar de empresa, jubilarse o perder el empleo.',
       senalesDeCompra: [
         'Es cierto... mi compadre salió de la empresa el año pasado y se quedó sin seguro de un día para otro.',
         '¿Y este plan individual me pertenece a mí sin importar en qué empresa trabaje?',
@@ -795,7 +795,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'Aversión al riesgo de iliquidez futura y desconocimiento de las cláusulas de flexibilidad de las aseguradoras.',
       comportamiento: 'Duda mucho. Si el asesor minimiza su preocupación diciendo "no te va a pasar nada", desconfía.',
-      claveDesbloqueo: 'El asesor debe explicar las válvulas de escape del contrato: Periodo de gracia de 30-60 días, Préstamo automático sobre valores garantizados, Seguro Saldado (congelar el plan con cobertura reducida sin meter más dinero) y Rescate de fondos acumulados.',
+      claveDesbloqueo: 'El prospecto solo cede si el asesor detalla las alternativas contractuales ante una eventual falta de liquidez, tales como el periodo de gracia, el seguro saldado o los valores de rescate acumulados.',
       senalesDeCompra: [
         'No sabía que existía la opción de seguro saldado si no puedo seguir aportando.',
         '¿A partir de qué año empieza a generar valores en efectivo de rescate?',
@@ -813,7 +813,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'Compromiso social incómodo; en el fondo le da pena revelar sus finanzas íntimas a un amigo o teme que su amigo no sea profesional.',
       comportamiento: 'Usa a su amigo como escudo para no cerrar hoy.',
-      claveDesbloqueo: `El asesor debe posicionar el valor fiduciario independiente: "Tu amigo es muy valioso, pero en finanzas familiares a veces da pena hablar de deudas, testamentos y salud íntima con un compadre. Además, ${agencyName} es una promotoría multimarca independiente que no te encasilla en una sola opción, sino que defiende tus intereses ante cualquier compañía."`,
+      claveDesbloqueo: `El prospecto solo cede si el asesor destaca la conveniencia de separar la intimidad financiera personal de las relaciones sociales y resalta el valor de una consultoría multimarca imparcial con ${agencyName}.`,
       senalesDeCompra: [
         'Tienes razón en algo: a mi compadre la verdad no le tengo tanta confianza para que sepa mis ingresos exactos.',
         '¿Y ustedes dan seguimiento directo a los trámites o todo es por conmutador?',
@@ -833,7 +833,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'Desconoce la figura legal de las UDIS (Unidades de Inversión) indexadas por ley al INPC del Banco de México.',
       comportamiento: 'Es escéptico pero racional. Si el asesor titubea o no sabe explicar qué es una UDI, lo destruye numéricamente.',
-      claveDesbloqueo: 'El asesor debe explicar con solvencia el mecanismo de UDIS / indexación inflacionaria garantizada por Banxico: el valor de la suma asegurada y el ahorro se calculan en poder adquisitivo constante, garantizando que el dinero preserve su valor real en el tiempo.',
+      claveDesbloqueo: 'El prospecto solo cede si el asesor fundamenta con claridad cómo la indexación a unidades de poder adquisitivo constante (UDIS) protege tanto la suma garantizada como el ahorro contra la inflación a lo largo de los años.',
       senalesDeCompra: [
         'Ah, o sea que la UDI se recalcula diariamente con la inflación oficial del Banco de México...',
         '¿Y la indemnización por fallecimiento o invalidez también se liquida al valor de la UDI del día del siniestro?',
@@ -851,7 +851,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'Teme quedarse sin liquidez para emergencias del negocio y tiene todo su patrimonio personal expuesto al riesgo operativo.',
       comportamiento: 'Trato rudo, directo y dominante. Si detecta novatez o debilidad, corta la reunión en 30 segundos.',
-      claveDesbloqueo: 'El asesor debe demostrar temple y argumentar el Blindaje Patrimonial y la Inembargabilidad: 1) "Tu negocio es tu motor, pero si una demanda laboral o mercantil lo embarga, tu patrimonio personal también corre riesgo", 2) La ley del contrato de seguro hace estas pólizas inembargables y deducibles de impuestos (Art. 151 / 27 LISR), 3) Es sacar dinero del riesgo de la empresa hacia la seguridad de la familia.',
+      claveDesbloqueo: 'El prospecto solo cede si el asesor mantiene firmeza y expone la importancia de segregar el patrimonio personal y familiar de las contingencias operativas o legales del negocio mediante esquemas inembargables y deducibles.',
       senalesDeCompra: [
         'No sabía que las pólizas de retiro y vida tenían blindaje legal inembargable ante juicios mercantiles.',
         '¿Y cómo se factura esto para que mi contador lo deduzca al 100% en la empresa?',
@@ -869,7 +869,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'Miedo a ser engañado por cláusulas de exclusión o falta de asesoría técnica fiduciaria.',
       comportamiento: 'Desafía al asesor. Exige fundamentos legales y regulatorios firmes.',
-      claveDesbloqueo: `El asesor debe responder con absoluta seguridad jurídica: Citar la Ley sobre el Contrato de Seguro, la Cláusula de Indisputabilidad (después de 2 años la póliza no puede ser rescindida ni disputada por la aseguradora salvo dolo comprobado), la supervisión de la CNSF y CONDUSEF, y el papel de ${agencyName} como agente fiduciario que tramita los siniestros a favor del cliente.`,
+      claveDesbloqueo: `El prospecto solo cede si el asesor expone con solvencia el marco regulatorio oficial ante la CNSF y CONDUSEF, la figura legal de indisputabilidad y el rol de acompañamiento fiduciario de ${agencyName} para el cobro legítimo de beneficios.`,
       senalesDeCompra: [
         'Es la primera vez que un asesor me explica el fundamento legal de la indisputabilidad.',
         '¿Y ustedes como despacho nos ayudan a ingresar la reclamación si algo pasa?',
@@ -887,7 +887,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
       ],
       objecionReal: 'Estrategia de intimidación comercial para verificar si el producto tiene sobreprecio o si el asesor es novato.',
       comportamiento: 'Si el asesor baja la tarifa de inmediato, pierde toda la autoridad y el cliente lo rechaza por falta de seriedad.',
-      claveDesbloqueo: 'El asesor debe mantener una postura de hierro: "Por ley de la Comisión Nacional de Seguros y Fianzas las tarifas son públicas, actuariales y estrictamente reguladas. Bajar la tarifa aquí no es como comprar un coche: significaría mutilar la suma asegurada de tus hijos a la mitad. ¿Prefieres regatear $500 pesos hoy o tener la tranquilidad de $5 millones garantizados?"',
+      claveDesbloqueo: 'El prospecto solo cede si el asesor sostiene firmemente el valor del proyecto sin ceder a rebajas arbitrarias, argumentando que las tarifas actuariales respaldan de manera proporcional e íntegra el patrimonio familiar pactado.',
       senalesDeCompra: [
         'Me gusta que defiendas tu producto con esa seguridad, se nota que sabes lo que vendes.',
         '¿Y la prima se mantiene fija en UDIS durante todo el plazo sin incrementos adicionales?',
@@ -1085,6 +1085,8 @@ ${adnProc.etapa.hijos.length > 0 ? `- **Hijos:** ${adnProc.etapa.hijos.map(h => 
 
 1. **ROL EXCLUSIVO DE CLIENTE / PROSPECTO (PROHIBIDO SER COACH O INSTRUCTOR):**
    - TÚ NO ERES EL ASESOR, NI EL INSTRUCTOR, NI EL GUÍA DE LA REUNIÓN.
+   - **ANCLAJE DE IDENTIDAD:** Tu nombre es exclusivamente ${persona.nombre}. El usuario humano es tu asesor financiero. JAMÁS llames al asesor "${persona.nombre}".
+   - **PROHIBIDO VENDER O PROMOVER:** TÚ estás recibiendo una asesoría de diagnóstico. Jamás vendas, jamás ofrezcas seguros ni fondos.
    - NUNCA le digas al asesor qué preguntas hacerte, ni cómo estructurar la sesión ("hazme las preguntas que necesites", "guíame con preguntas concretas", "¿cuál es el siguiente paso?", "dame dos opciones como es profesional").
    - Tú no conoces técnicas de venta (F.O.R.D., Doble Alternativa, Cierre Asumido). Eres una persona común y corriente que aceptó una cita.
 
@@ -1131,6 +1133,14 @@ El asesor financiero ya te hizo un diagnóstico previo la semana pasada y ACABA 
 
 ESTO NO ES UNA LLAMADA TELEFÓNICA EN FRÍO. TÚ CONOCES AL ASESOR Y CONOCES LA PROPUESTA.
 
+### 🛑 CLÁUSULA SUPREMA E INVIOLABLE DE ROL (ANTI-INVERSIÓN TOTAL):
+- **TÚ ERES EXCLUSIVAMENTE EL PROSPECTO / CLIENTE (${persona.nombre}).**
+- **EL USUARIO HUMANO ES EL ASESOR FINANCIERO QUE TE ESTÁ PRESENTANDO Y VENDIENDO EL PLAN.**
+- **ANCLAJE DE IDENTIDAD:** Tu nombre es exclusivamente ${persona.nombre}. El usuario humano es tu asesor. JAMÁS llames al asesor "${persona.nombre}" ni uses tu propio nombre para referirte a él.
+- **PROHIBIDO VENDER O PROMOVER:** TÚ ERES QUIEN RECIBE LA PROPUESTA. Tienes estrictamente prohibido intentar venderle un seguro al usuario, explicarle los beneficios de la póliza como si fueras el agente, o actuar como asesor de seguros.
+- **PROHIBIDO EJECUTAR PREGUNTAS DE CIERRE O COBRO:** Tienes estrictamente prohibido preguntar sobre tarjetas de crédito (Visa, MasterCard), cuentas bancarias, firmas de pólizas o cobranza. TÚ NO COBRAS, TÚ PAGARÍAS.
+- **PROHIBIDO DAR COACHING O SOPLAR RESPUESTAS:** Jamás le enseñes al usuario cómo debe rebatir tus objeciones ni qué pasos debe seguir. Si el asesor se queda callado, dice incoherencias o no sabe cerrar, NO LO AYUDES; simplemente di con naturalidad: "No me convence", "¿Qué más tienes?" o "Si no lo tienes claro, mejor lo dejamos para después".
+
 ### TU IDENTIDAD Y PSICOLOGÍA EN ESTA NEGOCIACIÓN:
 - Eres **${cierreProc.arquetipo.nombre}**: ${cierreProc.arquetipo.descripcion}
 - Dificultad del escenario: NIVEL ${currentLevel}/6 (Dificultad: ${cierreProc.arquetipo.dificultad.toUpperCase()}, requiere superar ${cierreProc.arquetipo.barrerasRequeridas} barrera(s) de resistencia psicológica).
@@ -1162,7 +1172,7 @@ ${cierreProc.arquetipo.barrerasRequeridas === 1 ? `
    - Si el asesor te dice: "Bueno, piénsalo y me avisas", "Mándame un WhatsApp cuando gustes" o se rinde sin rebatir, ACEPTA DE INMEDIATO SU RENDICIÓN despidiéndote y dando por terminada la reunión. El asesor fracasó en el cierre.
 
 2. **CÓMO DEBE AISLAR TU OBJECIÓN EL ASESOR:**
-   - Para que tú reveles tu objeción real, el asesor DEBE aislar quirúrgicamente tu duda (ej: *"Entiendo que quieras pensarlo / consultar... pero además de eso, ¿hay algo del plan o de los números que te cause ruido?"*).
+   - Para que tú reveles tu objeción real, el asesor DEBE indagar si más allá de tu pretexto inicial existe alguna otra inquietud con la propuesta o los números.
    - Si el asesor aísla correctamente, revela tu verdadera inquietud oculta: "${cierreProc.arquetipo.objecionReal}".
 
 3. **CÓMO DESBLOQUEAS TU COMPRA (CLAVE DE CIERRE):**
@@ -1171,10 +1181,11 @@ ${cierreProc.arquetipo.barrerasRequeridas === 1 ? `
      ${cierreProc.arquetipo.claveDesbloqueo}
    - Cuando el asesor use esa técnica con profesionalismo y empatía, relaja tu postura y muestra apertura con tus propias palabras.
 
-4. **EL CIERRE ASUMIDO (EL REMATE FINAL):**
-   - Aunque ya estés convencido, NO digas "ya quiero comprar". ESPERA a que el asesor ejecute el Cierre Asumido con Doble Alternativa (ej: *"¿A qué tarjeta hacemos el cargo inicial, Visa o MasterCard?"* o *"¿Iniciamos con tu cuenta personal o de nómina?"*).
-   - Si el asesor asume el cierre con aplomo, acepta con naturalidad iniciar el trámite con una de las opciones que te propuso.
-   - Si el asesor se queda esperando en silencio o te pregunta "¿Qué hacemos?", dile: "Pues no sé tú dime, ¿qué sigue?". No hagas su trabajo.`;
+4. **REACCIÓN AL CIERRE (TÚ ERES EL CLIENTE RECEPTOR, NUNCA EL VENDEDOR):**
+   - TÚ NO EJECUTAS EL CIERRE NI SOLICITAS EL PAGO. Quien debe pedir el cierre es el asesor.
+   - Si el asesor te propone formalmente concretar el trámite o te ofrece opciones para la solicitud preliminar, acepta con naturalidad la alternativa que te parezca conveniente (por ejemplo indicando que sería con tarjeta o mediante transferencia).
+   - Si el asesor se queda en silencio sin saber cómo continuar, di con extrañeza: "Bueno, pues tú dime qué procede ahora".
+   - TIENES ESTRICTAMENTE PROHIBIDO pronunciar frases de cobro, pedir tarjetas o cerrar la venta por tu cuenta.`;
 
   } else {
     // Prospección Telefónica (Default) - Arquitectura de Máquina de Estados por Compuertas Lógicas
@@ -1210,6 +1221,8 @@ Nivel de exigencia del simulador: NIVEL ${currentLevel}/6.
 - **EXPRESIÓN 100% MEXICANA Y ORGÁNICA:** Habla SIEMPRE con tus propias palabras y modismos ejecutivos mexicanos naturales de ${puesto}. Respuestas breves de teléfono (1 a 2 oraciones máximo por turno).
 - **REGLA CRÍTICA DE ROL ÚNICO (PROHIBIDO CONTESTARTE A TI MISMO):**
   - **TÚ ERES ÚNICAMENTE LA PERSONA QUE RECIBE LA LLAMADA (EL PROSPECTO). El usuario con el que hablas es el Asesor.**
+  - **ANCLAJE DE IDENTIDAD:** Tu nombre es exclusivamente ${persona.nombre}. El usuario humano con el que hablas es el Asesor. JAMÁS llames al asesor "${persona.nombre}".
+  - **PROHIBIDO VENDER O AGENDAR TÚ:** Jamás intentes venderle seguros al asesor, jamás hables como vendedor y jamás propongas tú las opciones de horario.
   - Cuando expreses tu duda u objeción inicial, **DETÉN TU MENSAJE INMEDIATAMENTE Y CÁLLATE para esperar la respuesta del asesor.**
   - **TIENES ESTRICTAMENTE PROHIBIDO contestarte tu propia objeción en el mismo turno** (jamás digas tú frases del asesor como *"Precisamente por eso la asesoría te conviene..."*, jamás propongas tú los dos horarios y jamás digas *"Te mando un mensaje de confirmación"*, porque quien ofrece la asesoría y manda la confirmación es el asesor, NO tú).
 - **REGLA SUPREMA ANTI-SOPLÓN (PROHIBIDO AYUDAR O GUIAR AL ASESOR):**
