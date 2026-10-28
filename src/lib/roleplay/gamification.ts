@@ -1,4 +1,4 @@
-// MOTOR DE GAMIFICACIÓN, NIVELES, PENALIZACIONES Y BENEFICIOS DE AACOM
+// MOTOR DE GAMIFICACIÓN, NIVELES, PENALIZACIONES Y BENEFICIOS DE AACOMSoft
 
 export interface LevelInfo {
   level: number;
@@ -13,7 +13,8 @@ export const LEVELS_CONFIG: Record<number, LevelInfo> = {
   2: { level: 2, title: 'Intermedio', icon: '🎖️', minXp: 1500, maxXp: 3999 },
   3: { level: 3, title: 'Avanzado', icon: '🥈', minXp: 4000, maxXp: 7499 },
   4: { level: 4, title: 'Experto', icon: '🥇', minXp: 7500, maxXp: 11999 },
-  5: { level: 5, title: 'Maestro', icon: '💎', minXp: 12000, maxXp: 999999 }
+  5: { level: 5, title: 'Maestro', icon: '💎', minXp: 12000, maxXp: 17999 },
+  6: { level: 6, title: 'Leyenda', icon: '👑', minXp: 18000, maxXp: 999999 }
 };
 
 export const BADGES_CATALOG = [
@@ -22,7 +23,7 @@ export const BADGES_CATALOG = [
   { id: 'maestro_objecion', name: 'Escudo Blindado', desc: 'Superó objeciones complejas con maestría', icon: '🛡️' },
   { id: 'experto_frio', name: 'Cazador Glacial', desc: 'Cerró cita en llamada en frío total', icon: '❄️' },
   { id: 'dia_perfecto', name: 'Racha Imparable', desc: 'Alcanzó el tope diario de 500 XP', icon: '⚡' },
-  { id: 'lobo_aacom', name: 'Lobo de AACOM', desc: 'Alcanzó el Nivel 5 de élite', icon: '👑' }
+  { id: 'lobo_aacom', name: 'Lobo de AACOMSoft', desc: 'Alcanzó el Nivel 5 de élite', icon: '👑' }
 ];
 
 export const DEFAULT_BENEFITS: Record<number, string[]> = {
@@ -30,7 +31,8 @@ export const DEFAULT_BENEFITS: Record<number, string[]> = {
   2: ["Desbloquea el Módulo de Análisis de Necesidades (ADN)"],
   3: ["Desbloquea el Módulo de Objeciones y Cierre"],
   4: ["Desbloquea Voces Premium y Casos Complejos"],
-  5: ["1 perdón de multas/retardos al mes", "Insignia Master en el directorio de la Agencia"]
+  5: ["1 perdón de multas/retardos al mes", "Insignia Master en el directorio de la Agencia"],
+  6: ["Estatus Leyenda de Academia PRO", "Acceso a prospectos hostiles de Nivel 6 e Insignia Cliente Hostil"]
 };
 
 export const DAILY_XP_CAP = 500;
@@ -39,6 +41,7 @@ export const DAILY_GOAL_CALLS = 3;
 
 export function calculateLevelFromXp(xp: number): number {
   const safeXp = Math.max(0, xp);
+  if (safeXp >= 18000) return 6;
   if (safeXp >= 12000) return 5;
   if (safeXp >= 7500) return 4;
   if (safeXp >= 4000) return 3;

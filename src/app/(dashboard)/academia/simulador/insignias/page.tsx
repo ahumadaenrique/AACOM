@@ -17,10 +17,14 @@ export default async function InsigniasPage() {
 
     const user = await prisma.user.findFirst({
       where: session.user.id ? { id: session.user.id } : { email: session.user.email! },
-      select: { id: true, agency: true }
+      select: { id: true, role: true, agency: true }
     });
 
     if (!user) redirect('/login');
+
+    if (user.role === 'REFERIDOR') {
+      redirect('/academia/videos');
+    }
 
     const stats = await prisma.roleplayStats.findUnique({
       where: { userId: user.id }

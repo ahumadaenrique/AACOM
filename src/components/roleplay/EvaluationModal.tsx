@@ -15,6 +15,7 @@ interface EvaluationModalProps {
     errores: string[];
     coachTip: string;
     conversationId?: string | null;
+    callAudioUrl?: string | null;
   } | null;
   stats: {
     xp: number;
@@ -45,6 +46,7 @@ export function EvaluationModal({ isOpen, evaluation, stats, onNextCall, moduleI
 
   const isSuccess = evaluation.appointmentClosed;
   const isGoodAttempt = evaluation.score >= 50;
+  const audioSrc = evaluation.callAudioUrl || (evaluation.conversationId ? `/api/roleplay/audio/${evaluation.conversationId}` : null);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200">
@@ -128,8 +130,8 @@ export function EvaluationModal({ isOpen, evaluation, stats, onNextCall, moduleI
             </div>
           )}
 
-          {/* Audio Player if conversation ID available */}
-          {evaluation.conversationId && (
+          {/* Audio Player if recording URL or conversation ID available */}
+          {audioSrc && (
             <div className="p-3.5 rounded-2xl bg-slate-800/50 border border-slate-700/60 flex items-center justify-between gap-4">
               <div className="flex items-center gap-2 text-xs font-medium text-slate-300">
                 <Volume2 className="h-4 w-4 text-emerald-400" />
@@ -138,7 +140,7 @@ export function EvaluationModal({ isOpen, evaluation, stats, onNextCall, moduleI
               <audio
                 controls
                 className="h-8 max-w-[240px]"
-                src={`/api/roleplay/audio/${evaluation.conversationId}`}
+                src={audioSrc}
               />
             </div>
           )}

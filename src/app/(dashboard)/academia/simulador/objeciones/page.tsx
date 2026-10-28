@@ -4,7 +4,7 @@ import { RoleplayClient } from "@/components/roleplay/RoleplayClient";
 import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Simulador de Objeciones y Cierre | AACOM Seguros",
+  title: "Simulador de Objeciones y Cierre | AACOMSoft",
   description: "Entrenamiento de cierre de ventas y rebatir objeciones con IA."
 };
 
@@ -38,6 +38,10 @@ export default async function SimuladorObjecionesPage() {
       redirect("/login");
     }
 
+    if (dbUser.role === 'REFERIDOR') {
+      redirect("/academia/videos");
+    }
+
     // Block access if the agency does not have the simulator enabled (SUPER_ADMIN always has access)
     if (dbUser.role !== 'SUPER_ADMIN' && dbUser.agency && dbUser.agency.allowRoleplaySimulator === false) {
       return (
@@ -48,7 +52,7 @@ export default async function SimuladorObjecionesPage() {
           <div className="space-y-2">
             <h2 className="text-xl font-bold text-white">Módulo Desactivado para tu Agencia</h2>
             <p className="text-xs text-slate-400 leading-relaxed">
-              El acceso al <strong>Simulador de Ventas con IA</strong> ha sido desactivado para tu agencia ({dbUser.agency.name}) por la administración central de AACOM.
+              El acceso al <strong>Simulador de Ventas con IA</strong> ha sido desactivado para tu agencia ({dbUser.agency.name}) por la administración central de AACOMSoft.
             </p>
           </div>
           <div className="pt-2">

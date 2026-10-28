@@ -48,10 +48,15 @@ export async function POST(req: Request) {
     const [user, stats] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
-        select: { id: true, agencyId: true, voiceSecondsBalance: true }
+        select: { id: true, role: true, agencyId: true, voiceSecondsBalance: true }
       }),
       prisma.roleplayStats.findUnique({ where: { userId } })
     ]);
+
+    if (user?.role === 'REFERIDOR') {
+      return NextResponse.json({ error: 'El simulador de voz es exclusivo para agentes y promotores.' }, { status: 403 });
+    }
+
     const agencyId = user?.agencyId || null;
 
     const userTurns = transcript.filter((m: any) => m.source === 'user');
@@ -102,7 +107,7 @@ export async function POST(req: Request) {
         stats: stats ? {
           xp: stats.xp,
           level: stats.level,
-          levelInfo: LEVELS_CONFIG[stats.level],
+          levelInfo: LEVELS_CONFIG[stats.level] || LEVELS_CONFIG[5],
           streak: stats.streak,
           todayXp: stats.todayXp,
           dailyCap: DAILY_XP_CAP,
@@ -150,7 +155,7 @@ export async function POST(req: Request) {
       El asesor se encuentra en la Cita de Presentación y Cierre de la Propuesta Patrimonial.
       El asesor DEBE:
       1. VALIDACIÓN EMPÁTICA: Recibir la resistencia o cortina de humo inicial del prospecto ("déjame pensarlo", "está caro", "lo consulto con mi esposa/socio") con serenidad y empatía profesional. Jamás confrontar ni molestarse.
-      2. AISLAMIENTO QUIRÚRGICO DE LA OBJECIÓN: Preguntar con precisión si además de ese tiempo para pensar o consultar existe alguna otra inquietud sobre el plan, sumas aseguradas o costos, para despejar la cortina de humo y llegar a la objeción de raíz.
+      2. AISLAMIENTO QUIRÚRGRGICO DE LA OBJECIÓN: Preguntar con precisión si además de ese tiempo para pensar o consultar existe alguna otra inquietud sobre el plan, sumas aseguradas o costos, para despejar la cortina de humo y llegar a la objeción de raíz.
       3. TÉCNICA DE REBOTE Y VALOR: Desmantelar la duda de fondo utilizando técnicas reconocidas de la industria:
          - Técnica del Boomerang (convertir la misma objeción en la razón primordial para contratar hoy).
          - Siente - Sentían - Comprobaron (validar casos de éxito de clientes similares).
@@ -292,24 +297,36 @@ ${badgesText}
       const hasClosingAgreement = /\b(nos\s+vemos|quedamos\s+entonces|anotado|lo\s+anoto|me\s+queda\s+mejor|agendamos\s+para)\b/i.test(aiUtterances);
       const hasProspectRejection = /\b(no\s+agendo|no\s+voy\s+a\s+agendar|mejor\s+ni\s+agendamos|mejor\s+no\s+agendo|no\s+me\s+da\s+confianza|cuelgo|perd[ií]o\s+para\s+m[ií])\b/i.test(aiUtterances);
 
-      const appointmentAchieved = hasDoubleAlt && hasClosingAgreement && !hasProspectRejection;
+      const hasObjecionesAssumedClose = /\b(tarjeta|cr[eé]dito|d[eé]bito|visa|mastercard|n[oó]mina|solicitud\s+preliminar|emitir|contratar|domicilia)/i.test(userUtterances);
+      const hasObjecionesAcceptance = /\b(hag[aá]moslo|entremos|anota|p[aá]samelo|va\s+pues|de\s+acuerdo|iniciemos|con\s+la\s+de\s+cr[eé]dito|con\s+tarjeta|visa|mastercard)\b/i.test(aiUtterances);
+
+      const appointmentAchieved = moduleId === 'objeciones'
+        ? (hasObjecionesAssumedClose && hasObjecionesAcceptance && !hasProspectRejection)
+        : (hasDoubleAlt && hasClosingAgreement && !hasProspectRejection);
+
       const computedScore = appointmentAchieved ? 88 : (transcriptList.length >= 6 ? 68 : 50);
 
       rawObject = {
         score: computedScore,
         aciertos: [
           'Postura profesional y fluidez en el desarrollo de la conversación.',
-          hasDoubleAlt ? 'Manejo de alternativas concretas de horario para la reunión.' : 'Cordialidad y respeto por los tiempos del prospecto.'
+          moduleId === 'objeciones'
+            ? (hasObjecionesAssumedClose ? 'Aplicación de cierre asumido con alternativa de trámite/pago.' : 'Manejo sereno de las inquietudes del prospecto.')
+            : (hasDoubleAlt ? 'Manejo de alternativas concretas de horario para la reunión.' : 'Cordialidad y respeto por los tiempos del prospecto.')
         ],
         errores: [
-          !hasDoubleAlt ? 'Asegurar siempre el uso de doble alternativa de horario al agendar.' : (!appointmentAchieved ? 'No se concretó el acuerdo final de fecha y hora con el prospecto.' : '')
+          moduleId === 'objeciones'
+            ? (!hasObjecionesAssumedClose ? 'Asegurar siempre el cierre asumido proponiendo dos alternativas de pago o emisión.' : (!appointmentAchieved ? 'Faltó desbloquear la objeción de raíz del prospecto antes de pedir el cierre.' : ''))
+            : (!hasDoubleAlt ? 'Asegurar siempre el uso de doble alternativa de horario al agendar.' : (!appointmentAchieved ? 'No se concretó el acuerdo final de fecha y hora con el prospecto.' : ''))
         ].filter(Boolean),
         cometioErrorFatal: false,
         appointmentClosed: appointmentAchieved,
         coachTip: appointmentAchieved 
-          ? '¡Gran trabajo! Lograste una sesión estructurada y una cita confirmada.' 
-          : 'Enfócate en responder directamente la duda del prospecto y cerrar ofreciendo dos horarios específicos.',
-        insigniasGanadas: appointmentAchieved && computedScore >= 85 ? ['p_doble_alt'] : [],
+          ? '¡Gran trabajo! Lograste una sesión estructurada y un cierre confirmado.' 
+          : (moduleId === 'objeciones' ? 'Aísla primero la cortina de humo, valida empáticamente y ejecuta el cierre asumido con dos opciones de pago.' : 'Enfócate en responder directamente la duda del prospecto y cerrar ofreciendo dos horarios específicos.'),
+        insigniasGanadas: appointmentAchieved && computedScore >= 85
+          ? [moduleId === 'objeciones' ? 'c_asumido' : moduleId === 'adn' ? 'a_ford' : 'p_doble_alt']
+          : [],
         aplicoTecnicaFord: hasFord,
         priorizoMetas: userUtterances.includes('prioridad') || userUtterances.includes('importante') || userUtterances.includes('principal')
       };
@@ -491,8 +508,12 @@ ${badgesText}
         if (!insigniasGanadas.includes('a_perfecto')) insigniasGanadas.push('a_perfecto');
       }
       // 6. Contacto Frío Exitoso:
-      if (scenario?.origen?.tipo === 'frio' && appointmentClosed && score >= 75 && !currentBadges.includes('p_frio_exitoso')) {
+      if ((scenario?.origen?.tipo === 'frio_total' || scenario?.origen?.tipo === 'frio') && appointmentClosed && score >= 75 && !currentBadges.includes('p_frio_exitoso')) {
         if (!insigniasGanadas.includes('p_frio_exitoso')) insigniasGanadas.push('p_frio_exitoso');
+      }
+      // 7. Cliente Hostil (Nivel 6 en Objeciones y Cierre):
+      if (moduleId === 'objeciones' && (scenario?.difficultyLevel || 1) >= 6 && appointmentClosed && score >= 75 && !currentBadges.includes('c_hostil')) {
+        if (!insigniasGanadas.includes('c_hostil')) insigniasGanadas.push('c_hostil');
       }
     }
 
@@ -639,7 +660,7 @@ ${badgesText}
       }
     });
 
-    // Descontar segundos consumidos si corrió bajo bolsa de AACOM (no BYOK)
+    // Descontar segundos consumidos si corrió bajo bolsa de AACOMSoft (no BYOK)
     if (durationSeconds > 0 && agencyId) {
       try {
         const agency = await prisma.agency.findUnique({

@@ -8,8 +8,20 @@ export const dynamic = 'force-dynamic';
 export async function POST(req: Request) {
   try {
     const session = await auth();
-    if (!session?.user?.email) {
+    if (!session?.user?.email && !session?.user?.id) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+    }
+
+    let userId = session.user.id;
+    if (!userId && session.user.email) {
+      const u = await prisma.user.findFirst({
+        where: { email: { equals: session.user.email.trim(), mode: 'insensitive' } },
+        select: { id: true, role: true }
+      });
+      if (u?.role === 'REFERIDOR') {
+        return NextResponse.json({ error: 'No autorizado' }, { status: 403 });
+      }
+      if (u) userId = u.id;
     }
 
     const formData = await req.formData();
@@ -20,19 +32,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Faltan parámetros requeridos (file, conversationId)' }, { status: 400 });
     }
 
-    const token = process.env.BLOB_READ_WRITE_TOKEN || 'vercel_blob_rw_lXYhGKKGWTXJIQp0_j4iwqKaJJEy88BVAadlj42H1HNYn92';
-    const filename = `recordings/${conversationId}.webm`;
+    const token = process.env.BLOB_READ_WRITE_TOKEN;
+    if (!token) {
+      return NextResponse.json({ error: 'Configuración de almacenamiento incompleta (BLOB_READ_WRITE_TOKEN)' }, { status: 500 });
+    }
+
+    const safeConvId = conversationId.replace(/[^a-zA-Z0-9_-]/g, '');
+    const filename = `recordings/${safeConvId}.webm`;
 
     const blob = await put(filename, file, {
       access: 'public',
       token
     });
 
-    console.log(`[Upload Recording] Call recording uploaded to Vercel Blob: ${blob.url} (convId: ${conversationId})`);
+    console.log(`[Upload Recording] Call recording uploaded to Vercel Blob: ${blob.url} (convId: ${safeConvId})`);
 
-    // Update RoleplayCall in DB if already created
+    // Update RoleplayCall in DB scoped to the authenticated user
     await prisma.roleplayCall.updateMany({
-      where: { conversationId },
+      where: userId ? { conversationId, userId } : { conversationId },
       data: { callAudioUrl: blob.url }
     });
 

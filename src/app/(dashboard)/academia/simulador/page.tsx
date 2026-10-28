@@ -7,7 +7,7 @@ import { LEVELS_CONFIG, DEFAULT_BENEFITS } from "@/lib/roleplay/gamification";
 import { BuySimulatorMinutesButton } from "@/components/roleplay/BuySimulatorMinutesButton";
 
 export const metadata = {
-  title: "Hub del Simulador IA | AACOM Seguros",
+  title: "Hub del Simulador IA | AACOMSoft",
   description: "Entrenamiento gamificado de ventas con inteligencia artificial."
 };
 
@@ -43,6 +43,10 @@ export default async function SimuladorHubPage() {
     redirect("/login");
   }
 
+  if (dbUser.role === 'REFERIDOR') {
+    redirect("/academia/videos");
+  }
+
   // Permisos Super Admin
   const isSuperAdmin = dbUser.role === 'SUPER_ADMIN';
 
@@ -55,7 +59,7 @@ export default async function SimuladorHubPage() {
         <div className="space-y-2">
           <h2 className="text-xl font-bold text-white">Módulo Desactivado</h2>
           <p className="text-xs text-slate-400 leading-relaxed">
-            El <strong>Academia PRO</strong> ha sido desactivado para tu agencia por la administración.
+            El <strong>Academia PRO</strong> ha sido desactivado para tu agencia por la administración de AACOMSoft.
           </p>
         </div>
         <div className="pt-2">
@@ -246,7 +250,7 @@ export default async function SimuladorHubPage() {
             </div>
           </div>
 
-                    <div className="flex justify-end">
+          <div className="flex justify-end">
             <Link href="/academia/simulador/insignias" className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-amber-100 hover:bg-amber-200 text-amber-700 font-bold text-sm transition-colors border border-amber-200">
               <Award className="w-5 h-5" /> Ver Álbum de Insignias
             </Link>

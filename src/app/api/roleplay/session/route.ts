@@ -34,7 +34,7 @@ export async function POST(req: Request) {
 
     const session = await auth();
     if (!session?.user?.id && !session?.user?.email) {
-      return NextResponse.json({ error: 'No autorizado. Inicia sesión en AACOM.' }, { status: 401 });
+      return NextResponse.json({ error: 'No autorizado. Inicia sesión en AACOMSoft.' }, { status: 401 });
     }
 
     // Resolve user ID (case-insensitive email fallback)
@@ -54,6 +54,10 @@ export async function POST(req: Request) {
       where: { id: userId },
       include: { agency: true }
     });
+
+    if (userWithAgency?.role === 'REFERIDOR') {
+      return NextResponse.json({ error: 'El simulador de voz es exclusivo para agentes y promotores.' }, { status: 403 });
+    }
 
     if (userWithAgency?.role !== 'SUPER_ADMIN' && userWithAgency?.agency && userWithAgency.agency.allowRoleplaySimulator === false) {
       return NextResponse.json({ error: 'El simulador de prospección telefónica no está habilitado para tu agencia.' }, { status: 403 });
@@ -241,7 +245,7 @@ export async function POST(req: Request) {
       effectiveEngine = 'ELEVENLABS';
     }
 
-    // 2. Control de saldo de minutos para llamadas con bolsa de AACOM
+    // 2. Control de saldo de minutos para llamadas con bolsa de AACOMSoft
     const agencyBalance = userWithAgency?.agency?.voiceSecondsBalance || 0;
     const userBalance = userWithAgency?.voiceSecondsBalance || 0;
     const isSuperAdmin = userWithAgency?.role === 'SUPER_ADMIN';
@@ -320,7 +324,8 @@ export async function POST(req: Request) {
                     first_message: true,
                     language: true,
                     prompt: {
-                      prompt: true
+                      prompt: true,
+                      llm: true
                     }
                   }
                 }
@@ -332,7 +337,9 @@ export async function POST(req: Request) {
               },
               agent: {
                 prompt: {
-                  prompt: scenario.systemPrompt
+                  prompt: scenario.systemPrompt,
+                  llm: 'gemini-3.8-flash',
+                  temperature: 0.35
                 },
                 first_message: scenario.firstMessage,
                 language: 'es',
@@ -362,7 +369,11 @@ export async function POST(req: Request) {
             body: JSON.stringify({
               conversation_config: {
                 agent: {
-                  prompt: { prompt: scenario.systemPrompt },
+                  prompt: {
+                    prompt: scenario.systemPrompt,
+                    llm: 'gemini-3.8-flash',
+                    temperature: 0.35
+                  },
                   first_message: scenario.firstMessage,
                   language: 'es'
                 },
@@ -419,7 +430,7 @@ export async function POST(req: Request) {
       stats: {
         xp: stats.xp,
         level: stats.level,
-        levelInfo: LEVELS_CONFIG[stats.level],
+        levelInfo: LEVELS_CONFIG[stats.level] || LEVELS_CONFIG[5],
         streak: stats.streak,
         todayXp: stats.todayXp,
         dailyCap: DAILY_XP_CAP,

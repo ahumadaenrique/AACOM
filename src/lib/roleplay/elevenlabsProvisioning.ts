@@ -38,7 +38,7 @@ export async function validateElevenLabsKey(apiKey: string): Promise<ElevenLabsK
 
 /**
  * Garantiza que la cuenta de ElevenLabs de la agencia tenga un agente Conversational AI
- * listo y configurado ("AACOM Academia PRO").
+ * listo y configurado ("AACOMSoft Academia PRO").
  * Si no existe, lo crea automáticamente vía API de ElevenLabs con cero intervención manual.
  */
 export async function getOrProvisionAgencyAgent(agencyId: string, apiKey: string, agencyName = 'AACOM Seguros'): Promise<string | null> {
@@ -90,7 +90,8 @@ export async function getOrProvisionAgencyAgent(agencyId: string, apiKey: string
                 first_message: true,
                 language: true,
                 prompt: {
-                  prompt: true
+                  prompt: true,
+                  llm: true
                 }
               }
             }
@@ -99,7 +100,9 @@ export async function getOrProvisionAgencyAgent(agencyId: string, apiKey: string
         conversation_config: {
           agent: {
             prompt: {
-              prompt: `Eres un prospecto mexicano participando en una sesión interactiva de entrenamiento comercial de ${agencyName}.`
+              prompt: `Eres un prospecto mexicano participando en una sesión interactiva de entrenamiento comercial de ${agencyName}.`,
+              llm: 'gemini-3.8-flash',
+              temperature: 0.35
             },
             first_message: 'Hola, buenas tardes.',
             language: 'es'

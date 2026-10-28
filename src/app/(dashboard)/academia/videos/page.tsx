@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "E-Learning | Videos de Capacitación",
+  title: "E-Learning | Videos de Capacitación | AACOMSoft",
   description: "Videos de capacitación y mejores prácticas para agentes y promotores.",
 };
 
@@ -27,10 +27,10 @@ export default async function AcademyVideosPage() {
               Módulo No Habilitado
             </h1>
             <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed">
-              El módulo de <strong>E-Learning</strong> está oculto o no ha sido habilitada aún para tu promotoría ({data.agency?.name || "tu agencia"}).
+              El módulo de <strong>E-Learning</strong> está oculto o no ha sido habilitado aún para tu promotoría ({data.agency?.name || "tu agencia"}).
             </p>
             <p className="text-xs text-slate-400">
-              Por favor solicita a la Dirección General de AACOM que active este módulo para comenzar a disfrutar de los videos de capacitación.
+              Por favor solicita a la Dirección General de AACOMSoft que active este módulo para comenzar a disfrutar de los videos de capacitación.
             </p>
           </div>
           <Button asChild className="rounded-xl w-full bg-slate-800 hover:bg-slate-700 text-white font-bold">
