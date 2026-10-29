@@ -38,10 +38,14 @@ export async function POST(req: Request) {
     }
 
     const safeConvId = conversationId.replace(/[^a-zA-Z0-9_-]/g, '');
-    const filename = `recordings/${safeConvId}.webm`;
+    const isMp4 = (file.type && file.type.toLowerCase().includes('mp4')) || ((file as any).name && String((file as any).name).endsWith('.mp4'));
+    const ext = isMp4 ? 'mp4' : 'webm';
+    const contentType = file.type || (isMp4 ? 'audio/mp4' : 'audio/webm');
+    const filename = `recordings/${safeConvId}.${ext}`;
 
     const blob = await put(filename, file, {
       access: 'public',
+      contentType,
       token
     });
 
@@ -58,7 +62,7 @@ export async function POST(req: Request) {
       url: blob.url
     });
   } catch (err: any) {
-    console.error('[Upload Recording Error]', err);
-    return NextResponse.json({ error: err.message || 'Error al subir grabación' }, { status: 500 });
+    console.error('[Upload Recording Error]:', err);
+    return NextResponse.json({ error: err?.message || 'Error subiendo grabación' }, { status: 500 });
   }
 }

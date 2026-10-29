@@ -1,7 +1,7 @@
 // app.js: Cédula B Simulator & E-Learning Platform Lógica
 
 window.onerror = function(message, source, lineno, colno, error) {
-    alert("Runtime Error: " + message + "\nLine: " + lineno + "\nSource: " + source);
+    console.warn("[Simulator Runtime Notice]", message, "Line:", lineno, "Source:", source);
     return false;
 };
 
@@ -518,16 +518,35 @@ function switchRole(role) {
         roleEl.innerText = "Agente en Capacitación";
         avatarEl.innerText = activeAgent ? activeAgent.initials : "PR";
         
-        // Hide role switcher, show logout (hides promoter navigation features from the agent view)
-        if (roleSwitcher) roleSwitcher.style.display = "none";
+        // Keep role switcher visible if the logged-in user is a promoter/admin so they can return to Promoter view
+        const isSuperAdminEmail = currentUser?.email === "enrique.ahumada@aacommx.com" || currentUser?.email === "desarrollo.agencias@gmail.com";
+        const isPromoterAccount = Boolean(currentUser && (currentUser.email?.toLowerCase().includes("promotor") || isSuperAdminEmail || currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN" || currentUser.role === "PROMOTER" || currentUser.role === "PROMOTOR"));
+        if (roleSwitcher) roleSwitcher.style.display = isPromoterAccount ? "flex" : "none";
         if (logoutBtn) logoutBtn.style.display = "flex";
         
+        if (!activeAgent) {
+            activeAgent = {
+                id: 99,
+                name: currentUser?.name || "Mi Cuenta",
+                initials: "AG",
+                email: currentUser?.email || "",
+                status: "active",
+                studyTime: 0,
+                remainingDays: isPromoterAccount ? 30 : 0,
+                attempts: [],
+                timesPerModule: {},
+                moduleScores: {},
+                studyProgress: {}
+            };
+        }
+
         // Update agent metrics UI
         document.getElementById("agent-active-badge").innerText = `Acceso Activo (${activeAgent.remainingDays} días restantes)`;
         document.getElementById("agent-active-badge").className = activeAgent.remainingDays > 0 ? "status-badge active" : "status-badge inactive";
-        document.getElementById("agent-total-study-time").innerText = `${Math.floor(activeAgent.studyTime / 60)}h ${Math.round(activeAgent.studyTime % 60)}m`;
+        document.getElementById("agent-total-study-time").innerText = `${Math.floor((activeAgent.studyTime || 0) / 60)}h ${Math.round((activeAgent.studyTime || 0) % 60)}m`;
         
-        const lastAttempt = activeAgent.attempts[activeAgent.attempts.length - 1];
+        const attemptsArr = Array.isArray(activeAgent.attempts) ? activeAgent.attempts : [];
+        const lastAttempt = attemptsArr[attemptsArr.length - 1];
         document.getElementById("agent-last-score").innerText = lastAttempt ? `${lastAttempt.score}%` : "N/A";
         
         updateAgentDashboard();
@@ -1806,14 +1825,32 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Auto-close menu when navigating
-const originalSwitchTab = switchTab;
-switchTab = function(tabId) {
-    originalSwitchTab(tabId);
-    if (document.body.classList.contains('menu-open')) {
-        toggleMobileMenu();
+// Auto-close menu when navigating or starting study/simulator modes on mobile
+function closeMobileMenuIfOpen() {
+    const sidebar = document.getElementById('main-sidebar');
+    if (document.body.classList.contains('menu-open') || (sidebar && sidebar.classList.contains('open'))) {
+        if (sidebar) sidebar.classList.remove('open');
+        document.body.classList.remove('menu-open');
     }
 }
+
+const originalSwitchTab = switchTab;
+switchTab = function(tabId) {
+    closeMobileMenuIfOpen();
+    originalSwitchTab(tabId);
+};
+
+const originalStartStudyMode = startStudyMode;
+startStudyMode = function() {
+    closeMobileMenuIfOpen();
+    originalStartStudyMode();
+};
+
+const originalStartSimulatorMode = startSimulatorMode;
+startSimulatorMode = function() {
+    closeMobileMenuIfOpen();
+    originalStartSimulatorMode();
+};
 
 function showTrialBlockedScreen() {
     const overlay = document.createElement('div');

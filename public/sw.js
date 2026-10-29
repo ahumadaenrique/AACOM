@@ -1,4 +1,4 @@
-// Minimal Service Worker for AACOM PWA installability - v1.0.2
+// Minimal Service Worker for AACOMSoft PWA installability - v1.0.3
 self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
@@ -8,18 +8,26 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Bypass service worker for AudioWorklet, audio streams, and worklet assets
-  // to prevent WebKit / Safari fetch cancellation bugs
+  const { request } = event;
+  // Bypass service worker for non-GET requests, HTML/navigation requests (prevents iOS WebKit redirect errors),
+  // Next.js RSC/build chunks, API routes, cross-origin requests, and AudioWorklet/audio streams.
   if (
-    event.request.destination === 'audioworklet' ||
-    event.request.destination === 'audio' ||
-    event.request.url.includes('/worklets/') ||
-    event.request.url.includes('libsamplerate') ||
-    event.request.url.includes('/api/')
+    request.method !== 'GET' ||
+    request.mode === 'navigate' ||
+    request.headers.get('RSC') === '1' ||
+    !request.url.startsWith(self.location.origin) ||
+    request.destination === 'audioworklet' ||
+    request.destination === 'audio' ||
+    request.url.includes('/worklets/') ||
+    request.url.includes('libsamplerate') ||
+    request.url.includes('/api/') ||
+    request.url.includes('/_next/')
   ) {
     return;
   }
-  event.respondWith(fetch(event.request));
+  event.respondWith(
+    fetch(request).catch(() => caches.match(request))
+  );
 });
 
 // --- Push Notifications ---
@@ -29,8 +37,8 @@ self.addEventListener('push', function (event) {
       const data = event.data.json();
       const options = {
         body: data.body,
-        icon: data.icon || '/logo.png',
-        badge: '/logo.png',
+        icon: data.icon || '/icons/manifest-icon-192.maskable.png',
+        badge: '/icons/manifest-icon-192.maskable.png',
         vibrate: [100, 50, 100],
         data: {
           url: data.url || '/'

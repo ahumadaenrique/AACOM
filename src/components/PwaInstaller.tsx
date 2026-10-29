@@ -3,25 +3,25 @@
 import React, { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { 
-  Upload, 
   X, 
   PlusSquare, 
-  MessageSquare,
   Sparkles,
-  Smartphone
+  Smartphone,
+  Compass
 } from "lucide-react"
 
-export default function PwaInstaller({ agencyName = "AACOMSOFT" }: { agencyName?: string }) {
+export default function PwaInstaller({ agencyName = "AACOMSoft" }: { agencyName?: string }) {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null)
   const [showPrompt, setShowPrompt] = useState<boolean>(false)
   const [isIOS, setIsIOS] = useState<boolean>(false)
+  const [isIOSInApp, setIsIOSInApp] = useState<boolean>(false)
   const [showIOSGuide, setShowIOSGuide] = useState<boolean>(false)
 
   useEffect(() => {
     // 1. Register the Service Worker
     if (typeof window !== "undefined" && "serviceWorker" in navigator) {
       navigator.serviceWorker.register("/sw.js")
-        .then(reg => {
+        .then(() => {
           // SW registered successfully
         })
         .catch(err => {
@@ -32,7 +32,7 @@ export default function PwaInstaller({ agencyName = "AACOMSOFT" }: { agencyName?
     // 2. Detect if already installed (standalone mode)
     const isStandalone = () => {
       const nav = window.navigator as any
-      return nav.standalone || window.matchMedia("(display-mode: standalone)").matches
+      return Boolean(nav.standalone) || window.matchMedia("(display-mode: standalone)").matches
     }
 
     if (isStandalone()) {
@@ -59,22 +59,22 @@ export default function PwaInstaller({ agencyName = "AACOMSOFT" }: { agencyName?
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt)
 
-    // 5. iOS Safari Detection
+    // 5. iOS & iPadOS 13+ Detection (including Safari, Chrome CriOS, and WhatsApp/In-App browsers)
     const isIOSDevice = () => {
-      const ua = window.navigator.userAgent
-      const ipad = !!ua.match(/iPad/i)
-      const iphone = !!ua.match(/iPhone/i)
-      const ipod = !!ua.match(/iPod/i)
-      return (ipad || iphone || ipod) && !(window as any).MSStream
+      const ua = window.navigator.userAgent || ""
+      const isIPhoneOrIPod = /iPad|iPhone|iPod/i.test(ua) && !(window as any).MSStream
+      const isIPadOS13Plus = window.navigator.platform === "MacIntel" && window.navigator.maxTouchPoints > 1
+      return isIPhoneOrIPod || isIPadOS13Plus
     }
 
-    const isSafariBrowser = () => {
-      const ua = window.navigator.userAgent
-      return ua.includes("Safari") && !ua.includes("CriOS") && !ua.includes("FxiOS")
+    const isInAppWebView = () => {
+      const ua = window.navigator.userAgent || ""
+      return /WhatsApp|FBAN|FBAV|Instagram|Line|MicroMessenger/i.test(ua)
     }
 
-    if (isIOSDevice() && isSafariBrowser()) {
+    if (isIOSDevice()) {
       setIsIOS(true)
+      setIsIOSInApp(isInAppWebView())
       setShowPrompt(true)
     }
 
@@ -122,14 +122,15 @@ export default function PwaInstaller({ agencyName = "AACOMSOFT" }: { agencyName?
                   <Sparkles className="h-3.5 w-3.5 text-yellow-400" />
                   Instalar Aplicación
                 </h4>
-                <p className="text-[13px] text-muted-foreground mt-1">
-                  Agrega "{agencyName}" a tu pantalla de inicio para un acceso rápido y notificaciones.
+                <p className="text-[13px] text-teal-100/90 mt-1">
+                  Agrega &ldquo;{agencyName}&rdquo; a tu pantalla de inicio para un acceso rápido y pantalla completa.
                 </p>
               </div>
             </div>
             <button 
               onClick={handleDismiss}
               className="p-1 text-teal-300 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
+              aria-label="Cerrar aviso de instalación"
             >
               <X className="h-4 w-4" />
             </button>
@@ -156,16 +157,19 @@ export default function PwaInstaller({ agencyName = "AACOMSOFT" }: { agencyName?
         </div>
       </div>
 
-      {/* iOS Safari Guide Modal */}
+      {/* iOS Safari / Chrome Installation Guide Modal */}
       {showIOSGuide && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+        <div
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-in fade-in duration-300"
+          onClick={() => setShowIOSGuide(false)}
+        >
           <div 
             className="bg-white rounded-2xl w-full max-w-sm p-6 shadow-2xl border border-slate-100 flex flex-col gap-5 text-slate-800 animate-in zoom-in-95 duration-300"
             onClick={e => e.stopPropagation()}
           >
             <div className="flex justify-between items-center border-b pb-3.5">
               <h3 className="font-black text-xs uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                <Smartphone className="h-4.5 w-4.5 text-teal-600 animate-pulse" />
+                <Smartphone className="h-4 w-4 text-teal-600 animate-pulse" />
                 Instalar en tu iPhone / iPad
               </h3>
               <button 
@@ -176,6 +180,15 @@ export default function PwaInstaller({ agencyName = "AACOMSOFT" }: { agencyName?
               </button>
             </div>
 
+            {isIOSInApp && (
+              <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 font-semibold flex items-start gap-2">
+                <Compass className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  Estás abriendo el enlace desde un navegador interno (ej. WhatsApp). Primero toca el ícono de <strong>Abrir en Safari</strong> abajo a la derecha.
+                </div>
+              </div>
+            )}
+
             <div className="flex flex-col gap-4 text-xs font-semibold text-slate-600">
               
               <div className="flex gap-3.5 items-start">
@@ -183,9 +196,9 @@ export default function PwaInstaller({ agencyName = "AACOMSOFT" }: { agencyName?
                   1
                 </div>
                 <div className="flex flex-col gap-1">
-                  <p>Presiona el botón de **Compartir** en Safari.</p>
+                  <p>Presiona el botón de <strong className="text-slate-900">Compartir</strong> en la barra de tu navegador (Safari o Chrome).</p>
                   <p className="text-[10px] text-slate-400 font-medium">
-                    (Ubicado en la barra de navegación inferior en tu celular).
+                    (En Safari está en la barra inferior; en Chrome en la esquina superior derecha).
                   </p>
                   {/* Visual Share Icon */}
                   <div className="inline-flex items-center gap-1.5 self-start px-2 py-1 bg-slate-100 rounded-md border text-[10px] font-bold text-slate-700 mt-1">
@@ -202,11 +215,11 @@ export default function PwaInstaller({ agencyName = "AACOMSOFT" }: { agencyName?
                   2
                 </div>
                 <div className="flex flex-col gap-1">
-                  <p>Desplázate hacia abajo y selecciona **"Agregar al inicio"**.</p>
+                  <p>Desplázate hacia abajo en el menú y selecciona <strong className="text-slate-900">&ldquo;Agregar a pantalla de inicio&rdquo;</strong>.</p>
                   {/* Visual Add to Home Screen Icon */}
                   <div className="inline-flex items-center gap-1.5 self-start px-2 py-1 bg-slate-100 rounded-md border text-[10px] font-bold text-slate-700 mt-1">
                     <PlusSquare className="h-3.5 w-3.5 text-slate-800" />
-                    Agregar al inicio
+                    Agregar a pantalla de inicio
                   </div>
                 </div>
               </div>
@@ -216,7 +229,7 @@ export default function PwaInstaller({ agencyName = "AACOMSOFT" }: { agencyName?
                   3
                 </div>
                 <p className="mt-1">
-                  Presiona **"Agregar"** en la esquina superior derecha del celular para confirmar la instalación.
+                  Presiona <strong className="text-slate-900">&ldquo;Agregar&rdquo;</strong> en la esquina superior derecha para instalar el ícono en tu celular.
                 </p>
               </div>
 

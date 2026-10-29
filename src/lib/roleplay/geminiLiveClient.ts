@@ -86,7 +86,15 @@ export class GeminiLiveSession {
           this.recordingDest = this.audioCtx.createMediaStreamDestination();
           this.masterGain.connect(this.recordingDest);
 
-          if (navigator.mediaDevices?.getUserMedia) {
+          const isIOS = typeof navigator !== 'undefined' && (
+            /iPad|iPhone|iPod/i.test(navigator.userAgent || '') ||
+            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+          );
+          const hasWebSpeech = typeof window !== 'undefined' && Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+
+          // On iOS Safari, opening getUserMedia alongside webkitSpeechRecognition causes hardware mic contention.
+          // Only attach a second getUserMedia stream to the recorder on non-iOS or when WebSpeech is not used.
+          if (navigator.mediaDevices?.getUserMedia && !(isIOS && hasWebSpeech)) {
             try {
               this.recordingMicStream = await navigator.mediaDevices.getUserMedia({
                 audio: {

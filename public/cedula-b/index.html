@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Cédula B CNSF - E-Learning & Simulador</title>
     <link rel="stylesheet" href="style.css">
     <!-- Chart.js CDN for detailed promoter charts -->
@@ -99,9 +99,14 @@
             
             <!-- ================= PROMOTER DASHBOARD ================= -->
             <section id="panel-promoter-dash" class="tab-panel active">
-                <div class="card-title">
+                <div class="card-title" style="flex-wrap: wrap; gap: 12px;">
                     <h2>Panel de Control del Promotor</h2>
-                    <span class="module-tag" style="background: rgba(20, 184, 166, 0.15); color: #2dd4bf; border-color: rgba(20, 184, 166, 0.3);">Trimestre Q2 Activo</span>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                        <button class="btn-primary" onclick="switchRole('agent')" style="padding: 8px 14px; font-size: 13px;">
+                            Ir a Modo Estudio / Simulador →
+                        </button>
+                        <span class="module-tag" style="background: rgba(20, 184, 166, 0.15); color: #2dd4bf; border-color: rgba(20, 184, 166, 0.3);">Trimestre Q2 Activo</span>
+                    </div>
                 </div>
 
                 <!-- Token and Package Management -->
@@ -254,6 +259,22 @@
                 </div>
 
                 <div id="agent-restricted-banner-container"></div>
+
+                <!-- Quick Launch Bar for Mobile & Desktop -->
+                <div class="glass-card" style="margin-bottom: 20px; padding: 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; border-color: rgba(139, 92, 246, 0.35); background: linear-gradient(135deg, rgba(88, 28, 135, 0.25), rgba(20, 184, 166, 0.12));">
+                    <div>
+                        <div style="font-size: 15px; font-weight: 700; color: #fff;">Acceso Rápido de Entrenamiento</div>
+                        <div style="font-size: 12px; color: var(--text-secondary);">Inicia directamente una sesión de estudio guiado o presenta un examen simulador oficial de 80 reactivos.</div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        <button class="btn-secondary" onclick="startStudyMode()" style="border-color: rgba(20, 184, 166, 0.4); color: #2dd4bf;">
+                            📚 Modo Estudio
+                        </button>
+                        <button class="btn-primary" onclick="startSimulatorMode()">
+                            📝 Iniciar Simulador CNSF
+                        </button>
+                    </div>
+                </div>
 
                 <div class="grid-stats">
                     <div class="glass-card">

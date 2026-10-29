@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-// import { Inter } from "next/font/google"; // Can't easily import fonts without next build system verifying? It should be fine.
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Analytics } from "@vercel/analytics/react";
@@ -7,34 +6,44 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { FooterWrapper } from "@/components/FooterWrapper";
 import { StitchPreviewBanner } from "@/components/StitchPreviewBanner";
 import { auth } from "@/auth";
-
-// const inter = Inter({ subsets: ["latin"] });
+import { headers } from "next/headers";
+import { prisma } from "@/lib/prisma";
 
 export async function generateMetadata(): Promise<Metadata> {
-    const { headers } = await import("next/headers");
-    const { prisma } = await import("@/lib/prisma");
     const headersList = headers();
     const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';
-    let agency = await prisma.agency.findUnique({ where: { slug } });
-    if (!agency) {
+    let agency = null;
+    try {
         agency = await prisma.agency.findUnique({ where: { slug } });
+    } catch (e) {
+        // Fallback during static generation or DB blip
     }
-    const agencyName = agency?.name || "AACOMSOFT";
+    const agencyName = agency?.name || "AACOMSoft";
 
     return {
-        title: "aacomsoft · Plataforma de Gestión Integral para Promotorías de Seguros",
+        title: "AACOMSoft · Plataforma de Gestión Integral para Promotorías de Seguros",
         description: "Una promotoría eficiente con los roles necesarios en una única plataforma: dirección, reclutamiento, coaching y agentes. Actividad por puntos, Academia CNSF Cédula A y B, talleres TIPS, diagnóstico ADN, cartera e IA.",
+        manifest: "/manifest.webmanifest",
+        icons: {
+            icon: [
+                { url: "/icons/manifest-icon-192.maskable.png", sizes: "192x192", type: "image/png" },
+                { url: "/icons/manifest-icon-512.maskable.png", sizes: "512x512", type: "image/png" },
+            ],
+            apple: [
+                { url: "/icons/apple-icon-180.png", sizes: "180x180", type: "image/png" },
+            ],
+        },
         openGraph: {
-            title: "aacomsoft · Plataforma de Gestión Integral para Promotorías de Seguros",
+            title: "AACOMSoft · Plataforma de Gestión Integral para Promotorías de Seguros",
             description: "Una promotoría eficiente con los roles necesarios en una única plataforma: dirección, reclutamiento, coaching y agentes. Actividad por puntos, Academia CNSF Cédula A y B, talleres TIPS, diagnóstico ADN, cartera e IA.",
             url: "https://www.aacomsoft.com",
-            siteName: "aacomsoft",
+            siteName: "AACOMSoft",
             locale: "es_MX",
             type: "website",
         },
         twitter: {
             card: "summary_large_image",
-            title: "aacomsoft · Plataforma de Gestión Integral para Promotorías de Seguros",
+            title: "AACOMSoft · Plataforma de Gestión Integral para Promotorías de Seguros",
             description: "Una promotoría eficiente con los roles necesarios en una única plataforma: dirección, reclutamiento, coaching y agentes. Actividad por puntos, Academia CNSF Cédula A y B, talleres TIPS, diagnóstico ADN, cartera e IA.",
         },
         verification: {
@@ -76,6 +85,9 @@ export async function generateMetadata(): Promise<Metadata> {
                 { url: '/icons/apple-splash-640-1136.jpg', media: '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)' },
                 { url: '/icons/apple-splash-1136-640.jpg', media: '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)' }
             ]
+        },
+        formatDetection: {
+            telephone: false,
         }
     };
 }
@@ -85,11 +97,9 @@ export const viewport: Viewport = {
     width: "device-width",
     initialScale: 1,
     maximumScale: 1,
-    userScalable: false
+    userScalable: false,
+    viewportFit: "cover"
 };
-
-import { headers } from "next/headers";
-import { prisma } from "@/lib/prisma";
 
 function hexToHsl(hex: string) {
     hex = hex.replace(/#/g, '');
@@ -139,9 +149,6 @@ export default async function RootLayout({
         const headersList = headers();
         const slug = headersList.get('x-agency-slug') || process.env.NEXT_PUBLIC_DEFAULT_AGENCY_SLUG || 'aacom';
         agency = await prisma.agency.findUnique({ where: { slug } });
-        if (!agency) {
-            agency = await prisma.agency.findUnique({ where: { slug } });
-        }
     }
 
     let agencyColor = null;

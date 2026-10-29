@@ -896,15 +896,47 @@ body {
 .close-sidebar-btn::after { transform: translate(-50%, -50%) rotate(-45deg); }
 
 @media (max-width: 768px) {
+    body {
+        height: 100dvh;
+    }
     .app-container {
         flex-direction: column;
+        height: 100dvh;
     }
     .mobile-header {
         display: flex;
+        padding-top: calc(12px + env(safe-area-inset-top, 0px));
     }
     .main-content {
-        height: calc(100vh - 70px);
+        height: calc(100dvh - 70px);
         padding: 16px;
+        padding-bottom: calc(36px + env(safe-area-inset-bottom, 0px));
+        -webkit-overflow-scrolling: touch;
+    }
+    .token-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+    .card-title {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .study-header {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .study-footer-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+    }
+    .audio-controls {
+        flex-wrap: wrap;
+    }
+    .simulator-header {
+        flex-wrap: wrap;
+        gap: 12px;
     }
     .sidebar {
         position: fixed;

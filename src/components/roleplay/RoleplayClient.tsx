@@ -204,8 +204,18 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
       if (AudioCtx) audioCtxRef.current = new AudioCtx();
     }
-    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
+    if (audioCtxRef.current) {
+      if (audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume().catch(() => {});
+      }
+      // iOS Safari / WebKit unlock: play a 1-sample silent buffer inside the user gesture
+      try {
+        const silentBuf = audioCtxRef.current.createBuffer(1, 1, 22050);
+        const src = audioCtxRef.current.createBufferSource();
+        src.buffer = silentBuf;
+        src.connect(audioCtxRef.current.destination);
+        src.start(0);
+      } catch (_) {}
     }
   };
 
@@ -509,6 +519,8 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       transcriptRef.current = [];
       setTranscript([]);
       setCallDuration(0);
+      // Unlock WebAudio synchronously on the user's tap BEFORE any async fetch (critical for iOS Safari / PWA)
+      initAudioCtx();
       if (isADN) {
         setCallStatusText(`Ingresando a la sala de diagnóstico con ${scenario.prospecto.nombre}...`);
       } else if (isObjeciones) {
@@ -518,11 +530,11 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
         playRing();
       }
 
-      // Si el token de sesión ya fue consumido en un intento previo o tiene más de 30s, refrescarlo conservando al prospecto en pantalla
+      // Si el token de sesión ya fue consumido en un intento previo o tiene más de 5 min (300s), refrescarlo conservando al prospecto en pantalla
       let activeSignedUrl = signedUrl;
       let activeWsUrl = wsUrl;
       let activeScenario = scenario;
-      const needsFreshUrl = isAutoRetry || sessionUrlConsumedRef.current || (Date.now() - sessionUrlCreatedAtRef.current > 30000);
+      const needsFreshUrl = isAutoRetry || sessionUrlConsumedRef.current || (Date.now() - sessionUrlCreatedAtRef.current > 300000);
       if (needsFreshUrl && scenario) {
         try {
           const refreshRes = await fetch('/api/roleplay/session', {
@@ -969,8 +981,9 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
     if (recordingBlob && recordingBlob.size > 0 && conversationIdRef.current) {
       try {
         setCallStatusText('Guardando grabación de audio y evaluando...');
+        const ext = recordingBlob.type && recordingBlob.type.toLowerCase().includes('mp4') ? 'mp4' : 'webm';
         const formData = new FormData();
-        formData.append('file', recordingBlob, `${conversationIdRef.current}.webm`);
+        formData.append('file', recordingBlob, `${conversationIdRef.current}.${ext}`);
         formData.append('conversationId', conversationIdRef.current);
 
         const upRes = await fetch('/api/roleplay/upload-recording', {
