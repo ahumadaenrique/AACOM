@@ -195,7 +195,7 @@ export function CorporateEmailUpsellBanner({
               </span>
               . Incluye tu dominio oficial renovado anualmente y hasta{" "}
               <strong className="text-sky-300">20 buzones de 10 GB</strong> integrados
-              directamente en <strong>AACOMSoft</strong>:
+              directamente en <strong>aacomsoft</strong>:
             </p>
 
             {/* Lista de correos personalizados con los agentes reales de la promotoría */}

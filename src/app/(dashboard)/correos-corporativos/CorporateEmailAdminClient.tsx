@@ -208,7 +208,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
       });
       setStatusBanner(
         res.routedViaForwarder
-          ? `📨 ¡Prueba de Puente de Cartera exitosa! Un asegurado escribió a ${res.originalRecipient} y Titan/AACOMSoft lo entregó automáticamente en la bandeja de ${res.deliveredTo}.`
+          ? `📨 ¡Prueba de Puente de Cartera exitosa! Un asegurado escribió a ${res.originalRecipient} y Titan/aacomsoft lo entregó automáticamente en la bandeja de ${res.deliveredTo}.`
           : `📨 Correo de prueba de asegurado entregado en ${res.deliveredTo}. Ábrelo en "📧 Mi Correo".`
       );
     } catch (err: any) {
@@ -333,7 +333,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-100 text-sky-800 text-xs font-bold mb-2">
-            <Mail className="w-3.5 h-3.5" /> Identidad Corporativa Promotoría AACOMSoft
+            <Mail className="w-3.5 h-3.5" /> Identidad Corporativa Promotoría aacomsoft
           </div>
           <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
             Dominio Oficial y 20 Buzones Corporativos
@@ -421,7 +421,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-black flex items-center gap-2 text-slate-800">
                   <Smartphone className="w-4 h-4 text-indigo-600" />
-                  2. Integrado en AACOMSoft + Móvil
+                  2. Integrado en aacomsoft + Móvil
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-xs text-slate-600 leading-relaxed">
@@ -604,7 +604,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                   Buzones Corporativos Asignados ({usedSeats} / {maxSeats})
                 </CardTitle>
                 <CardDescription className="text-xs">
-                  Vinculados al login de AACOMSoft con credenciales IMAP/SMTP cifradas en bóveda
+                  Vinculados al login de aacomsoft con credenciales IMAP/SMTP cifradas en bóveda
                   AES-256-GCM.
                 </CardDescription>
               </div>
@@ -625,7 +625,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                   <thead>
                     <tr className="bg-slate-50/50 border-b border-slate-100 text-left text-xs font-bold text-slate-500 uppercase">
                       <th className="py-3.5 px-4">Buzón Corporativo</th>
-                      <th className="py-3.5 px-4">Agente / Titular en AACOMSoft</th>
+                      <th className="py-3.5 px-4">Agente / Titular en aacomsoft</th>
                       <th className="py-3.5 px-4">Almacenamiento (10 GB)</th>
                       <th className="py-3.5 px-4">Estado</th>
                       <th className="py-3.5 px-4 text-right">Acciones de Administración</th>
@@ -923,7 +923,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
               {mailboxType === "AGENT" && (
                 <div className="space-y-1.5">
                   <Label className="text-xs font-bold">
-                    Selecciona al Agente de AACOMSoft
+                    Selecciona al Agente de aacomsoft
                   </Label>
                   <select
                     value={selectedAgentId}
@@ -988,7 +988,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                 className="bg-sky-600 hover:bg-sky-700 text-white font-bold"
               >
                 {creatingMailbox && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Crear Buzón y Vincular a AACOMSoft
+                Crear Buzón y Vincular a aacomsoft
               </Button>
             </DialogFooter>
           </form>

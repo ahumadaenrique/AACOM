@@ -343,9 +343,9 @@ export async function searchCustomDomainAction(query: string, targetAgencyId?: s
 }
 
 /**
- * Activa el Paquete Corporativo Promotoría AACOMSoft ($999 MXN/mes):
+ * Activa el Paquete Corporativo Promotoría aacomsoft ($999 MXN/mes):
  * - Realiza doble verificación en tiempo real (<500ms) de disponibilidad y tope mayorista <= $15 USD
- * - Registra el dominio con perfil WHOIS corporativo de AACOMSoft + Privacy Protection
+ * - Registra el dominio con perfil WHOIS corporativo de aacomsoft + Privacy Protection
  * - Crea la orden de Titan Email (20 asientos de 10 GB)
  * - Inyecta registros DNS MX, SPF, DKIM y DMARC
  * - Crea el primer buzón institucional direccion@<dominio> listo para usar
@@ -396,8 +396,8 @@ export async function activateCorporateEmailSubscriptionAction(params: {
             unit_amount: PACKAGE_MONTHLY_PRICE_MXN * 100,
             recurring: { interval: "month" },
             product_data: {
-              name: `Paquete Corporativo Promotoría AACOMSoft (${provisioned.domainName})`,
-              description: `Dominio oficial ${provisioned.domainName} + Hasta 20 buzones corporativos de 10 GB (Titan Email) integrados en AACOMSoft.`,
+              name: `Paquete Corporativo Promotoría aacomsoft (${provisioned.domainName})`,
+              description: `Dominio oficial ${provisioned.domainName} + Hasta 20 buzones corporativos de 10 GB (Titan Email) integrados en aacomsoft.`,
             },
           },
           quantity: 1,
@@ -499,13 +499,13 @@ export async function activateCorporateEmailSubscriptionAction(params: {
         mailboxId: createdMbx.id,
         folder: "INBOX",
         fromAddress: "soporte@aacomsoft.com",
-        fromName: "Identidad Corporativa AACOMSoft",
+        fromName: "Identidad Corporativa aacomsoft",
         toAddresses: defaultAdminEmail,
         subject: `🎉 ¡Bienvenido! Tu dominio ${provisioned.domainName} y tus 20 asientos Titan Email están activos`,
         snippet: `Los registros MX, SPF, DKIM y DMARC de ${provisioned.domainName} han sido configurados automáticamente.`,
         bodyHtml: `
           <div style="font-family: sans-serif; color: #1e293b; line-height: 1.6;">
-            <h2 style="color: #0284c7;">¡Tu Identidad Corporativa en AACOMSoft está lista!</h2>
+            <h2 style="color: #0284c7;">¡Tu Identidad Corporativa en aacomsoft está lista!</h2>
             <p>Hola <strong>${ctx.agency.name}</strong>,</p>
             <p>Tu dominio oficial <strong>${provisioned.domainName}</strong> ha sido registrado bajo custodia Zero-Touch con protección de privacidad WHOIS y conectado a tu bolsa de <strong>20 buzones de 10 GB</strong> en infraestructura Titan Email.</p>
             <ul>
@@ -516,7 +516,7 @@ export async function activateCorporateEmailSubscriptionAction(params: {
             <p>Desde el panel <strong>Dominios y 20 Correos</strong> puedes asignar asientos a tus agentes o liberar lugares cuando haya rotación sin perder los correos de tus asegurados.</p>
           </div>
         `,
-        bodyText: `¡Tu Identidad Corporativa en AACOMSoft está lista! Tu dominio ${provisioned.domainName} y tus 20 buzones de 10 GB están activos.`,
+        bodyText: `¡Tu Identidad Corporativa en aacomsoft está lista! Tu dominio ${provisioned.domainName} y tus 20 buzones de 10 GB están activos.`,
         isRead: false,
       },
     });
@@ -534,7 +534,7 @@ export async function activateCorporateEmailSubscriptionAction(params: {
 }
 
 /**
- * Crea un buzón corporativo (para un agente de AACOMSoft o departamental como siniestros@, atencion@)
+ * Crea un buzón corporativo (para un agente de aacomsoft o departamental como siniestros@, atencion@)
  */
 export async function createAgencyMailboxAction(params: {
   targetAgencyId?: string;
@@ -634,17 +634,17 @@ export async function createAgencyMailboxAction(params: {
       fromAddress: `direccion@${subscription.domainName}`,
       fromName: `Administración ${ctx.agency.name}`,
       toAddresses: fullEmail,
-      subject: `Bienvenido a tu nuevo correo oficial ${fullEmail} en AACOMSoft`,
-      snippet: `Tu buzón de 10 GB está listo para enviar pólizas y atender a tus asegurados desde AACOMSoft.`,
+      subject: `Bienvenido a tu nuevo correo oficial ${fullEmail} en aacomsoft`,
+      snippet: `Tu buzón de 10 GB está listo para enviar pólizas y atender a tus asegurados desde aacomsoft.`,
       bodyHtml: `
         <div style="font-family: sans-serif; color: #1e293b; line-height: 1.6;">
           <h3 style="color: #0284c7;">¡Bienvenido a tu buzón corporativo ${fullEmail}!</h3>
           <p>Hola <strong>${mailbox.displayName}</strong>,</p>
-          <p>Tu cuenta de correo profesional de <strong>10 GB</strong> ya está vinculada a tu sesión de <strong>AACOMSoft</strong>.</p>
+          <p>Tu cuenta de correo profesional de <strong>10 GB</strong> ya está vinculada a tu sesión de <strong>aacomsoft</strong>.</p>
           <p>Puedes enviar pólizas y expedientes en 1 clic usando el botón <strong>"Redactar / Enviar Póliza"</strong> o sincronizar este buzón en tu iPhone o Android sin teclear puertos ni contraseñas.</p>
         </div>
       `,
-      bodyText: `Hola ${mailbox.displayName}, tu buzón corporativo ${fullEmail} de 10 GB ya está activo en AACOMSoft.`,
+      bodyText: `Hola ${mailbox.displayName}, tu buzón corporativo ${fullEmail} de 10 GB ya está activo en aacomsoft.`,
       isRead: false,
     },
   });
@@ -995,7 +995,7 @@ export async function getAgentWebmailData(params?: {
 /**
  * Envía un correo corporativo (o guarda borrador) desde "📧 Mi Correo",
  * descifrando las credenciales AES-256-GCM en el servidor.
- * Además, si el destinatario es un buzón o Forwarder ("Puente de Cartera") dentro de AACOMSoft,
+ * Además, si el destinatario es un buzón o Forwarder ("Puente de Cartera") dentro de aacomsoft,
  * entrega el correo en tiempo real en la bandeja destino.
  */
 export async function sendCorporateEmailAction(params: {
@@ -1306,7 +1306,7 @@ export async function simulateIncomingClientEmailAction(params: {
           ${
             forward
               ? `<div style="background: #f0f9ff; border: 1px solid #bae6fd; padding: 10px 14px; border-radius: 8px; margin-bottom: 14px; font-size: 13px; color: #0369a1;">
-                  <strong>🛡️ Puente de Cartera AACOMSoft:</strong> Este asegurado escribió al correo anterior <code>${cleanRecipient}</code> (${forward.formerAgentName || "Ex-agente"}) y fue redirigido automáticamente a tu bandeja <code>${targetMailbox.emailAddress}</code> sin perder al cliente.
+                  <strong>🛡️ Puente de Cartera aacomsoft:</strong> Este asegurado escribió al correo anterior <code>${cleanRecipient}</code> (${forward.formerAgentName || "Ex-agente"}) y fue redirigido automáticamente a tu bandeja <code>${targetMailbox.emailAddress}</code> sin perder al cliente.
                 </div>`
               : ""
           }

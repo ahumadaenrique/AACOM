@@ -175,7 +175,7 @@ export function AgentWebmailClient({ initialData }: { initialData: any }) {
     );
 
     setBodyText(
-      `Hola ${clientDisplayName},\n\nTe envío desde mi correo corporativo oficial en AACOMSoft el resumen y expediente de tu póliza:\n\n• Número de Póliza: ${policy.policyNumber}\n• Aseguradora: ${insurerName}\n• Plan / Ramo: ${productName}\n• Contratante / Asegurado: ${policy.insured || clientDisplayName}\n• Fecha de Renovación: ${renewalStr}${
+      `Hola ${clientDisplayName},\n\nTe envío desde mi correo corporativo oficial en aacomsoft el resumen y expediente de tu póliza:\n\n• Número de Póliza: ${policy.policyNumber}\n• Aseguradora: ${insurerName}\n• Plan / Ramo: ${productName}\n• Contratante / Asegurado: ${policy.insured || clientDisplayName}\n• Fecha de Renovación: ${renewalStr}${
         policy.pdfUrl ? `\n• Descarga directa de carátula PDF: ${policy.pdfUrl}` : ""
       }\n\nPor favor conserva este correo para cualquier trámite, renovación o asistencia en siniestros.\n\nSaludos cordiales,\n${selectedMailbox?.displayName || initialData.currentUser.name}\n${initialData.agency.name}\n📧 ${selectedMailbox?.emailAddress || ""}`
     );
@@ -307,20 +307,62 @@ export function AgentWebmailClient({ initialData }: { initialData: any }) {
 
   // Si aún no tiene buzón asignado en la promotoría
   if (!selectedMailbox) {
+    const hasActiveSubscription = Boolean(
+      initialData.subscription && initialData.subscription.status === "active"
+    );
+    const domainName = initialData.subscription?.domainName;
+    const agencyName = initialData.agency?.name || "tu promotoría";
+
     return (
-      <div className="max-w-3xl mx-auto py-10">
-        <div className="rounded-3xl border border-sky-200 bg-white p-8 text-center shadow-sm space-y-4">
-          <div className="w-16 h-16 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mx-auto">
-            <Mail className="w-8 h-8" />
+      <div className="max-w-2xl mx-auto py-12 px-4">
+        <div className="rounded-3xl border border-sky-100 bg-white p-8 sm:p-10 text-center shadow-lg shadow-sky-500/5 space-y-6">
+          <div className="w-16 h-16 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center mx-auto shadow-inner">
+            {hasActiveSubscription ? (
+              <Mail className="w-8 h-8" />
+            ) : (
+              <Sparkles className="w-8 h-8 text-amber-500" />
+            )}
           </div>
-          <h1 className="text-2xl font-black text-slate-900">
-            📧 Mi Correo Corporativo en AACOMSoft
-          </h1>
-          <p className="text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
-            {initialData.currentUser?.isAdmin
-              ? `Tu promotoría (${initialData.agency.name}) aún no ha activado su dominio oficial o no tiene buzones creados. Activa tus 20 buzones de 10 GB en 1 clic desde el panel de administración.`
-              : `El administrador de tu promotoría (${initialData.agency.name}) aún no ha vinculado tu buzón corporativo personal. Solicítale que te asigne uno de los 20 lugares disponibles.`}
-          </p>
+
+          <div className="space-y-2">
+            <Badge
+              variant="outline"
+              className="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full border-sky-200 text-sky-700 bg-sky-50/50"
+            >
+              {hasActiveSubscription ? "Paquete Activo en tu Promotoría" : "Identidad Corporativa"}
+            </Badge>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+              {hasActiveSubscription
+                ? "📧 Tu Correo Corporativo en aacomsoft"
+                : "✨ Impulsa tu Presencia con Correo Corporativo"}
+            </h1>
+          </div>
+
+          <div className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-lg mx-auto">
+            {hasActiveSubscription ? (
+              <div className="space-y-3">
+                <p>
+                  Tu promotoría (<strong className="text-slate-800">{agencyName}</strong>) ya cuenta
+                  con su dominio oficial{" "}
+                  {domainName ? <strong className="text-sky-600">@{domainName}</strong> : null} y sus
+                  buzones profesionales activos.
+                </p>
+                <div className="p-4 rounded-2xl bg-sky-50/70 border border-sky-100 text-sky-900 text-sm font-medium">
+                  👉 <strong>Dile a tu promotor que te asigne un lugar</strong> para que puedas comenzar a enviar pólizas, recibir correos de tus asegurados y sincronizar tu cuenta en tu celular.
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p>
+                  Aún no cuentas con un buzón corporativo asignado a tu usuario.
+                </p>
+                <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-amber-950 text-sm font-medium">
+                  💬 <strong>Dile a tu promotor que puede adquirir un mail corporativo con nuestra promotoría</strong> en aacomsoft para vernos mucho más profesionales, proyectar máxima confianza con los asegurados y blindar nuestras pólizas.
+                </div>
+              </div>
+            )}
+          </div>
+
           {initialData.currentUser?.isAdmin && (
             <div className="pt-2">
               <Link
@@ -328,9 +370,11 @@ export function AgentWebmailClient({ initialData }: { initialData: any }) {
                   initialData.agency.id
                 )}`}
               >
-                <Button className="bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl h-11 px-6">
+                <Button className="bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl h-11 px-6 shadow-sm hover:shadow">
                   <Settings className="w-4 h-4 mr-2" />
-                  Ir a Administrar Dominio y 20 Buzones
+                  {hasActiveSubscription
+                    ? "Ir a Administrar y Asignar Buzones"
+                    : "Ver Paquete de Dominio y 20 Correos ($999 MXN)"}
                 </Button>
               </Link>
             </div>
@@ -703,7 +747,7 @@ export function AgentWebmailClient({ initialData }: { initialData: any }) {
         </div>
       </div>
 
-      {/* Modal 4.2: Redactar Correo / Enviar Póliza Integrado con Cartera AACOMSoft */}
+      {/* Modal 4.2: Redactar Correo / Enviar Póliza Integrado con Cartera aacomsoft */}
       <Dialog open={composeOpen} onOpenChange={setComposeOpen}>
         <DialogContent className="sm:max-w-[640px] max-h-[92vh] overflow-y-auto">
           <DialogHeader>
@@ -711,7 +755,7 @@ export function AgentWebmailClient({ initialData }: { initialData: any }) {
               {composePolicyMode ? (
                 <>
                   <FileText className="w-5 h-5 text-sky-600" />
-                  Enviar Póliza / Expediente desde Mi Cartera AACOMSoft
+                  Enviar Póliza / Expediente desde Mi Cartera aacomsoft
                 </>
               ) : (
                 <>
@@ -727,11 +771,11 @@ export function AgentWebmailClient({ initialData }: { initialData: any }) {
           </DialogHeader>
 
           <div className="space-y-3.5 py-2">
-            {/* Selector directo de Cliente y Póliza de AACOMSoft */}
+            {/* Selector directo de Cliente y Póliza de aacomsoft */}
             <div className="rounded-xl border border-sky-200 bg-sky-50/50 p-3 space-y-2.5">
               <div className="text-xs font-bold text-sky-900 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-                Autocompletar con Cliente o Póliza de tu Cartera en AACOMSoft
+                Autocompletar con Cliente o Póliza de tu Cartera en aacomsoft
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
