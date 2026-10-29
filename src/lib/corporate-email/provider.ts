@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { ProxyAgent } from "undici";
 import { encrypt, decrypt } from "@/lib/encryption";
 
 export const MAX_DOMAIN_WHOLESALE_USD = 15.0;
@@ -135,6 +136,28 @@ function getResellerClubAuthParams(): URLSearchParams {
   params.append("auth-userid", (process.env.RESELLERCLUB_AUTH_USERID || "").trim());
   params.append("api-key", (process.env.RESELLERCLUB_API_KEY || "").trim());
   return params;
+}
+
+/**
+ * Realiza peticiones a la API de ResellerClub enrutando a través del proxy de IP estática
+ * (Fixie / QuotaGuard) si FIXIE_URL está configurado en las variables de entorno.
+ */
+async function resellerClubFetch(url: string, init?: RequestInit): Promise<Response> {
+  const fixieUrl = process.env.FIXIE_URL;
+  const initCopy: any = {
+    ...init,
+    cache: "no-store",
+  };
+
+  if (fixieUrl && fixieUrl.trim().length > 0) {
+    try {
+      initCopy.dispatcher = new ProxyAgent(fixieUrl.trim());
+    } catch (e) {
+      console.warn("Error inicializando ProxyAgent para ResellerClub:", e);
+    }
+  }
+
+  return fetch(url, initCopy);
 }
 
 /**
