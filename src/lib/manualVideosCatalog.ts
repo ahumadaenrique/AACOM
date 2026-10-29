@@ -372,6 +372,27 @@ export const MANUAL_VIDEOS_CATALOG: ManualVideoItem[] = [
       "Portal enfocado del Referidor: meta diaria de 15 puntos, Proyecto 200 propio, Videos E-Learning e IA sin examen CNSF",
       "Bitácora detallada nombre por nombre, menú (⋮) para Suspender o Dar de Baja (liberar espacio) y Torre Admin con filtro en Actividad 25"
     ]
+  },
+  {
+    key: "mod17",
+    episodeNumber: "17",
+    title: "Identidad Corporativa: Dominio Oficial, 20 Buzones de 10 GB y Puente de Cartera",
+    shortModuleTitle: "Dominio y 20 Correos Corporativos",
+    subtitle: "Reclama el dominio oficial de tu promotoría, asigna hasta 20 buzones de 10 GB, envía pólizas en 1 clic y recicla asientos con Puente de Cartera.",
+    duration: "1:55",
+    roleBadge: "Todos",
+    videoUrl: "/api/manual-video/mod14",
+    blobUrl: "https://lxyhgkkgwtxjiqp0.private.blob.vercel-storage.com/manual-aacomsoft/video_mod14_admin_reportes_soporte_AAA.mp4",
+    posterUrl: "/manual/posters/mod14.png",
+    quickLink: "/correos-corporativos",
+    modulePaths: ["/correos-corporativos", "/mi-correo"],
+    manualChapterIds: ["administracion-promotoria", "herramientas-comerciales"],
+    highlights: [
+      "Aprovisionamiento Zero-Touch: Dominio oficial (.com, .com.mx o .mx) + DNS automático (MX, SPF, DKIM y DMARC)",
+      "Dashboard de 20 Asientos de 10 GB (Titan Email): asigna cuentas a tus agentes o crea buzones departamentales",
+      "Rotación sin pérdida de clientes: libera el asiento (18/20 ➔ 17/20), respalda correos y activa el Forwarder gratuito",
+      "Webmail «📧 Mi Correo» con envío directo de pólizas desde Mi Cartera y perfil .mobileconfig en 1 clic para iPhone/Android"
+    ]
   }
 ];
 

@@ -9,12 +9,14 @@ import {
   checkDomainsAvailabilityAndWholesalePrice,
   createTitanFreeForwarder,
   decryptMailboxCredentials,
+  deleteTitanMailboxAccount,
   DEFAULT_MAX_SEATS,
   DEFAULT_STORAGE_GB,
   MAX_DOMAIN_WHOLESALE_USD,
   PACKAGE_MONTHLY_PRICE_MXN,
   provisionCorporateDomainAndTitanOrder,
   provisionTitanMailboxAccount,
+  updateTitanMailboxSuspension,
 } from "@/lib/corporate-email/provider";
 
 /**
@@ -390,6 +392,13 @@ export async function activateCorporateEmailSubscriptionAction(params: {
         agencyId: ctx.effectiveAgencyId,
         domainName: provisioned.domainName,
       },
+      subscription_data: {
+        metadata: {
+          type: "CORPORATE_EMAIL_PACKAGE",
+          agencyId: ctx.effectiveAgencyId,
+          domainName: provisioned.domainName,
+        },
+      },
       success_url: `${baseUrl}/correos-corporativos?activated=1&domain=${encodeURIComponent(provisioned.domainName)}`,
       cancel_url: `${baseUrl}/correos-corporativos?canceled=1`,
     });
@@ -651,11 +660,18 @@ export async function toggleMailboxSuspensionAction(params: {
       id: params.mailboxId,
       agencyId: ctx.effectiveAgencyId,
     },
+    include: { subscription: true },
   });
 
   if (!mailbox) {
     throw new Error("Buzón no encontrado en esta promotoría.");
   }
+
+  await updateTitanMailboxSuspension({
+    titanOrderId: mailbox.subscription?.titanOrderId || "TITAN-ORDER",
+    emailAddress: mailbox.emailAddress,
+    suspend: params.suspend,
+  });
 
   const updated = await prisma.agencyMailbox.update({
     where: { id: mailbox.id },
@@ -742,7 +758,12 @@ export async function releaseMailboxAndCreateForwardAction(params: {
     }
   }
 
-  // 2. Eliminar mensajes del buzón liberado y marcar asiento como released (18/20 -> 17/20)
+  // 2. Eliminar buzón en Titan, limpiar mensajes del buzón liberado y marcar asiento como released (18/20 -> 17/20)
+  await deleteTitanMailboxAccount({
+    titanOrderId: subscription.titanOrderId || "TITAN-ORDER",
+    emailAddress: sourceMailbox.emailAddress,
+  });
+
   await prisma.agencyEmailMessage.deleteMany({
     where: { mailboxId: sourceMailbox.id },
   });

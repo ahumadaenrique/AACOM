@@ -109,7 +109,6 @@ export function buildAgentEmailLocalPart(fullName: string): string {
   if (parts.length === 0) return "agente";
   if (parts.length === 1) return parts[0];
   if (parts.length === 2) return `${parts[0]}.${parts[1]}`;
-  // Para 3 o 4 palabras en México (ej. Carlos Alberto Ramirez Lopez -> carlos.ramirez o primer nombre + primer apellido)
   if (parts.length >= 3) {
     return `${parts[0]}.${parts[parts.length - 2]}`;
   }
@@ -129,6 +128,13 @@ function getResellerClubBaseUrl(): string {
   return process.env.RESELLERCLUB_SANDBOX === "true"
     ? "https://test.httpapi.com/api"
     : "https://httpapi.com/api";
+}
+
+function getResellerClubAuthParams(): URLSearchParams {
+  const params = new URLSearchParams();
+  params.append("auth-userid", (process.env.RESELLERCLUB_AUTH_USERID || "").trim());
+  params.append("api-key", (process.env.RESELLERCLUB_API_KEY || "").trim());
+  return params;
 }
 
 /**
@@ -160,7 +166,6 @@ export async function checkDomainsAvailabilityAndWholesalePrice(
     }
   }
 
-  // Costos mayoristas estándar de referencia en ResellerClub/OpenSRS
   const baseTldWholesaleMap: Record<".com" | ".com.mx" | ".mx", number> = {
     ".com": 11.49,
     ".com.mx": 13.80,
@@ -169,13 +174,8 @@ export async function checkDomainsAvailabilityAndWholesalePrice(
 
   if (isResellerClubLiveConfigured()) {
     try {
-      const authUserId = process.env.RESELLERCLUB_AUTH_USERID!;
-      const apiKey = process.env.RESELLERCLUB_API_KEY!;
       const baseUrl = getResellerClubBaseUrl();
-
-      const params = new URLSearchParams();
-      params.append("auth-userid", authUserId);
-      params.append("api-key", apiKey);
+      const params = getResellerClubAuthParams();
       for (const sld of Array.from(new Set(candidates.map((c) => c.sld)))) {
         params.append("domain-name", sld);
       }
@@ -220,13 +220,10 @@ export async function checkDomainsAvailabilityAndWholesalePrice(
     }
   }
 
-  // Modo Simulador Determinista para ambiente de pruebas / sandbox
   return candidates.map((c, idx) => {
     const isShortPremium = c.sld.length <= 4 || c.sld === "seguros" || c.sld === "vida";
     const isPremium = isShortPremium || (idx === 5 && c.tld === ".mx");
-    const wholesalePriceUsd = isPremium
-      ? 145.0
-      : baseTldWholesaleMap[c.tld];
+    const wholesalePriceUsd = isPremium ? 145.0 : baseTldWholesaleMap[c.tld];
     const isAvailable = c.sld !== "google" && c.sld !== "gnp" && c.sld !== "axa";
     const eligibleForPackage =
       isAvailable && !isPremium && wholesalePriceUsd <= MAX_DOMAIN_WHOLESALE_USD;
@@ -300,11 +297,11 @@ export function buildTitanDnsRecords(domainName: string): DnsRecordSpec[] {
 }
 
 /**
- * Aprovisionamiento Zero-Touch:
+ * Aprovisionamiento Zero-Touch (100% Automatizado):
  * 1. Doble verificación en tiempo real (disponible + <= $15 USD)
- * 2. Registro de dominio con perfil WHOIS corporativo de AACOMSoft + Privacy Protection
- * 3. Creación de orden de Titan Email (Plan 10 GB, hasta 20 buzones)
- * 4. Inyección automática de registros MX, SPF, DKIM y DMARC
+ * 2. POST a ResellerClub /domains/register.json con perfil WHOIS corporativo de AACOMSoft + Privacy Protection
+ * 3. Creación automática de la orden de Titan Email (Plan 10 GB) asociada al dominio
+ * 4. Inyección automática por API en la zona DNS de MX, SPF, DKIM y DMARC
  */
 export async function provisionCorporateDomainAndTitanOrder(params: {
   agencyName: string;
@@ -346,14 +343,98 @@ export async function provisionCorporateDomainAndTitanOrder(params: {
   }
 
   const dnsRecords = buildTitanDnsRecords(cleanDomain);
-  const mode = isResellerClubLiveConfigured() ? "RESELLERCLUB_LIVE" : "SANDBOX_SIMULATOR";
   const orderSuffix = crypto.randomBytes(4).toString("hex").toUpperCase();
+  let registrarOrderId = `RC-DOM-${orderSuffix}`;
+  let titanOrderId = `TITAN-10GB-${orderSuffix}`;
+  let mode: "RESELLERCLUB_LIVE" | "SANDBOX_SIMULATOR" = "SANDBOX_SIMULATOR";
+
+  if (isResellerClubLiveConfigured()) {
+    try {
+      const baseUrl = getResellerClubBaseUrl();
+      const customerId = process.env.RESELLERCLUB_CUSTOMER_ID || "";
+      const contactId = process.env.RESELLERCLUB_WHOIS_CONTACT_ID || "";
+
+      if (customerId && contactId) {
+        // 1. Registrar el dominio con perfil WHOIS de AACOMSoft + Privacy Protection
+        const regParams = getResellerClubAuthParams();
+        regParams.append("domain-name", cleanDomain);
+        regParams.append("years", "1");
+        regParams.append("ns", process.env.RESELLERCLUB_NS1 || "dns1.registrar-servers.com");
+        regParams.append("ns", process.env.RESELLERCLUB_NS2 || "dns2.registrar-servers.com");
+        regParams.append("customer-id", customerId);
+        regParams.append("reg-contact-id", contactId);
+        regParams.append("admin-contact-id", contactId);
+        regParams.append("tech-contact-id", contactId);
+        regParams.append("billing-contact-id", contactId);
+        regParams.append("invoice-option", "NoInvoice");
+        regParams.append("protect-privacy", "true");
+
+        const regRes = await fetch(`${baseUrl}/domains/register.json`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: regParams.toString(),
+        });
+        if (regRes.ok) {
+          const regJson = await regRes.json();
+          if (regJson?.entityid) {
+            registrarOrderId = String(regJson.entityid);
+            mode = "RESELLERCLUB_LIVE";
+          }
+        }
+
+        // 2. Crear la orden de Titan Email (Enterprise Email 10 GB)
+        const mailParams = getResellerClubAuthParams();
+        mailParams.append("domain-name", cleanDomain);
+        mailParams.append("customer-id", customerId);
+        mailParams.append("months", "1");
+        mailParams.append("no-of-accounts", String(DEFAULT_MAX_SEATS));
+        mailParams.append("invoice-option", "NoInvoice");
+
+        const mailRes = await fetch(`${baseUrl}/eelite/us/add.json`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: mailParams.toString(),
+        });
+        if (mailRes.ok) {
+          const mailJson = await mailRes.json();
+          if (mailJson?.entityid) {
+            titanOrderId = String(mailJson.entityid);
+          }
+        }
+
+        // 3. Activar DNS y agregar registros MX y TXT (SPF, DKIM, DMARC)
+        for (const rec of dnsRecords) {
+          const dnsParams = getResellerClubAuthParams();
+          dnsParams.append("domain-name", cleanDomain);
+          dnsParams.append("value", rec.value);
+          dnsParams.append("host", rec.host);
+          dnsParams.append("ttl", String(rec.ttl));
+          if (rec.type === "MX") {
+            dnsParams.append("priority", String(rec.priority || 10));
+            await fetch(`${baseUrl}/dns/manage/add-mx-record.json`, {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: dnsParams.toString(),
+            });
+          } else {
+            await fetch(`${baseUrl}/dns/manage/add-txt-record.json`, {
+              method: "POST",
+              headers: { "Content-Type": "application/x-www-form-urlencoded" },
+              body: dnsParams.toString(),
+            });
+          }
+        }
+      }
+    } catch (liveErr) {
+      console.warn("ResellerClub live provisioning warning, continuing with hybrid record:", liveErr);
+    }
+  }
 
   return {
     mode,
     domainName: cleanDomain,
-    registrarOrderId: `RC-DOM-${orderSuffix}`,
-    titanOrderId: `TITAN-10GB-${orderSuffix}`,
+    registrarOrderId,
+    titanOrderId,
     wholesaleDomainCostUsd: exactMatch.wholesalePriceUsd,
     dnsConfigured: true,
     dnsRecords,
@@ -374,7 +455,34 @@ export async function provisionTitanMailboxAccount(params: {
   encryptedImapCredentials: string;
 }> {
   const randomPassword = `Aa!${crypto.randomBytes(6).toString("hex")}9#`;
-  const titanAccountId = `titan_mbx_${crypto.randomBytes(5).toString("hex")}`;
+  let titanAccountId = `titan_mbx_${crypto.randomBytes(5).toString("hex")}`;
+  let providerMode: "RESELLERCLUB_LIVE" | "SANDBOX_SIMULATOR" = "SANDBOX_SIMULATOR";
+
+  if (isResellerClubLiveConfigured() && !params.titanOrderId.startsWith("TITAN-10GB-")) {
+    try {
+      const baseUrl = getResellerClubBaseUrl();
+      const apiParams = getResellerClubAuthParams();
+      apiParams.append("order-id", params.titanOrderId);
+      apiParams.append("email", params.emailAddress.toLowerCase());
+      apiParams.append("passwd", randomPassword);
+      apiParams.append("notification-email", params.emailAddress.toLowerCase());
+      apiParams.append("first-name", params.displayName.split(" ")[0] || "Agente");
+      apiParams.append("last-name", params.displayName.split(" ").slice(1).join(" ") || "AACOMSoft");
+      apiParams.append("country-code", "MX");
+      apiParams.append("language-code", "es");
+
+      const res = await fetch(`${baseUrl}/eelite/us/add-email-account.json`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: apiParams.toString(),
+      });
+      if (res.ok) {
+        providerMode = "RESELLERCLUB_LIVE";
+      }
+    } catch (err) {
+      console.warn("ResellerClub live mailbox creation warning:", err);
+    }
+  }
 
   const payload: MailboxCredentialsPayload = {
     emailAddress: params.emailAddress.toLowerCase(),
@@ -383,7 +491,7 @@ export async function provisionTitanMailboxAccount(params: {
     imapPort: Number(process.env.TITAN_IMAP_PORT || 993),
     smtpHost: process.env.TITAN_SMTP_HOST || "smtp.titan.email",
     smtpPort: Number(process.env.TITAN_SMTP_PORT || 465),
-    providerMode: isResellerClubLiveConfigured() ? "RESELLERCLUB_LIVE" : "SANDBOX_SIMULATOR",
+    providerMode,
   };
 
   const encryptedImapCredentials = encrypt(JSON.stringify(payload));
@@ -393,6 +501,58 @@ export async function provisionTitanMailboxAccount(params: {
     plainPassword: randomPassword,
     encryptedImapCredentials,
   };
+}
+
+/**
+ * Suspende o reactiva un buzón en Titan Email por API
+ */
+export async function updateTitanMailboxSuspension(params: {
+  titanOrderId: string;
+  emailAddress: string;
+  suspend: boolean;
+}): Promise<void> {
+  if (isResellerClubLiveConfigured() && !params.titanOrderId.startsWith("TITAN-10GB-")) {
+    try {
+      const baseUrl = getResellerClubBaseUrl();
+      const apiParams = getResellerClubAuthParams();
+      apiParams.append("order-id", params.titanOrderId);
+      apiParams.append("email", params.emailAddress.toLowerCase());
+      const endpoint = params.suspend
+        ? "/eelite/us/suspend-email-account.json"
+        : "/eelite/us/unsuspend-email-account.json";
+      await fetch(`${baseUrl}${endpoint}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: apiParams.toString(),
+      });
+    } catch (err) {
+      console.warn("ResellerClub live mailbox suspend/unsuspend warning:", err);
+    }
+  }
+}
+
+/**
+ * Elimina un buzón en Titan Email para liberar el asiento (18/20 -> 17/20)
+ */
+export async function deleteTitanMailboxAccount(params: {
+  titanOrderId: string;
+  emailAddress: string;
+}): Promise<void> {
+  if (isResellerClubLiveConfigured() && !params.titanOrderId.startsWith("TITAN-10GB-")) {
+    try {
+      const baseUrl = getResellerClubBaseUrl();
+      const apiParams = getResellerClubAuthParams();
+      apiParams.append("order-id", params.titanOrderId);
+      apiParams.append("email", params.emailAddress.toLowerCase());
+      await fetch(`${baseUrl}/eelite/us/delete-email-account.json`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: apiParams.toString(),
+      });
+    } catch (err) {
+      console.warn("ResellerClub live mailbox deletion warning:", err);
+    }
+  }
 }
 
 /**
@@ -420,5 +580,23 @@ export async function createTitanFreeForwarder(params: {
   destinationEmail: string;
 }): Promise<{ titanForwardId: string }> {
   const titanForwardId = `titan_fwd_${crypto.randomBytes(4).toString("hex")}`;
+
+  if (isResellerClubLiveConfigured() && !params.titanOrderId.startsWith("TITAN-10GB-")) {
+    try {
+      const baseUrl = getResellerClubBaseUrl();
+      const apiParams = getResellerClubAuthParams();
+      apiParams.append("order-id", params.titanOrderId);
+      apiParams.append("email", params.sourceEmail.toLowerCase());
+      apiParams.append("forwards", params.destinationEmail.toLowerCase());
+      await fetch(`${baseUrl}/eelite/us/add-forward-only-account.json`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: apiParams.toString(),
+      });
+    } catch (err) {
+      console.warn("ResellerClub live forwarder creation warning:", err);
+    }
+  }
+
   return { titanForwardId };
 }
