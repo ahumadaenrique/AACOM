@@ -1025,6 +1025,8 @@ export async function sendCorporateEmailAction(params: {
   // Descifrar credenciales AES-256-GCM en backend
   const creds = decryptMailboxCredentials(senderMailbox.encryptedImapCredentials);
 
+  let externalDelivered = false;
+
   if (creds && creds.providerMode === "RESELLERCLUB_LIVE") {
     try {
       const transporter = nodemailer.createTransport({
@@ -1044,8 +1046,58 @@ export async function sendCorporateEmailAction(params: {
         html: params.bodyHtml,
         text: params.bodyText || snippet,
       });
+      externalDelivered = true;
     } catch (smtpErr) {
       console.warn("Titan SMTP live send warning (saved in SENT):", smtpErr);
+    }
+  }
+
+  // En modo Sandbox / Pruebas: si hay RESEND_API_KEY o SMTP_USER en el entorno, enviar también al correo real externo para pruebas en vivo
+  if (!externalDelivered && process.env.RESEND_API_KEY) {
+    try {
+      await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        },
+        body: JSON.stringify({
+          from: `"${senderMailbox.displayName} (${ctx.agency.name})" <no-reply@aacomsoft.com>`,
+          reply_to: senderMailbox.emailAddress,
+          to: cleanTo.split(/[;,]/).map((e) => e.trim()).filter(Boolean),
+          subject: params.subject.trim(),
+          html: params.bodyHtml,
+        }),
+      });
+      externalDelivered = true;
+    } catch {
+      // Fallback silencioso en sandbox
+    }
+  }
+
+  if (!externalDelivered && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    try {
+      const transporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: Number(process.env.SMTP_PORT) || 587,
+        secure: Number(process.env.SMTP_PORT) === 465,
+        auth: {
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
+        },
+      });
+      await transporter.sendMail({
+        from: `"${senderMailbox.displayName} (${ctx.agency.name})" <${process.env.SMTP_USER}>`,
+        replyTo: senderMailbox.emailAddress,
+        to: cleanTo,
+        cc: params.cc?.trim() || undefined,
+        subject: params.subject.trim(),
+        html: params.bodyHtml,
+        text: params.bodyText || snippet,
+      });
+      externalDelivered = true;
+    } catch {
+      // Fallback silencioso en sandbox
     }
   }
 
