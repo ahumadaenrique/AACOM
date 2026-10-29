@@ -552,7 +552,115 @@ async function injectColumns() {
       `CREATE INDEX IF NOT EXISTS "market_cg_chunks_fts_idx" ON "market_cg_chunks" USING GIN (to_tsvector('spanish', "aseguradora" || ' ' || "producto" || ' ' || "content"));`,
       `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "allowProyecto200Module" BOOLEAN NOT NULL DEFAULT false;`,
       `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "referidorCommissionPct" DOUBLE PRECISION DEFAULT 30;`,
-      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "referidorBonusPct" DOUBLE PRECISION DEFAULT 0;`
+      `ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "referidorBonusPct" DOUBLE PRECISION DEFAULT 0;`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "allowCorporateEmailModule" BOOLEAN NOT NULL DEFAULT false;`,
+      `CREATE TABLE IF NOT EXISTS "agency_email_subscriptions" (
+        "id" TEXT PRIMARY KEY,
+        "agencyId" TEXT UNIQUE NOT NULL,
+        "domainName" TEXT UNIQUE NOT NULL,
+        "registrarOrderId" TEXT,
+        "titanOrderId" TEXT,
+        "maxSeats" INTEGER NOT NULL DEFAULT 20,
+        "storageGbPerSeat" INTEGER NOT NULL DEFAULT 10,
+        "wholesaleDomainCostUsd" DOUBLE PRECISION NOT NULL DEFAULT 12.50,
+        "monthlyPriceMxn" DOUBLE PRECISION NOT NULL DEFAULT 999,
+        "billingMode" TEXT NOT NULL DEFAULT 'STRIPE',
+        "stripeSubscriptionId" TEXT,
+        "dnsConfigured" BOOLEAN NOT NULL DEFAULT true,
+        "dnsRecordsJson" JSONB,
+        "whoisCustodyProfile" TEXT NOT NULL DEFAULT 'AACOMSOFT_ZERO_TOUCH_PRIVACY',
+        "status" TEXT NOT NULL DEFAULT 'active',
+        "renewsAt" TIMESTAMP(3) NOT NULL,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "agency_email_subscriptions_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Agency"("id") ON DELETE CASCADE ON UPDATE CASCADE
+      );`,
+      `CREATE INDEX IF NOT EXISTS "agency_email_subscriptions_agencyId_idx" ON "agency_email_subscriptions"("agencyId");`,
+      `CREATE INDEX IF NOT EXISTS "agency_email_subscriptions_status_idx" ON "agency_email_subscriptions"("status");`,
+      `CREATE TABLE IF NOT EXISTS "agency_mailboxes" (
+        "id" TEXT PRIMARY KEY,
+        "subscriptionId" TEXT NOT NULL,
+        "agencyId" TEXT NOT NULL,
+        "agentUserId" TEXT,
+        "displayName" TEXT NOT NULL,
+        "isDepartmental" BOOLEAN NOT NULL DEFAULT false,
+        "emailAddress" TEXT UNIQUE NOT NULL,
+        "titanAccountId" TEXT,
+        "encryptedImapCredentials" TEXT NOT NULL,
+        "storageUsedMb" INTEGER NOT NULL DEFAULT 120,
+        "status" TEXT NOT NULL DEFAULT 'active',
+        "releasedAt" TIMESTAMP(3),
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "agency_mailboxes_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "agency_email_subscriptions"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        CONSTRAINT "agency_mailboxes_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Agency"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        CONSTRAINT "agency_mailboxes_agentUserId_fkey" FOREIGN KEY ("agentUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE
+      );`,
+      `CREATE INDEX IF NOT EXISTS "agency_mailboxes_subscriptionId_idx" ON "agency_mailboxes"("subscriptionId");`,
+      `CREATE INDEX IF NOT EXISTS "agency_mailboxes_agencyId_idx" ON "agency_mailboxes"("agencyId");`,
+      `CREATE INDEX IF NOT EXISTS "agency_mailboxes_agentUserId_idx" ON "agency_mailboxes"("agentUserId");`,
+      `CREATE INDEX IF NOT EXISTS "agency_mailboxes_status_idx" ON "agency_mailboxes"("status");`,
+      `CREATE TABLE IF NOT EXISTS "agency_email_forwards" (
+        "id" TEXT PRIMARY KEY,
+        "subscriptionId" TEXT NOT NULL,
+        "agencyId" TEXT NOT NULL,
+        "sourceEmail" TEXT NOT NULL,
+        "destinationEmail" TEXT NOT NULL,
+        "formerAgentUserId" TEXT,
+        "formerAgentName" TEXT,
+        "titanForwardId" TEXT,
+        "migratedMessagesCount" INTEGER NOT NULL DEFAULT 0,
+        "active" BOOLEAN NOT NULL DEFAULT true,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "agency_email_forwards_subscriptionId_fkey" FOREIGN KEY ("subscriptionId") REFERENCES "agency_email_subscriptions"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        CONSTRAINT "agency_email_forwards_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Agency"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        CONSTRAINT "agency_email_forwards_formerAgentUserId_fkey" FOREIGN KEY ("formerAgentUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE
+      );`,
+      `CREATE INDEX IF NOT EXISTS "agency_email_forwards_subscriptionId_idx" ON "agency_email_forwards"("subscriptionId");`,
+      `CREATE INDEX IF NOT EXISTS "agency_email_forwards_agencyId_idx" ON "agency_email_forwards"("agencyId");`,
+      `CREATE INDEX IF NOT EXISTS "agency_email_forwards_sourceEmail_idx" ON "agency_email_forwards"("sourceEmail");`,
+      `CREATE TABLE IF NOT EXISTS "agency_domain_suggestions_cache" (
+        "id" TEXT PRIMARY KEY,
+        "agencyId" TEXT NOT NULL,
+        "suggestedDomain" TEXT NOT NULL,
+        "tld" TEXT NOT NULL,
+        "isAvailable" BOOLEAN NOT NULL DEFAULT true,
+        "wholesalePriceUsd" DOUBLE PRECISION NOT NULL DEFAULT 11.99,
+        "isPremium" BOOLEAN NOT NULL DEFAULT false,
+        "checkedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "agency_domain_suggestions_cache_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Agency"("id") ON DELETE CASCADE ON UPDATE CASCADE
+      );`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "agency_domain_suggestions_cache_agency_domain_key" ON "agency_domain_suggestions_cache"("agencyId", "suggestedDomain");`,
+      `CREATE INDEX IF NOT EXISTS "agency_domain_suggestions_cache_agencyId_idx" ON "agency_domain_suggestions_cache"("agencyId");`,
+      `CREATE INDEX IF NOT EXISTS "agency_domain_suggestions_cache_checkedAt_idx" ON "agency_domain_suggestions_cache"("checkedAt");`,
+      `CREATE TABLE IF NOT EXISTS "agency_email_messages" (
+        "id" TEXT PRIMARY KEY,
+        "agencyId" TEXT NOT NULL,
+        "mailboxId" TEXT NOT NULL,
+        "folder" TEXT NOT NULL DEFAULT 'INBOX',
+        "fromAddress" TEXT NOT NULL,
+        "fromName" TEXT,
+        "toAddresses" TEXT NOT NULL,
+        "ccAddresses" TEXT,
+        "subject" TEXT NOT NULL,
+        "snippet" TEXT,
+        "bodyHtml" TEXT,
+        "bodyText" TEXT,
+        "attachmentsJson" JSONB,
+        "isRead" BOOLEAN NOT NULL DEFAULT false,
+        "isStarred" BOOLEAN NOT NULL DEFAULT false,
+        "relatedClientId" TEXT,
+        "relatedPolicyId" TEXT,
+        "migratedFrom" TEXT,
+        "messageUid" TEXT,
+        "receivedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "agency_email_messages_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Agency"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        CONSTRAINT "agency_email_messages_mailboxId_fkey" FOREIGN KEY ("mailboxId") REFERENCES "agency_mailboxes"("id") ON DELETE CASCADE ON UPDATE CASCADE
+      );`,
+      `CREATE INDEX IF NOT EXISTS "agency_email_messages_agencyId_idx" ON "agency_email_messages"("agencyId");`,
+      `CREATE INDEX IF NOT EXISTS "agency_email_messages_mailbox_folder_idx" ON "agency_email_messages"("mailboxId", "folder");`,
+      `CREATE INDEX IF NOT EXISTS "agency_email_messages_receivedAt_idx" ON "agency_email_messages"("receivedAt");`
     ];
 
     for (const q of queries) {
@@ -618,6 +726,11 @@ async function injectColumns() {
       await client.query(`UPDATE "Agency" SET "allowProyecto200Module" = CASE WHEN "id" = 'aacom' OR COALESCE("slug", '') = 'aacom' THEN true ELSE false END;`);
       await client.query(`INSERT INTO "Setting" ("key", "value") VALUES ('proyecto_200_aacom_only_init_v1', 'true') ON CONFLICT ("key") DO UPDATE SET "value" = 'true';`);
       console.log('Initialized allowProyecto200Module = true ONLY for AACOM, false for all other agencies.');
+      const corpEmailInitRes = await client.query(`SELECT "value" FROM "Setting" WHERE "key" = 'corporate_email_aacom_only_init_v1';`);
+      if (corpEmailInitRes.rows.length === 0) {
+        await client.query(`UPDATE "Agency" SET "allowCorporateEmailModule" = CASE WHEN "id" = 'aacom' OR COALESCE("slug", '') = 'aacom' THEN true ELSE false END;`);
+        await client.query(`INSERT INTO "Setting" ("key", "value") VALUES ('corporate_email_aacom_only_init_v1', 'true') ON CONFLICT ("key") DO UPDATE SET "value" = 'true';`);
+      }
     }
     console.log("Column injection completed successfully.");
   } catch (error) {

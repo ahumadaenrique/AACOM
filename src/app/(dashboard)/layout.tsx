@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity, Newspaper, SmilePlus, Youtube, Flame } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity, Newspaper, SmilePlus, Youtube, Flame, Mail } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { parseAgencyModulesConfig, isPathBlockedByModuleConfig } from "@/lib/agencyModules"
@@ -150,6 +150,7 @@ export default async function DashboardLayout({
     const allowReferidores = agency?.allowReferidores ?? false;
     const allowTipsModule = agency?.allowTipsModule ?? true;
     const allowProyecto200Module = agency?.allowProyecto200Module ?? (agency?.id === "aacom" || agency?.slug === "aacom");
+    const allowCorporateEmailModule = agency?.allowCorporateEmailModule ?? (agency?.id === "aacom" || agency?.slug === "aacom");
 
     const effectiveAgencyIdForModules = agency?.id || resolvedAgencyId || "aacom";
     const modulesSetting = await prisma.setting.findUnique({
@@ -174,6 +175,12 @@ export default async function DashboardLayout({
 
     // Si una promotoría tiene desactivado Proyecto 200 a nivel Super Admin, bloquear acceso a todos sus usuarios (incluyendo ADMIN de esa agencia)
     if (!isSuperAdmin && !allowProyecto200Module && pathname.startsWith('/proyecto-200')) {
+        const { redirect } = await import("next/navigation");
+        redirect("/");
+    }
+
+    // Si una promotoría tiene desactivado el módulo de Dominios y Correos Corporativos a nivel Super Admin, bloquear acceso a todos sus usuarios
+    if (!isSuperAdmin && !allowCorporateEmailModule && (pathname.startsWith('/mi-correo') || pathname.startsWith('/correos-corporativos'))) {
         const { redirect } = await import("next/navigation");
         redirect("/");
     }
@@ -318,6 +325,16 @@ export default async function DashboardLayout({
                                                 <Network className={`h-4 w-4 ${pathname.startsWith('/referidores') ? 'text-primary' : 'text-emerald-500'}`} />
                                                 Mis Referidores
                                                 {pathname.startsWith('/referidores') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
+                                            </Link>
+                                        )}
+                                        {allowCorporateEmailModule && modConfig.correo_corporativo && (
+                                            <Link
+                                                href="/mi-correo"
+                                                className={`relative py-5 transition-colors font-semibold flex items-center gap-1 ${pathname.startsWith('/mi-correo') ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`}
+                                            >
+                                                <Mail className={`h-4 w-4 ${pathname.startsWith('/mi-correo') ? 'text-primary' : 'text-sky-600 dark:text-sky-400'}`} />
+                                                Mi Correo
+                                                {pathname.startsWith('/mi-correo') && <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary rounded-full" />}
                                             </Link>
                                         )}
                                     </>
@@ -511,6 +528,12 @@ export default async function DashboardLayout({
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
+                                                <Link href="/correos-corporativos" className={`flex items-center gap-2 cursor-pointer font-bold text-sky-600 dark:text-sky-400 ${!(isSuperAdmin || allowCorporateEmailModule) ? 'hidden' : ''}`}>
+                                                    <Mail className="h-4 w-4 text-sky-600" />
+                                                    Dominios y 20 Correos
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
                                                 <Link href="/reportes" className="flex items-center gap-2 cursor-pointer font-medium">
                                                     <ClipboardCheck className="h-4 w-4" />
                                                     Reportes
@@ -655,6 +678,15 @@ export default async function DashboardLayout({
                                                          Mis Referidores
                                                      </Link>
                                                  )}
+                                                 {allowCorporateEmailModule && modConfig.correo_corporativo && (
+                                                     <Link
+                                                         href="/mi-correo"
+                                                         className="text-sky-700 dark:text-sky-400 font-semibold hover:text-foreground flex items-center gap-2"
+                                                     >
+                                                         <Mail className="h-5 w-5 text-sky-600" />
+                                                         Mi Correo
+                                                     </Link>
+                                                 )}
                                              </>
                                          )}
 
@@ -786,6 +818,10 @@ export default async function DashboardLayout({
                                                      <Link href="/proyecto-200?tab=admin" className={`text-orange-600 dark:text-orange-400 font-bold hover:text-foreground text-sm flex items-center gap-2 ${!(isSuperAdmin || allowProyecto200Module) ? 'hidden' : ''}`}>
                                                          <Flame className="h-4.5 w-4.5 text-orange-500" />
                                                          Dashboard Proyecto 200
+                                                     </Link>
+                                                     <Link href="/correos-corporativos" className={`text-sky-600 dark:text-sky-400 font-bold hover:text-foreground text-sm flex items-center gap-2 ${!(isSuperAdmin || allowCorporateEmailModule) ? 'hidden' : ''}`}>
+                                                         <Mail className="h-4.5 w-4.5 text-sky-600" />
+                                                         Dominios y 20 Correos
                                                      </Link>
                                                      <Link href="/reportes" className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-2">
                                                          <ClipboardCheck className="h-4.5 w-4.5 text-slate-500" />

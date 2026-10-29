@@ -6,6 +6,7 @@ export type AgencyModuleKey =
   | "team"
   | "ranking"
   | "referidores"
+  | "correo_corporativo"
   | "proyecto_200"
   | "encuesta_satisfaccion"
   | "documentacion"
@@ -84,6 +85,14 @@ export const AGENCY_MODULE_DEFINITIONS: AgencyModuleDefinition[] = [
     pathPrefix: "/referidores",
     group: "main",
     emoji: "🌐",
+  },
+  {
+    key: "correo_corporativo",
+    label: "Mi Correo Corporativo",
+    description: "Bandeja de correo empresarial de la promotoría integrada en AACOMSoft con envío directo de pólizas.",
+    pathPrefix: "/mi-correo",
+    group: "main",
+    emoji: "📧",
   },
 
   // Menú Herramientas
@@ -171,6 +180,7 @@ export const DEFAULT_AGENCY_MODULES_CONFIG: AgencyModulesConfig = {
   team: true,
   ranking: true,
   referidores: true,
+  correo_corporativo: true,
   proyecto_200: true,
   encuesta_satisfaccion: true,
   documentacion: true,

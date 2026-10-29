@@ -54,6 +54,7 @@ model Agency {
   allowRoleplaySimulator Boolean?            @default(false)
   allowAcademyModule    Boolean              @default(true)
   allowProyecto200Module Boolean             @default(false)
+  allowCorporateEmailModule Boolean          @default(false)
   shareAacomAcademyVideos Boolean            @default(false)
   maxAdmins             Int                  @default(2)
   voiceEngine           String?              @default("GEMINI_LIVE")
@@ -110,6 +111,11 @@ model Agency {
   project200Contacts    Project200Contact[]
   project200Logs        Project200Log[]
   tipsParticipants      TipsParticipant[]
+  emailSubscription     AgencyEmailSubscription?
+  mailboxes             AgencyMailbox[]
+  emailForwards         AgencyEmailForward[]
+  domainSuggestions     AgencyDomainSuggestionCache[]
+  emailMessages         AgencyEmailMessage[]
 
   @@index([referredById])
 }
@@ -215,6 +221,8 @@ model User {
   createdAcademyVideos AcademyVideo[]           @relation("UserCreatedAcademyVideos")
   project200Contacts   Project200Contact[]
   project200Logs       Project200Log[]
+  assignedMailboxes    AgencyMailbox[]           @relation("UserAssignedMailboxes")
+  formerEmailForwards  AgencyEmailForward[]      @relation("FormerAgentForwards")
 
   @@index([agencyId])
   @@index([reportsToId])
@@ -1318,4 +1326,135 @@ model Project200Log {
   @@index([userId])
   @@index([agencyId])
   @@index([createdAt])
+}
+
+
+model AgencyEmailSubscription {
+  id                     String   @id @default(cuid())
+  agencyId               String   @unique
+  domainName             String   @unique
+  registrarOrderId       String?
+  titanOrderId           String?
+  maxSeats               Int      @default(20)
+  storageGbPerSeat       Int      @default(10)
+  wholesaleDomainCostUsd Float    @default(12.50)
+  monthlyPriceMxn        Float    @default(999)
+  billingMode            String   @default("STRIPE")
+  stripeSubscriptionId   String?
+  dnsConfigured          Boolean  @default(true)
+  dnsRecordsJson         Json?
+  whoisCustodyProfile    String   @default("AACOMSOFT_ZERO_TOUCH_PRIVACY")
+  status                 String   @default("active")
+  renewsAt               DateTime
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+
+  agency                 Agency               @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  mailboxes              AgencyMailbox[]
+  forwards               AgencyEmailForward[]
+
+  @@index([agencyId])
+  @@index([status])
+  @@map("agency_email_subscriptions")
+}
+
+model AgencyMailbox {
+  id                       String    @id @default(cuid())
+  subscriptionId           String
+  agencyId                 String
+  agentUserId              String?
+  displayName              String
+  isDepartmental           Boolean   @default(false)
+  emailAddress             String    @unique
+  titanAccountId           String?
+  encryptedImapCredentials String
+  storageUsedMb            Int       @default(120)
+  status                   String    @default("active")
+  releasedAt               DateTime?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  subscription             AgencyEmailSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  agency                   Agency                  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  agentUser                User?                   @relation("UserAssignedMailboxes", fields: [agentUserId], references: [id], onDelete: SetNull)
+  messages                 AgencyEmailMessage[]
+
+  @@index([subscriptionId])
+  @@index([agencyId])
+  @@index([agentUserId])
+  @@index([status])
+  @@map("agency_mailboxes")
+}
+
+model AgencyEmailForward {
+  id                    String   @id @default(cuid())
+  subscriptionId        String
+  agencyId              String
+  sourceEmail           String
+  destinationEmail      String
+  formerAgentUserId     String?
+  formerAgentName       String?
+  titanForwardId        String?
+  migratedMessagesCount Int      @default(0)
+  active                Boolean  @default(true)
+  createdAt             DateTime @default(now())
+
+  subscription          AgencyEmailSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  agency                Agency                  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  formerAgentUser       User?                   @relation("FormerAgentForwards", fields: [formerAgentUserId], references: [id], onDelete: SetNull)
+
+  @@index([subscriptionId])
+  @@index([agencyId])
+  @@index([sourceEmail])
+  @@map("agency_email_forwards")
+}
+
+model AgencyDomainSuggestionCache {
+  id                String   @id @default(cuid())
+  agencyId          String
+  suggestedDomain   String
+  tld               String
+  isAvailable       Boolean  @default(true)
+  wholesalePriceUsd Float    @default(11.99)
+  isPremium         Boolean  @default(false)
+  checkedAt         DateTime @default(now())
+
+  agency            Agency   @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@unique([agencyId, suggestedDomain])
+  @@index([agencyId])
+  @@index([checkedAt])
+  @@map("agency_domain_suggestions_cache")
+}
+
+model AgencyEmailMessage {
+  id              String   @id @default(cuid())
+  agencyId        String
+  mailboxId       String
+  folder          String   @default("INBOX")
+  fromAddress     String
+  fromName        String?
+  toAddresses     String
+  ccAddresses     String?
+  subject         String
+  snippet         String?
+  bodyHtml        String?
+  bodyText        String?
+  attachmentsJson Json?
+  isRead          Boolean  @default(false)
+  isStarred       Boolean  @default(false)
+  relatedClientId String?
+  relatedPolicyId String?
+  migratedFrom    String?
+  messageUid      String?
+  receivedAt      DateTime @default(now())
+  createdAt       DateTime @default(now())
+
+  agency          Agency        @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+  mailbox         AgencyMailbox @relation(fields: [mailboxId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId])
+  @@index([mailboxId, folder])
+  @@index([receivedAt])
+  @@map("agency_email_messages")
 }
