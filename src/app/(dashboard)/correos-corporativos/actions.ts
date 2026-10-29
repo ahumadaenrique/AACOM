@@ -12,6 +12,7 @@ import {
   deleteTitanMailboxAccount,
   DEFAULT_MAX_SEATS,
   DEFAULT_STORAGE_GB,
+  isDomainTakenOnInternet,
   MAX_DOMAIN_WHOLESALE_USD,
   PACKAGE_MONTHLY_PRICE_MXN,
   provisionCorporateDomainAndTitanOrder,
@@ -103,9 +104,24 @@ export async function getOrRefreshDomainSuggestions(agencyId: string, forceRefre
     });
 
     if (cached.length > 0) {
-      return cached.filter(
-        (c) => c.isAvailable && !c.isPremium && c.wholesalePriceUsd <= MAX_DOMAIN_WHOLESALE_USD
-      );
+      const valid = [];
+      for (const c of cached) {
+        if (c.isAvailable && !c.isPremium && c.wholesalePriceUsd <= MAX_DOMAIN_WHOLESALE_USD) {
+          const isTaken = await isDomainTakenOnInternet(c.suggestedDomain);
+          if (isTaken) {
+            // Invalidar en caché si ya existe en internet (ej. aacomsoft.com)
+            await prisma.agencyDomainSuggestionCache.updateMany({
+              where: { suggestedDomain: c.suggestedDomain },
+              data: { isAvailable: false },
+            });
+          } else {
+            valid.push(c);
+          }
+        }
+      }
+      if (valid.length > 0) {
+        return valid;
+      }
     }
   }
 

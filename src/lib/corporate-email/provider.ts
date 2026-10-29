@@ -138,6 +138,80 @@ function getResellerClubAuthParams(): URLSearchParams {
 }
 
 /**
+ * Verifica si un dominio ya está registrado y activo en internet consultando
+ * servidores raíz/DNS y protocolos RDAP en tiempo real.
+ * Si el dominio tiene registros NS/SOA activos o devuelve 200 en RDAP, está ocupado.
+ */
+export async function isDomainTakenOnInternet(domain: string): Promise<boolean> {
+  const clean = domain.trim().toLowerCase();
+
+  // 1. Verificación rápida de dominios conocidos del ecosistema
+  if (
+    clean === "aacomsoft.com" ||
+    clean === "aacom.com.mx" ||
+    clean === "aacomsoft.mx" ||
+    clean === "aacomsoft.com.mx" ||
+    clean.startsWith("google.") ||
+    clean.startsWith("facebook.") ||
+    clean.startsWith("microsoft.")
+  ) {
+    return true;
+  }
+
+  // 2. Para dominios .com, Verisign RDAP da respuesta oficial inmediata (200 = ocupado, 404 = libre)
+  if (clean.endsWith(".com") && !clean.endsWith(".com.mx")) {
+    try {
+      const rdapRes = await fetch(`https://rdap.verisign.com/com/v1/domain/${encodeURIComponent(clean)}`, {
+        cache: "no-store",
+        signal: AbortSignal.timeout(3000),
+      });
+      if (rdapRes.status === 200) {
+        return true;
+      }
+      if (rdapRes.status === 404) {
+        return false;
+      }
+    } catch {
+      // Fallback a DNS
+    }
+  }
+
+  // 3. Verificación universal de registros NS vía DNS over HTTPS (Google DNS)
+  try {
+    const res = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(clean)}&type=NS`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(3000),
+    });
+    if (res.ok) {
+      const json = (await res.json()) as { Status?: number; Answer?: Array<{ type: number }> };
+      if (json.Status === 0 && Array.isArray(json.Answer) && json.Answer.length > 0) {
+        return true;
+      }
+    }
+  } catch {
+    // Continuar con chequeo SOA
+  }
+
+  // 4. Verificación de registro SOA del dominio
+  try {
+    const soaRes = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(clean)}&type=SOA`, {
+      cache: "no-store",
+      signal: AbortSignal.timeout(3000),
+    });
+    if (soaRes.ok) {
+      const soaJson = (await soaRes.json()) as { Status?: number; Answer?: Array<{ type: number }> };
+      if (soaJson.Status === 0 && Array.isArray(soaJson.Answer) && soaJson.Answer.length > 0) {
+        return true;
+      }
+    }
+  } catch {
+    // Si falla la red, no bloqueamos
+  }
+
+  return false;
+}
+
+/**
  * Consulta disponibilidad y costo mayorista de un conjunto de dominios aplicando
  * la Regla de Tope de Costo de Dominio (Filtro Anti-Premium <= $15.00 USD)
  */
@@ -172,6 +246,11 @@ export async function checkDomainsAvailabilityAndWholesalePrice(
     ".mx": 14.50,
   };
 
+  // Chequeo paralelo de existencia real en internet (DNS / RDAP)
+  const internetTakenChecks = await Promise.all(
+    candidates.map((c) => isDomainTakenOnInternet(c.domain))
+  );
+
   if (isResellerClubLiveConfigured()) {
     try {
       const baseUrl = getResellerClubBaseUrl();
@@ -190,30 +269,38 @@ export async function checkDomainsAvailabilityAndWholesalePrice(
 
       if (res.ok) {
         const data = await res.json();
-        const results: DomainCheckResult[] = [];
-        for (const c of candidates) {
-          const entry = data?.[c.domain];
-          const isAvailable = entry?.status === "available";
-          const isPremium = Boolean(entry?.isPremium || entry?.premium);
-          const wholesalePriceUsd = Number(entry?.price || baseTldWholesaleMap[c.tld]);
-          const eligibleForPackage =
-            isAvailable && !isPremium && wholesalePriceUsd <= MAX_DOMAIN_WHOLESALE_USD;
+        if (data?.status === "ERROR" || data?.status === "error") {
+          console.error("[ResellerClub Live Error]", data.message || data);
+        } else {
+          const results: DomainCheckResult[] = [];
+          for (let i = 0; i < candidates.length; i++) {
+            const c = candidates[i];
+            const isTakenOnInternet = internetTakenChecks[i];
+            const entry = data?.[c.domain];
 
-          results.push({
-            domain: c.domain,
-            tld: c.tld,
-            isAvailable,
-            wholesalePriceUsd,
-            isPremium,
-            eligibleForPackage,
-            reasonIfIneligible: !isAvailable
-              ? "Dominio ya registrado"
-              : isPremium || wholesalePriceUsd > MAX_DOMAIN_WHOLESALE_USD
-              ? `Dominio Premium ($${wholesalePriceUsd.toFixed(2)} USD > tope $15 USD)`
-              : undefined,
-          });
+            // Si el dominio ya existe en internet (ej. aacomsoft.com), jamás puede estar disponible
+            let isAvailable = entry?.status === "available" && !isTakenOnInternet;
+            const isPremium = Boolean(entry?.isPremium || entry?.premium);
+            const wholesalePriceUsd = Number(entry?.price || baseTldWholesaleMap[c.tld]);
+            const eligibleForPackage =
+              isAvailable && !isPremium && wholesalePriceUsd <= MAX_DOMAIN_WHOLESALE_USD;
+
+            results.push({
+              domain: c.domain,
+              tld: c.tld,
+              isAvailable,
+              wholesalePriceUsd,
+              isPremium,
+              eligibleForPackage,
+              reasonIfIneligible: !isAvailable
+                ? "Dominio ya registrado"
+                : isPremium || wholesalePriceUsd > MAX_DOMAIN_WHOLESALE_USD
+                ? `Dominio Premium ($${wholesalePriceUsd.toFixed(2)} USD > tope $15 USD)`
+                : undefined,
+            });
+          }
+          return results;
         }
-        return results;
       }
     } catch (error) {
       console.warn("ResellerClub live check fallback to simulator:", error);
@@ -221,10 +308,11 @@ export async function checkDomainsAvailabilityAndWholesalePrice(
   }
 
   return candidates.map((c, idx) => {
+    const isTakenOnInternet = internetTakenChecks[idx];
     const isShortPremium = c.sld.length <= 4 || c.sld === "seguros" || c.sld === "vida";
     const isPremium = isShortPremium || (idx === 5 && c.tld === ".mx");
     const wholesalePriceUsd = isPremium ? 145.0 : baseTldWholesaleMap[c.tld];
-    const isAvailable = c.sld !== "google" && c.sld !== "gnp" && c.sld !== "axa";
+    const isAvailable = !isTakenOnInternet && !isShortPremium;
     const eligibleForPackage =
       isAvailable && !isPremium && wholesalePriceUsd <= MAX_DOMAIN_WHOLESALE_USD;
 
@@ -236,7 +324,7 @@ export async function checkDomainsAvailabilityAndWholesalePrice(
       isPremium,
       eligibleForPackage,
       reasonIfIneligible: !isAvailable
-        ? "Dominio ocupado"
+        ? "Dominio ya registrado"
         : isPremium || wholesalePriceUsd > MAX_DOMAIN_WHOLESALE_USD
         ? `Excede tope mayorista ($${wholesalePriceUsd.toFixed(2)} USD > $15 USD)`
         : undefined,
