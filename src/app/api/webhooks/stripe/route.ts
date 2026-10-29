@@ -5,6 +5,13 @@ import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
 import bcrypt from "bcryptjs";
 import { grantTipsCreditsPackage } from "@/lib/tips-credits";
+import {
+  DEFAULT_MAX_SEATS,
+  DEFAULT_STORAGE_GB,
+  PACKAGE_MONTHLY_PRICE_MXN,
+  provisionCorporateDomainAndTitanOrder,
+  provisionTitanMailboxAccount,
+} from "@/lib/corporate-email/provider";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -481,6 +488,99 @@ export async function POST(req: Request) {
             console.error("Error updating discount code uses:", err);
           }
         }
+      } else if (session.metadata?.type === "CORPORATE_EMAIL_PACKAGE") {
+        const agencyId = session.metadata?.agencyId;
+        const domainName = session.metadata?.domainName;
+        const sellerId = session.metadata?.sellerId || null;
+        const discountCodeStr = session.metadata?.discountCodeStr;
+        const amountPaidMxn = (session.amount_total || 0) / 100;
+
+        if (agencyId && domainName) {
+          const agency = await prisma.agency.findUnique({ where: { id: agencyId } });
+          if (agency) {
+            const provisioned = await provisionCorporateDomainAndTitanOrder({
+              agencyName: agency.name,
+              agencySlug: agency.slug,
+              domainName,
+            });
+
+            const renewsAt = new Date();
+            renewsAt.setMonth(renewsAt.getMonth() + 1);
+
+            const subRecord = await prisma.agencyEmailSubscription.upsert({
+              where: { agencyId: agency.id },
+              update: {
+                domainName: provisioned.domainName,
+                registrarOrderId: provisioned.registrarOrderId,
+                titanOrderId: provisioned.titanOrderId,
+                maxSeats: DEFAULT_MAX_SEATS,
+                storageGbPerSeat: DEFAULT_STORAGE_GB,
+                wholesaleDomainCostUsd: provisioned.wholesaleDomainCostUsd,
+                monthlyPriceMxn: PACKAGE_MONTHLY_PRICE_MXN,
+                billingMode: "STRIPE",
+                stripeSubscriptionId:
+                  typeof session.subscription === "string" ? session.subscription : null,
+                dnsConfigured: provisioned.dnsConfigured,
+                dnsRecordsJson: provisioned.dnsRecords as any,
+                whoisCustodyProfile: provisioned.whoisCustodyProfile,
+                status: "active",
+                renewsAt,
+              },
+              create: {
+                agencyId: agency.id,
+                domainName: provisioned.domainName,
+                registrarOrderId: provisioned.registrarOrderId,
+                titanOrderId: provisioned.titanOrderId,
+                maxSeats: DEFAULT_MAX_SEATS,
+                storageGbPerSeat: DEFAULT_STORAGE_GB,
+                wholesaleDomainCostUsd: provisioned.wholesaleDomainCostUsd,
+                monthlyPriceMxn: PACKAGE_MONTHLY_PRICE_MXN,
+                billingMode: "STRIPE",
+                stripeSubscriptionId:
+                  typeof session.subscription === "string" ? session.subscription : null,
+                dnsConfigured: provisioned.dnsConfigured,
+                dnsRecordsJson: provisioned.dnsRecords as any,
+                whoisCustodyProfile: provisioned.whoisCustodyProfile,
+                status: "active",
+                renewsAt,
+              },
+            });
+
+            const defaultEmail = `direccion@${provisioned.domainName}`;
+            const existingMbx = await prisma.agencyMailbox.findUnique({
+              where: { emailAddress: defaultEmail },
+            });
+            if (!existingMbx) {
+              const titanAcc = await provisionTitanMailboxAccount({
+                emailAddress: defaultEmail,
+                displayName: `Dirección ${agency.name}`,
+                titanOrderId: provisioned.titanOrderId,
+              });
+              await prisma.agencyMailbox.create({
+                data: {
+                  subscriptionId: subRecord.id,
+                  agencyId: agency.id,
+                  displayName: `Dirección ${agency.name}`,
+                  isDepartmental: true,
+                  emailAddress: defaultEmail,
+                  titanAccountId: titanAcc.titanAccountId,
+                  encryptedImapCredentials: titanAcc.encryptedImapCredentials,
+                  storageUsedMb: 45,
+                  status: "active",
+                },
+              });
+            }
+
+            await logCommission(
+              sellerId,
+              agency.id,
+              `Paquete Corporativo Dominio + 20 Correos (${provisioned.domainName})`,
+              amountPaidMxn,
+              (session.payment_intent as string) || session.id,
+              discountCodeStr
+            );
+          }
+        }
       } else {
         const agencyId = session.metadata?.agencyId;
         const daysToAddStr = session.metadata?.daysToAdd;
@@ -535,8 +635,24 @@ export async function POST(req: Request) {
         const daysToAddStr = subscription.metadata?.daysToAdd;
         const monthsToAddStr = subscription.metadata?.monthsToAdd;
         const stripePeriodEndUnix = (subscription as any).current_period_end as number | undefined;
-        
-        if (agencyId) {
+
+        if (subscription.metadata?.type === "CORPORATE_EMAIL_PACKAGE") {
+          const nextRenew = stripePeriodEndUnix
+            ? new Date(stripePeriodEndUnix * 1000)
+            : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+          await prisma.agencyEmailSubscription.updateMany({
+            where: {
+              OR: [
+                { stripeSubscriptionId: subscriptionId },
+                ...(agencyId ? [{ agencyId }] : []),
+              ],
+            },
+            data: {
+              status: "active",
+              renewsAt: nextRenew,
+            },
+          });
+        } else if (agencyId) {
             await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr, stripePeriodEndUnix);
 
             await logCommission(
@@ -551,12 +667,29 @@ export async function POST(req: Request) {
     }
   }
 
-  // Handle customer.subscription.deleted (Agent or Seat cancellation)
+  // Handle invoice.payment_failed (Corporate Email past_due handling)
+  if (event.type === "invoice.payment_failed") {
+    const invoice = event.data.object as Stripe.Invoice;
+    const subscriptionId = (invoice as any).subscription as string | undefined;
+    if (subscriptionId) {
+      await prisma.agencyEmailSubscription.updateMany({
+        where: { stripeSubscriptionId: subscriptionId },
+        data: { status: "past_due" },
+      });
+    }
+  }
+
+  // Handle customer.subscription.deleted (Agent, Seat, or Corporate Email cancellation)
   if (event.type === "customer.subscription.deleted") {
     const subscription = event.data.object as Stripe.Subscription;
     const isAgencySeat = subscription.metadata?.isAgencySeat === 'true';
-    
-    if (isAgencySeat) {
+
+    if (subscription.metadata?.type === "CORPORATE_EMAIL_PACKAGE") {
+      await prisma.agencyEmailSubscription.updateMany({
+        where: { stripeSubscriptionId: subscription.id },
+        data: { status: "canceled" },
+      });
+    } else if (isAgencySeat) {
         const agencyId = subscription.metadata?.agencyId;
         if (agencyId) {
             const agency = await prisma.agency.findUnique({ where: { id: agencyId } });

@@ -4,9 +4,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { differenceInCalendarDays, format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ShieldAlert, ShieldCheck, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff, Bot, Sparkles, BookOpen, Coins, Video, Share2, Flame } from "lucide-react";
+import { ShieldAlert, ShieldCheck, CheckCircle2, XCircle, Trash2, Gift, PhoneCall, PhoneOff, Bot, Sparkles, BookOpen, Coins, Video, Share2, Flame, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { deleteAgency, getAgencyUsers, toggleAgencyRoleplay, updateAgencyMaxAdmins, toggleAgencyAcademyModule, toggleAgencyShareAacomVideos, toggleAgencyProyecto200Module } from "./actions";
+import { deleteAgency, getAgencyUsers, toggleAgencyRoleplay, updateAgencyMaxAdmins, toggleAgencyAcademyModule, toggleAgencyShareAacomVideos, toggleAgencyProyecto200Module, toggleAgencyCorporateEmailModule } from "./actions";
 import { useState, useEffect } from "react";
 import { GiftModal } from "./GiftModal";
 import { AgencyAiSettingsModal } from "./AgencyAiSettingsModal";
@@ -25,6 +25,19 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
   const [togglingAcademyId, setTogglingAcademyId] = useState<string | null>(null);
   const [togglingShareAacomId, setTogglingShareAacomId] = useState<string | null>(null);
   const [togglingProyecto200Id, setTogglingProyecto200Id] = useState<string | null>(null);
+  const [togglingCorpEmailId, setTogglingCorpEmailId] = useState<string | null>(null);
+
+  const handleToggleCorpEmail = async (agencyId: string, current: boolean) => {
+    try {
+      setTogglingCorpEmailId(agencyId);
+      await toggleAgencyCorporateEmailModule(agencyId, !current);
+      setLocalAgencies(prev => prev.map(a => a.id === agencyId ? { ...a, allowCorporateEmailModule: !current } : a));
+    } catch (e: any) {
+      alert("Error al cambiar estado de Dominios y Correos Corporativos: " + (e.message || "Error"));
+    } finally {
+      setTogglingCorpEmailId(null);
+    }
+  };
 
   const handleToggleProyecto200 = async (agencyId: string, current: boolean) => {
     try {
@@ -350,6 +363,18 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
 
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      {/* Dominios y Correos Corporativos (Titan Email 20 asientos) */}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleToggleCorpEmail(agency.id, agency.allowCorporateEmailModule ?? (agency.id === "aacom" || agency.slug === "aacom"))}
+                        disabled={togglingCorpEmailId === agency.id}
+                        className={`text-xs h-7 px-2 border ${(agency.allowCorporateEmailModule ?? (agency.id === "aacom" || agency.slug === "aacom")) ? 'border-sky-300 text-sky-700 bg-sky-50 hover:bg-sky-100 font-bold' : 'border-slate-200 text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
+                        title={(agency.allowCorporateEmailModule ?? (agency.id === "aacom" || agency.slug === "aacom")) ? "Módulo Dominios y Correos Corporativos HABILITADO (Click para Ocultar/Desactivar)" : "Módulo Dominios y Correos Corporativos OCULTO/DESACTIVADO (Click para Habilitar)"}
+                      >
+                        <Mail className={`h-3.5 w-3.5 ${(agency.allowCorporateEmailModule ?? (agency.id === "aacom" || agency.slug === "aacom")) ? 'text-sky-600' : 'text-slate-400'}`} />
+                      </Button>
+
                       {/* Proyecto 200 (CRM y Piloto Automático) */}
                       <Button
                         variant="outline"

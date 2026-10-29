@@ -55,6 +55,7 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
       allowReferidores: formData.get("allowReferidores") === "on",
       allowRoleplaySimulator: formData.get("allowRoleplaySimulator") === "on",
       allowProyecto200Module: formData.get("allowProyecto200Module") === "on",
+      allowCorporateEmailModule: formData.get("allowCorporateEmailModule") === "on",
       enableWhatsAppPlanner: formData.get("enableWhatsAppPlanner") === "on",
       whatsAppPlannerPhones: formData.get("whatsAppPlannerPhones") as string || undefined,
       whatsAppPlannerAgents: selectedAgents.length > 0 ? selectedAgents.join(",") : undefined,
@@ -218,6 +219,14 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
                 <p className="text-xs text-orange-700">Activa u oculta por completo el CRM y Piloto Automático de Proyecto 200 para esta promotoría.</p>
               </div>
               <Switch id="allowProyecto200Module" name="allowProyecto200Module" defaultChecked={agency ? (agency.allowProyecto200Module ?? (agency.id === "aacom" || agency.slug === "aacom")) : false} />
+            </div>
+
+            <div className="flex items-center justify-between p-3 border border-sky-200 rounded-lg bg-sky-50/40">
+              <div className="space-y-0.5">
+                <Label htmlFor="allowCorporateEmailModule" className="text-base font-semibold text-sky-900">Permitir Módulo Dominios y Correos Corporativos</Label>
+                <p className="text-xs text-sky-700">Exclusivo Super Admin: Activa o desactiva el acceso al módulo de Identidad Corporativa (Dominio + 20 Buzones Titan Email) y su banner de contratación ($999 MXN/mes).</p>
+              </div>
+              <Switch id="allowCorporateEmailModule" name="allowCorporateEmailModule" defaultChecked={agency ? (agency.allowCorporateEmailModule ?? (agency.id === "aacom" || agency.slug === "aacom")) : false} />
             </div>
 
             <div className="flex flex-col p-3 border border-green-200 rounded-lg bg-green-50/30 gap-3">

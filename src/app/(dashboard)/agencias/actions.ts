@@ -17,6 +17,7 @@ const agencySchema = z.object({
   allowReferidores: z.boolean().optional(),
   allowRoleplaySimulator: z.boolean().optional(),
   allowProyecto200Module: z.boolean().optional(),
+  allowCorporateEmailModule: z.boolean().optional(),
   // WhatsApp Planner Config
   enableWhatsAppPlanner: z.boolean().optional(),
   whatsAppPlannerPhones: z.string().optional(),
@@ -69,8 +70,9 @@ export async function getAgencies() {
           orderBy: { createdAt: "asc" }
         },
         _count: {
-          select: { users: true, clients: true, policies: true }
-        }
+          select: { users: true, clients: true, policies: true, mailboxes: true }
+        },
+        emailSubscription: true,
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -125,6 +127,7 @@ export async function createAgency(data: z.infer<typeof agencySchema>) {
       allowReferidores: parsed.allowReferidores ?? false,
       allowRoleplaySimulator: parsed.allowRoleplaySimulator ?? false,
       allowProyecto200Module: parsed.allowProyecto200Module ?? false,
+      allowCorporateEmailModule: parsed.allowCorporateEmailModule ?? false,
       enableWhatsAppPlanner: parsed.enableWhatsAppPlanner ?? false,
       whatsAppPlannerPhones: parsed.whatsAppPlannerPhones,
       whatsAppPlannerAgents: parsed.whatsAppPlannerAgents,
@@ -789,4 +792,26 @@ export async function updateAgencyMaxAdmins(agencyId: string, maxAdmins: number)
   revalidatePath("/agencias");
   revalidatePath("/admin");
   return { success: true, maxAdmins: updated.maxAdmins, activeAdmins: currentActiveAdmins };
+}
+
+
+export async function toggleAgencyCorporateEmailModule(agencyId: string, allow: boolean) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("No autorizado");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (user?.role !== "SUPER_ADMIN") {
+    throw new Error("Solo el Super Administrador puede habilitar o deshabilitar el Módulo de Dominios y Correos Corporativos.");
+  }
+
+  const updated = await prisma.agency.update({
+    where: { id: agencyId },
+    data: { allowCorporateEmailModule: allow }
+  });
+
+  revalidatePath("/agencias");
+  revalidatePath("/correos-corporativos");
+  revalidatePath("/mi-correo");
+  revalidatePath("/admin");
+  revalidatePath("/", "layout");
+  return { success: true, allowCorporateEmailModule: updated.allowCorporateEmailModule };
 }

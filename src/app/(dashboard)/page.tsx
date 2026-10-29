@@ -3,6 +3,9 @@ import { auth } from "@/auth"
 import ClientHome from "./ClientHome"
 import { headers } from "next/headers"
 import { Sparkles } from "lucide-react"
+import { CorporateEmailUpsellBanner } from "@/components/corporate-email/CorporateEmailUpsellBanner"
+import { getOrRefreshDomainSuggestions } from "@/app/(dashboard)/correos-corporativos/actions"
+import { buildAgentEmailLocalPart } from "@/lib/corporate-email/provider"
 
 export default async function HomePage() {
     const session = await auth();
@@ -126,8 +129,60 @@ export default async function HomePage() {
 
     upcomingBirthdays.sort((a, b) => a.daysUntil - b.daysUntil);
 
+    const isAdminOrSuperAdmin = currentUser?.role === 'ADMIN' || currentUser?.role === 'SUPER_ADMIN';
+    const allowCorporateEmailModule = agency?.allowCorporateEmailModule ?? (agency?.id === 'aacom' || agency?.slug === 'aacom');
+    let corporateEmailUpsellData: {
+        primaryDomain: string;
+        domainSuggestions: any[];
+        sampleAgentEmails: any[];
+    } | null = null;
+
+    if (isAdminOrSuperAdmin && allowCorporateEmailModule && agency?.id) {
+        const existingEmailSub = await prisma.agencyEmailSubscription.findUnique({
+            where: { agencyId: agency.id }
+        });
+        if (!existingEmailSub) {
+            const [suggestions, agencyAgents] = await Promise.all([
+                getOrRefreshDomainSuggestions(agency.id),
+                prisma.user.findMany({
+                    where: { agencyId: agency.id, active: true, role: { in: ['AGENTE', 'ADMIN'] } },
+                    select: { id: true, name: true, email: true },
+                    take: 2,
+                    orderBy: { createdAt: 'asc' }
+                })
+            ]);
+            const primaryDomain = suggestions[0]?.suggestedDomain || `${(agency.slug || 'mipromotoria').replace(/[^a-z0-9]/g, '')}seguros.com`;
+            const sampleAgentEmails = agencyAgents.length > 0
+                ? agencyAgents.map(a => ({
+                    userId: a.id,
+                    name: a.name || 'Agente',
+                    emailPreview: `${buildAgentEmailLocalPart(a.name || a.email)}@${primaryDomain}`
+                }))
+                : [
+                    { userId: 's1', name: 'Carlos Ramírez', emailPreview: `carlos.ramirez@${primaryDomain}` },
+                    { userId: 's2', name: 'Laura Méndez', emailPreview: `laura.mendez@${primaryDomain}` }
+                ];
+            corporateEmailUpsellData = {
+                primaryDomain,
+                domainSuggestions: suggestions,
+                sampleAgentEmails
+            };
+        }
+    }
+
     return (
         <div className="flex flex-col gap-8 w-full max-w-6xl mx-auto py-4 animate-in fade-in duration-300">
+            {corporateEmailUpsellData && agency && (
+                <CorporateEmailUpsellBanner
+                    agencyId={agency.id}
+                    agencyName={agency.name}
+                    primaryDomain={corporateEmailUpsellData.primaryDomain}
+                    domainSuggestions={corporateEmailUpsellData.domainSuggestions}
+                    sampleAgentEmails={corporateEmailUpsellData.sampleAgentEmails}
+                    isSuperAdmin={currentUser?.role === 'SUPER_ADMIN'}
+                    compact
+                />
+            )}
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pb-2 border-b border-slate-100 dark:border-slate-800/60">
                 <div className="flex flex-col gap-1">
                     <div className="flex items-center gap-2">

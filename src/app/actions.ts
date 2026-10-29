@@ -1640,6 +1640,7 @@ export async function getAgencyModulesConfig(): Promise<{
     allowReferidores?: boolean;
     allowTipsModule?: boolean;
     allowProyecto200Module?: boolean;
+    allowCorporateEmailModule?: boolean;
 }> {
     try {
         const session = await auth();
@@ -1666,7 +1667,8 @@ export async function getAgencyModulesConfig(): Promise<{
             config,
             allowReferidores: agency?.allowReferidores ?? false,
             allowTipsModule: agency?.allowTipsModule ?? true,
-            allowProyecto200Module: agency?.allowProyecto200Module ?? (agencyId === 'aacom' || agency?.slug === 'aacom')
+            allowProyecto200Module: agency?.allowProyecto200Module ?? (agencyId === 'aacom' || agency?.slug === 'aacom'),
+            allowCorporateEmailModule: agency?.allowCorporateEmailModule ?? (agencyId === 'aacom' || agency?.slug === 'aacom')
         };
     } catch (error) {
         console.error("Error fetching agency modules config:", error);

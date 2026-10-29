@@ -20,6 +20,7 @@ export default function AdminModulesSettings() {
     const [savingKey, setSavingKey] = useState<string | null>(null)
     const [statusMsg, setStatusMsg] = useState<string>("")
     const [allowProyecto200, setAllowProyecto200] = useState<boolean>(false)
+    const [allowCorporateEmail, setAllowCorporateEmail] = useState<boolean>(false)
 
     const loadConfig = async () => {
         setLoading(true)
@@ -28,6 +29,7 @@ export default function AdminModulesSettings() {
             if (res.success && res.config) {
                 setConfig(res.config)
                 if (typeof (res as any).allowProyecto200Module === "boolean") setAllowProyecto200((res as any).allowProyecto200Module)
+                if (typeof (res as any).allowCorporateEmailModule === "boolean") setAllowCorporateEmail((res as any).allowCorporateEmailModule)
             }
         } catch (err) {
             console.error("Error loading agency modules config:", err)
@@ -125,7 +127,11 @@ export default function AdminModulesSettings() {
         },
     ]
 
-    const visibleDefinitions = AGENCY_MODULE_DEFINITIONS.filter((m) => m.key !== "proyecto_200" || allowProyecto200)
+    const visibleDefinitions = AGENCY_MODULE_DEFINITIONS.filter(
+        (m) =>
+            (m.key !== "proyecto_200" || allowProyecto200) &&
+            (m.key !== "correo_corporativo" || allowCorporateEmail)
+    )
     const totalModules = visibleDefinitions.length
     const activeModulesCount = visibleDefinitions.filter((m) => config[m.key]).length
 
