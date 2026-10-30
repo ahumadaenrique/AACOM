@@ -57,10 +57,23 @@ export class GeminiLiveSession {
   private sessionId: string;
   private isMuted: boolean = false;
   private isAiSuppressed: boolean = false;
+  private lastAiSpeechEndTime: number = 0;
+  private userSpeechHangoverUntil: number = 0;
+  private consecutiveLoudBargeInFrames: number = 0;
+  private userIntentionallyBargedIn: boolean = false;
 
   constructor(config: GeminiLiveSessionConfig) {
     this.config = config;
     this.sessionId = 'gemini_' + Math.random().toString(36).substring(2, 11);
+  }
+
+  private isMobileDevice(): boolean {
+    if (typeof navigator === 'undefined') return false;
+    const ua = navigator.userAgent || '';
+    return (
+      /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    );
   }
 
   public async start(): Promise<void> {
@@ -86,21 +99,16 @@ export class GeminiLiveSession {
           this.recordingDest = this.audioCtx.createMediaStreamDestination();
           this.masterGain.connect(this.recordingDest);
 
-          const isIOS = typeof navigator !== 'undefined' && (
-            /iPad|iPhone|iPod/i.test(navigator.userAgent || '') ||
-            (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-          );
-          const hasWebSpeech = typeof window !== 'undefined' && Boolean((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
-
-          // On iOS Safari, opening getUserMedia alongside webkitSpeechRecognition causes hardware mic contention.
-          // Only attach a second getUserMedia stream to the recorder on non-iOS or when WebSpeech is not used.
-          if (navigator.mediaDevices?.getUserMedia && !(isIOS && hasWebSpeech)) {
+          // Open a single unified getUserMedia stream with autoGainControl disabled
+          // so mobile phones do not amplify distant room conversations, and share it cleanly with the PCM stream.
+          if (navigator.mediaDevices?.getUserMedia) {
             try {
               this.recordingMicStream = await navigator.mediaDevices.getUserMedia({
                 audio: {
+                  channelCount: 1,
                   echoCancellation: true,
                   noiseSuppression: true,
-                  autoGainControl: true,
+                  autoGainControl: false,
                   ...(this.config.inputDeviceId ? { deviceId: { exact: this.config.inputDeviceId } } : {})
                 }
               });
@@ -356,6 +364,14 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
     if (this.isListeningActive || this.isIntentionallyClosed) return;
     this.isListeningActive = true;
 
+    // En dispositivos móviles (Android / iOS), usar directamente el stream PCM unificado
+    // para evitar la colisión de hardware entre MediaRecorder y webkitSpeechRecognition (error audio-capture).
+    if (this.isMobileDevice()) {
+      console.log('[Gemini Live] Mobile device detected: using unified raw PCM mic stream with anti-echo & noise gate.');
+      this.startRawPcmMicStream();
+      return;
+    }
+
     const SpeechRecClass = typeof window !== 'undefined' && 
       ((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
 
@@ -383,6 +399,7 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
       };
 
       this.recognition.onspeechstart = () => {
+        if (this.isMuted || this.isAiSpeaking || Date.now() - this.lastAiSpeechEndTime < 450) return;
         if (this.config.onUserSpeaking) this.config.onUserSpeaking(true, 0.7);
         if (this.config.onMicStatus) this.config.onMicStatus('speaking');
       };
@@ -392,7 +409,7 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
         if (this.config.onMicStatus) this.config.onMicStatus('listening');
 
         // If the user stopped speaking and we have a pending utterance, commit it now!
-        if (this.pendingInterimText) {
+        if (this.pendingInterimText && !this.isAiSpeaking && Date.now() - this.lastAiSpeechEndTime >= 450) {
           const toSend = this.pendingInterimText;
           this.pendingInterimText = '';
           if (this.silenceTimer) {
@@ -404,6 +421,17 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
       };
 
       this.recognition.onresult = (event: any) => {
+        // Candado Anti-Eco: mientras el prospecto habla por el altavoz (o en los 450ms posteriores),
+        // ignorar lo que capte el micrófono para que el prospecto jamás se transcriba ni se corte a sí mismo.
+        if (this.isMuted || this.isAiSpeaking || Date.now() - this.lastAiSpeechEndTime < 450) {
+          this.pendingInterimText = '';
+          if (this.silenceTimer) {
+            clearTimeout(this.silenceTimer);
+            this.silenceTimer = null;
+          }
+          return;
+        }
+
         let interimText = '';
         let finalUtterance = '';
 
@@ -427,13 +455,6 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
           if (this.config.onUserSpeaking) this.config.onUserSpeaking(true, 0.8);
         }
 
-        // Barge-in: if prospect is speaking and user starts talking, interrupt prospect
-        if (this.isAiSpeaking && currentText.length > 4) {
-          console.log('[Gemini Live] User interrupted AI speech, stopping playback.');
-          this.stopAiAudioPlayback();
-          if (this.config.onAiSpeaking) this.config.onAiSpeaking(false);
-        }
-
         // If recognizer gave a final utterance, commit immediately
         if (finalUtterance.trim()) {
           this.pendingInterimText = '';
@@ -447,7 +468,7 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
           this.pendingInterimText = interimText.trim();
           if (this.silenceTimer) clearTimeout(this.silenceTimer);
           this.silenceTimer = setTimeout(() => {
-            if (this.pendingInterimText) {
+            if (this.pendingInterimText && !this.isAiSpeaking) {
               const toSend = this.pendingInterimText;
               this.pendingInterimText = '';
               this.sendUserTurn(toSend);
@@ -480,7 +501,7 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
         if (this.config.onUserSpeaking) this.config.onUserSpeaking(false, 0);
 
         // If there was any pending uncommitted speech, commit it
-        if (this.pendingInterimText) {
+        if (this.pendingInterimText && !this.isAiSpeaking) {
           const toSend = this.pendingInterimText;
           this.pendingInterimText = '';
           if (this.silenceTimer) {
@@ -521,14 +542,24 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
             channelCount: 1,
             echoCancellation: true,
             noiseSuppression: true,
-            autoGainControl: true,
+            autoGainControl: false,
             ...(this.config.inputDeviceId ? { deviceId: { exact: this.config.inputDeviceId } } : {})
           }
         };
         this.mediaStream = await navigator.mediaDevices.getUserMedia(micConstraints);
       }
+
+      if (this.config.onMicStatus) {
+        this.config.onMicStatus('listening');
+      }
+
       this.micSource = this.audioCtx.createMediaStreamSource(this.mediaStream);
       this.processor = this.audioCtx.createScriptProcessor(2048, 1, 1);
+
+      // Umbral de Noise Gate (ignora pláticas lejanas de fondo en la habitación)
+      const NOISE_GATE_RMS = 0.035;
+      // Umbral alto para interrupción voluntaria (barge-in hablando fuerte pegado al teléfono)
+      const BARGE_IN_RMS = 0.22;
 
       this.processor.onaudioprocess = (e) => {
         if (!this.isConnected || !this.isSetupComplete || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
@@ -537,40 +568,67 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
 
         const inputBuffer = e.inputBuffer.getChannelData(0);
         const inputRate = this.audioCtx?.sampleRate || 48000;
+        const targetLen = Math.floor(inputBuffer.length / (inputRate / 16000));
+
+        if (this.isMuted) {
+          if (this.config.onUserSpeaking) this.config.onUserSpeaking(false, 0);
+          return;
+        }
 
         let sum = 0;
         for (let i = 0; i < inputBuffer.length; i++) {
           sum += inputBuffer[i] * inputBuffer[i];
         }
         const rms = Math.sqrt(sum / inputBuffer.length);
-        const isSpeaking = rms > 0.02;
+
+        const inAiEchoWindow = this.isAiSpeaking || (Date.now() - this.lastAiSpeechEndTime < 450);
+
+        if (inAiEchoWindow) {
+          // Candado Half-Duplex Anti-Eco: mientras Mariana habla por el altavoz del celular,
+          // bloqueamos el retorno acústico del altavoz enviando silencio digital puro,
+          // salvo que el usuario hable muy fuerte durante >= 5 cuadros seguidos para interrumpir.
+          if (rms >= BARGE_IN_RMS) {
+            this.consecutiveLoudBargeInFrames++;
+          } else {
+            this.consecutiveLoudBargeInFrames = 0;
+          }
+
+          if (this.consecutiveLoudBargeInFrames >= 5) {
+            this.userIntentionallyBargedIn = true;
+            this.consecutiveLoudBargeInFrames = 0;
+            this.stopAiAudioPlayback();
+            if (this.config.onAiSpeaking) this.config.onAiSpeaking(false);
+          } else {
+            if (this.config.onUserSpeaking) this.config.onUserSpeaking(false, 0);
+            const silentPcm = new Int16Array(targetLen);
+            this.sendPcm16Chunk(silentPcm);
+            return;
+          }
+        } else {
+          this.consecutiveLoudBargeInFrames = 0;
+        }
+
+        // Compuerta de Ruido (Noise Gate): filtra conversaciones ajenas de fondo en el cuarto
+        if (rms >= NOISE_GATE_RMS) {
+          this.userSpeechHangoverUntil = Date.now() + 500;
+        }
+
+        const isUserVoiceActive = rms >= NOISE_GATE_RMS || Date.now() < this.userSpeechHangoverUntil;
 
         if (this.config.onUserSpeaking) {
-          this.config.onUserSpeaking(isSpeaking, Math.min(1, rms * 5));
+          this.config.onUserSpeaking(rms >= NOISE_GATE_RMS, rms >= NOISE_GATE_RMS ? Math.min(1, rms * 5) : 0);
+        }
+        if (this.config.onMicStatus) {
+          this.config.onMicStatus(rms >= NOISE_GATE_RMS ? 'speaking' : 'listening');
         }
 
-        const pcm16 = this.downsampleTo16k(inputBuffer, inputRate);
-        const bytes = new Uint8Array(pcm16.buffer, pcm16.byteOffset, pcm16.byteLength);
-        let binary = '';
-        for (let i = 0; i < bytes.byteLength; i++) {
-          binary += String.fromCharCode(bytes[i]);
-        }
-        const base64Audio = btoa(binary);
+        // Si solo hay ruido/plática de fondo por debajo del umbral y ya pasó la ventana de 500ms,
+        // enviamos silencio digital puro (ceros) para que Gemini detecte de inmediato el fin de turno y conteste.
+        const pcm16 = isUserVoiceActive
+          ? this.downsampleTo16k(inputBuffer, inputRate)
+          : new Int16Array(targetLen);
 
-        const mediaChunk = {
-          realtimeInput: {
-            mediaChunks: [
-              {
-                mimeType: 'audio/pcm;rate=16000',
-                data: base64Audio
-              }
-            ]
-          }
-        };
-
-        try {
-          this.ws?.send(JSON.stringify(mediaChunk));
-        } catch (_) {}
+        this.sendPcm16Chunk(pcm16);
       };
 
       this.muteGain = this.audioCtx.createGain();
@@ -582,6 +640,31 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
     } catch (err) {
       console.error('[Gemini Live startRawPcmMicStream error]', err);
     }
+  }
+
+  private sendPcm16Chunk(pcm16: Int16Array): void {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+    const bytes = new Uint8Array(pcm16.buffer, pcm16.byteOffset, pcm16.byteLength);
+    let binary = '';
+    for (let i = 0; i < bytes.byteLength; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    const base64Audio = btoa(binary);
+
+    const mediaChunk = {
+      realtimeInput: {
+        mediaChunks: [
+          {
+            mimeType: 'audio/pcm;rate=16000',
+            data: base64Audio
+          }
+        ]
+      }
+    };
+
+    try {
+      this.ws.send(JSON.stringify(mediaChunk));
+    } catch (_) {}
   }
 
   private downsampleTo16k(input: Float32Array, inputRate: number): Int16Array {
@@ -659,7 +742,12 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
 
       // 2. Interruption detection (barge-in): Gemini detected user speaking
       if (json.serverContent?.interrupted) {
+        if ((this.isAiSpeaking || Date.now() - this.lastAiSpeechEndTime < 450) && !this.userIntentionallyBargedIn) {
+          console.log('[Gemini Live] Ignored false server interruption (speaker echo protection)');
+          return;
+        }
         console.log('[Gemini Live] Interruption detected (barge-in)!');
+        this.userIntentionallyBargedIn = false;
         this.stopAiAudioPlayback();
         if (this.config.onAiSpeaking) this.config.onAiSpeaking(false);
         return;
@@ -802,6 +890,7 @@ IMPORTANTE: Habla siempre en español de México con tono y modismos ejecutivos 
         if (idx !== -1) this.audioQueue.splice(idx, 1);
         if (this.audioQueue.length === 0) {
           this.isAiSpeaking = false;
+          this.lastAiSpeechEndTime = Date.now();
           if (this.config.onAiSpeaking) this.config.onAiSpeaking(false);
         }
       };
