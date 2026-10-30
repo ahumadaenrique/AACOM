@@ -946,7 +946,13 @@ function loadAgentReport() {
         }
     });
     
-    if (lowModules.length === 0) {
+    if (!agent.attempts || agent.attempts.length === 0) {
+        recsContainer.innerHTML = `
+            <div style="background: rgba(245, 158, 11, 0.08); border-left: 3px solid #f59e0b; padding: 12px; border-radius: 4px; font-size:14px;">
+                <strong style="color: #fbbf24;">Sin simulaciones registradas:</strong> El agente cuenta con tiempo de estudio en módulos, pero aún no ha finalizado un examen en el Simulador Oficial para graficar sus fortalezas por tema.
+            </div>
+        `;
+    } else if (lowModules.length === 0) {
         recsContainer.innerHTML = `
             <div style="background: rgba(16,185,129,0.08); border-left: 3px solid var(--accent-success); padding: 12px; border-radius: 4px; font-size:14px;">
                 <strong>Excelente rendimiento:</strong> El agente mantiene un promedio aprobatorio en todos los temas. Recomienda seguir practicando en el simulador completo.
@@ -1050,13 +1056,15 @@ function renderStrengthsRadar(agent) {
             },
             scales: {
                 r: {
+                    min: 0,
+                    max: 100,
+                    beginAtZero: true,
                     angleLines: { color: 'rgba(255,255,255,0.08)' },
                     grid: { color: 'rgba(255,255,255,0.08)' },
                     ticks: {
                         color: '#6b7280',
                         backdropColor: 'transparent',
-                        beginAtZero: true,
-                        max: 100
+                        stepSize: 20
                     },
                     pointLabels: {
                         color: '#9ca3af',
@@ -1244,7 +1252,7 @@ function nextStudyQuestion() {
     } else {
         alert("¡Has completado todas las preguntas de este módulo!");
         if (!activeAgent.studyProgress) activeAgent.studyProgress = {};
-        activeAgent.studyProgress[studyModule] = 0; // Reset index on complete
+        activeAgent.studyProgress[studyModule] = studyQuestions.length; // Mark 100% completed
         syncStudyProgressImmediate();
         switchTab("agent-dash");
     }
@@ -1704,6 +1712,18 @@ function renderSimQuestion() {
         btn.classList.remove("active");
         if (idx === simCurrentIdx) btn.classList.add("active");
     });
+
+    // Update next button text on last question
+    const nextSimBtn = document.getElementById("btn-sim-next");
+    if (nextSimBtn) {
+        if (simCurrentIdx === simQuestions.length - 1) {
+            nextSimBtn.innerText = "Finalizar Examen";
+            nextSimBtn.style.background = "linear-gradient(135deg, var(--accent-error), #dc2626)";
+        } else {
+            nextSimBtn.innerText = "Siguiente";
+            nextSimBtn.style.background = "";
+        }
+    }
 }
 
 function selectSimOption(optionIndex) {
@@ -1733,6 +1753,8 @@ function nextSimQuestion() {
     if (simCurrentIdx < simQuestions.length - 1) {
         simCurrentIdx++;
         renderSimQuestion();
+    } else {
+        finishSimulatorExam(false);
     }
 }
 
@@ -1753,7 +1775,7 @@ async function finishSimulatorExam(auto = false) {
     
     simQuestions.forEach((q, idx) => {
         const selected = simAnswers[idx];
-        const module = q.module;
+        const module = q.module || q.modulo || "Seguro de Personas (Grupo y Colectivo)";
         
         moduleTotals[module] = (moduleTotals[module] || 0) + 1;
         
