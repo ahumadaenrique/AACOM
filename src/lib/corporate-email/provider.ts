@@ -1,5 +1,4 @@
 import crypto from "crypto";
-import { ProxyAgent } from "undici";
 import { encrypt, decrypt } from "@/lib/encryption";
 
 export const MAX_DOMAIN_WHOLESALE_USD = 15.0;
@@ -149,9 +148,13 @@ async function resellerClubFetch(url: string, init?: RequestInit): Promise<Respo
     cache: "no-store",
   };
 
-  if (fixieUrl && fixieUrl.trim().length > 0) {
+  if (fixieUrl && fixieUrl.trim().length > 0 && typeof window === "undefined") {
     try {
-      initCopy.dispatcher = new ProxyAgent(fixieUrl.trim());
+      const nodeRequire = eval("require");
+      const undiciMod = nodeRequire("undici");
+      if (undiciMod?.ProxyAgent) {
+        initCopy.dispatcher = new undiciMod.ProxyAgent(fixieUrl.trim());
+      }
     } catch (e) {
       console.warn("Error inicializando ProxyAgent para ResellerClub:", e);
     }

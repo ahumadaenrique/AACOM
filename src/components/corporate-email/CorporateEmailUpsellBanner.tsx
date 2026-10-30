@@ -22,7 +22,24 @@ import {
   activateCorporateEmailSubscriptionAction,
   searchCustomDomainAction,
 } from "@/app/(dashboard)/correos-corporativos/actions";
-import { buildAgentEmailLocalPart } from "@/lib/corporate-email/provider";
+
+function buildAgentEmailLocalPart(fullName: string): string {
+  const parts = (fullName || "agente")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (parts.length === 0) return "agente";
+  if (parts.length === 1) return parts[0];
+  if (parts.length === 2) return `${parts[0]}.${parts[1]}`;
+  if (parts.length >= 3) {
+    return `${parts[0]}.${parts[parts.length - 2]}`;
+  }
+  return `${parts[0]}.${parts[1]}`;
+}
 
 interface DomainOption {
   suggestedDomain: string;

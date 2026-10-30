@@ -726,11 +726,13 @@ async function injectColumns() {
       await client.query(`UPDATE "Agency" SET "allowProyecto200Module" = CASE WHEN "id" = 'aacom' OR COALESCE("slug", '') = 'aacom' THEN true ELSE false END;`);
       await client.query(`INSERT INTO "Setting" ("key", "value") VALUES ('proyecto_200_aacom_only_init_v1', 'true') ON CONFLICT ("key") DO UPDATE SET "value" = 'true';`);
       console.log('Initialized allowProyecto200Module = true ONLY for AACOM, false for all other agencies.');
-      const corpEmailInitRes = await client.query(`SELECT "value" FROM "Setting" WHERE "key" = 'corporate_email_aacom_only_init_v1';`);
-      if (corpEmailInitRes.rows.length === 0) {
-        await client.query(`UPDATE "Agency" SET "allowCorporateEmailModule" = CASE WHEN "id" = 'aacom' OR COALESCE("slug", '') = 'aacom' THEN true ELSE false END;`);
-        await client.query(`INSERT INTO "Setting" ("key", "value") VALUES ('corporate_email_aacom_only_init_v1', 'true') ON CONFLICT ("key") DO UPDATE SET "value" = 'true';`);
-      }
+    }
+
+    const corpEmailInitRes = await client.query(`SELECT "value" FROM "Setting" WHERE "key" = 'corporate_email_aacom_only_init_v1';`);
+    if (corpEmailInitRes.rows.length === 0) {
+      await client.query(`UPDATE "Agency" SET "allowCorporateEmailModule" = CASE WHEN "id" = 'aacom' OR COALESCE("slug", '') = 'aacom' THEN true ELSE false END;`);
+      await client.query(`INSERT INTO "Setting" ("key", "value") VALUES ('corporate_email_aacom_only_init_v1', 'true') ON CONFLICT ("key") DO UPDATE SET "value" = 'true';`);
+      console.log('Initialized allowCorporateEmailModule = true ONLY for AACOM, false for all other agencies.');
     }
     console.log("Column injection completed successfully.");
   } catch (error) {
