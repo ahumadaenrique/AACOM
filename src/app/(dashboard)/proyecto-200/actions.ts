@@ -45,15 +45,167 @@ function calculatePriorityScore(params: {
   return Math.max(1, Math.min(100, score));
 }
 
-function normalizePhone(rawPhone: string): string {
-  const digits = String(rawPhone || "").replace(/\D/g, "");
-  if (digits.length === 12 && digits.startsWith("52")) {
-    return digits.slice(2);
+function normalizeSinglePhoneSegment(rawSegment: string): string {
+  let str = String(rawSegment || "").trim();
+  if (!str) return "";
+
+  // Si viene en notación científica de Excel (ej. 5.512345678E+9)
+  if (/^[+-]?\d+(\.\d+)?e[+-]?\d+$/i.test(str)) {
+    const num = Number(str);
+    if (!Number.isNaN(num) && Number.isFinite(num)) {
+      str = Math.round(num).toString();
+    }
   }
-  if (digits.length === 13 && digits.startsWith("521")) {
+
+  // Quitar decimales .0 / .00 típicos de celdas numéricas exportadas de Excel
+  str = str.replace(/\.0+$/, "");
+
+  // Quitar extensiones al final (ej. "ext 123", "ext. 45", "x102")
+  str = str.replace(/\b(ext|extension|extensi[oó]n|x)\.?\s*\d+.*$/i, "");
+
+  const digits = str.replace(/\D/g, "");
+  if (!digits) return "";
+
+  if (digits.length === 13 && (digits.startsWith("521") || digits.startsWith("044") || digits.startsWith("045"))) {
     return digits.slice(3);
   }
-  return digits.slice(-10);
+  if (digits.length === 12 && (digits.startsWith("52") || digits.startsWith("01"))) {
+    return digits.slice(2);
+  }
+  if (digits.length === 11 && digits.startsWith("1")) {
+    return digits.slice(1);
+  }
+  if (digits.length > 10) {
+    return digits.slice(-10);
+  }
+  return digits;
+}
+
+function normalizePhone(rawPhone: string | number): string {
+  if (typeof rawPhone === "number" && Number.isFinite(rawPhone)) {
+    return normalizeSinglePhoneSegment(Math.round(rawPhone).toString());
+  }
+  const rawStr = String(rawPhone ?? "").trim();
+  if (!rawStr) return "";
+
+  // Si una celda incluye varios teléfonos separados por /, ;, |, " o "
+  const segments = rawStr.split(/[\/|;]|\s+o\s+/i);
+  for (const seg of segments) {
+    const candidate = normalizeSinglePhoneSegment(seg);
+    if (candidate.length === 10) {
+      return candidate;
+    }
+  }
+  return normalizeSinglePhoneSegment(rawStr);
+}
+
+function parseSmartSalary(rawInput: any): number {
+  if (typeof rawInput === "number" && Number.isFinite(rawInput)) {
+    if (rawInput <= 0) return 0;
+    return rawInput < 300 ? Math.round(rawInput * 1000) : Math.round(rawInput);
+  }
+  let str = String(rawInput ?? "").trim().toLowerCase();
+  if (!str) return 0;
+
+  const parseToken = (token: string): number => {
+    let t = token.trim();
+    const hasMil = /\b(mil|k)\b|\d+k\b/i.test(t);
+    // Quitar centavos finales tipo .00 o ,00
+    t = t.replace(/[.,]\d{2}(?!\d)$/, "");
+    // Dejar solo dígitos y punto si es decimal corto (ej. 45.5 mil)
+    const clean = hasMil
+      ? t.replace(/[^0-9.]/g, "")
+      : t.replace(/[^0-9]/g, "");
+    let val = Number(clean) || 0;
+    if (val <= 0) return 0;
+    if (hasMil && val < 1000) {
+      val = val * 1000;
+    } else if (val > 0 && val < 300) {
+      val = val * 1000;
+    }
+    return Math.round(val);
+  };
+
+  // Detectar si es un rango salarial (ej. "$30,000 - $50,000" o "30 a 40 mil")
+  if (/(\d[\d.,]*\s*(?:-|a|al|to)\s*\d)/i.test(str)) {
+    const parts = str.split(/\s*(?:-|a|al|to)\s*/i);
+    const hasGlobalMil = /\b(mil|k)\b/i.test(str);
+    const nums = parts
+      .map((p) => parseToken(hasGlobalMil && !/mil|k/i.test(p) ? p + " mil" : p))
+      .filter((n) => n > 0);
+    if (nums.length >= 2) {
+      return Math.round((nums[0] + nums[1]) / 2);
+    }
+  }
+
+  return parseToken(str);
+}
+
+function parseSmartProbability(rawInput: any): string {
+  if (rawInput === null || rawInput === undefined) return "";
+  if (typeof rawInput === "number" && Number.isFinite(rawInput)) {
+    const pct = rawInput > 0 && rawInput <= 1 ? rawInput * 100 : rawInput;
+    if (pct >= 70 || rawInput === 1) return "ALTA";
+    if (pct >= 40 || rawInput === 2) return "MEDIA";
+    if (pct > 0) return "BAJA";
+    return "";
+  }
+  const probRaw = String(rawInput)
+    .trim()
+    .toUpperCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  if (!probRaw) return "";
+
+  if (
+    probRaw.includes("ALT") ||
+    probRaw.includes("MUCH") ||
+    probRaw.includes("CALIENT") ||
+    probRaw.includes("HIGH") ||
+    probRaw.includes("EXCEL") ||
+    probRaw.includes("SEGUR") ||
+    probRaw === "A" ||
+    probRaw === "1" ||
+    probRaw === "SI"
+  ) {
+    return "ALTA";
+  }
+  if (
+    probRaw.includes("MED") ||
+    probRaw.includes("REGUL") ||
+    probRaw.includes("TIBI") ||
+    probRaw.includes("MOD") ||
+    probRaw.includes("NORM") ||
+    probRaw.includes("PROM") ||
+    probRaw === "M" ||
+    probRaw === "2"
+  ) {
+    return "MEDIA";
+  }
+  if (
+    probRaw.includes("BAJ") ||
+    probRaw.includes("POC") ||
+    probRaw.includes("FRI") ||
+    probRaw.includes("LOW") ||
+    probRaw.includes("DIFIC") ||
+    probRaw === "B" ||
+    probRaw === "3" ||
+    probRaw === "NO"
+  ) {
+    return "BAJA";
+  }
+
+  // Si escribieron un porcentaje (ej. "80%", "50%")
+  const numMatch = probRaw.match(/(\d+(?:\.\d+)?)\s*%?/);
+  if (numMatch) {
+    const n = Number(numMatch[1]);
+    const pct = n > 0 && n <= 1 ? n * 100 : n;
+    if (pct >= 70) return "ALTA";
+    if (pct >= 40) return "MEDIA";
+    if (pct > 0) return "BAJA";
+  }
+
+  return "";
 }
 
 async function getAuthenticatedUser() {
@@ -266,6 +418,7 @@ export async function getProject200DashboardData() {
 }
 
 export interface BulkImportRowInput {
+  rowNumber?: number;
   fullName: string;
   phone: string;
   relationship: string;
@@ -276,10 +429,14 @@ export interface BulkImportRowInput {
   notes?: string;
 }
 
-export async function bulkImportProject200Contacts(rows: BulkImportRowInput[]) {
+export async function bulkImportProject200Contacts(
+  rows: BulkImportRowInput[],
+  options?: { applySmartDefaults?: boolean }
+) {
   try {
     const user = await getAuthenticatedUser();
     const effectiveAgencyId = user.agencyId || "aacom";
+    const applySmartDefaults = options?.applySmartDefaults !== false;
 
     if (!Array.isArray(rows) || rows.length === 0) {
       return { success: false, error: "No se recibieron contactos válidos para importar." };
@@ -291,40 +448,92 @@ export async function bulkImportProject200Contacts(rows: BulkImportRowInput[]) {
     });
 
     const existingPhones = new Set(existingContacts.map((c) => normalizePhone(c.phone)));
+    const seenInCurrentFile = new Set<string>();
     const validToCreate: any[] = [];
-    const excludedRows: { rowNumber: number; fullName: string; reasons: string[] }[] = [];
+    const excludedRows: {
+      rowNumber: number;
+      fullName: string;
+      phone: string;
+      reasons: string[];
+      rawRow: BulkImportRowInput;
+    }[] = [];
     let skippedDuplicates = 0;
+    let autoCompletedCount = 0;
+    let ignoredEmptyRows = 0;
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
-      const rowNumber = i + 2; // Considerando encabezado en fila 1
-      const fullName = String(row.fullName || "").trim();
+      const rowNumber = row.rowNumber || i + 2;
+      const fullName = String(row.fullName || "")
+        .replace(/\s+/g, " ")
+        .trim();
+      const rawPhoneStr = String(row.phone ?? "").trim();
       const cleanPhone = normalizePhone(row.phone);
-      const relationship = String(row.relationship || "").trim();
-      const rawSalary = String(row.estimatedSalary ?? "").replace(/[^0-9.]/g, "");
-      const estimatedSalary = Number(rawSalary) || 0;
-      const probRaw = String(row.closingProbability || "")
-        .trim()
-        .toUpperCase();
+      let relationship = String(row.relationship || "").trim();
+      let estimatedSalary = parseSmartSalary(row.estimatedSalary);
+      let closingProbability = parseSmartProbability(row.closingProbability);
 
-      let closingProbability = "";
-      if (probRaw.includes("ALT") || probRaw === "A") closingProbability = "ALTA";
-      else if (probRaw.includes("MED") || probRaw === "M") closingProbability = "MEDIA";
-      else if (probRaw.includes("BAJ") || probRaw === "B") closingProbability = "BAJA";
+      // Ignorar silenciosamente filas completamente en blanco al final de hojas Excel
+      if (!fullName && !rawPhoneStr && !relationship && estimatedSalary <= 0) {
+        ignoredEmptyRows++;
+        continue;
+      }
+
+      const classRaw = String(row.classification || "PROSPECTO")
+        .trim()
+        .toUpperCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+      let classification = "PROSPECTO";
+      if (classRaw.includes("REF") || classRaw.includes("CENTRO") || classRaw.includes("INFLUENC")) {
+        classification = "REFERIDOR";
+      } else if (classRaw.includes("DESC") || classRaw.includes("BAJA") || classRaw.includes("NO CALIF")) {
+        classification = "DESCALIFICADO";
+      }
+
+      let disqReason = String(row.disqualificationReason || "").trim();
+
+      // Si está activo el modo de auto-completado inteligente, rellenar campos secundarios faltantes
+      let rowWasAutoCompleted = false;
+      if (applySmartDefaults && fullName.length >= 2 && cleanPhone.length === 10) {
+        if (!relationship) {
+          relationship = "Conocido / Red Personal";
+          rowWasAutoCompleted = true;
+        }
+        if (estimatedSalary <= 0) {
+          estimatedSalary = 35000;
+          rowWasAutoCompleted = true;
+        }
+        if (!closingProbability) {
+          closingProbability = "MEDIA";
+          rowWasAutoCompleted = true;
+        }
+        if (classification === "DESCALIFICADO" && disqReason.length < 3) {
+          disqReason = "Descalificado en carga inicial de archivo";
+          rowWasAutoCompleted = true;
+        }
+      }
 
       const reasons: string[] = [];
-      if (fullName.length < 2) reasons.push("Falta Nombre Completo");
-      if (cleanPhone.length !== 10) reasons.push("Teléfono inválido (debe tener 10 dígitos)");
-      if (!relationship) reasons.push("Falta Relación con el agente");
-      if (estimatedSalary <= 0) reasons.push("Falta Sueldo Estimado (> $0)");
-      if (!closingProbability) reasons.push("Falta Probabilidad de Cierre (Alta, Media o Baja)");
-
-      const classRaw = String(row.classification || "PROSPECTO").trim().toUpperCase();
-      let classification = "PROSPECTO";
-      if (classRaw.includes("REF")) classification = "REFERIDOR";
-      else if (classRaw.includes("DESC")) classification = "DESCALIFICADO";
-
-      const disqReason = String(row.disqualificationReason || "").trim();
+      if (fullName.length < 2) {
+        reasons.push("Falta Nombre Completo");
+      }
+      if (cleanPhone.length !== 10) {
+        reasons.push(
+          rawPhoneStr
+            ? `Teléfono inválido ("${rawPhoneStr}" tiene ${cleanPhone.length} dígitos, requiere 10)`
+            : "Falta Teléfono (10 dígitos)"
+        );
+      }
+      if (!relationship) {
+        reasons.push("Falta Relación con el agente");
+      }
+      if (estimatedSalary <= 0) {
+        reasons.push("Falta Sueldo Estimado (> $0)");
+      }
+      if (!closingProbability) {
+        reasons.push("Falta Probabilidad de Cierre (Alta, Media o Baja)");
+      }
       if (classification === "DESCALIFICADO" && disqReason.length < 3) {
         reasons.push("Descalificado sin motivo especificado");
       }
@@ -333,22 +542,55 @@ export async function bulkImportProject200Contacts(rows: BulkImportRowInput[]) {
         excludedRows.push({
           rowNumber,
           fullName: fullName || "(Sin nombre)",
+          phone: rawPhoneStr,
           reasons,
+          rawRow: {
+            rowNumber,
+            fullName,
+            phone: rawPhoneStr,
+            relationship: relationship || "Conocido / Red Personal",
+            estimatedSalary: estimatedSalary > 0 ? estimatedSalary : 35000,
+            closingProbability: closingProbability || "MEDIA",
+            classification,
+            disqualificationReason: disqReason,
+            notes: row.notes ? String(row.notes).trim() : "",
+          },
         });
         continue;
       }
 
-      if (existingPhones.has(cleanPhone)) {
+      if (existingPhones.has(cleanPhone) || seenInCurrentFile.has(cleanPhone)) {
         skippedDuplicates++;
+        const isInternalDup = seenInCurrentFile.has(cleanPhone);
         excludedRows.push({
           rowNumber,
           fullName,
-          reasons: [`Teléfono duplicado (${cleanPhone} ya existe en tu Proyecto 200)`],
+          phone: cleanPhone,
+          reasons: [
+            isInternalDup
+              ? `Teléfono repetido dentro del mismo archivo (${cleanPhone})`
+              : `Teléfono duplicado (${cleanPhone} ya existe en tu Proyecto 200)`,
+          ],
+          rawRow: {
+            rowNumber,
+            fullName,
+            phone: cleanPhone,
+            relationship,
+            estimatedSalary,
+            closingProbability,
+            classification,
+            disqualificationReason: disqReason,
+            notes: row.notes ? String(row.notes).trim() : "",
+          },
         });
         continue;
       }
 
+      seenInCurrentFile.add(cleanPhone);
       existingPhones.add(cleanPhone);
+      if (rowWasAutoCompleted) {
+        autoCompletedCount++;
+      }
 
       const priorityScore = calculatePriorityScore({
         closingProbability,
@@ -375,10 +617,14 @@ export async function bulkImportProject200Contacts(rows: BulkImportRowInput[]) {
       });
     }
 
+    // Insertar en bloques seguros de 100 registros
     if (validToCreate.length > 0) {
-      await prisma.project200Contact.createMany({
-        data: validToCreate,
-      });
+      for (let i = 0; i < validToCreate.length; i += 100) {
+        const chunk = validToCreate.slice(i, i + 100);
+        await prisma.project200Contact.createMany({
+          data: chunk,
+        });
+      }
     }
 
     const totalAfter = await prisma.project200Contact.count({
@@ -388,9 +634,14 @@ export async function bulkImportProject200Contacts(rows: BulkImportRowInput[]) {
     const missingFor200 = Math.max(0, 200 - totalAfter);
     const hasReached200 = totalAfter >= 200;
 
+    const autoCompletedNote =
+      autoCompletedCount > 0
+        ? ` (Se auto-completaron datos secundarios en ${autoCompletedCount} contactos para no detener tu carga).`
+        : "";
+
     const message = hasReached200
-      ? `¡Excelente! Se importaron ${validToCreate.length} contactos válidos (${excludedRows.length} filas excluidas). Ya cuentas con ${totalAfter} contactos y cumpliste la meta de 200.`
-      : `Se importaron ${validToCreate.length} contactos válidos y se excluyeron ${excludedRows.length} filas incompletas. Actualmente tienes ${totalAfter} contactos; aún te faltan ${missingFor200} contactos válidos para llegar a los 200 requeridos.`;
+      ? `¡Excelente! Se importaron ${validToCreate.length} contactos válidos (${excludedRows.length} filas excluidas).${autoCompletedNote} Ya cuentas con ${totalAfter} contactos y cumpliste la meta de 200.`
+      : `Se importaron ${validToCreate.length} contactos válidos y se excluyeron ${excludedRows.length} filas.${autoCompletedNote} Actualmente tienes ${totalAfter} contactos; aún te faltan ${missingFor200} contactos válidos para llegar a los 200 requeridos.`;
 
     revalidatePath("/proyecto-200");
     return {
@@ -399,6 +650,8 @@ export async function bulkImportProject200Contacts(rows: BulkImportRowInput[]) {
       excludedCount: excludedRows.length,
       excludedRows,
       skippedDuplicates,
+      autoCompletedCount,
+      ignoredEmptyRows,
       totalContacts: totalAfter,
       totalValidContactsInDb: totalAfter,
       missingFor200,

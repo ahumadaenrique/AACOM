@@ -293,7 +293,11 @@ export default function Proyecto200Client({
   // Estado Importador Excel / CSV
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [isUploadingFile, setIsUploadingFile] = useState<boolean>(false);
+  const [isDraggingFile, setIsDraggingFile] = useState<boolean>(false);
+  const [applySmartDefaults, setApplySmartDefaults] = useState<boolean>(true);
   const [importReport, setImportReport] = useState<any | null>(null);
+  const [editableExcludedRows, setEditableExcludedRows] = useState<any[]>([]);
+  const [isRetryingExcluded, setIsRetryingExcluded] = useState<boolean>(false);
 
   // Estado Admin Drill-Down
   const [adminSelectedAgentId, setAdminSelectedAgentId] =
@@ -480,8 +484,8 @@ export default function Proyecto200Client({
     searchQuery,
   ]);
 
-  // Descargar Plantilla Oficial Excel (.xlsx)
-  const handleDownloadTemplate = () => {
+  // Descargar Plantilla Oficial Excel (.xlsx) o CSV (.csv)
+  const handleDownloadTemplate = (format: "xlsx" | "csv" = "xlsx") => {
     const sampleRows = [
       {
         "Nombre Completo": "Alejandro Morales Méndez",
@@ -513,6 +517,25 @@ export default function Proyecto200Client({
     ];
 
     const worksheet = XLSX.utils.json_to_sheet(sampleRows);
+    if (format === "csv") {
+      const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
+      // Agregar BOM UTF-8 para que Microsoft Excel en Windows abra acentos y ñ perfectamente
+      const blob = new Blob(["\uFEFF" + csvOutput], {
+        type: "text/csv;charset=utf-8;",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "Plantilla_Oficial_Proyecto_200.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast(
+        "info",
+        "Plantilla CSV descargada con codificación UTF-8 compatible con Excel."
+      );
+      return;
+    }
+
     worksheet["!cols"] = [
       { wch: 30 },
       { wch: 16 },
@@ -528,115 +551,505 @@ export default function Proyecto200Client({
     XLSX.writeFile(workbook, "Plantilla_Oficial_Proyecto_200.xlsx");
     showToast(
       "info",
-      "Plantilla oficial descargada. Recuerda llenar todos los campos obligatorios."
+      "Plantilla oficial Excel (.xlsx) descargada."
     );
   };
 
-  // Procesar archivo Excel / CSV con el Validador Inteligente
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // Decodificador universal de texto para CSV/TSV (UTF-8 con fallback automático a Windows-1252/Latin-1 de Excel en Español)
+  const decodeCsvBufferUniversal = (arrayBuffer: ArrayBuffer): string => {
+    const uint8 = new Uint8Array(arrayBuffer);
+    let text = "";
+    try {
+      const utf8Decoder = new TextDecoder("utf-8", { fatal: true });
+      text = utf8Decoder.decode(uint8);
+    } catch {
+      const win1252Decoder = new TextDecoder("windows-1252");
+      text = win1252Decoder.decode(uint8);
+    }
+    return text.replace(/^\uFEFF/, "");
+  };
 
+  // Parser RFC-4180 tolerante con autodetección de delimitador (, ; \t |)
+  const parseCsvTextToMatrix = (rawText: string): any[][] => {
+    const cleaned = rawText.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    const lines = cleaned.split("\n");
+
+    let startLineIdx = 0;
+    let forcedDelimiter = "";
+    if (lines[0] && /^sep=(.)\s*$/i.test(lines[0].trim())) {
+      const m = lines[0].trim().match(/^sep=(.)\s*$/i);
+      if (m) forcedDelimiter = m[1];
+      startLineIdx = 1;
+    }
+
+    const sampleLines = lines
+      .slice(startLineIdx, startLineIdx + 10)
+      .filter((l) => l.trim().length > 0);
+
+    const countDelimiterOutsideQuotes = (line: string, delim: string) => {
+      let count = 0;
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          inQuotes = !inQuotes;
+        } else if (!inQuotes && ch === delim) {
+          count++;
+        }
+      }
+      return count;
+    };
+
+    let delimiter = forcedDelimiter || ",";
+    if (!forcedDelimiter && sampleLines.length > 0) {
+      const candidates = [",", ";", "\t", "|"];
+      let bestScore = -1;
+      for (const cand of candidates) {
+        const counts = sampleLines.map((l) => countDelimiterOutsideQuotes(l, cand));
+        const total = counts.reduce((a, b) => a + b, 0);
+        if (total > bestScore) {
+          bestScore = total;
+          delimiter = cand;
+        }
+      }
+    }
+
+    const bodyText = lines.slice(startLineIdx).join("\n");
+    const rows: string[][] = [];
+    let currentRow: string[] = [];
+    let currentCell = "";
+    let inQuotes = false;
+
+    for (let i = 0; i < bodyText.length; i++) {
+      const ch = bodyText[i];
+      const nextCh = bodyText[i + 1];
+
+      if (inQuotes) {
+        if (ch === '"' && nextCh === '"') {
+          currentCell += '"';
+          i++;
+        } else if (ch === '"') {
+          inQuotes = false;
+        } else {
+          currentCell += ch;
+        }
+      } else {
+        if (ch === '"') {
+          inQuotes = true;
+        } else if (ch === delimiter) {
+          currentRow.push(currentCell.trim());
+          currentCell = "";
+        } else if (ch === "\n") {
+          currentRow.push(currentCell.trim());
+          if (currentRow.some((cell) => cell !== "")) {
+            rows.push(currentRow);
+          }
+          currentRow = [];
+          currentCell = "";
+        } else {
+          currentCell += ch;
+        }
+      }
+    }
+
+    if (currentCell.length > 0 || currentRow.length > 0) {
+      currentRow.push(currentCell.trim());
+      if (currentRow.some((cell) => cell !== "")) {
+        rows.push(currentRow);
+      }
+    }
+
+    return rows;
+  };
+
+  const normalizeHeaderToken = (raw: any): string => {
+    return String(raw ?? "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/^\s*\d+[.):\-\s]+/, "") // Quita numeración inicial tipo "1. Nombre Completo"
+      .replace(/[^a-z0-9\s]/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  };
+
+  const looksLikePhoneCell = (val: any): boolean => {
+    let str = String(val ?? "").trim();
+    if (!str) return false;
+    if (/^[+-]?\d+(\.\d+)?e[+-]?\d+$/i.test(str)) {
+      const n = Number(str);
+      if (Number.isFinite(n)) str = Math.round(n).toString();
+    }
+    str = str.replace(/\.0+$/, "");
+    const digits = str.replace(/\D/g, "");
+    return digits.length >= 10 && digits.length <= 13;
+  };
+
+  // Extrae y mapea inteligentemente filas de una matriz 2D (soporta encabezados en cualquier fila o sin encabezados)
+  const extractMappedContactsFromMatrix = (matrix: any[][]) => {
+    const nonEmptyRows = matrix
+      .map((row, idx) => ({ row: Array.isArray(row) ? row : [], originalRowNumber: idx + 1 }))
+      .filter((item) => item.row.some((c) => String(c ?? "").trim() !== ""));
+
+    if (nonEmptyRows.length === 0) return [];
+
+    // 1. Buscar la fila de encabezados en las primeras 20 filas no vacías
+    let headerIndexInNonEmpty = -1;
+    let bestHeaderScore = 0;
+
+    const headerLimit = Math.min(20, nonEmptyRows.length);
+    for (let i = 0; i < headerLimit; i++) {
+      const cells = nonEmptyRows[i].row.map(normalizeHeaderToken);
+      let score = 0;
+      for (const c of cells) {
+        if (!c) continue;
+        if (
+          /\b(nombre|nombres|prospecto|contacto|cliente|candidato|persona|apellido|apellidos|paterno|materno|name)\b/.test(
+            c
+          )
+        ) {
+          score += 3;
+        }
+        if (/\b(telefono|tel|celular|cel|whatsapp|wa|movil|numero|phone)\b/.test(c)) {
+          score += 3;
+        }
+        if (/\b(relacion|parentesco|vinculo|origen|fuente|circulo|mercado|referid)\b/.test(c)) {
+          score += 2;
+        }
+        if (/\b(sueldo|ingreso|ingresos|salario|percepcion|mensual|estimado)\b/.test(c)) {
+          score += 2;
+        }
+        if (/\b(probabilidad|cierre|interes|potencial|prioridad|temperatura)\b/.test(c)) {
+          score += 2;
+        }
+        if (/\b(clasificacion|tipo|categoria|notas|observaciones|comentarios)\b/.test(c)) {
+          score += 1;
+        }
+      }
+      if (score > bestHeaderScore && score >= 3) {
+        bestHeaderScore = score;
+        headerIndexInNonEmpty = i;
+      }
+    }
+
+    let fullNameCols: number[] = [];
+    let phoneCols: number[] = [];
+    let relationshipCol = -1;
+    let salaryCol = -1;
+    let probabilityCol = -1;
+    let classificationCol = -1;
+    let disqReasonCol = -1;
+    let notesCols: { colIdx: number; label: string }[] = [];
+    let dataStartIndex = 0;
+
+    if (headerIndexInNonEmpty >= 0) {
+      dataStartIndex = headerIndexInNonEmpty + 1;
+      const rawHeaders = nonEmptyRows[headerIndexInNonEmpty].row;
+      const normHeaders = rawHeaders.map(normalizeHeaderToken);
+
+      normHeaders.forEach((h, idx) => {
+        if (!h) return;
+        // Evitar confundir "referido por (nombre)" con el nombre del contacto
+        const isReferredByHeader = h.includes("referido por") || h.includes("quien refiere");
+
+        if (
+          !isReferredByHeader &&
+          (/^(nombre completo|nombre y apellido|nombre y apellidos|nombre del prospecto|nombre del contacto|nombre|nombres|prospecto|contacto|cliente|candidato|persona|full name|name)$/.test(
+            h
+          ) ||
+            h.startsWith("nombre") ||
+            h.includes("apellido") ||
+            h === "paterno" ||
+            h === "materno")
+        ) {
+          fullNameCols.push(idx);
+          return;
+        }
+
+        if (
+          h.includes("telefono") ||
+          h.includes("celular") ||
+          h.includes("whatsapp") ||
+          h.includes("movil") ||
+          h === "tel" ||
+          h.startsWith("tel ") ||
+          h.includes("numero") ||
+          h.includes("phone") ||
+          h === "cel"
+        ) {
+          phoneCols.push(idx);
+          return;
+        }
+
+        if (
+          relationshipCol === -1 &&
+          (h.includes("relacion") ||
+            h.includes("parentesco") ||
+            h.includes("vinculo") ||
+            h.includes("origen") ||
+            h.includes("fuente") ||
+            h.includes("circulo") ||
+            h.includes("mercado") ||
+            h.includes("como lo conoces") ||
+            h.includes("de donde"))
+        ) {
+          relationshipCol = idx;
+          return;
+        }
+
+        if (
+          salaryCol === -1 &&
+          (h.includes("sueldo") ||
+            h.includes("ingreso") ||
+            h.includes("salario") ||
+            h.includes("percepcion") ||
+            h.includes("ganancia") ||
+            h.includes("capacidad"))
+        ) {
+          salaryCol = idx;
+          return;
+        }
+
+        if (
+          probabilityCol === -1 &&
+          (h.includes("probabilidad") ||
+            h.includes("cierre") ||
+            h.includes("interes") ||
+            h.includes("potencial") ||
+            h.includes("prioridad") ||
+            h.includes("temperatura"))
+        ) {
+          probabilityCol = idx;
+          return;
+        }
+
+        if (
+          classificationCol === -1 &&
+          (h.includes("clasificacion") ||
+            h.includes("categoria") ||
+            h === "tipo" ||
+            h === "perfil" ||
+            h === "rol")
+        ) {
+          classificationCol = idx;
+          return;
+        }
+
+        if (
+          disqReasonCol === -1 &&
+          (h.includes("motivo") || h.includes("razon") || h.includes("descalifica"))
+        ) {
+          disqReasonCol = idx;
+          return;
+        }
+
+        if (
+          h.includes("nota") ||
+          h.includes("observacion") ||
+          h.includes("comentario") ||
+          h.includes("ocupacion") ||
+          h.includes("profesion") ||
+          h.includes("empresa") ||
+          h.includes("puesto") ||
+          h.includes("edad") ||
+          h.includes("estado civil") ||
+          h.includes("hijos") ||
+          isReferredByHeader
+        ) {
+          notesCols.push({
+            colIdx: idx,
+            label: String(rawHeaders[idx] || "").trim(),
+          });
+        }
+      });
+    } else {
+      // El archivo no tiene encabezados reconocibles: inferir columnas por contenido
+      dataStartIndex = 0;
+      const sampleRows = nonEmptyRows.slice(0, 15).map((r) => r.row);
+      const maxCols = Math.max(...sampleRows.map((r) => r.length), 0);
+
+      for (let col = 0; col < maxCols; col++) {
+        const phoneHits = sampleRows.filter((r) => looksLikePhoneCell(r[col])).length;
+        if (phoneHits >= Math.max(1, Math.floor(sampleRows.length * 0.3))) {
+          phoneCols.push(col);
+        }
+      }
+
+      if (phoneCols.length === 0 && maxCols >= 2) {
+        phoneCols = [1];
+        fullNameCols = [0];
+      } else if (phoneCols.length > 0) {
+        const firstPhoneCol = phoneCols[0];
+        fullNameCols = firstPhoneCol > 0 ? [0] : [1];
+      }
+      if (maxCols >= 3 && relationshipCol === -1) relationshipCol = 2;
+      if (maxCols >= 4 && salaryCol === -1) salaryCol = 3;
+      if (maxCols >= 5 && probabilityCol === -1) probabilityCol = 4;
+      if (maxCols >= 6 && classificationCol === -1) classificationCol = 5;
+      if (maxCols >= 7) notesCols.push({ colIdx: 6, label: "Notas" });
+    }
+
+    const dataRows = nonEmptyRows.slice(dataStartIndex);
+
+    return dataRows
+      .map(({ row, originalRowNumber }) => {
+        // 1. Construir Nombre Completo (uniendo Nombre + Apellido Paterno + Materno si vienen separados)
+        let fullName = fullNameCols
+          .map((idx) => String(row[idx] ?? "").trim())
+          .filter(Boolean)
+          .join(" ")
+          .replace(/\s+/g, " ")
+          .trim();
+
+        // Fallback si la columna de nombre estaba vacía pero la primera columna tiene un nombre válido
+        if (!fullName && fullNameCols.length === 0 && row[0] && !looksLikePhoneCell(row[0])) {
+          fullName = String(row[0]).trim();
+        }
+
+        // 2. Extraer Teléfono de las columnas telefónicas (o rescatarlo de otra celda si se desplazó)
+        let phone = "";
+        for (const pIdx of phoneCols) {
+          const val = String(row[pIdx] ?? "").trim();
+          if (val && looksLikePhoneCell(val)) {
+            phone = val;
+            break;
+          }
+          if (!phone && val) {
+            phone = val;
+          }
+        }
+
+        if (!looksLikePhoneCell(phone)) {
+          // Buscar si en alguna otra columna de la fila viene un teléfono de 10 dígitos
+          for (let cIdx = 0; cIdx < row.length; cIdx++) {
+            if (cIdx === salaryCol || fullNameCols.includes(cIdx)) continue;
+            const candidate = String(row[cIdx] ?? "").trim();
+            if (looksLikePhoneCell(candidate)) {
+              phone = candidate;
+              break;
+            }
+          }
+        }
+
+        const relationship =
+          relationshipCol >= 0 ? String(row[relationshipCol] ?? "").trim() : "";
+        const estimatedSalary =
+          salaryCol >= 0 ? row[salaryCol] ?? "" : "";
+        const closingProbability =
+          probabilityCol >= 0 ? String(row[probabilityCol] ?? "").trim() : "";
+        const classification =
+          classificationCol >= 0
+            ? String(row[classificationCol] ?? "PROSPECTO").trim()
+            : "PROSPECTO";
+        const disqualificationReason =
+          disqReasonCol >= 0 ? String(row[disqReasonCol] ?? "").trim() : "";
+
+        const noteParts: string[] = [];
+        for (const nCol of notesCols) {
+          const val = String(row[nCol.colIdx] ?? "").trim();
+          if (!val) continue;
+          const normLabel = normalizeHeaderToken(nCol.label);
+          if (
+            normLabel.includes("nota") ||
+            normLabel.includes("observacion") ||
+            normLabel.includes("comentario")
+          ) {
+            noteParts.push(val);
+          } else {
+            noteParts.push(`${nCol.label}: ${val}`);
+          }
+        }
+
+        return {
+          rowNumber: originalRowNumber,
+          fullName,
+          phone,
+          relationship,
+          estimatedSalary,
+          closingProbability,
+          classification,
+          disqualificationReason,
+          notes: noteParts.join(" | "),
+        };
+      })
+      .filter((r) => {
+        // Ignorar filas vacías o filas repetidas de encabezados intermedios
+        const normName = normalizeHeaderToken(r.fullName);
+        if (
+          normName === "nombre completo" ||
+          normName === "nombre" ||
+          normName === "prospecto"
+        ) {
+          return false;
+        }
+        return Boolean(
+          r.fullName ||
+            r.phone ||
+            r.relationship ||
+            String(r.estimatedSalary).trim()
+        );
+      });
+  };
+
+  // Procesar archivo Excel (.xlsx / .xls) o CSV (.csv / .tsv / .txt)
+  const processUploadedFileObject = async (file: File) => {
     setIsUploadingFile(true);
     setImportReport(null);
+    setEditableExcludedRows([]);
 
     try {
       const arrayBuffer = await file.arrayBuffer();
-      const workbook = XLSX.read(arrayBuffer, { type: "array" });
-      const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
-      const rawJson: Record<string, any>[] = XLSX.utils.sheet_to_json(
-        worksheet,
-        { defval: "" }
-      );
+      const fileNameLower = file.name.toLowerCase();
+      const isCsvOrText =
+        fileNameLower.endsWith(".csv") ||
+        fileNameLower.endsWith(".tsv") ||
+        fileNameLower.endsWith(".txt") ||
+        file.type === "text/csv" ||
+        file.type === "text/plain";
 
-      if (!rawJson || rawJson.length === 0) {
+      let mappedRows: any[] = [];
+
+      if (isCsvOrText) {
+        const decodedText = decodeCsvBufferUniversal(arrayBuffer);
+        const matrix = parseCsvTextToMatrix(decodedText);
+        mappedRows = extractMappedContactsFromMatrix(matrix);
+      } else {
+        const workbook = XLSX.read(arrayBuffer, {
+          type: "array",
+          codepage: 65001,
+          cellDates: true,
+        });
+
+        // Evaluar todas las hojas del libro y elegir la que contenga más contactos válidos
+        let bestSheetRows: any[] = [];
+        for (const sheetName of workbook.SheetNames) {
+          const worksheet = workbook.Sheets[sheetName];
+          if (!worksheet) continue;
+          const matrix: any[][] = XLSX.utils.sheet_to_json(worksheet, {
+            header: 1,
+            defval: "",
+            blankrows: false,
+          });
+          const candidateRows = extractMappedContactsFromMatrix(matrix);
+          if (candidateRows.length > bestSheetRows.length) {
+            bestSheetRows = candidateRows;
+          }
+        }
+        mappedRows = bestSheetRows;
+      }
+
+      if (!mappedRows || mappedRows.length === 0) {
         showToast(
           "error",
-          "El archivo seleccionado está vacío o no tiene filas legibles."
+          "El archivo seleccionado está vacío o no se encontraron filas con contactos."
         );
         setIsUploadingFile(false);
         return;
       }
 
-      const mappedRows = rawJson.map((row) => {
-        const normalizedKeys: Record<string, any> = {};
-        for (const key of Object.keys(row)) {
-          const cleanKey = key
-            .toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .trim();
-          normalizedKeys[cleanKey] = row[key];
-        }
-
-        const fullName =
-          normalizedKeys["nombre completo"] ??
-          normalizedKeys["nombre"] ??
-          normalizedKeys["prospecto"] ??
-          normalizedKeys["contacto"] ??
-          "";
-
-        const phone =
-          normalizedKeys["telefono"] ??
-          normalizedKeys["celular"] ??
-          normalizedKeys["whatsapp"] ??
-          normalizedKeys["numero"] ??
-          normalizedKeys["tel"] ??
-          "";
-
-        const relationship =
-          normalizedKeys["relacion"] ??
-          normalizedKeys["parentesco"] ??
-          normalizedKeys["vinculo"] ??
-          normalizedKeys["origen"] ??
-          "";
-
-        const estimatedSalary =
-          normalizedKeys["sueldo estimado"] ??
-          normalizedKeys["sueldo"] ??
-          normalizedKeys["ingreso"] ??
-          normalizedKeys["ingreso mensual"] ??
-          normalizedKeys["ingresos"] ??
-          "";
-
-        const closingProbability =
-          normalizedKeys["probabilidad cierre"] ??
-          normalizedKeys["probabilidad de cierre"] ??
-          normalizedKeys["probabilidad"] ??
-          "";
-
-        const classification =
-          normalizedKeys["clasificacion"] ??
-          normalizedKeys["tipo"] ??
-          normalizedKeys["categoria"] ??
-          "PROSPECTO";
-
-        const disqualificationReason =
-          normalizedKeys["motivo descalificacion"] ??
-          normalizedKeys["razon descalificacion"] ??
-          normalizedKeys["motivo"] ??
-          "";
-
-        const notes =
-          normalizedKeys["notas"] ??
-          normalizedKeys["observaciones"] ??
-          normalizedKeys["comentarios"] ??
-          "";
-
-        return {
-          fullName: String(fullName),
-          phone: String(phone),
-          relationship: String(relationship),
-          estimatedSalary,
-          closingProbability: String(closingProbability),
-          classification: String(classification),
-          disqualificationReason: String(disqualificationReason),
-          notes: String(notes),
-        };
+      const response = await bulkImportProject200Contacts(mappedRows, {
+        applySmartDefaults,
       });
-
-      const response = await bulkImportProject200Contacts(mappedRows);
 
       if (!response.success) {
         showToast(
@@ -645,23 +1058,90 @@ export default function Proyecto200Client({
         );
       } else {
         setImportReport(response);
+        if (Array.isArray(response.excludedRows)) {
+          setEditableExcludedRows(
+            response.excludedRows.map((ex: any) => ({
+              rowNumber: ex.rowNumber,
+              reasons: ex.reasons || [],
+              fullName: ex.rawRow?.fullName ?? ex.fullName ?? "",
+              phone: ex.rawRow?.phone ?? ex.phone ?? "",
+              relationship: ex.rawRow?.relationship || "Conocido / Red Personal",
+              estimatedSalary: ex.rawRow?.estimatedSalary || 35000,
+              closingProbability: ex.rawRow?.closingProbability || "MEDIA",
+              classification: ex.rawRow?.classification || "PROSPECTO",
+              disqualificationReason: ex.rawRow?.disqualificationReason || "",
+              notes: ex.rawRow?.notes || "",
+            }))
+          );
+        }
         await refreshAllData();
         if (response.hasReached200) {
           confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
         }
-        showToast("success", response.message || "Archivo procesado.");
+        showToast("success", response.message || "Archivo procesado con éxito.");
       }
     } catch (error: any) {
       console.error("Error parsing file:", error);
       showToast(
         "error",
-        "No se pudo leer el archivo. Asegúrate de subir un archivo .xlsx o .csv válido."
+        "No se pudo leer el archivo. Asegúrate de subir un archivo .xlsx, .xls o .csv válido."
       );
     } finally {
       setIsUploadingFile(false);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await processUploadedFileObject(file);
+  };
+
+  const handleFileDrop = async (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDraggingFile(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    await processUploadedFileObject(file);
+  };
+
+  const handleRetryExcludedRows = async () => {
+    if (editableExcludedRows.length === 0) return;
+    setIsRetryingExcluded(true);
+    try {
+      const response = await bulkImportProject200Contacts(editableExcludedRows, {
+        applySmartDefaults: true,
+      });
+      if (!response.success) {
+        showToast("error", response.error || "No se pudieron importar las filas corregidas.");
+        return;
+      }
+      setImportReport(response);
+      setEditableExcludedRows(
+        (response.excludedRows || []).map((ex: any) => ({
+          rowNumber: ex.rowNumber,
+          reasons: ex.reasons || [],
+          fullName: ex.rawRow?.fullName ?? ex.fullName ?? "",
+          phone: ex.rawRow?.phone ?? ex.phone ?? "",
+          relationship: ex.rawRow?.relationship || "Conocido / Red Personal",
+          estimatedSalary: ex.rawRow?.estimatedSalary || 35000,
+          closingProbability: ex.rawRow?.closingProbability || "MEDIA",
+          classification: ex.rawRow?.classification || "PROSPECTO",
+          disqualificationReason: ex.rawRow?.disqualificationReason || "",
+          notes: ex.rawRow?.notes || "",
+        }))
+      );
+      await refreshAllData();
+      if (response.hasReached200) {
+        confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
+      }
+      showToast("success", response.message || "Filas corregidas importadas.");
+    } finally {
+      setIsRetryingExcluded(false);
     }
   };
 
@@ -2781,23 +3261,21 @@ export default function Proyecto200Client({
       {activeTab === "importador" && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* Instrucciones de Layout Estricto */}
+            {/* Instrucciones de Layout Flexible e Inteligente */}
             <div className="lg:col-span-5 bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
               <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-bold">
                 <FileSpreadsheet className="h-4 w-4" />
-                Reglas del Validador Inteligente Proyecto 200
+                Motor Inteligente de Importación Excel / CSV
               </div>
               <h2 className="text-xl font-black text-slate-900">
                 Layout Oficial para tus 200 Contactos
               </h2>
               <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
-                Nuestro validador audita fila por fila tu archivo Excel o CSV.{" "}
+                Nuestro lector universal detecta automáticamente archivos{" "}
                 <strong className="text-slate-900">
-                  Cualquier fila que no cumpla con TODOS los requisitos
-                  obligatorios será excluida automáticamente
-                </strong>{" "}
-                y el sistema te informará cuántos contactos te faltan para
-                completar los 200 requeridos.
+                  Excel (.xlsx, .xls) y CSV (.csv separados por coma o punto y coma)
+                </strong>
+                , une columnas de <em>Nombre + Apellidos</em> si vienen separadas y limpia prefijos telefónicos (<code>+52</code>, <code>521</code>, guiones o espacios).
               </p>
 
               <div className="space-y-2.5 text-xs">
@@ -2806,7 +3284,7 @@ export default function Proyecto200Client({
                     1. Nombre Completo (Obligatorio)
                   </div>
                   <div className="text-slate-600">
-                    Nombre y apellido del prospecto o referidor.
+                    Acepta una sola columna (<em>Nombre Completo</em>) o columnas separadas (<em>Nombre</em> + <em>Apellidos</em>).
                   </div>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
@@ -2814,69 +3292,112 @@ export default function Proyecto200Client({
                     2. Teléfono Celular a 10 Dígitos (Obligatorio)
                   </div>
                   <div className="text-slate-600">
-                    Es forzoso que cada registro tenga número telefónico válido
-                    de 10 dígitos para el contacto.
+                    Limpia automáticamente espacios, paréntesis, guiones y lada <code>+52</code> para dejar los 10 dígitos.
                   </div>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
                   <div className="font-bold text-slate-900">
-                    3. Relación con el Agente (Obligatorio)
+                    3. Relación con el Agente
                   </div>
                   <div className="text-slate-600">
-                    Ej. Amigo de universidad, Familiar, Ex compañero de trabajo,
-                    Referido, Vecino.
+                    Ej. Amigo de universidad, Familiar, Ex compañero de trabajo, Referido, Vecino.
                   </div>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
                   <div className="font-bold text-slate-900">
-                    4. Sueldo Mensual Estimado (Obligatorio &gt; $0)
+                    4. Sueldo Mensual Estimado
                   </div>
                   <div className="text-slate-600">
-                    Ingreso mensual aproximado en pesos (ej. 45000).
+                    Acepta números (<code>45000</code>), moneda (<code>$45,000.00</code>), miles (<code>45 mil</code> / <code>45k</code>) o rangos (<code>30,000 - 50,000</code>).
                   </div>
                 </div>
                 <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
                   <div className="font-bold text-slate-900">
-                    5. Probabilidad de Cierre (Obligatorio)
+                    5. Probabilidad de Cierre
                   </div>
                   <div className="text-slate-600">
-                    Valores permitidos: <strong>Alta</strong>,{" "}
-                    <strong>Media</strong> o <strong>Baja</strong>.
+                    Acepta <strong>Alta</strong>, <strong>Media</strong> o <strong>Baja</strong> (o porcentajes como <code>80%</code>).
                   </div>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={handleDownloadTemplate}
-                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-sm shadow-sm transition"
-              >
-                <Download className="h-4 w-4" />
-                Descargar Plantilla Oficial (.xlsx)
-              </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                <button
+                  type="button"
+                  onClick={() => handleDownloadTemplate("xlsx")}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-sm transition"
+                >
+                  <Download className="h-4 w-4 shrink-0" />
+                  Plantilla Excel (.xlsx)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadTemplate("csv")}
+                  className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-bold text-xs transition"
+                >
+                  <FileText className="h-4 w-4 shrink-0" />
+                  Plantilla CSV (.csv)
+                </button>
+              </div>
             </div>
 
-            {/* Zona de Carga y Reporte de Auditoría */}
+            {/* Zona de Carga (con Drag & Drop) y Reporte de Auditoría */}
             <div className="lg:col-span-7 space-y-5">
-              <div className="bg-white rounded-3xl border-2 border-dashed border-indigo-300 hover:border-indigo-500 p-8 text-center transition space-y-4">
+              <div
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if (!isDraggingFile) setIsDraggingFile(true);
+                }}
+                onDragLeave={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsDraggingFile(false);
+                }}
+                onDrop={handleFileDrop}
+                className={`bg-white rounded-3xl border-2 border-dashed p-8 text-center transition space-y-4 ${
+                  isDraggingFile
+                    ? "border-indigo-600 bg-indigo-50/50 scale-[1.01]"
+                    : "border-indigo-300 hover:border-indigo-500"
+                }`}
+              >
                 <div className="w-16 h-16 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto">
                   <Upload className="h-8 w-8" />
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-lg font-black text-slate-900">
-                    Sube tu archivo Excel (.xlsx) o CSV (.csv)
+                    Arrastra y suelta tu archivo Excel (.xlsx, .xls) o CSV (.csv)
                   </h3>
                   <p className="text-xs text-slate-500 max-w-md mx-auto">
-                    Puedes subir tu archivo en una sola carga o en varias
-                    entregas hasta alcanzar y superar tus 200 contactos válidos.
+                    Puedes subir tu archivo en una sola carga o en varias entregas hasta alcanzar y superar tus 200 contactos válidos.
                   </p>
+                </div>
+
+                {/* Toggle Auto-Completado Inteligente */}
+                <div className="max-w-lg mx-auto bg-slate-50 border border-slate-200 rounded-2xl p-3 text-left flex items-start gap-3">
+                  <input
+                    id="smart-defaults-toggle"
+                    type="checkbox"
+                    checked={applySmartDefaults}
+                    onChange={(e) => setApplySmartDefaults(e.target.checked)}
+                    className="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                  />
+                  <label
+                    htmlFor="smart-defaults-toggle"
+                    className="text-xs text-slate-700 cursor-pointer leading-relaxed"
+                  >
+                    <strong className="text-slate-900 block">
+                      Auto-completar datos secundarios faltantes (Recomendado)
+                    </strong>
+                    Si una fila tiene <strong>Nombre</strong> y <strong>Teléfono de 10 dígitos</strong> pero dejaste vacío el Sueldo, la Relación o la Probabilidad, se asignarán valores base editables (<code>$35,000</code>, <code>Conocido / Red Personal</code>, <code>Media</code>) para no rechazar tus contactos.
+                  </label>
                 </div>
 
                 <div>
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept=".xlsx,.xls,.csv"
+                    accept=".xlsx,.xls,.csv,.tsv,.txt,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"
                     onChange={handleFileUpload}
                     className="hidden"
                     id="proyecto200-file-upload"
@@ -2887,7 +3408,7 @@ export default function Proyecto200Client({
                   >
                     <Upload className="h-4 w-4" />
                     {isUploadingFile
-                      ? "Validando filas y teléfonos..."
+                      ? "Analizando columnas y validando teléfonos..."
                       : "Seleccionar Archivo Excel / CSV"}
                   </label>
                 </div>
@@ -2961,46 +3482,106 @@ export default function Proyecto200Client({
                         . Te faltan{" "}
                         <strong className="underline">
                           {importReport.missingFor200} contactos completos
-                        </strong>{" "}
-                        (con nombre, teléfono de 10 dígitos, relación, sueldo
-                        estimado y probabilidad). Corrige las filas excluidas y
-                        vuelve a subirlas.
+                        </strong>
+                        . Puedes corregir las filas excluidas aquí mismo abajo sin salir de la plataforma.
                       </div>
                     </div>
                   )}
 
-                  {importReport.excludedRows &&
-                    importReport.excludedRows.length > 0 && (
-                      <div className="space-y-2">
-                        <h4 className="text-xs font-black uppercase tracking-wider text-rose-700">
-                          Detalle de Filas Excluidas por Datos Incompletos (
-                          {importReport.excludedRows.length}):
-                        </h4>
-                        <div className="max-h-60 overflow-y-auto rounded-2xl border border-rose-200 divide-y divide-rose-100">
-                          {importReport.excludedRows.map(
-                            (ex: any, idx: number) => (
-                              <div
-                                key={idx}
-                                className="p-3 bg-rose-50/40 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2"
-                              >
-                                <div>
-                                  <span className="font-black text-rose-900">
-                                    Fila #{ex.rowNumber}:
-                                  </span>{" "}
-                                  <span className="font-semibold text-slate-800">
-                                    {ex.fullName}
-                                  </span>
-                                </div>
-                                <div className="text-rose-700 font-medium">
-                                  Motivo de exclusión:{" "}
-                                  <strong>{ex.reasons.join(" | ")}</strong>
-                                </div>
-                              </div>
-                            )
-                          )}
+                  {editableExcludedRows.length > 0 && (
+                    <div className="space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <h4 className="text-xs font-black uppercase tracking-wider text-rose-700">
+                            Corrección Rápida en Línea de Filas Excluidas ({editableExcludedRows.length})
+                          </h4>
+                          <p className="text-[11px] text-slate-500">
+                            Corrige el nombre o teléfono a 10 dígitos directamente aquí y presiona{" "}
+                            <strong>Importar Filas Corregidas</strong>.
+                          </p>
                         </div>
+                        <button
+                          type="button"
+                          onClick={handleRetryExcludedRows}
+                          disabled={isRetryingExcluded}
+                          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-xs font-black shadow-xs transition"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                          {isRetryingExcluded
+                            ? "Importando corregidas..."
+                            : "Guardar e Importar Filas Corregidas"}
+                        </button>
                       </div>
-                    )}
+
+                      <div className="max-h-80 overflow-y-auto rounded-2xl border border-rose-200 divide-y divide-rose-100">
+                        {editableExcludedRows.map((ex: any, idx: number) => (
+                          <div
+                            key={idx}
+                            className="p-3 bg-rose-50/40 text-xs space-y-2"
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span className="font-black text-rose-900">
+                                Fila #{ex.rowNumber}
+                              </span>
+                              <span className="text-rose-700 font-semibold">
+                                Motivo: <strong>{(ex.reasons || []).join(" | ")}</strong>
+                              </span>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+                              <div className="sm:col-span-5">
+                                <input
+                                  type="text"
+                                  value={ex.fullName}
+                                  placeholder="Nombre completo"
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setEditableExcludedRows((prev) =>
+                                      prev.map((item, i) =>
+                                        i === idx ? { ...item, fullName: val } : item
+                                      )
+                                    );
+                                  }}
+                                  className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-xs font-medium"
+                                />
+                              </div>
+                              <div className="sm:col-span-4">
+                                <input
+                                  type="text"
+                                  value={ex.phone}
+                                  placeholder="Teléfono (10 dígitos)"
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setEditableExcludedRows((prev) =>
+                                      prev.map((item, i) =>
+                                        i === idx ? { ...item, phone: val } : item
+                                      )
+                                    );
+                                  }}
+                                  className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-xs font-mono"
+                                />
+                              </div>
+                              <div className="sm:col-span-3">
+                                <input
+                                  type="text"
+                                  value={ex.relationship}
+                                  placeholder="Relación"
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    setEditableExcludedRows((prev) =>
+                                      prev.map((item, i) =>
+                                        i === idx ? { ...item, relationship: val } : item
+                                      )
+                                    );
+                                  }}
+                                  className="w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-slate-900 text-xs"
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
