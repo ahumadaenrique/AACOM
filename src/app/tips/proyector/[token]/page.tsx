@@ -17,27 +17,29 @@ import {
 } from 'lucide-react';
 
 const STEP_SLIDES: Record<number, string> = {
-  0: '/tips/slides/slide-0-lobby.webp?v=2',
-  1: '/tips/slides/slide-1-datos.webp',
-  2: '/tips/slides/slide-2-patrimonio.webp',
-  3: '/tips/slides/slide-3-numero-magico.webp',
-  4: '/tips/slides/slide-4-retiro.webp',
-  5: '/tips/slides/slide-5-suenos.webp',
-  6: '/tips/slides/slide-6-ahorro.webp',
-  7: '/tips/slides/slide-7-seguros.webp',
-  8: '/tips/slides/slide-8-diagnostico.webp',
+  0: '/tips/slides/00_portada.png?v=3',
+  1: '/tips/slides/01_datos_privacidad.png?v=3',
+  2: '/tips/slides/02_patrimonio_deudas.png?v=3',
+  3: '/tips/slides/03_sueldo_numero_magico.png?v=3',
+  4: '/tips/slides/04_jubilacion_cinta.png?v=3',
+  5: '/tips/slides/05_suenos_prioridades.png?v=3',
+  6: '/tips/slides/06_regla_16.png?v=3',
+  7: '/tips/slides/07_riesgos_seguros.png?v=3',
+  8: '/tips/slides/08_diagnostico.png?v=3',
+  9: '/tips/slides/09_cierre.png?v=3',
 };
 
 const STEP_NAMES: Record<number, string> = {
   0: 'Sala de Espera — Escanea el QR para conectarte',
-  1: 'Bloque 1: Datos Generales',
-  2: 'Bloque 2: Tu Patrimonio por Categorías y Deudas',
-  3: 'Bloque 3: Tu Sueldo y El Número Mágico',
-  4: 'Bloque 4: La Cinta Métrica de tu Jubilación',
-  5: 'Bloque 5: Tus Sueños y Prioridades',
-  6: 'Bloque 6: Regla de Oro del Ahorro (16%)',
-  7: 'Bloque 7: Protección de Capital Humano y Seguros',
-  8: 'Bloque 8: Diagnóstico Patrimonial Preliminar',
+  1: 'Bloque 1: Datos Generales y Aviso de Privacidad',
+  2: 'Bloque 2: Patrimonio y Deudas',
+  3: 'Bloque 3: Sueldo y Número Mágico',
+  4: 'Bloque 4: Jubilación con la Cinta Métrica',
+  5: 'Bloque 5: Sueños y Prioridades',
+  6: 'Bloque 6: Regla de Ahorro del 16%',
+  7: 'Bloque 7: Riesgos y Seguros',
+  8: 'Bloque 8: Diagnóstico Preliminar',
+  9: 'Cierre — Hoy diste el primer paso; la acción hace la diferencia',
 };
 
 const STEP_SPOTLIGHTS: Record<
@@ -170,7 +172,8 @@ export default function TipsProjectorBoardPage() {
   const participants: any[] = data.participants || [];
   const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://app.aacomsoft.com';
   const joinUrl = `${originUrl}/tips/sala/${sess.code}`;
-  const currentSlideUrl = STEP_SLIDES[sess.unlockedStep ?? 0] || STEP_SLIDES[0];
+  const activeSlideIndex = sess.status === 'CLOSED' ? 9 : (sess.unlockedStep ?? 0);
+  const currentSlideUrl = STEP_SLIDES[activeSlideIndex] || STEP_SLIDES[0];
   const showFullSlideOnly =
     slideOnlyOverride !== null ? slideOnlyOverride : !sess.showBoardOnProjector;
 
@@ -204,7 +207,7 @@ export default function TipsProjectorBoardPage() {
             </div>
             <h1 className="text-xl sm:text-2xl font-black tracking-tight mt-1">{sess.title}</h1>
             <p className="text-xs sm:text-sm text-indigo-200 font-semibold mt-0.5">
-              {STEP_NAMES[sess.unlockedStep] || `Paso ${sess.unlockedStep} de 8`}
+              {STEP_NAMES[activeSlideIndex] || `Paso ${sess.unlockedStep} de 8`}
             </p>
           </div>
         </div>

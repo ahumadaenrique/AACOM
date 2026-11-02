@@ -65,23 +65,32 @@ const DREAM_CATEGORY_LABELS: Record<string, string> = {
 };
 
 const STEP_SLIDES: Record<number, string> = {
-  0: '/tips/slides/slide-0-lobby.webp?v=2',
-  1: '/tips/slides/slide-1-datos.webp',
-  2: '/tips/slides/slide-2-patrimonio.webp',
-  3: '/tips/slides/slide-3-numero-magico.webp',
-  4: '/tips/slides/slide-4-retiro.webp',
-  5: '/tips/slides/slide-5-suenos.webp',
-  6: '/tips/slides/slide-6-ahorro.webp',
-  7: '/tips/slides/slide-7-seguros.webp',
-  8: '/tips/slides/slide-8-diagnostico.webp',
+  0: '/tips/slides/00_portada.png?v=3',
+  1: '/tips/slides/01_datos_privacidad.png?v=3',
+  2: '/tips/slides/02_patrimonio_deudas.png?v=3',
+  3: '/tips/slides/03_sueldo_numero_magico.png?v=3',
+  4: '/tips/slides/04_jubilacion_cinta.png?v=3',
+  5: '/tips/slides/05_suenos_prioridades.png?v=3',
+  6: '/tips/slides/06_regla_16.png?v=3',
+  7: '/tips/slides/07_riesgos_seguros.png?v=3',
+  8: '/tips/slides/08_diagnostico.png?v=3',
+  9: '/tips/slides/09_cierre.png?v=3',
 };
 
 const LOBBY_DEFINITION = {
   step: 0,
-  title: '0. Bienvenida y Lobby',
+  title: '0. Bienvenida y Portada',
   desc: 'Reglas del juego, confidencialidad y escaneo QR',
   speakerScript:
     '🎙️ Guion: "Nadie planea fracasar financieramente; la gente fracasa por no planear. En los próximos 45 minutos vas a descubrir en tu propio celular dónde estás parado hoy, cuánto deberías tener acumulado a tu edad y qué ajustes necesitas hacer para blindar a tu familia y tu retiro. Escanea el código QR y registra tu nombre para acompañarte paso a paso."',
+};
+
+const CLOSING_DEFINITION = {
+  step: 9,
+  title: 'Cierre · Gracias por Participar',
+  desc: 'Hoy diste el primer paso; la acción hace la diferencia',
+  speakerScript:
+    '🎙️ Guion: "Gracias por participar. Hoy diste el primer paso; la acción hace la diferencia. Asegúrate de descargar tu diagnóstico en PDF a tu celular, agendar tu cita uno a uno de 30 minutos sin costo conmigo y escribirme directo por WhatsApp para resolver cualquier duda."',
 };
 
 const STEP_DEFINITIONS = [
@@ -902,13 +911,16 @@ export default function TipsHostConsolePage() {
 
       {/* Teleprompter + Lámina Visual de Apoyo del Expositor en Vivo */}
       {(() => {
-        const viewedStep = previewStepOverride !== null ? previewStepOverride : sess.unlockedStep || 0;
+        const defaultLiveSlide = sess.status === 'CLOSED' ? 9 : sess.unlockedStep || 0;
+        const viewedStep = previewStepOverride !== null ? previewStepOverride : defaultLiveSlide;
         const viewedDef =
           viewedStep === 0
             ? LOBBY_DEFINITION
+            : viewedStep === 9
+            ? CLOSING_DEFINITION
             : STEP_DEFINITIONS.find((d) => d.step === viewedStep) || LOBBY_DEFINITION;
         const viewedSlideUrl = STEP_SLIDES[viewedStep] || STEP_SLIDES[0];
-        const isViewingLiveStep = viewedStep === (sess.unlockedStep || 0);
+        const isViewingLiveStep = viewedStep === defaultLiveSlide;
 
         return (
           <div className="bg-indigo-950 text-white border border-indigo-800 rounded-3xl p-4 sm:p-5 shadow-lg">
@@ -943,14 +955,14 @@ export default function TipsHostConsolePage() {
                     </span>
                     {isViewingLiveStep ? (
                       <span className="text-[11px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 px-2.5 py-0.5 rounded-full">
-                        ● Sincronizado con Paso Actual ({sess.unlockedStep}/8)
+                        ● Sincronizado con {sess.status === 'CLOSED' ? 'Cierre del Taller' : `Paso Actual (${sess.unlockedStep}/8)`}
                       </span>
                     ) : (
                       <button
                         onClick={() => setPreviewStepOverride(null)}
                         className="text-[11px] font-bold bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full hover:bg-amber-300"
                       >
-                        Vista previa Paso {viewedStep} · Volver al paso en vivo ({sess.unlockedStep})
+                        Vista previa {viewedStep === 0 ? 'Portada' : viewedStep === 9 ? 'Cierre' : `Paso ${viewedStep}`} · Volver al paso en vivo ({sess.status === 'CLOSED' ? 'Cierre' : sess.unlockedStep})
                       </button>
                     )}
                   </div>
@@ -972,20 +984,20 @@ export default function TipsHostConsolePage() {
                   </p>
                 </div>
 
-                {/* Selector rápido para previsualizar cualquier lámina (0 a 8) */}
+                {/* Selector rápido para previsualizar cualquier lámina (0 a 9) */}
                 <div className="flex items-center gap-1.5 flex-wrap pt-1">
                   <span className="text-[11px] font-bold text-indigo-300 mr-1">
                     Previsualizar lámina:
                   </span>
-                  {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((sNum) => {
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((sNum) => {
                     const isSelected = viewedStep === sNum;
-                    const isLive = (sess.unlockedStep || 0) === sNum;
+                    const isLive = defaultLiveSlide === sNum;
                     return (
                       <button
                         key={sNum}
                         type="button"
                         onClick={() =>
-                          setPreviewStepOverride(sNum === (sess.unlockedStep || 0) ? null : sNum)
+                          setPreviewStepOverride(sNum === defaultLiveSlide ? null : sNum)
                         }
                         className={`px-2.5 py-1 rounded-lg text-xs font-extrabold transition ${
                           isSelected
@@ -995,7 +1007,7 @@ export default function TipsHostConsolePage() {
                             : 'bg-white/10 hover:bg-white/20 text-indigo-200'
                         }`}
                       >
-                        {sNum === 0 ? 'Lobby' : `P${sNum}`}
+                        {sNum === 0 ? 'Portada' : sNum === 9 ? 'Cierre' : `P${sNum}`}
                       </button>
                     );
                   })}
@@ -2173,10 +2185,14 @@ export default function TipsHostConsolePage() {
             <div className="flex items-center justify-between gap-3 flex-wrap">
               <div className="flex items-center gap-2 flex-wrap">
                 <span className="text-xs font-extrabold uppercase bg-amber-400 text-slate-950 px-3 py-1 rounded-lg">
-                  {zoomedSlideStep === 0 ? 'Slide 0 · Lobby' : `Slide Paso ${zoomedSlideStep} de 8`}
+                  {zoomedSlideStep === 0
+                    ? 'Lámina 0 · Portada'
+                    : zoomedSlideStep === 9
+                    ? 'Lámina 9 · Cierre'
+                    : `Lámina Paso ${zoomedSlideStep} de 8`}
                 </span>
-                <div className="flex items-center gap-1">
-                  {[0, 1, 2, 3, 4, 5, 6, 7, 8].map((sNum) => (
+                <div className="flex items-center gap-1 flex-wrap">
+                  {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map((sNum) => (
                     <button
                       key={sNum}
                       type="button"
@@ -2187,7 +2203,7 @@ export default function TipsHostConsolePage() {
                           : 'bg-white/10 text-indigo-200 hover:bg-white/20'
                       }`}
                     >
-                      {sNum === 0 ? 'Lobby' : `P${sNum}`}
+                      {sNum === 0 ? 'Portada' : sNum === 9 ? 'Cierre' : `P${sNum}`}
                     </button>
                   ))}
                 </div>
@@ -2211,6 +2227,8 @@ export default function TipsHostConsolePage() {
             <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 text-xs sm:text-sm text-indigo-100">
               {zoomedSlideStep === 0
                 ? LOBBY_DEFINITION.speakerScript
+                : zoomedSlideStep === 9
+                ? CLOSING_DEFINITION.speakerScript
                 : STEP_DEFINITIONS.find((d) => d.step === zoomedSlideStep)?.speakerScript}
             </div>
           </div>
