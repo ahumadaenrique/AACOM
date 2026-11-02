@@ -1061,6 +1061,41 @@ export async function sendCorporateEmailAction(params: {
     return { success: true, message: draft, mode: "DRAFT" };
   }
 
+  // Preparar adjuntos (PDFs, imágenes, presentaciones, etc.) para SMTP y Resend
+  const rawAttachments: Array<{
+    filename: string;
+    mimeType?: string;
+    size?: number;
+    contentBase64?: string;
+    url?: string;
+  }> = Array.isArray(params.attachmentsJson) ? params.attachmentsJson : [];
+
+  const nodemailerAttachments = rawAttachments
+    .map((att) => {
+      if (att.contentBase64) {
+        return {
+          filename: att.filename || "adjunto",
+          content: Buffer.from(att.contentBase64, "base64"),
+          contentType: att.mimeType || "application/octet-stream",
+        };
+      }
+      if (att.url) {
+        return {
+          filename: att.filename || "documento.pdf",
+          path: att.url,
+        };
+      }
+      return null;
+    })
+    .filter(Boolean) as any[];
+
+  const resendAttachments = rawAttachments
+    .filter((att) => Boolean(att.contentBase64 || att.url))
+    .map((att) => ({
+      filename: att.filename || "adjunto",
+      ...(att.contentBase64 ? { content: att.contentBase64 } : { path: att.url }),
+    }));
+
   // Descifrar credenciales AES-256-GCM en backend
   const creds = decryptMailboxCredentials(senderMailbox.encryptedImapCredentials);
 
@@ -1084,6 +1119,7 @@ export async function sendCorporateEmailAction(params: {
         subject: params.subject.trim(),
         html: params.bodyHtml,
         text: params.bodyText || snippet,
+        attachments: nodemailerAttachments.length > 0 ? nodemailerAttachments : undefined,
       });
       externalDelivered = true;
     } catch (smtpErr) {
@@ -1106,6 +1142,7 @@ export async function sendCorporateEmailAction(params: {
           to: cleanTo.split(/[;,]/).map((e) => e.trim()).filter(Boolean),
           subject: params.subject.trim(),
           html: params.bodyHtml,
+          attachments: resendAttachments.length > 0 ? resendAttachments : undefined,
         }),
       });
       externalDelivered = true;
@@ -1133,6 +1170,7 @@ export async function sendCorporateEmailAction(params: {
         subject: params.subject.trim(),
         html: params.bodyHtml,
         text: params.bodyText || snippet,
+        attachments: nodemailerAttachments.length > 0 ? nodemailerAttachments : undefined,
       });
       externalDelivered = true;
     } catch {
