@@ -55,7 +55,10 @@ import {
   SlidersHorizontal,
   Settings2,
   Lock,
+  ExternalLink,
+  Upload,
 } from "lucide-react";
+import { uploadPolicyPdfSmart } from "@/app/(dashboard)/cartera/pdfClientHelper";
 import {
   sendCorporateEmailAction,
   updateEmailMessageStatusAction,
@@ -262,6 +265,8 @@ export function AgentWebmailClient({ initialData }: { initialData: WebmailData }
   const [showCcSuggestions, setShowCcSuggestions] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const policyPdfUploadInputRef = useRef<HTMLInputElement | null>(null);
+  const [isUploadingPolicyPdf, setIsUploadingPolicyPdf] = useState(false);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
   const bodyTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -685,6 +690,99 @@ ${customSignature}`;
     }
 
     populateEmailWithPolicy(policy, ownerClient);
+  };
+
+  // Insertar explícitamente el PDF de una póliza que ya está subida en el sistema
+  const handleInsertPolicyPdf = (policyToInsert?: PolicyItem | null) => {
+    const targetPol =
+      policyToInsert ||
+      selectedPolicyObj ||
+      availablePoliciesForCompose.find((p) => Boolean(p.pdfUrl)) ||
+      null;
+
+    if (!targetPol) {
+      notify("error", "Primero selecciona un asegurado o una póliza de tu cartera.");
+      return;
+    }
+
+    if (!targetPol.pdfUrl) {
+      notify(
+        "error",
+        `La póliza #${targetPol.policyNumber} aún no tiene su archivo PDF subido en el sistema. Puedes subirlo con el botón "Subir PDF a esta póliza".`
+      );
+      return;
+    }
+
+    // Si aún no estaba seleccionada como póliza activa, sincronizarla
+    if (selectedPolicyId !== targetPol.id) {
+      setSelectedPolicyId(targetPol.id);
+    }
+
+    const autoFilename = `Caratula_Poliza_${targetPol.policyNumber}.pdf`;
+    const alreadyAttached = composeAttachments.some(
+      (a) => a.filename === autoFilename
+    );
+
+    if (!alreadyAttached) {
+      setComposeAttachments((prev) => [
+        ...prev,
+        {
+          filename: autoFilename,
+          mimeType: "application/pdf",
+          size: 245760,
+          url: targetPol.pdfUrl!,
+        },
+      ]);
+    }
+
+    // Asegurar que el enlace o mención también esté en el cuerpo si estaba vacío
+    if (!composeBody.includes(targetPol.policyNumber)) {
+      populateEmailWithPolicy(targetPol, selectedClientObj);
+    } else if (targetPol.pdfUrl && !composeBody.includes(targetPol.pdfUrl)) {
+      setComposeBody((prev) => {
+        const sigIdx = prev.lastIndexOf("\n--\n");
+        const pdfLine = `\n📄 Descarga directa de tu Póliza #${targetPol.policyNumber} (PDF): ${targetPol.pdfUrl}\n`;
+        if (sigIdx !== -1) {
+          return prev.slice(0, sigIdx) + pdfLine + prev.slice(sigIdx);
+        }
+        return prev + pdfLine;
+      });
+    }
+
+    notify(
+      "success",
+      `📎 PDF de la Póliza #${targetPol.policyNumber} (${autoFilename}) insertado y adjuntado al correo.`
+    );
+  };
+
+  // Subir PDF directamente a la póliza en el sistema (Mi Cartera) e insertarlo en el correo en 1 solo paso
+  const handleUploadNewPolicyPdfAndInsert = async (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0 || !selectedPolicyObj) return;
+    const file = fileList[0];
+    setIsUploadingPolicyPdf(true);
+    try {
+      const { url } = await uploadPolicyPdfSmart(file, selectedPolicyObj.id);
+      // Actualizar estado local para que la póliza ya tenga su pdfUrl en memoria
+      const updatedPolicy: PolicyItem = { ...selectedPolicyObj, pdfUrl: url };
+      setData((prev) => ({
+        ...prev,
+        policies: prev.policies.map((p) =>
+          p.id === selectedPolicyObj.id ? updatedPolicy : p
+        ),
+      }));
+      handleInsertPolicyPdf(updatedPolicy);
+      notify(
+        "success",
+        `¡Listo! El PDF quedó guardado en Mi Cartera para la póliza #${selectedPolicyObj.policyNumber} y se adjuntó a este correo.`
+      );
+    } catch (err: any) {
+      notify(
+        "error",
+        err?.message || "No se pudo subir el PDF a la póliza. Intenta adjuntarlo como archivo normal."
+      );
+    } finally {
+      setIsUploadingPolicyPdf(false);
+    }
   };
 
   // Procesar archivos subidos desde input o Drag & Drop
@@ -2626,13 +2724,130 @@ ${customSignature}`;
                           </option>
                           {availablePoliciesForCompose.map((p) => (
                             <option key={p.id} value={p.id}>
-                              {p.policyNumber} — {cleanPersonName(p.insuranceCompany) || "Seguro"} (
+                              {p.policyNumber} — {cleanPersonName(p.insuranceCompany) || "Seguro"}{" "}
+                              {p.pdfUrl ? "📎 [PDF en sistema]" : "[Sin PDF]"} (
                               {cleanPersonName(p.contractor || p.insured) || "Asegurado"})
                             </option>
                           ))}
                         </select>
                       </div>
                     </div>
+
+                    {/* BOTÓN DIRECTO PARA INSERTAR EL PDF DE LA PÓLIZA SUBIDA EN EL SISTEMA */}
+                    {selectedPolicyObj && (
+                      <div className="bg-white border border-sky-200/90 rounded-lg px-3 py-2 flex flex-wrap items-center justify-between gap-2 shadow-sm">
+                        {selectedPolicyObj.pdfUrl ? (
+                          <>
+                            <div className="flex items-center gap-2 text-xs text-slate-800">
+                              <FileCheck2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                              <span>
+                                <strong>PDF de Póliza #{selectedPolicyObj.policyNumber}</strong> disponible en el sistema
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {composeAttachments.some(
+                                (a) =>
+                                  a.filename ===
+                                  `Caratula_Poliza_${selectedPolicyObj.policyNumber}.pdf`
+                              ) ? (
+                                <button
+                                  type="button"
+                                  onClick={() => handleInsertPolicyPdf(selectedPolicyObj)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition shadow-sm"
+                                >
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                  <span>PDF de Póliza Insertado (Reinsertar texto/link)</span>
+                                </button>
+                              ) : (
+                                <button
+                                  type="button"
+                                  onClick={() => handleInsertPolicyPdf(selectedPolicyObj)}
+                                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition shadow-sm animate-pulse"
+                                >
+                                  <FileCheck2 className="h-3.5 w-3.5" />
+                                  <span>📎 Insertar PDF de la Póliza en el Correo</span>
+                                </button>
+                              )}
+
+                              <a
+                                href={selectedPolicyObj.pdfUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold transition"
+                                title="Abrir y verificar el PDF de la póliza en una pestaña nueva"
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                <span>Ver PDF</span>
+                              </a>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex items-center gap-2 text-xs text-amber-900">
+                              <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
+                              <span>
+                                La póliza <strong>#{selectedPolicyObj.policyNumber}</strong> aún no tiene su PDF subido en Mi Cartera.
+                              </span>
+                            </div>
+                            <div>
+                              <input
+                                ref={policyPdfUploadInputRef}
+                                type="file"
+                                accept="application/pdf,.pdf"
+                                onChange={(e) => {
+                                  handleUploadNewPolicyPdfAndInsert(e.target.files);
+                                  e.target.value = "";
+                                }}
+                                className="hidden"
+                              />
+                              <button
+                                type="button"
+                                disabled={isUploadingPolicyPdf}
+                                onClick={() => policyPdfUploadInputRef.current?.click()}
+                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition shadow-sm disabled:opacity-50"
+                              >
+                                <Upload className="h-3.5 w-3.5" />
+                                <span>
+                                  {isUploadingPolicyPdf
+                                    ? "Subiendo e insertando PDF..."
+                                    : "Subir PDF a esta póliza e insertarlo"}
+                                </span>
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Si eligió cliente pero aún no ha elegido cuál de sus pólizas con PDF insertar, mostrar botones rápidos */}
+                    {!selectedPolicyObj &&
+                      selectedClientObj &&
+                      availablePoliciesForCompose.some((p) => Boolean(p.pdfUrl)) && (
+                        <div className="bg-white border border-sky-200/90 rounded-lg px-3 py-2 flex flex-wrap items-center justify-between gap-2">
+                          <span className="text-xs font-semibold text-slate-700">
+                            📎 Pólizas con PDF en el sistema de{" "}
+                            <strong>{cleanPersonName(selectedClientObj.name)}</strong>:
+                          </span>
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {availablePoliciesForCompose
+                              .filter((p) => Boolean(p.pdfUrl))
+                              .map((pol) => (
+                                <button
+                                  key={pol.id}
+                                  type="button"
+                                  onClick={() => handleInsertPolicyPdf(pol)}
+                                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold transition shadow-sm"
+                                >
+                                  <FileCheck2 className="h-3.5 w-3.5" />
+                                  <span>
+                                    Insertar PDF Póliza #{pol.policyNumber} (
+                                    {cleanPersonName(pol.insuranceCompany) || "Seguro"})
+                                  </span>
+                                </button>
+                              ))}
+                          </div>
+                        </div>
+                      )}
 
                     {/* Semáforo del Candado Anti-Equivocación en Vivo */}
                     {policySecurityCheck && (
@@ -2924,6 +3139,23 @@ ${customSignature}`;
                       }}
                       className="hidden"
                     />
+
+                    {(selectedPolicyObj?.pdfUrl ||
+                      availablePoliciesForCompose.some((p) => Boolean(p.pdfUrl))) && (
+                      <button
+                        type="button"
+                        onClick={() => handleInsertPolicyPdf(selectedPolicyObj)}
+                        title="Insertar el PDF de la póliza del cliente que ya está subida en el sistema"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-bold transition shadow-sm"
+                      >
+                        <FileCheck2 className="h-4 w-4 text-emerald-600" />
+                        <span>
+                          {selectedPolicyObj?.pdfUrl
+                            ? `Insertar PDF Póliza #${selectedPolicyObj.policyNumber}`
+                            : "Insertar PDF de Póliza"}
+                        </span>
+                      </button>
+                    )}
 
                     <button
                       type="button"

@@ -1116,18 +1116,66 @@ export async function sendCorporateEmailAction(params: {
     url?: string;
   }> = Array.isArray(params.attachmentsJson) ? params.attachmentsJson : [];
 
-  const nodemailerAttachments = rawAttachments
-    .map((att) => {
+  const resolvedAttachments = await Promise.all(
+    rawAttachments.map(async (att) => {
       if (att.contentBase64) {
         return {
           filename: att.filename || "adjunto",
-          content: Buffer.from(att.contentBase64, "base64"),
-          contentType: att.mimeType || "application/octet-stream",
+          mimeType: att.mimeType || "application/octet-stream",
+          base64: att.contentBase64,
+          buffer: Buffer.from(att.contentBase64, "base64"),
+        };
+      }
+      if (att.url) {
+        if (att.url.startsWith("data:")) {
+          const b64 = att.url.includes(",") ? att.url.split(",")[1] : "";
+          if (b64) {
+            return {
+              filename: att.filename || "Caratula_Poliza.pdf",
+              mimeType: att.mimeType || "application/pdf",
+              base64: b64,
+              buffer: Buffer.from(b64, "base64"),
+            };
+          }
+        }
+        try {
+          const resp = await fetch(att.url);
+          if (resp.ok) {
+            const arr = await resp.arrayBuffer();
+            const buf = Buffer.from(arr);
+            return {
+              filename: att.filename || "Caratula_Poliza.pdf",
+              mimeType: att.mimeType || "application/pdf",
+              base64: buf.toString("base64"),
+              buffer: buf,
+            };
+          }
+        } catch {
+          // Fallback a path directo si falla la descarga previa
+        }
+        return {
+          filename: att.filename || "Caratula_Poliza.pdf",
+          mimeType: att.mimeType || "application/pdf",
+          url: att.url,
+        };
+      }
+      return null;
+    })
+  );
+
+  const nodemailerAttachments = resolvedAttachments
+    .map((att) => {
+      if (!att) return null;
+      if (att.buffer) {
+        return {
+          filename: att.filename,
+          content: att.buffer,
+          contentType: att.mimeType,
         };
       }
       if (att.url) {
         return {
-          filename: att.filename || "documento.pdf",
+          filename: att.filename,
           path: att.url,
         };
       }
@@ -1135,12 +1183,24 @@ export async function sendCorporateEmailAction(params: {
     })
     .filter(Boolean) as any[];
 
-  const resendAttachments = rawAttachments
-    .filter((att) => Boolean(att.contentBase64 || att.url))
-    .map((att) => ({
-      filename: att.filename || "adjunto",
-      ...(att.contentBase64 ? { content: att.contentBase64 } : { path: att.url }),
-    }));
+  const resendAttachments = resolvedAttachments
+    .map((att) => {
+      if (!att) return null;
+      if (att.base64) {
+        return {
+          filename: att.filename,
+          content: att.base64,
+        };
+      }
+      if (att.url) {
+        return {
+          filename: att.filename,
+          path: att.url,
+        };
+      }
+      return null;
+    })
+    .filter(Boolean) as any[];
 
   // Descifrar credenciales AES-256-GCM en backend
   const creds = decryptMailboxCredentials(senderMailbox.encryptedImapCredentials);
