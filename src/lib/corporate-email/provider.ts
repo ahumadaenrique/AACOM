@@ -250,7 +250,7 @@ function nativeFixieTunnelFetch(
       const reqHeaders: Record<string, string> = {
         Host: targetUrl.host,
         Accept: "application/json, text/plain, */*",
-        "User-Agent": "curl/8.7.1",
+        "User-Agent": "PostmanRuntime/7.39.0",
         Connection: "close",
         ...((init?.headers as Record<string, string>) || {}),
       };
@@ -909,21 +909,39 @@ export async function diagnoseResellerClubAndFixieConnection(): Promise<{
   sampleCheckDomain: string;
   sampleDomainAvailable: boolean | null;
 }> {
-  const fixieConfigured = Boolean(cleanEnvValue(process.env.FIXIE_URL).length > 0);
+  const fixieUrl = cleanEnvValue(process.env.FIXIE_URL);
+  const fixieConfigured = Boolean(fixieUrl.length > 0);
   const resellerClubConfigured = isResellerClubLiveConfigured();
-  let outboundIp: string | null = null;
 
+  let fixieHost = "none";
   try {
-    const ipRes = await resellerClubFetch("https://api.ipify.org?format=json", {
-      method: "GET",
-    });
-    if (ipRes.ok) {
-      const ipJson = (await ipRes.json()) as { ip?: string };
-      outboundIp = ipJson.ip || null;
-    }
-  } catch (e: any) {
-    outboundIp = `Error leyendo IP: ${e?.message || "desconocido"}`;
+    if (fixieConfigured) fixieHost = new URL(fixieUrl).hostname;
+  } catch {
+    fixieHost = "invalid-url";
   }
+
+  // 1. Obtener las IPs de Fixie (hacemos 3 llamadas rápidas en paralelo para descubrir ambas IPs del par de Fixie) y la IP directa de Vercel
+  const [ipFixie1, ipFixie2, ipFixie3, ipDirect] = await Promise.all([
+    resellerClubFetch("https://api.ipify.org?format=json")
+      .then((r) => r.json())
+      .then((j) => j?.ip || null)
+      .catch((e) => `err:${e?.message}`),
+    resellerClubFetch("https://api.ipify.org?format=json")
+      .then((r) => r.json())
+      .then((j) => j?.ip || null)
+      .catch(() => null),
+    resellerClubFetch("https://api.ipify.org?format=json")
+      .then((r) => r.json())
+      .then((j) => j?.ip || null)
+      .catch(() => null),
+    resellerClubFetch("https://api.ipify.org?format=json", { skipFixie: true })
+      .then((r) => r.json())
+      .then((j) => j?.ip || null)
+      .catch(() => null),
+  ]);
+
+  const uniqueFixieIps = Array.from(new Set([ipFixie1, ipFixie2, ipFixie3].filter(Boolean)));
+  const outboundIp = uniqueFixieIps.join(", ") || "N/A";
 
   const testDomainSld = "aacomsofttestdiag2026";
   const sampleCheckDomain = `${testDomainSld}.com`;
@@ -942,7 +960,11 @@ export async function diagnoseResellerClubAndFixieConnection(): Promise<{
   }
 
   const authUserIdMasked = cleanEnvValue(process.env.RESELLERCLUB_AUTH_USERID);
-  const isSandbox = cleanEnvValue(process.env.RESELLERCLUB_SANDBOX).toLowerCase() === "true";
+  const apiKeyClean = cleanEnvValue(process.env.RESELLERCLUB_API_KEY);
+  const apiKeyMask =
+    apiKeyClean.length > 4
+      ? `${apiKeyClean.slice(0, 2)}***${apiKeyClean.slice(-2)} (len=${apiKeyClean.length})`
+      : `len=${apiKeyClean.length}`;
 
   try {
     const checkBaseUrl = getResellerClubDomainCheckBaseUrl();
@@ -951,66 +973,66 @@ export async function diagnoseResellerClubAndFixieConnection(): Promise<{
     params.append("domain-name", testDomainSld);
     params.append("tlds", "com");
 
-    // Prueba 1: domaincheck.httpapi.com vía Fixie con User-Agent curl/8.7.1
-    const rcRes = await resellerClubFetch(
-      `${checkBaseUrl}/domains/available.json?${params.toString()}`,
-      { method: "GET" }
-    );
-    const rawText = await rcRes.text();
-    const serverHdr = rcRes.headers.get("server") || "unknown";
-    const cfMitigated = rcRes.headers.get("cf-mitigated") || "none";
-    let parsed = parseResellerClubResponseText(rawText, rcRes.status);
+    // Probamos 3 variantes en paralelo a través del túnel nativo de Fixie:
+    // A) domaincheck.httpapi.com con PostmanRuntime/7.39.0
+    // B) httpapi.com/api/domains/available.json con PostmanRuntime/7.39.0
+    // C) domaincheck.httpapi.com con api-key=ping_test (para distinguir bloqueo WAF vs API Key / Whitelist)
+    const pingParams = new URLSearchParams();
+    pingParams.append("auth-userid", authUserIdMasked);
+    pingParams.append("api-key", "ping_test");
+    pingParams.append("domain-name", testDomainSld);
+    pingParams.append("tlds", "com");
 
-    // Prueba 2: Si domaincheck dio HTML, probar httpapi.com/api/customers/search.json vía Fixie
-    let customerProbeSummary = "";
-    if (!parsed.okJson) {
-      const custParams = getResellerClubAuthParams();
-      custParams.append("no-of-records", "10");
-      custParams.append("page-no", "1");
-      const custRes = await resellerClubFetch(
-        `${mainBaseUrl}/customers/search.json?${custParams.toString()}`,
-        { method: "GET" }
-      );
-      const custText = await custRes.text();
-      const custParsed = parseResellerClubResponseText(custText, custRes.status);
-      if (custParsed.okJson) {
-        parsed = custParsed;
-      } else {
-        customerProbeSummary = ` | customers/search: ${custParsed.errorSummary} (server=${custRes.headers.get("server")}, cf=${custRes.headers.get("cf-mitigated") || "none"})`;
-      }
-    }
+    const [probeA, probeB, probePing] = await Promise.all([
+      resellerClubFetch(`${checkBaseUrl}/domains/available.json?${params.toString()}`, {
+        method: "GET",
+        headers: { "User-Agent": "PostmanRuntime/7.39.0" },
+      }).then(async (r) => {
+        const t = await r.text();
+        return { status: r.status, parsed: parseResellerClubResponseText(t, r.status), raw: t.slice(0, 160) };
+      }),
+      resellerClubFetch(`${mainBaseUrl}/domains/available.json?${params.toString()}`, {
+        method: "GET",
+        headers: { "User-Agent": "PostmanRuntime/7.39.0" },
+      }).then(async (r) => {
+        const t = await r.text();
+        return { status: r.status, parsed: parseResellerClubResponseText(t, r.status), raw: t.slice(0, 160) };
+      }),
+      resellerClubFetch(`${checkBaseUrl}/domains/available.json?${pingParams.toString()}`, {
+        method: "GET",
+        headers: { "User-Agent": "PostmanRuntime/7.39.0" },
+      }).then(async (r) => {
+        const t = await r.text();
+        return { status: r.status, parsed: parseResellerClubResponseText(t, r.status), raw: t.slice(0, 160) };
+      }),
+    ]);
 
-    // Prueba 3: Si Fixie fue bloqueado por Cloudflare WAF (403), probar directo desde Vercel sin Fixie para comparar
-    if (!parsed.okJson) {
-      const directRes = await resellerClubFetch(
-        `${checkBaseUrl}/domains/available.json?${params.toString()}`,
-        { method: "GET", skipFixie: true }
-      );
-      const directText = await directRes.text();
-      const directParsed = parseResellerClubResponseText(directText, directRes.status);
-      const directInfo = directParsed.okJson
-        ? `Directo sin Fixie SÍ devolvió JSON: ${JSON.stringify(directParsed.data).slice(0, 140)}`
-        : `Directo sin Fixie devolvió: ${directParsed.errorSummary}`;
+    const winningProbe = probeA.parsed.okJson ? probeA : probeB.parsed.okJson ? probeB : null;
+
+    if (!winningProbe) {
+      const pingInfo = probePing.parsed.okJson
+        ? `Ping con clave falsa SÍ devolvió JSON (${JSON.stringify(probePing.parsed.data).slice(0, 90)}) -> Tu API Key (${apiKeyMask}) tiene caracteres que disparan el firewall o bloqueo.`
+        : `Ping también devolvió ${probePing.parsed.errorSummary}`;
 
       return {
         fixieConfigured,
         outboundIp,
         resellerClubConfigured: true,
         resellerClubConnected: false,
-        resellerClubMessage: `Vía Fixie (${outboundIp}): ${parsed.errorSummary} [server=${serverHdr}, cf-mitigated=${cfMitigated}]${customerProbeSummary} • Comparativa ${directInfo}`,
+        resellerClubMessage: `[Túnel Nativo v2 • Host Fixie: ${fixieHost} • IPs Fixie: ${outboundIp} • IP Directa Vercel: ${ipDirect}] domaincheck devolvió ${probeA.parsed.errorSummary} | httpapi devolvió ${probeB.parsed.errorSummary} | ${pingInfo}`,
         sampleCheckDomain,
         sampleDomainAvailable: null,
       };
     }
 
-    const data = parsed.data;
+    const data = winningProbe.parsed.data;
     if (data?.status === "ERROR" || data?.status === "error") {
       return {
         fixieConfigured,
         outboundIp,
         resellerClubConfigured: true,
         resellerClubConnected: false,
-        resellerClubMessage: `ResellerClub respondió JSON (UserID: ${authUserIdMasked}, Modo: ${isSandbox ? "Sandbox" : "Producción"}): "${data.message || JSON.stringify(data)}". Verifica que la IP ${outboundIp} esté autorizada en Settings -> API -> Whitelist IP Addresses.`,
+        resellerClubMessage: `[Túnel Nativo v2 • IPs Fixie: ${outboundIp}] ResellerClub respondió JSON (UserID: ${authUserIdMasked}, Key: ${apiKeyMask}): "${data.message || JSON.stringify(data)}". Asegúrate de que las IPs ${outboundIp} estén en Settings -> API -> Whitelist IP Addresses.`,
         sampleCheckDomain,
         sampleDomainAvailable: null,
       };
@@ -1024,7 +1046,7 @@ export async function diagnoseResellerClubAndFixieConnection(): Promise<{
       outboundIp,
       resellerClubConfigured: true,
       resellerClubConnected: true,
-      resellerClubMessage: `¡Enlace 100% verificado (200 OK)! IP ${outboundIp} autorizada en ResellerClub (UserID: ${authUserIdMasked}, ${sampleCheckDomain}: ${entry?.status || "conectado"}).`,
+      resellerClubMessage: `¡Enlace 100% verificado (200 OK)! Túnel Nativo Fixie (${fixieHost}) saliendo por IP ${outboundIp} (vs Vercel ${ipDirect}) autorizado en ResellerClub (UserID: ${authUserIdMasked}, ${sampleCheckDomain}: ${entry?.status || "conectado"}).`,
       sampleCheckDomain,
       sampleDomainAvailable: isAvail,
     };
@@ -1034,7 +1056,7 @@ export async function diagnoseResellerClubAndFixieConnection(): Promise<{
       outboundIp,
       resellerClubConfigured: true,
       resellerClubConnected: false,
-      resellerClubMessage: `Error de red al conectar con ResellerClub: ${err?.message || "desconocido"}`,
+      resellerClubMessage: `[Túnel Nativo v2] Error de red al conectar con ResellerClub: ${err?.message || "desconocido"}`,
       sampleCheckDomain,
       sampleDomainAvailable: null,
     };
