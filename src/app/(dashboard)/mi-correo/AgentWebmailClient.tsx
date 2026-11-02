@@ -1756,16 +1756,6 @@ ${customSignature}`;
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={() => setShowMobileSyncModal(true)}
-            title="Sincronizar correo en tu iPhone, Android o Outlook"
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition"
-          >
-            <Smartphone className="h-3.5 w-3.5 text-sky-600" />
-            <span className="hidden xl:inline">Celular</span>
-          </button>
-
           {data.currentUser.isAdmin && (
             <Link
               href="/correos-corporativos"
