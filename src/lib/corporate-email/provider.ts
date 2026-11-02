@@ -281,8 +281,7 @@ function nativeFixieTunnelFetch(
         requestOptions.createConnection = () => socket;
       }
 
-      const clientMod = isHttps ? https : http;
-      const actualReq = clientMod.request(requestOptions, (actualRes) => {
+      const actualReq = http.request(requestOptions, (actualRes) => {
         const chunks: Buffer[] = [];
         actualRes.on("data", (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));
         actualRes.on("end", () => {
