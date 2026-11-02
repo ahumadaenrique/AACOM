@@ -45,6 +45,7 @@ import {
   createAgencyMailboxAction,
   deleteForwarderAction,
   releaseMailboxAndCreateForwardAction,
+  resetCorporateEmailSandboxAction,
   simulateIncomingClientEmailAction,
   toggleMailboxSuspensionAction,
 } from "./actions";
@@ -303,6 +304,27 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                 ))}
               </select>
             </div>
+
+            {subscription && (
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                onClick={async () => {
+                  if (!confirm("¿Reiniciar la demostración de esta promotoría a cero? Se borrarán los buzones de prueba y volverás al buscador de dominios ($0).")) return;
+                  try {
+                    await resetCorporateEmailSandboxAction(data.agency.id);
+                    window.location.reload();
+                  } catch (err: any) {
+                    setErrorBanner(err.message || "Error al reiniciar demo.");
+                  }
+                }}
+                className="h-9 text-xs font-bold border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100"
+              >
+                <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
+                Reiniciar Prueba ($0)
+              </Button>
+            )}
 
             <Button
               type="button"

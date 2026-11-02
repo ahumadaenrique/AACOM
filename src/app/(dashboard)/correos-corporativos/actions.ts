@@ -376,6 +376,7 @@ export async function activateCorporateEmailSubscriptionAction(params: {
     agencyName: ctx.agency.name,
     agencySlug: ctx.agency.slug,
     domainName: params.domainName,
+    simulateOnly: params.billingMode !== "STRIPE",
   });
 
   // Si solicita Stripe Checkout real y existe STRIPE_SECRET_KEY cuando no es Sandbox directo
@@ -1331,4 +1332,33 @@ export async function simulateIncomingClientEmailAction(params: {
     deliveredTo: targetMailbox.emailAddress,
     messageId: msg.id,
   };
+}
+
+
+/**
+ * Permite al Super Admin reiniciar/limpiar la suscripción de prueba de una agencia ($0)
+ * para volver al buscador de dominios después de probar los 20 buzones y el Puente de Cartera.
+ */
+export async function resetCorporateEmailSandboxAction(targetAgencyId?: string) {
+  const ctx = await resolveTenantContext(targetAgencyId);
+  if (!ctx.isSuperAdmin) {
+    throw new Error("Solo el Super Administrador puede reiniciar una suscripción de prueba.");
+  }
+
+  await prisma.agencyEmailMessage.deleteMany({
+    where: { agencyId: ctx.effectiveAgencyId },
+  });
+  await prisma.agencyEmailForward.deleteMany({
+    where: { agencyId: ctx.effectiveAgencyId },
+  });
+  await prisma.agencyMailbox.deleteMany({
+    where: { agencyId: ctx.effectiveAgencyId },
+  });
+  await prisma.agencyEmailSubscription.deleteMany({
+    where: { agencyId: ctx.effectiveAgencyId },
+  });
+
+  revalidatePath("/correos-corporativos");
+  revalidatePath("/mi-correo");
+  return { success: true };
 }

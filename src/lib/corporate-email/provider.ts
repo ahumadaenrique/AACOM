@@ -277,7 +277,7 @@ export async function checkDomainsAvailabilityAndWholesalePrice(
     candidates.map((c) => isDomainTakenOnInternet(c.domain))
   );
 
-  if (isResellerClubLiveConfigured()) {
+  if (isResellerClubLiveConfigured() && !params.simulateOnly) {
     try {
       const baseUrl = getResellerClubBaseUrl();
       const params = getResellerClubAuthParams();
@@ -288,7 +288,7 @@ export async function checkDomainsAvailabilityAndWholesalePrice(
       params.append("tlds", "com.mx");
       params.append("tlds", "mx");
 
-      const res = await fetch(`${baseUrl}/domains/available.json?${params.toString()}`, {
+      const res = await resellerClubFetch(`${baseUrl}/domains/available.json?${params.toString()}`, {
         method: "GET",
         cache: "no-store",
       });
@@ -421,6 +421,7 @@ export async function provisionCorporateDomainAndTitanOrder(params: {
   agencyName: string;
   agencySlug?: string | null;
   domainName: string;
+  simulateOnly?: boolean;
 }): Promise<ProvisioningResult> {
   const cleanDomain = params.domainName.trim().toLowerCase();
   const liveChecks = await checkDomainsAvailabilityAndWholesalePrice(
