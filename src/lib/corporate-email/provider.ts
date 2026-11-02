@@ -266,7 +266,6 @@ function nativeFixieTunnelFetch(
         path: `${targetUrl.pathname}${targetUrl.search}`,
         method: init?.method || "GET",
         headers: reqHeaders,
-        agent: false,
       };
 
       if (isHttps) {
