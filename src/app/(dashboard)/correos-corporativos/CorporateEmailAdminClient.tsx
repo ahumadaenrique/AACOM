@@ -142,7 +142,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
       });
       setCreateOpen(false);
       setStatusBanner(
-        `Buzón ${res.mailbox.emailAddress} creado y aprovisionado con 10 GB en Titan Email.`
+        `Buzón ${res.mailbox.emailAddress} creado y aprovisionado con 3 GB en Titan Email.`
       );
       router.refresh();
       window.location.reload();
@@ -421,7 +421,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
           <p className="text-sm text-slate-600 max-w-2xl">
             Administra los 20 asientos institucionales de{" "}
             <strong className="text-slate-900 font-semibold">{data.agency.name}</strong>, asigna
-            cuentas con 10 GB a tus agentes y protege las renovaciones con el Puente de Cartera
+            cuentas con 3 GB a tus agentes y protege las renovaciones con el Puente de Cartera
             automático.
           </p>
         </div>
@@ -656,7 +656,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
                   <div>
                     <div className="text-[11px] font-bold uppercase tracking-widest text-sky-700">
-                      Capacidad de Bolsa Corporativa (Titan Email 10 GB)
+                      Capacidad de Bolsa Corporativa (Titan Email 3 GB)
                     </div>
                     <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 tabular-nums">
                       {usedSeats} / {maxSeats} Buzones asignados{" "}
@@ -683,7 +683,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
 
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
                   <span>
-                    Cada buzón incluye <strong className="text-slate-900">10 GB</strong> dedicados •
+                    Cada buzón incluye <strong className="text-slate-900">3 GB</strong> dedicados •
                     Los Puentes de Cartera (
                     <strong className="text-emerald-700">{forwards.length} activos</strong>) son
                     gratuitos y no consumen asiento.
@@ -823,7 +823,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                     <tr className="bg-slate-50/50 border-b border-slate-100 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                       <th className="py-3.5 px-6">Buzón Corporativo</th>
                       <th className="py-3.5 px-4">Agente / Titular en aacomsoft</th>
-                      <th className="py-3.5 px-4">Almacenamiento (10 GB)</th>
+                      <th className="py-3.5 px-4">Almacenamiento (3 GB)</th>
                       <th className="py-3.5 px-4">Estado</th>
                       <th className="py-3.5 px-6 text-right">Acciones de Administración</th>
                     </tr>
@@ -833,7 +833,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                       const usedGb = (mbx.storageUsedMb / 1024).toFixed(2);
                       const storagePct = Math.min(
                         100,
-                        Math.round((mbx.storageUsedMb / (10 * 1024)) * 100)
+                        Math.round((mbx.storageUsedMb / (3 * 1024)) * 100)
                       );
                       return (
                         <tr key={mbx.id} className="hover:bg-slate-50/80 transition-colors">
@@ -882,7 +882,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                             <div className="w-36 space-y-1.5">
                               <div className="flex justify-between text-[11px] font-semibold text-slate-600 tabular-nums">
                                 <span>{usedGb} GB</span>
-                                <span>10 GB</span>
+                                <span>3 GB</span>
                               </div>
                               <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                                 <div
@@ -1080,7 +1080,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Mail className="w-5 h-5 text-sky-600" />
-                Crear Buzón Corporativo (10 GB)
+                Crear Buzón Corporativo (3 GB)
               </DialogTitle>
               <DialogDescription>
                 Asigna uno de tus {availableSeats} lugares disponibles a un agente de{" "}

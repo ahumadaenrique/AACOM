@@ -232,7 +232,7 @@ export function CorporateEmailUpsellBanner({
 
               <p className="text-sm sm:text-[15px] text-slate-300 leading-relaxed max-w-2xl">
                 Consolida la presencia institucional de <strong className="text-white font-semibold">{agencyName}</strong> con{" "}
-                <strong className="text-sky-300 font-semibold">20 buzones corporativos de 10 GB</strong>{" "}
+                <strong className="text-sky-300 font-semibold">20 buzones corporativos de 3 GB</strong>{" "}
                 conectados de forma nativa a <strong className="text-white font-semibold">aacomsoft</strong>. Tus agentes envían pólizas y cotizaciones desde su propio correo oficial sin salir de su cartera.
               </p>
             </div>
@@ -244,7 +244,7 @@ export function CorporateEmailUpsellBanner({
                   Vista previa de cuentas listas para tus agentes
                 </span>
                 <span className="text-emerald-400 font-medium flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> 20 lugares incluidos (10 GB c/u)
+                  <CheckCircle2 className="w-3.5 h-3.5" /> 20 lugares incluidos (3 GB c/u)
                 </span>
               </div>
 
@@ -263,7 +263,7 @@ export function CorporateEmailUpsellBanner({
                           {item.name}
                         </span>
                         <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/20 shrink-0">
-                          10 GB
+                          3 GB
                         </span>
                       </div>
                       <div className="text-xs font-mono text-sky-300 break-all mt-0.5">
@@ -332,7 +332,7 @@ export function CorporateEmailUpsellBanner({
                     Paquete Corporativo Promotoría
                   </span>
                   <p className="text-xs text-slate-400 mt-0.5">
-                    Dominio oficial + 20 buzones de 10 GB
+                    Dominio oficial + 20 buzones de 3 GB
                   </p>
                 </div>
                 <div className="text-right shrink-0">

@@ -347,7 +347,7 @@ export async function searchCustomDomainAction(query: string, targetAgencyId?: s
  * Activa el Paquete Corporativo Promotoría aacomsoft ($999 MXN/mes):
  * - Realiza doble verificación en tiempo real (<500ms) de disponibilidad y tope mayorista <= $15 USD
  * - Registra el dominio con perfil WHOIS corporativo de aacomsoft + Privacy Protection
- * - Crea la orden de Titan Email (20 asientos de 10 GB)
+ * - Crea la orden de Titan Email (20 asientos de 3 GB)
  * - Inyecta registros DNS MX, SPF, DKIM y DMARC
  * - Crea el primer buzón institucional direccion@<dominio> listo para usar
  */
@@ -399,7 +399,7 @@ export async function activateCorporateEmailSubscriptionAction(params: {
             recurring: { interval: "month" },
             product_data: {
               name: `Paquete Corporativo Promotoría aacomsoft (${provisioned.domainName})`,
-              description: `Dominio oficial ${provisioned.domainName} + Hasta 20 buzones corporativos de 10 GB (Titan Email) integrados en aacomsoft.`,
+              description: `Dominio oficial ${provisioned.domainName} + Hasta 20 buzones corporativos de 3 GB (Titan Email) integrados en aacomsoft.`,
             },
           },
           quantity: 1,
@@ -509,7 +509,7 @@ export async function activateCorporateEmailSubscriptionAction(params: {
           <div style="font-family: sans-serif; color: #1e293b; line-height: 1.6;">
             <h2 style="color: #0284c7;">¡Tu Identidad Corporativa en aacomsoft está lista!</h2>
             <p>Hola <strong>${ctx.agency.name}</strong>,</p>
-            <p>Tu dominio oficial <strong>${provisioned.domainName}</strong> ha sido registrado bajo custodia Zero-Touch con protección de privacidad WHOIS y conectado a tu bolsa de <strong>20 buzones de 10 GB</strong> en infraestructura Titan Email.</p>
+            <p>Tu dominio oficial <strong>${provisioned.domainName}</strong> ha sido registrado bajo custodia Zero-Touch con protección de privacidad WHOIS y conectado a tu bolsa de <strong>20 buzones de 3 GB</strong> en infraestructura Titan Email.</p>
             <ul>
               <li><strong>Registros MX:</strong> mx1.titan.email (10), mx2.titan.email (20) — Activos</li>
               <li><strong>SPF:</strong> <code>v=spf1 include:spf.titan.email ~all</code> — Activo</li>
@@ -518,7 +518,7 @@ export async function activateCorporateEmailSubscriptionAction(params: {
             <p>Desde el panel <strong>Dominios y 20 Correos</strong> puedes asignar asientos a tus agentes o liberar lugares cuando haya rotación sin perder los correos de tus asegurados.</p>
           </div>
         `,
-        bodyText: `¡Tu Identidad Corporativa en aacomsoft está lista! Tu dominio ${provisioned.domainName} y tus 20 buzones de 10 GB están activos.`,
+        bodyText: `¡Tu Identidad Corporativa en aacomsoft está lista! Tu dominio ${provisioned.domainName} y tus 20 buzones de 3 GB están activos.`,
         isRead: false,
       },
     });
@@ -637,16 +637,16 @@ export async function createAgencyMailboxAction(params: {
       fromName: `Administración ${ctx.agency.name}`,
       toAddresses: fullEmail,
       subject: `Bienvenido a tu nuevo correo oficial ${fullEmail} en aacomsoft`,
-      snippet: `Tu buzón de 10 GB está listo para enviar pólizas y atender a tus asegurados desde aacomsoft.`,
+      snippet: `Tu buzón de 3 GB está listo para enviar pólizas y atender a tus asegurados desde aacomsoft.`,
       bodyHtml: `
         <div style="font-family: sans-serif; color: #1e293b; line-height: 1.6;">
           <h3 style="color: #0284c7;">¡Bienvenido a tu buzón corporativo ${fullEmail}!</h3>
           <p>Hola <strong>${mailbox.displayName}</strong>,</p>
-          <p>Tu cuenta de correo profesional de <strong>10 GB</strong> ya está vinculada a tu sesión de <strong>aacomsoft</strong>.</p>
+          <p>Tu cuenta de correo profesional de <strong>3 GB</strong> ya está vinculada a tu sesión de <strong>aacomsoft</strong>.</p>
           <p>Puedes enviar pólizas y expedientes en 1 clic usando el botón <strong>"Redactar / Enviar Póliza"</strong> o sincronizar este buzón en tu iPhone o Android sin teclear puertos ni contraseñas.</p>
         </div>
       `,
-      bodyText: `Hola ${mailbox.displayName}, tu buzón corporativo ${fullEmail} de 10 GB ya está activo en aacomsoft.`,
+      bodyText: `Hola ${mailbox.displayName}, tu buzón corporativo ${fullEmail} de 3 GB ya está activo en aacomsoft.`,
       isRead: false,
     },
   });

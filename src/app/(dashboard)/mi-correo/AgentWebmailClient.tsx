@@ -399,7 +399,7 @@ export function AgentWebmailClient({ initialData }: { initialData: any }) {
                   📧 Mi Correo
                 </h1>
                 <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
-                  10 GB Titan Email
+                  3 GB Titan Email
                 </Badge>
               </div>
               <div className="text-xs font-mono font-bold text-sky-700">

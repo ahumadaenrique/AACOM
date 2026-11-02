@@ -3,7 +3,7 @@ import { encrypt, decrypt } from "@/lib/encryption";
 
 export const MAX_DOMAIN_WHOLESALE_USD = 15.0;
 export const DEFAULT_MAX_SEATS = 20;
-export const DEFAULT_STORAGE_GB = 10;
+export const DEFAULT_STORAGE_GB = 3;
 export const PACKAGE_MONTHLY_PRICE_MXN = 999;
 
 export interface DomainCheckResult {
@@ -414,7 +414,7 @@ export function buildTitanDnsRecords(domainName: string): DnsRecordSpec[] {
  * Aprovisionamiento Zero-Touch (100% Automatizado):
  * 1. Doble verificación en tiempo real (disponible + <= $15 USD)
  * 2. POST a ResellerClub /domains/register.json con perfil WHOIS corporativo de AACOMSoft + Privacy Protection
- * 3. Creación automática de la orden de Titan Email (Plan 10 GB) asociada al dominio
+ * 3. Creación automática de la orden de Titan Email (Plan 3 GB) asociada al dominio
  * 4. Inyección automática por API en la zona DNS de MX, SPF, DKIM y DMARC
  */
 export async function provisionCorporateDomainAndTitanOrder(params: {
@@ -456,7 +456,7 @@ export async function provisionCorporateDomainAndTitanOrder(params: {
   const dnsRecords = buildTitanDnsRecords(cleanDomain);
   const orderSuffix = crypto.randomBytes(4).toString("hex").toUpperCase();
   let registrarOrderId = `RC-DOM-${orderSuffix}`;
-  let titanOrderId = `TITAN-10GB-${orderSuffix}`;
+  let titanOrderId = `TITAN-3GB-${orderSuffix}`;
   let mode: "RESELLERCLUB_LIVE" | "SANDBOX_SIMULATOR" = "SANDBOX_SIMULATOR";
 
   if (isResellerClubLiveConfigured() && !params.simulateOnly) {
@@ -493,7 +493,7 @@ export async function provisionCorporateDomainAndTitanOrder(params: {
           }
         }
 
-        // 2. Crear la orden de Titan Email (Enterprise Email 10 GB)
+        // 2. Crear la orden de Titan Email (Enterprise Email 3 GB)
         const mailParams = getResellerClubAuthParams();
         mailParams.append("domain-name", cleanDomain);
         mailParams.append("customer-id", customerId);
@@ -569,7 +569,7 @@ export async function provisionTitanMailboxAccount(params: {
   let titanAccountId = `titan_mbx_${crypto.randomBytes(5).toString("hex")}`;
   let providerMode: "RESELLERCLUB_LIVE" | "SANDBOX_SIMULATOR" = "SANDBOX_SIMULATOR";
 
-  if (isResellerClubLiveConfigured() && !params.titanOrderId.startsWith("TITAN-10GB-")) {
+  if (isResellerClubLiveConfigured() && !params.titanOrderId.startsWith("TITAN-3GB-") && !params.titanOrderId.startsWith("TITAN-10GB-")) {
     try {
       const baseUrl = getResellerClubBaseUrl();
       const apiParams = getResellerClubAuthParams();
@@ -622,7 +622,7 @@ export async function updateTitanMailboxSuspension(params: {
   emailAddress: string;
   suspend: boolean;
 }): Promise<void> {
-  if (isResellerClubLiveConfigured() && !params.titanOrderId.startsWith("TITAN-10GB-")) {
+  if (isResellerClubLiveConfigured() && !params.titanOrderId.startsWith("TITAN-3GB-") && !params.titanOrderId.startsWith("TITAN-10GB-")) {
     try {
       const baseUrl = getResellerClubBaseUrl();
       const apiParams = getResellerClubAuthParams();
@@ -649,7 +649,7 @@ export async function deleteTitanMailboxAccount(params: {
   titanOrderId: string;
   emailAddress: string;
 }): Promise<void> {
-  if (isResellerClubLiveConfigured() && !params.titanOrderId.startsWith("TITAN-10GB-")) {
+  if (isResellerClubLiveConfigured() && !params.titanOrderId.startsWith("TITAN-3GB-") && !params.titanOrderId.startsWith("TITAN-10GB-")) {
     try {
       const baseUrl = getResellerClubBaseUrl();
       const apiParams = getResellerClubAuthParams();
@@ -692,7 +692,7 @@ export async function createTitanFreeForwarder(params: {
 }): Promise<{ titanForwardId: string }> {
   const titanForwardId = `titan_fwd_${crypto.randomBytes(4).toString("hex")}`;
 
-  if (isResellerClubLiveConfigured() && !params.titanOrderId.startsWith("TITAN-10GB-")) {
+  if (isResellerClubLiveConfigured() && !params.titanOrderId.startsWith("TITAN-3GB-") && !params.titanOrderId.startsWith("TITAN-10GB-")) {
     try {
       const baseUrl = getResellerClubBaseUrl();
       const apiParams = getResellerClubAuthParams();
