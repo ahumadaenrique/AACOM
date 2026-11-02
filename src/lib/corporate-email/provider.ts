@@ -480,7 +480,7 @@ export async function provisionCorporateDomainAndTitanOrder(params: {
         regParams.append("invoice-option", "NoInvoice");
         regParams.append("protect-privacy", "true");
 
-        const regRes = await fetch(`${baseUrl}/domains/register.json`, {
+        const regRes = await resellerClubFetch(`${baseUrl}/domains/register.json`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: regParams.toString(),
@@ -501,7 +501,7 @@ export async function provisionCorporateDomainAndTitanOrder(params: {
         mailParams.append("no-of-accounts", String(DEFAULT_MAX_SEATS));
         mailParams.append("invoice-option", "NoInvoice");
 
-        const mailRes = await fetch(`${baseUrl}/eelite/us/add.json`, {
+        const mailRes = await resellerClubFetch(`${baseUrl}/eelite/us/add.json`, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: mailParams.toString(),
@@ -522,13 +522,13 @@ export async function provisionCorporateDomainAndTitanOrder(params: {
           dnsParams.append("ttl", String(rec.ttl));
           if (rec.type === "MX") {
             dnsParams.append("priority", String(rec.priority || 10));
-            await fetch(`${baseUrl}/dns/manage/add-mx-record.json`, {
+            await resellerClubFetch(`${baseUrl}/dns/manage/add-mx-record.json`, {
               method: "POST",
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
               body: dnsParams.toString(),
             });
           } else {
-            await fetch(`${baseUrl}/dns/manage/add-txt-record.json`, {
+            await resellerClubFetch(`${baseUrl}/dns/manage/add-txt-record.json`, {
               method: "POST",
               headers: { "Content-Type": "application/x-www-form-urlencoded" },
               body: dnsParams.toString(),
@@ -582,7 +582,7 @@ export async function provisionTitanMailboxAccount(params: {
       apiParams.append("country-code", "MX");
       apiParams.append("language-code", "es");
 
-      const res = await fetch(`${baseUrl}/eelite/us/add-email-account.json`, {
+      const res = await resellerClubFetch(`${baseUrl}/eelite/us/add-email-account.json`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: apiParams.toString(),
@@ -631,7 +631,7 @@ export async function updateTitanMailboxSuspension(params: {
       const endpoint = params.suspend
         ? "/eelite/us/suspend-email-account.json"
         : "/eelite/us/unsuspend-email-account.json";
-      await fetch(`${baseUrl}${endpoint}`, {
+      await resellerClubFetch(`${baseUrl}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: apiParams.toString(),
@@ -655,7 +655,7 @@ export async function deleteTitanMailboxAccount(params: {
       const apiParams = getResellerClubAuthParams();
       apiParams.append("order-id", params.titanOrderId);
       apiParams.append("email", params.emailAddress.toLowerCase());
-      await fetch(`${baseUrl}/eelite/us/delete-email-account.json`, {
+      await resellerClubFetch(`${baseUrl}/eelite/us/delete-email-account.json`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: apiParams.toString(),
@@ -699,7 +699,7 @@ export async function createTitanFreeForwarder(params: {
       apiParams.append("order-id", params.titanOrderId);
       apiParams.append("email", params.sourceEmail.toLowerCase());
       apiParams.append("forwards", params.destinationEmail.toLowerCase());
-      await fetch(`${baseUrl}/eelite/us/add-forward-only-account.json`, {
+      await resellerClubFetch(`${baseUrl}/eelite/us/add-forward-only-account.json`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
         body: apiParams.toString(),
@@ -710,4 +710,102 @@ export async function createTitanFreeForwarder(params: {
   }
 
   return { titanForwardId };
+}
+
+/**
+ * Diagnóstico en vivo (Solo lectura, $0 costo) para verificar:
+ * 1) Qué IP estática saliente está utilizando Fixie (FIXIE_URL)
+ * 2) Si las credenciales de ResellerClub están configuradas
+ * 3) Si ResellerClub acepta la IP de Fixie en su lista blanca (Whitelist) y responde 200 OK
+ */
+export async function diagnoseResellerClubAndFixieConnection(): Promise<{
+  fixieConfigured: boolean;
+  outboundIp: string | null;
+  resellerClubConfigured: boolean;
+  resellerClubConnected: boolean;
+  resellerClubMessage: string;
+  sampleCheckDomain: string;
+  sampleDomainAvailable: boolean | null;
+}> {
+  const fixieConfigured = Boolean(process.env.FIXIE_URL && process.env.FIXIE_URL.trim().length > 0);
+  const resellerClubConfigured = isResellerClubLiveConfigured();
+  let outboundIp: string | null = null;
+
+  try {
+    const ipRes = await resellerClubFetch("https://api.ipify.org?format=json", {
+      method: "GET",
+    });
+    if (ipRes.ok) {
+      const ipJson = (await ipRes.json()) as { ip?: string };
+      outboundIp = ipJson.ip || null;
+    }
+  } catch (e: any) {
+    outboundIp = `Error leyendo IP: ${e?.message || "desconocido"}`;
+  }
+
+  const testDomainSld = "aacomsofttestdiag2026";
+  const sampleCheckDomain = `${testDomainSld}.com`;
+
+  if (!resellerClubConfigured) {
+    return {
+      fixieConfigured,
+      outboundIp,
+      resellerClubConfigured: false,
+      resellerClubConnected: false,
+      resellerClubMessage:
+        "Faltan las variables RESELLERCLUB_AUTH_USERID o RESELLERCLUB_API_KEY en Vercel.",
+      sampleCheckDomain,
+      sampleDomainAvailable: null,
+    };
+  }
+
+  try {
+    const baseUrl = getResellerClubBaseUrl();
+    const params = getResellerClubAuthParams();
+    params.append("domain-name", testDomainSld);
+    params.append("tlds", "com");
+
+    const rcRes = await resellerClubFetch(
+      `${baseUrl}/domains/available.json?${params.toString()}`,
+      { method: "GET" }
+    );
+    const data = await rcRes.json();
+
+    if (data?.status === "ERROR" || data?.status === "error") {
+      return {
+        fixieConfigured,
+        outboundIp,
+        resellerClubConfigured: true,
+        resellerClubConnected: false,
+        resellerClubMessage: String(
+          data.message || "Error devuelto por ResellerClub (revisa IP Whitelist o API Key)."
+        ),
+        sampleCheckDomain,
+        sampleDomainAvailable: null,
+      };
+    }
+
+    const entry = data?.[sampleCheckDomain];
+    const isAvail = entry?.status === "available";
+
+    return {
+      fixieConfigured,
+      outboundIp,
+      resellerClubConfigured: true,
+      resellerClubConnected: true,
+      resellerClubMessage: `Conexión exitosa 200 OK con ResellerClub (${sampleCheckDomain}: ${entry?.status || "verificado"}).`,
+      sampleCheckDomain,
+      sampleDomainAvailable: isAvail,
+    };
+  } catch (err: any) {
+    return {
+      fixieConfigured,
+      outboundIp,
+      resellerClubConfigured: true,
+      resellerClubConnected: false,
+      resellerClubMessage: `Error de red al conectar con ResellerClub: ${err?.message || "desconocido"}`,
+      sampleCheckDomain,
+      sampleDomainAvailable: null,
+    };
+  }
 }

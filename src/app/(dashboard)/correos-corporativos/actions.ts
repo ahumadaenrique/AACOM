@@ -10,6 +10,7 @@ import {
   createTitanFreeForwarder,
   decryptMailboxCredentials,
   deleteTitanMailboxAccount,
+  diagnoseResellerClubAndFixieConnection,
   DEFAULT_MAX_SEATS,
   DEFAULT_STORAGE_GB,
   isDomainTakenOnInternet,
@@ -1361,4 +1362,16 @@ export async function resetCorporateEmailSandboxAction(targetAgencyId?: string) 
   revalidatePath("/correos-corporativos");
   revalidatePath("/mi-correo");
   return { success: true };
+}
+
+/**
+ * Acción exclusiva de Super Admin para diagnosticar en 1 clic la IP estática de Fixie
+ * y el enlace en vivo con la API de ResellerClub ($0 costo).
+ */
+export async function runResellerClubAndFixieDiagnosticAction(targetAgencyId?: string) {
+  const ctx = await resolveTenantContext(targetAgencyId);
+  if (!ctx.isSuperAdmin) {
+    throw new Error("Solo el Super Administrador puede ejecutar el diagnóstico de infraestructura.");
+  }
+  return await diagnoseResellerClubAndFixieConnection();
 }

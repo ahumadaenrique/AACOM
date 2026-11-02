@@ -46,6 +46,7 @@ import {
   deleteForwarderAction,
   releaseMailboxAndCreateForwardAction,
   resetCorporateEmailSandboxAction,
+  runResellerClubAndFixieDiagnosticAction,
   simulateIncomingClientEmailAction,
   toggleMailboxSuspensionAction,
 } from "./actions";
@@ -83,6 +84,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
   const [simulatingEmail, setSimulatingEmail] = useState<string | null>(null);
   const [togglingModule, setTogglingModule] = useState<boolean>(false);
   const [showDnsDetails, setShowDnsDetails] = useState<boolean>(false);
+  const [runningDiag, setRunningDiag] = useState<boolean>(false);
 
   const subscription = data.subscription;
   const activeMailboxes: any[] = data.activeMailboxes || [];
@@ -318,6 +320,42 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                 ))}
               </select>
             </div>
+
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              disabled={runningDiag}
+              onClick={async () => {
+                setRunningDiag(true);
+                setErrorBanner("");
+                setStatusBanner("");
+                try {
+                  const diag = await runResellerClubAndFixieDiagnosticAction(data.agency.id);
+                  if (diag.resellerClubConnected) {
+                    setStatusBanner(
+                      `[Diagnóstico Fixie + ResellerClub OK] Proxy Fixie: ${diag.fixieConfigured ? "ACTIVO" : "NO CONFIGURADO"} • IP Saliente detectada: ${diag.outboundIp || "N/A"} • ResellerClub API: ${diag.resellerClubMessage}`
+                    );
+                  } else {
+                    setErrorBanner(
+                      `[Diagnóstico Fixie + ResellerClub] Proxy Fixie: ${diag.fixieConfigured ? "ACTIVO" : "NO CONFIGURADO"} • IP Saliente: ${diag.outboundIp || "N/A"} • Respuesta ResellerClub: ${diag.resellerClubMessage}`
+                    );
+                  }
+                } catch (err: any) {
+                  setErrorBanner(err.message || "Error al ejecutar diagnóstico de Fixie y ResellerClub.");
+                } finally {
+                  setRunningDiag(false);
+                }
+              }}
+              className="h-8 text-xs font-semibold rounded-xl border-sky-400/35 bg-sky-500/10 text-sky-300 hover:bg-sky-500/20 hover:text-sky-200"
+            >
+              {runningDiag ? (
+                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
+              ) : (
+                <Server className="w-3.5 h-3.5 mr-1.5" />
+              )}
+              Probar Fixie + ResellerClub
+            </Button>
 
             {subscription && (
               <Button
