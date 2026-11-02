@@ -14,17 +14,17 @@ import {
   Unlock,
   CheckCircle2,
   AlertTriangle,
-  HardDrive,
   Globe,
   Building2,
-  Sparkles,
   Trash2,
   Send,
   Smartphone,
-  ExternalLink,
   Loader2,
   Server,
   UserMinus,
+  ArrowRight,
+  FolderArchive,
+  KeyRound,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,6 +50,13 @@ import {
   toggleMailboxSuspensionAction,
 } from "./actions";
 import { toggleAgencyCorporateEmailModule } from "@/app/(dashboard)/agencias/actions";
+
+function getInitials(name: string): string {
+  const parts = (name || "AG").trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "AG";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+}
 
 export function CorporateEmailAdminClient({ initialData }: { initialData: any }) {
   const router = useRouter();
@@ -133,7 +140,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
       });
       setCreateOpen(false);
       setStatusBanner(
-        `✓ Buzón ${res.mailbox.emailAddress} creado y aprovisionado con 10 GB en Titan Email.`
+        `Buzón ${res.mailbox.emailAddress} creado y aprovisionado con 10 GB en Titan Email.`
       );
       router.refresh();
       window.location.reload();
@@ -156,8 +163,8 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
       });
       setStatusBanner(
         nextSuspend
-          ? `🔒 Acceso revocado/suspendido en 1 clic para ${mailbox.emailAddress}.`
-          : `🔓 Acceso reactivado para ${mailbox.emailAddress}.`
+          ? `Acceso revocado/suspendido en 1 clic para ${mailbox.emailAddress}.`
+          : `Acceso reactivado para ${mailbox.emailAddress}.`
       );
       window.location.reload();
     } catch (err: any) {
@@ -189,7 +196,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
       });
       setReleaseModalMailbox(null);
       setStatusBanner(
-        `✓ Asiento liberado (${usedSeats}/${maxSeats} ➔ ${usedSeats - 1}/${maxSeats}). Puente de Cartera activo: ${res.forward.sourceEmail} ➔ ${res.forward.destinationEmail} (${res.migratedCount} correos históricos respaldados).`
+        `Asiento liberado (${usedSeats}/${maxSeats} -> ${usedSeats - 1}/${maxSeats}). Puente de Cartera activo: ${res.forward.sourceEmail} -> ${res.forward.destinationEmail} (${res.migratedCount} correos históricos respaldados).`
       );
       window.location.reload();
     } catch (err: any) {
@@ -209,8 +216,8 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
       });
       setStatusBanner(
         res.routedViaForwarder
-          ? `📨 ¡Prueba de Puente de Cartera exitosa! Un asegurado escribió a ${res.originalRecipient} y Titan/aacomsoft lo entregó automáticamente en la bandeja de ${res.deliveredTo}.`
-          : `📨 Correo de prueba de asegurado entregado en ${res.deliveredTo}. Ábrelo en "📧 Mi Correo".`
+          ? `Prueba de Puente de Cartera exitosa: Un asegurado escribió a ${res.originalRecipient} y aacomsoft lo entregó automáticamente en la bandeja de ${res.deliveredTo}.`
+          : `Correo de prueba de asegurado entregado en ${res.deliveredTo}. Ábrelo en "Mi Correo (Webmail)".`
       );
     } catch (err: any) {
       setErrorBanner(err.message || "Error al simular correo entrante.");
@@ -230,8 +237,8 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
       }));
       setStatusBanner(
         nextVal
-          ? `✓ Módulo habilitado para la promotoría ${data.agency.name}.`
-          : `⚠️ Módulo ocultado/desactivado para la promotoría ${data.agency.name}.`
+          ? `Módulo habilitado para la promotoría ${data.agency.name}.`
+          : `Módulo ocultado/desactivado para la promotoría ${data.agency.name}.`
       );
       router.refresh();
     } catch (err: any) {
@@ -251,43 +258,50 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
     }
   };
 
+  const primaryDomain =
+    subscription?.domainName || data.upsellPreview?.primaryDomain || "tupromotoria.com";
+
   return (
-    <div className="space-y-6 max-w-7xl mx-auto">
-      {/* Barra Exclusiva Super Admin: Selector Aislado por Agencia + Interruptor Maestro */}
+    <div className="space-y-7 max-w-7xl mx-auto pb-10">
+      {/* Barra Ejecutiva Super Admin: Discreta, de alto contraste y aislada por inquilino */}
       {data.currentUser?.isSuperAdmin && (
-        <div className="rounded-2xl border border-rose-200 bg-gradient-to-r from-rose-50 via-white to-sky-50 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="rounded-2xl bg-[#0F172A] text-slate-200 border border-slate-800 px-4 py-3 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-3.5">
           <div className="flex items-center gap-3">
-            <div className="p-2.5 rounded-xl bg-rose-600 text-white shadow-sm">
-              <ShieldCheck className="w-5 h-5" />
+            <div className="h-9 w-9 rounded-xl bg-sky-500/15 border border-sky-400/30 text-sky-400 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-4 h-4" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black uppercase tracking-wider text-rose-700">
-                  Control Maestro Super Admin
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[11px] font-bold uppercase tracking-widest text-sky-400">
+                  Consola Multi-Inquilino Super Admin
                 </span>
-                <Badge
-                  variant="outline"
-                  className={
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[10px] font-semibold border ${
                     data.agency.allowCorporateEmailModule
-                      ? "border-emerald-300 bg-emerald-50 text-emerald-700 font-bold text-[10px]"
-                      : "border-amber-300 bg-amber-50 text-amber-800 font-bold text-[10px]"
-                  }
+                      ? "border-emerald-400/30 bg-emerald-500/15 text-emerald-300"
+                      : "border-amber-400/30 bg-amber-500/15 text-amber-300"
+                  }`}
                 >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      data.agency.allowCorporateEmailModule ? "bg-emerald-400" : "bg-amber-400"
+                    }`}
+                  />
                   {data.agency.allowCorporateEmailModule
-                    ? "Módulo Visible para esta Agencia"
-                    : "Módulo Oculto para esta Agencia"}
-                </Badge>
+                    ? "Módulo Activo en Agencia"
+                    : "Módulo Oculto en Agencia"}
+                </span>
               </div>
-              <p className="text-xs text-slate-600 mt-0.5">
-                Aislamiento Multi-Inquilino activo: Estás inspeccionando únicamente la promotoría{" "}
-                <strong>{data.agency.name}</strong>.
+              <p className="text-xs text-slate-400 mt-0.5">
+                Aislamiento estricto activo: inspeccionando exclusivamente la promotoría{" "}
+                <strong className="text-white font-semibold">{data.agency.name}</strong>.
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-4 h-4 text-slate-500" />
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-2 bg-slate-950/80 border border-slate-800 rounded-xl px-2.5 py-1">
+              <Building2 className="w-3.5 h-3.5 text-slate-400 shrink-0" />
               <select
                 value={data.agency.id}
                 onChange={(e) => {
@@ -295,10 +309,10 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                     e.target.value
                   )}`;
                 }}
-                className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs font-bold text-slate-800 shadow-sm"
+                className="h-7 bg-transparent text-xs font-semibold text-slate-100 focus:outline-none pr-2"
               >
                 {(data.agenciesList || []).map((ag: any) => (
-                  <option key={ag.id} value={ag.id}>
+                  <option key={ag.id} value={ag.id} className="bg-slate-900 text-slate-100">
                     {ag.name} ({ag.slug}) {ag.allowCorporateEmailModule ? "✓ [Activo]" : "[Apagado]"}
                   </option>
                 ))}
@@ -311,7 +325,12 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                 size="sm"
                 variant="outline"
                 onClick={async () => {
-                  if (!confirm("¿Reiniciar la demostración de esta promotoría a cero? Se borrarán los buzones de prueba y volverás al buscador de dominios ($0).")) return;
+                  if (
+                    !confirm(
+                      "¿Reiniciar la demostración de esta promotoría a cero? Se borrarán los buzones de prueba y volverás al buscador de dominios ($0)."
+                    )
+                  )
+                    return;
                   try {
                     await resetCorporateEmailSandboxAction(data.agency.id);
                     window.location.reload();
@@ -319,7 +338,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                     setErrorBanner(err.message || "Error al reiniciar demo.");
                   }
                 }}
-                className="h-9 text-xs font-bold border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100"
+                className="h-8 text-xs font-semibold rounded-xl border-amber-400/35 bg-amber-500/10 text-amber-300 hover:bg-amber-500/20 hover:text-amber-200"
               >
                 <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
                 Reiniciar Prueba ($0)
@@ -329,13 +348,13 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
             <Button
               type="button"
               size="sm"
-              variant={data.agency.allowCorporateEmailModule ? "outline" : "default"}
+              variant="outline"
               onClick={handleSuperAdminToggleModule}
               disabled={togglingModule}
               className={
                 data.agency.allowCorporateEmailModule
-                  ? "h-9 text-xs font-bold border-rose-300 text-rose-700 hover:bg-rose-50"
-                  : "h-9 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+                  ? "h-8 text-xs font-semibold rounded-xl border-slate-700 bg-slate-800/80 text-slate-300 hover:bg-rose-500/20 hover:text-rose-200 hover:border-rose-400/30"
+                  : "h-8 text-xs font-semibold rounded-xl border-emerald-400/30 bg-emerald-500/15 text-emerald-300 hover:bg-emerald-500/25"
               }
             >
               {togglingModule ? (
@@ -344,42 +363,48 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                 <ShieldCheck className="w-3.5 h-3.5 mr-1.5" />
               )}
               {data.agency.allowCorporateEmailModule
-                ? "Desactivar Módulo en esta Agencia"
-                : "Activar Módulo en esta Agencia"}
+                ? "Ocultar Módulo en Agencia"
+                : "Habilitar Módulo en Agencia"}
             </Button>
           </div>
         </div>
       )}
 
-      {/* Encabezado Principal */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-100 text-sky-800 text-xs font-bold mb-2">
-            <Mail className="w-3.5 h-3.5" /> Identidad Corporativa Promotoría aacomsoft
+      {/* Encabezado Ejecutivo de la Página */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-200/80 pb-5">
+        <div className="space-y-1.5">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-slate-900 text-sky-300 text-[11px] font-bold tracking-wide uppercase">
+            <Mail className="w-3.5 h-3.5 text-sky-400" />
+            Infraestructura de Identidad Corporativa • aacomsoft
           </div>
-          <h1 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
             Dominio Oficial y 20 Buzones Corporativos
           </h1>
-          <p className="text-sm text-slate-600 mt-1">
-            Administra los 20 asientos de correo de <strong>{data.agency.name}</strong>, asigna
-            cuentas a tus agentes y recicla lugares con redirección automática de cartera.
+          <p className="text-sm text-slate-600 max-w-2xl">
+            Administra los 20 asientos institucionales de{" "}
+            <strong className="text-slate-900 font-semibold">{data.agency.name}</strong>, asigna
+            cuentas con 10 GB a tus agentes y protege las renovaciones con el Puente de Cartera
+            automático.
           </p>
         </div>
 
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
           <Link href={`/mi-correo?agencyId=${encodeURIComponent(data.agency.id)}`}>
-            <Button variant="outline" className="rounded-xl font-bold text-xs h-10 border-sky-200 text-sky-700 hover:bg-sky-50">
-              <Mail className="w-4 h-4 mr-1.5" />
-              Ir a 📧 Mi Correo (Webmail)
+            <Button
+              variant="outline"
+              className="rounded-xl font-bold text-xs h-10 px-4 border-slate-300 bg-white text-slate-800 hover:bg-slate-50 shadow-sm"
+            >
+              <Mail className="w-4 h-4 mr-2 text-sky-600" />
+              Abrir Mi Correo (Webmail)
             </Button>
           </Link>
           {subscription && (
             <Button
               onClick={handleOpenCreateModal}
               disabled={usedSeats >= maxSeats}
-              className="rounded-xl font-bold text-xs h-10 bg-sky-600 hover:bg-sky-700 text-white shadow-sm"
+              className="rounded-xl font-bold text-xs h-10 px-4 bg-slate-900 hover:bg-slate-800 text-white shadow-sm"
             >
-              <Plus className="w-4 h-4 mr-1.5" />
+              <Plus className="w-4 h-4 mr-1.5 text-sky-400" />
               Asignar Nuevo Buzón ({availableSeats} libres)
             </Button>
           )}
@@ -388,11 +413,14 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
 
       {/* Mensajes de estado */}
       {statusBanner && (
-        <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-xs font-bold text-emerald-800 flex items-center justify-between">
-          <span>{statusBanner}</span>
+        <div className="rounded-2xl border border-emerald-200 bg-emerald-50/90 px-4 py-3 text-xs font-semibold text-emerald-900 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            <span>{statusBanner}</span>
+          </div>
           <button
             onClick={() => setStatusBanner("")}
-            className="text-emerald-600 hover:text-emerald-900 font-black ml-4"
+            className="text-emerald-700 hover:text-emerald-950 font-bold ml-4"
           >
             ✕
           </button>
@@ -400,18 +428,21 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
       )}
 
       {errorBanner && (
-        <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-xs font-bold text-red-800 flex items-center justify-between">
-          <span>⚠️ {errorBanner}</span>
+        <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-xs font-semibold text-rose-900 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+            <span>{errorBanner}</span>
+          </div>
           <button
             onClick={() => setErrorBanner("")}
-            className="text-red-600 hover:text-red-900 font-black ml-4"
+            className="text-rose-700 hover:text-rose-950 font-bold ml-4"
           >
             ✕
           </button>
         </div>
       )}
 
-      {/* Vista 1: Si aún no tiene paquete contratado -> Mostrar Banner Inteligente de Upsell */}
+      {/* Vista 1: Sin paquete activo -> Hero Upsell + Bento Grid Arquitectónico Asimétrico */}
       {!subscription ? (
         <div className="space-y-6">
           <CorporateEmailUpsellBanner
@@ -424,82 +455,189 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
             onActivated={() => window.location.reload()}
           />
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="rounded-2xl border-slate-200 shadow-sm">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-black flex items-center gap-2 text-slate-800">
-                  <Globe className="w-4 h-4 text-sky-600" />
-                  1. Dominio Oficial Zero-Touch
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-slate-600 leading-relaxed">
-                Registramos tu dominio <code>.com</code>, <code>.com.mx</code> o <code>.mx</code>{" "}
-                y configuramos automáticamente los registros <strong>MX, SPF, DKIM y DMARC</strong>{" "}
-                para que las pólizas lleguen siempre a la bandeja principal de tus asegurados.
-              </CardContent>
-            </Card>
+          {/* Bento Grid Asimétrico (7 cols + 5 cols) siguiendo las reglas de taste-design */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            {/* Bento Izquierdo (7 cols): Motor Anti-Rotación y Puente de Cartera */}
+            <div className="lg:col-span-7 rounded-3xl border border-slate-200/90 bg-white p-6 sm:p-7 shadow-sm flex flex-col justify-between space-y-6">
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full">
+                    <ArrowRightLeft className="w-3.5 h-3.5" />
+                    Continuidad de Cartera Asegurada
+                  </span>
+                  <span className="text-xs font-mono font-semibold text-slate-400">
+                    0 Asientos Consumidos por Ex-Agentes
+                  </span>
+                </div>
+                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight pt-1">
+                  Puente de Cartera Anti-Rotación en 1 Clic
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  En una promotoría los agentes rotan, pero los asegurados se quedan en{" "}
+                  <strong className="text-slate-900">{data.agency.name}</strong>. Cuando un agente
+                  causa baja, recuperas su asiento pagado al instante y creamos un alias permanente
+                  gratuito para que ninguna renovación o siniestro se pierda.
+                </p>
+              </div>
 
-            <Card className="rounded-2xl border-slate-200 shadow-sm">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-black flex items-center gap-2 text-slate-800">
-                  <Smartphone className="w-4 h-4 text-indigo-600" />
-                  2. Integrado en aacomsoft + Móvil
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-slate-600 leading-relaxed">
-                Tus agentes entran desde <strong>app.aacomsoft.com</strong> sin recordar otra
-                contraseña, envían pólizas desde su cartera en 1 clic y pueden instalar su perfil{" "}
-                <code>.mobileconfig</code> en iPhone o Android.
-              </CardContent>
-            </Card>
+              {/* Diagrama interactivo de 3 etapas del Puente de Cartera */}
+              <div className="rounded-2xl bg-slate-50 border border-slate-200/80 p-4 space-y-3">
+                <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  Flujo automatizado al dar de baja a un agente
+                </div>
 
-            <Card className="rounded-2xl border-slate-200 shadow-sm">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-black flex items-center gap-2 text-slate-800">
-                  <ArrowRightLeft className="w-4 h-4 text-emerald-600" />
-                  3. Puente de Cartera Anti-Rotación
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="text-xs text-slate-600 leading-relaxed">
-                Si un agente causa baja, liberas su asiento de inmediato (ej. de <code>18/20</code>{" "}
-                a <code>17/20</code>) y creamos un <strong>Forwarder gratuito</strong> hacia el
-                nuevo agente sin perder renovaciones ni siniestros.
-              </CardContent>
-            </Card>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 items-stretch">
+                  <div className="rounded-xl bg-white border border-slate-200 p-3 flex flex-col justify-between">
+                    <span className="text-[10px] font-bold uppercase text-rose-600 bg-rose-50 border border-rose-100 px-2 py-0.5 rounded self-start">
+                      1. Baja de Agente
+                    </span>
+                    <div className="mt-2">
+                      <div className="text-xs font-bold text-slate-900">Se libera el lugar</div>
+                      <div className="text-[11px] font-mono text-slate-500 mt-0.5">
+                        18/20 <ArrowRight className="inline w-3 h-3 text-emerald-600" />{" "}
+                        <strong className="text-emerald-700">17/20 usados</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-white border border-slate-200 p-3 flex flex-col justify-between">
+                    <span className="text-[10px] font-bold uppercase text-sky-700 bg-sky-50 border border-sky-100 px-2 py-0.5 rounded self-start">
+                      2. Respaldo Total
+                    </span>
+                    <div className="mt-2">
+                      <div className="text-xs font-bold text-slate-900 flex items-center gap-1">
+                        <FolderArchive className="w-3.5 h-3.5 text-sky-600" /> Cartera Heredada
+                      </div>
+                      <div className="text-[11px] text-slate-500 mt-0.5">
+                        Historial copiado al nuevo responsable
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-xl bg-emerald-950 text-white border border-emerald-800 p-3 flex flex-col justify-between">
+                    <span className="text-[10px] font-bold uppercase text-emerald-300 bg-emerald-500/20 border border-emerald-400/30 px-2 py-0.5 rounded self-start">
+                      3. Forwarder Gratis
+                    </span>
+                    <div className="mt-2">
+                      <div className="text-xs font-bold text-white">Redirección 24/7</div>
+                      <div className="text-[11px] font-mono text-emerald-300 truncate mt-0.5">
+                        ex.agente@{primaryDomain}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Bento Derecho (5 cols): Infraestructura DNS Zero-Touch + Móvil */}
+            <div className="lg:col-span-5 rounded-3xl border border-slate-200/90 bg-gradient-to-b from-slate-900 to-slate-950 text-white p-6 sm:p-7 shadow-sm flex flex-col justify-between space-y-6">
+              <div className="space-y-3">
+                <span className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-sky-300 bg-sky-500/15 border border-sky-400/30 px-3 py-1 rounded-full">
+                  <Server className="w-3.5 h-3.5" />
+                  Arquitectura Zero-Touch + Móvil
+                </span>
+                <h3 className="text-lg sm:text-xl font-extrabold text-white tracking-tight">
+                  Entregabilidad Blindada y Acceso sin Contraseñas
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                  Configuramos automáticamente la zona DNS de{" "}
+                  <span className="font-mono text-sky-300 font-semibold">{primaryDomain}</span> y
+                  conectamos cada buzón con <strong className="text-white">app.aacomsoft.com</strong>{" "}
+                  para despachar pólizas en 1 clic.
+                </p>
+              </div>
+
+              <div className="space-y-2.5">
+                <div className="rounded-2xl bg-white/[0.05] border border-white/10 p-3.5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-sky-500/15 text-sky-300">
+                      <Globe className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white">
+                        Registros MX, SPF, DKIM y DMARC
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        Inyección DNS automática anti-spam
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-400/30 px-2 py-0.5 rounded-md">
+                    ACTIVO
+                  </span>
+                </div>
+
+                <div className="rounded-2xl bg-white/[0.05] border border-white/10 p-3.5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-emerald-500/15 text-emerald-300">
+                      <Smartphone className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white">
+                        Perfil .mobileconfig iOS y Android
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        Sincronización nativa en Apple Mail y Gmail
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-sky-300 bg-sky-500/15 border border-sky-400/30 px-2 py-0.5 rounded-md">
+                    1 CLIC
+                  </span>
+                </div>
+
+                <div className="rounded-2xl bg-white/[0.05] border border-white/10 p-3.5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 rounded-xl bg-sky-500/15 text-sky-300">
+                      <KeyRound className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold text-white">
+                        Revocación Instantánea de Seguridad
+                      </div>
+                      <div className="text-[11px] text-slate-400">
+                        Bloqueo de buzón en 1 clic ante extravío de celular
+                      </div>
+                    </div>
+                  </div>
+                  <span className="text-[10px] font-mono font-bold text-slate-300 bg-white/10 px-2 py-0.5 rounded-md">
+                    AES-256
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       ) : (
-        /* Vista 2: Suscripción Activa -> Dashboard de 20 Asientos, Gestión de Buzones y Flujo de Rotación */
+        /* Vista 2: Suscripción Activa -> Consola Ejecutiva de 20 Asientos */
         <>
-          {/* 5.1. Dashboard de Capacidad (Control de los 20 lugares) */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <Card className="lg:col-span-2 rounded-2xl border-sky-200 bg-gradient-to-br from-white to-sky-50/40 shadow-sm">
-              <CardContent className="p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
+          {/* 5.1. Telemetría de Capacidad (Control de los 20 lugares) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+            <Card className="lg:col-span-8 rounded-3xl border-slate-200/90 bg-white shadow-sm overflow-hidden">
+              <CardContent className="p-6 sm:p-7">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-5">
                   <div>
-                    <div className="text-xs font-bold uppercase tracking-wider text-sky-700">
+                    <div className="text-[11px] font-bold uppercase tracking-widest text-sky-700">
                       Capacidad de Bolsa Corporativa (Titan Email 10 GB)
                     </div>
-                    <div className="text-2xl md:text-3xl font-black text-slate-900 mt-1">
+                    <div className="text-2xl sm:text-3xl font-black text-slate-900 mt-1 tabular-nums">
                       {usedSeats} / {maxSeats} Buzones asignados{" "}
-                      <span className="text-base font-bold text-emerald-600">
+                      <span className="text-sm sm:text-base font-bold text-emerald-600">
                         ({availableSeats} lugares disponibles)
                       </span>
                     </div>
                   </div>
-                  <Badge className="bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold text-xs px-3 py-1 self-start">
+                  <Badge className="bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-xs px-3 py-1 self-start">
                     <CheckCircle2 className="w-3.5 h-3.5 mr-1.5 text-emerald-600" />
                     Suscripción Activa ($999 MXN/mes)
                   </Badge>
                 </div>
 
                 {/* Barra visual de asientos */}
-                <div className="w-full h-3.5 bg-slate-200 rounded-full overflow-hidden mb-3">
+                <div className="w-full h-3.5 bg-slate-100 border border-slate-200/70 rounded-full overflow-hidden mb-3.5">
                   <div
                     className={`h-full transition-all duration-500 rounded-full ${
-                      seatUsagePercent >= 90
-                        ? "bg-amber-500"
-                        : "bg-gradient-to-r from-sky-500 to-indigo-600"
+                      seatUsagePercent >= 90 ? "bg-amber-500" : "bg-sky-600"
                     }`}
                     style={{ width: `${Math.max(4, seatUsagePercent)}%` }}
                   />
@@ -507,11 +645,12 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
 
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-600">
                   <span>
-                    Cada buzón incluye <strong>10 GB</strong> dedicados • Los Puentes de Cartera (
-                    <strong>{forwards.length} activos</strong>) son gratuitos y no consumen
-                    asiento.
+                    Cada buzón incluye <strong className="text-slate-900">10 GB</strong> dedicados •
+                    Los Puentes de Cartera (
+                    <strong className="text-emerald-700">{forwards.length} activos</strong>) son
+                    gratuitos y no consumen asiento.
                   </span>
-                  <span className="font-semibold text-slate-800">
+                  <span className="font-semibold text-slate-800 tabular-nums">
                     Renovación:{" "}
                     {new Date(subscription.renewsAt).toLocaleDateString("es-MX", {
                       day: "2-digit",
@@ -524,43 +663,41 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
             </Card>
 
             {/* Tarjeta de Dominio y Salud DNS */}
-            <Card className="rounded-2xl border-slate-200 shadow-sm">
-              <CardContent className="p-6 flex flex-col justify-between h-full space-y-4">
+            <Card className="lg:col-span-4 rounded-3xl border-slate-800 bg-[#0B1120] text-white shadow-sm">
+              <CardContent className="p-6 sm:p-7 flex flex-col justify-between h-full space-y-4">
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400">
                       Dominio Oficial
                     </span>
-                    <Badge
-                      variant="outline"
-                      className="border-sky-300 bg-sky-50 text-sky-800 text-[10px] font-bold"
-                    >
-                      DNS Zero-Touch Activo
-                    </Badge>
+                    <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/15 border border-emerald-400/30 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                      DNS Verificado
+                    </span>
                   </div>
-                  <div className="text-xl font-mono font-black text-slate-900 mt-1 break-all">
+                  <div className="text-lg sm:text-xl font-mono font-bold text-sky-300 mt-1.5 break-all">
                     {subscription.domainName}
                   </div>
-                  <div className="flex flex-wrap gap-1.5 mt-3">
+                  <div className="flex flex-wrap gap-1.5 mt-3.5">
                     {["MX Titan", "SPF", "DKIM", "DMARC"].map((tag) => (
                       <span
                         key={tag}
-                        className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200"
+                        className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-md bg-white/[0.06] text-slate-200 border border-white/10"
                       >
-                        <CheckCircle2 className="w-3 h-3" /> {tag}
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" /> {tag}
                       </span>
                     ))}
                   </div>
                 </div>
 
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
-                  <span className="text-slate-500">
-                    Orden: <code className="font-mono">{subscription.titanOrderId}</code>
+                <div className="pt-3 border-t border-white/10 flex items-center justify-between text-xs">
+                  <span className="text-slate-400">
+                    Orden: <code className="font-mono text-slate-200">{subscription.titanOrderId}</code>
                   </span>
                   <button
                     type="button"
                     onClick={() => setShowDnsDetails(!showDnsDetails)}
-                    className="text-sky-600 hover:underline font-bold"
+                    className="text-sky-400 hover:text-sky-300 underline font-semibold"
                   >
                     {showDnsDetails ? "Ocultar DNS" : "Ver zona DNS"}
                   </button>
@@ -571,7 +708,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
 
           {/* Detalle de Registros DNS Inyectados Automáticamente */}
           {showDnsDetails && (
-            <Card className="rounded-2xl border-sky-200 bg-slate-950 text-slate-100 shadow-md">
+            <Card className="rounded-3xl border-slate-800 bg-slate-950 text-slate-100 shadow-md">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-bold flex items-center gap-2 text-sky-300">
                   <Server className="w-4 h-4" />
@@ -617,15 +754,15 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
             </Card>
           )}
 
-          {/* 5.2. Tabla de Buzones Activos y Gestión de Asientos */}
-          <Card className="rounded-2xl border-slate-200 shadow-sm overflow-hidden">
-            <CardHeader className="bg-slate-50/70 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          {/* 5.2. Tabla Ejecutiva de Buzones Activos */}
+          <Card className="rounded-3xl border-slate-200/90 shadow-sm overflow-hidden bg-white">
+            <CardHeader className="bg-slate-50/80 border-b border-slate-200/70 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-6 py-5">
               <div>
-                <CardTitle className="text-base font-black text-slate-800 flex items-center gap-2">
+                <CardTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
                   <Users className="w-4 h-4 text-sky-600" />
                   Buzones Corporativos Asignados ({usedSeats} / {maxSeats})
                 </CardTitle>
-                <CardDescription className="text-xs">
+                <CardDescription className="text-xs text-slate-600 mt-0.5">
                   Vinculados al login de aacomsoft con credenciales IMAP/SMTP cifradas en bóveda
                   AES-256-GCM.
                 </CardDescription>
@@ -634,9 +771,9 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                 size="sm"
                 onClick={handleOpenCreateModal}
                 disabled={usedSeats >= maxSeats}
-                className="rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs"
+                className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs h-9 px-3.5"
               >
-                <Plus className="w-3.5 h-3.5 mr-1.5" />
+                <Plus className="w-3.5 h-3.5 mr-1.5 text-sky-400" />
                 Crear Buzón
               </Button>
             </CardHeader>
@@ -645,12 +782,12 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="bg-slate-50/50 border-b border-slate-100 text-left text-xs font-bold text-slate-500 uppercase">
-                      <th className="py-3.5 px-4">Buzón Corporativo</th>
+                    <tr className="bg-slate-50/50 border-b border-slate-100 text-left text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      <th className="py-3.5 px-6">Buzón Corporativo</th>
                       <th className="py-3.5 px-4">Agente / Titular en aacomsoft</th>
                       <th className="py-3.5 px-4">Almacenamiento (10 GB)</th>
                       <th className="py-3.5 px-4">Estado</th>
-                      <th className="py-3.5 px-4 text-right">Acciones de Administración</th>
+                      <th className="py-3.5 px-6 text-right">Acciones de Administración</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -661,57 +798,64 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                         Math.round((mbx.storageUsedMb / (10 * 1024)) * 100)
                       );
                       return (
-                        <tr key={mbx.id} className="hover:bg-slate-50/70 transition-colors">
-                          <td className="py-3.5 px-4">
-                            <div className="font-mono font-bold text-slate-900 text-xs sm:text-sm">
-                              {mbx.emailAddress}
-                            </div>
-                            <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                              <span>{mbx.displayName}</span>
-                              {mbx.isDepartmental && (
-                                <Badge
-                                  variant="secondary"
-                                  className="text-[10px] px-1.5 py-0 bg-indigo-50 text-indigo-700"
-                                >
-                                  Departamental
-                                </Badge>
-                              )}
+                        <tr key={mbx.id} className="hover:bg-slate-50/80 transition-colors">
+                          <td className="py-4 px-6">
+                            <div className="flex items-center gap-3">
+                              <div className="h-9 w-9 rounded-xl bg-slate-900 text-sky-300 flex items-center justify-center text-xs font-bold shrink-0">
+                                {getInitials(mbx.displayName || mbx.emailAddress)}
+                              </div>
+                              <div>
+                                <div className="font-mono font-bold text-slate-900 text-xs sm:text-sm">
+                                  {mbx.emailAddress}
+                                </div>
+                                <div className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
+                                  <span>{mbx.displayName}</span>
+                                  {mbx.isDepartmental && (
+                                    <Badge
+                                      variant="secondary"
+                                      className="text-[10px] px-1.5 py-0 bg-slate-100 text-slate-700 border border-slate-200"
+                                    >
+                                      Institucional
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
                             </div>
                           </td>
 
-                          <td className="py-3.5 px-4">
+                          <td className="py-4 px-4">
                             {mbx.agentUser ? (
                               <div>
                                 <div className="font-bold text-slate-800 text-xs">
                                   {mbx.agentUser.name}
                                 </div>
-                                <div className="text-[11px] text-slate-500">
-                                  Login: {mbx.agentUser.email}
+                                <div className="text-[11px] text-slate-500 font-mono">
+                                  {mbx.agentUser.email}
                                 </div>
                               </div>
                             ) : (
-                              <span className="text-xs text-slate-500 italic">
-                                Buzón Institucional (Acceso Admin)
+                              <span className="text-xs text-slate-500">
+                                Cuenta Institucional (Acceso Admin)
                               </span>
                             )}
                           </td>
 
-                          <td className="py-3.5 px-4">
-                            <div className="w-36 space-y-1">
-                              <div className="flex justify-between text-[11px] font-semibold text-slate-600">
+                          <td className="py-4 px-4">
+                            <div className="w-36 space-y-1.5">
+                              <div className="flex justify-between text-[11px] font-semibold text-slate-600 tabular-nums">
                                 <span>{usedGb} GB</span>
                                 <span>10 GB</span>
                               </div>
                               <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
                                 <div
-                                  className="h-full bg-sky-500 rounded-full"
+                                  className="h-full bg-sky-600 rounded-full"
                                   style={{ width: `${Math.max(4, storagePct)}%` }}
                                 />
                               </div>
                             </div>
                           </td>
 
-                          <td className="py-3.5 px-4">
+                          <td className="py-4 px-4">
                             {mbx.status === "active" ? (
                               <Badge className="bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
                                 Activo
@@ -723,7 +867,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                             )}
                           </td>
 
-                          <td className="py-3.5 px-4 text-right">
+                          <td className="py-4 px-6 text-right">
                             <div className="flex items-center justify-end gap-1.5 flex-wrap">
                               <Link
                                 href={`/mi-correo?mailboxId=${encodeURIComponent(
@@ -733,10 +877,10 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  className="h-8 text-xs font-semibold border-sky-200 text-sky-700 hover:bg-sky-50"
+                                  className="h-8 text-xs font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50"
                                   title="Abrir bandeja de este buzón en Mi Correo"
                                 >
-                                  <Mail className="w-3.5 h-3.5 mr-1" />
+                                  <Mail className="w-3.5 h-3.5 mr-1 text-sky-600" />
                                   Bandeja
                                 </Button>
                               </Link>
@@ -746,7 +890,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                                 size="sm"
                                 onClick={() => handleSimulateClientEmail(mbx.emailAddress)}
                                 disabled={simulatingEmail === mbx.emailAddress}
-                                className="h-8 text-xs font-semibold border-slate-200 text-slate-700"
+                                className="h-8 text-xs font-semibold rounded-lg border-slate-200 text-slate-700 hover:bg-slate-50"
                                 title="Simular correo entrante de un asegurado a este buzón"
                               >
                                 {simulatingEmail === mbx.emailAddress ? (
@@ -762,7 +906,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                                 size="sm"
                                 onClick={() => handleToggleSuspend(mbx)}
                                 disabled={togglingMailboxId === mbx.id}
-                                className={`h-8 text-xs font-semibold ${
+                                className={`h-8 text-xs font-semibold rounded-lg ${
                                   mbx.status === "active"
                                     ? "border-amber-200 text-amber-700 hover:bg-amber-50"
                                     : "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
@@ -789,7 +933,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleOpenReleaseModal(mbx)}
-                                  className="h-8 text-xs font-bold border-rose-200 bg-rose-50/60 text-rose-700 hover:bg-rose-100"
+                                  className="h-8 text-xs font-bold rounded-lg border-rose-200 bg-rose-50/60 text-rose-700 hover:bg-rose-100"
                                   title="Dar de baja buzón de agente, liberar lugar (18/20 -> 17/20) y activar Puente de Cartera"
                                 >
                                   <UserMinus className="w-3.5 h-3.5 mr-1" />
@@ -808,15 +952,15 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
           </Card>
 
           {/* 5.3. Puentes de Cartera Activos (Forwarders / Alias Gratuitos de Ex-Agentes) */}
-          <Card className="rounded-2xl border-emerald-200 bg-gradient-to-br from-white to-emerald-50/30 shadow-sm">
-            <CardHeader className="pb-3">
+          <Card className="rounded-3xl border-emerald-200/90 bg-gradient-to-br from-white to-emerald-50/30 shadow-sm">
+            <CardHeader className="pb-3 px-6 pt-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <CardTitle className="text-base font-black text-slate-800 flex items-center gap-2">
+                  <CardTitle className="text-base font-extrabold text-slate-900 flex items-center gap-2">
                     <ArrowRightLeft className="w-4 h-4 text-emerald-600" />
                     Puentes de Cartera Activos — Redirecciones de Ex-Agentes ({forwards.length})
                   </CardTitle>
-                  <CardDescription className="text-xs">
+                  <CardDescription className="text-xs text-slate-600 mt-0.5">
                     Estos alias gratuitos redirigen automáticamente los correos que los asegurados
                     envíen a agentes dados de baja sin consumir ninguno de tus 20 asientos pagados.
                   </CardDescription>
@@ -826,11 +970,11 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                 </Badge>
               </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className="px-6 pb-6">
               {forwards.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-slate-200 p-6 text-center text-xs text-slate-500">
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-white/70 p-6 text-center text-xs text-slate-500">
                   Aún no has dado de baja ningún buzón de agente. Cuando un agente rote y uses el
-                  botón <strong>&ldquo;Dar de baja y liberar lugar&rdquo;</strong>, su correo
+                  botón <strong className="text-slate-700">&ldquo;Dar de baja y liberar lugar&rdquo;</strong>, su correo
                   aparecerá aquí redirigido automáticamente al nuevo responsable de la cartera.
                 </div>
               ) : (
@@ -838,7 +982,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                   {forwards.map((fwd) => (
                     <div
                       key={fwd.id}
-                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-emerald-200/80 bg-white p-3.5 shadow-sm"
+                      className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-200/80 bg-white p-4 shadow-sm"
                     >
                       <div className="flex flex-wrap items-center gap-2.5">
                         <Badge
@@ -852,7 +996,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                           {fwd.destinationEmail}
                         </Badge>
                         <span className="text-xs text-slate-500">
-                          • Ex-agente: <strong>{fwd.formerAgentName || "Agente"}</strong> (
+                          • Ex-agente: <strong className="text-slate-800">{fwd.formerAgentName || "Agente"}</strong> (
                           {fwd.migratedMessagesCount} correos históricos respaldados)
                         </span>
                       </div>
@@ -863,7 +1007,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                           variant="outline"
                           onClick={() => handleSimulateClientEmail(fwd.sourceEmail)}
                           disabled={simulatingEmail === fwd.sourceEmail}
-                          className="h-8 text-xs font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                          className="h-8 text-xs font-bold rounded-lg border-emerald-300 text-emerald-700 hover:bg-emerald-50"
                         >
                           {simulatingEmail === fwd.sourceEmail ? (
                             <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
@@ -876,7 +1020,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                           size="sm"
                           variant="ghost"
                           onClick={() => handleDeleteForwarder(fwd.id)}
-                          className="h-8 text-xs text-slate-400 hover:text-red-600"
+                          className="h-8 text-xs text-slate-400 hover:text-rose-600"
                           title="Eliminar redirección"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -918,11 +1062,11 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                   }}
                   className={`py-2 text-xs font-bold rounded-lg transition-all ${
                     mailboxType === "AGENT"
-                      ? "bg-white text-sky-700 shadow-sm"
+                      ? "bg-white text-slate-900 shadow-sm"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  👤 Para Agente / Usuario
+                  Para Agente / Usuario
                 </button>
                 <button
                   type="button"
@@ -934,11 +1078,11 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
                   }}
                   className={`py-2 text-xs font-bold rounded-lg transition-all ${
                     mailboxType === "DEPARTMENTAL"
-                      ? "bg-white text-sky-700 shadow-sm"
+                      ? "bg-white text-slate-900 shadow-sm"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  🏢 Buzón Institucional
+                  Buzón Institucional
                 </button>
               </div>
 
@@ -1007,7 +1151,7 @@ export function CorporateEmailAdminClient({ initialData }: { initialData: any })
               <Button
                 type="submit"
                 disabled={creatingMailbox}
-                className="bg-sky-600 hover:bg-sky-700 text-white font-bold"
+                className="bg-slate-900 hover:bg-slate-800 text-white font-bold"
               >
                 {creatingMailbox && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
                 Crear Buzón y Vincular a aacomsoft
