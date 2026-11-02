@@ -65,16 +65,16 @@ const DREAM_CATEGORY_LABELS: Record<string, string> = {
 };
 
 const STEP_SLIDES: Record<number, string> = {
-  0: '/tips/slides/00_portada.png?v=3',
-  1: '/tips/slides/01_datos_privacidad.png?v=3',
-  2: '/tips/slides/02_patrimonio_deudas.png?v=3',
-  3: '/tips/slides/03_sueldo_numero_magico.png?v=3',
-  4: '/tips/slides/04_jubilacion_cinta.png?v=3',
-  5: '/tips/slides/05_suenos_prioridades.png?v=3',
-  6: '/tips/slides/06_regla_16.png?v=3',
-  7: '/tips/slides/07_riesgos_seguros.png?v=3',
-  8: '/tips/slides/08_diagnostico.png?v=3',
-  9: '/tips/slides/09_cierre.png?v=3',
+  0: '/tips/slides/00_portada.png?v=4',
+  1: '/tips/slides/01_datos_privacidad.png?v=4',
+  2: '/tips/slides/02_patrimonio_deudas.png?v=4',
+  3: '/tips/slides/03_sueldo_numero_magico.png?v=4',
+  4: '/tips/slides/04_jubilacion_cinta.png?v=4',
+  5: '/tips/slides/05_suenos_prioridades.png?v=4',
+  6: '/tips/slides/06_regla_16.png?v=4',
+  7: '/tips/slides/07_riesgos_seguros.png?v=4',
+  8: '/tips/slides/08_diagnostico.png?v=4',
+  9: '/tips/slides/09_cierre.png?v=4',
 };
 
 const LOBBY_DEFINITION = {
@@ -280,6 +280,11 @@ export default function TipsHostConsolePage() {
   const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://aacomsoft.com';
   const joinUrl = `${originUrl}/tips/sala/${sess.code}`;
   const projectorUrl = `${originUrl}/tips/proyector/${sess.projectorToken}`;
+  const agencyLogoUrl =
+    sess.agency?.logoUrl ||
+    sess.host?.brandLogo ||
+    sess.host?.CompanyProfile?.logoUrl ||
+    null;
 
   const currentStepDef = STEP_DEFINITIONS.find((d) => d.step === sess.unlockedStep);
 
@@ -937,6 +942,15 @@ export default function TipsHostConsolePage() {
                     alt={viewedDef.title}
                     className="w-full h-auto object-contain"
                   />
+                  {agencyLogoUrl && (
+                    <div className="absolute top-[3.3%] right-[4.5%] z-10 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-xl shadow-md border border-slate-200/80 flex items-center justify-center max-w-[22%] max-h-[11%]">
+                      <img
+                        src={agencyLogoUrl}
+                        alt={sess.agency?.name || 'Promotoría'}
+                        className="max-h-7 w-auto object-contain"
+                      />
+                    </div>
+                  )}
                   <div className="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                     <span className="px-3.5 py-1.5 rounded-xl bg-white text-slate-900 font-extrabold text-xs shadow-lg">
                       🔍 Ampliar Lámina
@@ -2216,12 +2230,21 @@ export default function TipsHostConsolePage() {
               </button>
             </div>
 
-            <div className="rounded-2xl overflow-hidden border border-white/15 bg-slate-950">
+            <div className="relative rounded-2xl overflow-hidden border border-white/15 bg-slate-950">
               <img
                 src={STEP_SLIDES[zoomedSlideStep] || STEP_SLIDES[0]}
                 alt={`Slide ${zoomedSlideStep}`}
                 className="w-full h-auto max-h-[72vh] object-contain mx-auto"
               />
+              {agencyLogoUrl && (
+                <div className="absolute top-[3.3%] right-[4.5%] z-10 bg-white/95 backdrop-blur-sm px-3.5 py-1.5 rounded-xl shadow-lg border border-slate-200/80 flex items-center justify-center max-w-[22%] max-h-[12%]">
+                  <img
+                    src={agencyLogoUrl}
+                    alt={sess.agency?.name || 'Promotoría'}
+                    className="max-h-11 w-auto object-contain"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5 text-xs sm:text-sm text-indigo-100">

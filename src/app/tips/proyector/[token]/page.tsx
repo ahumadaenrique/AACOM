@@ -17,16 +17,16 @@ import {
 } from 'lucide-react';
 
 const STEP_SLIDES: Record<number, string> = {
-  0: '/tips/slides/00_portada.png?v=3',
-  1: '/tips/slides/01_datos_privacidad.png?v=3',
-  2: '/tips/slides/02_patrimonio_deudas.png?v=3',
-  3: '/tips/slides/03_sueldo_numero_magico.png?v=3',
-  4: '/tips/slides/04_jubilacion_cinta.png?v=3',
-  5: '/tips/slides/05_suenos_prioridades.png?v=3',
-  6: '/tips/slides/06_regla_16.png?v=3',
-  7: '/tips/slides/07_riesgos_seguros.png?v=3',
-  8: '/tips/slides/08_diagnostico.png?v=3',
-  9: '/tips/slides/09_cierre.png?v=3',
+  0: '/tips/slides/00_portada.png?v=4',
+  1: '/tips/slides/01_datos_privacidad.png?v=4',
+  2: '/tips/slides/02_patrimonio_deudas.png?v=4',
+  3: '/tips/slides/03_sueldo_numero_magico.png?v=4',
+  4: '/tips/slides/04_jubilacion_cinta.png?v=4',
+  5: '/tips/slides/05_suenos_prioridades.png?v=4',
+  6: '/tips/slides/06_regla_16.png?v=4',
+  7: '/tips/slides/07_riesgos_seguros.png?v=4',
+  8: '/tips/slides/08_diagnostico.png?v=4',
+  9: '/tips/slides/09_cierre.png?v=4',
 };
 
 const STEP_NAMES: Record<number, string> = {
@@ -279,12 +279,21 @@ export default function TipsProjectorBoardPage() {
       ) : showFullSlideOnly ? (
         /* MODO LÁMINA DE APOYO A PANTALLA COMPLETA (Aprovecha todo el ancho 16:9 sin huecos laterales) */
         <div className="my-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-center py-3 w-full">
-          <div className="lg:col-span-8 w-full rounded-3xl overflow-hidden border-2 border-indigo-400/40 shadow-2xl bg-slate-950">
+          <div className="relative lg:col-span-8 w-full rounded-3xl overflow-hidden border-2 border-indigo-400/40 shadow-2xl bg-slate-950">
             <img
               src={currentSlideUrl}
               alt={STEP_NAMES[sess.unlockedStep] || 'Slide TIPS'}
               className="w-full h-auto object-contain max-h-[72vh] mx-auto"
             />
+            {sess.brandLogo && (
+              <div className="absolute top-[3.3%] right-[4.5%] z-10 bg-white/95 backdrop-blur-sm px-3.5 py-1.5 rounded-xl shadow-lg border border-slate-200/80 flex items-center justify-center max-w-[22%] max-h-[12%]">
+                <img
+                  src={sess.brandLogo}
+                  alt={sess.brandName || 'Promotoría'}
+                  className="max-h-11 w-auto object-contain"
+                />
+              </div>
+            )}
           </div>
           <div className="lg:col-span-4 flex flex-col justify-center gap-4">
             {spotlight && sess.unlockedStep > 0 && (
@@ -346,12 +355,21 @@ export default function TipsProjectorBoardPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch my-auto w-full">
             {/* Columna Izquierda: Lámina Visual Oficial del Paso Actual */}
-            <div className="lg:col-span-7 rounded-3xl overflow-hidden border-2 border-indigo-400/40 shadow-2xl bg-slate-950 flex items-center justify-center">
+            <div className="relative lg:col-span-7 rounded-3xl overflow-hidden border-2 border-indigo-400/40 shadow-2xl bg-slate-950 flex items-center justify-center">
               <img
                 src={currentSlideUrl}
                 alt={STEP_NAMES[sess.unlockedStep] || 'Slide TIPS'}
                 className="w-full h-auto object-contain max-h-[64vh] mx-auto"
               />
+              {sess.brandLogo && (
+                <div className="absolute top-[3.3%] right-[4.5%] z-10 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-xl shadow-lg border border-slate-200/80 flex items-center justify-center max-w-[22%] max-h-[12%]">
+                  <img
+                    src={sess.brandLogo}
+                    alt={sess.brandName || 'Promotoría'}
+                    className="max-h-10 w-auto object-contain"
+                  />
+                </div>
+              )}
             </div>
 
             {/* Columna Derecha: Spotlight del Paso + QR o Tablero de Participantes en Vivo */}

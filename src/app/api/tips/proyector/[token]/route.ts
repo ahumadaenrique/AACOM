@@ -90,6 +90,7 @@ export async function GET(
             name: true,
             brandColor: true,
             brandLogo: true,
+            CompanyProfile: { select: { logoUrl: true } },
           },
         },
         agency: {
@@ -201,7 +202,11 @@ export async function GET(
         showBoardOnProjector: tipsSession.showBoardOnProjector,
         inactiveThresholdSec: tipsSession.inactiveThresholdSec,
         brandName: sanitizeTipsBrandName(tipsSession.agency?.name, tipsSession.host?.name),
-        brandLogo: tipsSession.agency?.logoUrl || tipsSession.host?.brandLogo || null,
+        brandLogo:
+          tipsSession.agency?.logoUrl ||
+          tipsSession.host?.brandLogo ||
+          tipsSession.host?.CompanyProfile?.logoUrl ||
+          null,
         brandColor: tipsSession.agency?.primaryColor || tipsSession.host?.brandColor || '#4f46e5',
         hostName: tipsSession.host?.name || 'Asesor Patrimonial',
       },

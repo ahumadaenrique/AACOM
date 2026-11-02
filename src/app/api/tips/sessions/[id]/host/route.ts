@@ -13,7 +13,19 @@ const demoHostState = {
   inactiveThresholdSec: 180,
 };
 
-function buildDemoHostPayload(hostUser: { id: string; name?: string | null; email?: string | null; phone?: string | null; agencyId?: string | null }) {
+function buildDemoHostPayload(
+  hostUser: {
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+    agencyId?: string | null;
+    brandLogo?: string | null;
+    brandColor?: string | null;
+    CompanyProfile?: { logoUrl?: string | null } | null;
+    agency?: { id: string; name: string; logoUrl?: string | null; primaryColor?: string | null } | null;
+  }
+) {
   const customParams = { realReturnRatePct: 4.0, inflationRatePct: 4.5, lifeExpectancy: 82.3 };
 
   const demoStep1A = {
@@ -190,10 +202,14 @@ function buildDemoHostPayload(hostUser: { id: string; name?: string | null; emai
         name: hostUser.name || 'Asesor Anfitrión',
         email: hostUser.email || '',
         phone: hostUser.phone || '',
+        brandLogo: hostUser.brandLogo || hostUser.CompanyProfile?.logoUrl || null,
+        brandColor: hostUser.brandColor || '#4f46e5',
       },
       agency: {
-        id: hostUser.agencyId || 'aacom',
-        name: 'aacomsoft',
+        id: hostUser.agency?.id || hostUser.agencyId || 'aacom',
+        name: hostUser.agency?.name || 'aacomsoft',
+        logoUrl: hostUser.agency?.logoUrl || hostUser.brandLogo || hostUser.CompanyProfile?.logoUrl || null,
+        primaryColor: hostUser.agency?.primaryColor || '#4f46e5',
       },
       participants,
     },
@@ -218,6 +234,14 @@ export async function GET(
 
     const user = await prisma.user.findUnique({
       where: { email: session.user.email },
+      include: {
+        agency: {
+          select: { id: true, name: true, logoUrl: true, primaryColor: true },
+        },
+        CompanyProfile: {
+          select: { logoUrl: true },
+        },
+      },
     });
 
     if (!user) {
@@ -237,7 +261,15 @@ export async function GET(
       where: { id: params.id },
       include: {
         host: {
-          select: { id: true, name: true, email: true, phone: true, brandColor: true, brandLogo: true },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            phone: true,
+            brandColor: true,
+            brandLogo: true,
+            CompanyProfile: { select: { logoUrl: true } },
+          },
         },
         agency: {
           select: { id: true, name: true, logoUrl: true, primaryColor: true },
