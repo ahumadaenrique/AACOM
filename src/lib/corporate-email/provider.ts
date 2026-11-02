@@ -597,6 +597,128 @@ export function buildTitanDnsRecords(domainName: string): DnsRecordSpec[] {
  * 3. Creación automática de la orden de Titan Email (Plan 3 GB) asociada al dominio
  * 4. Inyección automática por API en la zona DNS de MX, SPF, DKIM y DMARC
  */
+
+/**
+ * Resuelve automáticamente el Customer ID y el WHOIS Contact ID maestro en ResellerClub
+ * (o los crea automáticamente vía API si aún no existen en la cuenta Reseller),
+ * eliminando la necesidad de configurarlos manualmente en variables de entorno.
+ */
+async function resolveOrCreateResellerClubCustomerAndContact(baseUrl: string): Promise<{
+  customerId: string;
+  contactId: string;
+}> {
+  let customerId = cleanEnvValue(process.env.RESELLERCLUB_CUSTOMER_ID);
+  let contactId = cleanEnvValue(process.env.RESELLERCLUB_WHOIS_CONTACT_ID);
+
+  if (customerId && contactId) {
+    return { customerId, contactId };
+  }
+
+  try {
+    if (!customerId) {
+      const searchParams = getResellerClubAuthParams();
+      searchParams.append("no-of-records", "10");
+      searchParams.append("page-no", "1");
+      const searchRes = await resellerClubFetch(
+        `${baseUrl}/customers/search.json?${searchParams.toString()}`,
+        { method: "GET" }
+      );
+      if (searchRes.ok) {
+        const searchData = await searchRes.json().catch(() => null);
+        if (searchData && typeof searchData === "object") {
+          for (const [k, v] of Object.entries(searchData)) {
+            if (/^\d+$/.test(k) && v && typeof v === "object" && (v as any)["customer.customerid"]) {
+              customerId = String((v as any)["customer.customerid"]);
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    if (!customerId) {
+      const signupParams = getResellerClubAuthParams();
+      signupParams.append("username", "custodia@aacomsoft.com");
+      signupParams.append("passwd", `Aa!${crypto.randomBytes(5).toString("hex")}9#`);
+      signupParams.append("name", "Custodia Dominios aacomsoft");
+      signupParams.append("company", "aacomsoft");
+      signupParams.append("address-line-1", "Av. Paseo de la Reforma 250");
+      signupParams.append("city", "Ciudad de Mexico");
+      signupParams.append("state", "CDMX");
+      signupParams.append("country", "MX");
+      signupParams.append("zipcode", "06600");
+      signupParams.append("phone-cc", "52");
+      signupParams.append("phone", "5550000000");
+      signupParams.append("lang-pref", "es");
+
+      const createCustRes = await resellerClubFetch(`${baseUrl}/customers/v2/signup.json`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: signupParams.toString(),
+      });
+      if (createCustRes.ok) {
+        const custVal = (await createCustRes.text()).replace(/"/g, "").trim();
+        if (/^\d+$/.test(custVal)) {
+          customerId = custVal;
+        }
+      }
+    }
+
+    if (customerId && !contactId) {
+      const defParams = getResellerClubAuthParams();
+      defParams.append("customer-id", customerId);
+      defParams.append("type", "Contact");
+      const defRes = await resellerClubFetch(
+        `${baseUrl}/contacts/default.json?${defParams.toString()}`,
+        { method: "GET" }
+      );
+      if (defRes.ok) {
+        const defJson = await defRes.json().catch(() => null);
+        const foundId =
+          defJson?.Contact?.registrant ||
+          defJson?.Contact?.tech ||
+          defJson?.registrant ||
+          defJson?.entityid;
+        if (foundId && /^\d+$/.test(String(foundId))) {
+          contactId = String(foundId);
+        }
+      }
+    }
+
+    if (customerId && !contactId) {
+      const addContactParams = getResellerClubAuthParams();
+      addContactParams.append("name", "Custodia Dominios aacomsoft");
+      addContactParams.append("company", "aacomsoft");
+      addContactParams.append("email", "custodia@aacomsoft.com");
+      addContactParams.append("address-line-1", "Av. Paseo de la Reforma 250");
+      addContactParams.append("city", "Ciudad de Mexico");
+      addContactParams.append("state", "CDMX");
+      addContactParams.append("country", "MX");
+      addContactParams.append("zipcode", "06600");
+      addContactParams.append("phone-cc", "52");
+      addContactParams.append("phone", "5550000000");
+      addContactParams.append("customer-id", customerId);
+      addContactParams.append("type", "Contact");
+
+      const addRes = await resellerClubFetch(`${baseUrl}/contacts/add.json`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: addContactParams.toString(),
+      });
+      if (addRes.ok) {
+        const cidVal = (await addRes.text()).replace(/"/g, "").trim();
+        if (/^\d+$/.test(cidVal)) {
+          contactId = cidVal;
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("Auto-resolve ResellerClub customer/contact warning:", err);
+  }
+
+  return { customerId, contactId };
+}
+
 export async function provisionCorporateDomainAndTitanOrder(params: {
   agencyName: string;
   agencySlug?: string | null;
@@ -642,8 +764,7 @@ export async function provisionCorporateDomainAndTitanOrder(params: {
   if (isResellerClubLiveConfigured() && !params.simulateOnly) {
     try {
       const baseUrl = getResellerClubBaseUrl();
-      const customerId = process.env.RESELLERCLUB_CUSTOMER_ID || "";
-      const contactId = process.env.RESELLERCLUB_WHOIS_CONTACT_ID || "";
+      const { customerId, contactId } = await resolveOrCreateResellerClubCustomerAndContact(baseUrl);
 
       if (customerId && contactId) {
         // 1. Registrar el dominio con perfil WHOIS de AACOMSoft + Privacy Protection
