@@ -143,6 +143,27 @@ const STEP_DEFINITIONS = [
   },
 ];
 
+function formatBirthDateEs(raw?: string): string {
+  if (!raw || typeof raw !== 'string') return 'No capturada';
+  const match = raw.trim().match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (match) {
+    return `${match[3]}/${match[2]}/${match[1]}`;
+  }
+  return raw;
+}
+
+function formatInactiveDuration(seconds?: number): string {
+  const sec = Math.max(0, Math.floor(Number(seconds) || 0));
+  const mins = Math.floor(sec / 60);
+  if (mins < 60) return `${mins}m inactivo`;
+  const hours = Math.floor(mins / 60);
+  const remMins = mins % 60;
+  if (hours < 24) return remMins > 0 ? `${hours}h ${remMins}m inactivo` : `${hours}h inactivo`;
+  const days = Math.floor(hours / 24);
+  const remHours = hours % 24;
+  return remHours > 0 ? `${days}d ${remHours}h inactivo` : `${days}d inactivo`;
+}
+
 export default function TipsHostConsolePage() {
   const params = useParams();
   const sessionId = String(params?.id || '');
@@ -312,12 +333,12 @@ export default function TipsHostConsolePage() {
       `--------------------------------------------------`,
       `1. DATOS PERSONALES Y FAMILIARES`,
       `• Nombre Completo: ${p.fullName || s1.fullName || p.nickname || 'S/D'}`,
-      `• Fecha de Nacimiento: ${s1.birthDate || 'No capturada'} (${calc.age || '—'} años)`,
+      `• Fecha de Nacimiento: ${formatBirthDateEs(s1.birthDate)} (${calc.age || '—'} años)`,
       `• Estado Civil: ${MARITAL_LABELS[s1.maritalStatus] || s1.maritalStatus || 'No capturado'}`,
       `• Dependientes Económicos: ${s1.dependentsCount ?? 0}`,
       `• Teléfono / WhatsApp: ${p.phone || 'S/N'}`,
       `• Correo Electrónico: ${p.email || 'S/N'}`,
-      `• Progreso Taller: Paso ${p.completedStep}/8 · Score: ${p.leadScore || 0}/100 (${p.leadTier || 'COLD'})`,
+      `• Progreso Taller: Paso ${p.completedStep}/8 · Potencial Comercial (Interés/Oportunidad): ${p.leadScore || 0}/100 (${p.leadTier || 'COLD'}) · Salud Patrimonial: ${calc.patrimonyQualificationScore ?? 0}/100 (Semáforo ${calc.patrimonySemaphore || 'AMARILLO'})`,
       calc.appointmentRequested
         ? `• Cita Individual Solicitada: SÍ (Preferencia: ${calc.preferredSlot || '48h'})`
         : `• Cita Individual Solicitada: Pendiente`,
@@ -377,7 +398,11 @@ export default function TipsHostConsolePage() {
       ...(gaps.length > 0
         ? gaps.map(
             (g) =>
-              `  - [${g.code} · Severidad ${g.severity}] ${g.title}: Brecha $${Number(g.gapAmount || 0).toLocaleString('es-MX')} — ${g.reason}`
+              `  - [${g.code} · Severidad ${g.severity}] ${g.title}: ${
+                g.code === 'GMM' || !g.gapAmount || g.gapAmount === 50000000
+                  ? 'Sin Póliza GMM Activa'
+                  : 'Brecha $' + Number(g.gapAmount || 0).toLocaleString('es-MX')
+              } — ${g.reason}`
           )
         : ['  - Ningún hueco detectado todavía']),
     ];
@@ -471,7 +496,7 @@ export default function TipsHostConsolePage() {
   <div class="grid-4">
     <div class="card">
       <span class="label">Fecha de Nacimiento</span>
-      <span class="val">${s1.birthDate || 'No capturada'}</span>
+      <span class="val">${formatBirthDateEs(s1.birthDate)}</span>
     </div>
     <div class="card">
       <span class="label">Edad Actual</span>
@@ -658,7 +683,11 @@ export default function TipsHostConsolePage() {
           ? gaps
               .map(
                 (g) =>
-                  `<tr><td><strong>${g.title}</strong> (${g.code})</td><td>${g.severity}</td><td>${g.reason}</td><td><strong>$${Number(g.gapAmount || 0).toLocaleString('es-MX')}</strong></td></tr>`
+                  `<tr><td><strong>${g.title}</strong> (${g.code})</td><td>${g.severity}</td><td>${g.reason}</td><td><strong>${
+                    g.code === 'GMM' || !g.gapAmount || g.gapAmount === 50000000
+                      ? 'Sin Póliza GMM Activa'
+                      : '$' + Number(g.gapAmount || 0).toLocaleString('es-MX')
+                  }</strong></td></tr>`
               )
               .join('')
           : '<tr><td colspan="4" style="text-align:center;color:#64748b;">Sin huecos críticos detectados</td></tr>'
@@ -824,9 +853,17 @@ export default function TipsHostConsolePage() {
             </>
           ) : (
             <button
-              onClick={() => sendCommand({ action: 'REOPEN_SESSION' })}
+              onClick={() => {
+                if (
+                  confirm(
+                    '¿Deseas reabrir esta sesión TIPS? Los asistentes podrán volver a conectarse y capturar en sus celulares.'
+                  )
+                ) {
+                  sendCommand({ action: 'REOPEN_SESSION' });
+                }
+              }}
               disabled={actionBusy}
-              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition"
+              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition ml-2 border border-amber-400/40"
             >
               <RotateCcw className="w-4 h-4" />
               Reabrir Sesión
@@ -1016,14 +1053,33 @@ export default function TipsHostConsolePage() {
           </div>
 
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between gap-2">
               <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
                 <AlertTriangle className="w-4 h-4 text-amber-500" />
                 Rezagados en este bloque ({laggingParticipants.length})
               </span>
-              <span className="text-[11px] text-slate-400">
-                Tú decides si esperarlos o liberar
-              </span>
+              {laggingParticipants.some((p) => (p.inactiveSeconds || 0) >= 1800) ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (
+                      confirm(
+                        '¿Limpiar de la sala a los participantes inactivos que llevan más de 30 minutos sin actividad y sin avances?'
+                      )
+                    ) {
+                      sendCommand({ action: 'CLEAN_INACTIVE', minInactiveSec: 1800 });
+                    }
+                  }}
+                  disabled={actionBusy}
+                  className="text-[11px] font-bold text-rose-600 hover:text-rose-700 underline"
+                >
+                  Limpiar inactivos
+                </button>
+              ) : (
+                <span className="text-[11px] text-slate-400">
+                  Tú decides si esperarlos o liberar
+                </span>
+              )}
             </div>
 
             {laggingParticipants.length === 0 ? (
@@ -1035,7 +1091,7 @@ export default function TipsHostConsolePage() {
                 {laggingParticipants.map((p) => (
                   <div
                     key={p.id}
-                    className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs"
+                    className="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-xl px-3 py-2 text-xs gap-2"
                   >
                     <div>
                       <span className="font-bold text-amber-950">
@@ -1045,8 +1101,8 @@ export default function TipsHostConsolePage() {
                         (En paso {p.activeStep || p.currentStep || p.completedStep}/8 · {p.completedStep} guardados)
                       </span>
                     </div>
-                    <span className="text-[11px] font-semibold text-amber-700">
-                      {Math.floor((p.inactiveSeconds || 0) / 60)}m inactivo
+                    <span className="text-[11px] font-semibold text-amber-700 shrink-0">
+                      {formatInactiveDuration(p.inactiveSeconds)}
                     </span>
                   </div>
                 ))}
@@ -1214,9 +1270,12 @@ export default function TipsHostConsolePage() {
               Participantes Conectados y Diagnóstico en Tiempo Real ({participants.length})
             </h2>
           </div>
-          <span className="text-xs text-slate-500">
-            Haz clic en <strong>"Ver Diagnóstico Privado"</strong> para inspeccionar montos,
-            patrimonio, número mágico y huecos de seguro.
+          <span className="text-xs text-slate-500 max-w-md text-right">
+            Haz clic en <strong>"Ver Ficha Completa"</strong> para inspeccionar montos y brechas.{' '}
+            <span className="text-indigo-700 font-semibold">
+              Nota: Los asistentes pasan a tu Cartera cuando piden cita en el Paso 8 o al presionar
+              "Cerrar Taller y Enviar al Embudo".
+            </span>
           </span>
         </div>
 
@@ -1269,7 +1328,9 @@ export default function TipsHostConsolePage() {
                 <th className="py-3 px-4 font-bold">Paso Actual</th>
                 <th className="py-3 px-4 font-bold">Patrimonio vs Número Mágico</th>
                 <th className="py-3 px-4 font-bold">Huecos Detectados</th>
-                <th className="py-3 px-4 font-bold">Score Lead</th>
+                <th className="py-3 px-4 font-bold">
+                  Potencial Comercial vs. Salud Patrimonial
+                </th>
                 <th className="py-3 px-4 font-bold text-right">Acciones Host</th>
               </tr>
             </thead>
@@ -1305,8 +1366,20 @@ export default function TipsHostConsolePage() {
                             </span>
                           )}
                         </div>
-                        <div className="text-[11px] text-slate-400">
-                          {p.privacyAccepted ? '✓ LFPDPPP Aceptado' : 'En Lobby'}
+                        <div className="text-[11px] text-slate-400 flex items-center gap-1.5 flex-wrap">
+                          <span>{p.privacyAccepted ? '✓ LFPDPPP Aceptado' : 'En Lobby'}</span>
+                          {p.linkedClientId || sess.status === 'CLOSED' ? (
+                            <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.2 rounded">
+                              ✓ En Cartera
+                            </span>
+                          ) : p.privacyAccepted ? (
+                            <span
+                              className="text-[10px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded"
+                              title="Se inyectará en tu Cartera cuando solicite cita en el Paso 8 o cuando presiones 'Cerrar Taller y Enviar al Embudo'"
+                            >
+                              ⏳ Pasa a Cartera al cerrar taller
+                            </span>
+                          ) : null}
                         </div>
                       </td>
                       <td className="py-3 px-4 text-slate-600">
@@ -1339,8 +1412,12 @@ export default function TipsHostConsolePage() {
                               : 'text-indigo-500'
                           }`}
                         >
-                          {p.completedStep >= (sess.unlockedStep || 1)
+                          {p.completedStep >= 8
+                            ? '✓ Diagnóstico 8/8 visto'
+                            : p.completedStep >= (sess.unlockedStep || 1)
                             ? `✓ Paso ${p.completedStep} listo`
+                            : (sess.unlockedStep || 1) === 8 && p.completedStep === 7
+                            ? '⏳ Viendo Paso 8 (Diagnóstico)'
                             : `✍️ Capturando (${p.completedStep}/8 listos)`}
                         </span>
                       </td>
@@ -1354,8 +1431,17 @@ export default function TipsHostConsolePage() {
                               Núm. Mágico: ${(calc.magicNumber || 0).toLocaleString('es-MX')}
                             </div>
                           </div>
+                        ) : p.completedStep === 2 ? (
+                          <div>
+                            <div className="font-bold text-slate-800">
+                              Patrimonio: ${(calc.netWorth || 0).toLocaleString('es-MX')}
+                            </div>
+                            <div className="text-[11px] text-slate-400">
+                              Núm. Mágico en paso 3
+                            </div>
+                          </div>
                         ) : (
-                          <span className="text-slate-400">Pendiente paso 3</span>
+                          <span className="text-slate-400">En captura de activos (Paso 2)</span>
                         )}
                       </td>
                       <td className="py-3 px-4">
@@ -1375,41 +1461,62 @@ export default function TipsHostConsolePage() {
                         )}
                       </td>
                       <td className="py-3 px-4">
-                        <div className="font-black text-slate-900">{p.leadScore || 0} pts</div>
-                        <div className="text-[10px] font-bold">
-                          {p.leadTier === 'HOT'
-                            ? '🔥 Caliente'
-                            : p.leadTier === 'WARM'
-                            ? '🟡 Tibio'
-                            : '❄️ Frío'}
+                        <div
+                          className="font-black text-slate-900"
+                          title="Potencial Comercial / Interés para el Agente (basado en avance, brechas de seguro y solicitud de cita)"
+                        >
+                          Interés: {p.leadScore || 0}/100{' '}
+                          <span className="text-[10px] font-bold">
+                            {p.leadTier === 'HOT'
+                              ? '🔥 Caliente'
+                              : p.leadTier === 'WARM'
+                              ? '🟡 Tibio'
+                              : '❄️ Frío'}
+                          </span>
                         </div>
+                        {p.completedStep >= 2 && (
+                          <div
+                            className="text-[11px] text-slate-500 font-semibold mt-0.5"
+                            title="Calificación de Salud Patrimonial que el asistente ve en su propio diagnóstico"
+                          >
+                            Salud Fin.: {calc.patrimonyQualificationScore ?? 0}/100 (
+                            {calc.patrimonySemaphore || 'AMARILLO'})
+                          </div>
+                        )}
                       </td>
-                      <td className="py-3 px-4 text-right space-x-1.5 whitespace-nowrap">
-                        <button
-                          onClick={() => setSelectedParticipant(p)}
-                          className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs inline-flex items-center gap-1"
-                        >
-                          <FileText className="w-3.5 h-3.5" />
-                          Ver Ficha Completa
-                        </button>
-                        <button
-                          onClick={() => printParticipantDossier(p)}
-                          className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700"
-                          title="Descargar / Imprimir Ficha Técnica en PDF"
-                        >
-                          <Printer className="w-4 h-4 inline" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (confirm('¿Expulsar a este asistente de la sesión?')) {
-                              sendCommand({ action: 'KICK_PARTICIPANT', participantId: p.id });
-                            }
-                          }}
-                          className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-50"
-                          title="Expulsar asistente"
-                        >
-                          <UserX className="w-4 h-4 inline" />
-                        </button>
+                      <td className="py-3 px-4 text-right whitespace-nowrap">
+                        <div className="inline-flex items-center gap-1.5">
+                          <button
+                            onClick={() => setSelectedParticipant(p)}
+                            className="px-3 py-1.5 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold text-xs inline-flex items-center gap-1"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                            Ver Ficha Completa
+                          </button>
+                          <button
+                            onClick={() => printParticipantDossier(p)}
+                            className="p-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700"
+                            title="Descargar / Imprimir Ficha Técnica en PDF"
+                          >
+                            <Printer className="w-4 h-4 inline" />
+                          </button>
+                          <span className="h-4 w-px bg-slate-200 mx-1" />
+                          <button
+                            onClick={() => {
+                              if (
+                                confirm(
+                                  `¿Confirmas expulsar a "${p.fullName || p.nickname || 'este asistente'}" de la sesión TIPS? Esta acción eliminará su registro del taller.`
+                                )
+                              ) {
+                                sendCommand({ action: 'KICK_PARTICIPANT', participantId: p.id });
+                              }
+                            }}
+                            className="p-1.5 rounded-xl text-rose-500 hover:bg-rose-50 border border-transparent hover:border-rose-200"
+                            title="Expulsar asistente de la sala"
+                          >
+                            <UserX className="w-4 h-4 inline" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -1455,8 +1562,11 @@ export default function TipsHostConsolePage() {
                     <span className="text-xs font-extrabold uppercase text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded-lg">
                       Expediente Confidencial · Paso {activeParticipant.completedStep}/8
                     </span>
-                    <span className="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800">
-                      Score: {activeParticipant.leadScore || 0}/100 (
+                    <span
+                      className="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-rose-50 text-rose-900 border border-rose-200"
+                      title="Mide qué tan prioritario es este prospecto para ti (avance en taller, huecos detectados y solicitud de cita)"
+                    >
+                      Potencial Comercial (Interés): {activeParticipant.leadScore || 0}/100 (
                       {activeParticipant.leadTier === 'HOT'
                         ? '🔥 Caliente'
                         : activeParticipant.leadTier === 'WARM'
@@ -1464,6 +1574,15 @@ export default function TipsHostConsolePage() {
                         : '❄️ Frío'}
                       )
                     </span>
+                    {calc && (
+                      <span
+                        className="text-xs font-extrabold px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 border border-amber-200"
+                        title="Esta es la calificación de Salud Patrimonial que el asistente vio en su celular (activos, retiro, ahorro y blindaje)"
+                      >
+                        Salud Patrimonial del Asistente: {calc.patrimonyQualificationScore ?? 0}/100 (Semáforo{' '}
+                        {calc.patrimonySemaphore || 'AMARILLO'})
+                      </span>
+                    )}
                   </div>
                   <h3 className="text-2xl font-black text-slate-900 mt-1.5">
                     {activeParticipant.fullName || s1.fullName || activeParticipant.nickname}
@@ -1538,7 +1657,7 @@ export default function TipsHostConsolePage() {
                   <div className="bg-slate-50 rounded-xl p-3 border border-slate-200">
                     <span className="text-[11px] text-slate-500 block">Fecha de Nacimiento</span>
                     <strong className="text-sm font-black text-slate-900">
-                      {s1.birthDate || 'No capturada'}
+                      {formatBirthDateEs(s1.birthDate)}
                     </strong>
                     <span className="text-[11px] text-indigo-600 font-semibold block">
                       Edad calculada: {calc?.age || '—'} años
@@ -1961,7 +2080,9 @@ export default function TipsHostConsolePage() {
                               <p className="text-rose-800 mt-0.5">{gap.reason}</p>
                             </div>
                             <span className="px-2.5 py-1 rounded-lg bg-white border border-rose-200 font-bold text-rose-700 shrink-0">
-                              Brecha: ${(gap.gapAmount || 0).toLocaleString('es-MX')}
+                              {gap.code === 'GMM' || !gap.gapAmount || gap.gapAmount === 50000000
+                                ? 'Sin Póliza GMM (Prioridad Alta)'
+                                : `Brecha: $${(gap.gapAmount || 0).toLocaleString('es-MX')}`}
                             </span>
                           </div>
                         ))}

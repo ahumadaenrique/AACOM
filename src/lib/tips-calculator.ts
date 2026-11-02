@@ -189,6 +189,22 @@ export const DEFAULT_TIPS_PARAMS: TipsCustomParams = {
   lifeExpectancy: 82.3,
 };
 
+/**
+ * Garantiza Marca Blanca en TIPS:
+ * Jamás expone "Grupo AACOM", "AACOM" a secas ni "AACOMSOFT" en mayúsculas.
+ */
+export function sanitizeTipsBrandName(
+  agencyName?: string | null,
+  hostName?: string | null
+): string {
+  const cleanAgency = (agencyName || '').trim();
+  const cleanHost = (hostName || '').trim();
+  if (!cleanAgency || /aacom/i.test(cleanAgency)) {
+    return cleanHost ? `Práctica Patrimonial · ${cleanHost}` : 'aacomsoft';
+  }
+  return cleanAgency;
+}
+
 export const ASSET_REFERENCE_RATES: Record<TipsAssetCategory, { label: string; defaultRatePct: number; hint: string }> = {
   INMUEBLE: { label: 'Bienes Inmuebles', defaultRatePct: 6.0, hint: '4% a 8% anual sobre inflación' },
   INVERSION: { label: 'Inversiones / Fondos / CETES', defaultRatePct: 8.5, hint: 'Rendimiento financiero anual' },
@@ -245,41 +261,42 @@ export function calculateMagicNumber(age: number, monthlyIncome: number): {
 }
 
 /**
- * Fórmula oficial Capital Humano (Impacto por fallecimiento o invalidez):
- * (Edad jubilación − Edad actual) × Sueldo anual
- * Criterio de aceptación: 45 años, jubilación 65, sueldo 50,000 mensuales => 12,000,000
- */
-export function calculateHumanCapital(
-  currentAge: number,
-  desiredRetirementAge: number,
-  monthlyIncome: number
-): number {
-  const productiveYears = Math.max(0, desiredRetirementAge - currentAge);
-  const annualIncome = Math.max(0, monthlyIncome) * 12;
-  return Math.round(productiveYears * annualIncome);
-}
-
-/**
- * Pago mensual requerido (PMT) para alcanzar un monto futuro con tasa mensual real
+ * Cálculo de pago mensual requerido (PMT) con tasa real anual capitalizable mensualmente:
+ * PMT = Meta * (r_m) / ((1 + r_m)^n - 1)
  */
 export function calculateMonthlyPmt(
   targetAmount: number,
   years: number,
-  annualRealRatePct: number
+  annualRealRatePct = 4.0
 ): number {
+  if (targetAmount <= 0 || years <= 0) return 0;
   const months = Math.max(1, Math.round(years * 12));
-  if (targetAmount <= 0) return 0;
   const monthlyRate = annualRealRatePct / 100 / 12;
-  if (monthlyRate <= 0) {
+  if (Math.abs(monthlyRate) < 1e-6) {
     return Math.round(targetAmount / months);
   }
-  const factor = Math.pow(1 + monthlyRate, months) - 1;
-  if (factor <= 0) return Math.round(targetAmount / months);
-  return Math.round((targetAmount * monthlyRate) / factor);
+  const denominator = Math.pow(1 + monthlyRate, months) - 1;
+  if (denominator <= 0) return Math.round(targetAmount / months);
+  return Math.round((targetAmount * monthlyRate) / denominator);
 }
 
 /**
- * Ejecuta el motor completo de los 8 pasos de TIPS y genera el diagnóstico + scoring
+ * Cálculo de Valor Económico de la Vida / Capital Humano:
+ * Suma de ingresos de su edad actual a su edad de retiro deseada.
+ */
+export function calculateHumanCapital(
+  age: number,
+  desiredRetirementAge: number,
+  monthlyIncome: number
+): number {
+  if (monthlyIncome <= 0) return 0;
+  const productiveYears = Math.max(1, desiredRetirementAge - age);
+  return Math.round(monthlyIncome * 12 * productiveYears);
+}
+
+/**
+ * Evalúa de extremo a extremo los 8 pasos de un participante y devuelve
+ * todos los cálculos patrimoniales, brechas y el Lead Score (Caliente / Tibio / Frío).
  */
 export function evaluateTipsDiagnostic(input: {
   completedStep: number;
@@ -293,9 +310,14 @@ export function evaluateTipsDiagnostic(input: {
   step7?: Partial<TipsStep7Insurance> | null;
   customParams?: Partial<TipsCustomParams> | null;
 }): TipsCalculatedResults {
+  const rawLifeExp = Number(input.customParams?.lifeExpectancy);
+  const normalizedLifeExpectancy =
+    !rawLifeExp || rawLifeExp === 85 ? DEFAULT_TIPS_PARAMS.lifeExpectancy : rawLifeExp;
+
   const params: TipsCustomParams = {
     ...DEFAULT_TIPS_PARAMS,
     ...(input.customParams || {}),
+    lifeExpectancy: normalizedLifeExpectancy,
   };
 
   // Paso 1: Edad
@@ -516,9 +538,9 @@ export function evaluateTipsDiagnostic(input: {
       ramo: 'GMM',
       title: 'Gastos Médicos Mayores (Blindaje Patrimonial)',
       severity: 'ALTA',
-      recommendedCoverage: 50000000,
+      recommendedCoverage: 0,
       currentCoverage: 0,
-      gapAmount: 50000000,
+      gapAmount: 0,
       reason: 'Un evento médico mayor sin póliza obligaría a liquidar activos o adquirir deuda cara.',
     });
   }

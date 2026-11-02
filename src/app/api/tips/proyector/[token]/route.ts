@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { sanitizeTipsBrandName } from '@/lib/tips-calculator';
 
 export const dynamic = 'force-dynamic';
 
@@ -7,7 +8,6 @@ export const dynamic = 'force-dynamic';
  * Canal Público de Solo Lectura para el Proyector (Tablero en Vivo estilo Kahoot).
  * GARANTÍA DE PRIVACIDAD LFPDPPP:
  * - Jamás consulta ni incluye montos, edades, teléfono, correo ni resultados financieros.
- * - Si allowNicknames = true y el asistente tiene apodo, muestra únicamente su apodo.
  */
 export async function GET(
   _req: Request,
@@ -15,6 +15,60 @@ export async function GET(
 ) {
   try {
     const rawToken = decodeURIComponent(params.token || '').trim();
+
+    if (rawToken.toUpperCase() === 'DEMO') {
+      const demoParticipants = [
+        {
+          id: 'demo_part_1',
+          displayName: 'Carlos Mendoza R. (Demo)',
+          currentStep: 8,
+          completedStep: 8,
+          progressPct: 100,
+          status: 'COMPLETED',
+          inactiveSeconds: 10,
+          isReady: true,
+          isLagging: false,
+        },
+        {
+          id: 'demo_part_2',
+          displayName: 'Laura Gómez T. (Demo)',
+          currentStep: 6,
+          completedStep: 6,
+          progressPct: 75,
+          status: 'ACTIVE',
+          inactiveSeconds: 25,
+          isReady: false,
+          isLagging: false,
+        },
+      ];
+      return NextResponse.json({
+        session: {
+          code: 'DEMO',
+          title: 'Taller TIPS — Modo Demo y Práctica (Sin Consumo de Créditos)',
+          location: 'Simulador Interactivo',
+          expectedCapacity: 30,
+          status: 'ACTIVE',
+          unlockedStep: 8,
+          allowNicknames: false,
+          showBoardOnProjector: true,
+          inactiveThresholdSec: 180,
+          brandName: 'Taller Práctico · Modo Demo',
+          brandLogo: null,
+          brandColor: '#4f46e5',
+          hostName: 'Asesor Patrimonial Demo',
+        },
+        counters: {
+          connected: 2,
+          expectedCapacity: 30,
+          readyForUnlockedStep: 1,
+          completedAll: 1,
+          laggingCount: 0,
+          stepCounts: { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0, 6: 1, 7: 0, 8: 1 },
+        },
+        laggingList: [],
+        participants: demoParticipants,
+      });
+    }
 
     const tipsSession = await prisma.tipsSession.findFirst({
       where: {
@@ -146,7 +200,7 @@ export async function GET(
         allowNicknames: tipsSession.allowNicknames,
         showBoardOnProjector: tipsSession.showBoardOnProjector,
         inactiveThresholdSec: tipsSession.inactiveThresholdSec,
-        brandName: tipsSession.agency?.name || tipsSession.host?.name || 'TIPS Planeación Patrimonial',
+        brandName: sanitizeTipsBrandName(tipsSession.agency?.name, tipsSession.host?.name),
         brandLogo: tipsSession.agency?.logoUrl || tipsSession.host?.brandLogo || null,
         brandColor: tipsSession.agency?.primaryColor || tipsSession.host?.brandColor || '#4f46e5',
         hostName: tipsSession.host?.name || 'Asesor Patrimonial',

@@ -168,22 +168,26 @@ export default function TipsProjectorBoardPage() {
   };
   const laggingList: any[] = data.laggingList || [];
   const participants: any[] = data.participants || [];
-  const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://aacomsoft.com';
+  const originUrl = typeof window !== 'undefined' ? window.location.origin : 'https://app.aacomsoft.com';
   const joinUrl = `${originUrl}/tips/sala/${sess.code}`;
   const currentSlideUrl = STEP_SLIDES[sess.unlockedStep ?? 0] || STEP_SLIDES[0];
   const showFullSlideOnly =
     slideOnlyOverride !== null ? slideOnlyOverride : !sess.showBoardOnProjector;
+
+  const spotlight = STEP_SPOTLIGHTS[sess.unlockedStep ?? 1];
 
   const gridColsClass =
     participants.length > 40
       ? 'grid-cols-3 sm:grid-cols-4 xl:grid-cols-5'
       : participants.length > 20
       ? 'grid-cols-2 sm:grid-cols-3 xl:grid-cols-4'
+      : participants.length <= 2
+      ? 'grid-cols-1 sm:grid-cols-2'
       : 'grid-cols-2 sm:grid-cols-3';
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900 text-white p-4 sm:p-6 flex flex-col justify-between select-none overflow-hidden">
-      {/* Encabezado Superior con QR, Título y Contador Gigante "X de 50 listos" */}
+      {/* Encabezado Superior con QR, Título y Contador Gigante "X de Y listos" */}
       <div className="flex flex-col lg:flex-row items-center justify-between gap-4 bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-4 sm:p-5">
         <div className="flex items-center gap-4">
           <div className="bg-white p-2 rounded-2xl shadow-lg shrink-0">
@@ -191,7 +195,7 @@ export default function TipsProjectorBoardPage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-xs font-extrabold uppercase tracking-wider bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 px-2.5 py-0.5 rounded-full">
+              <span className="text-xs font-extrabold tracking-wider bg-indigo-500/30 border border-indigo-400/40 text-indigo-200 px-2.5 py-0.5 rounded-full">
                 {sess.brandName} · TIPS
               </span>
               <span className="text-xs font-mono font-black bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-md">
@@ -205,7 +209,7 @@ export default function TipsProjectorBoardPage() {
           </div>
         </div>
 
-        {/* Indicador Gigante: "X de 50 listos" + Botones de Vista y Pantalla Completa */}
+        {/* Indicador Gigante: "X de Y listos" + Botones de Vista y Pantalla Completa */}
         <div className="flex items-center gap-3 flex-wrap justify-end">
           <div className="bg-indigo-600/30 border-2 border-indigo-400/50 rounded-2xl px-5 py-2.5 text-center shadow-inner">
             <span className="text-[11px] uppercase tracking-widest text-indigo-200 font-bold block">
@@ -270,31 +274,47 @@ export default function TipsProjectorBoardPage() {
           </p>
         </div>
       ) : showFullSlideOnly ? (
-        /* MODO LÁMINA DE APOYO A PANTALLA COMPLETA */
-        <div className="my-auto flex flex-col lg:flex-row items-center justify-center gap-6 py-3">
-          <div className="w-full max-w-5xl rounded-3xl overflow-hidden border-2 border-indigo-400/40 shadow-2xl bg-slate-950">
+        /* MODO LÁMINA DE APOYO A PANTALLA COMPLETA (Aprovecha todo el ancho 16:9 sin huecos laterales) */
+        <div className="my-auto grid grid-cols-1 lg:grid-cols-12 gap-6 items-center py-3 w-full">
+          <div className="lg:col-span-8 w-full rounded-3xl overflow-hidden border-2 border-indigo-400/40 shadow-2xl bg-slate-950">
             <img
               src={currentSlideUrl}
               alt={STEP_NAMES[sess.unlockedStep] || 'Slide TIPS'}
               className="w-full h-auto object-contain max-h-[72vh] mx-auto"
             />
           </div>
-          {sess.unlockedStep === 0 && (
-            <div className="bg-white/10 border border-white/20 rounded-3xl p-6 text-center space-y-3 shrink-0">
-              <div className="bg-white p-4 rounded-2xl shadow-xl border-4 border-amber-400 inline-block">
-                <QRCodeSVG value={joinUrl} size={190} level="H" includeMargin={false} />
+          <div className="lg:col-span-4 flex flex-col justify-center gap-4">
+            {spotlight && sess.unlockedStep > 0 && (
+              <div className="bg-white/5 border border-indigo-400/30 rounded-3xl p-5 space-y-2.5">
+                <span className="inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-amber-300 bg-amber-400/10 border border-amber-400/30 px-2.5 py-1 rounded-full">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  {spotlight.badge}
+                </span>
+                <h2 className="text-lg sm:text-xl font-black text-white leading-snug">
+                  {spotlight.headline}
+                </h2>
+                <div className="text-xs font-bold text-indigo-200 bg-indigo-950/60 border border-indigo-400/20 rounded-xl p-3">
+                  {spotlight.formulaOrRule}
+                </div>
+                <p className="text-xs text-slate-300 leading-relaxed">{spotlight.prompt}</p>
               </div>
-              <div className="text-sm font-bold text-indigo-200">
-                Escanea con tu celular
-                <span className="block text-2xl font-mono font-black text-amber-300 mt-0.5">
+            )}
+
+            <div className="bg-white/10 border border-white/20 rounded-3xl p-5 text-center space-y-2.5">
+              <div className="bg-white p-3 rounded-2xl shadow-xl border-4 border-amber-400 inline-block">
+                <QRCodeSVG value={joinUrl} size={150} level="H" includeMargin={false} />
+              </div>
+              <div className="text-xs font-bold text-indigo-200">
+                Únete desde tu celular en vivo
+                <span className="block text-xl font-mono font-black text-amber-300 mt-0.5">
                   {sess.code}
                 </span>
               </div>
             </div>
-          )}
+          </div>
         </div>
       ) : (
-        /* MODO COMBINADO: LÁMINA DEL PASO ACTUAL + TABLERO EN VIVO */
+        /* MODO COMBINADO: LÁMINA DEL PASO ACTUAL + GUÍA Y TABLERO EN VIVO */
         <div className="flex-1 flex flex-col justify-between gap-4 my-3">
           {/* SECCIÓN DE PRESIÓN DE GRUPO: "FALTAN:" */}
           {sess.unlockedStep > 0 && laggingList.length > 0 && (
@@ -321,20 +341,40 @@ export default function TipsProjectorBoardPage() {
             </div>
           )}
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center my-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch my-auto w-full">
             {/* Columna Izquierda: Lámina Visual Oficial del Paso Actual */}
-            <div className="lg:col-span-7 rounded-3xl overflow-hidden border-2 border-indigo-400/40 shadow-2xl bg-slate-950">
+            <div className="lg:col-span-7 rounded-3xl overflow-hidden border-2 border-indigo-400/40 shadow-2xl bg-slate-950 flex items-center justify-center">
               <img
                 src={currentSlideUrl}
                 alt={STEP_NAMES[sess.unlockedStep] || 'Slide TIPS'}
-                className="w-full h-auto object-contain max-h-[62vh] mx-auto"
+                className="w-full h-auto object-contain max-h-[64vh] mx-auto"
               />
             </div>
 
-            {/* Columna Derecha: QR de Sala (si no hay conectados en Lobby) o Tablero de Participantes en Vivo */}
-            <div className="lg:col-span-5 flex flex-col justify-center">
+            {/* Columna Derecha: Spotlight del Paso + QR o Tablero de Participantes en Vivo */}
+            <div className="lg:col-span-5 flex flex-col justify-between gap-3.5">
+              {spotlight && sess.unlockedStep > 0 && (
+                <div className="bg-white/5 border border-indigo-400/30 rounded-2xl p-4 space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-amber-300">
+                      {spotlight.badge}
+                    </span>
+                    <span className="text-[10px] font-bold text-indigo-200">
+                      Asesor: {sess.hostName}
+                    </span>
+                  </div>
+                  <h3 className="text-sm sm:text-base font-extrabold text-white">
+                    {spotlight.headline}
+                  </h3>
+                  <div className="text-[11px] font-semibold text-indigo-200 bg-indigo-950/60 border border-indigo-400/20 rounded-xl px-3 py-1.5">
+                    {spotlight.formulaOrRule}
+                  </div>
+                  <p className="text-[11px] text-slate-300">{spotlight.prompt}</p>
+                </div>
+              )}
+
               {sess.unlockedStep === 0 && participants.length === 0 ? (
-                <div className="bg-white/5 border border-white/15 rounded-3xl p-6 flex flex-col items-center justify-center text-center space-y-4">
+                <div className="bg-white/5 border border-white/15 rounded-3xl p-6 flex-1 flex flex-col items-center justify-center text-center space-y-4">
                   <div className="bg-white p-4 rounded-3xl shadow-2xl border-4 border-amber-400">
                     <QRCodeSVG value={joinUrl} size={190} level="H" includeMargin={false} />
                   </div>
@@ -349,69 +389,86 @@ export default function TipsProjectorBoardPage() {
                   </div>
                 </div>
               ) : (
-                <div className="space-y-2.5">
-                  <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-wider text-indigo-200 px-1">
-                    <span>Tablero de Participantes ({participants.length})</span>
-                    <span className="text-emerald-300">
-                      ✓ {counters.readyForUnlockedStep} listos en este paso
-                    </span>
+                <div className="bg-white/5 border border-white/10 rounded-3xl p-4 flex-1 flex flex-col justify-between space-y-3">
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between text-xs font-extrabold uppercase tracking-wider text-indigo-200 px-1">
+                      <span>Tablero de Participantes ({participants.length})</span>
+                      <span className="text-emerald-300">
+                        ✓ {counters.readyForUnlockedStep} listos en este paso
+                      </span>
+                    </div>
+                    {participants.length === 0 ? (
+                      <div className="py-8 text-center text-xs text-indigo-200/80">
+                        Esperando a que los asistentes escaneen el código QR ({sess.code})...
+                      </div>
+                    ) : (
+                      <div className={`grid ${gridColsClass} gap-2.5 max-h-[38vh] overflow-y-auto pr-1`}>
+                        {participants.map((p) => {
+                          const isDoneAll = p.completedStep >= 8;
+                          const isReadyCurrent = p.isReady;
+                          const isLag = p.isLagging;
+
+                          return (
+                            <div
+                              key={p.id}
+                              className={`rounded-2xl p-3 border transition-all flex flex-col justify-between ${
+                                isDoneAll
+                                  ? 'bg-emerald-500/20 border-emerald-400/60 text-white'
+                                  : isLag
+                                  ? 'bg-amber-500/20 border-2 border-amber-400 text-amber-100 animate-pulse'
+                                  : isReadyCurrent
+                                  ? 'bg-indigo-500/20 border-indigo-400/40 text-white'
+                                  : 'bg-white/5 border-white/10 text-slate-200'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between gap-1">
+                                <span className="font-extrabold text-xs sm:text-sm truncate">
+                                  {p.displayName}
+                                </span>
+                                {isDoneAll ? (
+                                  <Trophy className="w-4 h-4 text-amber-300 shrink-0" />
+                                ) : isReadyCurrent ? (
+                                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                                ) : (
+                                  <Clock className="w-3.5 h-3.5 text-amber-300 shrink-0" />
+                                )}
+                              </div>
+
+                              <div className="mt-2 space-y-1">
+                                <div className="flex items-center justify-between text-[10px] font-bold">
+                                  <span>
+                                    Paso {p.currentStep || p.completedStep}/8{' '}
+                                    {isReadyCurrent ? '✓' : '✍️'}
+                                  </span>
+                                  <span>{p.progressPct}%</span>
+                                </div>
+                                <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full rounded-full transition-all duration-500 ${
+                                      isDoneAll
+                                        ? 'bg-emerald-400'
+                                        : isLag
+                                        ? 'bg-amber-400'
+                                        : 'bg-indigo-400'
+                                    }`}
+                                    style={{ width: `${Math.max(8, p.progressPct)}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
-                  <div className={`grid ${gridColsClass} gap-2.5 max-h-[56vh] overflow-y-auto pr-1`}>
-                    {participants.map((p) => {
-                      const isDoneAll = p.completedStep >= 8;
-                      const isReadyCurrent = p.isReady;
-                      const isLag = p.isLagging;
 
-                      return (
-                        <div
-                          key={p.id}
-                          className={`rounded-2xl p-2.5 sm:p-3 border transition-all flex flex-col justify-between ${
-                            isDoneAll
-                              ? 'bg-emerald-500/20 border-emerald-400/60 text-white'
-                              : isLag
-                              ? 'bg-amber-500/20 border-2 border-amber-400 text-amber-100 animate-pulse'
-                              : isReadyCurrent
-                              ? 'bg-indigo-500/20 border-indigo-400/40 text-white'
-                              : 'bg-white/5 border-white/10 text-slate-200'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between gap-1">
-                            <span className="font-extrabold text-xs sm:text-sm truncate">
-                              {p.displayName}
-                            </span>
-                            {isDoneAll ? (
-                              <Trophy className="w-4 h-4 text-amber-300 shrink-0" />
-                            ) : isReadyCurrent ? (
-                              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                            ) : (
-                              <Clock className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-                            )}
-                          </div>
-
-                          <div className="mt-2 space-y-1">
-                            <div className="flex items-center justify-between text-[10px] font-bold">
-                              <span>
-                                Paso {p.currentStep || p.completedStep}/8{' '}
-                                {isReadyCurrent ? '✓' : '✍️'}
-                              </span>
-                              <span>{p.progressPct}%</span>
-                            </div>
-                            <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
-                              <div
-                                className={`h-full rounded-full transition-all duration-500 ${
-                                  isDoneAll
-                                    ? 'bg-emerald-400'
-                                    : isLag
-                                    ? 'bg-amber-400'
-                                    : 'bg-indigo-400'
-                                }`}
-                                style={{ width: `${Math.max(8, p.progressPct)}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
+                  <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[11px] text-indigo-200">
+                    <span>
+                      Únete en: <strong className="text-white">{joinUrl}</strong>
+                    </span>
+                    <span className="font-mono font-black text-amber-300">
+                      Código: {sess.code}
+                    </span>
                   </div>
                 </div>
               )}

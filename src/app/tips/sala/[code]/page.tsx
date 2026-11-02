@@ -182,6 +182,50 @@ export default function TipsParticipantMobilePage() {
       }
 
       setSession(json.session);
+      if (code === 'DEMO' && typeof window !== 'undefined') {
+        try {
+          const savedDemoRaw = localStorage.getItem('tips_demo_state_v1');
+          if (savedDemoRaw) {
+            const savedDemo = JSON.parse(savedDemoRaw);
+            if (savedDemo.participant) {
+              setParticipant({ ...savedDemo.participant, creditConsumed: true });
+              setInLobbyJoined(true);
+            }
+            if (savedDemo.nickname) setNickname(savedDemo.nickname);
+            if (savedDemo.fullName) setFullName(savedDemo.fullName);
+            if (savedDemo.phone) setPhone(savedDemo.phone);
+            if (savedDemo.email) setEmail(savedDemo.email);
+            if (typeof savedDemo.privacyAccepted === 'boolean') setPrivacyAccepted(savedDemo.privacyAccepted);
+            if (savedDemo.birthDate) setBirthDate(savedDemo.birthDate);
+            if (savedDemo.manualAge !== undefined) setManualAge(savedDemo.manualAge);
+            if (savedDemo.maritalStatus) setMaritalStatus(savedDemo.maritalStatus);
+            if (savedDemo.dependentsCount !== undefined) setDependentsCount(savedDemo.dependentsCount);
+            if (Array.isArray(savedDemo.assets)) setAssets(savedDemo.assets);
+            if (Array.isArray(savedDemo.debts)) setDebts(savedDemo.debts);
+            if (savedDemo.monthlyIncome !== undefined) setMonthlyIncome(Number(savedDemo.monthlyIncome));
+            if (savedDemo.desiredRetirementAge !== undefined) setDesiredRetirementAge(savedDemo.desiredRetirementAge);
+            if (savedDemo.desiredPensionPct !== undefined) setDesiredPensionPct(savedDemo.desiredPensionPct);
+            if (savedDemo.imssRegime) setImssRegime(savedDemo.imssRegime);
+            if (savedDemo.aforeBalance !== undefined) setAforeBalance(Number(savedDemo.aforeBalance));
+            if (typeof savedDemo.hasPpr === 'boolean') setHasPpr(savedDemo.hasPpr);
+            if (savedDemo.pprBalance !== undefined) setPprBalance(Number(savedDemo.pprBalance));
+            if (savedDemo.pprMonthlyContribution !== undefined) setPprMonthlyContribution(Number(savedDemo.pprMonthlyContribution));
+            if (Array.isArray(savedDemo.dreams)) setDreams(savedDemo.dreams);
+            if (savedDemo.savingsPct !== undefined) setSavingsPct(Number(savedDemo.savingsPct));
+            if (typeof savedDemo.hasLifeInsurance === 'boolean') setHasLifeInsurance(savedDemo.hasLifeInsurance);
+            if (savedDemo.lifeInsuredSum !== undefined) setLifeInsuredSum(Number(savedDemo.lifeInsuredSum));
+            if (savedDemo.lifePerception !== undefined) setLifePerception(Number(savedDemo.lifePerception));
+            if (typeof savedDemo.hasDisabilityInsurance === 'boolean') setHasDisabilityInsurance(savedDemo.hasDisabilityInsurance);
+            if (typeof savedDemo.hasGmm === 'boolean') setHasGmm(savedDemo.hasGmm);
+            if (typeof savedDemo.hasAutoInsurance === 'boolean') setHasAutoInsurance(savedDemo.hasAutoInsurance);
+            if (typeof savedDemo.hasHomeInsurance === 'boolean') setHasHomeInsurance(savedDemo.hasHomeInsurance);
+            if (typeof savedDemo.viewStep === 'number' && savedDemo.viewStep >= 1) {
+              setViewStep(savedDemo.viewStep);
+            }
+            return;
+          }
+        } catch (_) {}
+      }
       if (json.participant) {
         const p = json.participant;
         setParticipant(p);
@@ -269,11 +313,86 @@ export default function TipsParticipantMobilePage() {
     }
   }, [deviceToken, fetchInitialState]);
 
-  // Heartbeat en tiempo real cada 2 segundos + Auto-Follow cuando el Host libera el siguiente paso
+  // Persistir avance automáticamente cuando está en Modo DEMO (/tips/sala/DEMO) para no perder datos al recargar
   useEffect(() => {
-    if (!code || !deviceToken || !inLobbyJoined) return;
+    if (code !== 'DEMO' || typeof window === 'undefined' || !inLobbyJoined) return;
+    try {
+      localStorage.setItem(
+        'tips_demo_state_v1',
+        JSON.stringify({
+          participant,
+          nickname,
+          fullName,
+          phone,
+          email,
+          privacyAccepted,
+          birthDate,
+          manualAge,
+          maritalStatus,
+          dependentsCount,
+          assets,
+          debts,
+          monthlyIncome,
+          desiredRetirementAge,
+          desiredPensionPct,
+          imssRegime,
+          aforeBalance,
+          hasPpr,
+          pprBalance,
+          pprMonthlyContribution,
+          dreams,
+          savingsPct,
+          hasLifeInsurance,
+          lifeInsuredSum,
+          lifePerception,
+          hasDisabilityInsurance,
+          hasGmm,
+          hasAutoInsurance,
+          hasHomeInsurance,
+          viewStep,
+        })
+      );
+    } catch (_) {}
+  }, [
+    code,
+    inLobbyJoined,
+    participant,
+    nickname,
+    fullName,
+    phone,
+    email,
+    privacyAccepted,
+    birthDate,
+    manualAge,
+    maritalStatus,
+    dependentsCount,
+    assets,
+    debts,
+    monthlyIncome,
+    desiredRetirementAge,
+    desiredPensionPct,
+    imssRegime,
+    aforeBalance,
+    hasPpr,
+    pprBalance,
+    pprMonthlyContribution,
+    dreams,
+    savingsPct,
+    hasLifeInsurance,
+    lifeInsuredSum,
+    lifePerception,
+    hasDisabilityInsurance,
+    hasGmm,
+    hasAutoInsurance,
+    hasHomeInsurance,
+    viewStep,
+  ]);
 
-    const interval = setInterval(async () => {
+  // Heartbeat en tiempo real cada 2 segundos + Sincronización inmediata al volver de segundo plano en celular
+  useEffect(() => {
+    if (!code || code === 'DEMO' || !deviceToken || !inLobbyJoined) return;
+
+    const runHeartbeat = async () => {
       try {
         const queuedRaw = localStorage.getItem(`tips_queue_${code}`);
         if (queuedRaw) {
@@ -335,9 +454,26 @@ export default function TipsParticipantMobilePage() {
           }
         }
       } catch (_) {}
-    }, 2000);
+    };
 
-    return () => clearInterval(interval);
+    const interval = setInterval(runHeartbeat, 2000);
+
+    const handleVisibilityOrFocus = () => {
+      if (document.visibilityState === 'visible') {
+        runHeartbeat();
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    window.addEventListener('pageshow', handleVisibilityOrFocus);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      window.removeEventListener('pageshow', handleVisibilityOrFocus);
+    };
   }, [code, deviceToken, inLobbyJoined, viewStep]);
 
   // Cálculo reactivo local en vivo
@@ -637,22 +773,54 @@ export default function TipsParticipantMobilePage() {
     );
   }
 
+  const isDemoRoom = code === 'DEMO' || Boolean(session?.isDemo);
+  const hasStepAccess = Boolean(participant?.privacyAccepted && (participant?.creditConsumed || isDemoRoom));
   const unlockedStep = session.unlockedStep || 0;
   const completedStep = participant?.completedStep || 0;
   const isWaitingForNextUnlock =
     inLobbyJoined &&
+    !isDemoRoom &&
     ((unlockedStep === 0 && viewStep === 0) ||
       (completedStep >= unlockedStep && viewStep === unlockedStep && unlockedStep < 8));
+
+  const handleResetDemo = () => {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('tips_demo_state_v1');
+      window.location.reload();
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 pb-16 print:bg-white print:pb-0">
       {/* Encabezado Móvil con Progreso (Oculto al imprimir PDF) */}
       <header className="bg-indigo-950 text-white px-4 py-3.5 sticky top-0 z-30 shadow-md print:hidden">
+        {isDemoRoom && (
+          <div className="max-w-lg mx-auto mb-2.5 pb-2 border-b border-white/15 flex items-center justify-between gap-2 flex-wrap text-[11px]">
+            <span className="font-bold text-emerald-300">
+              🎓 Modo Práctica / Demo (0 créditos)
+            </span>
+            <div className="flex items-center gap-2">
+              <a
+                href="/tips/DEMO/host"
+                className="px-2.5 py-1 rounded-lg bg-indigo-500/30 hover:bg-indigo-500/50 border border-indigo-300/40 text-indigo-100 font-bold transition"
+              >
+                🎛️ Ver Consola Anfitrión Demo
+              </a>
+              <button
+                type="button"
+                onClick={handleResetDemo}
+                className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-amber-300 font-bold transition"
+              >
+                🔄 Reiniciar Demo
+              </button>
+            </div>
+          </div>
+        )}
         <div className="max-w-lg mx-auto flex items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-200">
+              <span className="text-[11px] font-extrabold tracking-wider text-indigo-200">
                 {session.brandName} · TIPS
               </span>
             </div>
@@ -661,7 +829,9 @@ export default function TipsParticipantMobilePage() {
 
           <div className="text-right">
             <span className="text-[11px] font-mono bg-white/10 px-2 py-0.5 rounded text-amber-300 font-bold">
-              Paso {Math.min(8, Math.max(1, viewStep))}/8
+              {!inLobbyJoined || unlockedStep === 0 || viewStep === 0
+                ? 'Sala de Espera'
+                : `Paso ${Math.min(8, Math.max(1, viewStep))}/8`}
             </span>
             {offlinePending && (
               <div className="text-[10px] text-amber-300 flex items-center gap-1 mt-0.5">
@@ -681,25 +851,41 @@ export default function TipsParticipantMobilePage() {
               <button
                 key={s}
                 type="button"
-                disabled={!unlocked || !participant?.privacyAccepted || !participant?.creditConsumed}
-                onClick={() =>
-                  unlocked &&
-                  participant?.privacyAccepted &&
-                  participant?.creditConsumed &&
-                  setViewStep(s)
+                title={
+                  !hasStepAccess
+                    ? `Paso ${s}: Primero ingresa y guarda el Paso 1 con el aviso de privacidad`
+                    : !unlocked
+                    ? `Paso ${s}: Se desbloqueará cuando el expositor avance a este bloque`
+                    : `Ir al Paso ${s}`
                 }
+                disabled={!unlocked || !hasStepAccess}
+                onClick={() => unlocked && hasStepAccess && setViewStep(s)}
                 className={`h-1.5 rounded-full transition-all ${
                   active
                     ? 'bg-amber-400'
                     : done
                     ? 'bg-emerald-400'
-                    : unlocked
-                    ? 'bg-indigo-400/50'
-                    : 'bg-white/15'
+                    : unlocked && hasStepAccess
+                    ? 'bg-indigo-400/50 cursor-pointer'
+                    : 'bg-white/15 cursor-not-allowed'
                 }`}
               />
             );
           })}
+        </div>
+        <div className="max-w-lg mx-auto mt-1.5 text-[10px] text-indigo-200/80 flex items-center justify-between">
+          <span>
+            {!inLobbyJoined || unlockedStep === 0
+              ? '🔒 Los 8 pasos se habilitarán en cuanto el expositor inicie el taller.'
+              : !hasStepAccess
+              ? '🔒 Completa el Paso 1 y acepta el aviso de privacidad para avanzar.'
+              : isDemoRoom
+              ? '🔓 Modo Demo: Puedes navegar libremente entre los 8 pasos.'
+              : `🔓 Bloques habilitados por el expositor: 1 al ${unlockedStep} de 8`}
+          </span>
+          {hasStepAccess && viewStep > 0 && (
+            <span className="font-semibold text-amber-300">Avance: {completedStep}/8</span>
+          )}
         </div>
       </header>
 
@@ -774,7 +960,7 @@ export default function TipsParticipantMobilePage() {
               <strong>Paso 1</strong>, tu teléfono avanzará automáticamente.
             </p>
           </div>
-        ) : viewStep === 1 || !participant?.privacyAccepted || !participant?.creditConsumed ? (
+        ) : viewStep === 1 || !hasStepAccess ? (
           /* PASO 1: CONSENTIMIENTO LFPDPPP + DATOS GENERALES */
           <form
             onSubmit={handleSaveStep1AndConsent}
@@ -1017,17 +1203,17 @@ export default function TipsParticipantMobilePage() {
                 </button>
               </div>
 
-              {/* Botones rápidos para agregar activos sin precargar valores falsos (QA T3) */}
+              {/* Botones rápidos para agregar activos con categoría diferenciada */}
               <div className="flex flex-wrap gap-1.5">
                 {[
-                  { cat: 'INMUEBLE' as TipsAssetCategory, label: '🏠 + Inmueble', rate: 6.0, liq: 'BAJA' as const },
-                  { cat: 'FONDO_EMERGENCIA' as TipsAssetCategory, label: '🏦 + Ahorro / CETES', rate: 8.0, liq: 'ALTA' as const },
-                  { cat: 'INVERSION' as TipsAssetCategory, label: '📈 + Inversión', rate: 8.5, liq: 'MEDIA' as const },
-                  { cat: 'NEGOCIO' as TipsAssetCategory, label: '🚀 + Negocio', rate: 18.0, liq: 'BAJA' as const },
-                  { cat: 'VEHICULO' as TipsAssetCategory, label: '🚗 + Auto', rate: -15.0, liq: 'MEDIA' as const },
+                  { key: 'inm', cat: 'INMUEBLE' as TipsAssetCategory, label: '🏠 + Inmueble', desc: 'Inmueble / Casa / Depto', rate: 6.0, liq: 'BAJA' as const },
+                  { key: 'fdo', cat: 'FONDO_EMERGENCIA' as TipsAssetCategory, label: '🛟 + Fondo Emergencia', desc: 'Fondo de Emergencia / Liquidez', rate: 5.0, liq: 'ALTA' as const },
+                  { key: 'cet', cat: 'INVERSION' as TipsAssetCategory, label: '🏦 + Ahorro / CETES', desc: 'Ahorro en CETES / Pagaré / Fondos', rate: 8.5, liq: 'ALTA' as const },
+                  { key: 'neg', cat: 'NEGOCIO' as TipsAssetCategory, label: '🚀 + Negocio', desc: 'Negocio Propio', rate: 18.0, liq: 'BAJA' as const },
+                  { key: 'veh', cat: 'VEHICULO' as TipsAssetCategory, label: '🚗 + Auto', desc: 'Vehículo / Automóvil', rate: -15.0, liq: 'MEDIA' as const },
                 ].map((q) => (
                   <button
-                    key={q.cat}
+                    key={q.key}
                     type="button"
                     onClick={() =>
                       setAssets([
@@ -1035,7 +1221,7 @@ export default function TipsParticipantMobilePage() {
                         {
                           id: `ast_${Date.now()}_${Math.random().toString(36).slice(2, 5)}`,
                           category: q.cat,
-                          description: '',
+                          description: q.desc,
                           value: 0,
                           annualRatePct: q.rate,
                           liquidity: q.liq,
@@ -1381,7 +1567,11 @@ export default function TipsParticipantMobilePage() {
                     style={{ width: `${Math.min(100, Math.max(5, liveCalc.magicNumberRatioPct))}%` }}
                   />
                 </div>
-                {liveCalc.magicNumberGap > 0 ? (
+                {!monthlyIncome || monthlyIncome <= 0 ? (
+                  <p className="text-[11px] text-amber-200 pt-1">
+                    👆 Ingresa tu sueldo o ingreso mensual promedio arriba para calcular tu Número Mágico y compararlo con tu patrimonio.
+                  </p>
+                ) : liveCalc.magicNumberGap > 0 ? (
                   <p className="text-[11px] text-rose-300 pt-1">
                     Brecha por construir para alcanzar tu Número Mágico:{' '}
                     <strong>${liveCalc.magicNumberGap.toLocaleString('es-MX')}</strong>
@@ -1429,14 +1619,22 @@ export default function TipsParticipantMobilePage() {
               <div className="w-full h-5 rounded-xl overflow-hidden flex font-extrabold text-[10px] text-slate-950">
                 <div
                   className="bg-slate-400 flex items-center justify-center"
-                  style={{ width: `${Math.round((liveCalc.age / 85) * 100)}%` }}
+                  style={{
+                    width: `${Math.round(
+                      (liveCalc.age / (liveCalc.tapeMeasure.lifeExpectancy || 82.3)) * 100
+                    )}%`,
+                  }}
                 >
                   {liveCalc.age}
                 </div>
                 <div
                   className="bg-emerald-400 flex items-center justify-center"
                   style={{
-                    width: `${Math.round((liveCalc.tapeMeasure.productiveYearsLeft / 85) * 100)}%`,
+                    width: `${Math.round(
+                      (liveCalc.tapeMeasure.productiveYearsLeft /
+                        (liveCalc.tapeMeasure.lifeExpectancy || 82.3)) *
+                        100
+                    )}%`,
                   }}
                 >
                   +{liveCalc.tapeMeasure.productiveYearsLeft}a
@@ -1932,10 +2130,11 @@ export default function TipsParticipantMobilePage() {
                 ${liveCalc.humanCapitalValue.toLocaleString('es-MX')} MXN
               </div>
               <p className="text-[11px] text-rose-100 leading-relaxed">
-                Regla de oro: Tu Seguro de Vida e Invalidez debe cubrir al menos{' '}
-                <strong>7 a 10 años de tu ingreso</strong> ($
-                {liveCalc.recommendedLifeSumMin.toLocaleString('es-MX')} MXN) para proteger a tu
-                familia.
+                Regla de oro: Tu Seguro de Vida e Invalidez debe cubrir de{' '}
+                <strong>7 a 10 años de tu ingreso</strong> (entre{' '}
+                <strong>${liveCalc.recommendedLifeSumMin.toLocaleString('es-MX')}</strong> y{' '}
+                <strong>${liveCalc.recommendedLifeSumIdeal.toLocaleString('es-MX')} MXN</strong>)
+                para proteger a tu familia.
               </p>
             </div>
 
@@ -2082,9 +2281,9 @@ export default function TipsParticipantMobilePage() {
         ) : (
           /* PASO 8: DIAGNÓSTICO EJECUTIVO + CITA EN 1 CLIC + REPORTE PDF DE MARCA BLANCA */
           <div className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-md space-y-6 print:shadow-none print:border-none">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-4 flex-wrap gap-2">
               <div>
-                <span className="text-xs font-extrabold uppercase tracking-wider text-indigo-600">
+                <span className="text-xs font-extrabold tracking-wider text-indigo-600">
                   {session.brandName} · Diagnóstico Patrimonial TIPS
                 </span>
                 <h2 className="text-2xl font-black text-slate-900">
@@ -2105,7 +2304,10 @@ export default function TipsParticipantMobilePage() {
                       : 'bg-rose-100 text-rose-800'
                   }`}
                 >
-                  Semáforo: {liveCalc.patrimonySemaphore} ({liveCalc.patrimonyQualificationScore}/100)
+                  Salud Patrimonial: {liveCalc.patrimonySemaphore} ({liveCalc.patrimonyQualificationScore}/100)
+                </span>
+                <span className="block text-[10px] text-slate-500 mt-0.5">
+                  Diversificación de activos y rendimiento vs. inflación
                 </span>
               </div>
             </div>
@@ -2148,7 +2350,7 @@ export default function TipsParticipantMobilePage() {
                   ${liveCalc.humanCapitalValue.toLocaleString('es-MX')}
                 </strong>
                 <span className="text-[10px] text-rose-700 font-bold block mt-0.5">
-                  Vida sugerido (7×): ${liveCalc.recommendedLifeSumMin.toLocaleString('es-MX')}
+                  Vida sugerido (7× a 10×): ${liveCalc.recommendedLifeSumMin.toLocaleString('es-MX')} – ${liveCalc.recommendedLifeSumIdeal.toLocaleString('es-MX')}
                 </span>
               </div>
             </div>

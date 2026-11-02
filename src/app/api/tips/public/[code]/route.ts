@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { consumeOneTipsCredit, getAndSyncTipsBalance } from '@/lib/tips-credits';
-import { evaluateTipsDiagnostic } from '@/lib/tips-calculator';
+import { evaluateTipsDiagnostic, sanitizeTipsBrandName } from '@/lib/tips-calculator';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,22 +18,22 @@ export async function GET(
     const { searchParams } = new URL(req.url);
     const deviceToken = searchParams.get('deviceToken')?.trim() || '';
 
-    // QA T9: Modo Demo virtual sin consumo de créditos ni persistencia en base de datos
+    // Modo Demo virtual sin consumo de créditos ni persistencia en base de datos
     if (code === 'DEMO') {
       return NextResponse.json({
         session: {
           id: 'demo_session_virtual',
           code: 'DEMO',
-          title: 'Taller TIPS — Modo Demo y Capacitación (Sin Consumo de Créditos)',
+          title: 'Taller TIPS — Modo Demo y Práctica (Sin Consumo de Créditos)',
           location: 'Simulador Interactivo',
           status: 'ACTIVE',
           unlockedStep: 8,
           allowNicknames: false,
           customParams: { realReturnRatePct: 4.0, inflationRatePct: 4.5, lifeExpectancy: 82.3 },
-          hostName: 'Asesor Demo TIPS',
+          hostName: 'Asesor Patrimonial Demo',
           hostPhone: '',
           hostEmail: '',
-          brandName: 'TIPS · Modo Capacitación',
+          brandName: 'Taller Práctico · Modo Demo',
           brandLogo: null,
           brandColor: '#4f46e5',
           privacyNoticeText: DEFAULT_PRIVACY_NOTICE,
@@ -91,6 +91,16 @@ export async function GET(
       }
     }
 
+    const rawCustomParams = (tipsSession.customParams as any) || {};
+    const normalizedCustomParams = {
+      realReturnRatePct: Number(rawCustomParams.realReturnRatePct ?? 4.0),
+      inflationRatePct: Number(rawCustomParams.inflationRatePct ?? 4.5),
+      lifeExpectancy:
+        !rawCustomParams.lifeExpectancy || Number(rawCustomParams.lifeExpectancy) === 85
+          ? 82.3
+          : Number(rawCustomParams.lifeExpectancy),
+    };
+
     return NextResponse.json({
       session: {
         id: tipsSession.id,
@@ -100,11 +110,11 @@ export async function GET(
         status: tipsSession.status,
         unlockedStep: tipsSession.unlockedStep,
         allowNicknames: false,
-        customParams: tipsSession.customParams,
+        customParams: normalizedCustomParams,
         hostName: tipsSession.host?.name || 'Tu Asesor Patrimonial',
         hostPhone: tipsSession.host?.phone || '',
         hostEmail: tipsSession.host?.email || '',
-        brandName: tipsSession.agency?.name || tipsSession.host?.name || 'TIPS Planeación Patrimonial',
+        brandName: sanitizeTipsBrandName(tipsSession.agency?.name, tipsSession.host?.name),
         brandLogo: tipsSession.agency?.logoUrl || tipsSession.host?.brandLogo || null,
         brandColor: tipsSession.agency?.primaryColor || tipsSession.host?.brandColor || '#4f46e5',
         privacyNoticeText: tipsSession.agency?.tipsPrivacyNotice || DEFAULT_PRIVACY_NOTICE,
@@ -132,19 +142,23 @@ export async function POST(
 
     const cleanToken = String(deviceToken).trim();
 
-    // QA T9: Si es el modo DEMO, responder sin consumir créditos ni crear registros en BD
+    // Si es el modo DEMO, responder sin consumir créditos reales ni crear registros en BD,
+    // pero devolviendo creditConsumed: true en el objeto virtual para habilitar los 8 pasos en el navegador.
     if (code === 'DEMO') {
       const demoSession = {
         id: 'demo_session_virtual',
         code: 'DEMO',
-        title: 'Taller TIPS — Modo Demo y Capacitación (Sin Consumo de Créditos)',
+        title: 'Taller TIPS — Modo Demo y Práctica (Sin Consumo de Créditos)',
         status: 'ACTIVE',
         unlockedStep: 8,
         allowNicknames: false,
+        customParams: { realReturnRatePct: 4.0, inflationRatePct: 4.5, lifeExpectancy: 82.3 },
         isDemo: true,
       };
       const stepNum =
-        action === 'ACCEPT_PRIVACY_AND_STEP1'
+        action === 'JOIN_LOBBY'
+          ? 0
+          : action === 'ACCEPT_PRIVACY_AND_STEP1'
           ? 1
           : action === 'REQUEST_APPOINTMENT'
           ? 8
@@ -157,13 +171,14 @@ export async function POST(
           deviceToken: cleanToken,
           nickname: body.nickname || 'Demo',
           fullName: body.fullName || body.nickname || 'Participante Demo',
-          phone: body.phone || '',
+          phone: body.phone || '5500000000',
           email: body.email || '',
           privacyAccepted: true,
-          creditConsumed: false,
+          creditConsumed: true,
           currentStep: Math.min(8, Math.max(1, stepNum)),
           completedStep: Math.min(8, Math.max(1, stepNum)),
           status: stepNum >= 8 ? 'COMPLETED' : 'ACTIVE',
+          step1General: body.step1Data || undefined,
         },
         kicked: false,
       });
@@ -472,10 +487,7 @@ export async function POST(
       if (stepNumber === 6) updateFields.step6Savings = stepData;
       if (stepNumber === 7) updateFields.step7Insurance = stepData;
 
-      const rawNextCompleted = Math.max(participant.completedStep, stepNumber);
-      // Si el participante acaba de guardar el Paso 7 y el Paso 8 ya está desbloqueado, completar 8/8 automáticamente
-      const nextCompleted =
-        rawNextCompleted === 7 && tipsSession.unlockedStep >= 8 ? 8 : rawNextCompleted;
+      const nextCompleted = Math.max(participant.completedStep, stepNumber);
       const nextCurrent = Math.min(
         8,
         Math.max(
@@ -517,7 +529,7 @@ export async function POST(
         },
       });
 
-      // Si completó 8/8 y es Caliente (HOT >= 70 pts), disparar creación de tarea 48h de forma idempotente (QA T1)
+      // Si completó 8/8 y es Caliente (HOT >= 70 pts), disparar creación de tarea 48h de forma idempotente
       if (nextCompleted >= 8 && calc.leadTier === 'HOT') {
         const cleanName = (updated.fullName || updated.nickname || 'Prospecto TIPS').trim();
         const dueIn48h = new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString().split('T')[0];
@@ -683,7 +695,7 @@ export async function POST(
       });
     }
 
-    // 5. HEARTBEAT EN TIEMPO REAL (<= 2s)
+    // 5. HEARTBEAT EN TIEMPO REAL
     if (action === 'HEARTBEAT') {
       const requestedViewStep = Number(body.currentStep || 0);
       let participant = await prisma.tipsParticipant.findUnique({
@@ -693,9 +705,12 @@ export async function POST(
       if (participant && participant.sessionId === tipsSession.id && participant.status !== 'KICKED') {
         const validCurrentStep = Math.min(tipsSession.unlockedStep, Math.max(0, requestedViewStep));
 
-        // QA T1: Si el Host ya liberó el Paso 8 y el participante ya había completado el Paso 7,
-        // marcar automáticamente 8/8 (COMPLETED), recalcular score a HOT y generar tarea 48h
-        if (tipsSession.unlockedStep >= 8 && participant.completedStep === 7) {
+        // Solo marcar completado 8/8 en heartbeat si el teléfono del asistente REALMENTE ya abrió el Paso 8 (requestedViewStep >= 8)
+        if (
+          tipsSession.unlockedStep >= 8 &&
+          participant.completedStep === 7 &&
+          requestedViewStep >= 8
+        ) {
           const calc = evaluateTipsDiagnostic({
             completedStep: 8,
             step1: participant.step1General as any,

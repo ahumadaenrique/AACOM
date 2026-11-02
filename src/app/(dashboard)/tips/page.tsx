@@ -48,6 +48,7 @@ export default function TipsDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
   const [scope, setScope] = useState<'mine' | 'agency'>('mine');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'OPEN' | 'CLOSED'>('ALL');
 
   // Modales
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -94,9 +95,16 @@ export default function TipsDashboardPage() {
         const json = await res.json();
         setData(json);
         if (json.agencyConfig) {
-          setRealRate(json.agencyConfig.tipsRealReturnRate ?? 4.0);
-          setInflationRate(json.agencyConfig.tipsInflationRate ?? 4.5);
-          setLifeExpectancy(json.agencyConfig.tipsLifeExpectancy ?? 82.3);
+          const parsedReal = Number(json.agencyConfig.tipsRealReturnRate);
+          const parsedInflation = Number(json.agencyConfig.tipsInflationRate);
+          const parsedLifeExp = Number(json.agencyConfig.tipsLifeExpectancy);
+          setRealRate(Number.isFinite(parsedReal) && parsedReal > 0 ? parsedReal : 4.0);
+          setInflationRate(Number.isFinite(parsedInflation) && parsedInflation > 0 ? parsedInflation : 4.5);
+          setLifeExpectancy(
+            !Number.isFinite(parsedLifeExp) || parsedLifeExp <= 0 || parsedLifeExp === 85
+              ? 82.3
+              : parsedLifeExp
+          );
           const isSharing = Boolean(json.agencyConfig.tipsShareAgencyCredits);
           setSharePool(isSharing);
           setPrivacyNotice(json.agencyConfig.tipsPrivacyNotice || '');
@@ -229,7 +237,7 @@ export default function TipsDashboardPage() {
         }
       );
       const json = await res.json();
-      if (res.ok && json.success) {
+      if (res.ok && (json.ok || json.success)) {
         setBannerMsg(
           `El evento "${sessionToDelete.title}" (Código ${sessionToDelete.code}) fue eliminado permanentemente.`
         );
@@ -361,7 +369,12 @@ export default function TipsDashboardPage() {
 
   const isManager = data?.user?.role === 'ADMIN' || data?.user?.role === 'SUPER_ADMIN';
   const isSuperAdmin = data?.user?.role === 'SUPER_ADMIN';
-  const sessions = data?.sessions || [];
+  const allSessions: any[] = data?.sessions || [];
+  const sessions = allSessions.filter((s: any) => {
+    if (statusFilter === 'OPEN') return s.status !== 'CLOSED';
+    if (statusFilter === 'CLOSED') return s.status === 'CLOSED';
+    return true;
+  });
   const credits = data?.credits || { userBalance: 0, agencyBalance: 0, totalAvailableForHost: 0 };
   const packages: TipsPackage[] = data?.packages || [];
 
@@ -482,7 +495,7 @@ export default function TipsDashboardPage() {
               </button>
             )}
 
-            {isSuperAdmin && (
+            {process.env.NODE_ENV === 'development' && isSuperAdmin && (
               <div className="pt-1 flex items-center gap-2">
                 <button
                   onClick={() => handleGrantSuperAdminBonus('user')}
@@ -505,10 +518,10 @@ export default function TipsDashboardPage() {
 
       {/* Barra de controles y filtros */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-xl font-bold text-slate-900">Sesiones de Taller TIPS</h2>
           {isManager && (
-            <div className="inline-flex rounded-xl bg-slate-100 p-1 ml-2">
+            <div className="inline-flex rounded-xl bg-slate-100 p-1 ml-1">
               <button
                 onClick={() => setScope('mine')}
                 className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
@@ -531,6 +544,39 @@ export default function TipsDashboardPage() {
               </button>
             </div>
           )}
+
+          <div className="inline-flex rounded-xl bg-slate-100 p-1">
+            <button
+              onClick={() => setStatusFilter('ALL')}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+                statusFilter === 'ALL'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Todas ({allSessions.length})
+            </button>
+            <button
+              onClick={() => setStatusFilter('OPEN')}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+                statusFilter === 'OPEN'
+                  ? 'bg-white text-emerald-700 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Activas ({allSessions.filter((s: any) => s.status !== 'CLOSED').length})
+            </button>
+            <button
+              onClick={() => setStatusFilter('CLOSED')}
+              className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition ${
+                statusFilter === 'CLOSED'
+                  ? 'bg-white text-slate-900 shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Finalizadas ({allSessions.filter((s: any) => s.status === 'CLOSED').length})
+            </button>
+          </div>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -538,9 +584,18 @@ export default function TipsDashboardPage() {
             href="/tips/sala/DEMO"
             target="_blank"
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-emerald-200 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 text-xs font-bold"
+            title="Simular la vista interactiva de los 8 pasos en el celular del asistente (sin gastar créditos)"
           >
             <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
-            Modo Demo / Práctica (Gratis)
+            Celular Demo (8 Pasos)
+          </Link>
+          <Link
+            href="/tips/DEMO/host"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-amber-200 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold"
+            title="Explorar la Consola de Anfitrión y Proyector con asistentes simulados (sin gastar créditos)"
+          >
+            <Monitor className="w-3.5 h-3.5 text-amber-600" />
+            Consola Demo (Anfitrión)
           </Link>
           <button
             onClick={fetchDashboard}
@@ -657,7 +712,7 @@ export default function TipsDashboardPage() {
                         </span>
                         {sess.host?.name && (
                           <span className="text-slate-600 font-medium">
-                            Host: {sess.host.name}
+                            Anfitrión: {sess.host.name}
                           </span>
                         )}
                       </div>

@@ -47,6 +47,139 @@ async function resolveEffectiveAgencyId(
   return user.agencyId || 'aacom';
 }
 
+/**
+ * Limpieza idempotente de sesiones de prueba QA antiguas ("WW3NPM", "PRUEBA QA Grok - no usar",
+ * "QA Prueba Interna - no usar", "Prueba Casa"), reembolso de créditos de prueba consumidos en ellas,
+ * normalización de esperanza de vida (82.3) y cierre automático de sesiones inactivas > 7 días.
+ */
+async function cleanupLegacyQaSessionsAndNormalizeParams(agencyId: string) {
+  try {
+    // 1. Normalizar nombre de marca y esperanza de vida (85 -> 82.3) en la agencia
+    const agency = await prisma.agency.findUnique({
+      where: { id: agencyId },
+      select: { id: true, name: true, tipsLifeExpectancy: true, tipsRealReturnRate: true, tipsInflationRate: true },
+    });
+
+    if (agency) {
+      const agencyUpdates: Record<string, any> = {};
+      if (agency.tipsLifeExpectancy === 85 || agency.tipsLifeExpectancy === null) {
+        agencyUpdates.tipsLifeExpectancy = 82.3;
+      }
+      if (agency.tipsRealReturnRate === null) {
+        agencyUpdates.tipsRealReturnRate = 4.0;
+      }
+      if (agency.tipsInflationRate === null) {
+        agencyUpdates.tipsInflationRate = 4.5;
+      }
+      if (agency.id === 'aacom' && (/grupo\s*aacom/i.test(agency.name) || agency.name === 'AACOMSOFT')) {
+        agencyUpdates.name = 'aacomsoft';
+      }
+      if (Object.keys(agencyUpdates).length > 0) {
+        await prisma.agency.update({
+          where: { id: agency.id },
+          data: agencyUpdates,
+        });
+      }
+    }
+
+    // 2. Identificar y eliminar sesiones de prueba QA explícitas sin mandar prospectos ficticios a cartera
+    const qaTestSessions = await prisma.tipsSession.findMany({
+      where: {
+        agencyId,
+        OR: [
+          { code: 'WW3NPM' },
+          { title: { contains: 'no usar', mode: 'insensitive' } },
+          { title: { contains: 'PRUEBA QA', mode: 'insensitive' } },
+          { title: { equals: 'Prueba Casa', mode: 'insensitive' } },
+        ],
+      },
+      include: {
+        participants: {
+          select: { id: true, creditConsumed: true, creditSource: true, fullName: true, nickname: true },
+        },
+      },
+    });
+
+    for (const qaSess of qaTestSessions) {
+      const consumedParticipants = qaSess.participants.filter((p) => p.creditConsumed);
+      for (const cp of consumedParticipants) {
+        if (cp.creditSource === 'AGENCY' && qaSess.agencyId) {
+          const latestLot = await prisma.tipsCreditPurchase.findFirst({
+            where: { agencyId: qaSess.agencyId, expiresAt: { gt: new Date() } },
+            orderBy: { expiresAt: 'desc' },
+          });
+          if (latestLot) {
+            await prisma.tipsCreditPurchase.update({
+              where: { id: latestLot.id },
+              data: { creditsRemaining: { increment: 1 } },
+            });
+          }
+          await prisma.agency.update({
+            where: { id: qaSess.agencyId },
+            data: { tipsCreditsBalance: { increment: 1 } },
+          }).catch(() => {});
+        } else {
+          const latestLot = await prisma.tipsCreditPurchase.findFirst({
+            where: { userId: qaSess.hostId, agencyId: null, expiresAt: { gt: new Date() } },
+            orderBy: { expiresAt: 'desc' },
+          });
+          if (latestLot) {
+            await prisma.tipsCreditPurchase.update({
+              where: { id: latestLot.id },
+              data: { creditsRemaining: { increment: 1 } },
+            });
+          }
+          await prisma.user.update({
+            where: { id: qaSess.hostId },
+            data: { tipsCreditsBalance: { increment: 1 } },
+          }).catch(() => {});
+        }
+      }
+
+      // Borrar tareas de prueba asociadas si se generaron
+      await prisma.task.deleteMany({
+        where: {
+          userId: qaSess.hostId,
+          OR: [
+            { title: { contains: 'Prueba QA', mode: 'insensitive' } },
+            { description: { contains: qaSess.title, mode: 'insensitive' } },
+          ],
+        },
+      }).catch(() => {});
+
+      await prisma.tipsSession.delete({
+        where: { id: qaSess.id },
+      }).catch(() => {});
+    }
+
+    // 3. Limpiar salas en LOBBY vacías con más de 7 días de antigüedad y auto-cerrar sesiones ACTIVE de hace > 7 días
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const staleSessions = await prisma.tipsSession.findMany({
+      where: {
+        agencyId,
+        status: { in: ['LOBBY', 'ACTIVE', 'PAUSED'] },
+        createdAt: { lt: sevenDaysAgo },
+      },
+      include: {
+        participants: { select: { id: true } },
+      },
+    });
+
+    for (const stale of staleSessions) {
+      if (stale.status === 'LOBBY' && stale.participants.length === 0) {
+        await prisma.tipsSession.delete({ where: { id: stale.id } }).catch(() => {});
+      } else {
+        await prisma.tipsSession.update({
+          where: { id: stale.id },
+          data: { status: 'CLOSED', closedAt: new Date() },
+        }).catch(() => {});
+      }
+    }
+  } catch (err) {
+    console.warn('[TIPS_CLEANUP_WARN]', err);
+  }
+}
+
 export async function GET(req: Request) {
   try {
     const session = await auth();
@@ -74,6 +207,8 @@ export async function GET(req: Request) {
       requestedAgencyId
     );
     const effectiveRole = (session.user as any).role || user.role;
+
+    await cleanupLegacyQaSessionsAndNormalizeParams(effectiveAgencyId);
 
     const creditStatus = await getAndSyncTipsBalance(user.id, effectiveAgencyId, effectiveRole);
 
@@ -235,10 +370,11 @@ export async function POST(req: Request) {
         ? user.agency
         : await prisma.agency.findUnique({ where: { id: effectiveAgencyId } });
 
+    const rawLifeExp = targetAgency?.tipsLifeExpectancy;
     const customParams = {
       realReturnRatePct: targetAgency?.tipsRealReturnRate ?? 4.0,
       inflationRatePct: targetAgency?.tipsInflationRate ?? 4.5,
-      lifeExpectancy: targetAgency?.tipsLifeExpectancy ?? 82.3,
+      lifeExpectancy: !rawLifeExp || Number(rawLifeExp) === 85 ? 82.3 : Number(rawLifeExp),
     };
 
     const created = await prisma.tipsSession.create({
