@@ -1,4 +1,7 @@
 import crypto from "crypto";
+import http from "http";
+import https from "https";
+import tls from "tls";
 import { encrypt, decrypt } from "@/lib/encryption";
 
 export const MAX_DOMAIN_WHOLESALE_USD = 15.0;
@@ -177,12 +180,158 @@ function parseResellerClubResponseText(rawText: string, status: number): { okJso
  * Realiza peticiones a la API de ResellerClub enrutando a través del proxy de IP estática
  * (Fixie / QuotaGuard) si FIXIE_URL está configurado en las variables de entorno.
  */
+interface ProxyFetchResponseLike {
+  ok: boolean;
+  status: number;
+  headers: {
+    get: (name: string) => string | null;
+  };
+  text: () => Promise<string>;
+  json: () => Promise<any>;
+}
+
+/**
+ * Abre un túnel TCP HTTP CONNECT nativo (node:http + node:tls + node:https) hacia el proxy Fixie
+ * sin depender de undici ni del fetch parcheado de Next.js en Vercel Serverless.
+ */
+function nativeFixieTunnelFetch(
+  targetUrlStr: string,
+  proxyUrlStr: string,
+  init?: RequestInit
+): Promise<ProxyFetchResponseLike> {
+  return new Promise((resolve, reject) => {
+    const targetUrl = new URL(targetUrlStr);
+    const proxyUrl = new URL(proxyUrlStr);
+
+    const proxyAuth =
+      proxyUrl.username || proxyUrl.password
+        ? "Basic " +
+          Buffer.from(
+            `${decodeURIComponent(proxyUrl.username)}:${decodeURIComponent(proxyUrl.password)}`
+          ).toString("base64")
+        : null;
+
+    const targetPort = targetUrl.port
+      ? Number(targetUrl.port)
+      : targetUrl.protocol === "https:"
+      ? 443
+      : 80;
+
+    const connectHeaders: Record<string, string> = {
+      Host: `${targetUrl.hostname}:${targetPort}`,
+      Connection: "close",
+    };
+    if (proxyAuth) {
+      connectHeaders["Proxy-Authorization"] = proxyAuth;
+    }
+
+    const connectReq = http.request({
+      host: proxyUrl.hostname,
+      port: proxyUrl.port ? Number(proxyUrl.port) : 80,
+      method: "CONNECT",
+      path: `${targetUrl.hostname}:${targetPort}`,
+      headers: connectHeaders,
+      timeout: 12000,
+    });
+
+    connectReq.on("connect", (res, socket, head) => {
+      if (res.statusCode !== 200) {
+        socket.destroy();
+        return reject(
+          new Error(`Fixie Proxy CONNECT rechazado con HTTP ${res.statusCode}`)
+        );
+      }
+
+      if (head && head.length > 0) {
+        socket.unshift(head);
+      }
+
+      const isHttps = targetUrl.protocol === "https:";
+      const reqHeaders: Record<string, string> = {
+        Host: targetUrl.host,
+        Accept: "application/json, text/plain, */*",
+        "User-Agent": "curl/8.7.1",
+        Connection: "close",
+        ...((init?.headers as Record<string, string>) || {}),
+      };
+
+      const bodyBuffer = init?.body ? Buffer.from(String(init.body), "utf8") : null;
+      if (bodyBuffer) {
+        reqHeaders["Content-Length"] = String(bodyBuffer.length);
+      }
+
+      const requestOptions: https.RequestOptions = {
+        hostname: targetUrl.hostname,
+        port: targetPort,
+        path: `${targetUrl.pathname}${targetUrl.search}`,
+        method: init?.method || "GET",
+        headers: reqHeaders,
+        agent: false,
+      };
+
+      if (isHttps) {
+        const tlsSocket = tls.connect({
+          socket,
+          servername: targetUrl.hostname,
+          ALPNProtocols: ["http/1.1"],
+        });
+        tlsSocket.on("error", (err) => reject(err));
+        requestOptions.createConnection = () => tlsSocket;
+      } else {
+        requestOptions.createConnection = () => socket;
+      }
+
+      const clientMod = isHttps ? https : http;
+      const actualReq = clientMod.request(requestOptions, (actualRes) => {
+        const chunks: Buffer[] = [];
+        actualRes.on("data", (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));
+        actualRes.on("end", () => {
+          const textBody = Buffer.concat(chunks).toString("utf8");
+          const headersMap = new Map<string, string>();
+          for (const [k, v] of Object.entries(actualRes.headers)) {
+            if (typeof v === "string") headersMap.set(k.toLowerCase(), v);
+            else if (Array.isArray(v)) headersMap.set(k.toLowerCase(), v.join(", "));
+          }
+          const statusCode = actualRes.statusCode || 500;
+          resolve({
+            ok: statusCode >= 200 && statusCode < 300,
+            status: statusCode,
+            headers: {
+              get: (name: string) => headersMap.get(String(name).toLowerCase()) || null,
+            },
+            text: async () => textBody,
+            json: async () => JSON.parse(textBody),
+          });
+        });
+      });
+
+      actualReq.on("error", (err) => reject(err));
+      if (bodyBuffer) {
+        actualReq.write(bodyBuffer);
+      }
+      actualReq.end();
+    });
+
+    connectReq.on("timeout", () => {
+      connectReq.destroy();
+      reject(new Error("Timeout al conectar con el proxy Fixie"));
+    });
+
+    connectReq.on("error", (err) => reject(err));
+    connectReq.end();
+  });
+}
+
 async function resellerClubFetch(
   url: string,
   init?: RequestInit & { skipFixie?: boolean }
-): Promise<Response> {
+): Promise<ProxyFetchResponseLike> {
   const fixieUrl = cleanEnvValue(process.env.FIXIE_URL);
-  const targetHostname = new URL(url).hostname;
+
+  if (!init?.skipFixie && fixieUrl && fixieUrl.length > 0 && typeof window === "undefined") {
+    return nativeFixieTunnelFetch(url, fixieUrl, init);
+  }
+
   const mergedHeaders: Record<string, string> = {
     Accept: "application/json",
     "User-Agent": "curl/8.7.1",
@@ -195,23 +344,6 @@ async function resellerClubFetch(
     cache: "no-store",
   };
   delete initCopy.skipFixie;
-
-  if (!init?.skipFixie && fixieUrl && fixieUrl.length > 0 && typeof window === "undefined") {
-    try {
-      const nodeRequire = eval("require");
-      const undiciMod = nodeRequire("undici");
-      if (undiciMod?.ProxyAgent) {
-        initCopy.dispatcher = new undiciMod.ProxyAgent({
-          uri: fixieUrl,
-          requestTls: {
-            servername: targetHostname,
-          },
-        });
-      }
-    } catch (e) {
-      console.warn("Error inicializando ProxyAgent para ResellerClub:", e);
-    }
-  }
 
   return fetch(url, initCopy);
 }
