@@ -277,7 +277,7 @@ export async function checkDomainsAvailabilityAndWholesalePrice(
     candidates.map((c) => isDomainTakenOnInternet(c.domain))
   );
 
-  if (isResellerClubLiveConfigured() && !params.simulateOnly) {
+  if (isResellerClubLiveConfigured()) {
     try {
       const baseUrl = getResellerClubBaseUrl();
       const params = getResellerClubAuthParams();
@@ -459,7 +459,7 @@ export async function provisionCorporateDomainAndTitanOrder(params: {
   let titanOrderId = `TITAN-10GB-${orderSuffix}`;
   let mode: "RESELLERCLUB_LIVE" | "SANDBOX_SIMULATOR" = "SANDBOX_SIMULATOR";
 
-  if (isResellerClubLiveConfigured()) {
+  if (isResellerClubLiveConfigured() && !params.simulateOnly) {
     try {
       const baseUrl = getResellerClubBaseUrl();
       const customerId = process.env.RESELLERCLUB_CUSTOMER_ID || "";
