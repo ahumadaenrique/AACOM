@@ -177,12 +177,15 @@ function parseResellerClubResponseText(rawText: string, status: number): { okJso
  * Realiza peticiones a la API de ResellerClub enrutando a través del proxy de IP estática
  * (Fixie / QuotaGuard) si FIXIE_URL está configurado en las variables de entorno.
  */
-async function resellerClubFetch(url: string, init?: RequestInit): Promise<Response> {
+async function resellerClubFetch(
+  url: string,
+  init?: RequestInit & { skipFixie?: boolean }
+): Promise<Response> {
   const fixieUrl = cleanEnvValue(process.env.FIXIE_URL);
+  const targetHostname = new URL(url).hostname;
   const mergedHeaders: Record<string, string> = {
-    Accept: "application/json, text/plain, */*",
-    "User-Agent":
-      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36",
+    Accept: "application/json",
+    "User-Agent": "curl/8.7.1",
     ...((init?.headers as Record<string, string>) || {}),
   };
 
@@ -191,13 +194,19 @@ async function resellerClubFetch(url: string, init?: RequestInit): Promise<Respo
     headers: mergedHeaders,
     cache: "no-store",
   };
+  delete initCopy.skipFixie;
 
-  if (fixieUrl && fixieUrl.length > 0 && typeof window === "undefined") {
+  if (!init?.skipFixie && fixieUrl && fixieUrl.length > 0 && typeof window === "undefined") {
     try {
       const nodeRequire = eval("require");
       const undiciMod = nodeRequire("undici");
       if (undiciMod?.ProxyAgent) {
-        initCopy.dispatcher = new undiciMod.ProxyAgent(fixieUrl);
+        initCopy.dispatcher = new undiciMod.ProxyAgent({
+          uri: fixieUrl,
+          requestTls: {
+            servername: targetHostname,
+          },
+        });
       }
     } catch (e) {
       console.warn("Error inicializando ProxyAgent para ResellerClub:", e);
@@ -207,11 +216,6 @@ async function resellerClubFetch(url: string, init?: RequestInit): Promise<Respo
   return fetch(url, initCopy);
 }
 
-/**
- * Verifica si un dominio ya está registrado y activo en internet consultando
- * servidores raíz/DNS y protocolos RDAP en tiempo real.
- * Si el dominio tiene registros NS/SOA activos o devuelve 200 en RDAP, está ocupado.
- */
 export async function isDomainTakenOnInternet(domain: string): Promise<boolean> {
   const clean = domain.trim().toLowerCase();
 
@@ -810,41 +814,61 @@ export async function diagnoseResellerClubAndFixieConnection(): Promise<{
 
   try {
     const checkBaseUrl = getResellerClubDomainCheckBaseUrl();
+    const mainBaseUrl = getResellerClubBaseUrl();
     const params = getResellerClubAuthParams();
     params.append("domain-name", testDomainSld);
     params.append("tlds", "com");
 
-    // 1. Probar domaincheck.httpapi.com (servidor oficial de disponibilidad)
-    let rcRes = await resellerClubFetch(
+    // Prueba 1: domaincheck.httpapi.com vía Fixie con User-Agent curl/8.7.1
+    const rcRes = await resellerClubFetch(
       `${checkBaseUrl}/domains/available.json?${params.toString()}`,
       { method: "GET" }
     );
-    let rawText = await rcRes.text();
+    const rawText = await rcRes.text();
+    const serverHdr = rcRes.headers.get("server") || "unknown";
+    const cfMitigated = rcRes.headers.get("cf-mitigated") || "none";
     let parsed = parseResellerClubResponseText(rawText, rcRes.status);
 
-    // 2. Si domaincheck devolvió HTML, probar httpapi.com/api/resellers/details.json
+    // Prueba 2: Si domaincheck dio HTML, probar httpapi.com/api/customers/search.json vía Fixie
+    let customerProbeSummary = "";
     if (!parsed.okJson) {
-      const mainBaseUrl = getResellerClubBaseUrl();
-      const authParams = getResellerClubAuthParams();
-      const fallbackRes = await resellerClubFetch(
-        `${mainBaseUrl}/resellers/details.json?${authParams.toString()}`,
+      const custParams = getResellerClubAuthParams();
+      custParams.append("no-of-records", "10");
+      custParams.append("page-no", "1");
+      const custRes = await resellerClubFetch(
+        `${mainBaseUrl}/customers/search.json?${custParams.toString()}`,
         { method: "GET" }
       );
-      const fallbackText = await fallbackRes.text();
-      const fallbackParsed = parseResellerClubResponseText(fallbackText, fallbackRes.status);
-      if (fallbackParsed.okJson) {
-        parsed = fallbackParsed;
+      const custText = await custRes.text();
+      const custParsed = parseResellerClubResponseText(custText, custRes.status);
+      if (custParsed.okJson) {
+        parsed = custParsed;
       } else {
-        return {
-          fixieConfigured,
-          outboundIp,
-          resellerClubConfigured: true,
-          resellerClubConnected: false,
-          resellerClubMessage: `Servidor ResellerClub (${isSandbox ? "Sandbox" : "Producción"}, UserID: ${authUserIdMasked}) devolvió HTML en lugar de JSON -> ${parsed.errorSummary}`,
-          sampleCheckDomain,
-          sampleDomainAvailable: null,
-        };
+        customerProbeSummary = ` | customers/search: ${custParsed.errorSummary} (server=${custRes.headers.get("server")}, cf=${custRes.headers.get("cf-mitigated") || "none"})`;
       }
+    }
+
+    // Prueba 3: Si Fixie fue bloqueado por Cloudflare WAF (403), probar directo desde Vercel sin Fixie para comparar
+    if (!parsed.okJson) {
+      const directRes = await resellerClubFetch(
+        `${checkBaseUrl}/domains/available.json?${params.toString()}`,
+        { method: "GET", skipFixie: true }
+      );
+      const directText = await directRes.text();
+      const directParsed = parseResellerClubResponseText(directText, directRes.status);
+      const directInfo = directParsed.okJson
+        ? `Directo sin Fixie SÍ devolvió JSON: ${JSON.stringify(directParsed.data).slice(0, 140)}`
+        : `Directo sin Fixie devolvió: ${directParsed.errorSummary}`;
+
+      return {
+        fixieConfigured,
+        outboundIp,
+        resellerClubConfigured: true,
+        resellerClubConnected: false,
+        resellerClubMessage: `Vía Fixie (${outboundIp}): ${parsed.errorSummary} [server=${serverHdr}, cf-mitigated=${cfMitigated}]${customerProbeSummary} • Comparativa ${directInfo}`,
+        sampleCheckDomain,
+        sampleDomainAvailable: null,
+      };
     }
 
     const data = parsed.data;
@@ -854,7 +878,7 @@ export async function diagnoseResellerClubAndFixieConnection(): Promise<{
         outboundIp,
         resellerClubConfigured: true,
         resellerClubConnected: false,
-        resellerClubMessage: `ResellerClub rechazó la petición (UserID: ${authUserIdMasked}, Modo: ${isSandbox ? "Sandbox" : "Producción"}): "${data.message || JSON.stringify(data)}". Verifica que la IP ${outboundIp} esté en Settings -> API -> Whitelist IP Addresses.`,
+        resellerClubMessage: `ResellerClub respondió JSON (UserID: ${authUserIdMasked}, Modo: ${isSandbox ? "Sandbox" : "Producción"}): "${data.message || JSON.stringify(data)}". Verifica que la IP ${outboundIp} esté autorizada en Settings -> API -> Whitelist IP Addresses.`,
         sampleCheckDomain,
         sampleDomainAvailable: null,
       };
