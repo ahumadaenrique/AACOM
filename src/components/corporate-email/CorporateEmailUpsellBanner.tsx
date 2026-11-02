@@ -128,7 +128,7 @@ export function CorporateEmailUpsellBanner({
         );
       } else {
         setErrorMessage(
-          "Ese dominio no está disponible o es un dominio Premium que supera el tope incluido ($15 USD). Prueba con otra variante."
+          "Ese dominio ya se encuentra ocupado o reservado. Prueba con otra variante disponible."
         );
       }
     } catch (err: any) {
@@ -193,7 +193,7 @@ export function CorporateEmailUpsellBanner({
               </Badge>
               <Badge className="bg-sky-500/20 text-sky-200 border border-sky-400/30 px-2.5 py-1 text-[11px] font-semibold">
                 <ShieldCheck className="w-3 h-3 mr-1 text-sky-300" />
-                Filtro Anti-Premium Activo (Incluido 100%)
+                Dominio y Renovación Anual 100% Incluidos
               </Badge>
             </div>
 

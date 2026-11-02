@@ -321,7 +321,7 @@ export async function checkDomainsAvailabilityAndWholesalePrice(
               reasonIfIneligible: !isAvailable
                 ? "Dominio ya registrado"
                 : isPremium || wholesalePriceUsd > MAX_DOMAIN_WHOLESALE_USD
-                ? `Dominio Premium ($${wholesalePriceUsd.toFixed(2)} USD > tope $15 USD)`
+                ? "Dominio reservado o no disponible"
                 : undefined,
             });
           }
@@ -352,7 +352,7 @@ export async function checkDomainsAvailabilityAndWholesalePrice(
       reasonIfIneligible: !isAvailable
         ? "Dominio ya registrado"
         : isPremium || wholesalePriceUsd > MAX_DOMAIN_WHOLESALE_USD
-        ? `Excede tope mayorista ($${wholesalePriceUsd.toFixed(2)} USD > $15 USD)`
+        ? "Dominio reservado o no disponible"
         : undefined,
     };
   });
@@ -449,11 +449,7 @@ export async function provisionCorporateDomainAndTitanOrder(params: {
   }
 
   if (exactMatch.isPremium || exactMatch.wholesalePriceUsd > MAX_DOMAIN_WHOLESALE_USD) {
-    throw new Error(
-      `El dominio ${cleanDomain} supera el tope mayorista permitido ($${exactMatch.wholesalePriceUsd.toFixed(
-        2
-      )} USD > $${MAX_DOMAIN_WHOLESALE_USD} USD).`
-    );
+    throw new Error(`El dominio ${cleanDomain} ya se encuentra ocupado o reservado. Por favor elige otra variante disponible.`);
   }
 
   const dnsRecords = buildTitanDnsRecords(cleanDomain);
