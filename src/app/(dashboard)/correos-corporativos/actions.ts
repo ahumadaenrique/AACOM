@@ -934,7 +934,7 @@ export async function getAgentWebmailData(params?: {
         phone: true,
       },
       orderBy: { name: "asc" },
-      take: 200,
+      take: 1500,
     }),
     prisma.policy.findMany({
       where: {
@@ -958,7 +958,7 @@ export async function getAgentWebmailData(params?: {
         clientId: true,
       },
       orderBy: { createdAt: "desc" },
-      take: 200,
+      take: 1500,
     }),
     selectedMailbox
       ? prisma.agencyEmailForward.findMany({
@@ -989,7 +989,9 @@ export async function getAgentWebmailData(params?: {
     accessibleMailboxes,
     selectedMailbox,
     activeForwards,
-    messages,
+    customSignature:
+      messages.find((m) => m.folder === "SIGNATURE_CONFIG")?.bodyText || null,
+    messages: messages.filter((m) => m.folder !== "SIGNATURE_CONFIG"),
     clients,
     policies,
   };
@@ -1754,5 +1756,79 @@ export async function syncMailboxImapAction(params: {
       syncedCount > 0
         ? `Se sincronizaron ${syncedCount} correo(s) nuevo(s) desde Titan Email.`
         : "Tu bandeja está al día con el servidor de correo.",
+  };
+}
+
+
+/**
+ * Guarda la firma personalizada del buzón y opcionalmente actualiza el nombre visible del remitente.
+ */
+export async function saveMailboxSignatureAction(params: {
+  mailboxId: string;
+  displayName?: string;
+  signatureText: string;
+  targetAgencyId?: string;
+}) {
+  const ctx = await resolveTenantContext(params.targetAgencyId);
+
+  const mailbox = await prisma.agencyMailbox.findFirst({
+    where: {
+      id: params.mailboxId,
+      agencyId: ctx.effectiveAgencyId,
+      ...(ctx.isAdmin ? {} : { agentUserId: ctx.user.id }),
+    },
+  });
+
+  if (!mailbox) {
+    throw new Error("No tienes permiso para configurar este buzón.");
+  }
+
+  if (params.displayName && params.displayName.trim()) {
+    await prisma.agencyMailbox.update({
+      where: { id: mailbox.id },
+      data: { displayName: params.displayName.trim() },
+    });
+  }
+
+  const existingSig = await prisma.agencyEmailMessage.findFirst({
+    where: {
+      agencyId: ctx.effectiveAgencyId,
+      mailboxId: mailbox.id,
+      folder: "SIGNATURE_CONFIG",
+    },
+  });
+
+  if (existingSig) {
+    await prisma.agencyEmailMessage.update({
+      where: { id: existingSig.id },
+      data: {
+        bodyText: params.signatureText,
+        bodyHtml: params.signatureText,
+        receivedAt: new Date(),
+      },
+    });
+  } else {
+    await prisma.agencyEmailMessage.create({
+      data: {
+        agencyId: ctx.effectiveAgencyId,
+        mailboxId: mailbox.id,
+        folder: "SIGNATURE_CONFIG",
+        fromAddress: mailbox.emailAddress,
+        fromName: params.displayName?.trim() || mailbox.displayName,
+        toAddresses: mailbox.emailAddress,
+        subject: "SIGNATURE_CONFIG",
+        snippet: "Configuración de firma del buzón",
+        bodyText: params.signatureText,
+        bodyHtml: params.signatureText,
+        isRead: true,
+      },
+    });
+  }
+
+  revalidatePath("/mi-correo");
+  return {
+    success: true,
+    signatureText: params.signatureText,
+    displayName: params.displayName?.trim() || mailbox.displayName,
   };
 }

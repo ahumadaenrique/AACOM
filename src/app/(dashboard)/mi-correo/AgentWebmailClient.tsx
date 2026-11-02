@@ -15,13 +15,13 @@ import {
   Paperclip,
   Smartphone,
   ShieldCheck,
+  ShieldAlert,
   CheckCircle2,
   Clock,
   Reply,
   ReplyAll,
   Forward,
   Sparkles,
-  UserCheck,
   FileCheck2,
   Building2,
   ArrowRight,
@@ -40,7 +40,6 @@ import {
   Presentation,
   FileArchive,
   Download,
-  Eye,
   Columns,
   Rows,
   PanelLeftClose,
@@ -54,6 +53,8 @@ import {
   List,
   PenTool,
   SlidersHorizontal,
+  Settings2,
+  Lock,
 } from "lucide-react";
 import {
   sendCorporateEmailAction,
@@ -62,8 +63,8 @@ import {
   emptyTrashAction,
   syncMailboxImapAction,
   simulateIncomingClientEmailAction,
+  saveMailboxSignatureAction,
 } from "@/app/(dashboard)/correos-corporativos/actions";
-import { CorporateEmailUpsellBanner } from "@/components/corporate-email/CorporateEmailUpsellBanner";
 
 interface AttachmentItem {
   filename: string;
@@ -71,6 +72,29 @@ interface AttachmentItem {
   size: number;
   contentBase64?: string;
   url?: string;
+}
+
+interface ClientItem {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string | null;
+}
+
+interface PolicyItem {
+  id: string;
+  policyNumber: string;
+  insuranceCompany: string | null;
+  product: string | null;
+  ramo: string | null;
+  contractor: string | null;
+  insured: string | null;
+  annualPremium: number | null;
+  currency: string | null;
+  effectiveDate: Date | string | null;
+  renewalDate: Date | string | null;
+  pdfUrl: string | null;
+  clientId: string | null;
 }
 
 interface WebmailData {
@@ -91,28 +115,10 @@ interface WebmailData {
   accessibleMailboxes: any[];
   selectedMailbox: any;
   activeForwards: any[];
+  customSignature?: string | null;
   messages: any[];
-  clients: Array<{
-    id: string;
-    name: string;
-    email: string | null;
-    phone: string | null;
-  }>;
-  policies: Array<{
-    id: string;
-    policyNumber: string;
-    insuranceCompany: string | null;
-    product: string | null;
-    ramo: string | null;
-    contractor: string | null;
-    insured: string | null;
-    annualPremium: number | null;
-    currency: string | null;
-    effectiveDate: Date | string | null;
-    renewalDate: Date | string | null;
-    pdfUrl: string | null;
-    clientId: string | null;
-  }>;
+  clients: ClientItem[];
+  policies: PolicyItem[];
 }
 
 type FolderType = "INBOX" | "STARRED" | "SENT" | "DRAFTS" | "MIGRATED" | "TRASH";
@@ -122,6 +128,49 @@ function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+function cleanPersonName(raw: string | null | undefined): string {
+  if (!raw) return "";
+  return raw.replace(/\s+/g, " ").trim();
+}
+
+function normalizeNameTokens(raw: string | null | undefined): string[] {
+  if (!raw) return [];
+  return raw
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .split(/\s+/)
+    .filter((t) => t.length >= 2);
+}
+
+/**
+ * Verifica con alta precisión si una póliza pertenece a un cliente específico,
+ * ya sea por ID directo (policy.clientId === client.id) o por coincidencia de nombre/apellidos
+ * entre el cliente y el contratante/asegurado (ej. "Eduardo Ahumada Felix" <-> "AHUMADA FELIX, EDUARDO").
+ */
+function doesPolicyBelongToClient(policy: PolicyItem, client: ClientItem): boolean {
+  if (policy.clientId && policy.clientId === client.id) {
+    return true;
+  }
+  const clientTokens = normalizeNameTokens(client.name);
+  if (clientTokens.length < 2) return false;
+
+  const contractorTokens = normalizeNameTokens(policy.contractor);
+  const insuredTokens = normalizeNameTokens(policy.insured);
+
+  const matchesAllTokens = (targetTokens: string[]) => {
+    if (targetTokens.length < 2) return false;
+    const matched = clientTokens.filter((ct) => targetTokens.includes(ct));
+    return (
+      matched.length >= Math.min(clientTokens.length, targetTokens.length) &&
+      matched.length >= 2
+    );
+  };
+
+  return matchesAllTokens(contractorTokens) || matchesAllTokens(insuredTokens);
 }
 
 function getAttachmentIcon(mimeType: string, filename: string) {
@@ -173,6 +222,23 @@ export function AgentWebmailClient({ initialData }: { initialData: WebmailData }
   const [lastSyncText, setLastSyncText] = useState<string>("Sincronizado");
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
 
+  const activeMailbox = data.selectedMailbox;
+
+  // Firma personalizable del buzón
+  const buildDefaultSignature = (mb: any) =>
+    `Atentamente,\n${mb?.displayName || "Asesor de Seguros"}\n${data.agency.name}\n${mb?.emailAddress || ""}`;
+
+  const [customSignature, setCustomSignature] = useState<string>(
+    initialData.customSignature || buildDefaultSignature(initialData.selectedMailbox)
+  );
+  const [showSignatureModal, setShowSignatureModal] = useState<boolean>(false);
+  const [sigDraftDisplayName, setSigDraftDisplayName] = useState<string>(
+    initialData.selectedMailbox?.displayName || ""
+  );
+  const [sigDraftText, setSigDraftText] = useState<string>(
+    initialData.customSignature || buildDefaultSignature(initialData.selectedMailbox)
+  );
+
   // Ventana de Redacción estilo Gmail (3 modos: Ventana Amplia, Acoplada a la derecha, o Minimizada)
   const [showComposeModal, setShowComposeModal] = useState(false);
   const [composeSizeMode, setComposeSizeMode] = useState<"LARGE_MODAL" | "DOCKED_RIGHT">("LARGE_MODAL");
@@ -188,7 +254,6 @@ export function AgentWebmailClient({ initialData }: { initialData: WebmailData }
   const [composeBody, setComposeBody] = useState("");
   const [selectedClientId, setSelectedClientId] = useState("");
   const [selectedPolicyId, setSelectedPolicyId] = useState("");
-  const [showPolicyHelper, setShowPolicyHelper] = useState(false);
   const [composeAttachments, setComposeAttachments] = useState<AttachmentItem[]>([]);
   const [isDraggingOver, setIsDraggingOver] = useState(false);
 
@@ -211,8 +276,6 @@ export function AgentWebmailClient({ initialData }: { initialData: WebmailData }
     setToast({ type, text });
     setTimeout(() => setToast(null), 5000);
   };
-
-  const activeMailbox = data.selectedMailbox;
 
   // Filtrar mensajes por carpeta y búsqueda
   const filteredMessages = useMemo(() => {
@@ -259,14 +322,103 @@ export function AgentWebmailClient({ initialData }: { initialData: WebmailData }
     };
   }, [data.messages]);
 
-  // Contactos combinados (Clientes de Cartera + Buzones del Equipo) para Autocompletado instantáneo en Para/CC
+  // ============================================================================
+  // SISTEMA ANTI-EQUIVOCACIONES DE CARTERA (CANDADO CLIENTE <-> PÓLIZA <-> CORREO)
+  // ============================================================================
+  const selectedClientObj = useMemo(
+    () => data.clients.find((c) => c.id === selectedClientId) || null,
+    [data.clients, selectedClientId]
+  );
+
+  const selectedPolicyObj = useMemo(
+    () => data.policies.find((p) => p.id === selectedPolicyId) || null,
+    [data.policies, selectedPolicyId]
+  );
+
+  // Si hay un cliente seleccionado, el selector de pólizas SOLO muestra las pólizas de ese cliente
+  const availablePoliciesForCompose = useMemo(() => {
+    if (!selectedClientObj) {
+      return data.policies;
+    }
+    return data.policies.filter((p) => doesPolicyBelongToClient(p, selectedClientObj));
+  }, [data.policies, selectedClientObj]);
+
+  // Identificar quién es el dueño real de la póliza seleccionada
+  const policyOwnerClient = useMemo(() => {
+    if (!selectedPolicyObj) return null;
+    return (
+      data.clients.find((c) => doesPolicyBelongToClient(selectedPolicyObj, c)) || null
+    );
+  }, [data.clients, selectedPolicyObj]);
+
+  // Validar en tiempo real si el correo en "Para:" coincide con el titular de la póliza
+  const policySecurityCheck = useMemo(() => {
+    if (!selectedPolicyObj) return null;
+
+    const ownerName = cleanPersonName(
+      selectedPolicyObj.contractor ||
+        selectedPolicyObj.insured ||
+        policyOwnerClient?.name ||
+        "Asegurado"
+    );
+    const expectedEmail = (policyOwnerClient?.email || "").trim().toLowerCase();
+    const currentRecipient = composeTo
+      .split(/[;,]/)
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean)[0] || "";
+
+    // ¿El correo puesto en Para: pertenece a OTRO cliente distinto en la base de datos?
+    const otherClientWithThatEmail = currentRecipient
+      ? data.clients.find(
+          (c) =>
+            c.email &&
+            c.email.trim().toLowerCase() === currentRecipient &&
+            (!policyOwnerClient || c.id !== policyOwnerClient.id) &&
+            !doesPolicyBelongToClient(selectedPolicyObj, c)
+        )
+      : null;
+
+    if (otherClientWithThatEmail) {
+      return {
+        status: "DANGER" as const,
+        message: `¡CUIDADO! La póliza #${selectedPolicyObj.policyNumber} pertenece a ${ownerName}, pero el correo "${currentRecipient}" está registrado a nombre de OTRO cliente (${cleanPersonName(
+          otherClientWithThatEmail.name
+        )}).`,
+      };
+    }
+
+    if (expectedEmail && currentRecipient && currentRecipient !== expectedEmail) {
+      return {
+        status: "WARNING" as const,
+        message: `Atención: La póliza #${selectedPolicyObj.policyNumber} es de ${ownerName} (correo registrado: ${expectedEmail}), pero estás enviando a "${currentRecipient}". Verifica que sea correcto.`,
+      };
+    }
+
+    if (expectedEmail && currentRecipient === expectedEmail) {
+      return {
+        status: "VERIFIED" as const,
+        message: `Candado Anti-Equivocación Verificado: Póliza #${selectedPolicyObj.policyNumber} pertenece a ${ownerName} y se enviará a su correo oficial (${expectedEmail}).`,
+      };
+    }
+
+    if (!expectedEmail) {
+      return {
+        status: "WARNING" as const,
+        message: `Póliza #${selectedPolicyObj.policyNumber} de ${ownerName}. Este asegurado no tiene correo guardado en su ficha; verifica bien el destinatario antes de enviar.`,
+      };
+    }
+
+    return null;
+  }, [selectedPolicyObj, policyOwnerClient, composeTo, data.clients]);
+
+  // Contactos combinados para Autocompletado instantáneo en Para/CC
   const addressBook = useMemo(() => {
     const items: Array<{ label: string; email: string; badge: string; clientId?: string }> = [];
     for (const c of data.clients) {
       if (c.email) {
         items.push({
-          label: c.name,
-          email: c.email.toLowerCase(),
+          label: cleanPersonName(c.name),
+          email: c.email.trim().toLowerCase(),
           badge: "Asegurado",
           clientId: c.id,
         });
@@ -324,7 +476,7 @@ export function AgentWebmailClient({ initialData }: { initialData: WebmailData }
         setComposeTo(Array.from(new Set(parts)).join(", "));
       }
       if (contact.clientId) {
-        setSelectedClientId(contact.clientId);
+        handleSelectClient(contact.clientId);
       }
       setShowToSuggestions(false);
     } else {
@@ -374,32 +526,13 @@ export function AgentWebmailClient({ initialData }: { initialData: WebmailData }
     );
   }
 
-  // Seleccionar Cliente y autocompletar
-  const handleSelectClient = (clientId: string) => {
-    setSelectedClientId(clientId);
-    const client = data.clients.find((c) => c.id === clientId);
-    if (client?.email) {
-      setComposeTo(client.email);
-    }
-  };
-
-  // Seleccionar Póliza e inyectar bloque de datos + adjunto PDF automático
-  const handleSelectPolicy = (policyId: string) => {
-    setSelectedPolicyId(policyId);
-    const policy = data.policies.find((p) => p.id === policyId);
-    if (!policy) return;
-
-    if (policy.clientId) {
-      const linkedClient = data.clients.find((c) => c.id === policy.clientId);
-      if (linkedClient?.email) {
-        setComposeTo(linkedClient.email);
-        setSelectedClientId(linkedClient.id);
-      }
-    }
-
-    const aseguradora = policy.insuranceCompany || "Aseguradora";
-    const ramo = policy.ramo || policy.product || "Seguro";
-    const titular = policy.contractor || policy.insured || "Estimado Asegurado";
+  // Generar el texto del correo para una póliza de forma limpia (sin espacios basura)
+  const populateEmailWithPolicy = (policy: PolicyItem, clientOverride?: ClientItem | null) => {
+    const aseguradora = cleanPersonName(policy.insuranceCompany) || "Aseguradora";
+    const ramo = cleanPersonName(policy.ramo || policy.product) || "Seguro";
+    const titular =
+      cleanPersonName(policy.contractor || policy.insured || clientOverride?.name) ||
+      "Estimado Asegurado";
     const vigenciaFin = policy.renewalDate
       ? new Date(policy.renewalDate).toLocaleDateString("es-MX")
       : "Vigente";
@@ -415,26 +548,29 @@ Te comparto los datos oficiales y documentación de tu póliza registrada en nue
 • Número de Póliza: ${policy.policyNumber}
 • Aseguradora: ${aseguradora}
 • Ramo / Producto: ${ramo}
-• Prima Anual: $${Number(policy.annualPremium || 0).toLocaleString("es-MX")} ${policy.currency || "MXN"}
+• Prima Anual: $${Number(policy.annualPremium || 0).toLocaleString("es-MX")} ${
+      policy.currency || "MXN"
+    }
 • Próxima Renovación: ${vigenciaFin}${
       policy.pdfUrl ? `\n• Descarga directa de Carátula PDF: ${policy.pdfUrl}` : ""
     }
 
 Quedo a tu entera disposición en este correo oficial para cualquier endoso, renovación o asistencia en siniestros.
 
-Atentamente,
-${activeMailbox.displayName}
-${activeMailbox.emailAddress}
-${data.agency.name}`;
+--
+${customSignature}`;
 
     setComposeBody(policyBlock);
 
     const autoFilename = `Caratula_Poliza_${policy.policyNumber}.pdf`;
     setComposeAttachments((prev) => {
-      const filtered = prev.filter((a) => a.filename !== autoFilename);
+      // Quitar cualquier carátula de otra póliza anterior para evitar mezclar PDFs de distintos clientes
+      const withoutOtherPolicies = prev.filter(
+        (a) => !a.filename.startsWith("Caratula_Poliza_")
+      );
       if (policy.pdfUrl) {
         return [
-          ...filtered,
+          ...withoutOtherPolicies,
           {
             filename: autoFilename,
             mimeType: "application/pdf",
@@ -443,8 +579,112 @@ ${data.agency.name}`;
           },
         ];
       }
-      return filtered;
+      return withoutOtherPolicies;
     });
+  };
+
+  // Seleccionar Cliente con Candado Anti-Equivocación
+  const handleSelectClient = (clientId: string) => {
+    setSelectedClientId(clientId);
+
+    if (!clientId) {
+      setSelectedPolicyId("");
+      setComposeAttachments((prev) =>
+        prev.filter((a) => !a.filename.startsWith("Caratula_Poliza_"))
+      );
+      return;
+    }
+
+    const client = data.clients.find((c) => c.id === clientId);
+    if (!client) return;
+
+    // 1. Actualizar "Para:" SIEMPRE al correo del nuevo cliente (o vaciarlo si no tiene correo para NUNCA dejar el correo del cliente anterior)
+    if (client.email && client.email.trim()) {
+      setComposeTo(client.email.trim().toLowerCase());
+    } else {
+      setComposeTo("");
+      notify(
+        "error",
+        `El asegurado ${cleanPersonName(client.name)} no tiene un correo registrado en su ficha. Escríbelo manualmente en "Para:".`
+      );
+    }
+
+    // 2. Verificar si había una póliza seleccionada de OTRO cliente
+    const currentPol = data.policies.find((p) => p.id === selectedPolicyId);
+    const clientPolicies = data.policies.filter((p) =>
+      doesPolicyBelongToClient(p, client)
+    );
+
+    if (currentPol && !doesPolicyBelongToClient(currentPol, client)) {
+      // Limpiar de inmediato los datos del cliente anterior y si el nuevo cliente tiene pólizas, cargar la suya
+      if (clientPolicies.length === 1) {
+        const onlyPol = clientPolicies[0];
+        setSelectedPolicyId(onlyPol.id);
+        populateEmailWithPolicy(onlyPol, client);
+        notify(
+          "success",
+          `Candado Anti-Equivocación: Se actualizó automáticamente a la póliza #${onlyPol.policyNumber} de ${cleanPersonName(
+            client.name
+          )}.`
+        );
+      } else {
+        setSelectedPolicyId("");
+        setComposeSubject("");
+        setComposeBody(
+          `Estimado(a) ${cleanPersonName(client.name)},\n\n\n\n--\n${customSignature}`
+        );
+        setComposeAttachments((prev) =>
+          prev.filter((a) => !a.filename.startsWith("Caratula_Poliza_"))
+        );
+        notify(
+          "success",
+          `Candado Anti-Equivocación: Se limpió la póliza del cliente anterior. Ahora solo ves las pólizas de ${cleanPersonName(
+            client.name
+          )}.`
+        );
+      }
+      return;
+    }
+
+    // Si no había póliza seleccionada y el cliente tiene exactamente 1 póliza, pre-seleccionarla
+    if (!currentPol && clientPolicies.length === 1) {
+      const onlyPol = clientPolicies[0];
+      setSelectedPolicyId(onlyPol.id);
+      populateEmailWithPolicy(onlyPol, client);
+    } else if (!currentPol) {
+      setComposeBody(
+        `Estimado(a) ${cleanPersonName(client.name)},\n\n\n\n--\n${customSignature}`
+      );
+    }
+  };
+
+  // Seleccionar Póliza e inyectar bloque de datos + sincronizar automáticamente su Cliente dueño
+  const handleSelectPolicy = (policyId: string) => {
+    setSelectedPolicyId(policyId);
+    if (!policyId) {
+      setComposeAttachments((prev) =>
+        prev.filter((a) => !a.filename.startsWith("Caratula_Poliza_"))
+      );
+      return;
+    }
+
+    const policy = data.policies.find((p) => p.id === policyId);
+    if (!policy) return;
+
+    // Buscar al cliente titular de esta póliza y sincronizar el Selector 1 + Para:
+    const ownerClient =
+      data.clients.find((c) => doesPolicyBelongToClient(policy, c)) || null;
+
+    if (ownerClient) {
+      setSelectedClientId(ownerClient.id);
+      if (ownerClient.email && ownerClient.email.trim()) {
+        setComposeTo(ownerClient.email.trim().toLowerCase());
+      } else {
+        setComposeTo("");
+      }
+    }
+
+    populateEmailWithPolicy(policy, ownerClient);
   };
 
   // Procesar archivos subidos desde input o Drag & Drop
@@ -495,14 +735,22 @@ ${data.agency.name}`;
     setComposeAttachments((prev) => prev.filter((_, idx) => idx !== index));
   };
 
-  // Insertar formato o firma en el redactor
+  // Insertar formato o actualizar firma en el redactor
   const insertTextFormat = (type: "BOLD" | "ITALIC" | "LIST" | "SIGNATURE") => {
     const el = bodyTextareaRef.current;
     if (type === "SIGNATURE") {
-      const sig = `\n\n--\n${activeMailbox.displayName}\nAsesor Patrimonial y de Seguros | ${data.agency.name}\n✉️ ${activeMailbox.emailAddress}`;
-      setComposeBody((prev) => (prev.includes(activeMailbox.emailAddress) ? prev : prev + sig));
+      setComposeBody((prev) => {
+        // Si ya existe un separador "--\n", reemplazar la firma anterior por la firma personalizada actual
+        const sigMarkerIndex = prev.lastIndexOf("\n--\n");
+        if (sigMarkerIndex !== -1) {
+          return prev.slice(0, sigMarkerIndex) + `\n--\n${customSignature}`;
+        }
+        return `${prev.trimEnd()}\n\n--\n${customSignature}`;
+      });
+      notify("success", "Firma oficial insertada al pie del correo.");
       return;
     }
+
     if (!el) return;
     const start = el.selectionStart || 0;
     const end = el.selectionEnd || 0;
@@ -510,7 +758,7 @@ ${data.agency.name}`;
 
     let replacement = selected;
     if (type === "BOLD") {
-      replacement = `**${selected || "texto importante"}**`;
+      replacement = `**${selected || "texto en negrita"}**`;
     } else if (type === "ITALIC") {
       replacement = `_${selected || "texto en cursiva"}_`;
     } else if (type === "LIST") {
@@ -530,8 +778,141 @@ ${data.agency.name}`;
     }, 20);
   };
 
+  // Guardar firma personalizada en base de datos
+  const handleSaveCustomSignature = () => {
+    if (!sigDraftText.trim()) {
+      notify("error", "La firma no puede estar vacía.");
+      return;
+    }
+    startTransition(async () => {
+      try {
+        const res = await saveMailboxSignatureAction({
+          mailboxId: activeMailbox.id,
+          displayName: sigDraftDisplayName.trim() || activeMailbox.displayName,
+          signatureText: sigDraftText.trim(),
+          targetAgencyId: data.agency.id,
+        });
+        setCustomSignature(res.signatureText);
+        setData((prev) => ({
+          ...prev,
+          selectedMailbox: {
+            ...prev.selectedMailbox,
+            displayName: res.displayName,
+          },
+        }));
+        // Si el redactor está abierto, actualizar la firma en vivo en el cuerpo del mensaje
+        if (showComposeModal) {
+          setComposeBody((prev) => {
+            const idx = prev.lastIndexOf("\n--\n");
+            if (idx !== -1) {
+              return prev.slice(0, idx) + `\n--\n${res.signatureText}`;
+            }
+            return `${prev.trimEnd()}\n\n--\n${res.signatureText}`;
+          });
+        }
+        setShowSignatureModal(false);
+        notify("success", "Tu firma oficial ha sido actualizada y guardada.");
+      } catch (err: any) {
+        notify("error", err?.message || "No se pudo guardar la firma.");
+      }
+    });
+  };
+
+  // Verificar si el usuario escribió contenido real para auto-guardar en Borradores al cerrar
+  const hasUnsavedDraftContent = (): boolean => {
+    const bodyWithoutSig = composeBody.split("\n--\n")[0]?.trim() || "";
+    return Boolean(
+      composeTo.trim() ||
+        composeCc.trim() ||
+        composeSubject.trim() ||
+        bodyWithoutSig.length > 0 ||
+        composeAttachments.length > 0
+    );
+  };
+
+  // Cerrar el redactor auto-guardando en Borradores (igual que Gmail)
+  const handleCloseComposeWithAutoDraft = () => {
+    if (!hasUnsavedDraftContent()) {
+      setShowComposeModal(false);
+      setComposeMinimized(false);
+      setEditingDraftId(null);
+      return;
+    }
+
+    const snapshotTo = composeTo.trim() || "borrador@pendiente.mx";
+    const snapshotCc = composeCc.trim() || undefined;
+    const snapshotBcc = composeBcc.trim() || undefined;
+    const snapshotSubject = composeSubject.trim() || "(Sin asunto)";
+    const snapshotBody = composeBody;
+    const snapshotClientId = selectedClientId || undefined;
+    const snapshotPolicyId = selectedPolicyId || undefined;
+    const snapshotAttachments =
+      composeAttachments.length > 0 ? [...composeAttachments] : undefined;
+    const snapshotDraftId = editingDraftId || undefined;
+
+    setShowComposeModal(false);
+    setComposeMinimized(false);
+    setEditingDraftId(null);
+
+    startTransition(async () => {
+      try {
+        const res = await sendCorporateEmailAction({
+          mailboxId: activeMailbox.id,
+          to: snapshotTo,
+          cc: snapshotCc,
+          bcc: snapshotBcc,
+          subject: snapshotSubject,
+          bodyHtml: formatBodyToCleanHtml(snapshotBody),
+          bodyText: snapshotBody,
+          relatedClientId: snapshotClientId,
+          relatedPolicyId: snapshotPolicyId,
+          attachmentsJson: snapshotAttachments,
+          saveAsDraft: true,
+          draftId: snapshotDraftId,
+          targetAgencyId: data.agency.id,
+        });
+
+        setData((prev) => {
+          const withoutOld = snapshotDraftId
+            ? prev.messages.filter((m) => m.id !== snapshotDraftId)
+            : prev.messages;
+          return {
+            ...prev,
+            messages: [res.message, ...withoutOld],
+          };
+        });
+
+        notify("success", "Correo guardado automáticamente en tu carpeta Borradores.");
+      } catch {
+        // Silencioso en caso de cierre rápido
+      }
+    });
+  };
+
+  // Descartar borrador explícitamente con el ícono de papelera
+  const handleDiscardDraftExplicitly = () => {
+    const draftToRemove = editingDraftId;
+    setShowComposeModal(false);
+    setComposeMinimized(false);
+    setEditingDraftId(null);
+    setComposeAttachments([]);
+
+    if (draftToRemove) {
+      setData((prev) => ({
+        ...prev,
+        messages: prev.messages.filter((m) => m.id !== draftToRemove),
+      }));
+      bulkUpdateEmailMessagesAction({
+        messageIds: [draftToRemove],
+        deletePermanently: true,
+        targetAgencyId: data.agency.id,
+      }).catch(() => {});
+    }
+    notify("success", "Borrador descartado.");
+  };
+
   // Abrir redactor para correo nuevo
-  const openComposeNew = (withPolicyHelper = false) => {
+  const openComposeNew = () => {
     setEditingDraftId(null);
     setComposeModeLabel("Mensaje nuevo");
     setComposeTo("");
@@ -539,14 +920,12 @@ ${data.agency.name}`;
     setComposeBcc("");
     setShowCcBcc(false);
     setComposeSubject("");
-    setComposeBody(
-      `\n\n--\n${activeMailbox.displayName}\n${data.agency.name}\n${activeMailbox.emailAddress}`
-    );
+    setComposeBody(`\n\n--\n${customSignature}`);
     setSelectedClientId("");
     setSelectedPolicyId("");
-    setShowPolicyHelper(withPolicyHelper);
     setComposeAttachments([]);
     setComposeMinimized(false);
+    setComposeSizeMode("LARGE_MODAL");
     setShowComposeModal(true);
   };
 
@@ -560,13 +939,15 @@ ${data.agency.name}`;
     setComposeCc("");
     setComposeBcc("");
     setShowCcBcc(false);
+    setSelectedClientId("");
+    setSelectedPolicyId("");
     setComposeSubject(
       msg.subject?.toLowerCase().startsWith("re:")
         ? msg.subject
         : `Re: ${msg.subject}`
     );
     setComposeBody(
-      `\n\n--\n${activeMailbox.displayName}\n${data.agency.name}\n${activeMailbox.emailAddress}\n\n--- El ${new Date(
+      `\n\n--\n${customSignature}\n\n--- El ${new Date(
         msg.receivedAt
       ).toLocaleString("es-MX")}, ${msg.fromName || msg.fromAddress} escribió: ---\n> ${(
         msg.bodyText ||
@@ -578,7 +959,7 @@ ${data.agency.name}`;
     );
     setComposeAttachments([]);
     setComposeMinimized(false);
-    setComposeSizeMode("DOCKED_RIGHT"); // Acoplado a la derecha para poder leer el correo original mientras respondes
+    setComposeSizeMode("DOCKED_RIGHT");
     setShowComposeModal(true);
   };
 
@@ -603,13 +984,15 @@ ${data.agency.name}`;
     setComposeCc(uniqueCc);
     setComposeBcc("");
     setShowCcBcc(Boolean(uniqueCc));
+    setSelectedClientId("");
+    setSelectedPolicyId("");
     setComposeSubject(
       msg.subject?.toLowerCase().startsWith("re:")
         ? msg.subject
         : `Re: ${msg.subject}`
     );
     setComposeBody(
-      `\n\n--\n${activeMailbox.displayName}\n${data.agency.name}\n${activeMailbox.emailAddress}\n\n--- El ${new Date(
+      `\n\n--\n${customSignature}\n\n--- El ${new Date(
         msg.receivedAt
       ).toLocaleString("es-MX")}, ${msg.fromName || msg.fromAddress} escribió: ---\n> ${(
         msg.bodyText ||
@@ -633,6 +1016,8 @@ ${data.agency.name}`;
     setComposeCc("");
     setComposeBcc("");
     setShowCcBcc(false);
+    setSelectedClientId("");
+    setSelectedPolicyId("");
     setComposeSubject(
       msg.subject?.toLowerCase().startsWith("fwd:") ||
         msg.subject?.toLowerCase().startsWith("rv:")
@@ -640,7 +1025,7 @@ ${data.agency.name}`;
         : `Fwd: ${msg.subject}`
     );
 
-    const forwardedHeader = `\n\n--\n${activeMailbox.displayName}\n${data.agency.name}\n${activeMailbox.emailAddress}\n\n---------- Mensaje reenviado ----------\nDe: ${
+    const forwardedHeader = `\n\n--\n${customSignature}\n\n---------- Mensaje reenviado ----------\nDe: ${
       msg.fromName ? `${msg.fromName} <${msg.fromAddress}>` : msg.fromAddress
     }\nFecha: ${new Date(msg.receivedAt).toLocaleString("es-MX")}\nAsunto: ${
       msg.subject
@@ -650,7 +1035,6 @@ ${data.agency.name}`;
 
     setComposeBody(forwardedHeader);
 
-    // Conservar los archivos adjuntos originales para que se reenvíen automáticamente
     const originalAttachments: AttachmentItem[] = Array.isArray(msg.attachmentsJson)
       ? msg.attachmentsJson
       : [];
@@ -671,7 +1055,11 @@ ${data.agency.name}`;
   const handleOpenDraftInComposer = (draftMsg: any) => {
     setEditingDraftId(draftMsg.id);
     setComposeModeLabel("Editando borrador guardado");
-    setComposeTo(draftMsg.toAddresses || "");
+    setComposeTo(
+      draftMsg.toAddresses === "borrador@pendiente.mx"
+        ? ""
+        : draftMsg.toAddresses || ""
+    );
     setComposeCc(draftMsg.ccAddresses || "");
     setComposeBcc("");
     setShowCcBcc(Boolean(draftMsg.ccAddresses));
@@ -758,11 +1146,24 @@ ${data.agency.name}`;
       .join("")}</div>`;
   };
 
-  // Enviar correo o guardar borrador
+  // Enviar correo o guardar borrador (con validación Anti-Equivocación)
   const handleSendEmail = (saveAsDraft = false) => {
     if (!saveAsDraft && (!composeTo.trim() || !composeSubject.trim())) {
       notify("error", "Por favor indica el destinatario (Para) y el Asunto del correo.");
       return;
+    }
+
+    // Bloqueo preventivo si el Candado Anti-Equivocación detectó que el correo pertenece a OTRO cliente
+    if (!saveAsDraft && policySecurityCheck?.status === "DANGER") {
+      const proceed = window.confirm(
+        `⚠️ ALERTA DE SEGURIDAD ANTI-EQUIVOCACIÓN:\n\n${policySecurityCheck.message}\n\n¿Estás 100% seguro de que deseas enviar esta póliza a ese destinatario?`
+      );
+      if (!proceed) return;
+    } else if (!saveAsDraft && policySecurityCheck?.status === "WARNING") {
+      const proceed = window.confirm(
+        `Aviso de verificación:\n\n${policySecurityCheck.message}\n\n¿Deseas continuar con el envío?`
+      );
+      if (!proceed) return;
     }
 
     startTransition(async () => {
@@ -843,7 +1244,6 @@ ${data.agency.name}`;
 
   // Marcar leído / destacado / papelera individual
   const handleSelectMessage = (msg: any) => {
-    // Si estamos en la carpeta BORRADORES, al hacer clic abrimos directamente el redactor para continuar editándolo
     if (msg.folder === "DRAFTS") {
       setSelectedMessageId(msg.id);
       handleOpenDraftInComposer(msg);
@@ -905,7 +1305,6 @@ ${data.agency.name}`;
     if (e) e.stopPropagation();
     const targetMsg = data.messages.find((m) => m.id === msgId);
     if (targetMsg?.folder === "TRASH") {
-      // Eliminar definitivamente
       setData((prev) => ({
         ...prev,
         messages: prev.messages.filter((m) => m.id !== msgId),
@@ -1083,7 +1482,7 @@ ${data.agency.name}`;
       {/* Notificación flotante */}
       {toast && (
         <div
-          className={`fixed bottom-5 left-1/2 -translate-x-1/2 z-[80] flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl border text-sm font-semibold transition-all ${
+          className={`fixed bottom-5 left-1/2 -translate-x-1/2 z-[90] flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl border text-sm font-semibold transition-all ${
             toast.type === "success"
               ? "bg-slate-900 text-white border-slate-700"
               : "bg-rose-950 text-rose-100 border-rose-800"
@@ -1174,7 +1573,7 @@ ${data.agency.name}`;
           </div>
         </div>
 
-        {/* Derecha: Sincronizar IMAP + Selector de Vista + Celular + Admin */}
+        {/* Derecha: Sincronizar IMAP + Firma + Selector de Vista + Celular + Admin */}
         <div className="flex items-center gap-1.5 shrink-0">
           <button
             type="button"
@@ -1185,6 +1584,20 @@ ${data.agency.name}`;
           >
             <RefreshCw className={`h-3.5 w-3.5 text-sky-600 ${isSyncing ? "animate-spin" : ""}`} />
             <span className="hidden md:inline">{isSyncing ? "Sincronizando..." : lastSyncText}</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setSigDraftDisplayName(activeMailbox.displayName || "");
+              setSigDraftText(customSignature);
+              setShowSignatureModal(true);
+            }}
+            title="Configurar o modificar tu firma de correo"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition"
+          >
+            <PenTool className="h-3.5 w-3.5 text-sky-600" />
+            <span className="hidden lg:inline">Mi Firma</span>
           </button>
 
           {/* Selector de Vista: Lista Ancho Completo (Gmail) vs Panel Dividido */}
@@ -1223,7 +1636,6 @@ ${data.agency.name}`;
             </button>
           </div>
 
-          {/* Ajuste de proporción de columnas cuando está en Panel Dividido */}
           {layoutMode === "SPLIT" && (
             <button
               type="button"
@@ -1302,7 +1714,7 @@ ${data.agency.name}`;
             <div className="space-y-1.5">
               <button
                 type="button"
-                onClick={() => openComposeNew(false)}
+                onClick={openComposeNew}
                 title="Redactar Correo Nuevo"
                 className={`w-full flex items-center ${
                   sidebarCollapsed ? "justify-center px-0 py-3" : "gap-3 px-4 py-3"
@@ -1315,7 +1727,7 @@ ${data.agency.name}`;
               {!sidebarCollapsed && (
                 <button
                   type="button"
-                  onClick={() => openComposeNew(true)}
+                  onClick={openComposeNew}
                   className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white hover:bg-sky-50 text-sky-700 border border-sky-200 font-semibold text-xs transition shadow-sm"
                 >
                   <FileCheck2 className="h-3.5 w-3.5" />
@@ -1452,7 +1864,7 @@ ${data.agency.name}`;
                 : `w-full ${splitListWidthClass} border-r border-slate-200`
             } flex flex-col bg-white min-h-0 shrink-0`}
           >
-            {/* Barra de herramientas de la bandeja (Checkboxes y acciones en lote estilo Gmail) */}
+            {/* Barra de herramientas de la bandeja */}
             <div className="h-11 px-3 border-b border-slate-200 bg-slate-50/60 flex items-center justify-between gap-2 shrink-0">
               <div className="flex items-center gap-2.5">
                 <button
@@ -1517,7 +1929,7 @@ ${data.agency.name}`;
                     {activeFolder === "INBOX" && "Bandeja de Recibidos"}
                     {activeFolder === "STARRED" && "Correos Destacados"}
                     {activeFolder === "SENT" && "Correos Enviados"}
-                    {activeFolder === "DRAFTS" && "Borradores (Clic para editar)"}
+                    {activeFolder === "DRAFTS" && "Borradores (Clic para continuar escribiendo)"}
                     {activeFolder === "MIGRATED" && "Cartera Heredada"}
                     {activeFolder === "TRASH" && "Papelera"}
                   </span>
@@ -1614,7 +2026,11 @@ ${data.agency.name}`;
                               }`}
                             >
                               {msg.folder === "SENT" || msg.folder === "DRAFTS"
-                                ? `Para: ${msg.toAddresses}`
+                                ? `Para: ${
+                                    msg.toAddresses === "borrador@pendiente.mx"
+                                      ? "(Sin destinatario)"
+                                      : msg.toAddresses
+                                  }`
                                 : msg.fromName || msg.fromAddress}
                             </span>
                             {msg.folder === "DRAFTS" && (
@@ -1624,7 +2040,6 @@ ${data.agency.name}`;
                             )}
                           </div>
 
-                          {/* Fecha (se oculta en hover para mostrar acciones rápidas) */}
                           <span className="text-[11px] text-slate-400 shrink-0 group-hover:hidden">
                             {new Date(msg.receivedAt).toLocaleDateString("es-MX", {
                               day: "2-digit",
@@ -1632,7 +2047,7 @@ ${data.agency.name}`;
                             })}
                           </span>
 
-                          {/* Acciones rápidas en Hover (Responder, Reenviar, Leído, Eliminar) */}
+                          {/* Acciones rápidas en Hover */}
                           <div className="hidden group-hover:flex items-center gap-1 bg-white/95 px-1.5 py-0.5 rounded-lg shadow-sm border border-slate-200 shrink-0">
                             <button
                               type="button"
@@ -1691,7 +2106,6 @@ ${data.agency.name}`;
                           {msg.snippet}
                         </p>
 
-                        {/* Píldoras de archivos adjuntos o Puente de Cartera */}
                         {(msgAttachments.length > 0 || msg.migratedFrom) && (
                           <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
                             {msgAttachments.slice(0, 2).map((att, i) => (
@@ -1725,7 +2139,7 @@ ${data.agency.name}`;
           </div>
         )}
 
-        {/* 3. PANEL DE LECTURA DEL CORREO (Con Responder, Responder a todos, Reenviar, Imprimir y Descarga de Adjuntos) */}
+        {/* 3. PANEL DE LECTURA DEL CORREO */}
         {(layoutMode === "SPLIT" || readingFullView) && (
           <div className="flex-1 flex flex-col bg-white min-w-0 min-h-0 overflow-hidden">
             {!selectedMessage ? (
@@ -1740,7 +2154,7 @@ ${data.agency.name}`;
               </div>
             ) : (
               <>
-                {/* Barra de Acciones Superior del Lector (Estilo Gmail) */}
+                {/* Barra de Acciones Superior del Lector */}
                 <div className="h-12 px-4 sm:px-6 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between gap-2 shrink-0">
                   <div className="flex items-center gap-2">
                     {layoutMode === "LIST_FULL" && (
@@ -1793,7 +2207,6 @@ ${data.agency.name}`;
                     </button>
                   </div>
 
-                  {/* Derecha del lector: Imprimir, Destacar, Marcar no leído, Borrar */}
                   <div className="flex items-center gap-1.5">
                     <button
                       type="button"
@@ -1866,7 +2279,6 @@ ${data.agency.name}`;
 
                 {/* Contenido Scrollable del Correo */}
                 <div className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-6">
-                  {/* Asunto y Cabecera del Remitente */}
                   <div className="space-y-4 pb-5 border-b border-slate-100">
                     <h2 className="text-lg sm:text-xl font-bold text-slate-900 leading-snug">
                       {selectedMessage.subject}
@@ -1962,7 +2374,6 @@ ${data.agency.name}`;
                         })}
                       </div>
 
-                      {/* Vista previa inline de imágenes adjuntas */}
                       {selectedAttachments.some(
                         (a) => (a.mimeType || "").startsWith("image/") && a.contentBase64
                       ) && (
@@ -1994,7 +2405,7 @@ ${data.agency.name}`;
                     }}
                   />
 
-                  {/* Botones Inferiores Rápidos Estilo Gmail (Responder / Responder a todos / Reenviar) */}
+                  {/* Botones Inferiores Rápidos Estilo Gmail */}
                   <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center gap-3">
                     <button
                       type="button"
@@ -2030,9 +2441,15 @@ ${data.agency.name}`;
         )}
       </div>
 
-      {/* REDACTOR DE CORREO ESTILO GMAIL (3 MODOS: VENTANA AMPLIA 88%, ACOPLADA A LA DERECHA O MINIMIZADA) */}
+      {/* REDACTOR DE CORREO ESTILO GMAIL (CON CANDADO ANTI-EQUIVOCACIÓN Y AUTO-GUARDADO EN BORRADORES AL SALIR) */}
       {showComposeModal && (
         <div
+          onClick={() => {
+            // Si hace clic en el fondo oscuro del modal, auto-guarda en Borradores y cierra igual que Gmail
+            if (!composeMinimized && composeSizeMode === "LARGE_MODAL") {
+              handleCloseComposeWithAutoDraft();
+            }
+          }}
           className={
             composeMinimized
               ? "fixed bottom-0 right-6 z-50 w-80 shadow-2xl rounded-t-2xl overflow-hidden border border-slate-300 bg-white"
@@ -2054,6 +2471,7 @@ ${data.agency.name}`;
           }}
         >
           <div
+            onClick={(e) => e.stopPropagation()}
             className={
               composeMinimized
                 ? "w-full"
@@ -2114,8 +2532,8 @@ ${data.agency.name}`;
                 </button>
                 <button
                   type="button"
-                  onClick={() => setShowComposeModal(false)}
-                  title="Cerrar redactor"
+                  onClick={handleCloseComposeWithAutoDraft}
+                  title="Cerrar y guardar automáticamente en Borradores"
                   className="p-1.5 rounded hover:bg-rose-600 text-slate-300 hover:text-white transition"
                 >
                   <X className="h-4 w-4" />
@@ -2140,43 +2558,107 @@ ${data.agency.name}`;
                     </div>
                   )}
 
-                  {/* Barra colapsable para Autocompletar Póliza de aacomsoft */}
-                  <div className="bg-sky-50/80 border border-sky-200/80 rounded-xl px-3.5 py-2 flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 text-xs font-bold text-sky-900">
-                      <Sparkles className="h-3.5 w-3.5 text-sky-600 shrink-0" />
-                      <span>Conectar con Cartera aacomsoft:</span>
+                  {/* BLOQUE DE CARTERA CON CANDADO ANTI-EQUIVOCACIÓN (CLIENTE <-> SUS PÓLIZAS) */}
+                  <div className="bg-sky-50/90 border border-sky-200 rounded-xl p-3 space-y-2">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 text-xs font-bold text-sky-950">
+                        <Lock className="h-3.5 w-3.5 text-sky-600 shrink-0" />
+                        <span>Conectar con Cartera aacomsoft (Candado Anti-Equivocación):</span>
+                      </div>
+
+                      {(selectedClientId || selectedPolicyId) && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedClientId("");
+                            setSelectedPolicyId("");
+                            setComposeAttachments((prev) =>
+                              prev.filter((a) => !a.filename.startsWith("Caratula_Poliza_"))
+                            );
+                          }}
+                          className="text-[11px] font-semibold text-slate-500 hover:text-rose-600 underline"
+                        >
+                          Desvincular cliente/póliza
+                        </button>
+                      )}
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2 flex-1 max-w-2xl">
-                      <select
-                        aria-label="Elegir Cliente de tu Cartera"
-                        value={selectedClientId}
-                        onChange={(e) => handleSelectClient(e.target.value)}
-                        className="flex-1 min-w-[180px] bg-white border border-sky-200 rounded-lg px-2.5 py-1 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                      >
-                        <option value="">👤 Elegir asegurado...</option>
-                        {data.clients.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.name} {c.email ? `(${c.email})` : ""}
-                          </option>
-                        ))}
-                      </select>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {/* Selector 1: Asegurado */}
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-sky-800 mb-1">
+                          1. Asegurado Titular ({data.clients.length})
+                        </label>
+                        <select
+                          aria-label="Elegir Cliente de tu Cartera"
+                          value={selectedClientId}
+                          onChange={(e) => handleSelectClient(e.target.value)}
+                          className="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        >
+                          <option value="">👤 -- Seleccionar asegurado --</option>
+                          {data.clients.map((c) => (
+                            <option key={c.id} value={c.id}>
+                              {cleanPersonName(c.name)} {c.email ? `(${c.email.trim()})` : "(Sin correo)"}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
 
-                      <select
-                        aria-label="Insertar Póliza de tu Cartera"
-                        value={selectedPolicyId}
-                        onChange={(e) => handleSelectPolicy(e.target.value)}
-                        className="flex-1 min-w-[200px] bg-white border border-sky-200 rounded-lg px-2.5 py-1 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
-                      >
-                        <option value="">📄 Insertar datos y PDF de póliza...</option>
-                        {data.policies.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.policyNumber} — {p.insuranceCompany || "Seguro"} (
-                            {p.contractor || p.insured || "Asegurado"})
+                      {/* Selector 2: Pólizas acotadas estrictamente al asegurado elegido */}
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-sky-800 mb-1">
+                          {selectedClientObj
+                            ? `2. Pólizas exclusivas de ${cleanPersonName(selectedClientObj.name)} (${availablePoliciesForCompose.length})`
+                            : `2. Póliza a enviar (${availablePoliciesForCompose.length})`}
+                        </label>
+                        <select
+                          aria-label="Insertar Póliza de tu Cartera"
+                          value={selectedPolicyId}
+                          onChange={(e) => handleSelectPolicy(e.target.value)}
+                          className="w-full bg-white border border-sky-200 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                        >
+                          <option value="">
+                            {selectedClientObj
+                              ? availablePoliciesForCompose.length > 0
+                                ? `📄 -- Elegir entre las ${availablePoliciesForCompose.length} póliza(s) de este cliente --`
+                                : "⚠️ Este cliente no tiene pólizas registradas"
+                              : "📄 -- Seleccionar póliza --"}
                           </option>
-                        ))}
-                      </select>
+                          {availablePoliciesForCompose.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.policyNumber} — {cleanPersonName(p.insuranceCompany) || "Seguro"} (
+                              {cleanPersonName(p.contractor || p.insured) || "Asegurado"})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
                     </div>
+
+                    {/* Semáforo del Candado Anti-Equivocación en Vivo */}
+                    {policySecurityCheck && (
+                      <div
+                        className={`flex items-start gap-2 px-3 py-2 rounded-lg text-xs font-semibold border ${
+                          policySecurityCheck.status === "VERIFIED"
+                            ? "bg-emerald-50 text-emerald-900 border-emerald-200"
+                            : policySecurityCheck.status === "DANGER"
+                            ? "bg-rose-50 text-rose-900 border-rose-300 animate-pulse"
+                            : "bg-amber-50 text-amber-900 border-amber-200"
+                        }`}
+                      >
+                        {policySecurityCheck.status === "VERIFIED" ? (
+                          <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                        ) : (
+                          <ShieldAlert
+                            className={`h-4 w-4 shrink-0 mt-0.5 ${
+                              policySecurityCheck.status === "DANGER"
+                                ? "text-rose-600"
+                                : "text-amber-600"
+                            }`}
+                          />
+                        )}
+                        <span>{policySecurityCheck.message}</span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Campo PARA con Autocompletado Flotante Instantáneo */}
@@ -2206,7 +2688,6 @@ ${data.agency.name}`;
                       </button>
                     )}
 
-                    {/* Dropdown de sugerencias instantáneas en Para: */}
                     {showToSuggestions && matchingToContacts.length > 0 && (
                       <div className="absolute left-14 top-9 z-40 w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-xl py-1 overflow-hidden">
                         {matchingToContacts.map((c, i) => (
@@ -2300,41 +2781,59 @@ ${data.agency.name}`;
                     />
                   </div>
 
-                  {/* Barra de Formato Simple + Firma */}
-                  <div className="flex items-center gap-1 border-b border-slate-100 pb-1.5 text-slate-600">
-                    <button
-                      type="button"
-                      onClick={() => insertTextFormat("BOLD")}
-                      title="Negrita"
-                      className="p-1.5 rounded hover:bg-slate-100 text-slate-700"
-                    >
-                      <Bold className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => insertTextFormat("ITALIC")}
-                      title="Cursiva"
-                      className="p-1.5 rounded hover:bg-slate-100 text-slate-700"
-                    >
-                      <Italic className="h-3.5 w-3.5" />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => insertTextFormat("LIST")}
-                      title="Lista de viñetas"
-                      className="p-1.5 rounded hover:bg-slate-100 text-slate-700"
-                    >
-                      <List className="h-3.5 w-3.5" />
-                    </button>
-                    <div className="h-4 w-px bg-slate-200 mx-1" />
-                    <button
-                      type="button"
-                      onClick={() => insertTextFormat("SIGNATURE")}
-                      className="inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 text-xs font-semibold text-slate-700"
-                    >
-                      <PenTool className="h-3 w-3 text-sky-600" />
-                      Insertar Firma
-                    </button>
+                  {/* Barra de Formato + Insertar Firma + Editar Firma */}
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-1.5 text-slate-600">
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => insertTextFormat("BOLD")}
+                        title="Negrita"
+                        className="p-1.5 rounded hover:bg-slate-100 text-slate-700"
+                      >
+                        <Bold className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertTextFormat("ITALIC")}
+                        title="Cursiva"
+                        className="p-1.5 rounded hover:bg-slate-100 text-slate-700"
+                      >
+                        <Italic className="h-3.5 w-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => insertTextFormat("LIST")}
+                        title="Lista de viñetas"
+                        className="p-1.5 rounded hover:bg-slate-100 text-slate-700"
+                      >
+                        <List className="h-3.5 w-3.5" />
+                      </button>
+                      <div className="h-4 w-px bg-slate-200 mx-1" />
+                      <button
+                        type="button"
+                        onClick={() => insertTextFormat("SIGNATURE")}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-sky-50 text-xs font-semibold text-slate-700 hover:text-sky-700 transition"
+                      >
+                        <PenTool className="h-3 w-3 text-sky-600" />
+                        Insertar Firma
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setSigDraftDisplayName(activeMailbox.displayName || "");
+                          setSigDraftText(customSignature);
+                          setShowSignatureModal(true);
+                        }}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-slate-100 text-xs font-semibold text-sky-700 transition"
+                      >
+                        <Settings2 className="h-3 w-3" />
+                        Editar mi Firma
+                      </button>
+                    </div>
+
+                    <span className="text-[11px] text-slate-400">
+                      Si cierras con ✕ se guarda automáticamente en Borradores
+                    </span>
                   </div>
 
                   {/* Área de Texto Principal Amplia */}
@@ -2389,7 +2888,7 @@ ${data.agency.name}`;
                   )}
                 </div>
 
-                {/* Barra de Herramientas Inferior del Redactor (Enviar + Adjuntar Archivos/Imágenes/Presentaciones) */}
+                {/* Barra de Herramientas Inferior del Redactor */}
                 <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 shrink-0">
                   <div className="flex items-center gap-2">
                     <button
@@ -2402,7 +2901,6 @@ ${data.agency.name}`;
                       {isPending ? "Enviando..." : "Enviar"}
                     </button>
 
-                    {/* Input oculto general para cualquier archivo (PDF, PPTX, XLSX, DOCX, ZIP, Imágenes) */}
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -2415,7 +2913,6 @@ ${data.agency.name}`;
                       className="hidden"
                     />
 
-                    {/* Input oculto para imágenes */}
                     <input
                       ref={imageInputRef}
                       type="file"
@@ -2460,11 +2957,8 @@ ${data.agency.name}`;
                     </button>
                     <button
                       type="button"
-                      onClick={() => {
-                        setShowComposeModal(false);
-                        setEditingDraftId(null);
-                      }}
-                      title="Descartar"
+                      onClick={handleDiscardDraftExplicitly}
+                      title="Descartar y eliminar este borrador sin guardar"
                       className="p-2 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -2473,6 +2967,102 @@ ${data.agency.name}`;
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: PERSONALIZAR / EDITAR MI FIRMA DE CORREO */}
+      {showSignatureModal && (
+        <div className="fixed inset-0 z-[70] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 text-sky-600 flex items-center justify-center">
+                  <PenTool className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Personalizar mi Firma Oficial de Correo
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Se agregará automáticamente en los correos que envíes desde{" "}
+                    <span className="font-mono font-semibold text-slate-700">
+                      {activeMailbox.emailAddress}
+                    </span>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSignatureModal(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">
+                  Tu Nombre o Cargo Visible (Remitente)
+                </label>
+                <input
+                  type="text"
+                  value={sigDraftDisplayName}
+                  onChange={(e) => setSigDraftDisplayName(e.target.value)}
+                  placeholder="Ej. Enrique Ahumada | Asesor Patrimonial"
+                  className="w-full border border-slate-300 rounded-xl px-3.5 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                />
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700">
+                    Texto de tu Firma al Pie del Correo
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSigDraftText(
+                        `Atentamente,\n${
+                          sigDraftDisplayName || activeMailbox.displayName
+                        }\nAsesor de Seguros y Fianzas | ${data.agency.name}\n✉️ ${
+                          activeMailbox.emailAddress
+                        }\n📱 Tel / WhatsApp: 55 0000 0000`
+                      )
+                    }
+                    className="text-[11px] font-semibold text-sky-600 hover:underline"
+                  >
+                    Usar plantilla ejecutiva
+                  </button>
+                </div>
+                <textarea
+                  rows={6}
+                  value={sigDraftText}
+                  onChange={(e) => setSigDraftText(e.target.value)}
+                  placeholder="Escribe tu nombre, cargo, teléfono, cédula o aviso de privacidad..."
+                  className="w-full border border-slate-300 rounded-xl p-3 text-sm text-slate-900 leading-relaxed focus:outline-none focus:ring-2 focus:ring-sky-500 font-sans"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowSignatureModal(false)}
+                className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveCustomSignature}
+                disabled={isPending}
+                className="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-white text-xs font-bold shadow-md transition disabled:opacity-50"
+              >
+                {isPending ? "Guardando..." : "Guardar mi Firma"}
+              </button>
+            </div>
           </div>
         </div>
       )}
