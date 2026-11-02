@@ -1,75 +1,121 @@
 "use client";
 
-import React, { useState, useMemo, useRef } from "react";
+import React, { useState, useTransition, useMemo, useRef } from "react";
 import Link from "next/link";
 import {
   Mail,
-  Inbox,
   Send,
-  FileEdit,
-  Trash2,
-  FolderGit2,
+  Inbox,
   FileText,
-  Smartphone,
-  Plus,
-  Search,
+  Trash2,
+  FolderSync,
   Star,
-  ArrowLeft,
-  Reply,
-  Forward,
+  Search,
+  Plus,
+  Paperclip,
+  Smartphone,
+  ShieldCheck,
   CheckCircle2,
-  Settings,
-  Download,
+  Clock,
+  Reply,
+  ReplyAll,
+  Forward,
+  Sparkles,
+  UserCheck,
+  FileCheck2,
+  Building2,
+  ArrowRight,
+  ArrowLeft,
+  RefreshCw,
+  AlertCircle,
   Copy,
   Check,
-  Loader2,
-  ShieldCheck,
-  Sparkles,
-  RefreshCw,
-  Paperclip,
+  X,
+  ChevronDown,
+  Maximize2,
+  Minimize2,
+  Minus,
   Image as ImageIcon,
   FileSpreadsheet,
   Presentation,
   FileArchive,
-  X,
-  Maximize2,
-  Minimize2,
-  Minus,
+  Download,
+  Eye,
   Columns,
   Rows,
+  PanelLeftClose,
+  PanelLeftOpen,
   Printer,
-  HardDrive,
+  CheckSquare,
+  Square,
+  MailOpen,
+  Bold,
+  Italic,
+  List,
+  PenTool,
+  SlidersHorizontal,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   sendCorporateEmailAction,
-  simulateIncomingClientEmailAction,
   updateEmailMessageStatusAction,
+  bulkUpdateEmailMessagesAction,
+  emptyTrashAction,
+  syncMailboxImapAction,
+  simulateIncomingClientEmailAction,
 } from "@/app/(dashboard)/correos-corporativos/actions";
+import { CorporateEmailUpsellBanner } from "@/components/corporate-email/CorporateEmailUpsellBanner";
 
-type FolderKey = "INBOX" | "STARRED" | "SENT" | "DRAFTS" | "MIGRATED" | "TRASH";
-
-interface EmailAttachmentItem {
-  id: string;
+interface AttachmentItem {
   filename: string;
   mimeType: string;
   size: number;
   contentBase64?: string;
-  dataUrl?: string;
   url?: string;
-  isPolicyPdf?: boolean;
 }
+
+interface WebmailData {
+  agency: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  currentUser: {
+    id: string;
+    name: string | null;
+    email: string;
+    role: string;
+    isAdmin: boolean;
+    isSuperAdmin: boolean;
+  };
+  subscription: any;
+  accessibleMailboxes: any[];
+  selectedMailbox: any;
+  activeForwards: any[];
+  messages: any[];
+  clients: Array<{
+    id: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
+  }>;
+  policies: Array<{
+    id: string;
+    policyNumber: string;
+    insuranceCompany: string | null;
+    product: string | null;
+    ramo: string | null;
+    contractor: string | null;
+    insured: string | null;
+    annualPremium: number | null;
+    currency: string | null;
+    effectiveDate: Date | string | null;
+    renewalDate: Date | string | null;
+    pdfUrl: string | null;
+    clientId: string | null;
+  }>;
+}
+
+type FolderType = "INBOX" | "STARRED" | "SENT" | "DRAFTS" | "MIGRATED" | "TRASH";
 
 function formatBytes(bytes: number): string {
   if (!bytes || bytes <= 0) return "12 KB";
@@ -78,487 +124,248 @@ function formatBytes(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
-function getInitials(name: string): string {
-  const parts = (name || "AG").trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return "AG";
-  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-  return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+function getAttachmentIcon(mimeType: string, filename: string) {
+  const lower = (filename || "").toLowerCase();
+  const mime = (mimeType || "").toLowerCase();
+  if (mime.startsWith("image/") || /\.(png|jpg|jpeg|gif|webp|svg)$/.test(lower)) {
+    return <ImageIcon className="h-4 w-4 text-emerald-600 shrink-0" />;
+  }
+  if (
+    mime.includes("presentation") ||
+    mime.includes("powerpoint") ||
+    /\.(ppt|pptx|key)$/.test(lower)
+  ) {
+    return <Presentation className="h-4 w-4 text-amber-600 shrink-0" />;
+  }
+  if (
+    mime.includes("spreadsheet") ||
+    mime.includes("excel") ||
+    /\.(xls|xlsx|csv)$/.test(lower)
+  ) {
+    return <FileSpreadsheet className="h-4 w-4 text-green-600 shrink-0" />;
+  }
+  if (mime.includes("zip") || mime.includes("compressed") || /\.(zip|rar|7z)$/.test(lower)) {
+    return <FileArchive className="h-4 w-4 text-purple-600 shrink-0" />;
+  }
+  return <FileText className="h-4 w-4 text-rose-600 shrink-0" />;
 }
 
-function getAttachmentIcon(mimeType = "", filename = "") {
-  const lower = `${mimeType} ${filename}`.toLowerCase();
-  if (lower.includes("image") || /\.(png|jpg|jpeg|webp|gif|svg)$/.test(lower)) {
-    return ImageIcon;
-  }
-  if (lower.includes("presentation") || lower.includes("powerpoint") || /\.(ppt|pptx|key)$/.test(lower)) {
-    return Presentation;
-  }
-  if (lower.includes("sheet") || lower.includes("excel") || lower.includes("csv") || /\.(xls|xlsx|csv)$/.test(lower)) {
-    return FileSpreadsheet;
-  }
-  if (lower.includes("zip") || lower.includes("rar") || /\.(zip|rar|7z)$/.test(lower)) {
-    return FileArchive;
-  }
-  return FileText;
-}
+export function AgentWebmailClient({ initialData }: { initialData: WebmailData }) {
+  const [data, setData] = useState<WebmailData>(initialData);
+  const [activeFolder, setActiveFolder] = useState<FolderType>("INBOX");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(
+    initialData.messages.find((m) => m.folder === "INBOX")?.id ||
+      initialData.messages[0]?.id ||
+      null
+  );
 
-export function AgentWebmailClient({ initialData }: { initialData: any }) {
-  const [selectedFolder, setSelectedFolder] = useState<FolderKey>("INBOX");
-  const [searchQuery, setSearchQuery] = useState<string>("");
-  const [viewMode, setViewMode] = useState<"GMAIL_FULL" | "SPLIT">("GMAIL_FULL");
-  const [selectedMessageId, setSelectedMessageId] = useState<string | null>(null);
+  // Configuración ergonómica del espacio de trabajo (Full-Viewport App Shell)
+  const [sidebarCollapsed, setSidebarCollapsed] = useState<boolean>(false);
+  const [layoutMode, setLayoutMode] = useState<"SPLIT" | "LIST_FULL">("SPLIT");
+  const [listWidthPreset, setListWidthPreset] = useState<"COMPACT" | "MEDIUM" | "WIDE">("MEDIUM");
+  const [readingFullView, setReadingFullView] = useState<boolean>(false);
 
-  // Estado del Redactor estilo Gmail (anclado abajo a la derecha o pantalla completa)
-  const [composeOpen, setComposeOpen] = useState<boolean>(false);
-  const [composeMinimized, setComposeMinimized] = useState<boolean>(false);
-  const [composeMaximized, setComposeMaximized] = useState<boolean>(true); // Por defecto amplio para máxima comodidad
-  const [showCrmBar, setShowCrmBar] = useState<boolean>(true);
-  const [showCc, setShowCc] = useState<boolean>(false);
-  const [selectedClientId, setSelectedClientId] = useState<string>("");
-  const [selectedPolicyId, setSelectedPolicyId] = useState<string>("");
-  const [toEmail, setToEmail] = useState<string>("");
-  const [ccEmail, setCcEmail] = useState<string>("");
-  const [subject, setSubject] = useState<string>("");
-  const [bodyText, setBodyText] = useState<string>("");
-  const [attachments, setAttachments] = useState<EmailAttachmentItem[]>([]);
-  const [isDraggingOver, setIsDraggingOver] = useState<boolean>(false);
-  const [sending, setSending] = useState<boolean>(false);
+  // Selección múltiple (Checkboxes estilo Gmail)
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+
+  // Sincronización IMAP
+  const [lastSyncText, setLastSyncText] = useState<string>("Sincronizado");
+  const [isSyncing, setIsSyncing] = useState<boolean>(false);
+
+  // Ventana de Redacción estilo Gmail (3 modos: Ventana Amplia, Acoplada a la derecha, o Minimizada)
+  const [showComposeModal, setShowComposeModal] = useState(false);
+  const [composeSizeMode, setComposeSizeMode] = useState<"LARGE_MODAL" | "DOCKED_RIGHT">("LARGE_MODAL");
+  const [composeMinimized, setComposeMinimized] = useState(false);
+  const [composeModeLabel, setComposeModeLabel] = useState<string>("Mensaje nuevo");
+  const [editingDraftId, setEditingDraftId] = useState<string | null>(null);
+
+  const [composeTo, setComposeTo] = useState("");
+  const [composeCc, setComposeCc] = useState("");
+  const [composeBcc, setComposeBcc] = useState("");
+  const [showCcBcc, setShowCcBcc] = useState(false);
+  const [composeSubject, setComposeSubject] = useState("");
+  const [composeBody, setComposeBody] = useState("");
+  const [selectedClientId, setSelectedClientId] = useState("");
+  const [selectedPolicyId, setSelectedPolicyId] = useState("");
+  const [showPolicyHelper, setShowPolicyHelper] = useState(false);
+  const [composeAttachments, setComposeAttachments] = useState<AttachmentItem[]>([]);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+
+  // Autocompletado directo en el campo Para: / CC:
+  const [showToSuggestions, setShowToSuggestions] = useState(false);
+  const [showCcSuggestions, setShowCcSuggestions] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
+  const bodyTextareaRef = useRef<HTMLTextAreaElement | null>(null);
 
-  // Modal: Sincronizar con iPhone / Android
-  const [mobileSyncOpen, setMobileSyncOpen] = useState<boolean>(false);
-  const [mobileConfigData, setMobileConfigData] = useState<any | null>(null);
-  const [loadingMobileConfig, setLoadingMobileConfig] = useState<boolean>(false);
+  // Modal de Configuración Móvil (IMAP / SMTP en iPhone y Android)
+  const [showMobileSyncModal, setShowMobileSyncModal] = useState(false);
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
-  // Estado general
-  const [toastMsg, setToastMsg] = useState<string>("");
-  const [simulating, setSimulating] = useState<boolean>(false);
+  const [isPending, startTransition] = useTransition();
+  const [toast, setToast] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
-  const selectedMailbox = initialData.selectedMailbox;
-  const accessibleMailboxes: any[] = initialData.accessibleMailboxes || [];
-  const [messagesState, setMessagesState] = useState<any[]>(initialData.messages || []);
-  const clients: any[] = initialData.clients || [];
-  const policies: any[] = initialData.policies || [];
-  const activeForwards: any[] = initialData.activeForwards || [];
+  const notify = (type: "success" | "error", text: string) => {
+    setToast({ type, text });
+    setTimeout(() => setToast(null), 5000);
+  };
 
+  const activeMailbox = data.selectedMailbox;
+
+  // Filtrar mensajes por carpeta y búsqueda
   const filteredMessages = useMemo(() => {
-    return messagesState.filter((m) => {
-      if (selectedFolder === "STARRED") {
+    return data.messages.filter((m) => {
+      if (activeFolder === "STARRED") {
         if (!m.isStarred || m.folder === "TRASH") return false;
-      } else if (m.folder !== selectedFolder) {
+      } else if (m.folder !== activeFolder) {
         return false;
       }
       if (!searchQuery.trim()) return true;
       const q = searchQuery.toLowerCase();
-      const attNames = Array.isArray(m.attachmentsJson)
-        ? m.attachmentsJson.map((a: any) => a.filename || "").join(" ")
-        : "";
+      const attMatch = Array.isArray(m.attachmentsJson)
+        ? m.attachmentsJson.some((a: any) => (a?.filename || "").toLowerCase().includes(q))
+        : false;
       return (
         (m.subject || "").toLowerCase().includes(q) ||
         (m.fromAddress || "").toLowerCase().includes(q) ||
         (m.fromName || "").toLowerCase().includes(q) ||
         (m.toAddresses || "").toLowerCase().includes(q) ||
         (m.snippet || "").toLowerCase().includes(q) ||
-        attNames.toLowerCase().includes(q)
+        attMatch
       );
     });
-  }, [messagesState, selectedFolder, searchQuery]);
+  }, [data.messages, activeFolder, searchQuery]);
 
-  const activeMessage = useMemo(() => {
-    if (!selectedMessageId) {
-      return viewMode === "SPLIT" ? filteredMessages[0] || null : null;
-    }
-    return filteredMessages.find((m) => m.id === selectedMessageId) || null;
-  }, [filteredMessages, selectedMessageId, viewMode]);
-
-  const unreadInboxCount = useMemo(
-    () => messagesState.filter((m) => m.folder === "INBOX" && !m.isRead).length,
-    [messagesState]
-  );
-  const starredCount = useMemo(
-    () => messagesState.filter((m) => m.isStarred && m.folder !== "TRASH").length,
-    [messagesState]
-  );
-  const migratedCount = useMemo(
-    () => messagesState.filter((m) => m.folder === "MIGRATED").length,
-    [messagesState]
-  );
-
-  const usedGb = selectedMailbox
-    ? (selectedMailbox.storageUsedMb / 1024).toFixed(2)
-    : "0.04";
-  const storagePct = selectedMailbox
-    ? Math.min(100, Math.round((selectedMailbox.storageUsedMb / (3 * 1024)) * 100))
-    : 2;
-
-  const handleOpenCompose = (withPolicyTemplate: boolean) => {
-    setComposeMinimized(false);
-    setComposeMaximized(true);
-    setShowCrmBar(withPolicyTemplate);
-    setSelectedClientId("");
-    setSelectedPolicyId("");
-    setToEmail("");
-    setCcEmail("");
-    setAttachments([]);
-    if (withPolicyTemplate) {
-      setSubject(`Entrega de Póliza y Expediente | ${initialData.agency.name}`);
-      setBodyText(
-        `Estimado(a) asegurado(a),\n\nPor medio del presente correo oficial de ${initialData.agency.name} te comparto los documentos y datos de tu póliza vigente.\n\nQuedo a tu entera disposición para cualquier duda, endoso, presentación o reporte de siniestro.\n\nAtentamente,\n${selectedMailbox?.displayName || initialData.currentUser.name}\n${initialData.agency.name}\n${selectedMailbox?.emailAddress || ""}`
-      );
-    } else {
-      setSubject("");
-      setBodyText(
-        `\n\n--\n${selectedMailbox?.displayName || initialData.currentUser.name}\n${initialData.agency.name}\n${selectedMailbox?.emailAddress || ""}`
-      );
-    }
-    setComposeOpen(true);
-  };
-
-  const handleSelectClientForPolicy = (clientId: string) => {
-    setSelectedClientId(clientId);
-    const client = clients.find((c) => c.id === clientId);
-    if (client?.email) {
-      setToEmail(client.email);
-    }
-    const clientPolicies = policies.filter((p) => p.clientId === clientId);
-    if (clientPolicies.length > 0) {
-      handleSelectPolicyForTemplate(clientPolicies[0].id, client);
-    }
-  };
-
-  const handleSelectPolicyForTemplate = (policyId: string, overrideClient?: any) => {
-    setSelectedPolicyId(policyId);
-    const policy = policies.find((p) => p.id === policyId);
-    if (!policy) return;
-
-    const client =
-      overrideClient ||
-      clients.find((c) => c.id === policy.clientId) ||
-      clients.find((c) => c.id === selectedClientId);
-
-    if (client?.email) {
-      setToEmail(client.email);
-    }
-
-    const clientDisplayName =
-      client?.name || policy.contractor || policy.insured || "Asegurado";
-    const insurerName = policy.insuranceCompany || policy.insurer || "Aseguradora";
-    const productName = policy.product || policy.ramo || "Seguro";
-    const renewalStr = policy.renewalDate
-      ? new Date(policy.renewalDate).toLocaleDateString("es-MX")
-      : "Anual";
-
-    setSubject(
-      `Póliza ${policy.policyNumber} (${insurerName} - ${productName}) | ${initialData.agency.name}`
-    );
-
-    setBodyText(
-      `Hola ${clientDisplayName},\n\nTe envío desde mi correo corporativo oficial en ${initialData.agency.name} el resumen y expediente de tu póliza:\n\n• Número de Póliza: ${policy.policyNumber}\n• Aseguradora: ${insurerName}\n• Plan / Ramo: ${productName}\n• Contratante / Asegurado: ${policy.insured || clientDisplayName}\n• Fecha de Renovación: ${renewalStr}${
-        policy.pdfUrl ? `\n• Descarga directa de carátula PDF: ${policy.pdfUrl}` : ""
-      }\n\nPor favor conserva este correo para cualquier trámite, renovación o asistencia en siniestros.\n\nSaludos cordiales,\n${selectedMailbox?.displayName || initialData.currentUser.name}\n${initialData.agency.name}\n${selectedMailbox?.emailAddress || ""}`
-    );
-
-    if (policy.pdfUrl) {
-      setAttachments((prev) => {
-        const filtered = prev.filter((a) => !a.isPolicyPdf);
-        return [
-          ...filtered,
-          {
-            id: `pol_${policy.id}`,
-            filename: `Poliza_${policy.policyNumber}_${insurerName.replace(/\s+/g, "_")}.pdf`,
-            mimeType: "application/pdf",
-            size: 245000,
-            url: policy.pdfUrl,
-            isPolicyPdf: true,
-          },
-        ];
-      });
-    }
-  };
-
-  const handleFilesSelected = async (fileList: FileList | null) => {
-    if (!fileList || fileList.length === 0) return;
-    const filesArray = Array.from(fileList);
-
-    for (const file of filesArray) {
-      if (file.size > 15 * 1024 * 1024) {
-        alert(`El archivo "${file.name}" supera el límite de 15 MB por adjunto.`);
-        continue;
-      }
-
-      const dataUrl: string = await new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(String(reader.result || ""));
-        reader.onerror = (err) => reject(err);
-        reader.readAsDataURL(file);
-      });
-
-      const base64Part = dataUrl.includes(",") ? dataUrl.split(",")[1] : "";
-
-      setAttachments((prev) => [
-        ...prev,
-        {
-          id: `att_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-          filename: file.name,
-          mimeType: file.type || "application/octet-stream",
-          size: file.size,
-          contentBase64: base64Part,
-          dataUrl,
-        },
-      ]);
-    }
-  };
-
-  const handleRemoveAttachment = (id: string) => {
-    setAttachments((prev) => prev.filter((a) => a.id !== id));
-  };
-
-  const handleReply = (msg: any) => {
-    setComposeMinimized(false);
-    setComposeMaximized(false);
-    setShowCrmBar(false);
-    setToEmail(msg.fromAddress);
-    setCcEmail("");
-    setAttachments([]);
-    setSubject(
-      msg.subject?.toLowerCase().startsWith("re:") ? msg.subject : `Re: ${msg.subject}`
-    );
-    setBodyText(
-      `\n\n---\nEl ${new Date(msg.receivedAt).toLocaleString("es-MX")}, ${
-        msg.fromName || msg.fromAddress
-      } escribió:\n> ${(msg.bodyText || msg.snippet || "").replace(/\n/g, "\n> ")}`
-    );
-    setComposeOpen(true);
-  };
-
-  const handleForwardMessage = (msg: any) => {
-    setComposeMinimized(false);
-    setComposeMaximized(true);
-    setShowCrmBar(false);
-    setToEmail("");
-    setCcEmail("");
-    setAttachments(Array.isArray(msg.attachmentsJson) ? msg.attachmentsJson : []);
-    setSubject(
-      msg.subject?.toLowerCase().startsWith("fwd:") ? msg.subject : `Fwd: ${msg.subject}`
-    );
-    setBodyText(
-      `\n\n---------- Mensaje reenviado ----------\nDe: ${msg.fromName || ""} <${msg.fromAddress}>\nFecha: ${new Date(msg.receivedAt).toLocaleString("es-MX")}\nAsunto: ${msg.subject}\nPara: ${msg.toAddresses}\n\n${msg.bodyText || msg.snippet || ""}`
-    );
-    setComposeOpen(true);
-  };
-
-  const handleSendEmail = async (saveAsDraft: boolean) => {
-    if (!selectedMailbox) return;
-    if (!saveAsDraft && !toEmail.trim()) {
-      alert("Por favor ingresa el correo del destinatario.");
-      return;
-    }
-
-    setSending(true);
-    try {
-      const escapedBody = bodyText
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-
-      const inlineImagesHtml = attachments
-        .filter((a) => a.mimeType?.startsWith("image/") && a.dataUrl)
-        .map(
-          (img) =>
-            `<div style="margin-top: 14px;"><p style="font-size: 11px; color: #64748b; margin-bottom: 4px;">📎 ${img.filename}</p><img src="${img.dataUrl}" alt="${img.filename}" style="max-width: 520px; border-radius: 8px; border: 1px solid #e2e8f0;" /></div>`
-        )
-        .join("");
-
-      const htmlFormatted = `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1e293b; line-height: 1.6; white-space: pre-wrap;">${escapedBody}${inlineImagesHtml}</div>`;
-
-      await sendCorporateEmailAction({
-        mailboxId: selectedMailbox.id,
-        to: toEmail,
-        cc: ccEmail,
-        subject: subject || "(Sin asunto)",
-        bodyHtml: htmlFormatted,
-        bodyText,
-        relatedClientId: selectedClientId || undefined,
-        relatedPolicyId: selectedPolicyId || undefined,
-        attachmentsJson: attachments.length > 0 ? attachments : undefined,
-        saveAsDraft,
-        targetAgencyId: initialData.agency.id,
-      });
-
-      setComposeOpen(false);
-      setToastMsg(
-        saveAsDraft
-          ? "Borrador guardado correctamente."
-          : `Correo enviado desde ${selectedMailbox.emailAddress}${
-              attachments.length > 0 ? ` con ${attachments.length} archivo(s) adjunto(s)` : ""
-            }.`
-      );
-      window.location.reload();
-    } catch (err: any) {
-      alert(err.message || "Error al enviar el correo.");
-    } finally {
-      setSending(false);
-    }
-  };
-
-  const handleSelectMessage = async (msg: any) => {
-    setSelectedMessageId(msg.id);
-    if (!msg.isRead) {
-      setMessagesState((prev) =>
-        prev.map((m) => (m.id === msg.id ? { ...m, isRead: true } : m))
-      );
-      try {
-        await updateEmailMessageStatusAction({
-          messageId: msg.id,
-          isRead: true,
-          targetAgencyId: initialData.agency.id,
-        });
-      } catch {
-        // Ignore non-critical read status error
-      }
-    }
-  };
-
-  const handleToggleStar = async (e: React.MouseEvent, msg: any) => {
-    e.stopPropagation();
-    const nextStarred = !msg.isStarred;
-    setMessagesState((prev) =>
-      prev.map((m) => (m.id === msg.id ? { ...m, isStarred: nextStarred } : m))
-    );
-    try {
-      await updateEmailMessageStatusAction({
-        messageId: msg.id,
-        isStarred: nextStarred,
-        targetAgencyId: initialData.agency.id,
-      });
-    } catch {
-      // Ignore
-    }
-  };
-
-  const handleMoveToTrash = async (msgId: string) => {
-    setMessagesState((prev) =>
-      prev.map((m) => (m.id === msgId ? { ...m, folder: "TRASH" } : m))
-    );
-    setSelectedMessageId(null);
-    await updateEmailMessageStatusAction({
-      messageId: msgId,
-      moveToFolder: "TRASH",
-      targetAgencyId: initialData.agency.id,
-    });
-  };
-
-  const handleOpenMobileSyncModal = async () => {
-    if (!selectedMailbox) return;
-    setMobileSyncOpen(true);
-    setLoadingMobileConfig(true);
-    try {
-      const res = await fetch(
-        `/api/corporate-email/mobileconfig?mailboxId=${encodeURIComponent(
-          selectedMailbox.id
-        )}&format=json`
-      );
-      if (res.ok) {
-        const json = await res.json();
-        setMobileConfigData(json);
-      }
-    } catch {
-      // Fallback
-    } finally {
-      setLoadingMobileConfig(false);
-    }
-  };
-
-  const handleCopyText = (key: string, val: string) => {
-    navigator.clipboard.writeText(val);
-    setCopiedField(key);
-    setTimeout(() => setCopiedField(null), 2000);
-  };
-
-  const handleSimulateIncoming = async () => {
-    if (!selectedMailbox) return;
-    setSimulating(true);
-    try {
-      await simulateIncomingClientEmailAction({
-        toEmail: selectedMailbox.emailAddress,
-        targetAgencyId: initialData.agency.id,
-      });
-      window.location.reload();
-    } catch (err: any) {
-      alert(err.message || "Error simulando recepción");
-    } finally {
-      setSimulating(false);
-    }
-  };
-
-  // Si aún no tiene buzón asignado en la promotoría
-  if (!selectedMailbox) {
-    const hasActiveSubscription = Boolean(
-      initialData.subscription && initialData.subscription.status === "active"
-    );
-    const domainName = initialData.subscription?.domainName;
-    const agencyName = initialData.agency?.name || "tu promotoría";
-
+  const selectedMessage = useMemo(() => {
     return (
-      <div className="max-w-2xl mx-auto py-12 px-4">
-        <div className="rounded-3xl border border-slate-200 bg-white p-8 sm:p-10 text-center shadow-lg space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-slate-900 text-sky-400 flex items-center justify-center mx-auto shadow-inner">
-            <Mail className="w-8 h-8" />
-          </div>
+      filteredMessages.find((m) => m.id === selectedMessageId) ||
+      data.messages.find((m) => m.id === selectedMessageId) ||
+      filteredMessages[0] ||
+      null
+    );
+  }, [filteredMessages, data.messages, selectedMessageId]);
 
-          <div className="space-y-2">
-            <Badge
-              variant="outline"
-              className="px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-full border-sky-200 text-sky-700 bg-sky-50/50"
-            >
-              {hasActiveSubscription ? "Paquete Activo en tu Promotoría" : "Identidad Corporativa"}
-            </Badge>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              {hasActiveSubscription
-                ? "Tu Correo Corporativo en aacomsoft"
-                : "Impulsa tu Presencia con Correo Corporativo"}
-            </h1>
-          </div>
+  // Contadores de carpetas
+  const counts = useMemo(() => {
+    return {
+      INBOX: data.messages.filter((m) => m.folder === "INBOX" && !m.isRead).length,
+      STARRED: data.messages.filter((m) => m.isStarred && m.folder !== "TRASH").length,
+      SENT: data.messages.filter((m) => m.folder === "SENT").length,
+      DRAFTS: data.messages.filter((m) => m.folder === "DRAFTS").length,
+      MIGRATED: data.messages.filter((m) => m.folder === "MIGRATED").length,
+      TRASH: data.messages.filter((m) => m.folder === "TRASH").length,
+    };
+  }, [data.messages]);
 
-          <div className="text-slate-600 text-sm sm:text-base leading-relaxed max-w-lg mx-auto">
-            {hasActiveSubscription ? (
-              <div className="space-y-3">
-                <p>
-                  Tu promotoría (<strong className="text-slate-800">{agencyName}</strong>) ya cuenta
-                  con su dominio oficial{" "}
-                  {domainName ? <strong className="text-sky-600">@{domainName}</strong> : null} y sus
-                  buzones profesionales activos.
-                </p>
-                <div className="p-4 rounded-2xl bg-sky-50/70 border border-sky-100 text-sky-900 text-sm font-medium">
-                  <strong>Dile a tu promotor que te asigne un lugar</strong> para que puedas comenzar a enviar pólizas, presentaciones y documentos a tus asegurados.
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <p>Aún no cuentas con un buzón corporativo asignado a tu usuario.</p>
-                <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-amber-950 text-sm font-medium">
-                  <strong>Dile a tu promotor que puede adquirir el paquete de correo corporativo</strong> en aacomsoft para proyectar máxima confianza con los asegurados.
-                </div>
-              </div>
-            )}
-          </div>
+  // Contactos combinados (Clientes de Cartera + Buzones del Equipo) para Autocompletado instantáneo en Para/CC
+  const addressBook = useMemo(() => {
+    const items: Array<{ label: string; email: string; badge: string; clientId?: string }> = [];
+    for (const c of data.clients) {
+      if (c.email) {
+        items.push({
+          label: c.name,
+          email: c.email.toLowerCase(),
+          badge: "Asegurado",
+          clientId: c.id,
+        });
+      }
+    }
+    for (const mb of data.accessibleMailboxes) {
+      if (mb.emailAddress) {
+        items.push({
+          label: mb.displayName,
+          email: mb.emailAddress.toLowerCase(),
+          badge: "Equipo",
+        });
+      }
+    }
+    return items;
+  }, [data.clients, data.accessibleMailboxes]);
 
-          {initialData.currentUser?.isAdmin && (
+  const matchingToContacts = useMemo(() => {
+    const lastToken = (composeTo.split(/[;,]/).pop() || "").trim().toLowerCase();
+    if (!lastToken) return addressBook.slice(0, 6);
+    return addressBook
+      .filter(
+        (c) =>
+          c.label.toLowerCase().includes(lastToken) ||
+          c.email.toLowerCase().includes(lastToken)
+      )
+      .slice(0, 6);
+  }, [addressBook, composeTo]);
+
+  const matchingCcContacts = useMemo(() => {
+    const lastToken = (composeCc.split(/[;,]/).pop() || "").trim().toLowerCase();
+    if (!lastToken) return addressBook.slice(0, 6);
+    return addressBook
+      .filter(
+        (c) =>
+          c.label.toLowerCase().includes(lastToken) ||
+          c.email.toLowerCase().includes(lastToken)
+      )
+      .slice(0, 6);
+  }, [addressBook, composeCc]);
+
+  const applyContactSuggestion = (
+    field: "TO" | "CC",
+    contact: { label: string; email: string; clientId?: string }
+  ) => {
+    if (field === "TO") {
+      const parts = composeTo
+        .split(/[;,]/)
+        .map((p) => p.trim())
+        .filter(Boolean);
+      if (parts.length <= 1) {
+        setComposeTo(contact.email);
+      } else {
+        parts[parts.length - 1] = contact.email;
+        setComposeTo(Array.from(new Set(parts)).join(", "));
+      }
+      if (contact.clientId) {
+        setSelectedClientId(contact.clientId);
+      }
+      setShowToSuggestions(false);
+    } else {
+      const parts = composeCc
+        .split(/[;,]/)
+        .map((p) => p.trim())
+        .filter(Boolean);
+      if (parts.length <= 1) {
+        setComposeCc(contact.email);
+      } else {
+        parts[parts.length - 1] = contact.email;
+        setComposeCc(Array.from(new Set(parts)).join(", "));
+      }
+      setShowCcSuggestions(false);
+    }
+  };
+
+  // Si la promotoría aún no tiene suscripción activa o ningún buzón asignado:
+  if (!data.subscription || !activeMailbox) {
+    return (
+      <div className="max-w-5xl mx-auto py-8 px-4 space-y-6">
+        <div className="bg-white border border-slate-200 rounded-2xl p-8 shadow-sm text-center space-y-4">
+          <div className="w-16 h-16 rounded-2xl bg-sky-50 border border-sky-200 text-sky-600 flex items-center justify-center mx-auto">
+            <Mail className="h-8 w-8" />
+          </div>
+          <h1 className="text-2xl font-bold text-slate-900">
+            Tu Bandeja de Correo Corporativo Oficial
+          </h1>
+          <p className="text-slate-600 max-w-xl mx-auto text-sm leading-relaxed">
+            {data.currentUser.isAdmin
+              ? "Aún no has activado el paquete de Correos Corporativos y Dominio Propio para tu promotoría. Actívalo ahora para habilitar hasta 20 cuentas oficiales conectadas con las pólizas y asegurados en aacomsoft."
+              : "Tu promotoría aún no te ha asignado un buzón corporativo oficial. Solicita a tu Administrador que active tu cuenta en el panel de Correos Corporativos."}
+          </p>
+          {data.currentUser.isAdmin && (
             <div className="pt-2">
               <Link
-                href={`/correos-corporativos?agencyId=${encodeURIComponent(
-                  initialData.agency.id
-                )}`}
+                href="/correos-corporativos"
+                className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm shadow-md transition"
               >
-                <Button className="bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl h-11 px-6 shadow-sm">
-                  <Settings className="w-4 h-4 mr-2 text-sky-400" />
-                  {hasActiveSubscription
-                    ? "Ir a Administrar y Asignar Buzones"
-                    : "Ver Paquete de Dominio y 20 Correos ($999 MXN)"}
-                </Button>
+                <span>Configurar Dominio y Activar mis 20 Buzones</span>
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </div>
           )}
@@ -567,57 +374,793 @@ export function AgentWebmailClient({ initialData }: { initialData: any }) {
     );
   }
 
-  return (
-    <div className="flex flex-col gap-3 w-full max-w-[1600px] mx-auto pb-6">
-      {/* Barra Superior Estilo Gmail Workspace */}
-      <div className="rounded-2xl border border-slate-200/90 bg-white px-4 py-2.5 shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-        {/* Identidad del Buzón Activo */}
-        <div className="flex items-center gap-3 shrink-0">
-          <div className="h-10 w-10 rounded-xl bg-[#0B1120] text-sky-400 flex items-center justify-center font-bold shadow-sm">
-            <Mail className="w-5 h-5" />
+  // Seleccionar Cliente y autocompletar
+  const handleSelectClient = (clientId: string) => {
+    setSelectedClientId(clientId);
+    const client = data.clients.find((c) => c.id === clientId);
+    if (client?.email) {
+      setComposeTo(client.email);
+    }
+  };
+
+  // Seleccionar Póliza e inyectar bloque de datos + adjunto PDF automático
+  const handleSelectPolicy = (policyId: string) => {
+    setSelectedPolicyId(policyId);
+    const policy = data.policies.find((p) => p.id === policyId);
+    if (!policy) return;
+
+    if (policy.clientId) {
+      const linkedClient = data.clients.find((c) => c.id === policy.clientId);
+      if (linkedClient?.email) {
+        setComposeTo(linkedClient.email);
+        setSelectedClientId(linkedClient.id);
+      }
+    }
+
+    const aseguradora = policy.insuranceCompany || "Aseguradora";
+    const ramo = policy.ramo || policy.product || "Seguro";
+    const titular = policy.contractor || policy.insured || "Estimado Asegurado";
+    const vigenciaFin = policy.renewalDate
+      ? new Date(policy.renewalDate).toLocaleDateString("es-MX")
+      : "Vigente";
+
+    setComposeSubject(
+      `📄 Póliza ${policy.policyNumber} (${aseguradora} - ${ramo}) | ${data.agency.name}`
+    );
+
+    const policyBlock = `Estimado(a) ${titular},
+
+Te comparto los datos oficiales y documentación de tu póliza registrada en nuestra promotoría ${data.agency.name}:
+
+• Número de Póliza: ${policy.policyNumber}
+• Aseguradora: ${aseguradora}
+• Ramo / Producto: ${ramo}
+• Prima Anual: $${Number(policy.annualPremium || 0).toLocaleString("es-MX")} ${policy.currency || "MXN"}
+• Próxima Renovación: ${vigenciaFin}${
+      policy.pdfUrl ? `\n• Descarga directa de Carátula PDF: ${policy.pdfUrl}` : ""
+    }
+
+Quedo a tu entera disposición en este correo oficial para cualquier endoso, renovación o asistencia en siniestros.
+
+Atentamente,
+${activeMailbox.displayName}
+${activeMailbox.emailAddress}
+${data.agency.name}`;
+
+    setComposeBody(policyBlock);
+
+    const autoFilename = `Caratula_Poliza_${policy.policyNumber}.pdf`;
+    setComposeAttachments((prev) => {
+      const filtered = prev.filter((a) => a.filename !== autoFilename);
+      if (policy.pdfUrl) {
+        return [
+          ...filtered,
+          {
+            filename: autoFilename,
+            mimeType: "application/pdf",
+            size: 245760,
+            url: policy.pdfUrl,
+          },
+        ];
+      }
+      return filtered;
+    });
+  };
+
+  // Procesar archivos subidos desde input o Drag & Drop
+  const processUploadedFiles = async (fileList: FileList | null) => {
+    if (!fileList || fileList.length === 0) return;
+
+    const maxFileSizeBytes = 10 * 1024 * 1024; // 10 MB por archivo
+    const newItems: AttachmentItem[] = [];
+
+    for (const file of Array.from(fileList)) {
+      if (file.size > maxFileSizeBytes) {
+        notify(
+          "error",
+          `El archivo "${file.name}" supera el límite de 10 MB por adjunto.`
+        );
+        continue;
+      }
+
+      const base64 = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          const result = typeof reader.result === "string" ? reader.result : "";
+          const base64Part = result.includes(",") ? result.split(",")[1] : result;
+          resolve(base64Part);
+        };
+        reader.onerror = () => reject(new Error("Error al leer el archivo"));
+        reader.readAsDataURL(file);
+      });
+
+      newItems.push({
+        filename: file.name,
+        mimeType: file.type || "application/octet-stream",
+        size: file.size,
+        contentBase64: base64,
+      });
+    }
+
+    if (newItems.length > 0) {
+      setComposeAttachments((prev) => [...prev, ...newItems]);
+      notify(
+        "success",
+        `${newItems.length} archivo(s) adjuntado(s) al correo.`
+      );
+    }
+  };
+
+  const removeAttachment = (index: number) => {
+    setComposeAttachments((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  // Insertar formato o firma en el redactor
+  const insertTextFormat = (type: "BOLD" | "ITALIC" | "LIST" | "SIGNATURE") => {
+    const el = bodyTextareaRef.current;
+    if (type === "SIGNATURE") {
+      const sig = `\n\n--\n${activeMailbox.displayName}\nAsesor Patrimonial y de Seguros | ${data.agency.name}\n✉️ ${activeMailbox.emailAddress}`;
+      setComposeBody((prev) => (prev.includes(activeMailbox.emailAddress) ? prev : prev + sig));
+      return;
+    }
+    if (!el) return;
+    const start = el.selectionStart || 0;
+    const end = el.selectionEnd || 0;
+    const selected = composeBody.slice(start, end);
+
+    let replacement = selected;
+    if (type === "BOLD") {
+      replacement = `**${selected || "texto importante"}**`;
+    } else if (type === "ITALIC") {
+      replacement = `_${selected || "texto en cursiva"}_`;
+    } else if (type === "LIST") {
+      replacement = selected
+        ? selected
+            .split("\n")
+            .map((line) => `• ${line}`)
+            .join("\n")
+        : "\n• Punto 1\n• Punto 2\n• Punto 3";
+    }
+
+    const nextBody = composeBody.slice(0, start) + replacement + composeBody.slice(end);
+    setComposeBody(nextBody);
+    setTimeout(() => {
+      el.focus();
+      el.setSelectionRange(start, start + replacement.length);
+    }, 20);
+  };
+
+  // Abrir redactor para correo nuevo
+  const openComposeNew = (withPolicyHelper = false) => {
+    setEditingDraftId(null);
+    setComposeModeLabel("Mensaje nuevo");
+    setComposeTo("");
+    setComposeCc("");
+    setComposeBcc("");
+    setShowCcBcc(false);
+    setComposeSubject("");
+    setComposeBody(
+      `\n\n--\n${activeMailbox.displayName}\n${data.agency.name}\n${activeMailbox.emailAddress}`
+    );
+    setSelectedClientId("");
+    setSelectedPolicyId("");
+    setShowPolicyHelper(withPolicyHelper);
+    setComposeAttachments([]);
+    setComposeMinimized(false);
+    setShowComposeModal(true);
+  };
+
+  // 1. RESPONDER (Reply)
+  const handleReplyMessage = (msg: any) => {
+    setEditingDraftId(null);
+    const replyTarget =
+      msg.folder === "SENT" ? msg.toAddresses : msg.fromAddress;
+    setComposeModeLabel(`Respondiendo a ${msg.fromName || replyTarget}`);
+    setComposeTo(replyTarget);
+    setComposeCc("");
+    setComposeBcc("");
+    setShowCcBcc(false);
+    setComposeSubject(
+      msg.subject?.toLowerCase().startsWith("re:")
+        ? msg.subject
+        : `Re: ${msg.subject}`
+    );
+    setComposeBody(
+      `\n\n--\n${activeMailbox.displayName}\n${data.agency.name}\n${activeMailbox.emailAddress}\n\n--- El ${new Date(
+        msg.receivedAt
+      ).toLocaleString("es-MX")}, ${msg.fromName || msg.fromAddress} escribió: ---\n> ${(
+        msg.bodyText ||
+        msg.snippet ||
+        ""
+      )
+        .split("\n")
+        .join("\n> ")}`
+    );
+    setComposeAttachments([]);
+    setComposeMinimized(false);
+    setComposeSizeMode("DOCKED_RIGHT"); // Acoplado a la derecha para poder leer el correo original mientras respondes
+    setShowComposeModal(true);
+  };
+
+  // 2. RESPONDER A TODOS (Reply All)
+  const handleReplyAllMessage = (msg: any) => {
+    setEditingDraftId(null);
+    const myEmail = (activeMailbox.emailAddress || "").toLowerCase();
+    const replyTarget =
+      msg.folder === "SENT" ? msg.toAddresses : msg.fromAddress;
+
+    const allOthers = [
+      ...(msg.toAddresses || "").split(/[;,]/),
+      ...(msg.ccAddresses || "").split(/[;,]/),
+    ]
+      .map((e: string) => e.trim().toLowerCase())
+      .filter((e: string) => Boolean(e) && e !== myEmail && e !== replyTarget.toLowerCase());
+
+    const uniqueCc = Array.from(new Set(allOthers)).join(", ");
+
+    setComposeModeLabel(`Responder a todos: ${msg.subject}`);
+    setComposeTo(replyTarget);
+    setComposeCc(uniqueCc);
+    setComposeBcc("");
+    setShowCcBcc(Boolean(uniqueCc));
+    setComposeSubject(
+      msg.subject?.toLowerCase().startsWith("re:")
+        ? msg.subject
+        : `Re: ${msg.subject}`
+    );
+    setComposeBody(
+      `\n\n--\n${activeMailbox.displayName}\n${data.agency.name}\n${activeMailbox.emailAddress}\n\n--- El ${new Date(
+        msg.receivedAt
+      ).toLocaleString("es-MX")}, ${msg.fromName || msg.fromAddress} escribió: ---\n> ${(
+        msg.bodyText ||
+        msg.snippet ||
+        ""
+      )
+        .split("\n")
+        .join("\n> ")}`
+    );
+    setComposeAttachments([]);
+    setComposeMinimized(false);
+    setComposeSizeMode("DOCKED_RIGHT");
+    setShowComposeModal(true);
+  };
+
+  // 3. REENVIAR (Forward) — Conservando todos los archivos adjuntos originales
+  const handleForwardMessage = (msg: any) => {
+    setEditingDraftId(null);
+    setComposeModeLabel(`Reenviar correo: ${msg.subject}`);
+    setComposeTo("");
+    setComposeCc("");
+    setComposeBcc("");
+    setShowCcBcc(false);
+    setComposeSubject(
+      msg.subject?.toLowerCase().startsWith("fwd:") ||
+        msg.subject?.toLowerCase().startsWith("rv:")
+        ? msg.subject
+        : `Fwd: ${msg.subject}`
+    );
+
+    const forwardedHeader = `\n\n--\n${activeMailbox.displayName}\n${data.agency.name}\n${activeMailbox.emailAddress}\n\n---------- Mensaje reenviado ----------\nDe: ${
+      msg.fromName ? `${msg.fromName} <${msg.fromAddress}>` : msg.fromAddress
+    }\nFecha: ${new Date(msg.receivedAt).toLocaleString("es-MX")}\nAsunto: ${
+      msg.subject
+    }\nPara: ${msg.toAddresses}${
+      msg.ccAddresses ? `\nCC: ${msg.ccAddresses}` : ""
+    }\n\n${msg.bodyText || msg.snippet || ""}`;
+
+    setComposeBody(forwardedHeader);
+
+    // Conservar los archivos adjuntos originales para que se reenvíen automáticamente
+    const originalAttachments: AttachmentItem[] = Array.isArray(msg.attachmentsJson)
+      ? msg.attachmentsJson
+      : [];
+    setComposeAttachments(originalAttachments);
+
+    setComposeMinimized(false);
+    setComposeSizeMode("LARGE_MODAL");
+    setShowComposeModal(true);
+    if (originalAttachments.length > 0) {
+      notify(
+        "success",
+        `Se incluyeron ${originalAttachments.length} archivo(s) adjunto(s) del correo original para reenviar.`
+      );
+    }
+  };
+
+  // 4. CONTINUAR EDITANDO BORRADOR (Draft)
+  const handleOpenDraftInComposer = (draftMsg: any) => {
+    setEditingDraftId(draftMsg.id);
+    setComposeModeLabel("Editando borrador guardado");
+    setComposeTo(draftMsg.toAddresses || "");
+    setComposeCc(draftMsg.ccAddresses || "");
+    setComposeBcc("");
+    setShowCcBcc(Boolean(draftMsg.ccAddresses));
+    setComposeSubject(
+      draftMsg.subject === "(Sin asunto)" ? "" : draftMsg.subject || ""
+    );
+    setComposeBody(draftMsg.bodyText || draftMsg.snippet || "");
+    setSelectedClientId(draftMsg.relatedClientId || "");
+    setSelectedPolicyId(draftMsg.relatedPolicyId || "");
+    const draftAttachments: AttachmentItem[] = Array.isArray(draftMsg.attachmentsJson)
+      ? draftMsg.attachmentsJson
+      : [];
+    setComposeAttachments(draftAttachments);
+    setComposeMinimized(false);
+    setComposeSizeMode("LARGE_MODAL");
+    setShowComposeModal(true);
+  };
+
+  // 5. IMPRIMIR CORREO / GUARDAR PDF PARA EXPEDIENTE
+  const handlePrintMessage = (msg: any) => {
+    const printWin = window.open("", "_blank", "width=860,height=720");
+    if (!printWin) {
+      window.print();
+      return;
+    }
+    const attList = Array.isArray(msg.attachmentsJson) ? msg.attachmentsJson : [];
+    const attHtml =
+      attList.length > 0
+        ? `<div style="margin-top:24px;padding-top:16px;border-top:1px solid #e2e8f0;">
+            <strong style="font-size:12px;color:#475569;text-transform:uppercase;">Archivos Adjuntos (${attList.length}):</strong>
+            <ul style="margin-top:8px;font-size:13px;color:#1e293b;">
+              ${attList.map((a: any) => `<li>${a.filename} (${formatBytes(a.size || 0)})</li>`).join("")}
+            </ul>
+          </div>`
+        : "";
+
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8" />
+          <title>${msg.subject} - ${activeMailbox.emailAddress}</title>
+          <style>
+            body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #0f172a; padding: 36px; line-height: 1.6; }
+            .brand { font-size: 12px; color: #64748b; border-bottom: 2px solid #0f172a; padding-bottom: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; }
+            h1 { font-size: 20px; margin: 0 0 16px 0; color: #0f172a; }
+            .meta { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; font-size: 13px; margin-bottom: 24px; }
+            .meta div { margin-bottom: 4px; }
+          </style>
+        </head>
+        <body>
+          <div class="brand">
+            <strong>${data.agency.name} — Correo Corporativo Oficial (${activeMailbox.emailAddress})</strong>
+            <span>Impreso desde aacomsoft</span>
           </div>
-          <div>
+          <h1>${msg.subject}</h1>
+          <div class="meta">
+            <div><strong>De:</strong> ${msg.fromName ? `${msg.fromName} &lt;${msg.fromAddress}&gt;` : msg.fromAddress}</div>
+            <div><strong>Para:</strong> ${msg.toAddresses}</div>
+            ${msg.ccAddresses ? `<div><strong>CC:</strong> ${msg.ccAddresses}</div>` : ""}
+            <div><strong>Fecha:</strong> ${new Date(msg.receivedAt).toLocaleString("es-MX")}</div>
+          </div>
+          <div>${msg.bodyHtml || `<pre style="white-space:pre-wrap;font-family:inherit;">${msg.bodyText || msg.snippet}</pre>`}</div>
+          ${attHtml}
+          <script>window.onload = function() { window.print(); };</script>
+        </body>
+      </html>
+    `);
+    printWin.document.close();
+  };
+
+  // Convertir texto con formato simple (**negrita**, _cursiva_) a HTML limpio al enviar
+  const formatBodyToCleanHtml = (rawText: string) => {
+    const escaped = rawText
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
+      .replace(/_([^_]+)_/g, "<em>$1</em>");
+
+    return `<div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1e293b; line-height: 1.65; font-size: 14px;">${escaped
+      .split("\n")
+      .map((line) => `<p style="margin: 0 0 8px 0;">${line || "&nbsp;"}</p>`)
+      .join("")}</div>`;
+  };
+
+  // Enviar correo o guardar borrador
+  const handleSendEmail = (saveAsDraft = false) => {
+    if (!saveAsDraft && (!composeTo.trim() || !composeSubject.trim())) {
+      notify("error", "Por favor indica el destinatario (Para) y el Asunto del correo.");
+      return;
+    }
+
+    startTransition(async () => {
+      try {
+        const res = await sendCorporateEmailAction({
+          mailboxId: activeMailbox.id,
+          to: composeTo || "borrador@pendiente.mx",
+          cc: composeCc || undefined,
+          bcc: composeBcc || undefined,
+          subject: composeSubject || "(Sin asunto)",
+          bodyHtml: formatBodyToCleanHtml(composeBody),
+          bodyText: composeBody,
+          relatedClientId: selectedClientId || undefined,
+          relatedPolicyId: selectedPolicyId || undefined,
+          attachmentsJson: composeAttachments.length > 0 ? composeAttachments : undefined,
+          saveAsDraft,
+          draftId: editingDraftId || undefined,
+          targetAgencyId: data.agency.id,
+        });
+
+        setData((prev) => {
+          const withoutOldDraft = editingDraftId
+            ? prev.messages.filter((m) => m.id !== editingDraftId)
+            : prev.messages;
+          return {
+            ...prev,
+            messages: [res.message, ...withoutOldDraft],
+          };
+        });
+
+        setShowComposeModal(false);
+        setComposeMinimized(false);
+        setEditingDraftId(null);
+        setComposeAttachments([]);
+        setActiveFolder(saveAsDraft ? "DRAFTS" : "SENT");
+        setSelectedMessageId(res.message.id);
+        notify(
+          "success",
+          saveAsDraft
+            ? "Borrador guardado en tu carpeta Borradores."
+            : `Correo enviado desde ${activeMailbox.emailAddress}${
+                composeAttachments.length > 0
+                  ? ` con ${composeAttachments.length} archivo(s) adjunto(s).`
+                  : "."
+              }`
+        );
+      } catch (err: any) {
+        notify("error", err?.message || "Error al procesar el correo.");
+      }
+    });
+  };
+
+  // Sincronización IMAP entrante
+  const handleSyncImap = () => {
+    setIsSyncing(true);
+    startTransition(async () => {
+      try {
+        const res = await syncMailboxImapAction({
+          mailboxId: activeMailbox.id,
+          targetAgencyId: data.agency.id,
+        });
+        const nowStr = new Date().toLocaleTimeString("es-MX", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+        setLastSyncText(`Actualizado ${nowStr}`);
+        notify("success", res.detail || "Bandeja sincronizada correctamente.");
+        if (res.syncedCount && res.syncedCount > 0) {
+          window.location.reload();
+        }
+      } catch (err: any) {
+        notify("error", err?.message || "No se pudo sincronizar en este momento.");
+      } finally {
+        setIsSyncing(false);
+      }
+    });
+  };
+
+  // Marcar leído / destacado / papelera individual
+  const handleSelectMessage = (msg: any) => {
+    // Si estamos en la carpeta BORRADORES, al hacer clic abrimos directamente el redactor para continuar editándolo
+    if (msg.folder === "DRAFTS") {
+      setSelectedMessageId(msg.id);
+      handleOpenDraftInComposer(msg);
+      return;
+    }
+
+    setSelectedMessageId(msg.id);
+    if (layoutMode === "LIST_FULL") {
+      setReadingFullView(true);
+    }
+    if (!msg.isRead) {
+      setData((prev) => ({
+        ...prev,
+        messages: prev.messages.map((m) =>
+          m.id === msg.id ? { ...m, isRead: true } : m
+        ),
+      }));
+      updateEmailMessageStatusAction({
+        messageId: msg.id,
+        isRead: true,
+        targetAgencyId: data.agency.id,
+      }).catch(() => {});
+    }
+  };
+
+  const handleToggleRead = (msg: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const nextRead = !msg.isRead;
+    setData((prev) => ({
+      ...prev,
+      messages: prev.messages.map((m) =>
+        m.id === msg.id ? { ...m, isRead: nextRead } : m
+      ),
+    }));
+    updateEmailMessageStatusAction({
+      messageId: msg.id,
+      isRead: nextRead,
+      targetAgencyId: data.agency.id,
+    }).catch(() => {});
+  };
+
+  const handleToggleStar = (msg: any, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const nextStar = !msg.isStarred;
+    setData((prev) => ({
+      ...prev,
+      messages: prev.messages.map((m) =>
+        m.id === msg.id ? { ...m, isStarred: nextStar } : m
+      ),
+    }));
+    updateEmailMessageStatusAction({
+      messageId: msg.id,
+      isStarred: nextStar,
+      targetAgencyId: data.agency.id,
+    }).catch(() => {});
+  };
+
+  const handleMoveToTrash = (msgId: string, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    const targetMsg = data.messages.find((m) => m.id === msgId);
+    if (targetMsg?.folder === "TRASH") {
+      // Eliminar definitivamente
+      setData((prev) => ({
+        ...prev,
+        messages: prev.messages.filter((m) => m.id !== msgId),
+      }));
+      bulkUpdateEmailMessagesAction({
+        messageIds: [msgId],
+        deletePermanently: true,
+        targetAgencyId: data.agency.id,
+      }).catch(() => {});
+      notify("success", "Correo eliminado definitivamente.");
+      return;
+    }
+
+    setData((prev) => ({
+      ...prev,
+      messages: prev.messages.map((m) =>
+        m.id === msgId ? { ...m, folder: "TRASH" } : m
+      ),
+    }));
+    updateEmailMessageStatusAction({
+      messageId: msgId,
+      moveToFolder: "TRASH",
+      targetAgencyId: data.agency.id,
+    }).catch(() => {});
+    notify("success", "Correo movido a la Papelera.");
+  };
+
+  // Selección múltiple (Checkboxes)
+  const toggleSelectOne = (msgId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedIds((prev) =>
+      prev.includes(msgId) ? prev.filter((id) => id !== msgId) : [...prev, msgId]
+    );
+  };
+
+  const allVisibleSelected =
+    filteredMessages.length > 0 &&
+    filteredMessages.every((m) => selectedIds.includes(m.id));
+
+  const toggleSelectAllVisible = () => {
+    if (allVisibleSelected) {
+      setSelectedIds([]);
+    } else {
+      setSelectedIds(filteredMessages.map((m) => m.id));
+    }
+  };
+
+  const handleBulkAction = (action: "READ" | "UNREAD" | "STAR" | "TRASH" | "DELETE_FOREVER") => {
+    if (selectedIds.length === 0) return;
+    const ids = [...selectedIds];
+    setSelectedIds([]);
+
+    if (action === "DELETE_FOREVER") {
+      setData((prev) => ({
+        ...prev,
+        messages: prev.messages.filter((m) => !ids.includes(m.id)),
+      }));
+      bulkUpdateEmailMessagesAction({
+        messageIds: ids,
+        deletePermanently: true,
+        targetAgencyId: data.agency.id,
+      }).catch(() => {});
+      notify("success", `${ids.length} correo(s) eliminado(s) definitivamente.`);
+      return;
+    }
+
+    if (action === "TRASH") {
+      setData((prev) => ({
+        ...prev,
+        messages: prev.messages.map((m) =>
+          ids.includes(m.id) ? { ...m, folder: "TRASH" } : m
+        ),
+      }));
+      bulkUpdateEmailMessagesAction({
+        messageIds: ids,
+        moveToFolder: "TRASH",
+        targetAgencyId: data.agency.id,
+      }).catch(() => {});
+      notify("success", `${ids.length} correo(s) movido(s) a la Papelera.`);
+      return;
+    }
+
+    if (action === "READ" || action === "UNREAD") {
+      const isRead = action === "READ";
+      setData((prev) => ({
+        ...prev,
+        messages: prev.messages.map((m) =>
+          ids.includes(m.id) ? { ...m, isRead } : m
+        ),
+      }));
+      bulkUpdateEmailMessagesAction({
+        messageIds: ids,
+        isRead,
+        targetAgencyId: data.agency.id,
+      }).catch(() => {});
+      notify(
+        "success",
+        `${ids.length} correo(s) marcado(s) como ${isRead ? "leído(s)" : "no leído(s)"}.`
+      );
+      return;
+    }
+
+    if (action === "STAR") {
+      setData((prev) => ({
+        ...prev,
+        messages: prev.messages.map((m) =>
+          ids.includes(m.id) ? { ...m, isStarred: true } : m
+        ),
+      }));
+      bulkUpdateEmailMessagesAction({
+        messageIds: ids,
+        isStarred: true,
+        targetAgencyId: data.agency.id,
+      }).catch(() => {});
+    }
+  };
+
+  const handleEmptyTrash = () => {
+    startTransition(async () => {
+      try {
+        await emptyTrashAction({
+          mailboxId: activeMailbox.id,
+          targetAgencyId: data.agency.id,
+        });
+        setData((prev) => ({
+          ...prev,
+          messages: prev.messages.filter((m) => m.folder !== "TRASH"),
+        }));
+        notify("success", "La Papelera ha sido vaciada por completo.");
+      } catch (err: any) {
+        notify("error", err?.message || "No se pudo vaciar la papelera.");
+      }
+    });
+  };
+
+  const handleSimulateClientIncoming = () => {
+    startTransition(async () => {
+      try {
+        const res = await simulateIncomingClientEmailAction({
+          toEmail: activeMailbox.emailAddress,
+          targetAgencyId: data.agency.id,
+        });
+        notify(
+          "success",
+          `Correo entrante recibido en ${res.deliveredTo}. Actualizando bandeja...`
+        );
+        window.location.reload();
+      } catch (err: any) {
+        notify("error", err?.message || "No se pudo simular el correo.");
+      }
+    });
+  };
+
+  const copyText = (key: string, value: string) => {
+    navigator.clipboard.writeText(value);
+    setCopiedField(key);
+    setTimeout(() => setCopiedField(null), 2000);
+  };
+
+  const selectedAttachments: AttachmentItem[] = Array.isArray(
+    selectedMessage?.attachmentsJson
+  )
+    ? selectedMessage.attachmentsJson
+    : [];
+
+  const splitListWidthClass =
+    listWidthPreset === "COMPACT"
+      ? "lg:w-[320px] xl:w-[350px]"
+      : listWidthPreset === "WIDE"
+      ? "lg:w-[480px] xl:w-[540px]"
+      : "lg:w-[380px] xl:w-[430px]";
+
+  return (
+    <div className="-mx-4 -my-4 md:-mx-8 md:-my-8 h-[calc(100vh-4rem)] flex flex-col bg-white overflow-hidden select-none sm:select-auto">
+      {/* Notificación flotante */}
+      {toast && (
+        <div
+          className={`fixed bottom-5 left-1/2 -translate-x-1/2 z-[80] flex items-center gap-3 px-5 py-3 rounded-xl shadow-2xl border text-sm font-semibold transition-all ${
+            toast.type === "success"
+              ? "bg-slate-900 text-white border-slate-700"
+              : "bg-rose-950 text-rose-100 border-rose-800"
+          }`}
+        >
+          {toast.type === "success" ? (
+            <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+          ) : (
+            <AlertCircle className="h-4 w-4 text-rose-400 shrink-0" />
+          )}
+          <span>{toast.text}</span>
+        </div>
+      )}
+
+      {/* BARRA SUPERIOR COMPACTA FULL-BLEED ESTILO GMAIL WORKSPACE (56px) */}
+      <div className="h-14 px-3 sm:px-5 border-b border-slate-200 bg-slate-50/90 flex items-center justify-between gap-3 shrink-0">
+        {/* Izquierda: Botón Hamburguesa + Identidad de Buzón Activo */}
+        <div className="flex items-center gap-2.5 min-w-0">
+          <button
+            type="button"
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            title={sidebarCollapsed ? "Mostrar panel de carpetas" : "Ocultar panel de carpetas para ganar espacio"}
+            className="p-2 rounded-lg text-slate-600 hover:bg-slate-200/70 hover:text-slate-900 transition"
+          >
+            {sidebarCollapsed ? (
+              <PanelLeftOpen className="h-5 w-5" />
+            ) : (
+              <PanelLeftClose className="h-5 w-5" />
+            )}
+          </button>
+
+          <div className="w-8 h-8 rounded-lg bg-sky-600 text-white flex items-center justify-center shadow-sm shrink-0">
+            <Mail className="h-4 w-4" />
+          </div>
+
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="text-sm sm:text-base font-extrabold text-slate-900 tracking-tight">
-                Mi Correo
-              </span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                3 GB Titan
+              {data.accessibleMailboxes.length > 1 ? (
+                <div className="relative">
+                  <select
+                    aria-label="Seleccionar buzón activo"
+                    value={activeMailbox.id}
+                    onChange={(e) => {
+                      window.location.href = `/mi-correo?mailboxId=${e.target.value}`;
+                    }}
+                    className="appearance-none bg-white border border-slate-300 hover:border-sky-500 rounded-lg px-2.5 py-1 pr-7 text-xs sm:text-sm font-bold text-slate-900 font-mono focus:outline-none focus:ring-2 focus:ring-sky-500 cursor-pointer"
+                  >
+                    {data.accessibleMailboxes.map((mb) => (
+                      <option key={mb.id} value={mb.id}>
+                        {mb.emailAddress} ({mb.displayName})
+                      </option>
+                    ))}
+                  </select>
+                  <ChevronDown className="h-3.5 w-3.5 text-slate-500 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+                </div>
+              ) : (
+                <span className="text-xs sm:text-sm font-bold text-slate-900 font-mono truncate">
+                  {activeMailbox.emailAddress}
+                </span>
+              )}
+              <span className="hidden xl:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                <ShieldCheck className="h-3 w-3" />3 GB
               </span>
             </div>
-            {accessibleMailboxes.length > 1 ? (
-              <select
-                value={selectedMailbox.id}
-                onChange={(e) => {
-                  window.location.href = `/mi-correo?mailboxId=${encodeURIComponent(
-                    e.target.value
-                  )}&agencyId=${encodeURIComponent(initialData.agency.id)}`;
-                }}
-                className="text-xs font-mono font-bold text-sky-700 bg-transparent focus:outline-none cursor-pointer"
-              >
-                {accessibleMailboxes.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.emailAddress} ({m.displayName})
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <div className="text-xs font-mono font-bold text-sky-700">
-                {selectedMailbox.emailAddress}
-              </div>
-            )}
           </div>
         </div>
 
-        {/* Buscador Central Omnibox tipo Gmail */}
-        <div className="flex-1 max-w-2xl">
+        {/* Centro: Omnibox de Búsqueda estilo Gmail */}
+        <div className="flex-1 max-w-xl mx-2">
           <div className="relative">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-            <Input
+            <Search className="h-4 w-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar en el correo (cliente, número de póliza, asunto o archivo adjunto)..."
-              className="pl-10 pr-8 h-10 text-xs sm:text-sm rounded-full bg-slate-100/90 hover:bg-slate-100 focus:bg-white border-transparent focus:border-sky-300 transition-all"
+              placeholder="Buscar por cliente, correo, póliza, asunto o archivo adjunto..."
+              className="w-full bg-white hover:bg-slate-100/60 focus:bg-white border border-slate-200/90 focus:border-sky-500 rounded-full pl-10 pr-9 py-1.5 text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-sky-500/20 transition"
             />
             {searchQuery && (
               <button
@@ -625,1144 +1168,1397 @@ export function AgentWebmailClient({ initialData }: { initialData: any }) {
                 onClick={() => setSearchQuery("")}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
               >
-                <X className="w-4 h-4" />
+                <X className="h-3.5 w-3.5" />
               </button>
             )}
           </div>
         </div>
 
-        {/* Acciones Derecha: Modo de Vista + Sincronización Móvil + 20 Asientos */}
-        <div className="flex flex-wrap items-center gap-2 shrink-0">
-          {/* Selector de vista Lista Completa Gmail vs Panel Dividido */}
-          <div className="hidden md:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200/70">
+        {/* Derecha: Sincronizar IMAP + Selector de Vista + Celular + Admin */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={handleSyncImap}
+            disabled={isSyncing || isPending}
+            title="Sincronizar nuevos correos recibidos en el servidor"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition disabled:opacity-50"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 text-sky-600 ${isSyncing ? "animate-spin" : ""}`} />
+            <span className="hidden md:inline">{isSyncing ? "Sincronizando..." : lastSyncText}</span>
+          </button>
+
+          {/* Selector de Vista: Lista Ancho Completo (Gmail) vs Panel Dividido */}
+          <div className="hidden md:flex items-center bg-slate-200/70 p-0.5 rounded-lg border border-slate-200">
             <button
               type="button"
               onClick={() => {
-                setViewMode("GMAIL_FULL");
-                setSelectedMessageId(null);
+                setLayoutMode("LIST_FULL");
+                setReadingFullView(false);
               }}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                viewMode === "GMAIL_FULL"
+              title="Vista Lista de Ancho Completo (estilo Gmail)"
+              className={`px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1 transition ${
+                layoutMode === "LIST_FULL"
                   ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-500 hover:text-slate-800"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
-              title="Vista amplia tipo Gmail"
             >
-              <Rows className="w-3.5 h-3.5" />
-              Lista Gmail
+              <Rows className="h-3.5 w-3.5" />
+              <span className="hidden xl:inline">Lista Completa</span>
             </button>
             <button
               type="button"
-              onClick={() => setViewMode("SPLIT")}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                viewMode === "SPLIT"
+              onClick={() => {
+                setLayoutMode("SPLIT");
+                setReadingFullView(false);
+              }}
+              title="Vista de Panel Dividido (Lista + Lectura simultánea)"
+              className={`px-2 py-1 rounded-md text-xs font-semibold flex items-center gap-1 transition ${
+                layoutMode === "SPLIT"
                   ? "bg-white text-slate-900 shadow-sm"
-                  : "text-slate-500 hover:text-slate-800"
+                  : "text-slate-600 hover:text-slate-900"
               }`}
-              title="Vista con panel de lectura lateral"
             >
-              <Columns className="w-3.5 h-3.5" />
-              Panel Dividido
+              <Columns className="h-3.5 w-3.5" />
+              <span className="hidden xl:inline">Panel Dividido</span>
             </button>
           </div>
 
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleOpenMobileSyncModal}
-            className="border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs h-9 rounded-xl"
-          >
-            <Smartphone className="w-3.5 h-3.5 mr-1.5 text-sky-600" />
-            iPhone / Android
-          </Button>
-
-          {initialData.currentUser?.isAdmin && (
-            <Link
-              href={`/correos-corporativos?agencyId=${encodeURIComponent(
-                initialData.agency.id
-              )}`}
+          {/* Ajuste de proporción de columnas cuando está en Panel Dividido */}
+          {layoutMode === "SPLIT" && (
+            <button
+              type="button"
+              onClick={() =>
+                setListWidthPreset((prev) =>
+                  prev === "COMPACT" ? "MEDIUM" : prev === "MEDIUM" ? "WIDE" : "COMPACT"
+                )
+              }
+              title="Ajustar ancho de la columna de lista vs lectura"
+              className="hidden lg:inline-flex items-center gap-1 px-2 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-xs font-semibold transition"
             >
-              <Button
-                type="button"
-                variant="outline"
-                className="border-slate-200 text-slate-700 hover:bg-slate-50 font-bold text-xs h-9 rounded-xl"
-              >
-                <Settings className="w-3.5 h-3.5 mr-1.5" />
-                20 Asientos
-              </Button>
+              <SlidersHorizontal className="h-3.5 w-3.5" />
+              <span className="text-[11px]">
+                {listWidthPreset === "COMPACT"
+                  ? "Lectura Amplia"
+                  : listWidthPreset === "WIDE"
+                  ? "Lista Amplia"
+                  : "Equilibrado"}
+              </span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setShowMobileSyncModal(true)}
+            title="Sincronizar correo en tu iPhone, Android o Outlook"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition"
+          >
+            <Smartphone className="h-3.5 w-3.5 text-sky-600" />
+            <span className="hidden xl:inline">Celular</span>
+          </button>
+
+          {data.currentUser.isAdmin && (
+            <Link
+              href="/correos-corporativos"
+              title="Administrar los 20 buzones y Puente de Cartera"
+              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold transition"
+            >
+              <Building2 className="h-3.5 w-3.5 text-sky-400" />
+              <span className="hidden xl:inline">20 Asientos</span>
             </Link>
           )}
         </div>
       </div>
 
-      {/* Aviso si recibe Puentes de Cartera */}
-      {activeForwards.length > 0 && (
-        <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 px-4 py-2 text-xs text-emerald-900 flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2 flex-wrap">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span>
-              <strong>Puente de Cartera Activo:</strong> Tu bandeja recibe automáticamente los correos enviados a{" "}
-              {activeForwards.map((f) => (
-                <code
-                  key={f.id}
-                  className="font-mono font-bold bg-white px-1.5 py-0.5 rounded border border-emerald-200 mx-1"
-                >
-                  {f.sourceEmail}
-                </code>
-              ))}
+      {/* Banner de Puente de Cartera si este buzón recibe correos de ex-agentes */}
+      {data.activeForwards.length > 0 && (
+        <div className="bg-sky-50 border-b border-sky-200/80 px-4 py-1.5 flex items-center justify-between gap-2 text-xs text-sky-900 shrink-0">
+          <div className="flex items-center gap-2 truncate">
+            <FolderSync className="h-3.5 w-3.5 text-sky-600 shrink-0" />
+            <span className="truncate">
+              <strong>Puente de Cartera Activo:</strong> Recibes automáticamente los correos enviados a{" "}
+              {data.activeForwards.map((f) => f.sourceEmail).join(", ")}
             </span>
           </div>
-        </div>
-      )}
-
-      {toastMsg && (
-        <div className="rounded-xl bg-emerald-50 border border-emerald-200 px-4 py-2.5 text-xs font-bold text-emerald-800 flex items-center justify-between">
-          <span>✓ {toastMsg}</span>
-          <button onClick={() => setToastMsg("")} className="text-emerald-700 font-bold">
-            ✕
+          <button
+            type="button"
+            onClick={() => setActiveFolder("MIGRATED")}
+            className="text-sky-700 hover:text-sky-950 font-bold underline shrink-0"
+          >
+            Ver Cartera Heredada
           </button>
         </div>
       )}
 
-      {/* Cuerpo Principal estilo Gmail: Barra Lateral Izquierda + Área de Trabajo Amplia */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 min-h-[calc(100dvh-210px)]">
-        {/* Columna Lateral Izquierda (Gmail Sidebar: 2 columnas en desktop) */}
-        <div className="lg:col-span-2 flex flex-col gap-3">
-          {/* Botones Grandes de Redactar estilo Gmail */}
-          <div className="grid grid-cols-2 lg:grid-cols-1 gap-2">
-            <Button
-              type="button"
-              onClick={() => handleOpenCompose(false)}
-              className="h-12 rounded-2xl bg-[#0B1120] hover:bg-slate-800 text-white font-extrabold text-xs sm:text-sm shadow-md flex items-center justify-start px-4 gap-3"
-            >
-              <Plus className="w-5 h-5 text-sky-400 shrink-0" />
-              <span>Redactar Correo</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => handleOpenCompose(true)}
-              className="h-10 rounded-xl border-sky-200 bg-sky-50/70 hover:bg-sky-100/80 text-sky-900 font-bold text-xs flex items-center justify-start px-3.5 gap-2"
-            >
-              <FileText className="w-4 h-4 text-sky-600 shrink-0" />
-              <span className="truncate">Enviar Póliza / Cartera</span>
-            </Button>
-          </div>
-
-          {/* Lista de Carpetas */}
-          <div className="flex lg:flex-col gap-1 overflow-x-auto pb-1 lg:pb-0">
-            {[
-              {
-                id: "INBOX" as FolderKey,
-                label: "Recibidos",
-                icon: Inbox,
-                badge: unreadInboxCount > 0 ? unreadInboxCount : undefined,
-              },
-              {
-                id: "STARRED" as FolderKey,
-                label: "Destacados",
-                icon: Star,
-                badge: starredCount > 0 ? starredCount : undefined,
-              },
-              { id: "SENT" as FolderKey, label: "Enviados", icon: Send },
-              { id: "DRAFTS" as FolderKey, label: "Borradores", icon: FileEdit },
-              {
-                id: "MIGRATED" as FolderKey,
-                label: "Cartera Heredada",
-                icon: FolderGit2,
-                badge: migratedCount > 0 ? migratedCount : undefined,
-              },
-              { id: "TRASH" as FolderKey, label: "Papelera", icon: Trash2 },
-            ].map((folder) => {
-              const Icon = folder.icon;
-              const active = selectedFolder === folder.id;
-              return (
-                <button
-                  key={folder.id}
-                  type="button"
-                  onClick={() => {
-                    setSelectedFolder(folder.id);
-                    if (viewMode === "GMAIL_FULL") {
-                      setSelectedMessageId(null);
-                    }
-                  }}
-                  className={`flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                    active
-                      ? "bg-sky-100/90 text-sky-950 font-extrabold"
-                      : "text-slate-600 hover:bg-slate-100"
-                  }`}
-                >
-                  <span className="flex items-center gap-2.5">
-                    <Icon className={`w-4 h-4 ${active ? "text-sky-600" : "text-slate-500"}`} />
-                    {folder.label}
-                  </span>
-                  {folder.badge !== undefined && (
-                    <span
-                      className={`px-2 py-0.5 rounded-full text-[10px] font-black ${
-                        active ? "bg-sky-600 text-white" : "bg-slate-200 text-slate-700"
-                      }`}
-                    >
-                      {folder.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Medidor de Almacenamiento de 3 GB + Simulador */}
-          <div className="hidden lg:flex flex-col gap-3 mt-auto pt-4 border-t border-slate-200/80 px-1">
+      {/* CUERPO PRINCIPAL EDGE-TO-EDGE (Sidebar + Lista + Lector) */}
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        {/* 1. SIDEBAR IZQUIERDO DE CARPETAS (Colapsable con ☰) */}
+        <div
+          className={`${
+            sidebarCollapsed ? "w-16" : "w-56 xl:w-60"
+          } border-r border-slate-200 bg-slate-50/50 flex flex-col justify-between p-2.5 shrink-0 transition-all duration-150 overflow-y-auto`}
+        >
+          <div className="space-y-3">
+            {/* Botones Principales: Redactar Correo y Enviar Póliza */}
             <div className="space-y-1.5">
-              <div className="flex items-center justify-between text-[11px] text-slate-500 font-semibold">
-                <span className="flex items-center gap-1">
-                  <HardDrive className="w-3.5 h-3.5 text-slate-400" /> Almacenamiento
-                </span>
-                <span className="tabular-nums">{usedGb} de 3 GB</span>
-              </div>
-              <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-sky-600 rounded-full"
-                  style={{ width: `${Math.max(4, storagePct)}%` }}
-                />
-              </div>
-            </div>
+              <button
+                type="button"
+                onClick={() => openComposeNew(false)}
+                title="Redactar Correo Nuevo"
+                className={`w-full flex items-center ${
+                  sidebarCollapsed ? "justify-center px-0 py-3" : "gap-3 px-4 py-3"
+                } rounded-2xl bg-sky-600 hover:bg-sky-500 text-white font-bold text-sm shadow-md shadow-sky-600/20 transition`}
+              >
+                <Plus className="h-5 w-5 shrink-0" />
+                {!sidebarCollapsed && <span>Redactar Correo</span>}
+              </button>
 
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleSimulateIncoming}
-              disabled={simulating}
-              className="w-full text-[11px] font-bold border-dashed border-slate-300 text-slate-600 hover:bg-slate-50 rounded-xl"
-            >
-              {simulating ? (
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-              ) : (
-                <Sparkles className="w-3.5 h-3.5 mr-1.5 text-sky-600" />
-              )}
-              Simular Correo Cliente
-            </Button>
-          </div>
-        </div>
-
-        {/* Área Principal (10 columnas en desktop) */}
-        <div className="lg:col-span-10 flex flex-col">
-          {/* MODO 1: VISTA AMPLIA ESTILO GMAIL (Lista completa de ancho completo -> Al hacer clic abre el correo a pantalla ancha) */}
-          {viewMode === "GMAIL_FULL" ? (
-            <div className="flex-1 rounded-2xl border border-slate-200/90 bg-white shadow-sm overflow-hidden flex flex-col">
-              {!activeMessage ? (
-                <>
-                  {/* Barra de herramientas de la bandeja estilo Gmail */}
-                  <div className="px-4 py-2.5 border-b border-slate-100 bg-slate-50/60 flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.location.reload()}
-                        className="h-8 px-2.5 text-xs font-semibold text-slate-600"
-                        title="Actualizar bandeja"
-                      >
-                        <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                        Actualizar
-                      </Button>
-                      <span className="text-xs text-slate-400">|</span>
-                      <span className="text-xs font-semibold text-slate-600">
-                        {filteredMessages.length} mensaje(s)
-                      </span>
-                    </div>
-
-                    <div className="text-xs text-slate-400 hidden sm:block">
-                      Haz clic en cualquier fila para abrir el correo completo
-                    </div>
-                  </div>
-
-                  {/* Filas horizontales amplias estilo Gmail */}
-                  <div className="divide-y divide-slate-100 overflow-y-auto flex-1">
-                    {filteredMessages.length === 0 ? (
-                      <div className="py-20 text-center text-slate-400 space-y-2">
-                        <Mail className="w-10 h-10 mx-auto stroke-1" />
-                        <p className="text-sm font-medium">No hay correos en esta carpeta.</p>
-                      </div>
-                    ) : (
-                      filteredMessages.map((msg) => {
-                        const msgAttachments: any[] = Array.isArray(msg.attachmentsJson)
-                          ? msg.attachmentsJson
-                          : [];
-                        return (
-                          <div
-                            key={msg.id}
-                            onClick={() => handleSelectMessage(msg)}
-                            className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-4 py-3 cursor-pointer transition-colors ${
-                              !msg.isRead
-                                ? "bg-white hover:bg-sky-50/50 font-semibold"
-                                : "bg-slate-50/40 hover:bg-slate-100/70 text-slate-600"
-                            }`}
-                          >
-                            {/* Estrella + Remitente */}
-                            <div className="flex items-center gap-3 sm:w-64 shrink-0 min-w-0">
-                              <button
-                                type="button"
-                                onClick={(e) => handleToggleStar(e, msg)}
-                                className="text-slate-300 hover:text-amber-400 transition-colors shrink-0"
-                                title="Destacar correo"
-                              >
-                                <Star
-                                  className={`w-4 h-4 ${
-                                    msg.isStarred ? "fill-amber-400 text-amber-400" : ""
-                                  }`}
-                                />
-                              </button>
-                              <span
-                                className={`text-xs sm:text-sm truncate ${
-                                  !msg.isRead ? "font-extrabold text-slate-900" : "font-medium text-slate-700"
-                                }`}
-                              >
-                                {selectedFolder === "SENT"
-                                  ? `Para: ${msg.toAddresses}`
-                                  : msg.fromName || msg.fromAddress}
-                              </span>
-                            </div>
-
-                            {/* Asunto + Snippet + Chips de Archivos Adjuntos */}
-                            <div className="flex-1 min-w-0 flex flex-col gap-1">
-                              <div className="flex items-center gap-2 min-w-0">
-                                {msg.migratedFrom && (
-                                  <Badge
-                                    variant="outline"
-                                    className="text-[10px] px-1.5 py-0 border-emerald-300 bg-emerald-50 text-emerald-700 shrink-0"
-                                  >
-                                    Puente: {msg.migratedFrom}
-                                  </Badge>
-                                )}
-                                <span
-                                  className={`text-xs sm:text-sm truncate ${
-                                    !msg.isRead ? "font-bold text-slate-900" : "text-slate-800"
-                                  }`}
-                                >
-                                  {msg.subject}
-                                </span>
-                                <span className="text-xs text-slate-400 hidden md:inline truncate">
-                                  — {msg.snippet}
-                                </span>
-                              </div>
-
-                              {/* Mostrar chips de adjuntos como en Gmail */}
-                              {msgAttachments.length > 0 && (
-                                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
-                                  {msgAttachments.slice(0, 3).map((att, idx) => {
-                                    const AttIcon = getAttachmentIcon(att.mimeType, att.filename);
-                                    return (
-                                      <span
-                                        key={idx}
-                                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-white border border-slate-200 text-slate-700 shadow-2xs"
-                                      >
-                                        <AttIcon className="w-3 h-3 text-sky-600 shrink-0" />
-                                        <span className="max-w-[160px] truncate">{att.filename}</span>
-                                      </span>
-                                    );
-                                  })}
-                                  {msgAttachments.length > 3 && (
-                                    <span className="text-[10px] text-slate-500 font-semibold">
-                                      +{msgAttachments.length - 3} más
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-
-                            {/* Fecha y Acciones Rápidas al pasar el mouse */}
-                            <div className="flex items-center justify-end gap-2 sm:w-32 shrink-0">
-                              <span className="text-xs text-slate-500 tabular-nums group-hover:hidden">
-                                {new Date(msg.receivedAt).toLocaleDateString("es-MX", {
-                                  day: "2-digit",
-                                  month: "short",
-                                })}
-                              </span>
-                              <div className="hidden group-hover:flex items-center gap-1">
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleReply(msg);
-                                  }}
-                                  className="h-7 px-2 text-xs text-slate-600 hover:text-sky-700"
-                                  title="Responder"
-                                >
-                                  <Reply className="w-3.5 h-3.5" />
-                                </Button>
-                                {msg.folder !== "TRASH" && (
-                                  <Button
-                                    type="button"
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleMoveToTrash(msg.id);
-                                    }}
-                                    className="h-7 px-2 text-xs text-slate-500 hover:text-rose-600"
-                                    title="Eliminar"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5" />
-                                  </Button>
-                                )}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </>
-              ) : (
-                /* Lector de Correo a Pantalla Completa estilo Gmail */
-                <div className="flex flex-col h-full">
-                  {/* Barra Superior del Lector */}
-                  <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/60 flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setSelectedMessageId(null)}
-                        className="h-8 px-3 text-xs font-bold text-slate-700 hover:bg-slate-200/70 rounded-xl"
-                      >
-                        <ArrowLeft className="w-4 h-4 mr-1.5" />
-                        Volver a {selectedFolder === "INBOX" ? "Recibidos" : "la lista"}
-                      </Button>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleReply(activeMessage)}
-                        className="h-8 text-xs font-bold rounded-xl border-slate-200 text-slate-800 hover:bg-slate-100"
-                      >
-                        <Reply className="w-3.5 h-3.5 mr-1.5 text-sky-600" />
-                        Responder
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleForwardMessage(activeMessage)}
-                        className="h-8 text-xs font-bold rounded-xl border-slate-200 text-slate-800 hover:bg-slate-100"
-                      >
-                        <Forward className="w-3.5 h-3.5 mr-1.5 text-slate-600" />
-                        Reenviar
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => window.print()}
-                        className="h-8 px-2.5 text-xs text-slate-500 hover:text-slate-900"
-                        title="Imprimir correo"
-                      >
-                        <Printer className="w-4 h-4" />
-                      </Button>
-                      {activeMessage.folder !== "TRASH" && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleMoveToTrash(activeMessage.id)}
-                          className="h-8 px-2.5 text-xs text-slate-500 hover:text-rose-600"
-                          title="Mover a Papelera"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Contenido del Correo estilo Gmail */}
-                  <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-6">
-                    <div className="space-y-4 border-b border-slate-100 pb-5">
-                      <div className="flex flex-wrap items-start justify-between gap-3">
-                        <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug">
-                          {activeMessage.subject}
-                        </h2>
-                        <Badge variant="outline" className="text-xs font-semibold border-slate-200 text-slate-600">
-                          {activeMessage.folder}
-                        </Badge>
-                      </div>
-
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <div className="h-10 w-10 rounded-full bg-slate-900 text-sky-300 flex items-center justify-center font-bold text-xs shrink-0">
-                            {getInitials(activeMessage.fromName || activeMessage.fromAddress)}
-                          </div>
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span className="text-sm font-bold text-slate-900">
-                                {activeMessage.fromName || activeMessage.fromAddress}
-                              </span>
-                              <span className="text-xs font-mono text-slate-500">
-                                &lt;{activeMessage.fromAddress}&gt;
-                              </span>
-                            </div>
-                            <div className="text-xs text-slate-500">
-                              para <span className="font-mono">{activeMessage.toAddresses}</span>
-                              {activeMessage.ccAddresses ? (
-                                <span> • cc: {activeMessage.ccAddresses}</span>
-                              ) : null}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="text-xs text-slate-400 tabular-nums shrink-0">
-                          {new Date(activeMessage.receivedAt).toLocaleString("es-MX")}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Cuerpo del mensaje */}
-                    <div className="text-sm sm:text-[15px] text-slate-800 leading-relaxed max-w-4xl">
-                      {activeMessage.bodyHtml ? (
-                        <div dangerouslySetInnerHTML={{ __html: activeMessage.bodyHtml }} />
-                      ) : (
-                        <div className="whitespace-pre-wrap">{activeMessage.bodyText}</div>
-                      )}
-                    </div>
-
-                    {/* Sección de Archivos Adjuntos del Correo (si tiene adjuntos) */}
-                    {Array.isArray(activeMessage.attachmentsJson) &&
-                      activeMessage.attachmentsJson.length > 0 && (
-                        <div className="pt-6 border-t border-slate-200 space-y-3">
-                          <div className="text-xs font-bold uppercase tracking-wider text-slate-500 flex items-center gap-1.5">
-                            <Paperclip className="w-3.5 h-3.5 text-sky-600" />
-                            {activeMessage.attachmentsJson.length} Archivo(s) Adjunto(s)
-                          </div>
-                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                            {activeMessage.attachmentsJson.map((att: any, idx: number) => {
-                              const AttIcon = getAttachmentIcon(att.mimeType, att.filename);
-                              const downloadHref =
-                                att.dataUrl ||
-                                att.url ||
-                                (att.contentBase64
-                                  ? `data:${att.mimeType || "application/octet-stream"};base64,${att.contentBase64}`
-                                  : "#");
-                              return (
-                                <div
-                                  key={idx}
-                                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50/70 p-3 hover:bg-slate-100/80 transition-colors"
-                                >
-                                  <div className="flex items-center gap-2.5 min-w-0">
-                                    <div className="p-2 rounded-lg bg-white border border-slate-200 text-sky-600 shrink-0">
-                                      <AttIcon className="w-4 h-4" />
-                                    </div>
-                                    <div className="min-w-0">
-                                      <div className="text-xs font-bold text-slate-800 truncate">
-                                        {att.filename}
-                                      </div>
-                                      <div className="text-[10px] text-slate-500">
-                                        {formatBytes(att.size || 0)}
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <a
-                                    href={downloadHref}
-                                    download={att.filename}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="p-2 rounded-lg bg-white border border-slate-200 text-slate-700 hover:text-sky-600 shrink-0"
-                                    title="Descargar archivo"
-                                  >
-                                    <Download className="w-3.5 h-3.5" />
-                                  </a>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      )}
-
-                    {/* Botones inferiores rápidos estilo Gmail */}
-                    <div className="pt-6 flex items-center gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => handleReply(activeMessage)}
-                        className="rounded-full px-5 font-bold text-xs h-9 border-slate-300 text-slate-700 hover:bg-slate-100"
-                      >
-                        <Reply className="w-3.5 h-3.5 mr-2" />
-                        Responder
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => handleForwardMessage(activeMessage)}
-                        className="rounded-full px-5 font-bold text-xs h-9 border-slate-300 text-slate-700 hover:bg-slate-100"
-                      >
-                        <Forward className="w-3.5 h-3.5 mr-2" />
-                        Reenviar
-                      </Button>
-                    </div>
-                  </div>
-                </div>
+              {!sidebarCollapsed && (
+                <button
+                  type="button"
+                  onClick={() => openComposeNew(true)}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-white hover:bg-sky-50 text-sky-700 border border-sky-200 font-semibold text-xs transition shadow-sm"
+                >
+                  <FileCheck2 className="h-3.5 w-3.5" />
+                  <span>Enviar Póliza / Cartera</span>
+                </button>
               )}
             </div>
-          ) : (
-            /* MODO 2: PANEL DIVIDIDO (Lista a la izquierda + Lectura a la derecha) */
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 flex-1">
-              <div className="lg:col-span-5 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col">
-                <div className="p-3 border-b border-slate-100 bg-slate-50/60 text-xs font-bold text-slate-600 flex items-center justify-between">
-                  <span>{filteredMessages.length} mensaje(s)</span>
+
+            {/* Lista de Carpetas */}
+            <nav className="space-y-0.5">
+              {[
+                {
+                  id: "INBOX" as FolderType,
+                  label: "Recibidos",
+                  icon: Inbox,
+                  badge: counts.INBOX,
+                },
+                {
+                  id: "STARRED" as FolderType,
+                  label: "Destacados",
+                  icon: Star,
+                  badge: counts.STARRED,
+                },
+                {
+                  id: "SENT" as FolderType,
+                  label: "Enviados",
+                  icon: Send,
+                  badge: 0,
+                },
+                {
+                  id: "DRAFTS" as FolderType,
+                  label: "Borradores",
+                  icon: FileText,
+                  badge: counts.DRAFTS,
+                },
+                {
+                  id: "MIGRATED" as FolderType,
+                  label: "Cartera Heredada",
+                  icon: FolderSync,
+                  badge: counts.MIGRATED,
+                },
+                {
+                  id: "TRASH" as FolderType,
+                  label: "Papelera",
+                  icon: Trash2,
+                  badge: counts.TRASH,
+                },
+              ].map((folder) => {
+                const Icon = folder.icon;
+                const isActive = activeFolder === folder.id;
+                return (
                   <button
+                    key={folder.id}
                     type="button"
-                    onClick={() => window.location.reload()}
-                    className="text-sky-600 hover:underline flex items-center gap-1"
+                    title={folder.label}
+                    onClick={() => {
+                      setActiveFolder(folder.id);
+                      setReadingFullView(false);
+                      setSelectedIds([]);
+                      const firstInFolder = data.messages.find((m) =>
+                        folder.id === "STARRED"
+                          ? m.isStarred && m.folder !== "TRASH"
+                          : m.folder === folder.id
+                      );
+                      setSelectedMessageId(firstInFolder?.id || null);
+                    }}
+                    className={`w-full flex items-center ${
+                      sidebarCollapsed ? "justify-center px-2 py-2.5" : "justify-between px-3 py-2"
+                    } rounded-xl text-xs sm:text-sm font-semibold transition ${
+                      isActive
+                        ? "bg-sky-100/90 text-sky-950 font-bold"
+                        : "text-slate-600 hover:bg-slate-200/60 hover:text-slate-900"
+                    }`}
                   >
-                    <RefreshCw className="w-3 h-3" /> Actualizar
-                  </button>
-                </div>
-                <div className="divide-y divide-slate-100 overflow-y-auto max-h-[640px]">
-                  {filteredMessages.map((msg) => {
-                    const isSelected = activeMessage?.id === msg.id;
-                    return (
-                      <button
-                        key={msg.id}
-                        type="button"
-                        onClick={() => handleSelectMessage(msg)}
-                        className={`w-full text-left p-3.5 transition-colors flex flex-col gap-1 ${
-                          isSelected
-                            ? "bg-sky-50/90 border-l-4 border-l-sky-600"
-                            : !msg.isRead
-                            ? "bg-white hover:bg-slate-50 font-semibold"
-                            : "bg-slate-50/40 hover:bg-slate-50"
+                    <span className="flex items-center gap-2.5 truncate">
+                      <Icon
+                        className={`h-4 w-4 shrink-0 ${
+                          isActive ? "text-sky-700" : "text-slate-500"
+                        }`}
+                      />
+                      {!sidebarCollapsed && <span className="truncate">{folder.label}</span>}
+                    </span>
+                    {!sidebarCollapsed && folder.badge > 0 && (
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-[11px] font-bold ${
+                          isActive
+                            ? "bg-sky-600 text-white"
+                            : "bg-slate-200 text-slate-700"
                         }`}
                       >
+                        {folder.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+
+          {/* Almacenamiento y Simulador inferior */}
+          {!sidebarCollapsed && (
+            <div className="space-y-2.5 pt-3 border-t border-slate-200/80">
+              <div className="px-2 space-y-1">
+                <div className="flex items-center justify-between text-[11px] text-slate-500 font-medium">
+                  <span>Almacenamiento</span>
+                  <span>
+                    {activeMailbox.storageUsedMb || 18} MB / {(activeMailbox.storageLimitGb || 3) * 1024} MB
+                  </span>
+                </div>
+                <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
+                  <div className="h-full bg-sky-600 rounded-full" style={{ width: "3%" }} />
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSimulateClientIncoming}
+                disabled={isPending}
+                className="w-full flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 text-[11px] font-semibold transition disabled:opacity-50"
+              >
+                <Sparkles className="h-3 w-3 text-sky-600" />
+                Simular Correo Entrante
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* 2. COLUMNA DE LISTA DE CORREOS (Con Checkboxes, Acciones en Lote y Hover Actions) */}
+        {!(layoutMode === "LIST_FULL" && readingFullView) && (
+          <div
+            className={`${
+              layoutMode === "LIST_FULL"
+                ? "flex-1"
+                : `w-full ${splitListWidthClass} border-r border-slate-200`
+            } flex flex-col bg-white min-h-0 shrink-0`}
+          >
+            {/* Barra de herramientas de la bandeja (Checkboxes y acciones en lote estilo Gmail) */}
+            <div className="h-11 px-3 border-b border-slate-200 bg-slate-50/60 flex items-center justify-between gap-2 shrink-0">
+              <div className="flex items-center gap-2.5">
+                <button
+                  type="button"
+                  onClick={toggleSelectAllVisible}
+                  title="Seleccionar todos los correos de esta vista"
+                  className="p-1 rounded hover:bg-slate-200/70 text-slate-600 transition"
+                >
+                  {allVisibleSelected ? (
+                    <CheckSquare className="h-4 w-4 text-sky-600" />
+                  ) : (
+                    <Square className="h-4 w-4 text-slate-400" />
+                  )}
+                </button>
+
+                {selectedIds.length > 0 ? (
+                  <div className="flex items-center gap-1">
+                    <span className="text-xs font-bold text-sky-800 bg-sky-100 px-2 py-0.5 rounded-md mr-1">
+                      {selectedIds.length} seleccionados
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => handleBulkAction("READ")}
+                      title="Marcar seleccionados como leídos"
+                      className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1"
+                    >
+                      <MailOpen className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">Leído</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleBulkAction("UNREAD")}
+                      title="Marcar seleccionados como no leídos"
+                      className="p-1.5 rounded-lg hover:bg-slate-200 text-slate-700 text-xs font-semibold flex items-center gap-1"
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                      <span className="hidden sm:inline">No leído</span>
+                    </button>
+                    {activeFolder === "TRASH" ? (
+                      <button
+                        type="button"
+                        onClick={() => handleBulkAction("DELETE_FOREVER")}
+                        className="p-1.5 rounded-lg hover:bg-rose-100 text-rose-700 text-xs font-bold flex items-center gap-1"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span>Eliminar definitivo</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleBulkAction("TRASH")}
+                        title="Mover seleccionados a la Papelera"
+                        className="p-1.5 rounded-lg hover:bg-rose-100 text-rose-600 text-xs font-semibold flex items-center gap-1"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span className="hidden sm:inline">Eliminar</span>
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <span className="text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    {activeFolder === "INBOX" && "Bandeja de Recibidos"}
+                    {activeFolder === "STARRED" && "Correos Destacados"}
+                    {activeFolder === "SENT" && "Correos Enviados"}
+                    {activeFolder === "DRAFTS" && "Borradores (Clic para editar)"}
+                    {activeFolder === "MIGRATED" && "Cartera Heredada"}
+                    {activeFolder === "TRASH" && "Papelera"}
+                  </span>
+                )}
+              </div>
+
+              <div className="flex items-center gap-2">
+                {activeFolder === "TRASH" && filteredMessages.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleEmptyTrash}
+                    disabled={isPending}
+                    className="px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold transition"
+                  >
+                    Vaciar papelera ahora
+                  </button>
+                )}
+                <span className="text-xs text-slate-400 font-medium">
+                  {filteredMessages.length} mensaje(s)
+                </span>
+              </div>
+            </div>
+
+            {/* Filas de Mensajes */}
+            <div className="flex-1 overflow-y-auto divide-y divide-slate-100">
+              {filteredMessages.length === 0 ? (
+                <div className="p-12 text-center space-y-2">
+                  <Inbox className="h-9 w-9 text-slate-300 mx-auto" />
+                  <p className="text-sm font-semibold text-slate-600">
+                    No hay correos en esta vista
+                  </p>
+                  <p className="text-xs text-slate-400">
+                    Usa el botón Redactar Correo o sincroniza tu bandeja.
+                  </p>
+                </div>
+              ) : (
+                filteredMessages.map((msg) => {
+                  const isSelected = selectedMessage?.id === msg.id;
+                  const isChecked = selectedIds.includes(msg.id);
+                  const msgAttachments: AttachmentItem[] = Array.isArray(msg.attachmentsJson)
+                    ? msg.attachmentsJson
+                    : [];
+
+                  return (
+                    <div
+                      key={msg.id}
+                      onClick={() => handleSelectMessage(msg)}
+                      className={`group relative w-full text-left px-3 py-2.5 transition cursor-pointer flex items-start gap-2.5 ${
+                        isChecked
+                          ? "bg-sky-100/70"
+                          : isSelected && layoutMode === "SPLIT"
+                          ? "bg-sky-50/90 border-l-4 border-l-sky-600"
+                          : !msg.isRead
+                          ? "bg-white hover:bg-slate-50 font-semibold"
+                          : "bg-slate-50/35 hover:bg-slate-100/60 text-slate-600"
+                      }`}
+                    >
+                      {/* Checkbox + Estrella */}
+                      <div className="flex items-center gap-1.5 pt-0.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={(e) => toggleSelectOne(msg.id, e)}
+                          className="text-slate-400 hover:text-sky-600 transition"
+                        >
+                          {isChecked ? (
+                            <CheckSquare className="h-4 w-4 text-sky-600" />
+                          ) : (
+                            <Square className="h-4 w-4" />
+                          )}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => handleToggleStar(msg, e)}
+                          className="text-slate-300 hover:text-amber-400 transition"
+                        >
+                          <Star
+                            className={`h-4 w-4 ${
+                              msg.isStarred ? "fill-amber-400 text-amber-400" : ""
+                            }`}
+                          />
+                        </button>
+                      </div>
+
+                      {/* Contenido de la fila */}
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <span className="text-xs font-bold text-slate-900 truncate">
-                            {selectedFolder === "SENT"
-                              ? `Para: ${msg.toAddresses}`
-                              : msg.fromName || msg.fromAddress}
-                          </span>
-                          <span className="text-[10px] text-slate-400">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            {!msg.isRead && (
+                              <span className="w-2 h-2 rounded-full bg-sky-600 shrink-0" />
+                            )}
+                            <span
+                              className={`text-xs sm:text-sm truncate ${
+                                !msg.isRead ? "font-bold text-slate-900" : "font-medium text-slate-700"
+                              }`}
+                            >
+                              {msg.folder === "SENT" || msg.folder === "DRAFTS"
+                                ? `Para: ${msg.toAddresses}`
+                                : msg.fromName || msg.fromAddress}
+                            </span>
+                            {msg.folder === "DRAFTS" && (
+                              <span className="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 text-[10px] font-bold">
+                                Borrador
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Fecha (se oculta en hover para mostrar acciones rápidas) */}
+                          <span className="text-[11px] text-slate-400 shrink-0 group-hover:hidden">
                             {new Date(msg.receivedAt).toLocaleDateString("es-MX", {
                               day: "2-digit",
                               month: "short",
                             })}
                           </span>
-                        </div>
-                        <div className="text-xs font-bold text-slate-800 line-clamp-1">
-                          {msg.subject}
-                        </div>
-                        <div className="text-[11px] text-slate-500 line-clamp-1">{msg.snippet}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
 
-              <div className="lg:col-span-7 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden flex flex-col">
-                {activeMessage ? (
-                  <div className="p-6 space-y-4 overflow-y-auto flex-1">
-                    <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                      <h2 className="text-lg font-extrabold text-slate-900">
-                        {activeMessage.subject}
-                      </h2>
-                      <div className="flex items-center gap-1.5">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleReply(activeMessage)}
-                          className="h-8 text-xs font-bold"
+                          {/* Acciones rápidas en Hover (Responder, Reenviar, Leído, Eliminar) */}
+                          <div className="hidden group-hover:flex items-center gap-1 bg-white/95 px-1.5 py-0.5 rounded-lg shadow-sm border border-slate-200 shrink-0">
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleReplyMessage(msg);
+                              }}
+                              title="Responder"
+                              className="p-1 rounded hover:bg-slate-100 text-slate-600 hover:text-sky-600"
+                            >
+                              <Reply className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleForwardMessage(msg);
+                              }}
+                              title="Reenviar"
+                              className="p-1 rounded hover:bg-slate-100 text-slate-600 hover:text-sky-600"
+                            >
+                              <Forward className="h-3.5 w-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => handleToggleRead(msg, e)}
+                              title={msg.isRead ? "Marcar como no leído" : "Marcar como leído"}
+                              className="p-1 rounded hover:bg-slate-100 text-slate-600 hover:text-sky-600"
+                            >
+                              {msg.isRead ? (
+                                <Mail className="h-3.5 w-3.5" />
+                              ) : (
+                                <MailOpen className="h-3.5 w-3.5" />
+                              )}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={(e) => handleMoveToTrash(msg.id, e)}
+                              title="Eliminar"
+                              className="p-1 rounded hover:bg-rose-50 text-slate-600 hover:text-rose-600"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <p
+                          className={`text-xs sm:text-sm truncate mt-0.5 ${
+                            !msg.isRead ? "font-bold text-slate-900" : "font-medium text-slate-800"
+                          }`}
                         >
-                          <Reply className="w-3.5 h-3.5 mr-1" /> Responder
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleForwardMessage(activeMessage)}
-                          className="h-8 text-xs font-bold"
-                        >
-                          <Forward className="w-3.5 h-3.5 mr-1" /> Reenviar
-                        </Button>
+                          {msg.subject}
+                        </p>
+
+                        <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+                          {msg.snippet}
+                        </p>
+
+                        {/* Píldoras de archivos adjuntos o Puente de Cartera */}
+                        {(msgAttachments.length > 0 || msg.migratedFrom) && (
+                          <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                            {msgAttachments.slice(0, 2).map((att, i) => (
+                              <span
+                                key={i}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-medium bg-slate-100 text-slate-700 border border-slate-200 max-w-[180px] truncate"
+                              >
+                                {getAttachmentIcon(att.mimeType, att.filename)}
+                                <span className="truncate">{att.filename}</span>
+                              </span>
+                            ))}
+                            {msgAttachments.length > 2 && (
+                              <span className="text-[10px] font-bold text-slate-500">
+                                +{msgAttachments.length - 2} más
+                              </span>
+                            )}
+                            {msg.migratedFrom && (
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-sky-100 text-sky-800">
+                                <FolderSync className="h-2.5 w-2.5" />
+                                Puente: {msg.migratedFrom}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="text-xs text-slate-500">
-                      De: <strong className="text-slate-800">{activeMessage.fromName}</strong> &lt;
-                      {activeMessage.fromAddress}&gt; • Para: {activeMessage.toAddresses}
-                    </div>
-                    <div className="text-sm text-slate-800 leading-relaxed pt-2">
-                      {activeMessage.bodyHtml ? (
-                        <div dangerouslySetInnerHTML={{ __html: activeMessage.bodyHtml }} />
+                  );
+                })
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* 3. PANEL DE LECTURA DEL CORREO (Con Responder, Responder a todos, Reenviar, Imprimir y Descarga de Adjuntos) */}
+        {(layoutMode === "SPLIT" || readingFullView) && (
+          <div className="flex-1 flex flex-col bg-white min-w-0 min-h-0 overflow-hidden">
+            {!selectedMessage ? (
+              <div className="flex-1 flex flex-col items-center justify-center p-12 text-center">
+                <Mail className="h-12 w-12 text-slate-200 mb-3" />
+                <p className="text-base font-semibold text-slate-600">
+                  Selecciona un correo para leerlo
+                </p>
+                <p className="text-xs text-slate-400 mt-1 max-w-sm">
+                  Puedes responder, responder a todos, reenviar con archivos adjuntos o imprimir cualquier correo para tus expedientes en aacomsoft.
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Barra de Acciones Superior del Lector (Estilo Gmail) */}
+                <div className="h-12 px-4 sm:px-6 border-b border-slate-200 bg-slate-50/50 flex items-center justify-between gap-2 shrink-0">
+                  <div className="flex items-center gap-2">
+                    {layoutMode === "LIST_FULL" && (
+                      <button
+                        type="button"
+                        onClick={() => setReadingFullView(false)}
+                        className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold transition"
+                      >
+                        <ArrowLeft className="h-3.5 w-3.5" />
+                        Volver a la lista
+                      </button>
+                    )}
+
+                    {selectedMessage.folder === "DRAFTS" && (
+                      <button
+                        type="button"
+                        onClick={() => handleOpenDraftInComposer(selectedMessage)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow-sm transition"
+                      >
+                        <PenTool className="h-3.5 w-3.5" />
+                        Continuar editando borrador
+                      </button>
+                    )}
+
+                    <button
+                      type="button"
+                      onClick={() => handleReplyMessage(selectedMessage)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold transition"
+                    >
+                      <Reply className="h-3.5 w-3.5 text-sky-600" />
+                      Responder
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleReplyAllMessage(selectedMessage)}
+                      className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold transition"
+                    >
+                      <ReplyAll className="h-3.5 w-3.5 text-sky-600" />
+                      Responder a todos
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleForwardMessage(selectedMessage)}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold transition"
+                    >
+                      <Forward className="h-3.5 w-3.5 text-indigo-600" />
+                      Reenviar
+                    </button>
+                  </div>
+
+                  {/* Derecha del lector: Imprimir, Destacar, Marcar no leído, Borrar */}
+                  <div className="flex items-center gap-1.5">
+                    <button
+                      type="button"
+                      onClick={() => handlePrintMessage(selectedMessage)}
+                      title="Imprimir correo o guardar como PDF para expediente"
+                      className="p-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 transition"
+                    >
+                      <Printer className="h-4 w-4" />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleToggleRead(selectedMessage)}
+                      title={selectedMessage.isRead ? "Marcar como no leído" : "Marcar como leído"}
+                      className="p-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 transition"
+                    >
+                      {selectedMessage.isRead ? (
+                        <Mail className="h-4 w-4" />
                       ) : (
-                        <div className="whitespace-pre-wrap">{activeMessage.bodyText}</div>
+                        <MailOpen className="h-4 w-4 text-sky-600" />
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleToggleStar(selectedMessage)}
+                      title="Destacar con estrella"
+                      className="p-1.5 rounded-lg bg-white hover:bg-slate-100 text-slate-600 border border-slate-200 transition"
+                    >
+                      <Star
+                        className={`h-4 w-4 ${
+                          selectedMessage.isStarred ? "fill-amber-400 text-amber-400" : ""
+                        }`}
+                      />
+                    </button>
+
+                    {selectedMessage.folder === "TRASH" ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setData((prev) => ({
+                            ...prev,
+                            messages: prev.messages.map((m) =>
+                              m.id === selectedMessage.id ? { ...m, folder: "INBOX" } : m
+                            ),
+                          }));
+                          updateEmailMessageStatusAction({
+                            messageId: selectedMessage.id,
+                            moveToFolder: "INBOX",
+                            targetAgencyId: data.agency.id,
+                          });
+                          notify("success", "Correo restaurado a Recibidos.");
+                        }}
+                        className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold transition"
+                      >
+                        Restaurar a Recibidos
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleMoveToTrash(selectedMessage.id)}
+                        title="Mover a la Papelera"
+                        className="p-1.5 rounded-lg bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 border border-slate-200 transition"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Contenido Scrollable del Correo */}
+                <div className="flex-1 overflow-y-auto p-5 sm:p-8 space-y-6">
+                  {/* Asunto y Cabecera del Remitente */}
+                  <div className="space-y-4 pb-5 border-b border-slate-100">
+                    <h2 className="text-lg sm:text-xl font-bold text-slate-900 leading-snug">
+                      {selectedMessage.subject}
+                    </h2>
+
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-sky-600 text-white font-bold text-sm flex items-center justify-center shrink-0">
+                          {(selectedMessage.fromName || selectedMessage.fromAddress || "A")
+                            .charAt(0)
+                            .toUpperCase()}
+                        </div>
+                        <div className="space-y-0.5 text-xs">
+                          <div className="font-bold text-slate-900 text-sm">
+                            {selectedMessage.fromName || selectedMessage.fromAddress}{" "}
+                            <span className="font-mono font-normal text-slate-500 text-xs">
+                              &lt;{selectedMessage.fromAddress}&gt;
+                            </span>
+                          </div>
+                          <div className="text-slate-500">
+                            Para:{" "}
+                            <span className="font-mono text-slate-700">
+                              {selectedMessage.toAddresses}
+                            </span>
+                            {selectedMessage.ccAddresses && (
+                              <span className="ml-2">
+                                • CC:{" "}
+                                <span className="font-mono text-slate-700">
+                                  {selectedMessage.ccAddresses}
+                                </span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-xs text-slate-400 flex items-center gap-1.5">
+                        <Clock className="h-3.5 w-3.5" />
+                        {new Date(selectedMessage.receivedAt).toLocaleString("es-MX")}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tarjetas de Archivos Adjuntos Descargables */}
+                  {selectedAttachments.length > 0 && (
+                    <div className="bg-slate-50 border border-slate-200/90 rounded-2xl p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                          <Paperclip className="h-3.5 w-3.5 text-sky-600" />
+                          {selectedAttachments.length} Archivo(s) Adjunto(s)
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2.5">
+                        {selectedAttachments.map((att, idx) => {
+                          const downloadHref = att.url
+                            ? att.url
+                            : att.contentBase64
+                            ? `data:${att.mimeType || "application/octet-stream"};base64,${att.contentBase64}`
+                            : "#";
+
+                          return (
+                            <div
+                              key={idx}
+                              className="flex items-center justify-between gap-3 bg-white border border-slate-200 hover:border-sky-300 rounded-xl p-2.5 shadow-sm transition"
+                            >
+                              <div className="flex items-center gap-2.5 min-w-0">
+                                <div className="w-9 h-9 rounded-lg bg-slate-100 flex items-center justify-center shrink-0">
+                                  {getAttachmentIcon(att.mimeType, att.filename)}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="text-xs font-bold text-slate-900 truncate">
+                                    {att.filename}
+                                  </p>
+                                  <p className="text-[11px] text-slate-400">
+                                    {formatBytes(att.size)}
+                                  </p>
+                                </div>
+                              </div>
+
+                              <a
+                                href={downloadHref}
+                                download={att.filename}
+                                target={att.url ? "_blank" : undefined}
+                                rel="noreferrer"
+                                className="p-2 rounded-lg bg-sky-50 hover:bg-sky-100 text-sky-700 transition shrink-0"
+                                title="Descargar archivo"
+                              >
+                                <Download className="h-4 w-4" />
+                              </a>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Vista previa inline de imágenes adjuntas */}
+                      {selectedAttachments.some(
+                        (a) => (a.mimeType || "").startsWith("image/") && a.contentBase64
+                      ) && (
+                        <div className="pt-2 flex flex-wrap gap-3">
+                          {selectedAttachments
+                            .filter(
+                              (a) => (a.mimeType || "").startsWith("image/") && a.contentBase64
+                            )
+                            .map((img, i) => (
+                              <img
+                                key={i}
+                                src={`data:${img.mimeType};base64,${img.contentBase64}`}
+                                alt={img.filename}
+                                className="max-h-52 rounded-xl border border-slate-200 shadow-sm object-contain bg-white"
+                              />
+                            ))}
+                        </div>
                       )}
                     </div>
+                  )}
+
+                  {/* Cuerpo del Correo */}
+                  <div
+                    className="prose prose-slate max-w-none text-sm text-slate-800 leading-relaxed"
+                    dangerouslySetInnerHTML={{
+                      __html:
+                        selectedMessage.bodyHtml ||
+                        `<p>${selectedMessage.bodyText || selectedMessage.snippet}</p>`,
+                    }}
+                  />
+
+                  {/* Botones Inferiores Rápidos Estilo Gmail (Responder / Responder a todos / Reenviar) */}
+                  <div className="pt-6 border-t border-slate-100 flex flex-wrap items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => handleReplyMessage(selectedMessage)}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs sm:text-sm font-bold transition shadow-sm"
+                    >
+                      <Reply className="h-4 w-4 text-sky-600" />
+                      Responder
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleReplyAllMessage(selectedMessage)}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs sm:text-sm font-bold transition shadow-sm"
+                    >
+                      <ReplyAll className="h-4 w-4 text-sky-600" />
+                      Responder a todos
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => handleForwardMessage(selectedMessage)}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 text-xs sm:text-sm font-bold transition shadow-sm"
+                    >
+                      <Forward className="h-4 w-4 text-indigo-600" />
+                      Reenviar
+                    </button>
                   </div>
-                ) : (
-                  <div className="flex-1 flex items-center justify-center p-10 text-xs text-slate-400">
-                    Selecciona un mensaje para leerlo.
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
-      {/* REDACTOR DE CORREO ESTILO GMAIL (Expandible a Pantalla Completa / Anclado Abajo a la Derecha / Minimizable + Adjuntos PDF, Imágenes y Presentaciones) */}
-      {composeOpen && (
+      {/* REDACTOR DE CORREO ESTILO GMAIL (3 MODOS: VENTANA AMPLIA 88%, ACOPLADA A LA DERECHA O MINIMIZADA) */}
+      {showComposeModal && (
         <div
+          className={
+            composeMinimized
+              ? "fixed bottom-0 right-6 z-50 w-80 shadow-2xl rounded-t-2xl overflow-hidden border border-slate-300 bg-white"
+              : composeSizeMode === "LARGE_MODAL"
+              ? "fixed inset-0 z-50 bg-slate-900/45 backdrop-blur-[2px] flex items-center justify-center p-2 sm:p-5"
+              : "fixed bottom-0 right-4 z-50 w-full max-w-[650px] h-[82vh] shadow-2xl rounded-t-2xl overflow-hidden border border-slate-300 bg-white flex flex-col"
+          }
           onDragOver={(e) => {
             e.preventDefault();
-            setIsDraggingOver(true);
+            if (!composeMinimized) setIsDraggingOver(true);
           }}
           onDragLeave={() => setIsDraggingOver(false)}
           onDrop={(e) => {
             e.preventDefault();
             setIsDraggingOver(false);
-            handleFilesSelected(e.dataTransfer.files);
+            if (!composeMinimized && e.dataTransfer?.files?.length) {
+              processUploadedFiles(e.dataTransfer.files);
+            }
           }}
-          className={`fixed z-50 transition-all duration-200 bg-white shadow-[0_25px_70px_-15px_rgba(15,23,42,0.45)] border border-slate-300 flex flex-col overflow-hidden ${
-            composeMinimized
-              ? "bottom-0 right-6 w-80 h-12 rounded-t-2xl"
-              : composeMaximized
-              ? "inset-3 sm:inset-6 lg:inset-10 rounded-2xl"
-              : "bottom-0 right-4 sm:right-8 w-[95vw] sm:w-[680px] h-[640px] rounded-t-2xl"
-          }`}
         >
-          {/* Barra de Título Oscura estilo Gmail Compose */}
           <div
-            onClick={() => composeMinimized && setComposeMinimized(false)}
-            className="bg-[#0B1120] text-white px-4 py-3 flex items-center justify-between cursor-pointer select-none shrink-0"
+            className={
+              composeMinimized
+                ? "w-full"
+                : composeSizeMode === "LARGE_MODAL"
+                ? "bg-white border border-slate-200 rounded-2xl max-w-5xl w-full h-[90vh] shadow-2xl flex flex-col overflow-hidden"
+                : "flex-1 flex flex-col overflow-hidden"
+            }
           >
-            <div className="flex items-center gap-2.5 min-w-0">
-              <Mail className="w-4 h-4 text-sky-400 shrink-0" />
-              <span className="text-xs sm:text-sm font-bold truncate">
-                {subject.trim() ? subject : "Mensaje nuevo"}
-              </span>
-              <span className="hidden sm:inline-block text-[11px] font-mono text-slate-400 truncate">
-                ({selectedMailbox.emailAddress})
-              </span>
-            </div>
-
-            <div className="flex items-center gap-1 shrink-0">
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setComposeMinimized(!composeMinimized);
-                }}
-                className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10"
-                title={composeMinimized ? "Restaurar" : "Minimizar"}
-              >
-                <Minus className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setComposeMinimized(false);
-                  setComposeMaximized(!composeMaximized);
-                }}
-                className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-white/10"
-                title={composeMaximized ? "Tamaño ventana" : "Pantalla completa"}
-              >
-                {composeMaximized ? (
-                  <Minimize2 className="w-4 h-4" />
-                ) : (
-                  <Maximize2 className="w-4 h-4" />
-                )}
-              </button>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setComposeOpen(false);
-                }}
-                className="p-1.5 rounded-lg text-slate-300 hover:text-rose-400 hover:bg-white/10"
-                title="Cerrar"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-
-          {!composeMinimized && (
-            <>
-              {/* Barra inteligente de vinculación con Cartera / Pólizas de aacomsoft */}
-              <div className="bg-slate-50 border-b border-slate-200 px-4 py-2 flex flex-col gap-2 shrink-0">
-                <div className="flex items-center justify-between">
-                  <button
-                    type="button"
-                    onClick={() => setShowCrmBar(!showCrmBar)}
-                    className="text-xs font-bold text-sky-700 hover:text-sky-900 flex items-center gap-1.5"
-                  >
-                    <Sparkles className="w-3.5 h-3.5 text-sky-600" />
-                    {showCrmBar
-                      ? "Ocultar selector de Clientes y Pólizas de aacomsoft"
-                      : "Autocompletar con Cliente o Póliza de tu Cartera en aacomsoft"}
-                  </button>
-                  <span className="text-[11px] text-slate-400 hidden sm:inline">
-                    Puedes arrastrar y soltar PDFs, imágenes o presentaciones aquí
-                  </span>
-                </div>
-
-                {showCrmBar && (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pb-1">
-                    <select
-                      value={selectedClientId}
-                      onChange={(e) => handleSelectClientForPolicy(e.target.value)}
-                      className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-800"
-                    >
-                      <option value="">1. Elegir Cliente de mi Cartera (Opcional)...</option>
-                      {clients.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name} {c.email ? `(${c.email})` : ""}
-                        </option>
-                      ))}
-                    </select>
-
-                    <select
-                      value={selectedPolicyId}
-                      onChange={(e) => handleSelectPolicyForTemplate(e.target.value)}
-                      className="h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-800"
-                    >
-                      <option value="">2. Insertar Póliza / Carátula PDF (Opcional)...</option>
-                      {policies
-                        .filter((p) => !selectedClientId || p.clientId === selectedClientId)
-                        .map((p) => (
-                          <option key={p.id} value={p.id}>
-                            #{p.policyNumber} — {p.insuranceCompany || p.insurer || "Póliza"} (
-                            {p.insured || p.contractor || "Cliente"})
-                          </option>
-                        ))}
-                    </select>
-                  </div>
-                )}
+            {/* Barra de título oscura estilo Gmail */}
+            <div
+              onClick={() => {
+                if (composeMinimized) setComposeMinimized(false);
+              }}
+              className="bg-slate-900 text-white px-4 py-2.5 flex items-center justify-between cursor-pointer select-none shrink-0"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <Mail className="h-4 w-4 text-sky-400 shrink-0" />
+                <span className="text-xs sm:text-sm font-bold truncate">
+                  {composeSubject ? composeSubject : composeModeLabel}
+                </span>
+                <span className="hidden md:inline-block text-[11px] text-slate-400 font-mono truncate">
+                  ({activeMailbox.emailAddress})
+                </span>
               </div>
 
-              {/* Campos Para / CC / Asunto estilo Gmail */}
-              <div className="px-5 divide-y divide-slate-100 shrink-0">
-                <div className="flex items-center gap-2 py-2">
-                  <span className="text-xs font-semibold text-slate-400 w-14 shrink-0">Para</span>
-                  <input
-                    type="text"
-                    value={toEmail}
-                    onChange={(e) => setToEmail(e.target.value)}
-                    placeholder="correo@asegurado.com (puedes separar varios con coma)"
-                    className="flex-1 text-xs sm:text-sm font-mono text-slate-900 focus:outline-none"
-                  />
-                  {!showCc && (
+              <div
+                className="flex items-center gap-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={() => setComposeMinimized(!composeMinimized)}
+                  title={composeMinimized ? "Restaurar" : "Minimizar en barra inferior"}
+                  className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition"
+                >
+                  <Minus className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setComposeMinimized(false);
+                    setComposeSizeMode((prev) =>
+                      prev === "LARGE_MODAL" ? "DOCKED_RIGHT" : "LARGE_MODAL"
+                    );
+                  }}
+                  title={
+                    composeSizeMode === "LARGE_MODAL"
+                      ? "Acoplar a la derecha para leer el correo de fondo"
+                      : "Expandir a ventana amplia centrada"
+                  }
+                  className="p-1.5 rounded hover:bg-slate-800 text-slate-300 hover:text-white transition"
+                >
+                  {composeSizeMode === "LARGE_MODAL" ? (
+                    <Minimize2 className="h-4 w-4" />
+                  ) : (
+                    <Maximize2 className="h-4 w-4" />
+                  )}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setShowComposeModal(false)}
+                  title="Cerrar redactor"
+                  className="p-1.5 rounded hover:bg-rose-600 text-slate-300 hover:text-white transition"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Contenido del Redactor */}
+            {!composeMinimized && (
+              <>
+                <div className="flex-1 overflow-y-auto px-5 py-3 flex flex-col gap-2.5 relative">
+                  {/* Overlay de Drag & Drop */}
+                  {isDraggingOver && (
+                    <div className="absolute inset-3 z-30 rounded-2xl border-2 border-dashed border-sky-500 bg-sky-50/95 flex flex-col items-center justify-center gap-2 pointer-events-none">
+                      <Paperclip className="h-10 w-10 text-sky-600 animate-bounce" />
+                      <p className="text-base font-bold text-sky-950">
+                        Suelta tus archivos, imágenes, PDFs o presentaciones aquí
+                      </p>
+                      <p className="text-xs text-sky-700">
+                        Se adjuntarán automáticamente a tu correo
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Barra colapsable para Autocompletar Póliza de aacomsoft */}
+                  <div className="bg-sky-50/80 border border-sky-200/80 rounded-xl px-3.5 py-2 flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 text-xs font-bold text-sky-900">
+                      <Sparkles className="h-3.5 w-3.5 text-sky-600 shrink-0" />
+                      <span>Conectar con Cartera aacomsoft:</span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2 flex-1 max-w-2xl">
+                      <select
+                        aria-label="Elegir Cliente de tu Cartera"
+                        value={selectedClientId}
+                        onChange={(e) => handleSelectClient(e.target.value)}
+                        className="flex-1 min-w-[180px] bg-white border border-sky-200 rounded-lg px-2.5 py-1 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      >
+                        <option value="">👤 Elegir asegurado...</option>
+                        {data.clients.map((c) => (
+                          <option key={c.id} value={c.id}>
+                            {c.name} {c.email ? `(${c.email})` : ""}
+                          </option>
+                        ))}
+                      </select>
+
+                      <select
+                        aria-label="Insertar Póliza de tu Cartera"
+                        value={selectedPolicyId}
+                        onChange={(e) => handleSelectPolicy(e.target.value)}
+                        className="flex-1 min-w-[200px] bg-white border border-sky-200 rounded-lg px-2.5 py-1 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500"
+                      >
+                        <option value="">📄 Insertar datos y PDF de póliza...</option>
+                        {data.policies.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.policyNumber} — {p.insuranceCompany || "Seguro"} (
+                            {p.contractor || p.insured || "Asegurado"})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Campo PARA con Autocompletado Flotante Instantáneo */}
+                  <div className="relative flex items-center gap-2 border-b border-slate-200 pb-1.5">
+                    <span className="text-xs font-bold text-slate-500 w-14 shrink-0">
+                      Para:
+                    </span>
+                    <input
+                      type="text"
+                      value={composeTo}
+                      onFocus={() => setShowToSuggestions(true)}
+                      onBlur={() => setTimeout(() => setShowToSuggestions(false), 180)}
+                      onChange={(e) => {
+                        setComposeTo(e.target.value);
+                        setShowToSuggestions(true);
+                      }}
+                      placeholder="Escribe nombre del cliente o correo (ej. cliente@correo.com)..."
+                      className="flex-1 text-sm text-slate-900 focus:outline-none bg-transparent"
+                    />
+                    {!showCcBcc && (
+                      <button
+                        type="button"
+                        onClick={() => setShowCcBcc(true)}
+                        className="text-xs font-semibold text-slate-500 hover:text-sky-600 px-2 py-0.5 rounded"
+                      >
+                        CC / CCO
+                      </button>
+                    )}
+
+                    {/* Dropdown de sugerencias instantáneas en Para: */}
+                    {showToSuggestions && matchingToContacts.length > 0 && (
+                      <div className="absolute left-14 top-9 z-40 w-full max-w-md bg-white border border-slate-200 rounded-xl shadow-xl py-1 overflow-hidden">
+                        {matchingToContacts.map((c, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              applyContactSuggestion("TO", c);
+                            }}
+                            className="w-full px-3 py-2 text-left hover:bg-sky-50 flex items-center justify-between gap-2 text-xs transition"
+                          >
+                            <div className="truncate">
+                              <span className="font-bold text-slate-900">{c.label}</span>{" "}
+                              <span className="font-mono text-slate-500">&lt;{c.email}&gt;</span>
+                            </div>
+                            <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 shrink-0">
+                              {c.badge}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Campos CC y CCO */}
+                  {showCcBcc && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 border-b border-slate-200 pb-1.5">
+                      <div className="relative flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-500 w-14 shrink-0">
+                          CC:
+                        </span>
+                        <input
+                          type="text"
+                          value={composeCc}
+                          onFocus={() => setShowCcSuggestions(true)}
+                          onBlur={() => setTimeout(() => setShowCcSuggestions(false), 180)}
+                          onChange={(e) => {
+                            setComposeCc(e.target.value);
+                            setShowCcSuggestions(true);
+                          }}
+                          placeholder="Copia a..."
+                          className="flex-1 text-sm text-slate-900 focus:outline-none bg-transparent"
+                        />
+                        {showCcSuggestions && matchingCcContacts.length > 0 && (
+                          <div className="absolute left-14 top-8 z-40 w-full bg-white border border-slate-200 rounded-xl shadow-xl py-1 overflow-hidden">
+                            {matchingCcContacts.map((c, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  applyContactSuggestion("CC", c);
+                                }}
+                                className="w-full px-3 py-1.5 text-left hover:bg-sky-50 flex items-center justify-between gap-2 text-xs"
+                              >
+                                <span className="truncate font-bold text-slate-900">
+                                  {c.label} ({c.email})
+                                </span>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-500 w-12 shrink-0">
+                          CCO:
+                        </span>
+                        <input
+                          type="text"
+                          value={composeBcc}
+                          onChange={(e) => setComposeBcc(e.target.value)}
+                          placeholder="Copia oculta..."
+                          className="flex-1 text-sm text-slate-900 focus:outline-none bg-transparent"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Campo ASUNTO */}
+                  <div className="flex items-center gap-2 border-b border-slate-200 pb-1.5">
+                    <span className="text-xs font-bold text-slate-500 w-14 shrink-0">
+                      Asunto:
+                    </span>
+                    <input
+                      type="text"
+                      value={composeSubject}
+                      onChange={(e) => setComposeSubject(e.target.value)}
+                      placeholder="Asunto del correo..."
+                      className="flex-1 text-sm font-semibold text-slate-900 focus:outline-none bg-transparent"
+                    />
+                  </div>
+
+                  {/* Barra de Formato Simple + Firma */}
+                  <div className="flex items-center gap-1 border-b border-slate-100 pb-1.5 text-slate-600">
                     <button
                       type="button"
-                      onClick={() => setShowCc(true)}
-                      className="text-xs font-semibold text-slate-400 hover:text-slate-700 px-2"
+                      onClick={() => insertTextFormat("BOLD")}
+                      title="Negrita"
+                      className="p-1.5 rounded hover:bg-slate-100 text-slate-700"
                     >
-                      CC
+                      <Bold className="h-3.5 w-3.5" />
                     </button>
+                    <button
+                      type="button"
+                      onClick={() => insertTextFormat("ITALIC")}
+                      title="Cursiva"
+                      className="p-1.5 rounded hover:bg-slate-100 text-slate-700"
+                    >
+                      <Italic className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => insertTextFormat("LIST")}
+                      title="Lista de viñetas"
+                      className="p-1.5 rounded hover:bg-slate-100 text-slate-700"
+                    >
+                      <List className="h-3.5 w-3.5" />
+                    </button>
+                    <div className="h-4 w-px bg-slate-200 mx-1" />
+                    <button
+                      type="button"
+                      onClick={() => insertTextFormat("SIGNATURE")}
+                      className="inline-flex items-center gap-1 px-2 py-1 rounded hover:bg-slate-100 text-xs font-semibold text-slate-700"
+                    >
+                      <PenTool className="h-3 w-3 text-sky-600" />
+                      Insertar Firma
+                    </button>
+                  </div>
+
+                  {/* Área de Texto Principal Amplia */}
+                  <textarea
+                    ref={bodyTextareaRef}
+                    value={composeBody}
+                    onChange={(e) => setComposeBody(e.target.value)}
+                    placeholder="Escribe tu mensaje aquí... (Puedes arrastrar y soltar archivos, PDFs, imágenes o presentaciones en cualquier parte de esta ventana)"
+                    className="flex-1 min-h-[220px] w-full resize-none text-sm text-slate-900 leading-relaxed focus:outline-none font-sans"
+                  />
+
+                  {/* Tarjetas de Archivos Adjuntos Cargados */}
+                  {composeAttachments.length > 0 && (
+                    <div className="pt-2 border-t border-slate-100 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                          Archivos Adjuntos ({composeAttachments.length})
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setComposeAttachments([])}
+                          className="text-[11px] text-rose-600 hover:underline font-semibold"
+                        >
+                          Quitar todos
+                        </button>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {composeAttachments.map((att, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-2 bg-slate-100 border border-slate-200 rounded-xl px-3 py-1.5 text-xs"
+                          >
+                            {getAttachmentIcon(att.mimeType, att.filename)}
+                            <span className="font-semibold text-slate-800 max-w-[200px] truncate">
+                              {att.filename}
+                            </span>
+                            <span className="text-[10px] text-slate-500">
+                              ({formatBytes(att.size)})
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => removeAttachment(idx)}
+                              className="text-slate-400 hover:text-rose-600 ml-1"
+                              title="Quitar adjunto"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   )}
                 </div>
 
-                {showCc && (
-                  <div className="flex items-center gap-2 py-2">
-                    <span className="text-xs font-semibold text-slate-400 w-14 shrink-0">CC</span>
+                {/* Barra de Herramientas Inferior del Redactor (Enviar + Adjuntar Archivos/Imágenes/Presentaciones) */}
+                <div className="px-5 py-3 bg-slate-50 border-t border-slate-200 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSendEmail(false)}
+                      disabled={isPending}
+                      className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-sky-600 hover:bg-sky-500 text-white text-sm font-bold shadow-md shadow-sky-600/20 transition disabled:opacity-50"
+                    >
+                      <Send className="h-4 w-4" />
+                      {isPending ? "Enviando..." : "Enviar"}
+                    </button>
+
+                    {/* Input oculto general para cualquier archivo (PDF, PPTX, XLSX, DOCX, ZIP, Imágenes) */}
                     <input
-                      type="text"
-                      value={ccEmail}
-                      onChange={(e) => setCcEmail(e.target.value)}
-                      placeholder="copia@promotoria.com"
-                      className="flex-1 text-xs sm:text-sm font-mono text-slate-900 focus:outline-none"
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.key,.zip,.txt,image/*"
+                      onChange={(e) => {
+                        processUploadedFiles(e.target.files);
+                        e.target.value = "";
+                      }}
+                      className="hidden"
                     />
+
+                    {/* Input oculto para imágenes */}
+                    <input
+                      ref={imageInputRef}
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={(e) => {
+                        processUploadedFiles(e.target.files);
+                        e.target.value = "";
+                      }}
+                      className="hidden"
+                    />
+
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      title="Adjuntar archivos, PDFs, presentaciones PowerPoint (.pptx), Excel (.xlsx) o documentos"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold transition shadow-sm"
+                    >
+                      <Paperclip className="h-4 w-4 text-sky-600" />
+                      <span>Adjuntar archivo / presentación</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => imageInputRef.current?.click()}
+                      title="Adjuntar imágenes o fotografías"
+                      className="inline-flex items-center gap-1.5 px-3 py-2 rounded-full bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold transition shadow-sm"
+                    >
+                      <ImageIcon className="h-4 w-4 text-emerald-600" />
+                      <span className="hidden sm:inline">Imagen</span>
+                    </button>
                   </div>
-                )}
 
-                <div className="flex items-center gap-2 py-2.5">
-                  <span className="text-xs font-semibold text-slate-400 w-14 shrink-0">Asunto</span>
-                  <input
-                    type="text"
-                    value={subject}
-                    onChange={(e) => setSubject(e.target.value)}
-                    placeholder="Asunto del correo..."
-                    className="flex-1 text-xs sm:text-sm font-bold text-slate-900 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              {/* Área Principal de Redacción Amplia */}
-              <div className="flex-1 px-5 py-3 flex flex-col min-h-0 relative overflow-y-auto">
-                {isDraggingOver && (
-                  <div className="absolute inset-3 rounded-2xl border-2 border-dashed border-sky-500 bg-sky-50/90 z-20 flex flex-col items-center justify-center text-sky-800 font-bold text-sm">
-                    <Paperclip className="w-8 h-8 mb-2 text-sky-600 animate-bounce" />
-                    Suelta tus archivos aquí para adjuntarlos al correo (PDFs, imágenes, presentaciones, Excel)
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => handleSendEmail(true)}
+                      disabled={isPending}
+                      className="px-3.5 py-2 rounded-full bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-semibold transition"
+                    >
+                      Guardar borrador
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowComposeModal(false);
+                        setEditingDraftId(null);
+                      }}
+                      title="Descartar"
+                      className="p-2 rounded-full text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
                   </div>
-                )}
-
-                <textarea
-                  value={bodyText}
-                  onChange={(e) => setBodyText(e.target.value)}
-                  placeholder="Escribe tu mensaje aquí..."
-                  className="w-full flex-1 min-h-[220px] resize-none border-0 text-sm sm:text-[15px] text-slate-800 leading-relaxed focus:outline-none"
-                />
-
-                {/* Bandeja de Archivos Adjuntos Cargados */}
-                {attachments.length > 0 && (
-                  <div className="mt-4 pt-3 border-t border-slate-100 space-y-2">
-                    <div className="flex items-center justify-between text-xs text-slate-500 font-semibold">
-                      <span>Archivos adjuntos ({attachments.length})</span>
-                      <span>
-                        Total:{" "}
-                        {formatBytes(
-                          attachments.reduce((acc, item) => acc + (item.size || 0), 0)
-                        )}
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                      {attachments.map((att) => {
-                        const AttIcon = getAttachmentIcon(att.mimeType, att.filename);
-                        const isImage = att.mimeType?.startsWith("image/") && att.dataUrl;
-                        return (
-                          <div
-                            key={att.id}
-                            className="flex items-center justify-between gap-2.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 shadow-2xs"
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              {isImage ? (
-                                <img
-                                  src={att.dataUrl}
-                                  alt={att.filename}
-                                  className="h-9 w-9 rounded-lg object-cover border border-slate-200 shrink-0"
-                                />
-                              ) : (
-                                <div className="h-9 w-9 rounded-lg bg-white border border-slate-200 text-sky-600 flex items-center justify-center shrink-0">
-                                  <AttIcon className="w-4 h-4" />
-                                </div>
-                              )}
-                              <div className="min-w-0">
-                                <div className="text-xs font-bold text-slate-800 truncate">
-                                  {att.filename}
-                                </div>
-                                <div className="text-[10px] text-slate-500">
-                                  {formatBytes(att.size)}
-                                </div>
-                              </div>
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveAttachment(att.id)}
-                              className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 shrink-0"
-                              title="Quitar adjunto"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Inputs ocultos para subir cualquier archivo o imágenes */}
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.key,.zip,.txt,image/*"
-                onChange={(e) => {
-                  handleFilesSelected(e.target.files);
-                  e.target.value = "";
-                }}
-                className="hidden"
-              />
-              <input
-                ref={imageInputRef}
-                type="file"
-                multiple
-                accept="image/*"
-                onChange={(e) => {
-                  handleFilesSelected(e.target.files);
-                  e.target.value = "";
-                }}
-                className="hidden"
-              />
-
-              {/* Barra Inferior de Herramientas y Envío estilo Gmail */}
-              <div className="px-5 py-3 border-t border-slate-200 bg-slate-50 flex flex-wrap items-center justify-between gap-3 shrink-0">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button
-                    type="button"
-                    onClick={() => handleSendEmail(false)}
-                    disabled={sending}
-                    className="bg-sky-600 hover:bg-sky-500 text-white font-extrabold text-xs sm:text-sm h-10 px-6 rounded-full shadow-sm"
-                  >
-                    {sending ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Send className="w-4 h-4 mr-2" />
-                    )}
-                    Enviar
-                  </Button>
-
-                  {/* Botón Adjuntar Archivos (PDF, PPTX, XLSX, DOCX, etc.) */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="h-9 rounded-full border-slate-300 bg-white text-slate-700 hover:bg-slate-100 text-xs font-bold px-3.5"
-                    title="Adjuntar archivos (PDF, Presentaciones PowerPoint, Excel, Word, etc.)"
-                  >
-                    <Paperclip className="w-4 h-4 mr-1.5 text-sky-600" />
-                    Adjuntar archivo / presentación
-                  </Button>
-
-                  {/* Botón Insertar Imagen */}
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => imageInputRef.current?.click()}
-                    className="h-9 rounded-full border-slate-300 bg-white text-slate-700 hover:bg-slate-100 text-xs font-bold px-3.5"
-                    title="Insertar o adjuntar imágenes"
-                  >
-                    <ImageIcon className="w-4 h-4 mr-1.5 text-emerald-600" />
-                    Imagen
-                  </Button>
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleSendEmail(true)}
-                    disabled={sending}
-                    className="h-9 text-xs font-semibold text-slate-600 hover:text-slate-900"
-                  >
-                    Guardar borrador
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setComposeOpen(false)}
-                    disabled={sending}
-                    className="h-9 px-2.5 text-slate-400 hover:text-rose-600"
-                    title="Descartar borrador"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Modal: Conector en 1 Clic para iPhone (.mobileconfig) y Android */}
-      <Dialog open={mobileSyncOpen} onOpenChange={setMobileSyncOpen}>
-        <DialogContent className="sm:max-w-[520px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Smartphone className="w-5 h-5 text-sky-600" />
-              Sincronizar con mi iPhone / Android en 1 Clic
-            </DialogTitle>
-            <DialogDescription className="text-xs">
-              Conecta <strong className="font-mono">{selectedMailbox.emailAddress}</strong> a la app
-              nativa de tu celular sin configurar puertos manualmente.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-3">
-            <div className="rounded-2xl border border-sky-200 bg-gradient-to-br from-sky-50 to-slate-50 p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-sky-950">
-                  Opción A: iPhone, iPad o Mac (Apple Mail)
-                </span>
-                <Badge className="bg-sky-600 text-white text-[10px]">Automático 1 Clic</Badge>
+      {/* MODAL: SINCRONIZAR EN IPHONE / ANDROID / OUTLOOK */}
+      {showMobileSyncModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 text-sky-600 flex items-center justify-center">
+                  <Smartphone className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Conectar en tu iPhone, Android o Outlook
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Usa tu correo dentro de aacomsoft o llévalo también en la app de tu celular
+                  </p>
+                </div>
               </div>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Descarga el perfil oficial <code>.mobileconfig</code> preconfigurado con tus
-                credenciales y servidores SSL. Al abrirlo en tu iPhone, solo pulsa{" "}
-                <strong>&ldquo;Instalar Perfil&rdquo;</strong> en Configuración.
-              </p>
-              <a
-                href={`/api/corporate-email/mobileconfig?mailboxId=${encodeURIComponent(
-                  selectedMailbox.id
-                )}`}
-                download
-                className="block"
+              <button
+                type="button"
+                onClick={() => setShowMobileSyncModal(false)}
+                className="text-slate-400 hover:text-slate-600"
               >
-                <Button className="w-full bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs h-10 rounded-xl">
-                  <Download className="w-4 h-4 mr-2" />
-                  Descargar Perfil Automático para iPhone (.mobileconfig)
-                </Button>
-              </a>
+                <X className="h-5 w-5" />
+              </button>
             </div>
 
-            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
-              <div className="text-xs font-black text-slate-800">
-                Opción B: Android (App Gmail / Outlook Móvil)
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-500 font-medium">Cuenta de Correo:</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono font-bold text-slate-900">
+                    {activeMailbox.emailAddress}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => copyText("email", activeMailbox.emailAddress)}
+                    className="text-sky-600 hover:text-sky-800"
+                  >
+                    {copiedField === "email" ? (
+                      <Check className="h-3.5 w-3.5 text-emerald-600" />
+                    ) : (
+                      <Copy className="h-3.5 w-3.5" />
+                    )}
+                  </button>
+                </div>
               </div>
-              {loadingMobileConfig ? (
-                <div className="py-4 text-center text-xs text-slate-500">
-                  <Loader2 className="w-4 h-4 animate-spin mx-auto mb-1" />
-                  Cargando credenciales seguras...
+
+              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-200/80">
+                <div>
+                  <span className="text-slate-400 block">Servidor Entrante (IMAP):</span>
+                  <span className="font-mono font-bold text-slate-800">
+                    imap.titan.email
+                  </span>
+                  <span className="text-[11px] text-slate-500 block">
+                    Puerto: 993 (SSL/TLS)
+                  </span>
                 </div>
-              ) : mobileConfigData ? (
-                <div className="space-y-2 text-xs">
-                  {[
-                    { label: "Correo / Usuario", key: "email", val: mobileConfigData.emailAddress },
-                    { label: "Contraseña App", key: "pass", val: mobileConfigData.password },
-                    {
-                      label: "Servidor Entrante (IMAP SSL)",
-                      key: "imap",
-                      val: `${mobileConfigData.imapHost}:${mobileConfigData.imapPort}`,
-                    },
-                    {
-                      label: "Servidor Saliente (SMTP SSL)",
-                      key: "smtp",
-                      val: `${mobileConfigData.smtpHost}:${mobileConfigData.smtpPort}`,
-                    },
-                  ].map((item) => (
-                    <div
-                      key={item.key}
-                      className="flex items-center justify-between rounded-lg bg-white border border-slate-200 px-3 py-2"
-                    >
-                      <div>
-                        <div className="text-[10px] text-slate-400 font-semibold">{item.label}</div>
-                        <div className="font-mono font-bold text-slate-800">{item.val}</div>
-                      </div>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleCopyText(item.key, item.val)}
-                        className="h-7 px-2 text-xs text-sky-600"
-                      >
-                        {copiedField === item.key ? (
-                          <Check className="w-3.5 h-3.5 text-emerald-600" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5" />
-                        )}
-                      </Button>
-                    </div>
-                  ))}
+                <div>
+                  <span className="text-slate-400 block">Servidor Saliente (SMTP):</span>
+                  <span className="font-mono font-bold text-slate-800">
+                    smtp.titan.email
+                  </span>
+                  <span className="text-[11px] text-slate-500 block">
+                    Puerto: 465 (SSL/TLS)
+                  </span>
                 </div>
-              ) : null}
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <button
+                type="button"
+                onClick={() => setShowMobileSyncModal(false)}
+                className="px-5 py-2 rounded-xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition"
+              >
+                Entendido
+              </button>
             </div>
           </div>
-
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setMobileSyncOpen(false)}>
-              Cerrar
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </div>
   );
 }

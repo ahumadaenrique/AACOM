@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import nodemailer from "nodemailer";
+import tls from "tls";
 import {
   buildAgentEmailLocalPart,
   checkDomainsAvailabilityAndWholesalePrice,
@@ -1004,6 +1005,7 @@ export async function sendCorporateEmailAction(params: {
   mailboxId: string;
   to: string;
   cc?: string;
+  bcc?: string;
   subject: string;
   bodyHtml: string;
   bodyText?: string;
@@ -1011,6 +1013,7 @@ export async function sendCorporateEmailAction(params: {
   relatedPolicyId?: string;
   attachmentsJson?: any;
   saveAsDraft?: boolean;
+  draftId?: string;
   targetAgencyId?: string;
 }) {
   const ctx = await resolveTenantContext(params.targetAgencyId);
@@ -1038,6 +1041,35 @@ export async function sendCorporateEmailAction(params: {
     .slice(0, 160);
 
   if (params.saveAsDraft) {
+    if (params.draftId) {
+      const existingDraft = await prisma.agencyEmailMessage.findFirst({
+        where: {
+          id: params.draftId,
+          agencyId: ctx.effectiveAgencyId,
+          mailboxId: senderMailbox.id,
+        },
+      });
+      if (existingDraft) {
+        const updatedDraft = await prisma.agencyEmailMessage.update({
+          where: { id: existingDraft.id },
+          data: {
+            toAddresses: cleanTo,
+            ccAddresses: params.cc?.trim() || null,
+            subject: params.subject.trim() || "(Sin asunto)",
+            snippet,
+            bodyHtml: params.bodyHtml,
+            bodyText: params.bodyText || snippet,
+            attachmentsJson: params.attachmentsJson ?? undefined,
+            relatedClientId: params.relatedClientId || null,
+            relatedPolicyId: params.relatedPolicyId || null,
+            receivedAt: new Date(),
+          },
+        });
+        revalidatePath("/mi-correo");
+        return { success: true, message: updatedDraft, mode: "DRAFT" };
+      }
+    }
+
     const draft = await prisma.agencyEmailMessage.create({
       data: {
         agencyId: ctx.effectiveAgencyId,
@@ -1059,6 +1091,18 @@ export async function sendCorporateEmailAction(params: {
     });
     revalidatePath("/mi-correo");
     return { success: true, message: draft, mode: "DRAFT" };
+  }
+
+  // Si provenía de un borrador existente y ahora se envía, eliminar el borrador de DRAFTS
+  if (params.draftId) {
+    await prisma.agencyEmailMessage.deleteMany({
+      where: {
+        id: params.draftId,
+        agencyId: ctx.effectiveAgencyId,
+        mailboxId: senderMailbox.id,
+        folder: "DRAFTS",
+      },
+    });
   }
 
   // Preparar adjuntos (PDFs, imágenes, presentaciones, etc.) para SMTP y Resend
@@ -1116,6 +1160,7 @@ export async function sendCorporateEmailAction(params: {
         from: `"${senderMailbox.displayName}" <${senderMailbox.emailAddress}>`,
         to: cleanTo,
         cc: params.cc?.trim() || undefined,
+        bcc: params.bcc?.trim() || undefined,
         subject: params.subject.trim(),
         html: params.bodyHtml,
         text: params.bodyText || snippet,
@@ -1167,6 +1212,7 @@ export async function sendCorporateEmailAction(params: {
         replyTo: senderMailbox.emailAddress,
         to: cleanTo,
         cc: params.cc?.trim() || undefined,
+        bcc: params.bcc?.trim() || undefined,
         subject: params.subject.trim(),
         html: params.bodyHtml,
         text: params.bodyText || snippet,
@@ -1412,4 +1458,301 @@ export async function runResellerClubAndFixieDiagnosticAction(targetAgencyId?: s
     throw new Error("Solo el Super Administrador puede ejecutar el diagnóstico de infraestructura.");
   }
   return await diagnoseResellerClubAndFixieConnection();
+}
+
+
+/**
+ * Acciones en lote estilo Gmail (selección múltiple con checkboxes):
+ * Marcar leídos/no leídos, destacar, mover a Papelera/Recibidos o eliminar definitivamente.
+ */
+export async function bulkUpdateEmailMessagesAction(params: {
+  messageIds: string[];
+  isRead?: boolean;
+  isStarred?: boolean;
+  moveToFolder?: "INBOX" | "TRASH";
+  deletePermanently?: boolean;
+  targetAgencyId?: string;
+}) {
+  const ctx = await resolveTenantContext(params.targetAgencyId);
+  if (!Array.isArray(params.messageIds) || params.messageIds.length === 0) {
+    return { success: true, count: 0 };
+  }
+
+  if (params.deletePermanently) {
+    const res = await prisma.agencyEmailMessage.deleteMany({
+      where: {
+        id: { in: params.messageIds },
+        agencyId: ctx.effectiveAgencyId,
+      },
+    });
+    revalidatePath("/mi-correo");
+    return { success: true, count: res.count };
+  }
+
+  const res = await prisma.agencyEmailMessage.updateMany({
+    where: {
+      id: { in: params.messageIds },
+      agencyId: ctx.effectiveAgencyId,
+    },
+    data: {
+      ...(typeof params.isRead === "boolean" ? { isRead: params.isRead } : {}),
+      ...(typeof params.isStarred === "boolean" ? { isStarred: params.isStarred } : {}),
+      ...(params.moveToFolder ? { folder: params.moveToFolder } : {}),
+    },
+  });
+
+  revalidatePath("/mi-correo");
+  return { success: true, count: res.count };
+}
+
+/**
+ * Vacía definitivamente todos los mensajes en la carpeta PAPELERA (TRASH) del buzón activo.
+ */
+export async function emptyTrashAction(params: {
+  mailboxId: string;
+  targetAgencyId?: string;
+}) {
+  const ctx = await resolveTenantContext(params.targetAgencyId);
+  const res = await prisma.agencyEmailMessage.deleteMany({
+    where: {
+      agencyId: ctx.effectiveAgencyId,
+      mailboxId: params.mailboxId,
+      folder: "TRASH",
+    },
+  });
+  revalidatePath("/mi-correo");
+  return { success: true, deletedCount: res.count };
+}
+
+function decodeMimeWords(str: string): string {
+  if (!str) return "";
+  return str.replace(/=\?([^?]+)\?([BQbq])\?([^?]*)\?=/g, (_, charset, encoding, text) => {
+    try {
+      if (encoding.toUpperCase() === "B") {
+        return Buffer.from(text, "base64").toString("utf8");
+      }
+      if (encoding.toUpperCase() === "Q") {
+        const qText = text
+          .replace(/_/g, " ")
+          .replace(/=([0-9A-Fa-f]{2})/g, (__: string, hex: string) =>
+            String.fromCharCode(parseInt(hex, 16))
+          );
+        return Buffer.from(qText, "binary").toString("utf8");
+      }
+    } catch {
+      // ignore decode error
+    }
+    return text;
+  });
+}
+
+/**
+ * Sincroniza correos entrantes externos reales vía IMAP sobre TLS (ej. imap.titan.email:993)
+ * usando las credenciales cifradas AES-256-GCM del buzón.
+ */
+export async function syncMailboxImapAction(params: {
+  mailboxId: string;
+  targetAgencyId?: string;
+}) {
+  const ctx = await resolveTenantContext(params.targetAgencyId);
+
+  const mailbox = await prisma.agencyMailbox.findFirst({
+    where: {
+      id: params.mailboxId,
+      agencyId: ctx.effectiveAgencyId,
+      ...(ctx.isAdmin ? {} : { agentUserId: ctx.user.id }),
+    },
+  });
+
+  if (!mailbox) {
+    throw new Error("Buzón no encontrado.");
+  }
+
+  const creds = decryptMailboxCredentials(mailbox.encryptedImapCredentials);
+  if (!creds || creds.providerMode !== "RESELLERCLUB_LIVE") {
+    revalidatePath("/mi-correo");
+    return {
+      success: true,
+      syncedCount: 0,
+      mode: "INTERNAL_SYNC",
+      detail: "Buzón sincronizado con la red interna de aacomsoft.",
+    };
+  }
+
+  // Conector nativo IMAP TLS (0 dependencias externas para compatibilidad 100% Vercel Serverless)
+  const fetchedMessages = await new Promise<
+    Array<{
+      fromName: string;
+      fromAddress: string;
+      toAddresses: string;
+      ccAddresses: string | null;
+      subject: string;
+      date: Date;
+      snippet: string;
+      bodyText: string;
+    }>
+  >((resolve) => {
+    const results: Array<{
+      fromName: string;
+      fromAddress: string;
+      toAddresses: string;
+      ccAddresses: string | null;
+      subject: string;
+      date: Date;
+      snippet: string;
+      bodyText: string;
+    }> = [];
+
+    let buffer = "";
+    let step: "GREETING" | "LOGIN" | "SELECT" | "FETCH" | "DONE" = "GREETING";
+    const host = creds.imapHost || "imap.titan.email";
+    const port = creds.imapPort || 993;
+
+    const socket = tls.connect(
+      {
+        host,
+        port,
+        servername: host,
+        timeout: 6500,
+      },
+      () => {
+        // Esperar saludo * OK del servidor IMAP
+      }
+    );
+
+    const finish = () => {
+      if (step !== "DONE") {
+        step = "DONE";
+        try {
+          socket.write("A4 LOGOUT\r\n");
+          socket.destroy();
+        } catch {
+          // ignore
+        }
+        resolve(results);
+      }
+    };
+
+    socket.setTimeout(6500, finish);
+    socket.on("error", finish);
+    socket.on("close", finish);
+
+    socket.on("data", (chunk) => {
+      buffer += chunk.toString("utf8");
+
+      if (step === "GREETING" && buffer.includes("* OK")) {
+        buffer = "";
+        step = "LOGIN";
+        const safeUser = creds.emailAddress.replace(/"/g, '\\"');
+        const safePass = creds.password.replace(/"/g, '\\"');
+        socket.write(`A1 LOGIN "${safeUser}" "${safePass}"\r\n`);
+        return;
+      }
+
+      if (step === "LOGIN" && (buffer.includes("A1 OK") || buffer.includes("A1 NO") || buffer.includes("A1 BAD"))) {
+        if (!buffer.includes("A1 OK")) {
+          finish();
+          return;
+        }
+        buffer = "";
+        step = "SELECT";
+        socket.write("A2 SELECT INBOX\r\n");
+        return;
+      }
+
+      if (step === "SELECT" && (buffer.includes("A2 OK") || buffer.includes("A2 NO"))) {
+        const existsMatch = buffer.match(/\*\s+(\d+)\s+EXISTS/i);
+        const total = existsMatch ? parseInt(existsMatch[1], 10) : 0;
+        buffer = "";
+        if (total <= 0) {
+          finish();
+          return;
+        }
+        const startSeq = Math.max(1, total - 14);
+        step = "FETCH";
+        socket.write(
+          `A3 FETCH ${startSeq}:${total} (BODY.PEEK[HEADER.FIELDS (FROM TO CC SUBJECT DATE)])\r\n`
+        );
+        return;
+      }
+
+      if (step === "FETCH" && (buffer.includes("A3 OK") || buffer.includes("A3 NO") || buffer.includes("A3 BAD"))) {
+        const blocks = buffer.split(/\*\s+\d+\s+FETCH/i).slice(1);
+        for (const block of blocks) {
+          const fromMatch = block.match(/^From:\s*(.+)$/im);
+          const toMatch = block.match(/^To:\s*(.+)$/im);
+          const ccMatch = block.match(/^Cc:\s*(.+)$/im);
+          const subjMatch = block.match(/^Subject:\s*(.+)$/im);
+          const dateMatch = block.match(/^Date:\s*(.+)$/im);
+
+          const rawFrom = decodeMimeWords((fromMatch?.[1] || "").trim());
+          const emailExtract = rawFrom.match(/<([^>]+)>/) || rawFrom.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/);
+          const fromAddress = (emailExtract ? emailExtract[1] : rawFrom).trim().toLowerCase();
+          const fromName = rawFrom.replace(/<[^>]+>/g, "").replace(/"/g, "").trim() || fromAddress;
+          const subject = decodeMimeWords((subjMatch?.[1] || "(Sin asunto)").trim());
+          const toAddresses = decodeMimeWords((toMatch?.[1] || mailbox.emailAddress).trim());
+          const ccAddresses = ccMatch?.[1] ? decodeMimeWords(ccMatch[1].trim()) : null;
+          const parsedDate = dateMatch?.[1] ? new Date(dateMatch[1].trim()) : new Date();
+          const validDate = isNaN(parsedDate.getTime()) ? new Date() : parsedDate;
+
+          if (fromAddress && subject) {
+            results.push({
+              fromName,
+              fromAddress,
+              toAddresses,
+              ccAddresses,
+              subject,
+              date: validDate,
+              snippet: `Correo recibido de ${fromName} (${fromAddress})`,
+              bodyText: `Asunto: ${subject}\nDe: ${fromName} <${fromAddress}>\nPara: ${toAddresses}`,
+            });
+          }
+        }
+        finish();
+      }
+    });
+  });
+
+  let syncedCount = 0;
+  for (const item of fetchedMessages) {
+    const exists = await prisma.agencyEmailMessage.findFirst({
+      where: {
+        agencyId: ctx.effectiveAgencyId,
+        mailboxId: mailbox.id,
+        fromAddress: item.fromAddress,
+        subject: item.subject,
+      },
+    });
+    if (!exists) {
+      await prisma.agencyEmailMessage.create({
+        data: {
+          agencyId: ctx.effectiveAgencyId,
+          mailboxId: mailbox.id,
+          folder: "INBOX",
+          fromAddress: item.fromAddress,
+          fromName: item.fromName,
+          toAddresses: item.toAddresses,
+          ccAddresses: item.ccAddresses,
+          subject: item.subject,
+          snippet: item.snippet,
+          bodyHtml: `<div style="font-family: sans-serif; color: #1e293b; line-height: 1.6;"><p>${item.bodyText.replace(/\n/g, "<br/>")}</p></div>`,
+          bodyText: item.bodyText,
+          isRead: false,
+          receivedAt: item.date,
+        },
+      });
+      syncedCount++;
+    }
+  }
+
+  revalidatePath("/mi-correo");
+  return {
+    success: true,
+    syncedCount,
+    mode: "IMAP_LIVE",
+    detail:
+      syncedCount > 0
+        ? `Se sincronizaron ${syncedCount} correo(s) nuevo(s) desde Titan Email.`
+        : "Tu bandeja está al día con el servidor de correo.",
+  };
 }
