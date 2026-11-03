@@ -151,6 +151,11 @@ export async function checkAllSystemsStatus() {
                 const google = createGoogleGenerativeAI({ apiKey });
                 const res = await generateText({
                     model: google('gemini-3.5-flash-lite'),
+                    providerOptions: { google: { thinkingConfig: { thinkingLevel: 'minimal' } } },
+                    prompt: 'a'
+                }).catch(() => generateText({ model: google('gemini-2.5-flash'), prompt: 'a' }));
+                const _unused = ({
+                    model: google('gemini-3.5-flash-lite'),
                     providerOptions: {
                         google: {
                             thinkingConfig: {

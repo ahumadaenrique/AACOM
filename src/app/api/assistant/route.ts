@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { searchMarketConditionsForAssistant } from "@/lib/marketCgSearch";
 
 const CACHE_TTL_MS = 60_000;
+let preferredWorkingModel: string | null = null;
 
 const knowledgeCache = new Map<
     string,
@@ -263,7 +264,10 @@ ${portfolioContext}`;
         ];
 
         // 7. Call Gemini 3.x API endpoint with STREAMING and minimal thinking latency
-        const candidateModels = ["gemini-3.5-flash-lite", "gemini-3.8-flash"];
+        const baseCandidates = ["gemini-3.5-flash-lite", "gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash"];
+        const candidateModels = preferredWorkingModel
+            ? [preferredWorkingModel, ...baseCandidates.filter((m) => m !== preferredWorkingModel)]
+            : baseCandidates;
 
         const buildPayload = (includeThinkingConfig: boolean) =>
             JSON.stringify({
@@ -295,7 +299,7 @@ ${portfolioContext}`;
                 headers: {
                     "Content-Type": "application/json",
                 },
-                body: buildPayload(true),
+                body: buildPayload(modelName.startsWith("gemini-3")),
             });
 
             // Fallback without thinkingConfig if the specific model endpoint rejects the field
@@ -311,6 +315,7 @@ ${portfolioContext}`;
 
             if (res.ok) {
                 googleRes = res;
+                preferredWorkingModel = modelName;
                 break;
             }
             lastErrText = await res.text();

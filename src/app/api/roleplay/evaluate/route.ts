@@ -271,7 +271,7 @@ ${badgesText}
           schema: EvaluationSchema,
           prompt: promptText
         });
-      } catch (_primaryErr) {
+      } catch (_primaryErr) { try {
         evalResult = await generateObject({
           model: google('gemini-3.5-flash-lite'),
           providerOptions: {
@@ -284,6 +284,14 @@ ${badgesText}
           schema: EvaluationSchema,
           prompt: promptText
         });
+      }
+      catch (_secondaryErr) {
+        evalResult = await generateObject({
+          model: google('gemini-2.5-flash'),
+          schema: EvaluationSchema,
+          prompt: promptText
+        });
+      }
       }
       rawObject = evalResult.object as any;
     } catch (aiErr) {

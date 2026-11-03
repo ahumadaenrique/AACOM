@@ -162,6 +162,11 @@ ${promptArticles}`
       model: google('gemini-3.5-flash-lite'),
       schema: CurationResultSchema,
       prompt,
+    }).catch(() => generateObject({ model: google('gemini-2.5-flash'), schema: CurationResultSchema, prompt }))
+    const _unused = ({
+      model: google('gemini-3.5-flash-lite'),
+      schema: CurationResultSchema,
+      prompt,
     })
 
     return object.evaluations
