@@ -191,6 +191,12 @@ export default async function DashboardLayout({
         redirect("/");
     }
 
+    // Módulos beta en desarrollo: proteger acceso directo por URL
+    if (!isSuperAdmin && (pathname.startsWith('/portal-clientes') || pathname.startsWith('/correo-corporativo'))) {
+        const { redirect } = await import("next/navigation");
+        redirect("/cartera");
+    }
+
     // Si un agente o usuario no administrador intenta acceder por URL directa a un módulo desactivado por su promotoría, redirigir al inicio
     if (!isAdmin && isPathBlockedByModuleConfig(pathname, modConfig)) {
         const { redirect } = await import("next/navigation");
@@ -383,18 +389,23 @@ export default async function DashboardLayout({
                                             </button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="w-56">
-                                            <DropdownMenuItem asChild>
-                                                <Link href="/portal-clientes" className="flex items-center gap-2 cursor-pointer font-bold text-teal-700 dark:text-teal-400">
-                                                    <ShieldCheck className="h-4 w-4 text-teal-600" />
-                                                    Portal de Clientes
-                                                </Link>
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link href="/correo-corporativo" className="flex items-center gap-2 cursor-pointer font-semibold text-indigo-700 dark:text-indigo-400">
-                                                    <Mail className="h-4 w-4 text-indigo-600" />
-                                                    Correo Corporativo (1-5 Buzones)
-                                                </Link>
-                                            </DropdownMenuItem>
+                                            {/* Módulos beta en desarrollo - Ocultos hasta su prueba */}
+                                            {false && (
+                                                <>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href="/portal-clientes" className="flex items-center gap-2 cursor-pointer font-bold text-teal-700 dark:text-teal-400">
+                                                            <ShieldCheck className="h-4 w-4 text-teal-600" />
+                                                            Portal de Clientes
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                    <DropdownMenuItem asChild>
+                                                        <Link href="/correo-corporativo" className="flex items-center gap-2 cursor-pointer font-semibold text-indigo-700 dark:text-indigo-400">
+                                                            <Mail className="h-4 w-4 text-indigo-600" />
+                                                            Correo Corporativo (1-5 Buzones)
+                                                        </Link>
+                                                    </DropdownMenuItem>
+                                                </>
+                                            )}
                                             {allowProyecto200Module && modConfig.proyecto_200 && (
                                                 <DropdownMenuItem asChild>
                                                     <Link href="/proyecto-200" className="flex items-center gap-2 cursor-pointer font-bold text-orange-600 dark:text-orange-400">
@@ -843,14 +854,19 @@ export default async function DashboardLayout({
                                                          <Flame className="h-4.5 w-4.5 text-orange-500" />
                                                          Dashboard Proyecto 200
                                                      </Link>
-                                                     <Link href="/portal-clientes" className="text-teal-700 dark:text-teal-400 font-bold hover:text-foreground text-sm flex items-center gap-2">
-                                                         <ShieldCheck className="h-4.5 w-4.5 text-teal-600" />
-                                                         Portal de Clientes
-                                                     </Link>
-                                                     <Link href="/correo-corporativo" className="text-indigo-700 dark:text-indigo-400 font-semibold hover:text-foreground text-sm flex items-center gap-2">
-                                                         <Mail className="h-4.5 w-4.5 text-indigo-600" />
-                                                         Correo Corporativo (1-5 Buzones)
-                                                     </Link>
+                                                     {/* Módulos beta en desarrollo - Ocultos en mobile */}
+                                                     {false && (
+                                                         <>
+                                                             <Link href="/portal-clientes" className="text-teal-700 dark:text-teal-400 font-bold hover:text-foreground text-sm flex items-center gap-2">
+                                                                 <ShieldCheck className="h-4.5 w-4.5 text-teal-600" />
+                                                                 Portal de Clientes
+                                                             </Link>
+                                                             <Link href="/correo-corporativo" className="text-indigo-700 dark:text-indigo-400 font-semibold hover:text-foreground text-sm flex items-center gap-2">
+                                                                 <Mail className="h-4.5 w-4.5 text-indigo-600" />
+                                                                 Correo Corporativo (1-5 Buzones)
+                                                             </Link>
+                                                         </>
+                                                     )}
                                                      <Link href="/admin/agencia" className="text-indigo-700 dark:text-indigo-400 font-bold hover:text-foreground text-sm flex items-center gap-2">
                                                          <Building2 className="h-4.5 w-4.5 text-indigo-600" />
                                                          Mi Marca, Logotipo y Colores

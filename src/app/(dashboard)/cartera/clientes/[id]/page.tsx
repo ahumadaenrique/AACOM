@@ -224,10 +224,13 @@ export default async function ClienteDetalle({
               </Button>
             </a>
           )}
-          <ClientPortalManagerDialog
-            client={{ ...client, portalItems: clientPortalItems }}
-            agentTemplates={agentTemplates}
-          />
+          {/* Módulo Beta - Oculto hasta ser probado */}
+          {false && (
+            <ClientPortalManagerDialog
+              client={{ ...client, portalItems: clientPortalItems }}
+              agentTemplates={agentTemplates}
+            />
+          )}
           <ClientFormDialog client={client} />
         </div>
       </div>

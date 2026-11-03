@@ -18,7 +18,7 @@ export async function updateCorporateMailboxesConfig(data: {
     return { success: false, message: "Ingresa un dominio válido (ej. segurosjuanperez.com)." };
   }
 
-  await prisma.agency.update({
+  await (prisma.agency as any).update({
     where: { id: session.user.agencyId },
     data: {
       corporateEmailDomain: cleanDomain,

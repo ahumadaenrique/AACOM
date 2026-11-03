@@ -114,17 +114,19 @@ export default function InicioPage() {
   const [activeVideoKey, setActiveVideoKey] = useState<string>('prueba-gratis');
   const [heroStageMode, setHeroStageMode] = useState<HeroStageMode>('video-5dias');
   const [showStickyCta, setShowStickyCta] = useState(false);
-  const [audienceMode, setAudienceMode] = useState<'GATEWAY' | 'AGENCY' | 'AGENT'>('GATEWAY');
+  const [audienceMode, setAudienceMode] = useState<'GATEWAY' | 'AGENCY' | 'AGENT'>('AGENCY');
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const host = window.location.hostname.toLowerCase();
       const params = new URLSearchParams(window.location.search);
-      const modeParam = params.get('modo') || params.get('mode');
-      if (host.startsWith('agentes.') || host.startsWith('agente.') || modeParam === 'agente') {
-        setAudienceMode('AGENT');
-      } else if (modeParam === 'agencia' || modeParam === 'promotoria') {
-        setAudienceMode('AGENCY');
+      const isSoloPreview = params.get('preview_solo') === 'true';
+      if (isSoloPreview) {
+        const modeParam = params.get('modo') || params.get('mode');
+        if (modeParam === 'agente') {
+          setAudienceMode('AGENT');
+        } else {
+          setAudienceMode('GATEWAY');
+        }
       }
     }
   }, []);
@@ -271,23 +273,25 @@ export default function InicioPage() {
         />
       ) : null}
       <div className={audienceMode === 'AGENCY' ? 'block' : 'hidden'}>
-        <div className="bg-slate-900/95 border-b border-slate-800 py-2 px-4 text-center text-xs text-slate-300 flex items-center justify-center gap-3 flex-wrap">
-          <span>Estás viendo la versión para <strong>Promotorías y Agencias</strong>.</span>
-          <button
-            type="button"
-            onClick={() => setAudienceMode('AGENT')}
-            className="text-teal-400 hover:text-teal-300 font-bold underline cursor-pointer"
-          >
-            Cambiar a versión Agente Individual ($2,999/año) →
-          </button>
-          <button
-            type="button"
-            onClick={() => setAudienceMode('GATEWAY')}
-            className="text-slate-400 hover:text-white font-semibold cursor-pointer"
-          >
-            [Cambiar modalidad]
-          </button>
-        </div>
+        {audienceMode !== 'AGENCY' && (
+          <div className="bg-slate-900/95 border-b border-slate-800 py-2 px-4 text-center text-xs text-slate-300 flex items-center justify-center gap-3 flex-wrap">
+            <span>Estás viendo la versión para <strong>Promotorías y Agencias</strong>.</span>
+            <button
+              type="button"
+              onClick={() => setAudienceMode('AGENT')}
+              className="text-teal-400 hover:text-teal-300 font-bold underline cursor-pointer"
+            >
+              Cambiar a versión Agente Individual ($2,999/año) →
+            </button>
+            <button
+              type="button"
+              onClick={() => setAudienceMode('GATEWAY')}
+              className="text-slate-400 hover:text-white font-semibold cursor-pointer"
+            >
+              [Cambiar modalidad]
+            </button>
+          </div>
+        )}
       <header className="sticky top-0 z-50 w-full border-b border-slate-800/80 bg-slate-950/80 backdrop-blur-xl transition-all">
         <div className="container mx-auto px-4 h-18 flex items-center justify-between">
           
