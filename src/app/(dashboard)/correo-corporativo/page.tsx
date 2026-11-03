@@ -21,6 +21,10 @@ export default async function CorreoCorporativoPage() {
   }
 
   const agency = user.agency as any;
+  // Aislamiento estricto de producto: Exclusivo para cuentas SOLO_AGENT (las promotorías usan /correos-corporativos y /mi-correo)
+  if (agency.accountType !== "SOLO_AGENT") {
+    redirect("/mi-correo");
+  }
   const endDate = agency.subscriptionEndDate ? new Date(agency.subscriptionEndDate) : null;
   const SUBSCRIPTION_GRACE_MS = 36 * 60 * 60 * 1000;
   const isSaasActive =

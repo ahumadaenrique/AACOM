@@ -191,8 +191,8 @@ export default async function DashboardLayout({
         redirect("/");
     }
 
-    // Módulos beta en desarrollo: proteger acceso directo por URL
-    if (!isSuperAdmin && (pathname.startsWith('/portal-clientes') || pathname.startsWith('/correo-corporativo'))) {
+    // Aislamiento estricto de producto: los módulos de Agente Individual (SOLO_AGENT) jamás deben ser accesibles para cuentas de Promotoría/Agencia
+    if (!isSoloAgent && (pathname.startsWith('/portal-clientes') || pathname.startsWith('/correo-corporativo'))) {
         const { redirect } = await import("next/navigation");
         redirect("/cartera");
     }
@@ -556,12 +556,14 @@ export default async function DashboardLayout({
                                                     Dashboard Proyecto 200
                                                 </Link>
                                             </DropdownMenuItem>
-                                            <DropdownMenuItem asChild>
-                                                <Link href="/admin/agencia" className="flex items-center gap-2 cursor-pointer font-bold text-indigo-700 dark:text-indigo-400">
-                                                    <Building2 className="h-4 w-4 text-indigo-600" />
-                                                    Mi Marca, Logotipo y Colores
-                                                </Link>
-                                            </DropdownMenuItem>
+                                            {isSoloAgent && false && (
+                                                <DropdownMenuItem asChild>
+                                                    <Link href="/admin/agencia" className="flex items-center gap-2 cursor-pointer font-bold text-indigo-700 dark:text-indigo-400">
+                                                        <Building2 className="h-4 w-4 text-indigo-600" />
+                                                        Mi Marca, Logotipo y Colores
+                                                    </Link>
+                                                </DropdownMenuItem>
+                                            )}
                                             <DropdownMenuItem asChild>
                                                 <Link href="/correos-corporativos" className={`flex items-center gap-2 cursor-pointer font-bold text-sky-600 dark:text-sky-400 ${!(isSuperAdmin || allowCorporateEmailModule) ? 'hidden' : ''}`}>
                                                     <Mail className="h-4 w-4 text-sky-600" />
@@ -867,7 +869,7 @@ export default async function DashboardLayout({
                                                              </Link>
                                                          </>
                                                      )}
-                                                     <Link href="/admin/agencia" className="text-indigo-700 dark:text-indigo-400 font-bold hover:text-foreground text-sm flex items-center gap-2">
+                                                     <Link href="/admin/agencia" className="hidden text-indigo-700 dark:text-indigo-400 font-bold hover:text-foreground text-sm flex items-center gap-2">
                                                          <Building2 className="h-4.5 w-4.5 text-indigo-600" />
                                                          Mi Marca, Logotipo y Colores
                                                      </Link>
