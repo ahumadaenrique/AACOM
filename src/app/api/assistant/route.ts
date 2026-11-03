@@ -324,6 +324,12 @@ ${portfolioContext}`;
 
         if (!googleRes || !googleRes.ok) {
             console.error("Google API Error (all models failed):", lastErrText);
+            if (lastErrText.includes("prepayment credits are depleted") || lastErrText.includes("402")) {
+                return new Response("Los créditos de Google Gemini en AI Studio están agotados (Error 402). Por favor recarga saldo en https://ai.studio/projects o actualiza la clave GEMINI_API_KEY en Vercel.", { status: 402 });
+            }
+            if (lastErrText.includes("429") || lastErrText.includes("quota")) {
+                return new Response("Se superó el límite de consultas de la IA (Error 429). Por favor espera unos segundos e intenta nuevamente.", { status: 429 });
+            }
             return new Response("Error del servidor de IA", { status: 500 });
         }
 
