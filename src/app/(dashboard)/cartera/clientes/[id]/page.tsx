@@ -36,6 +36,7 @@ import {
 import Link from "next/link";
 import PolicyUpload from "./PolicyUpload";
 import ClientFormDialog from "./ClientFormDialog";
+import ClientPortalManagerDialog from "./ClientPortalManagerDialog";
 import PolicyFormDialog from "./PolicyFormDialog";
 import PolicyActions from "./PolicyActions";
 import {
@@ -130,6 +131,20 @@ export default async function ClienteDetalle({
   ]);
 
   const blindaje = analyzeClientBlindaje(client, adnDiagnostics, cotizaciones);
+  const [clientPortalItems, agentTemplates] = await Promise.all([
+    (prisma as any).clientPortalItem
+      ? (prisma as any).clientPortalItem.findMany({
+          where: { clientId: client.id },
+          orderBy: { createdAt: "desc" },
+        })
+      : Promise.resolve([]),
+    (prisma as any).clientPortalItem
+      ? (prisma as any).clientPortalItem.findMany({
+          where: { userId: session.user.id, isTemplate: true },
+          orderBy: { createdAt: "desc" },
+        })
+      : Promise.resolve([]),
+  ]);
   const ageInfo = calculateClientAgeInfo(client.birthDate);
 
   const enrichedPolicies = client.policies.map((p) => ({
@@ -209,6 +224,10 @@ export default async function ClienteDetalle({
               </Button>
             </a>
           )}
+          <ClientPortalManagerDialog
+            client={{ ...client, portalItems: clientPortalItems }}
+            agentTemplates={agentTemplates}
+          />
           <ClientFormDialog client={client} />
         </div>
       </div>

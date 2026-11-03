@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import { getOrCreateBimonthlyAgencyPrice } from "@/lib/stripe-pricing";
+import { getOrCreateBimonthlyAgencyPrice, getOrCreateSoloAgentPrice, SOLO_AGENT_PLANS } from "@/lib/stripe-pricing";
 
 export async function POST(req: NextRequest) {
   try {
@@ -50,7 +50,15 @@ export async function POST(req: NextRequest) {
     let monthsToAdd = 0;
     let daysToAdd = 0;
 
-    if (plan === "2M" || plan === "bimestral") {
+    if (plan?.startsWith("SOLO_")) {
+      const soloKey = plan.replace("SOLO_", "") as "1M" | "3M" | "6M" | "12M";
+      const cfg = SOLO_AGENT_PLANS[soloKey];
+      if (cfg) {
+        priceId = await getOrCreateSoloAgentPrice(soloKey);
+        monthsToAdd = cfg.monthsToAdd;
+        daysToAdd = cfg.daysToAdd;
+      }
+    } else if (plan === "2M" || plan === "bimestral") {
       priceId = await getOrCreateBimonthlyAgencyPrice();
       daysToAdd = 60;
     } else if (plan === "3M" || plan === "trimestral") {

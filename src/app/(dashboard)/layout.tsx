@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { headers } from "next/headers"
-import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity, Newspaper, SmilePlus, Youtube, Flame, Mail } from "lucide-react"
+import { CircleUser, Menu, LogOut, Award, ClipboardCheck, Sparkles, Users, MessageSquare, Wallet, Building2, Settings, Book, Calculator, HeartPulse, Target, LifeBuoy, GraduationCap, Bot, Tag, Rocket, Network, Activity, Newspaper, SmilePlus, Youtube, Flame, Mail, ShieldCheck } from "lucide-react"
 import { auth, signOut } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { parseAgencyModulesConfig, isPathBlockedByModuleConfig } from "@/lib/agencyModules"
@@ -147,6 +147,8 @@ export default async function DashboardLayout({
     const isSeller = dbUser?.role === 'SELLER';
     const isLiteAgent = dbUser?.role === 'AGENTE_LITE';
     const isReferidor = dbUser?.role === 'REFERIDOR';
+    const isCliente = dbUser?.role === 'CLIENTE';
+    const isSoloAgent = (agency as any)?.accountType === 'SOLO_AGENT';
     const allowReferidores = agency?.allowReferidores ?? false;
     const allowTipsModule = agency?.allowTipsModule ?? true;
     const allowProyecto200Module = agency?.allowProyecto200Module ?? (agency?.id === "aacom" || agency?.slug === "aacom");
@@ -156,7 +158,7 @@ export default async function DashboardLayout({
     const modulesSetting = await prisma.setting.findUnique({
         where: { key: `agency_modules_${effectiveAgencyIdForModules}` }
     });
-    const modConfig = parseAgencyModulesConfig(modulesSetting?.value);
+    const modConfig = parseAgencyModulesConfig(modulesSetting?.value, (agency as any)?.accountType);
     const hasVisibleTools =
         (modConfig.proyecto_200 && allowProyecto200Module) ||
         modConfig.encuesta_satisfaccion ||
@@ -168,6 +170,10 @@ export default async function DashboardLayout({
         modConfig.academia ||
         (agency?.allowAcademyModule ?? true);
 
+    if (isCliente && !pathname.startsWith('/mi-portal')) {
+        const { redirect } = await import("next/navigation");
+        redirect("/mi-portal");
+    }
     if (isSeller && pathname !== '/vendedor') {
         const { redirect } = await import("next/navigation");
         redirect("/vendedor");
@@ -203,7 +209,7 @@ export default async function DashboardLayout({
         }
     }
 
-    const showNavLinks = (isSubscriptionActive || isSuperAdmin) && !isSeller;
+    const showNavLinks = (isSubscriptionActive || isSuperAdmin) && !isSeller && !isCliente;
 
     // Server-side native logout action
     const handleLogout = async () => {
@@ -377,6 +383,18 @@ export default async function DashboardLayout({
                                             </button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="start" className="w-56">
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/portal-clientes" className="flex items-center gap-2 cursor-pointer font-bold text-teal-700 dark:text-teal-400">
+                                                    <ShieldCheck className="h-4 w-4 text-teal-600" />
+                                                    Portal de Clientes
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/correo-corporativo" className="flex items-center gap-2 cursor-pointer font-semibold text-indigo-700 dark:text-indigo-400">
+                                                    <Mail className="h-4 w-4 text-indigo-600" />
+                                                    Correo Corporativo (1-5 Buzones)
+                                                </Link>
+                                            </DropdownMenuItem>
                                             {allowProyecto200Module && modConfig.proyecto_200 && (
                                                 <DropdownMenuItem asChild>
                                                     <Link href="/proyecto-200" className="flex items-center gap-2 cursor-pointer font-bold text-orange-600 dark:text-orange-400">
@@ -525,6 +543,12 @@ export default async function DashboardLayout({
                                                 <Link href="/proyecto-200?tab=admin" className={`flex items-center gap-2 cursor-pointer font-bold text-orange-600 dark:text-orange-400 ${!(isSuperAdmin || allowProyecto200Module) ? 'hidden' : ''}`}>
                                                     <Flame className="h-4 w-4 text-orange-500" />
                                                     Dashboard Proyecto 200
+                                                </Link>
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem asChild>
+                                                <Link href="/admin/agencia" className="flex items-center gap-2 cursor-pointer font-bold text-indigo-700 dark:text-indigo-400">
+                                                    <Building2 className="h-4 w-4 text-indigo-600" />
+                                                    Mi Marca, Logotipo y Colores
                                                 </Link>
                                             </DropdownMenuItem>
                                             <DropdownMenuItem asChild>
@@ -818,6 +842,18 @@ export default async function DashboardLayout({
                                                      <Link href="/proyecto-200?tab=admin" className={`text-orange-600 dark:text-orange-400 font-bold hover:text-foreground text-sm flex items-center gap-2 ${!(isSuperAdmin || allowProyecto200Module) ? 'hidden' : ''}`}>
                                                          <Flame className="h-4.5 w-4.5 text-orange-500" />
                                                          Dashboard Proyecto 200
+                                                     </Link>
+                                                     <Link href="/portal-clientes" className="text-teal-700 dark:text-teal-400 font-bold hover:text-foreground text-sm flex items-center gap-2">
+                                                         <ShieldCheck className="h-4.5 w-4.5 text-teal-600" />
+                                                         Portal de Clientes
+                                                     </Link>
+                                                     <Link href="/correo-corporativo" className="text-indigo-700 dark:text-indigo-400 font-semibold hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Mail className="h-4.5 w-4.5 text-indigo-600" />
+                                                         Correo Corporativo (1-5 Buzones)
+                                                     </Link>
+                                                     <Link href="/admin/agencia" className="text-indigo-700 dark:text-indigo-400 font-bold hover:text-foreground text-sm flex items-center gap-2">
+                                                         <Building2 className="h-4.5 w-4.5 text-indigo-600" />
+                                                         Mi Marca, Logotipo y Colores
                                                      </Link>
                                                      <Link href="/correos-corporativos" className={`text-sky-600 dark:text-sky-400 font-bold hover:text-foreground text-sm flex items-center gap-2 ${!(isSuperAdmin || allowCorporateEmailModule) ? 'hidden' : ''}`}>
                                                          <Mail className="h-4.5 w-4.5 text-sky-600" />

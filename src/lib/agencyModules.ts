@@ -192,8 +192,35 @@ export const DEFAULT_AGENCY_MODULES_CONFIG: AgencyModulesConfig = {
   assistant: true,
 };
 
-export function parseAgencyModulesConfig(rawJson?: string | null): AgencyModulesConfig {
-  const result: AgencyModulesConfig = { ...DEFAULT_AGENCY_MODULES_CONFIG };
+export const DEFAULT_SOLO_AGENT_MODULES_CONFIG: AgencyModulesConfig = {
+  newsletters: true,
+  activity: true,
+  pea_prp: false,
+  cartera: true,
+  team: false,
+  ranking: false,
+  referidores: true,
+  correo_corporativo: true,
+  proyecto_200: true,
+  encuesta_satisfaccion: true,
+  documentacion: true,
+  cotizador: true,
+  adn: true,
+  tips: true,
+  plan_arranque: false,
+  academia: true,
+  assistant: true,
+};
+
+export function parseAgencyModulesConfig(
+  rawJson?: string | null,
+  accountType?: string | null
+): AgencyModulesConfig {
+  const baseDefaults =
+    accountType === "SOLO_AGENT"
+      ? DEFAULT_SOLO_AGENT_MODULES_CONFIG
+      : DEFAULT_AGENCY_MODULES_CONFIG;
+  const result: AgencyModulesConfig = { ...baseDefaults };
   if (!rawJson) return result;
   try {
     const parsed = JSON.parse(rawJson);
@@ -222,7 +249,10 @@ export function isPathBlockedByModuleConfig(
     pathname.startsWith("/support") ||
     pathname.startsWith("/votaciones") ||
     pathname.startsWith("/reportes") ||
-    pathname.startsWith("/vendedor")
+    pathname.startsWith("/vendedor") ||
+    pathname.startsWith("/mi-portal") ||
+    pathname.startsWith("/portal-clientes") ||
+    pathname.startsWith("/correo-corporativo")
   ) {
     return false;
   }

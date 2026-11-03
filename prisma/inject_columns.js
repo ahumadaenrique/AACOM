@@ -734,6 +734,48 @@ async function injectColumns() {
       await client.query(`INSERT INTO "Setting" ("key", "value") VALUES ('corporate_email_aacom_only_init_v1', 'true') ON CONFLICT ("key") DO UPDATE SET "value" = 'true';`);
       console.log('Initialized allowCorporateEmailModule = true ONLY for AACOM, false for all other agencies.');
     }
+    // SOLO_AGENT SaaS, Corporate Email Individual & Client Portal columns and tables
+    const soloAgentAndPortalQueries = [
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "accountType" TEXT NOT NULL DEFAULT 'AGENCY';`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "corporateEmailMailboxes" INTEGER NOT NULL DEFAULT 0;`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "corporateEmailStatus" TEXT;`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "corporateEmailEndDate" TIMESTAMP(3);`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "corporateEmailSubId" TEXT;`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "corporateEmailDomain" TEXT;`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "corporateEmailConfig" TEXT;`,
+      `ALTER TABLE "Agency" ADD COLUMN IF NOT EXISTS "corporateEmailMailboxesJson" TEXT;`,
+      `ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "portalUserId" TEXT;`,
+      `ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "portalEnabled" BOOLEAN NOT NULL DEFAULT false;`,
+      `ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "portalWelcomeNote" TEXT;`,
+      `ALTER TABLE "Client" ADD COLUMN IF NOT EXISTS "portalHiddenPolicyIds" TEXT;`,
+      `CREATE UNIQUE INDEX IF NOT EXISTS "Client_portalUserId_key" ON "Client"("portalUserId") WHERE "portalUserId" IS NOT NULL;`,
+      `CREATE TABLE IF NOT EXISTS "ClientPortalItem" (
+        "id" TEXT PRIMARY KEY,
+        "clientId" TEXT NOT NULL,
+        "agencyId" TEXT,
+        "userId" TEXT NOT NULL,
+        "category" TEXT NOT NULL DEFAULT 'INSTRUCTIVO',
+        "title" TEXT NOT NULL,
+        "content" TEXT,
+        "fileUrl" TEXT,
+        "fileName" TEXT,
+        "insurer" TEXT,
+        "ramo" TEXT,
+        "order" INTEGER NOT NULL DEFAULT 0,
+        "active" BOOLEAN NOT NULL DEFAULT true,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "ClientPortalItem_clientId_fkey" FOREIGN KEY ("clientId") REFERENCES "Client"("id") ON DELETE CASCADE ON UPDATE CASCADE,
+        CONSTRAINT "ClientPortalItem_agencyId_fkey" FOREIGN KEY ("agencyId") REFERENCES "Agency"("id") ON DELETE SET NULL ON UPDATE CASCADE
+      );`,
+      `CREATE INDEX IF NOT EXISTS "ClientPortalItem_clientId_idx" ON "ClientPortalItem"("clientId");`,
+      `CREATE INDEX IF NOT EXISTS "ClientPortalItem_agencyId_idx" ON "ClientPortalItem"("agencyId");`,
+      `CREATE INDEX IF NOT EXISTS "ClientPortalItem_userId_idx" ON "ClientPortalItem"("userId");`
+    ];
+    for (const q of soloAgentAndPortalQueries) {
+      await client.query(q);
+    }
+
     console.log("Column injection completed successfully.");
   } catch (error) {
     console.warn("⚠️  inject_columns: Could not connect to DB or columns may already exist. Continuing build...");

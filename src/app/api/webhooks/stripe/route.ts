@@ -35,7 +35,8 @@ export async function POST(req: Request) {
     agencyId: string,
     daysToAddStr?: string,
     monthsToAddStr?: string,
-    stripePeriodEndUnix?: number
+    stripePeriodEndUnix?: number,
+    isSoloAgentPlan?: boolean
   ) => {
     const agency = await prisma.agency.findUnique({
       where: { id: agencyId },
@@ -89,6 +90,7 @@ export async function POST(req: Request) {
       newEndDate.setUTCHours(23, 59, 59, 999);
 
       let subscriptionPlan = "QUARTERLY";
+      const isSolo = isSoloAgentPlan || (agency as any).accountType === "SOLO_AGENT";
       let studyTokens = 12;
       if (monthsToAddStr) {
         const months = parseInt(monthsToAddStr, 10);
@@ -127,7 +129,15 @@ export async function POST(req: Request) {
         data: {
           subscriptionStatus: "active",
           subscriptionEndDate: newEndDate,
-          subscriptionPlan: subscriptionPlan,
+          subscriptionPlan: isSolo
+            ? subscriptionPlan === "ANNUAL"
+              ? "SOLO_12M"
+              : subscriptionPlan === "SEMIANNUAL"
+              ? "SOLO_6M"
+              : subscriptionPlan === "QUARTERLY"
+              ? "SOLO_3M"
+              : "SOLO_1M"
+            : subscriptionPlan,
         },
       });
 
@@ -488,6 +498,39 @@ export async function POST(req: Request) {
             console.error("Error updating discount code uses:", err);
           }
         }
+      } else if (session.metadata?.isCorporateEmail === "true") {
+        const agencyId = session.metadata?.agencyId;
+        const mailboxes = parseInt(session.metadata?.mailboxes || "1", 10);
+        const requestedDomain = session.metadata?.requestedDomain || undefined;
+        const discountCodeStr = session.metadata?.discountCodeStr;
+        const sellerId = session.metadata?.sellerId || null;
+        const amountPaidMxn = (session.amount_total || 0) / 100;
+
+        if (agencyId) {
+          const endDate = new Date();
+          endDate.setFullYear(endDate.getFullYear() + 1);
+          endDate.setUTCHours(23, 59, 59, 999);
+
+          await prisma.agency.update({
+            where: { id: agencyId },
+            data: {
+              corporateEmailMailboxes: mailboxes,
+              corporateEmailStatus: "active",
+              corporateEmailEndDate: endDate,
+              corporateEmailSubId: (session.subscription as string) || null,
+              ...(requestedDomain ? { corporateEmailDomain: requestedDomain } : {}),
+            } as any,
+          });
+
+          await logCommission(
+            sellerId,
+            agencyId,
+            `Paquete Correo Corporativo (${mailboxes} buzón/es 10GB Anual)`,
+            amountPaidMxn,
+            session.payment_intent as string,
+            discountCodeStr
+          );
+        }
       } else if (session.metadata?.type === "CORPORATE_EMAIL_PACKAGE") {
         const agencyId = session.metadata?.agencyId;
         const domainName = session.metadata?.domainName;
@@ -598,7 +641,8 @@ export async function POST(req: Request) {
               console.error("Error retrieving subscription period end on checkout:", e);
             }
           }
-          await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr, stripePeriodEndUnix);
+          const isSoloAgentPlan = session.metadata?.isSoloAgentPlan === "true";
+          await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr, stripePeriodEndUnix, isSoloAgentPlan);
 
           await logCommission(
             sellerId, 
@@ -653,7 +697,8 @@ export async function POST(req: Request) {
             },
           });
         } else if (agencyId) {
-            await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr, stripePeriodEndUnix);
+            const isSoloAgentPlan = subscription.metadata?.isSoloAgentPlan === "true";
+            await processSubscriptionPayment(agencyId, daysToAddStr, monthsToAddStr, stripePeriodEndUnix, isSoloAgentPlan);
 
             await logCommission(
               null, 

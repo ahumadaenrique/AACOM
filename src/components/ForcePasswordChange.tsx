@@ -77,6 +77,14 @@ export function ForcePasswordChange({ userId, email }: { userId: string, email: 
                         ) : (
                             <form onSubmit={handleSubmit} className="space-y-4">
                                 <div className="space-y-1 text-center mb-4">
+                                    <div className="bg-amber-50 border-2 border-amber-300 text-amber-950 rounded-xl p-3.5 mb-4 text-left shadow-sm">
+                                        <p className="text-xs font-extrabold uppercase tracking-wide text-amber-800 mb-1">
+                                            ⚠️ Importante antes de continuar
+                                        </p>
+                                        <p className="text-xs leading-relaxed font-semibold text-amber-900">
+                                            Por favor elige una contraseña personal <span className="underline font-black">QUE SÍ VAYAS A RECORDAR</span>. La utilizarás para consultar tus pólizas, vigencias e instructivos en caso de siniestro o emergencia.
+                                        </p>
+                                    </div>
                                     <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Usuario</span>
                                     <p className="text-sm font-semibold text-slate-700 dark:text-zinc-300">{email}</p>
                                 </div>
