@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
     const mailboxesJson = JSON.stringify(mailboxes);
 
     // Pre-guardar configuración solicitada en la agencia
-    await prisma.agency.update({
+    await (prisma.agency as any).update({
       where: { id: agency.id },
       data: {
         corporateEmailDomain: requestedDomain,

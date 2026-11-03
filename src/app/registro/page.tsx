@@ -252,6 +252,8 @@ export default function RegisterPage() {
               Personaliza el logotipo y color de tu promotoría en menos de 2 minutos. Tendrás acceso total durante 5 días con videos interactivos «Así funciono» en cada pantalla.
             </p>
 
+            {/* Selector de modalidad Solo Agent en beta - Oculto a menos que venga por parámetro especial */}
+            {initialTypeParam && (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
                 <button
                   type="button"
@@ -278,6 +280,7 @@ export default function RegisterPage() {
                   <div className="text-[11px] text-slate-400 mt-0.5">Mi Cartera, Portal de Clientes, P200, IA y Simuladores ($2,999/año)</div>
                 </button>
               </div>
+            )}
             {canceled && (
               <div className="mt-4 p-4 bg-amber-950/60 text-amber-200 rounded-xl border border-amber-500/40 flex items-center gap-2 text-xs sm:text-sm">
                 <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
