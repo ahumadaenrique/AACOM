@@ -29,6 +29,11 @@ export default async function PortalClientesHubPage() {
     redirect("/mi-portal");
   }
 
+  // Aislamiento estricto de producto: Exclusivo para cuentas SOLO_AGENT (nunca para Promotorías/Agencias)
+  if ((currentUser.agency as any)?.accountType !== "SOLO_AGENT") {
+    redirect("/cartera");
+  }
+
   const isAdmin = currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN";
   const effectiveAgencyId = (session.user.agencyId || currentUser.agencyId || "aacom") as string;
 
