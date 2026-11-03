@@ -45,6 +45,11 @@ Devuelve ÚNICAMENTE el texto limpio del System Prompt sin bloques markdown.`;
 
       const result = await generateText({
         model: google('gemini-3.5-flash-lite'),
+        providerOptions: { google: { thinkingConfig: { thinkingLevel: 'minimal' } } },
+        prompt: metaInstruction
+      }).catch(() => generateText({ model: google('gemini-2.5-flash'), prompt: metaInstruction }));
+      const _unused = ({
+        model: google('gemini-3.5-flash-lite'),
         providerOptions: {
           google: {
             thinkingConfig: {

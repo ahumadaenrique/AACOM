@@ -596,6 +596,11 @@ Responde únicamente con la minuta estructurada en Markdown. Sé conciso y profe
 
           const { text } = await generateText({
             model: google('gemini-3.5-flash-lite'),
+            providerOptions: { google: { thinkingConfig: { thinkingLevel: 'minimal' } } },
+            prompt,
+          }).catch(() => generateText({ model: google('gemini-2.5-flash'), prompt }));
+          const _unused = ({
+            model: google('gemini-3.5-flash-lite'),
             providerOptions: {
               google: {
                 thinkingConfig: {
