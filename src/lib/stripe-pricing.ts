@@ -142,3 +142,168 @@ export async function getOrCreateBimonthlyAgencyPrice(): Promise<string> {
 
   return price.id;
 }
+
+
+export const SOLO_AGENT_PLANS: Record<
+  "1M" | "3M" | "6M" | "12M",
+  {
+    label: string;
+    amountMxn: number;
+    unitAmount: number;
+    interval: "month" | "year";
+    intervalCount: number;
+    monthsToAdd: number;
+    daysToAdd: number;
+  }
+> = {
+  "1M": {
+    label: "Mensual",
+    amountMxn: 339,
+    unitAmount: 33900,
+    interval: "month",
+    intervalCount: 1,
+    monthsToAdd: 1,
+    daysToAdd: 30,
+  },
+  "3M": {
+    label: "Trimestral",
+    amountMxn: 899,
+    unitAmount: 89900,
+    interval: "month",
+    intervalCount: 3,
+    monthsToAdd: 3,
+    daysToAdd: 90,
+  },
+  "6M": {
+    label: "Semestral",
+    amountMxn: 1649,
+    unitAmount: 164900,
+    interval: "month",
+    intervalCount: 6,
+    monthsToAdd: 6,
+    daysToAdd: 180,
+  },
+  "12M": {
+    label: "Anual",
+    amountMxn: 2999,
+    unitAmount: 299900,
+    interval: "year",
+    intervalCount: 1,
+    monthsToAdd: 12,
+    daysToAdd: 365,
+  },
+};
+
+export async function getOrCreateSoloAgentPrice(
+  plan: "1M" | "3M" | "6M" | "12M"
+): Promise<string> {
+  const cfg = SOLO_AGENT_PLANS[plan] || SOLO_AGENT_PLANS["12M"];
+  const envKey = `STRIPE_SOLO_AGENT_${plan}_PRICE_ID`;
+  if (process.env[envKey]) {
+    return process.env[envKey]!;
+  }
+
+  const prices = await stripe.prices.list({
+    active: true,
+    limit: 100,
+  });
+
+  const existingPrice = prices.data.find(
+    (p) =>
+      p.metadata?.isSoloAgentSaasPrice === "true" &&
+      p.metadata?.planKey === plan &&
+      p.unit_amount === cfg.unitAmount &&
+      p.currency === "mxn"
+  );
+
+  if (existingPrice) {
+    return existingPrice.id;
+  }
+
+  const product = await stripe.products.create({
+    name: `AACOMSoft Agente SaaS - Plan ${cfg.label}`,
+    description: `Suscripción ${cfg.label.toLowerCase()} de AACOMSoft para Agente Individual.`,
+    metadata: {
+      isSoloAgentSaasProduct: "true",
+      planKey: plan,
+    },
+  });
+
+  const price = await stripe.prices.create({
+    product: product.id,
+    currency: "mxn",
+    recurring: {
+      interval: cfg.interval,
+      interval_count: cfg.intervalCount,
+    },
+    unit_amount: cfg.unitAmount,
+    metadata: {
+      isSoloAgentSaasPrice: "true",
+      planKey: plan,
+      monthsToAdd: cfg.monthsToAdd.toString(),
+      daysToAdd: cfg.daysToAdd.toString(),
+    },
+  });
+
+  return price.id;
+}
+
+export const CORPORATE_EMAIL_PACKAGES: Record<
+  number,
+  { mailboxes: number; amountMxn: number; unitAmount: number; name: string }
+> = {
+  1: { mailboxes: 1, amountMxn: 999, unitAmount: 99900, name: "Individual (1 Buzón de 10 GB)" },
+  2: { mailboxes: 2, amountMxn: 1799, unitAmount: 179900, name: "Dúo (2 Buzones de 10 GB c/u)" },
+  3: { mailboxes: 3, amountMxn: 2499, unitAmount: 249900, name: "Despacho 3 (3 Buzones de 10 GB c/u)" },
+  4: { mailboxes: 4, amountMxn: 3199, unitAmount: 319900, name: "Despacho 4 (4 Buzones de 10 GB c/u)" },
+  5: { mailboxes: 5, amountMxn: 3799, unitAmount: 379900, name: "Despacho Full (5 Buzones de 10 GB c/u)" },
+};
+
+export async function getOrCreateCorporateEmailPrice(
+  mailboxesCount: number
+): Promise<{ priceId: string; amountMxn: number }> {
+  const safeCount = Math.min(5, Math.max(1, Math.round(mailboxesCount)));
+  const pkg = CORPORATE_EMAIL_PACKAGES[safeCount];
+
+  const prices = await stripe.prices.list({
+    active: true,
+    limit: 100,
+  });
+
+  const existingPrice = prices.data.find(
+    (p) =>
+      p.metadata?.isCorporateEmailPrice === "true" &&
+      p.metadata?.mailboxesCount === safeCount.toString() &&
+      p.unit_amount === pkg.unitAmount &&
+      p.currency === "mxn"
+  );
+
+  if (existingPrice) {
+    return { priceId: existingPrice.id, amountMxn: pkg.amountMxn };
+  }
+
+  const product = await stripe.products.create({
+    name: `Correo Corporativo AACOMSoft - ${pkg.name}`,
+    description: `Paquete anual de correo electrónico empresarial (${safeCount} ${safeCount === 1 ? "buzón" : "buzones"} de 10 GB c/u) con renovación anual automática.`,
+    metadata: {
+      isCorporateEmailProduct: "true",
+      mailboxesCount: safeCount.toString(),
+    },
+  });
+
+  const price = await stripe.prices.create({
+    product: product.id,
+    currency: "mxn",
+    recurring: {
+      interval: "year",
+      interval_count: 1,
+    },
+    unit_amount: pkg.unitAmount,
+    metadata: {
+      isCorporateEmailPrice: "true",
+      mailboxesCount: safeCount.toString(),
+    },
+  });
+
+  return { priceId: price.id, amountMxn: pkg.amountMxn };
+}

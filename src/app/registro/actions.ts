@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { headers } from "next/headers";
+import { DEFAULT_SOLO_AGENT_MODULES_CONFIG } from "@/lib/agencyModules";
 
 export async function checkSlugAvailability(slug: string) {
   if (!slug || slug.length < 2) return false;
@@ -45,7 +46,8 @@ export async function validateCode(code: string) {
 
 export async function processRegistration(data: any) {
   try {
-    const { name, email, phone, password, agencyName, agencySlug, agencyColor, priceId, daysToAdd, refSlug } = data;
+    const { name, email, phone, password, agencyName, agencySlug, agencyColor, priceId, daysToAdd, refSlug, accountType } = data;
+    const isSoloAgent = accountType === "SOLO_AGENT";
 
     const normalizedEmail = email.trim().toLowerCase();
 
@@ -102,6 +104,19 @@ export async function processRegistration(data: any) {
         subscriptionEndDate: trialEndDate,
         active: true,
         allowRoleplaySimulator: false,
+        ...(isSoloAgent
+          ? {
+              accountType: "SOLO_AGENT",
+              maxAdmins: 1,
+              purchasedSeats: 1,
+              allowReferidores: true,
+              allowProyecto200Module: true,
+              allowTipsModule: true,
+              allowAcademyModule: true,
+            }
+          : {
+              accountType: "AGENCY",
+            }),
         referredByAgencyId,
       }
     });
@@ -114,6 +129,7 @@ export async function processRegistration(data: any) {
         password: password.trim(), // Using plain text to match existing auth logic
         phone,
         phoneVerified: true, // We verified it in step 1.5
+        isSelfPaid: isSoloAgent,
         role: "ADMIN",
         agencyId: newAgency.id,
         active: true,
@@ -136,6 +152,16 @@ export async function processRegistration(data: any) {
     });
 
     // No checkout session generated here, return success directly for Freemium model
+    if (isSoloAgent) {
+      await prisma.setting.upsert({
+        where: { key: `agency_modules_${newAgency.id}` },
+        update: { value: JSON.stringify(DEFAULT_SOLO_AGENT_MODULES_CONFIG) },
+        create: {
+          key: `agency_modules_${newAgency.id}`,
+          value: JSON.stringify(DEFAULT_SOLO_AGENT_MODULES_CONFIG),
+        },
+      });
+    }
     return { success: true, url: `/login?welcome=true` };
   } catch (error: any) {
     console.error("Error in processRegistration:", error);

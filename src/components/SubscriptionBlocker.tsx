@@ -20,7 +20,7 @@ export function SubscriptionBlocker({
     }
 
     // Rutas permitidas incluso cuando están inactivos (para que puedan pagar)
-    if (pathname?.startsWith('/admin/suscripcion') || pathname?.startsWith('/admin/agencia') || pathname?.startsWith('/billing')) {
+    if (pathname?.startsWith('/admin/suscripcion') || pathname?.startsWith('/admin/agencia') || pathname?.startsWith('/billing') || pathname?.startsWith('/correo-corporativo')) {
         return <>{children}</>
     }
 

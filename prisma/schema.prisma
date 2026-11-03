@@ -39,6 +39,14 @@ model Agency {
   subscriptionStatus    String?              @default("active")
   subscriptionEndDate   DateTime?
   subscriptionPlan      String?              @default("QUARTERLY")
+  accountType           String               @default("AGENCY")
+  corporateEmailMailboxes Int                @default(0)
+  corporateEmailStatus    String?
+  corporateEmailEndDate   DateTime?
+  corporateEmailSubId     String?
+  corporateEmailDomain    String?
+  corporateEmailConfig    String?
+  corporateEmailMailboxesJson String?
   referredByAgencyId    String?
   active                Boolean              @default(true)
   createdAt             DateTime             @default(now())
@@ -116,6 +124,7 @@ model Agency {
   emailForwards         AgencyEmailForward[]
   domainSuggestions     AgencyDomainSuggestionCache[]
   emailMessages         AgencyEmailMessage[]
+  clientPortalItems     ClientPortalItem[]
 
   @@index([referredById])
 }
@@ -281,6 +290,11 @@ model Client {
   user             User              @relation(fields: [userId], references: [id])
   policies         Policy[]
   tipsParticipants TipsParticipant[]
+  portalUserId          String?           @unique
+  portalEnabled         Boolean           @default(false)
+  portalWelcomeNote     String?
+  portalHiddenPolicyIds String?
+  portalItems           ClientPortalItem[]
 
   @@index([agencyId])
   @@index([userId])
@@ -1457,4 +1471,29 @@ model AgencyEmailMessage {
   @@index([mailboxId, folder])
   @@index([receivedAt])
   @@map("agency_email_messages")
+}
+
+model ClientPortalItem {
+  id         String   @id @default(cuid())
+  clientId   String
+  agencyId   String?
+  userId     String
+  category   String   @default("INSTRUCTIVO")
+  title      String
+  content    String?
+  fileUrl    String?
+  fileName   String?
+  insurer    String?
+  ramo       String?
+  order      Int      @default(0)
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  client     Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  agency     Agency?  @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+
+  @@index([clientId])
+  @@index([agencyId])
+  @@index([userId])
 }

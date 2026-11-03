@@ -49,3 +49,24 @@ export async function createCustomerPortalSession() {
     return { success: false, message: "Hubo un error al contactar al proveedor de pagos." };
   }
 }
+
+
+export async function getAgencyBillingContext() {
+  try {
+    const session = await auth();
+    if (!session?.user?.email) {
+      return { accountType: "AGENCY" as const };
+    }
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email.toLowerCase() },
+      include: { agency: true },
+    });
+    const accountType = (user?.agency as any)?.accountType === "SOLO_AGENT" ? "SOLO_AGENT" : "AGENCY";
+    return {
+      accountType: accountType as "AGENCY" | "SOLO_AGENT",
+      agencyName: user?.agency?.name || "AACOMSoft",
+    };
+  } catch {
+    return { accountType: "AGENCY" as const };
+  }
+}

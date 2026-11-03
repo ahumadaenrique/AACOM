@@ -21,6 +21,21 @@ export default function RegisterPage() {
   const searchParams = useSearchParams();
   const refSlug = searchParams.get("ref");
   const canceled = searchParams.get("canceled");
+  const initialTypeParam = searchParams.get("type") || searchParams.get("mode") || "";
+  const [accountType, setAccountType] = useState<"AGENCY" | "SOLO_AGENT">(
+    initialTypeParam === "agent" || initialTypeParam === "agente" || initialTypeParam === "SOLO_AGENT"
+      ? "SOLO_AGENT"
+      : "AGENCY"
+  );
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const host = window.location.hostname.toLowerCase();
+      if (host.startsWith("agentes.") || host.startsWith("agente.")) {
+        setAccountType("SOLO_AGENT");
+      }
+    }
+  }, []);
 
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -188,6 +203,7 @@ export default function RegisterPage() {
     const data = {
       name, email, phone, password,
       agencyName, agencySlug, agencyColor,
+      accountType,
       refSlug,
       promoCode: promoMessage?.type === "success" ? promoCode.trim() : undefined
     };
@@ -228,12 +244,40 @@ export default function RegisterPage() {
               <span>Activación Inmediata • 5 Días Gratis • Sin Tarjeta</span>
             </div>
             <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight">
-              Crea tu cuenta de agencia en AACOMSoft
+              {accountType === "SOLO_AGENT"
+                ? "Crea tu cuenta de Agente de Seguros en AACOMSoft"
+                : "Crea tu cuenta de agencia en AACOMSoft"}
             </h1>
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
               Personaliza el logotipo y color de tu promotoría en menos de 2 minutos. Tendrás acceso total durante 5 días con videos interactivos «Así funciono» en cada pantalla.
             </p>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setAccountType("AGENCY")}
+                  className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer ${
+                    accountType === "AGENCY"
+                      ? "border-indigo-500 bg-indigo-950/60 text-white shadow-md"
+                      : "border-slate-800 bg-slate-900/70 text-slate-400 hover:border-slate-700"
+                  }`}
+                >
+                  <div className="font-extrabold text-sm text-indigo-300">🏢 Soy Promotoría / Agencia</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">Multi-usuario (hasta 20 agentes, ranking y dirección)</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAccountType("SOLO_AGENT")}
+                  className={`p-3 rounded-xl border-2 text-left transition-all cursor-pointer ${
+                    accountType === "SOLO_AGENT"
+                      ? "border-teal-500 bg-teal-950/60 text-white shadow-md"
+                      : "border-slate-800 bg-slate-900/70 text-slate-400 hover:border-slate-700"
+                  }`}
+                >
+                  <div className="font-extrabold text-sm text-teal-300">💼 Soy Agente Individual</div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">Mi Cartera, Portal de Clientes, P200, IA y Simuladores ($2,999/año)</div>
+                </button>
+              </div>
             {canceled && (
               <div className="mt-4 p-4 bg-amber-950/60 text-amber-200 rounded-xl border border-amber-500/40 flex items-center gap-2 text-xs sm:text-sm">
                 <AlertCircle className="w-5 h-5 text-amber-400 shrink-0" />
