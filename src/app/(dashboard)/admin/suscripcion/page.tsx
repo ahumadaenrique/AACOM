@@ -48,7 +48,18 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
   const isSubscribed =
     (agency.subscriptionStatus === "active" || agency.subscriptionStatus === "trialing") &&
     (!endDate || new Date(endDate).getTime() + SUBSCRIPTION_GRACE_MS >= Date.now());
-  const daysLeft = endDate ? differenceInCalendarDays(endDate, new Date()) : 0;
+  if (searchParams.success || !isSubscribed) {
+    const { syncSingleAgencyFromStripe } = await import("@/lib/stripe-sync");
+    const synced = await syncSingleAgencyFromStripe(agency, user?.email);
+    if (synced) {
+      agency = synced;
+    }
+  }
+  const effectiveEndDate = agency.subscriptionEndDate;
+  const effectiveIsSubscribed =
+    (agency.subscriptionStatus === "active" || agency.subscriptionStatus === "trialing") &&
+    (!effectiveEndDate || new Date(effectiveEndDate).getTime() + SUBSCRIPTION_GRACE_MS >= Date.now());
+  const daysLeft = effectiveEndDate ? differenceInCalendarDays(effectiveEndDate, new Date()) : 0;
     // El enlace de referido debe usar el 'slug' (el nombre corto de la plataforma), no el ID de base de datos
   const referralLink = `https://aacomsoft.com/registro?ref=${agency.slug}`;
 
@@ -92,8 +103,8 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
                 </CardTitle>
                 <CardDescription>Resumen de tu licencia SaaS</CardDescription>
               </div>
-              <Badge variant={isSubscribed ? "default" : "destructive"} className={isSubscribed ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0" : ""}>
-                {isSubscribed ? "Activa" : "Inactiva"}
+              <Badge variant={effectiveIsSubscribed ? "default" : "destructive"} className={effectiveIsSubscribed ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border-0" : ""}>
+                {effectiveIsSubscribed ? "Activa" : "Inactiva"}
               </Badge>
             </div>
           </CardHeader>
@@ -107,10 +118,10 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
                 </div>
               </div>
 
-              {endDate && (
+              {effectiveEndDate && (
                 <div className="text-sm text-slate-600 flex items-center gap-2">
                   <CreditCard className="w-4 h-4 text-slate-400" />
-                  Próximo corte: <strong>{format(endDate, "dd 'de' MMMM, yyyy", { locale: es })}</strong>
+                  Próximo corte: <strong>{format(effectiveEndDate, "dd 'de' MMMM, yyyy", { locale: es })}</strong>
                 </div>
               )}
             </div>
@@ -149,7 +160,7 @@ export default async function SuscripcionPage({ searchParams }: { searchParams: 
 
       <div className="mt-8">
         <h2 className="text-2xl font-extrabold text-slate-800 mb-6">Elige tu Plan de Suscripción</h2>
-        <PlanSelector isSubscribed={isSubscribed} />
+        <PlanSelector isSubscribed={effectiveIsSubscribed} />
       </div>
     </div>
   );

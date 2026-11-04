@@ -636,7 +636,7 @@ export async function POST(req: Request) {
           if (session.subscription && typeof session.subscription === "string") {
             try {
               const sub = await stripe.subscriptions.retrieve(session.subscription);
-              stripePeriodEndUnix = (sub as any).current_period_end;
+              stripePeriodEndUnix = (sub as any).current_period_end || (sub.items?.data?.[0] as any)?.current_period_end;
             } catch (e) {
               console.error("Error retrieving subscription period end on checkout:", e);
             }
@@ -678,7 +678,7 @@ export async function POST(req: Request) {
         const agencyId = subscription.metadata?.agencyId;
         const daysToAddStr = subscription.metadata?.daysToAdd;
         const monthsToAddStr = subscription.metadata?.monthsToAdd;
-        const stripePeriodEndUnix = (subscription as any).current_period_end as number | undefined;
+        const stripePeriodEndUnix = ((subscription as any).current_period_end || (subscription.items?.data?.[0] as any)?.current_period_end) as number | undefined;
 
         if (subscription.metadata?.type === "CORPORATE_EMAIL_PACKAGE") {
           const nextRenew = stripePeriodEndUnix
