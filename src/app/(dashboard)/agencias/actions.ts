@@ -78,6 +78,10 @@ export async function getAgencies() {
     }),
     prisma.promotorSaldo.findMany(),
   ]);
+  const { syncAgenciesListFromStripe } = await import("@/lib/stripe-sync");
+  await syncAgenciesListFromStripe(agencies);
+  void ([
+  ]);
 
   const { getAgencyStudyDaysLimit } = await import("@/lib/cedula/studyLimits");
   const saldoMap = new Map(
