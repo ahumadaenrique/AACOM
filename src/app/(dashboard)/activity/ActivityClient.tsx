@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { useToast } from "@/hooks/use-toast";
 import { 
     saveActivityLogEntry, 
     deleteActivityLogEntry, 
@@ -48,6 +49,7 @@ interface HistoryGroup {
 
 export default function ActivityPage({ agencyName = "Tu Agencia", isReferidor = false }: { agencyName?: string, isReferidor?: boolean }) {
     const TARGET = isReferidor ? 15 : 25;
+    const { toast } = useToast();
     // State
     const [todayLogs, setTodayLogs] = useState<LogEntry[]>([]);
     const [plannedGoals, setPlannedGoals] = useState<Record<string, number>>({});
@@ -87,26 +89,27 @@ export default function ActivityPage({ agencyName = "Tu Agencia", isReferidor = 
 
     // Accordion state for history
     const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({});
+    const pendingOpsRef = useRef(0);
 
     // Load initial data
-    const loadData = async () => {
+    const loadData = async (silent = false) => {
         try {
-            setLoading(true);
+            if (!silent) setLoading(true);
             const daily = await getDailyActivitySummary();
-            if (daily.success) {
+            if (daily.success && pendingOpsRef.current === 0) {
                 setTodayLogs(daily.logs as any);
                 setPlannedGoals(daily.plannedGoals || {});
                 setTotalPoints(daily.totalPoints);
             }
             
             const hist = await getActivityHistory();
-            if (hist.success) {
+            if (hist.success && pendingOpsRef.current === 0) {
                 setHistory(hist.history as any);
             }
         } catch (error) {
             console.error("Error loading daily activities:", error);
         } finally {
-            setLoading(false);
+            if (!silent) setLoading(false);
         }
     };
 
@@ -178,38 +181,77 @@ export default function ActivityPage({ agencyName = "Tu Agencia", isReferidor = 
 
     // Handle Quick click subtraction
     const handleActivityMinusClick = async (activity: typeof SALES_ACTIVITIES[0]) => {
+        const hasExisting = todayLogs.some(log => log.activityId === activity.id);
+        if (!hasExisting) {
+            return;
+        }
+
+        // Optimistic UI subtraction so rapid clicks are instant and never lost
+        setTodayLogs(prev => {
+            const idx = prev.findIndex(l => l.activityId === activity.id);
+            if (idx === -1) return prev;
+            const next = [...prev];
+            next.splice(idx, 1);
+            return next;
+        });
+        setTotalPoints(prev => Math.max(0, prev - activity.value));
+
+        pendingOpsRef.current += 1;
         try {
-            setSubmitting(true);
             const res = await removeLastActivityLogEntry(activity.id);
-            if (res.success) {
-                await loadData();
-            } else {
-                alert(res.message);
+            if (!res.success) {
+                toast({ title: "Aviso", description: res.message || "No se pudo restar la actividad.", variant: "destructive" });
             }
         } catch (err) {
             console.error("Failed to subtract activity:", err);
-            alert("Ocurrió un error al reducir la actividad.");
+            toast({ title: "Error", description: "Ocurrió un error al reducir la actividad.", variant: "destructive" });
         } finally {
-            setSubmitting(false);
+            pendingOpsRef.current = Math.max(0, pendingOpsRef.current - 1);
+            if (pendingOpsRef.current === 0) {
+                await loadData(true);
+            }
         }
     };
 
     // Save activity API wrapper
     const registerActivity = async (id: string, nameProspect?: string) => {
+        const actDef = SALES_ACTIVITIES.find(a => a.id === id);
+        if (!actDef) return;
+
+        const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+        const optimisticEntry: LogEntry = {
+            id: tempId,
+            activityId: actDef.id,
+            activityName: actDef.name,
+            points: actDef.value,
+            prospectName: nameProspect?.trim() || null,
+            dateStr: new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" }),
+            createdAt: new Date().toISOString(),
+        };
+
+        // Optimistic UI addition so rapid clicks never lose increments
+        setTodayLogs(prev => [optimisticEntry, ...prev]);
+        setTotalPoints(prev => prev + actDef.value);
+        if (nameProspect) {
+            setIsModalOpen(false);
+        }
+
+        pendingOpsRef.current += 1;
         try {
-            setSubmitting(true);
+            if (nameProspect) setSubmitting(true);
             const res = await saveActivityLogEntry(id, nameProspect);
-            if (res.success) {
-                await loadData();
-                setIsModalOpen(false);
-            } else {
-                alert(res.message);
+            if (!res.success) {
+                toast({ title: "Error", description: res.message || "No se pudo registrar la actividad.", variant: "destructive" });
             }
         } catch (err) {
             console.error("Failed to log activity:", err);
-            alert("Ocurrió un error al registrar la actividad.");
+            toast({ title: "Error", description: "Ocurrió un error al registrar la actividad.", variant: "destructive" });
         } finally {
-            setSubmitting(false);
+            if (nameProspect) setSubmitting(false);
+            pendingOpsRef.current = Math.max(0, pendingOpsRef.current - 1);
+            if (pendingOpsRef.current === 0) {
+                await loadData(true);
+            }
         }
     };
 
@@ -254,8 +296,8 @@ export default function ActivityPage({ agencyName = "Tu Agencia", isReferidor = 
             totalSimulatedPoints += (count * act.value);
         }
 
-        if (totalSimulatedPoints < 15) {
-            setPlannerError(`Debes planear un mínimo de 15 puntos. Actualmente tienes: ${totalSimulatedPoints} puntos.`);
+        if (totalSimulatedPoints < TARGET) {
+            setPlannerError(`Debes planear un mínimo de ${TARGET} puntos para alcanzar la meta diaria. Actualmente tienes: ${totalSimulatedPoints} puntos.`);
             return;
         }
 
@@ -263,8 +305,9 @@ export default function ActivityPage({ agencyName = "Tu Agencia", isReferidor = 
             setSavingPlanner(true);
             const res = await saveDailyPlan(plannerState);
             if (res.success) {
-                await loadData();
+                await loadData(true);
                 setIsPlannerModalOpen(false);
+                toast({ title: "Planeación guardada", description: "Tus metas del día han sido actualizadas." });
             } else {
                 setPlannerError(res.message);
             }
@@ -285,9 +328,9 @@ export default function ActivityPage({ agencyName = "Tu Agencia", isReferidor = 
             setSubmitting(true);
             const res = await deleteActivityLogEntry(logId);
             if (res.success) {
-                await loadData();
+                await loadData(true);
             } else {
-                alert(res.message);
+                toast({ title: "Error", description: res.message, variant: "destructive" });
             }
         } catch (err) {
             console.error("Failed to delete log:", err);
@@ -426,7 +469,6 @@ export default function ActivityPage({ agencyName = "Tu Agencia", isReferidor = 
                             >
                                 {/* Left Side: Clickable area to add points */}
                                 <button
-                                    disabled={submitting}
                                     onClick={() => handleActivityClick(act)}
                                     className="flex items-center gap-3 flex-1 min-w-0 text-left group hover:translate-x-0.5 active:scale-[0.99] transition-all"
                                     title={`Sumar ${act.name}`}
@@ -460,17 +502,16 @@ export default function ActivityPage({ agencyName = "Tu Agencia", isReferidor = 
                                 <div className="flex items-center gap-1.5 ml-2 shrink-0">
                                     {/* Minus Button */}
                                     <button
-                                        disabled={submitting}
+                                        disabled={achievedCount === 0}
                                         onClick={() => handleActivityMinusClick(act)}
-                                        className="h-7 w-7 rounded-full bg-slate-100 hover:bg-rose-50 dark:bg-zinc-800/80 dark:hover:bg-rose-950/20 flex items-center justify-center text-slate-500 hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-400 active:scale-90 transition-all border border-slate-200/40 dark:border-zinc-700/30"
-                                        title="Quitar último"
+                                        className="h-7 w-7 rounded-full bg-slate-100 hover:bg-rose-50 dark:bg-zinc-800/80 dark:hover:bg-rose-950/20 flex items-center justify-center text-slate-500 hover:text-rose-600 dark:text-zinc-400 dark:hover:text-rose-400 active:scale-90 transition-all border border-slate-200/40 dark:border-zinc-700/30 disabled:opacity-35 disabled:pointer-events-none"
+                                        title={achievedCount === 0 ? "Sin registros para quitar" : "Quitar último"}
                                     >
                                         <span className="text-base font-black leading-none -translate-y-[1px]">−</span>
                                     </button>
 
                                     {/* Plus Button */}
                                     <button
-                                        disabled={submitting}
                                         onClick={() => handleActivityClick(act)}
                                         className="h-7 w-7 rounded-full bg-slate-100 hover:bg-teal-600 dark:bg-zinc-800/80 dark:hover:bg-teal-500 flex items-center justify-center text-slate-500 hover:text-white dark:text-zinc-400 dark:hover:text-white active:scale-90 transition-all border border-slate-200/40 dark:border-zinc-700/30"
                                         title="Sumar uno"
@@ -664,7 +705,7 @@ export default function ActivityPage({ agencyName = "Tu Agencia", isReferidor = 
                             </div>
                         </div>
 
-                        <form onSubmit={handleModalSubmit} className="space-y-4">
+                        <form onSubmit={handleModalSubmit} noValidate className="space-y-4">
                             <div className="space-y-1.5">
                                 <label className="text-xs font-bold text-slate-700 dark:text-zinc-300">
                                     Nombre del Nuevo Prospecto / Cliente
@@ -725,7 +766,7 @@ export default function ActivityPage({ agencyName = "Tu Agencia", isReferidor = 
                                     🗓️ Planear mi día
                                 </h3>
                                 <p className="text-xs text-muted-foreground mt-1">
-                                    Simula cuántas actividades lograrás hoy. Mínimo 15 puntos.
+                                    Simula cuántas actividades lograrás hoy. Mínimo {TARGET} puntos.
                                 </p>
                             </div>
                             <button
@@ -793,7 +834,7 @@ export default function ActivityPage({ agencyName = "Tu Agencia", isReferidor = 
                             <div className="flex items-center justify-between mb-4">
                                 <span className="text-sm font-bold text-slate-600 dark:text-zinc-400">Total Simulado:</span>
                                 <span className={`text-lg font-black ${
-                                    Object.entries(plannerState).reduce((acc, [id, count]) => acc + (count * (SALES_ACTIVITIES.find(a => a.id === id)?.value || 0)), 0) >= 15
+                                    Object.entries(plannerState).reduce((acc, [id, count]) => acc + (count * (SALES_ACTIVITIES.find(a => a.id === id)?.value || 0)), 0) >= TARGET
                                     ? 'text-teal-600 dark:text-teal-400'
                                     : 'text-rose-500 dark:text-rose-400'
                                 }`}>

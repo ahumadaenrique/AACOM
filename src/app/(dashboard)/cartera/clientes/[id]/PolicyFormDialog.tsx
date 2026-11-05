@@ -72,9 +72,9 @@ export default function PolicyFormDialog({
     originalPremium: policy?.originalPremium ?? undefined,
     status: policy?.status || "VIGENTE",
     subStatus: policy?.subStatus || "",
-    annualPremium: policy?.annualPremium || 0,
+    annualPremium: policy?.annualPremium || ("" as any),
     paymentMethod: policy?.paymentMethod || "Anual",
-    effectiveDate: toDateInputValue(policy?.effectiveDate),
+    effectiveDate: toDateInputValue(policy?.effectiveDate || new Date()),
     renewalDate: toDateInputValue(policy?.renewalDate),
     approximateCommission: policy?.approximateCommission || 0,
     approximateBonus: policy?.approximateBonus || 0,
@@ -262,7 +262,7 @@ export default function PolicyFormDialog({
           </div>
         </div>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid gap-3.5 md:grid-cols-2">
+        <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="grid gap-3.5 md:grid-cols-2">
           {/* 7 CAMPOS ESENCIALES */}
           <div className="space-y-1.5">
             <Label>Número de Póliza *</Label>
@@ -313,7 +313,17 @@ export default function PolicyFormDialog({
 
           <div className="space-y-1.5">
             <Label>Inicio de Vigencia</Label>
-            <Input type="date" {...form.register("effectiveDate")} />
+            <Input
+              type="date"
+              min="1980-01-01"
+              max="2100-12-31"
+              {...form.register("effectiveDate")}
+            />
+            {form.formState.errors.effectiveDate && (
+              <p className="text-xs text-red-500">
+                {form.formState.errors.effectiveDate.message as string}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5">
@@ -335,7 +345,7 @@ export default function PolicyFormDialog({
             <Input
               type="number"
               step="0.01"
-              min="0"
+              min="0.01"
               {...form.register("annualPremium")}
             />
             {form.formState.errors.annualPremium && (
@@ -396,6 +406,11 @@ export default function PolicyFormDialog({
                   placeholder="Opcional si está en UDI o USD"
                   {...form.register("originalPremium")}
                 />
+                {form.formState.errors.originalPremium && (
+                  <p className="text-xs text-red-500">
+                    {form.formState.errors.originalPremium.message as string}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1.5">
@@ -419,7 +434,17 @@ export default function PolicyFormDialog({
                     ? "Fecha Fin de Plazo (Opcional)"
                     : "Fecha de Renovación Anual"}
                 </Label>
-                <Input type="date" {...form.register("renewalDate")} />
+                <Input
+                  type="date"
+                  min="1980-01-01"
+                  max="2100-12-31"
+                  {...form.register("renewalDate")}
+                />
+                {form.formState.errors.renewalDate && (
+                  <p className="text-xs text-red-500">
+                    {form.formState.errors.renewalDate.message as string}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-1.5">

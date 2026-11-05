@@ -775,26 +775,28 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
       return false
     }
 
-    // REQUERIR GPS
-    if (!navigator.geolocation) {
-      setValidationError("Tu navegador no soporta geolocalización. Es obligatoria para guardar ADNs.")
-      setIsSaving(false)
-      return false
+    // Intentar obtener GPS de forma opcional (con timeout corto de 3.5s) para no bloquear en computadora de escritorio o laptop
+    let latitude: number | undefined = undefined
+    let longitude: number | undefined = undefined
+
+    if (typeof navigator !== 'undefined' && navigator.geolocation) {
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject, {
+            enableHighAccuracy: false,
+            timeout: 3500,
+            maximumAge: 60000
+          })
+        })
+        latitude = position.coords.latitude
+        longitude = position.coords.longitude
+      } catch (geoErr) {
+        // Si está en computadora sin GPS, el permiso fue rechazado o tardó más de 3.5s, continuar sin bloquear el diagnóstico
+        console.warn("Geolocalización no disponible en este dispositivo, guardando ADN sin coordenadas:", geoErr)
+      }
     }
 
     try {
-      // Prompt GPS
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 15000,
-          maximumAge: 0
-        })
-      })
-
-      const latitude = position.coords.latitude
-      const longitude = position.coords.longitude
-
       let gastosObj = {}
       if (modalidad === 'DETALLADO') {
         gastosObj = gastosDet
@@ -2116,8 +2118,16 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
               </div>
             )}
 
+            {/* INLINE VALIDATION ERROR NEAR WIZARD BUTTONS */}
+            {validationError && (
+              <div className="bg-red-50 dark:bg-red-950/30 border-l-4 border-red-500 p-3.5 rounded-xl flex items-center gap-3 mt-6 print:hidden">
+                <AlertTriangle className="h-5 w-5 text-red-600 shrink-0" />
+                <p className="text-xs sm:text-sm text-red-800 dark:text-red-300 font-semibold">{validationError}</p>
+              </div>
+            )}
+
             {/* WIZARD ACTIONS */}
-            <div className="flex justify-between items-center border-t border-slate-100 dark:border-zinc-800 pt-6 mt-8">
+            <div className="flex justify-between items-center border-t border-slate-100 dark:border-zinc-800 pt-6 mt-6">
               {step > 1 ? (
                 <button
                   onClick={handleBack}

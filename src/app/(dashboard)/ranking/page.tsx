@@ -178,8 +178,17 @@ export default function RankingPage() {
             .toUpperCase();
     };
 
-    // Dynamic styles for Top 3 leaders
-    const getPodiumClass = (index: number) => {
+    // Dynamic styles for Top 3 leaders (only award medals when count > 0)
+    const getPodiumClass = (index: number, count: number) => {
+        if (count <= 0) {
+            return {
+                borderClass: "border-slate-200 dark:border-zinc-800 bg-card",
+                badgeClass: "bg-slate-100 dark:bg-zinc-800 text-slate-500 dark:text-zinc-400 border-slate-200 dark:border-zinc-700",
+                iconColor: "text-slate-400",
+                avatarRing: "ring-slate-200 dark:ring-zinc-800",
+                badgeText: "Sin actividad"
+            };
+        }
         switch (index) {
             case 0: // 1st Place
                 return {
@@ -336,7 +345,7 @@ export default function RankingPage() {
             {topThree.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 px-4 md:px-0">
                     {topThree.map((item, idx) => {
-                        const style = getPodiumClass(idx);
+                        const style = getPodiumClass(idx, item.count);
                         const secondaryText = formatSecondaryMetric(item, rankingMetric);
                         
                         return (
@@ -350,7 +359,7 @@ export default function RankingPage() {
                                 </span>
 
                                 {/* Crown for 1st Place */}
-                                {idx === 0 && (
+                                {idx === 0 && item.count > 0 && (
                                     <div className="absolute top-3 right-4 transform rotate-12 text-amber-500 animate-bounce">
                                         <Sparkles className="h-5 w-5" />
                                     </div>

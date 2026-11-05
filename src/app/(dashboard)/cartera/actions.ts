@@ -282,12 +282,175 @@ export async function markReceiptAsPaid(data: {
   revalidatePath("/cartera/clientes");
   if (policy.clientId) revalidatePath(`/cartera/clientes/${policy.clientId}`);
   revalidatePath("/admin");
+  revalidatePath("/admin/produccion");
+  revalidatePath("/ranking");
 
   return {
     success: true,
     receipt: updatedReceipt,
     syncedToProduction: !!syncedEmissionId,
   };
+}
+
+/**
+ * Sincroniza una póliza de Cartera hacia Producción (AgentEmission) y Ranking
+ * únicamente cuando la póliza está activa y su inicio de vigencia (effectiveDate)
+ * corresponde al año de evaluación (registrándose en su mes y año exactos de inicio de vigencia).
+ */
+async function syncPolicyEmissionWithProduction(
+  policy: any,
+  actorUserId: string
+) {
+  if (!policy?.id) return;
+
+  const receiptsWithSync = await prisma.policyReceipt.findMany({
+    where: {
+      policyId: policy.id,
+      syncedEmissionId: { not: null },
+    },
+    orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
+  });
+
+  const existingSyncedIds = Array.from(
+    new Set(receiptsWithSync.map((r) => r.syncedEmissionId).filter(Boolean))
+  ) as string[];
+
+  const effDate = toUTCNoonDate(policy.effectiveDate);
+  const currentMxParts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Mexico_City",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(new Date());
+  const currentYear = Number(
+    currentMxParts.find((p) => p.type === "year")?.value ||
+      new Date().getFullYear()
+  );
+  const currentMonth = Number(
+    currentMxParts.find((p) => p.type === "month")?.value ||
+      new Date().getMonth() + 1
+  );
+
+  const isActiveStatus =
+    !policy.isArchived &&
+    policy.status !== "CANCELADA" &&
+    policy.status !== "TERMINADA";
+  const premiumAmount = Number(policy.annualPremium) || 0;
+
+  const effYear = effDate ? effDate.getUTCFullYear() : null;
+  const effMonth = effDate ? effDate.getUTCMonth() + 1 : null;
+
+  // Solo sincronizar a Producción/Ranking cuando el inicio de vigencia corresponde al mes y año de evaluación actual
+  const shouldSync =
+    isActiveStatus &&
+    premiumAmount > 0 &&
+    effDate !== null &&
+    effYear !== null &&
+    effMonth !== null &&
+    effYear === currentYear &&
+    effMonth === currentMonth;
+
+  if (!shouldSync) {
+    if (existingSyncedIds.length > 0) {
+      await prisma.agentEmission.deleteMany({
+        where: { id: { in: existingSyncedIds } },
+      });
+      await prisma.policyReceipt.updateMany({
+        where: { policyId: policy.id, syncedEmissionId: { in: existingSyncedIds } },
+        data: { syncedEmissionId: null },
+      });
+    }
+    return;
+  }
+
+  const prodRamo = mapCarteraRamoToProductionRamo(policy.ramo, policy.product);
+  const companyName = (policy.insuranceCompany || "Insignia Life").trim();
+
+  let clientName = (policy.contractor || policy.insured || "").trim();
+  if (!clientName && policy.clientId) {
+    const cl = await prisma.client.findUnique({
+      where: { id: policy.clientId },
+      select: { name: true },
+    });
+    clientName = cl?.name?.trim() || "";
+  }
+  if (!clientName) clientName = "Cliente Cartera";
+
+  const companyRecord = await prisma.insuranceCompany.findFirst({
+    where: {
+      active: true,
+      name: { equals: companyName, mode: "insensitive" },
+      OR: [{ agencyId: policy.agencyId }, { agencyId: null }],
+    },
+  });
+
+  const firstReceipt = await prisma.policyReceipt.findFirst({
+    where: { policyId: policy.id },
+    orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
+  });
+
+  let syncedEmissionId =
+    firstReceipt?.syncedEmissionId || existingSyncedIds[0] || null;
+
+  if (syncedEmissionId) {
+    const existingEmission = await prisma.agentEmission.findUnique({
+      where: { id: syncedEmissionId },
+    });
+    if (existingEmission) {
+      await prisma.agentEmission.update({
+        where: { id: syncedEmissionId },
+        data: {
+          agentId: policy.userId,
+          companyId: companyRecord?.id || null,
+          companyName: companyRecord?.name || companyName,
+          policyNumber: policy.policyNumber,
+          clientName,
+          ramo: prodRamo,
+          issueDate: effDate!,
+          year: effYear!,
+          month: effMonth!,
+          primaEmitida: premiumAmount,
+          primaPagada: premiumAmount,
+          status: "PAGADA",
+        },
+      });
+    } else {
+      syncedEmissionId = null;
+    }
+  }
+
+  if (!syncedEmissionId) {
+    const createdEmission = await prisma.agentEmission.create({
+      data: {
+        agencyId: policy.agencyId,
+        agentId: policy.userId,
+        companyId: companyRecord?.id || null,
+        companyName: companyRecord?.name || companyName,
+        policyNumber: policy.policyNumber,
+        clientName,
+        ramo: prodRamo,
+        issueDate: effDate!,
+        year: effYear!,
+        month: effMonth!,
+        primaEmitida: premiumAmount,
+        primaPagada: premiumAmount,
+        status: "PAGADA",
+        notes: "Sincronizado automáticamente desde Mi Cartera",
+        createdById: actorUserId,
+      },
+    });
+    syncedEmissionId = createdEmission.id;
+  }
+
+  if (firstReceipt) {
+    await prisma.policyReceipt.update({
+      where: { id: firstReceipt.id },
+      data: {
+        status: "PAGADO",
+        paidAt: firstReceipt.paidAt || effDate!,
+        syncedEmissionId,
+      },
+    });
+  }
 }
 
 /**
@@ -576,9 +739,15 @@ export async function createPolicy(data: z.infer<typeof policySchema>) {
   // Generar recibos del ciclo actual para la nueva póliza
   await syncReceiptsForPolicy(policy, { autoMarkHistoricalPaid: true });
 
+  // Sincronizar automáticamente con Producción y Ranking si el inicio de vigencia corresponde al periodo de evaluación
+  await syncPolicyEmissionWithProduction(policy, ctx.userId);
+
   revalidatePath("/cartera");
   revalidatePath("/cartera/clientes");
   if (parsed.clientId) revalidatePath(`/cartera/clientes/${parsed.clientId}`);
+  revalidatePath("/admin");
+  revalidatePath("/admin/produccion");
+  revalidatePath("/ranking");
   return policy;
 }
 
@@ -648,9 +817,14 @@ export async function updatePolicy(id: string, data: z.infer<typeof policySchema
     replacePending: paymentOrPremiumChanged,
   });
 
+  await syncPolicyEmissionWithProduction(policy, ctx.userId);
+
   revalidatePath("/cartera");
   revalidatePath("/cartera/clientes");
   if (existing.clientId) revalidatePath(`/cartera/clientes/${existing.clientId}`);
+  revalidatePath("/admin");
+  revalidatePath("/admin/produccion");
+  revalidatePath("/ranking");
   return policy;
 }
 
@@ -664,6 +838,16 @@ export async function deletePolicy(id: string) {
   });
   if (!existing) throw new Error("Póliza no encontrada o sin permisos");
 
+  // Eliminar emisiones sincronizadas en Producción antes de archivar
+  const syncedReceipts = await prisma.policyReceipt.findMany({
+    where: { policyId: id, syncedEmissionId: { not: null } },
+    select: { syncedEmissionId: true },
+  });
+  const syncedIds = syncedReceipts.map((r) => r.syncedEmissionId).filter(Boolean) as string[];
+  if (syncedIds.length > 0) {
+    await prisma.agentEmission.deleteMany({ where: { id: { in: syncedIds } } });
+  }
+
   await prisma.policy.update({
     where: { id },
     data: {
@@ -675,6 +859,9 @@ export async function deletePolicy(id: string) {
   revalidatePath("/cartera");
   revalidatePath("/cartera/clientes");
   if (existing.clientId) revalidatePath(`/cartera/clientes/${existing.clientId}`);
+  revalidatePath("/admin");
+  revalidatePath("/admin/produccion");
+  revalidatePath("/ranking");
   return { success: true };
 }
 
@@ -986,15 +1173,26 @@ export async function createClientAndPolicyFromAi(payload: {
 }) {
   const ctx = await getSessionContext();
 
+  const cleanName = (payload.clientName || payload.policyData.contractor || "").trim();
+  const validatedClient = clientSchema.parse({
+    name: cleanName,
+    email: payload.clientEmail?.trim() || "",
+    phone: payload.clientPhone?.trim() || "",
+    birthDate: payload.clientBirthDate || null,
+    rfc: payload.clientRfc?.trim() || null,
+  });
+
+  // Validar también la póliza antes de crear el cliente para evitar crear clientes huérfanos si la póliza es inválida
+  policySchema.parse(payload.policyData);
+
   let targetClientId = payload.existingClientId || null;
 
   if (!targetClientId) {
-    const cleanName = (payload.clientName || payload.policyData.contractor || "Cliente").trim();
     // Buscar si ya existe un cliente con ese nombre exacto para este agente/agencia
     const existingClient = await prisma.client.findFirst({
       where: ctx.isAdmin
-        ? { agencyId: ctx.agencyId, name: { equals: cleanName, mode: "insensitive" }, isArchived: false }
-        : { userId: ctx.userId, name: { equals: cleanName, mode: "insensitive" }, isArchived: false },
+        ? { agencyId: ctx.agencyId, name: { equals: validatedClient.name, mode: "insensitive" }, isArchived: false }
+        : { userId: ctx.userId, name: { equals: validatedClient.name, mode: "insensitive" }, isArchived: false },
     });
 
     if (existingClient) {
@@ -1003,10 +1201,10 @@ export async function createClientAndPolicyFromAi(payload: {
       await prisma.client.update({
         where: { id: existingClient.id },
         data: {
-          rfc: existingClient.rfc || payload.clientRfc?.trim().toUpperCase() || null,
-          email: existingClient.email || payload.clientEmail?.trim() || null,
-          phone: existingClient.phone || payload.clientPhone?.trim() || null,
-          birthDate: existingClient.birthDate || toUTCNoonDate(payload.clientBirthDate),
+          rfc: existingClient.rfc || validatedClient.rfc?.trim().toUpperCase() || null,
+          email: existingClient.email || validatedClient.email?.trim() || null,
+          phone: existingClient.phone || validatedClient.phone?.trim() || null,
+          birthDate: existingClient.birthDate || toUTCNoonDate(validatedClient.birthDate),
         },
       });
     } else {
@@ -1014,11 +1212,11 @@ export async function createClientAndPolicyFromAi(payload: {
         data: {
           agencyId: ctx.agencyId,
           userId: ctx.userId,
-          name: cleanName,
-          rfc: payload.clientRfc?.trim().toUpperCase() || null,
-          email: payload.clientEmail?.trim() || null,
-          phone: payload.clientPhone?.trim() || null,
-          birthDate: toUTCNoonDate(payload.clientBirthDate),
+          name: validatedClient.name,
+          rfc: validatedClient.rfc?.trim().toUpperCase() || null,
+          email: validatedClient.email?.trim() || null,
+          phone: validatedClient.phone?.trim() || null,
+          birthDate: toUTCNoonDate(validatedClient.birthDate),
         },
       });
       targetClientId = createdClient.id;

@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { RAMOS_CATALOGO, DEFAULT_COMPANIES, MONTH_NAMES_ES } from "@/lib/productionConstants";
+import { toUTCNoonDate } from "@/app/(dashboard)/cartera/dateUtils";
 
 
 // Helper to check admin access
@@ -158,11 +159,11 @@ export async function createEmission(data: {
     if (!data.agentId) throw new Error("Debes seleccionar un agente.");
     if (!data.companyName?.trim()) throw new Error("Debes especificar la aseguradora.");
 
-    const dateObj = new Date(data.issueDate || Date.now());
-    if (isNaN(dateObj.getTime())) throw new Error("Fecha de emisión inválida.");
+    const dateObj = toUTCNoonDate(data.issueDate) || toUTCNoonDate(new Date());
+    if (!dateObj || isNaN(dateObj.getTime())) throw new Error("Fecha de emisión inválida.");
 
-    const year = dateObj.getFullYear();
-    const month = dateObj.getMonth() + 1; // 1-indexed
+    const year = dateObj.getUTCFullYear();
+    const month = dateObj.getUTCMonth() + 1; // 1-indexed
 
     // Agent agency check
     const agent = await prisma.user.findUnique({
@@ -192,6 +193,8 @@ export async function createEmission(data: {
     });
 
     revalidatePath("/admin");
+    revalidatePath("/admin/produccion");
+    revalidatePath("/ranking");
     return { success: true, emission };
   } catch (error: any) {
     console.error("Error createEmission:", error);
@@ -229,11 +232,11 @@ export async function updateEmission(id: string, data: {
     if (data.notes !== undefined) updatePayload.notes = data.notes?.trim() || null;
 
     if (data.issueDate) {
-      const d = new Date(data.issueDate);
-      if (!isNaN(d.getTime())) {
+      const d = toUTCNoonDate(data.issueDate);
+      if (d && !isNaN(d.getTime())) {
         updatePayload.issueDate = d;
-        updatePayload.year = d.getFullYear();
-        updatePayload.month = d.getMonth() + 1;
+        updatePayload.year = d.getUTCFullYear();
+        updatePayload.month = d.getUTCMonth() + 1;
       }
     }
 
@@ -243,6 +246,8 @@ export async function updateEmission(id: string, data: {
     });
 
     revalidatePath("/admin");
+    revalidatePath("/admin/produccion");
+    revalidatePath("/ranking");
     return { success: true, emission: updated };
   } catch (error: any) {
     console.error("Error updateEmission:", error);
@@ -256,6 +261,8 @@ export async function deleteEmission(id: string) {
     await verifyAdminUser();
     await prisma.agentEmission.delete({ where: { id } });
     revalidatePath("/admin");
+    revalidatePath("/admin/produccion");
+    revalidatePath("/ranking");
     return { success: true };
   } catch (error: any) {
     console.error("Error deleteEmission:", error);

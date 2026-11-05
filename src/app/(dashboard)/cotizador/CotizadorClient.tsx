@@ -202,10 +202,12 @@ export default function CotizadorPage({
   const [hasCalculated, setHasCalculated] = useState(printMode ? true : false)
   const [currentQuoteId, setCurrentQuoteId] = useState<string | null>(null)
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
+  const [stepError, setStepError] = useState<string | null>(null)
 
   // Handle forms input changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
+    setStepError(null)
     setFormData(prev => {
       const updated = {
         ...prev,
@@ -335,6 +337,7 @@ export default function CotizadorPage({
 
   // Handle Mapping Selector Changes
   const handleMappingChange = (conceptKey: keyof ColumnMapping, columnIndex: number) => {
+    setStepError(null)
     setMapping(prev => ({
       ...prev,
       [conceptKey]: columnIndex
@@ -344,21 +347,29 @@ export default function CotizadorPage({
   // Proceed to Step 2 with phone number validation (Correction 1)
   const handleProceedToStep2 = () => {
     if (!formData.cliente.trim()) {
-      alert("Por favor, ingresa el nombre del cliente.")
+      setStepError("Por favor ingresa el nombre completo del cliente para continuar.")
       return
     }
     if (!formData.agente || formData.agente === "" || formData.agente === "Nombre de Agente") {
-      alert("Por favor, selecciona un agente válido de la lista.")
+      setStepError("Por favor selecciona el nombre del agente responsable de la lista.")
       return
     }
-    
+    if (/[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(formData.telefono)) {
+      setStepError("El teléfono del cliente solo debe contener números (sin letras).")
+      return
+    }
     // Validate 10 numeric digits strictly
     const cleanedPhone = formData.telefono.replace(/\D/g, "")
     if (cleanedPhone.length !== 10) {
-      alert("El número de teléfono del cliente debe tener exactamente 10 dígitos numéricos.")
+      setStepError("El número de teléfono del cliente debe tener exactamente 10 dígitos numéricos.")
+      return
+    }
+    if (!formData.edadCliente || formData.edadCliente < 1 || formData.edadCliente > 99) {
+      setStepError("Ingresa una edad válida para el cliente (entre 1 y 99 años).")
       return
     }
     
+    setStepError(null)
     setStep(2)
   }
 
@@ -1224,6 +1235,13 @@ export default function CotizadorPage({
               </div>
             </div>
 
+            {stepError && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/30 dark:border-rose-900/50 px-4 py-3 text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-2">
+                <ShieldAlert className="h-4 w-4 shrink-0 text-rose-600" />
+                <span>{stepError}</span>
+              </div>
+            )}
+
             <div className="flex justify-end pt-4">
               <Button onClick={handleProceedToStep2} className="bg-teal-600 hover:bg-teal-700 text-white w-full md:w-auto px-8">
                 Continuar a Carga <ArrowRight className="ml-2 h-4 w-4" />
@@ -1297,15 +1315,35 @@ export default function CotizadorPage({
               )}
             </div>
 
+            {!file && (
+              <div className="rounded-xl border border-amber-200 bg-amber-50/70 dark:bg-amber-950/20 dark:border-amber-900/40 px-4 py-2.5 text-xs font-medium text-amber-800 dark:text-amber-300 flex items-center gap-2">
+                <ShieldAlert className="h-4 w-4 shrink-0 text-amber-600" />
+                <span>Para avanzar al Paso 3 debes subir primero un archivo Excel (.xlsx, .xls) o CSV de proyección.</span>
+              </div>
+            )}
+
+            {stepError && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/30 dark:border-rose-900/50 px-4 py-3 text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-2">
+                <ShieldAlert className="h-4 w-4 shrink-0 text-rose-600" />
+                <span>{stepError}</span>
+              </div>
+            )}
+
             <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={() => setStep(1)} className="px-6">
+              <Button variant="outline" onClick={() => { setStepError(null); setStep(1); }} className="px-6">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Atrás
               </Button>
               
               <Button 
-                disabled={!file} 
-                onClick={() => setStep(3)} 
-                className="bg-teal-600 hover:bg-teal-700 text-white px-8 disabled:opacity-50"
+                onClick={() => {
+                  if (!file) {
+                    setStepError("Por favor selecciona o arrastra tu archivo Excel (.xlsx, .xls) o CSV antes de continuar al mapeo.")
+                    return
+                  }
+                  setStepError(null)
+                  setStep(3)
+                }} 
+                className={`bg-teal-600 hover:bg-teal-700 text-white px-8 ${!file ? "opacity-75" : ""}`}
               >
                 Continuar a Mapeo <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
@@ -1444,19 +1482,39 @@ export default function CotizadorPage({
               </p>
             </div>
 
+            {stepError && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 dark:bg-rose-950/30 dark:border-rose-900/50 px-4 py-3 text-xs font-bold text-rose-700 dark:text-rose-300 flex items-center gap-2">
+                <ShieldAlert className="h-4 w-4 shrink-0 text-rose-600" />
+                <span>{stepError}</span>
+              </div>
+            )}
+
             <div className="flex justify-between pt-4">
-              <Button variant="outline" onClick={() => setStep(2)} className="px-6">
+              <Button variant="outline" onClick={() => { setStepError(null); setStep(2); }} className="px-6">
                 <ArrowLeft className="mr-2 h-4 w-4" /> Atrás
               </Button>
               
               <Button 
-                disabled={
-                  formData.producto === "Insignia Life Universal"
-                    ? (mapping.anios === -1 || mapping.prima === -1 || mapping.sa === -1 || mapping.valores === -1 || mapping.fondoDisponible === -1 || mapping.recuperacion === -1 || mapping.primaProteccion === -1 || mapping.primaAhorro === -1)
-                    : (mapping.anios === -1 || mapping.prima === -1 || mapping.sa === -1 || mapping.valores === -1)
-                } 
-                onClick={calculateResults} 
-                className="bg-teal-600 hover:bg-teal-700 text-white px-8 disabled:opacity-50"
+                onClick={() => {
+                  const missingCols: string[] = []
+                  if (mapping.anios === -1) missingCols.push("Años Póliza")
+                  if (mapping.prima === -1) missingCols.push(formData.producto === "Insignia Life Universal" ? "Prima Total ($)" : "Prima Anual ($)")
+                  if (mapping.sa === -1) missingCols.push(formData.producto === "Insignia Life Universal" ? "Protección ($)" : "Suma Asegurada ($)")
+                  if (mapping.valores === -1) missingCols.push(formData.producto === "Insignia Life Universal" ? "Aportación Acumulada" : "Valores Garantizados")
+                  if (formData.producto === "Insignia Life Universal") {
+                    if (mapping.primaProteccion === -1) missingCols.push("Prima Protec.")
+                    if (mapping.primaAhorro === -1) missingCols.push("Prima Ahorro")
+                    if (mapping.fondoDisponible === -1) missingCols.push("Fondo Disponible")
+                    if (mapping.recuperacion === -1) missingCols.push("Recuperación %")
+                  }
+                  if (missingCols.length > 0) {
+                    setStepError(`Por favor asigna las columnas faltantes antes de generar las tablas: ${missingCols.join(", ")}.`)
+                    return
+                  }
+                  setStepError(null)
+                  calculateResults()
+                }} 
+                className="bg-teal-600 hover:bg-teal-700 text-white px-8"
               >
                 Generar Tablas <ArrowRight className="ml-2 h-4 w-4" />
               </Button>

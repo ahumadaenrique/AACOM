@@ -1834,7 +1834,7 @@ export async function getMonthlyAdnRankings(
             where: {
                 agencyId,
                 active: true,
-                role: { in: ['USER', 'AGENTE', 'AGENTE_LITE'] }
+                role: { in: ['USER', 'AGENTE', 'AGENTE_LITE', 'ADMIN'] }
             },
             select: {
                 id: true,
