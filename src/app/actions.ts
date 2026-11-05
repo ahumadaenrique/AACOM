@@ -717,17 +717,16 @@ export async function createAgentUser(data: { name: string; email: string; role:
             return { success: false, message: "Permisos insuficientes" };
         }
 
-        // RestricciÃ³n: Validar que si es AGENTE_LITE la agencia lo permita
+        // Restricción: Validar que si es AGENTE_LITE la agencia lo permita
         if (data.role === 'AGENTE_LITE' && currentUser.agency && !currentUser.agency.allowLiteAgents) {
-            return { success: false, message: "Tu agencia no tiene habilitada la funciÃ³n de Agentes Limitados." };
+            return { success: false, message: "Tu agencia no tiene habilitada la función de Agentes Limitados." };
         }
 
-        // RestricciÃ³n: solo el propietario (enrique.ahumada@aacommx.com) puede dar de alta a otros administradores
-        if (data.role === 'ADMIN' && !(process.env.SUPER_ADMIN_EMAILS || "enrique.ahumada@aacommx.com").includes(currentUser.email)) {
-            return { success: false, message: "Solo el administrador principal (Enrique Ahumada) estÃ¡ facultado para dar de alta cuentas administrativas." };
+        if (data.role === 'SUPER_ADMIN' && currentUser.role !== 'SUPER_ADMIN') {
+            return { success: false, message: "Permisos insuficientes para asignar el rol de Super Administrador." };
         }
 
-        // Restricción adicional: límite dinámico de ADMINS por Agencia/Promotoría (default: 2, configurable por SUPER_ADMIN)
+        // Límite dinámico de ADMINS por Agencia/Promotoría (default: 2, configurable por SUPER_ADMIN)
         if (data.role === 'ADMIN' && ((session?.user?.agencyId || currentUser?.agencyId) as string)) {
             const targetAgencyId = ((session?.user?.agencyId || currentUser?.agencyId) as string);
             const agencyRecord = await prisma.agency.findUnique({
@@ -2235,10 +2234,10 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
         if (data.active !== undefined && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) updateData.active = data.active;
         
         if (data.role !== undefined && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) {
+            if (data.role === 'SUPER_ADMIN' && currentUser.role !== 'SUPER_ADMIN') {
+                return { success: false, message: "Permisos insuficientes para promover a Super Administrador." };
+            }
             if (data.role === 'ADMIN' && data.role !== targetUser.role) {
-                if (!(process.env.SUPER_ADMIN_EMAILS || "enrique.ahumada@aacommx.com").includes(currentUser.email)) {
-                    return { success: false, message: "Solo el administrador principal (Enrique Ahumada) está facultado para promover cuentas a nivel Administrador." };
-                }
                 const targetAgencyId = targetUser.agencyId || ((session?.user?.agencyId || currentUser?.agencyId) as string);
                 if (targetAgencyId) {
                     const agencyRecord = await prisma.agency.findUnique({
