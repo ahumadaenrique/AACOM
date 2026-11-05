@@ -256,7 +256,7 @@ export default async function DashboardLayout({
             <header className="sticky top-0 z-40 flex h-16 items-center justify-between border-b bg-background/95 backdrop-blur px-4 md:px-6 shadow-sm bg-gradient-to-l from-primary from-[15%] via-primary/40 to-transparent">
                 <div className="flex items-center gap-4">
                     {/* Desktop Navigation */}
-                    <nav className="hidden flex-row items-center gap-5 text-sm md:flex lg:gap-6">
+                    <nav className="hidden flex-row items-center gap-4 text-sm xl:flex 2xl:gap-6 whitespace-nowrap">
                         <Link
                             href="/"
                             className="flex items-center gap-2 text-lg font-semibold md:text-base mr-4 shrink-0"

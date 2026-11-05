@@ -42,14 +42,25 @@ export default function AgencySettingsForm({
   const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
 
   const handleSaveSettings = async () => {
+    const trimmedName = name.trim();
+    if (!trimmedName) {
+      toast({
+        title: "Nombre obligatorio",
+        description: "El nombre de la agencia no puede quedar vacío.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       setIsSaving(true);
-      const res = await updateAgencySettings(slug, { name, primaryColor: color });
+      const res = await updateAgencySettings(slug, { name: trimmedName, primaryColor: color });
       if (res.success) {
+        setName(trimmedName);
         toast({ title: "Guardado exitoso", description: "La configuración ha sido actualizada. Recarga la página para ver todos los cambios aplicados globalmente." });
       }
-    } catch (e) {
-      toast({ title: "Error", description: "No se pudo guardar la configuración", variant: "destructive" });
+    } catch (e: any) {
+      toast({ title: "Error", description: e?.message || "No se pudo guardar la configuración", variant: "destructive" });
     } finally {
       setIsSaving(false);
     }

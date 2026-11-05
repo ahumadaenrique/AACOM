@@ -118,7 +118,7 @@ export default function AdminProduccion() {
   const [formPolicyNumber, setFormPolicyNumber] = useState("");
   const [formClientName, setFormClientName] = useState("");
   const [formRamo, setFormRamo] = useState("Protección");
-  const [formIssueDate, setFormIssueDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [formIssueDate, setFormIssueDate] = useState(() => new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" }));
   const [formPrimaEmitida, setFormPrimaEmitida] = useState<string>("");
   const [formPrimaPagada, setFormPrimaPagada] = useState<string>("");
   const [formNotes, setFormNotes] = useState("");
@@ -541,7 +541,7 @@ export default function AdminProduccion() {
       `"${em.policyNumber || ""}"`,
       `"${em.clientName || ""}"`,
       `"${em.ramo || ""}"`,
-      `"${new Date(em.issueDate).toLocaleDateString("es-MX")}"`,
+      `"${new Date(em.issueDate).toLocaleDateString("es-MX", { timeZone: "UTC" })}"`,
       em.primaEmitida || 0,
       em.primaPagada || 0,
       `"${em.status || ""}"`,
@@ -1511,6 +1511,7 @@ export default function AdminProduccion() {
                             {new Date(em.issueDate).toLocaleDateString("es-MX", {
                               day: "2-digit",
                               month: "short",
+                              timeZone: "UTC",
                             })}
                           </td>
                           <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-zinc-100">
@@ -2019,6 +2020,7 @@ export default function AdminProduccion() {
                                     day: "2-digit",
                                     month: "2-digit",
                                     year: "numeric",
+                                    timeZone: "UTC",
                                   })}
                                 </span>
                               </div>
@@ -2179,6 +2181,7 @@ export default function AdminProduccion() {
                                   day: "2-digit",
                                   month: "2-digit",
                                   year: "numeric",
+                                  timeZone: "UTC",
                                 })}
                               </td>
 

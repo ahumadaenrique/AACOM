@@ -9,6 +9,7 @@ import {
   RAMO_LABELS,
   COMMON_INSURERS,
   PAYMENT_METHODS,
+  toDateInputValue,
 } from "./dateUtils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,26 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
+const getInitialFormState = () => ({
+  clientName: "",
+  clientRfc: "",
+  clientPhone: "",
+  clientEmail: "",
+  clientBirthDate: "",
+  policyNumber: "",
+  insuranceCompany: "Insignia Life",
+  product: "",
+  ramo: "VIDA_INDIVIDUAL",
+  tipoVigencia: "LARGO_PLAZO",
+  effectiveDate: toDateInputValue(new Date()),
+  renewalDate: "",
+  paymentMethod: "Anual",
+  currency: "MXN",
+  annualPremium: "" as string | number,
+  originalPremium: "" as string | number,
+  observations: "",
+});
+
 export default function QuickPdfAiPolicyDialog({
   existingClients = [],
 }: {
@@ -45,30 +66,27 @@ export default function QuickPdfAiPolicyDialog({
   const [isSaving, setIsSaving] = useState(false);
   const [fileName, setFileName] = useState<string | null>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [formError, setFormError] = useState<string>("");
 
-  const [formState, setFormState] = useState({
-    clientName: "",
-    clientRfc: "",
-    clientPhone: "",
-    clientEmail: "",
-    clientBirthDate: "",
-    policyNumber: "",
-    insuranceCompany: "Insignia Life",
-    product: "",
-    ramo: "VIDA_INDIVIDUAL",
-    tipoVigencia: "LARGO_PLAZO",
-    effectiveDate: "",
-    renewalDate: "",
-    paymentMethod: "Anual",
-    currency: "MXN",
-    annualPremium: 0,
-    originalPremium: "" as string | number,
-    observations: "",
-  });
+  const [formState, setFormState] = useState(getInitialFormState);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const router = useRouter();
+
+  const resetDialogState = () => {
+    setFormState(getInitialFormState());
+    setFileName(null);
+    setPdfUrl(null);
+    setShowAdvanced(false);
+    setFormError("");
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
+
+  const handleOpenChange = (nextOpen: boolean) => {
+    setOpen(nextOpen);
+    resetDialogState();
+  };
 
   const handleClientNameChange = (val: string) => {
     const matched = existingClients.find(
@@ -77,8 +95,7 @@ export default function QuickPdfAiPolicyDialog({
     setFormState((prev) => ({
       ...prev,
       clientName: val,
-      clientPhone:
-        prev.clientPhone || (matched?.phone ? matched.phone : prev.clientPhone),
+      clientPhone: matched?.phone ? matched.phone : prev.clientPhone,
     }));
   };
 
@@ -142,14 +159,73 @@ export default function QuickPdfAiPolicyDialog({
     }
   };
 
+  const validateYearStr = (dateStr: string): boolean => {
+    if (!dateStr || !dateStr.trim()) return true;
+    const yearMatch = dateStr.trim().match(/^(\d{4})-/);
+    if (!yearMatch) return false;
+    const yr = parseInt(yearMatch[1], 10);
+    return yr >= 1980 && yr <= 2100;
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formState.policyNumber.trim() || !formState.clientName.trim()) {
-      toast({
-        title: "Datos incompletos",
-        description: "El nombre del cliente y el número de póliza son obligatorios.",
-        variant: "destructive",
-      });
+    setFormError("");
+
+    if (!formState.clientName.trim()) {
+      const msg = "Por favor, ingresa el nombre del cliente o contratante.";
+      setFormError(msg);
+      toast({ title: "Datos incompletos", description: msg, variant: "destructive" });
+      return;
+    }
+
+    if (!formState.policyNumber.trim()) {
+      const msg = "Por favor, ingresa el número de póliza.";
+      setFormError(msg);
+      toast({ title: "Datos incompletos", description: msg, variant: "destructive" });
+      return;
+    }
+
+    const premiumRaw = String(formState.annualPremium ?? "").trim();
+    const premiumNum = Number(premiumRaw);
+    if (!premiumRaw || isNaN(premiumNum) || premiumNum <= 0) {
+      const msg = "La prima anual debe ser un monto positivo mayor a $0 (no se permiten valores negativos ni en cero).";
+      setFormError(msg);
+      toast({ title: "Prima anual inválida", description: msg, variant: "destructive" });
+      return;
+    }
+
+    if (formState.originalPremium !== "" && formState.originalPremium !== null) {
+      const origNum = Number(formState.originalPremium);
+      if (isNaN(origNum) || origNum < 0) {
+        const msg = "La prima en moneda original no puede ser negativa.";
+        setFormError(msg);
+        toast({ title: "Prima original inválida", description: msg, variant: "destructive" });
+        return;
+      }
+    }
+
+    if (formState.clientPhone.trim() !== "") {
+      const phoneVal = formState.clientPhone.trim();
+      const digits = phoneVal.replace(/\D/g, "");
+      if (/[a-zA-ZáéíóúÁÉÍÓÚñÑ]/.test(phoneVal) || digits.length < 10 || digits.length > 15) {
+        const msg = "El teléfono o WhatsApp debe contener de 10 a 15 dígitos numéricos (sin letras).";
+        setFormError(msg);
+        toast({ title: "Teléfono inválido", description: msg, variant: "destructive" });
+        return;
+      }
+    }
+
+    if (!validateYearStr(formState.effectiveDate)) {
+      const msg = "El año de Inicio de Vigencia debe ser válido (entre 1980 y 2100).";
+      setFormError(msg);
+      toast({ title: "Fecha de vigencia inválida", description: msg, variant: "destructive" });
+      return;
+    }
+
+    if (!validateYearStr(formState.renewalDate)) {
+      const msg = "El año de Aniversario / Fin de Vigencia debe ser válido (entre 1980 y 2100).";
+      setFormError(msg);
+      toast({ title: "Fecha de renovación inválida", description: msg, variant: "destructive" });
       return;
     }
 
@@ -173,7 +249,7 @@ export default function QuickPdfAiPolicyDialog({
           renewalDate: formState.renewalDate || null,
           paymentMethod: formState.paymentMethod,
           currency: formState.currency,
-          annualPremium: Number(formState.annualPremium) || 0,
+          annualPremium: premiumNum,
           originalPremium:
             formState.originalPremium !== ""
               ? Number(formState.originalPremium)
@@ -188,13 +264,15 @@ export default function QuickPdfAiPolicyDialog({
         title: "✅ Póliza guardada en tu Cartera",
         description: `Póliza ${formState.policyNumber} registrada con sus recibos programados.`,
       });
+      resetDialogState();
       setOpen(false);
-      setFileName(null);
       router.refresh();
     } catch (err: any) {
+      const errMsg = err?.message || "Revisa los campos capturados.";
+      setFormError(errMsg);
       toast({
         title: "Error al guardar",
-        description: err.message,
+        description: errMsg,
         variant: "destructive",
       });
     } finally {
@@ -206,7 +284,7 @@ export default function QuickPdfAiPolicyDialog({
     "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">
           <Plus className="w-4 h-4 mr-1.5" />
@@ -288,7 +366,7 @@ export default function QuickPdfAiPolicyDialog({
           )}
         </div>
 
-        <form onSubmit={handleSave} className="grid gap-3.5 md:grid-cols-2 pt-1">
+        <form onSubmit={handleSave} noValidate className="grid gap-3.5 md:grid-cols-2 pt-1">
           {/* 7 CAMPOS ESENCIALES */}
           <div className="space-y-1.5 md:col-span-2">
             <Label>Cliente / Contratante *</Label>
@@ -297,7 +375,6 @@ export default function QuickPdfAiPolicyDialog({
               value={formState.clientName}
               onChange={(e) => handleClientNameChange(e.target.value)}
               placeholder="Escribe el nombre o selecciona un cliente existente..."
-              required
             />
             {existingClients.length > 0 && (
               <datalist id="existing-clients-list">
@@ -316,7 +393,6 @@ export default function QuickPdfAiPolicyDialog({
                 setFormState({ ...formState, policyNumber: e.target.value })
               }
               placeholder="Ej. 308299"
-              required
             />
           </div>
 
@@ -375,6 +451,8 @@ export default function QuickPdfAiPolicyDialog({
             <Label>Inicio de Vigencia</Label>
             <Input
               type="date"
+              min="1980-01-01"
+              max="2100-12-31"
               value={formState.effectiveDate}
               onChange={(e) =>
                 setFormState({ ...formState, effectiveDate: e.target.value })
@@ -404,11 +482,13 @@ export default function QuickPdfAiPolicyDialog({
             <Input
               type="number"
               step="0.01"
+              min="0.01"
+              placeholder="Ej. 25000"
               value={formState.annualPremium}
               onChange={(e) =>
                 setFormState({
                   ...formState,
-                  annualPremium: parseFloat(e.target.value) || 0,
+                  annualPremium: e.target.value,
                 })
               }
             />
@@ -417,11 +497,12 @@ export default function QuickPdfAiPolicyDialog({
           <div className="space-y-1.5">
             <Label>WhatsApp del Cliente (Opcional)</Label>
             <Input
+              type="tel"
               value={formState.clientPhone}
               onChange={(e) =>
                 setFormState({ ...formState, clientPhone: e.target.value })
               }
-              placeholder="10 dígitos para enviar recordatorios"
+              placeholder="10 dígitos numéricos (ej. 5512345678)"
             />
           </div>
 
@@ -466,6 +547,7 @@ export default function QuickPdfAiPolicyDialog({
                 <Input
                   type="number"
                   step="0.01"
+                  min="0"
                   placeholder="Opcional"
                   value={formState.originalPremium}
                   onChange={(e) =>
@@ -481,6 +563,8 @@ export default function QuickPdfAiPolicyDialog({
                 <Label>Aniversario / Fin de Vigencia</Label>
                 <Input
                   type="date"
+                  min="1980-01-01"
+                  max="2100-12-31"
                   value={formState.renewalDate}
                   onChange={(e) =>
                     setFormState({ ...formState, renewalDate: e.target.value })
@@ -509,6 +593,12 @@ export default function QuickPdfAiPolicyDialog({
                   placeholder="Ej. Suma Asegurada $5,000,000 MXN..."
                 />
               </div>
+            </div>
+          )}
+
+          {formError && (
+            <div className="md:col-span-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-900/50 text-xs font-semibold text-red-700 dark:text-red-300">
+              ⚠️ {formError}
             </div>
           )}
 

@@ -96,7 +96,7 @@ export default function ClientFormDialog({
             {isEditing ? "Editar Información del Cliente" : "Registrar Nuevo Cliente"}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="space-y-4">
           <div className="space-y-1.5">
             <Label>Nombre Completo / Razón Social *</Label>
             <Input {...form.register("name")} placeholder="Ej. Juan Pérez García" />
@@ -124,7 +124,17 @@ export default function ClientFormDialog({
 
             <div className="space-y-1.5">
               <Label>Fecha de Nacimiento</Label>
-              <Input type="date" {...form.register("birthDate")} />
+              <Input
+                type="date"
+                min="1910-01-01"
+                max={new Date().toISOString().split("T")[0]}
+                {...form.register("birthDate")}
+              />
+              {form.formState.errors.birthDate && (
+                <p className="text-xs text-red-500">
+                  {form.formState.errors.birthDate.message as string}
+                </p>
+              )}
             </div>
           </div>
 

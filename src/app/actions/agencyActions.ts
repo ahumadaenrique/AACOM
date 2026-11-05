@@ -11,12 +11,16 @@ export async function updateAgencySettings(
     primaryColor?: string;
   }
 ) {
-  if (!slug) throw new Error("No agency slug provided");
+  if (!slug) throw new Error("No se especificó la agencia");
+
+  if (data.name !== undefined && !data.name.trim()) {
+    throw new Error("El nombre de la agencia no puede estar vacío");
+  }
 
   const agency = await prisma.agency.update({
     where: { slug },
     data: {
-      ...(data.name && { name: data.name }),
+      ...(data.name && { name: data.name.trim() }),
       ...(data.primaryColor && { primaryColor: data.primaryColor }),
     },
   });
