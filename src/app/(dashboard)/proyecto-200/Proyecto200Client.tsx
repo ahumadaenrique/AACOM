@@ -162,6 +162,22 @@ function formatDateTime(dateInput?: string | Date | null) {
   });
 }
 
+function buildGoogleCalendarUrl(contact: any, agentName: string) {
+  const rawDate = contact.scheduledMeetingAt || contact.nextActionAt;
+  const start = rawDate ? new Date(rawDate) : new Date();
+  if (isNaN(start.getTime())) return "#";
+  const end = new Date(start.getTime() + 45 * 60 * 1000);
+  const fmt = (d: Date) =>
+    d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const title = encodeURIComponent(
+    `Cita Diagnóstico Financiero — ${contact.fullName}`
+  );
+  const details = encodeURIComponent(
+    `Prospecto Proyecto 200: ${contact.fullName}\nTeléfono: ${contact.phone}\nRelación: ${contact.relationship || ""}\nNotas: ${contact.notes || "Sin notas"}\nAsesor: ${agentName}`
+  );
+  return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&details=${details}`;
+}
+
 export default function Proyecto200Client({
   currentUser,
   initialData,
@@ -172,10 +188,11 @@ export default function Proyecto200Client({
     currentUser.role === "ADMIN" || currentUser.role === "SUPER_ADMIN";
 
   const [activeTab, setActiveTab] = useState<
-    "piloto" | "crm" | "importador" | "estadisticas" | "admin"
+    "piloto" | "agenda" | "crm" | "importador" | "estadisticas" | "admin"
   >(() => {
     if (initialTab === "admin" && isAdmin) return "admin";
     if (
+      initialTab === "agenda" ||
       initialTab === "crm" ||
       initialTab === "importador" ||
       initialTab === "estadisticas"
@@ -229,7 +246,7 @@ export default function Proyecto200Client({
   const [callSeconds, setCallSeconds] = useState<number>(0);
   const [actionNotes, setActionNotes] = useState<string>("");
   const [pilotoActionModal, setPilotoActionModal] = useState<
-    null | "CITA" | "RECORDATORIO" | "DESCALIFICAR"
+    null | "CITA" | "RECORDATORIO" | "NO_CONTESTO" | "DESCALIFICAR"
   >(null);
   const [scheduledDate, setScheduledDate] = useState<string>(() => {
     const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -244,6 +261,14 @@ export default function Proyecto200Client({
   const [disqReasonInput, setDisqReasonInput] = useState<string>("");
   const [disqPreset, setDisqPreset] = useState<string>("");
   const [submittingAction, setSubmittingAction] = useState<boolean>(false);
+
+  // Estado Vista Agenda de Citas y Recordatorios (Agente)
+  const [agendaFilterType, setAgendaFilterType] = useState<
+    "ALL" | "CITA_AGENDADA" | "RECORDATORIO_PROGRAMADO"
+  >("ALL");
+  const [agendaTimeframe, setAgendaTimeframe] = useState<
+    "ALL" | "TODAY" | "WEEK" | "UPCOMING"
+  >("ALL");
 
   // Estado Filtros CRM
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -302,11 +327,16 @@ export default function Proyecto200Client({
   // Estado Admin Drill-Down
   const [adminSelectedAgentId, setAdminSelectedAgentId] =
     useState<string>("ALL");
+  const [adminSupervisorFilter, setAdminSupervisorFilter] =
+    useState<string>("ALL");
+  const [adminAgendaTimeframe, setAdminAgendaTimeframe] = useState<
+    "ALL" | "TODAY" | "WEEK" | "UPCOMING"
+  >("ALL");
   const [adminSearch, setAdminSearch] = useState<string>("");
   const [adminFilterClass, setAdminFilterClass] = useState<string>("ALL");
   const [adminFilterStatus, setAdminFilterStatus] = useState<string>("ALL");
   const [adminSubView, setAdminSubView] = useState<
-    "agentes" | "contactos" | "bitacora"
+    "agentes" | "agenda" | "contactos" | "bitacora"
   >("agentes");
   const [hiddenAgentIds, setHiddenAgentIds] = useState<string[]>(
     initialAdminData?.hiddenAgentIds || []
@@ -413,11 +443,19 @@ export default function Proyecto200Client({
     });
   }, [contacts]);
 
+  // Anclaje automático de Contacto en Estación (Contact Lock):
+  // En cuanto hay un contacto en la cola y ninguno está seleccionado, lo fija para que nunca salte solo en un re-render
+  useEffect(() => {
+    if (!selectedQueueContactId && activeQueue.length > 0) {
+      setSelectedQueueContactId(activeQueue[0].id);
+    }
+  }, [selectedQueueContactId, activeQueue]);
+
   const currentPilotoContact = useMemo(() => {
     if (selectedQueueContactId) {
       const found =
-        activeQueue.find((c) => c.id === selectedQueueContactId) ||
-        contacts.find((c) => c.id === selectedQueueContactId);
+        contacts.find((c) => c.id === selectedQueueContactId) ||
+        activeQueue.find((c) => c.id === selectedQueueContactId);
       if (found) return found;
     }
     return activeQueue[0] || null;
@@ -1248,12 +1286,55 @@ export default function Proyecto200Client({
     }
   };
 
+  // Cambiar clasificación y guion en vivo durante la llamada SIN saltar al siguiente contacto
+  const handleInCallClassificationToggle = async (
+    targetClassification: "PROSPECTO" | "REFERIDOR"
+  ) => {
+    if (!currentPilotoContact) return;
+    if (currentPilotoContact.classification === targetClassification) return;
+
+    const contactId = currentPilotoContact.id;
+    // Fijar el contacto para garantizar que no se mueva
+    setSelectedQueueContactId(contactId);
+
+    // Actualización optimista inmediata del guion en pantalla
+    setContacts((prev) =>
+      prev.map((c) =>
+        c.id === contactId ? { ...c, classification: targetClassification } : c
+      )
+    );
+
+    const res = await updateProject200Contact(contactId, {
+      classification: targetClassification,
+    });
+
+    if (!res.success) {
+      showToast("error", res.error || "No se pudo cambiar la clasificación.");
+      await refreshAllData();
+      return;
+    }
+
+    if (res.contact) {
+      setContacts((prev) =>
+        prev.map((c) => (c.id === contactId ? res.contact : c))
+      );
+    }
+
+    showToast(
+      "info",
+      targetClassification === "REFERIDOR"
+        ? `🤝 Guion cambiado a Centro de Influencia / Referidor. Continúa tu llamada con ${currentPilotoContact.fullName}.`
+        : `🎯 Guion cambiado a Prospecto Directo. Continúa tu llamada con ${currentPilotoContact.fullName}.`
+    );
+  };
+
   // Ejecutar acción en el Piloto Automático de Prospección
   const handlePilotoOutcome = async (
     actionType:
       | "CITA_AGENDADA"
       | "RECORDATORIO_PROGRAMADO"
       | "NO_CONTESTO"
+      | "DOBLE_TOQUE_RESCATE"
       | "SEGUIMIENTO_WHATSAPP"
       | "CONVERTIR_REFERIDOR"
       | "DESCALIFICAR"
@@ -1299,10 +1380,26 @@ export default function Proyecto200Client({
       return;
     }
 
+    // Si es Doble Toque (Llamada no contestada + Rescate por WhatsApp), abrir WhatsApp con el mensaje prellenado
+    if (actionType === "DOBLE_TOQUE_RESCATE") {
+      const waText = `¡Hola ${
+        currentPilotoContact.fullName.split(" ")[0]
+      }! Te escribe ${
+        currentUser.name.split(" ")[0]
+      }. Te marqué hace un momento por teléfono y no logré localizarte. No quiero quitarte tiempo por mensaje, ¿a qué hora del día de hoy o mañana te puedo marcar 2 minutos?`;
+      const waUrl = `https://wa.me/52${
+        currentPilotoContact.phone
+      }?text=${encodeURIComponent(waText)}`;
+      window.open(waUrl, "_blank", "noopener,noreferrer");
+    }
+
+    const completedContactId = currentPilotoContact.id;
+    const nextCandidate = activeQueue.find((c) => c.id !== completedContactId);
+
     setSubmittingAction(true);
     try {
       const res = await recordGuidedProspectingAction({
-        contactId: currentPilotoContact.id,
+        contactId: completedContactId,
         actionType,
         scheduledDate:
           actionType === "CITA_AGENDADA"
@@ -1333,7 +1430,7 @@ export default function Proyecto200Client({
         confetti({ particleCount: 80, spread: 65, origin: { y: 0.65 } });
         showToast(
           "success",
-          `¡Excelente! Cita agendada con ${currentPilotoContact.fullName}. Cargando siguiente contacto prioritario...`
+          `¡Excelente! Cita agendada con ${currentPilotoContact.fullName}. Puedes consultarla en la pestaña «📅 Mi Agenda de Citas».`
         );
       } else if (actionType === "RECORDATORIO_PROGRAMADO") {
         showToast(
@@ -1343,7 +1440,12 @@ export default function Proyecto200Client({
       } else if (actionType === "NO_CONTESTO") {
         showToast(
           "info",
-          `Intento registrado para ${currentPilotoContact.fullName}. Se reprogramó automáticamente y avanzamos al siguiente contacto.`
+          `📵 Intento registrado para ${currentPilotoContact.fullName}. Reprogramado en 4 hrs y avanzando al siguiente contacto.`
+        );
+      } else if (actionType === "DOBLE_TOQUE_RESCATE") {
+        showToast(
+          "success",
+          `📞+💬 Doble Toque registrado para ${currentPilotoContact.fullName}. WhatsApp de rescate abierto y avanzando al siguiente contacto.`
         );
       } else if (actionType === "SEGUIMIENTO_WHATSAPP") {
         showToast(
@@ -1353,7 +1455,7 @@ export default function Proyecto200Client({
       } else if (actionType === "CONVERTIR_REFERIDOR") {
         showToast(
           "success",
-          `${currentPilotoContact.fullName} ahora está clasificado como Referidor.`
+          `${currentPilotoContact.fullName} quedó registrado en seguimiento como Centro de Influencia / Referidor.`
         );
       } else if (actionType === "DESCALIFICAR") {
         showToast(
@@ -1362,7 +1464,7 @@ export default function Proyecto200Client({
         );
       }
 
-      setSelectedQueueContactId(null);
+      setSelectedQueueContactId(nextCandidate?.id || null);
       setPilotoActionModal(null);
       setReminderReasonInput("");
       await refreshAllData();
@@ -1531,6 +1633,139 @@ export default function Proyecto200Client({
     }
   };
 
+  // Agenda Cronológica del Agente (Citas Agendadas + Recordatorios Programados)
+  const agentAgendaItems = useMemo(() => {
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    const endOf7Days = new Date(startOfToday.getTime() + 7 * 24 * 60 * 60 * 1000);
+    endOf7Days.setHours(23, 59, 59, 999);
+
+    return contacts
+      .filter((c) => {
+        if (c.classification === "DESCALIFICADO") return false;
+        const isCita = c.status === "CITA_AGENDADA";
+        const isRecordatorio = c.status === "RECORDATORIO_PROGRAMADO";
+        if (!isCita && !isRecordatorio) return false;
+
+        if (agendaFilterType !== "ALL" && c.status !== agendaFilterType) {
+          return false;
+        }
+
+        const rawDate = c.scheduledMeetingAt || c.nextActionAt;
+        const dt = rawDate ? new Date(rawDate) : null;
+        if (!dt || isNaN(dt.getTime())) return agendaTimeframe === "ALL";
+
+        if (agendaTimeframe === "TODAY") {
+          return dt >= startOfToday && dt <= endOfToday;
+        }
+        if (agendaTimeframe === "WEEK") {
+          return dt >= startOfToday && dt <= endOf7Days;
+        }
+        if (agendaTimeframe === "UPCOMING") {
+          return dt >= startOfToday;
+        }
+        return true;
+      })
+      .sort((a, b) => {
+        const da = new Date(a.scheduledMeetingAt || a.nextActionAt || 0).getTime();
+        const db = new Date(b.scheduledMeetingAt || b.nextActionAt || 0).getTime();
+        return da - db;
+      });
+  }, [contacts, agendaFilterType, agendaTimeframe]);
+
+  // Lista de Desarrolladores / Supervisores disponibles en la promotoría
+  const supervisorsList = useMemo(() => {
+    const all = adminData?.agentSummaries || [];
+    const map = new Map<string, string>();
+    for (const ag of all) {
+      if (ag.reportsToId && ag.reportsToName) {
+        map.set(ag.reportsToId, ag.reportsToName);
+      }
+    }
+    return Array.from(map.entries()).map(([id, name]) => ({ id, name }));
+  }, [adminData]);
+
+  const visibleAgentSummaries = useMemo(() => {
+    const all = adminData?.agentSummaries || [];
+    return all.filter((ag: any) => {
+      if (hiddenAgentIds.includes(ag.agentId)) return false;
+      if (
+        adminSupervisorFilter !== "ALL" &&
+        ag.reportsToId !== adminSupervisorFilter &&
+        ag.agentId !== adminSupervisorFilter
+      ) {
+        return false;
+      }
+      return true;
+    });
+  }, [adminData, hiddenAgentIds, adminSupervisorFilter]);
+
+  const visibleAgentIdSet = useMemo(() => {
+    return new Set(visibleAgentSummaries.map((a: any) => a.agentId));
+  }, [visibleAgentSummaries]);
+
+  // Agenda Cronológica del Equipo para el Desarrollador / Líder (Admin)
+  const adminAgendaItems = useMemo(() => {
+    const all = adminData?.allContacts || [];
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+    const endOf7Days = new Date(startOfToday.getTime() + 7 * 24 * 60 * 60 * 1000);
+    endOf7Days.setHours(23, 59, 59, 999);
+
+    return all
+      .filter((c: any) => {
+        if (c.status !== "CITA_AGENDADA" && c.status !== "RECORDATORIO_PROGRAMADO") {
+          return false;
+        }
+        if (
+          adminSelectedAgentId !== "ALL" &&
+          c.userId !== adminSelectedAgentId
+        ) {
+          return false;
+        }
+        if (
+          adminSupervisorFilter !== "ALL" &&
+          !visibleAgentIdSet.has(c.userId)
+        ) {
+          return false;
+        }
+
+        const rawDate = c.scheduledMeetingAt || c.nextActionAt;
+        const dt = rawDate ? new Date(rawDate) : null;
+        if (!dt || isNaN(dt.getTime())) return adminAgendaTimeframe === "ALL";
+
+        if (adminAgendaTimeframe === "TODAY") {
+          return dt >= startOfToday && dt <= endOfToday;
+        }
+        if (adminAgendaTimeframe === "WEEK") {
+          return dt >= startOfToday && dt <= endOf7Days;
+        }
+        if (adminAgendaTimeframe === "UPCOMING") {
+          return dt >= startOfToday;
+        }
+        return true;
+      })
+      .sort((a: any, b: any) => {
+        // Citas Agendadas primero y por orden cronológico
+        const aIsCita = a.status === "CITA_AGENDADA" ? 0 : 1;
+        const bIsCita = b.status === "CITA_AGENDADA" ? 0 : 1;
+        if (aIsCita !== bIsCita) return aIsCita - bIsCita;
+        const da = new Date(a.scheduledMeetingAt || a.nextActionAt || 0).getTime();
+        const db = new Date(b.scheduledMeetingAt || b.nextActionAt || 0).getTime();
+        return da - db;
+      });
+  }, [
+    adminData,
+    adminSelectedAgentId,
+    adminSupervisorFilter,
+    visibleAgentIdSet,
+    adminAgendaTimeframe,
+  ]);
+
   // Filtrado de contactos en el Panel Ejecutivo de Admin
   const filteredAdminContacts = useMemo(() => {
     const all = adminData?.allContacts || [];
@@ -1538,6 +1773,12 @@ export default function Proyecto200Client({
       if (
         adminSelectedAgentId !== "ALL" &&
         c.userId !== adminSelectedAgentId
+      ) {
+        return false;
+      }
+      if (
+        adminSupervisorFilter !== "ALL" &&
+        !visibleAgentIdSet.has(c.userId)
       ) {
         return false;
       }
@@ -1565,6 +1806,8 @@ export default function Proyecto200Client({
   }, [
     adminData,
     adminSelectedAgentId,
+    adminSupervisorFilter,
+    visibleAgentIdSet,
     adminFilterClass,
     adminFilterStatus,
     adminSearch,
@@ -1572,9 +1815,16 @@ export default function Proyecto200Client({
 
   const filteredAdminLogs = useMemo(() => {
     const logs = adminData?.recentLogs || [];
-    if (adminSelectedAgentId === "ALL") return logs;
-    return logs.filter((l: any) => l.userId === adminSelectedAgentId);
-  }, [adminData, adminSelectedAgentId]);
+    return logs.filter((l: any) => {
+      if (adminSelectedAgentId !== "ALL" && l.userId !== adminSelectedAgentId) {
+        return false;
+      }
+      if (adminSupervisorFilter !== "ALL" && !visibleAgentIdSet.has(l.userId)) {
+        return false;
+      }
+      return true;
+    });
+  }, [adminData, adminSelectedAgentId, adminSupervisorFilter, visibleAgentIdSet]);
 
   const handleToggleAgentTracking = async (
     targetAgentId: string,
@@ -1607,11 +1857,6 @@ export default function Proyecto200Client({
       setTogglingAgentId(null);
     }
   };
-
-  const visibleAgentSummaries = useMemo(() => {
-    const all = adminData?.agentSummaries || [];
-    return all.filter((ag: any) => !hiddenAgentIds.includes(ag.agentId));
-  }, [adminData, hiddenAgentIds]);
 
   const adminExecutiveKpis = useMemo(() => {
     const summaries = visibleAgentSummaries;
@@ -2038,6 +2283,29 @@ export default function Proyecto200Client({
 
           <button
             type="button"
+            onClick={() => setActiveTab("agenda")}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              activeTab === "agenda"
+                ? "bg-emerald-600 text-white shadow-md shadow-emerald-500/20"
+                : "bg-white text-slate-700 hover:bg-slate-100 border border-slate-200"
+            }`}
+          >
+            <Calendar className="h-4 w-4" />
+            Mi Agenda de Citas
+            <span
+              className={`px-2 py-0.5 rounded-full text-xs ${
+                activeTab === "agenda"
+                  ? "bg-white/20 text-white"
+                  : "bg-emerald-100 text-emerald-800"
+              }`}
+            >
+              {(stats.citasAgendadasCount || 0) +
+                (stats.recordatoriosProgramadosCount || 0)}
+            </span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveTab("crm")}
             className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${
               activeTab === "crm"
@@ -2262,62 +2530,40 @@ export default function Proyecto200Client({
                         </p>
                       </div>
 
-                      {/* Botones de Acción Telefónica Directa (Metodología Teléfono Primero / Anti-WhatsApp) */}
+                      {/* Botones de Acción Telefónica Directa (Metodología Teléfono Primero / Contacto Fijado) */}
                       <div className="flex flex-col items-end gap-1.5">
                         <div className="flex flex-wrap items-center gap-2.5">
                           <a
                             href={`tel:${currentPilotoContact.phone}`}
-                            onClick={() =>
+                            onClick={() => {
+                              setSelectedQueueContactId(
+                                currentPilotoContact.id
+                              );
                               setDialedContactIds((prev) => ({
                                 ...prev,
                                 [currentPilotoContact.id]: true,
-                              }))
-                            }
+                              }));
+                            }}
                             className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm shadow-md shadow-emerald-600/20 transition"
                           >
                             <Phone className="h-4 w-4" />
                             Llamar Ahora ({currentPilotoContact.phone})
                           </a>
 
-                          {(currentPilotoContact.attemptsCount || 0) >= 1 ||
-                          dialedContactIds[currentPilotoContact.id] ||
-                          currentPilotoContact.status === "CITA_AGENDADA" ? (
-                            <a
-                              href={`https://wa.me/52${
-                                currentPilotoContact.phone
-                              }?text=${encodeURIComponent(
-                                `¡Hola ${
-                                  currentPilotoContact.fullName.split(" ")[0]
-                                }! Te escribe ${
-                                  currentUser.name.split(" ")[0]
-                                }. Te marqué hace un momento por teléfono y no logré localizarte. No quiero quitarte tiempo por mensaje, ¿a qué hora del día de hoy o mañana te puedo marcar 2 minutos?`
-                              )}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-300 font-bold text-xs shadow-xs transition"
-                            >
-                              <MessageCircle className="h-4 w-4 text-teal-600" />
-                              WhatsApp de Rescate (Doble Toque)
-                            </a>
+                          {dialedContactIds[currentPilotoContact.id] ? (
+                            <span className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-2xl bg-indigo-50 text-indigo-900 border border-indigo-300 font-black text-xs shadow-2xs">
+                              <Lock className="h-3.5 w-3.5 text-indigo-600" />
+                              Contacto fijado en llamada — Registra el resultado a la derecha →
+                            </span>
                           ) : (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                showToast(
-                                  "info",
-                                  "Regla de Oro Proyecto 200: En el 1er contacto primero marca por teléfono. El botón de WhatsApp se desbloquea automáticamente como rescate si no te contestan."
-                                )
-                              }
-                              className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-2xl bg-slate-100 text-slate-500 border border-slate-200 font-bold text-xs cursor-not-allowed"
-                              title="En el 1er contacto debes llamar primero por teléfono"
-                            >
-                              <Lock className="h-3.5 w-3.5 text-slate-400" />
-                              WhatsApp bloqueado en 1er toque (Llama primero)
-                            </button>
+                            <span className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-2xl bg-slate-100 text-slate-600 border border-slate-200 font-bold text-xs">
+                              <Lock className="h-3.5 w-3.5 text-slate-500" />
+                              Contacto fijo en estación (No cambiará hasta guardar respuesta)
+                            </span>
                           )}
                         </div>
                         <span className="text-[11px] font-semibold text-slate-500">
-                          📞 Regla de Oro: Nunca prospectes en frío por texto. Usa WhatsApp solo si no contestó tu llamada.
+                          📞 Regla de Oro: Marca primero por teléfono. Si no te contesta, usa el botón «No Contestó» a la derecha para enviar el WhatsApp de Rescate.
                         </span>
                       </div>
                     </div>
@@ -2377,27 +2623,47 @@ export default function Proyecto200Client({
 
                     {/* Guion Dinámico en Pantalla */}
                     <div className="space-y-4 border-t border-slate-200 pt-5">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
                         <h3 className="text-sm font-black uppercase tracking-wider text-indigo-950 flex items-center gap-2">
                           <Sparkles className="h-4 w-4 text-indigo-600" />
                           {currentPilotoContact.classification === "REFERIDOR"
                             ? "Guion Oficial para Centro de Influencia / Referidor"
                             : "Guion Oficial de los 5 Pilares para Agendar Cita"}
                         </h3>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            openNewContactModal({
-                              relationship: `Referido por ${currentPilotoContact.fullName}`,
-                              source: "REFERIDO_DIRECTO",
-                              notes: `Obtenido durante llamada con ${currentPilotoContact.fullName}`,
-                            })
-                          }
-                          className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-200 transition"
-                        >
-                          <Plus className="h-3.5 w-3.5" /> Capturar Referido en
-                          Llamada
-                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleInCallClassificationToggle(
+                                currentPilotoContact.classification ===
+                                  "REFERIDOR"
+                                  ? "PROSPECTO"
+                                  : "REFERIDOR"
+                              )
+                            }
+                            className="inline-flex items-center gap-1 text-xs font-bold text-purple-800 hover:text-purple-950 bg-purple-50 hover:bg-purple-100 px-3 py-1.5 rounded-lg border border-purple-200 transition"
+                            title="Cambia el guion en pantalla sin cerrar la llamada ni saltar al siguiente contacto"
+                          >
+                            <RefreshCw className="h-3.5 w-3.5" />
+                            {currentPilotoContact.classification === "REFERIDOR"
+                              ? "Ver Guion Prospecto Directo"
+                              : "Cambiar Guion a Referidor (Sin saltar)"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openNewContactModal({
+                                relationship: `Referido por ${currentPilotoContact.fullName}`,
+                                source: "REFERIDO_DIRECTO",
+                                notes: `Obtenido durante llamada con ${currentPilotoContact.fullName}`,
+                              })
+                            }
+                            className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-800 bg-emerald-50 hover:bg-emerald-100 px-3 py-1.5 rounded-lg border border-emerald-200 transition"
+                          >
+                            <Plus className="h-3.5 w-3.5" /> Capturar Referido en
+                            Llamada
+                          </button>
+                        </div>
                       </div>
 
                       {currentPilotoContact.classification === "REFERIDOR" ? (
@@ -2741,46 +3007,79 @@ export default function Proyecto200Client({
                       </div>
                     )}
 
-                    <button
-                      type="button"
-                      disabled={submittingAction}
-                      onClick={() => handlePilotoOutcome("NO_CONTESTO")}
-                      className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition shadow-xs"
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <PhoneOff className="h-4 w-4" />
-                        No Contestó / Buzón (Reprogramar + Siguiente)
-                      </span>
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-
+                    {/* Flujo Unificado de "No Contestó + Rescate por WhatsApp" */}
                     <button
                       type="button"
                       disabled={submittingAction}
                       onClick={() =>
-                        handlePilotoOutcome("SEGUIMIENTO_WHATSAPP")
+                        setPilotoActionModal(
+                          pilotoActionModal === "NO_CONTESTO"
+                            ? null
+                            : "NO_CONTESTO"
+                        )
                       }
-                      className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl border font-bold text-sm transition ${
-                        (currentPilotoContact.attemptsCount || 0) >= 1 ||
-                        dialedContactIds[currentPilotoContact.id]
-                          ? "bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border-indigo-200"
-                          : "bg-slate-50 hover:bg-slate-100 text-slate-500 border-slate-200"
-                      }`}
+                      className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-amber-500 hover:bg-amber-600 text-white font-black text-sm transition shadow-xs"
                     >
                       <span className="flex items-center gap-2.5 text-left">
-                        {(currentPilotoContact.attemptsCount || 0) >= 1 ||
-                        dialedContactIds[currentPilotoContact.id] ? (
-                          <MessageCircle className="h-4 w-4 text-indigo-600 shrink-0" />
-                        ) : (
-                          <Lock className="h-4 w-4 text-slate-400 shrink-0" />
-                        )}
+                        <PhoneOff className="h-4 w-4 shrink-0" />
                         <span>
-                          Rescate por WhatsApp tras llamada (Acordar horario de
-                          llamada)
+                          📵 No Contestó la Llamada / Buzón (Elegir Rescate WA o
+                          Reprogramar)
                         </span>
                       </span>
-                      <ArrowRight className="h-4 w-4 text-indigo-600 shrink-0" />
+                      <ChevronRight className="h-4 w-4 shrink-0" />
                     </button>
+
+                    {pilotoActionModal === "NO_CONTESTO" && (
+                      <div className="p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 space-y-3">
+                        <div className="text-xs font-black text-amber-950">
+                          ¿Cómo deseas dar seguimiento a{" "}
+                          {currentPilotoContact.fullName} tras no contestar tu
+                          llamada?
+                        </div>
+                        <p className="text-[11px] text-amber-900 leading-relaxed">
+                          💡 <strong>Recomendación Metodológica (Doble Toque):</strong>{" "}
+                          Envíale ahora mismo un WhatsApp corto de rescate para
+                          acordar a qué hora te puede tomar 2 minutos de llamada.
+                          Se registrará como <strong>Llamada + Rescate WA</strong>{" "}
+                          (sin penalizar tu indicador telefónico).
+                        </p>
+
+                        <div className="space-y-2 pt-1">
+                          <button
+                            type="button"
+                            disabled={submittingAction}
+                            onClick={() =>
+                              handlePilotoOutcome("DOBLE_TOQUE_RESCATE")
+                            }
+                            className="w-full flex items-center justify-between px-3.5 py-3 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-black transition shadow-sm"
+                          >
+                            <span className="flex items-center gap-2 text-left">
+                              <MessageCircle className="h-4 w-4 text-teal-200 shrink-0" />
+                              <span>
+                                💬 Enviar WhatsApp de Rescate + Guardar Intento y
+                                Pasar al Siguiente →
+                              </span>
+                            </span>
+                          </button>
+
+                          <button
+                            type="button"
+                            disabled={submittingAction}
+                            onClick={() => handlePilotoOutcome("NO_CONTESTO")}
+                            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl bg-white hover:bg-amber-100 text-amber-950 border border-amber-300 text-xs font-bold transition"
+                          >
+                            <span className="flex items-center gap-2 text-left">
+                              <Clock className="h-3.5 w-3.5 text-amber-700 shrink-0" />
+                              <span>
+                                ⏭️ Solo Reprogramar Llamada (+4 hrs, sin
+                                WhatsApp) y Pasar al Siguiente →
+                              </span>
+                            </span>
+                          </button>
+                        </div>
+                      </div>
+                    )}
 
                     <button
                       type="button"
@@ -2788,11 +3087,14 @@ export default function Proyecto200Client({
                       onClick={() => handlePilotoOutcome("CONVERTIR_REFERIDOR")}
                       className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 font-bold text-sm transition"
                     >
-                      <span className="flex items-center gap-2.5">
-                        <Users className="h-4 w-4 text-purple-600" />
-                        Clasificar como Centro de Influencia / Referidor
+                      <span className="flex items-center gap-2.5 text-left">
+                        <Users className="h-4 w-4 text-purple-600 shrink-0" />
+                        <span>
+                          🤝 Cerrar Llamada como Referidor Activo y Pasar al
+                          Siguiente
+                        </span>
                       </span>
-                      <ArrowRight className="h-4 w-4 text-purple-600" />
+                      <ArrowRight className="h-4 w-4 text-purple-600 shrink-0" />
                     </button>
 
                     <button
@@ -2885,7 +3187,16 @@ export default function Proyecto200Client({
                         <button
                           key={item.id}
                           type="button"
-                          onClick={() => setSelectedQueueContactId(item.id)}
+                          onClick={() => {
+                            if (isCurrent) return;
+                            if (dialedContactIds[currentPilotoContact.id]) {
+                              const ok = window.confirm(
+                                `Tienes una llamada iniciada con ${currentPilotoContact.fullName}. ¿Seguro que deseas cambiar de contacto sin registrar primero el resultado de esta llamada?`
+                              );
+                              if (!ok) return;
+                            }
+                            setSelectedQueueContactId(item.id);
+                          }}
                           className={`w-full text-left p-3 rounded-2xl border transition flex items-center justify-between gap-3 ${
                             isCurrent
                               ? "bg-indigo-50/90 border-indigo-400 shadow-xs"
@@ -2900,6 +3211,11 @@ export default function Proyecto200Client({
                               <span className="text-sm font-bold text-slate-900 truncate">
                                 {item.fullName}
                               </span>
+                              {isCurrent && (
+                                <span className="px-1.5 py-0.5 rounded bg-indigo-600 text-white text-[10px] font-black">
+                                  🔒 En estación
+                                </span>
+                              )}
                             </div>
                             <div className="text-[11px] text-slate-500 truncate">
                               {item.relationship} •{" "}
@@ -2920,6 +3236,275 @@ export default function Proyecto200Client({
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* =====================================================================
+          TAB 1.5: MI AGENDA DE CITAS Y RECORDATORIOS (VISTA CRONOLÓGICA AGENTE)
+      ===================================================================== */}
+      {activeTab === "agenda" && (
+        <div className="space-y-5">
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[11px] font-black uppercase tracking-wider mb-1">
+                  <Calendar className="h-3.5 w-3.5 text-emerald-700" />
+                  Agenda Oficial Proyecto 200
+                </div>
+                <h2 className="text-xl font-black text-slate-900">
+                  📅 Mi Agenda de Citas de Diagnóstico y Recordatorios
+                </h2>
+                <p className="text-xs text-slate-600">
+                  Aquí se concentran todas las citas exitosas agendadas desde el
+                  Piloto Automático y los recordatorios programados a futuro,
+                  ordenados por fecha y hora para que nunca pierdas una sesión.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex rounded-xl bg-slate-100 p-1 border border-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => setAgendaFilterType("ALL")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                      agendaFilterType === "ALL"
+                        ? "bg-white text-slate-900 shadow-2xs"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    Todos ({(stats.citasAgendadasCount || 0) + (stats.recordatoriosProgramadosCount || 0)})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setAgendaFilterType("CITA_AGENDADA")}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                      agendaFilterType === "CITA_AGENDADA"
+                        ? "bg-emerald-600 text-white shadow-2xs"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    📅 Citas ({stats.citasAgendadasCount || 0})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setAgendaFilterType("RECORDATORIO_PROGRAMADO")
+                    }
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                      agendaFilterType === "RECORDATORIO_PROGRAMADO"
+                        ? "bg-indigo-600 text-white shadow-2xs"
+                        : "text-slate-600 hover:text-slate-900"
+                    }`}
+                  >
+                    ⏰ Recordatorios ({stats.recordatoriosProgramadosCount || 0})
+                  </button>
+                </div>
+
+                <select
+                  value={agendaTimeframe}
+                  onChange={(e) =>
+                    setAgendaTimeframe(e.target.value as any)
+                  }
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-800"
+                >
+                  <option value="ALL">🗓️ Todas las fechas</option>
+                  <option value="TODAY">🔥 Solo para Hoy</option>
+                  <option value="WEEK">📆 Próximos 7 días</option>
+                  <option value="UPCOMING">🚀 Próximas vigentes</option>
+                </select>
+              </div>
+            </div>
+
+            {agentAgendaItems.length === 0 ? (
+              <div className="py-12 text-center space-y-3">
+                <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto">
+                  <Calendar className="h-7 w-7" />
+                </div>
+                <h3 className="text-base font-black text-slate-900">
+                  No tienes citas ni recordatorios en este filtro
+                </h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto">
+                  Cuando agendes una cita exitosa o un recordatorio desde el
+                  Piloto Automático o la Bitácora 360°, aparecerá aquí ordenada
+                  por día y hora.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("piloto")}
+                  className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition"
+                >
+                  Ir al Piloto Automático a Prospectar →
+                </button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {agentAgendaItems.map((item: any) => {
+                  const isCita = item.status === "CITA_AGENDADA";
+                  const eventDateRaw =
+                    item.scheduledMeetingAt || item.nextActionAt;
+                  const eventDate = eventDateRaw
+                    ? new Date(eventDateRaw)
+                    : null;
+                  const now = new Date();
+                  const startOfToday = new Date();
+                  startOfToday.setHours(0, 0, 0, 0);
+                  const endOfToday = new Date();
+                  endOfToday.setHours(23, 59, 59, 999);
+
+                  const isToday =
+                    eventDate &&
+                    eventDate >= startOfToday &&
+                    eventDate <= endOfToday;
+                  const isPast = eventDate && eventDate < now && !isToday;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`rounded-2xl border p-4 shadow-2xs flex flex-col justify-between gap-3.5 transition ${
+                        isCita
+                          ? "bg-gradient-to-br from-emerald-50/50 via-white to-white border-emerald-300"
+                          : "bg-gradient-to-br from-indigo-50/40 via-white to-white border-indigo-200"
+                      }`}
+                    >
+                      <div className="space-y-2">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                          <span
+                            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black ${
+                              isCita
+                                ? "bg-emerald-600 text-white"
+                                : "bg-indigo-600 text-white"
+                            }`}
+                          >
+                            {isCita ? (
+                              <>
+                                <Calendar className="h-3.5 w-3.5" /> Cita
+                                Diagnóstico: {formatDateTime(eventDateRaw)}
+                              </>
+                            ) : (
+                              <>
+                                <Bell className="h-3.5 w-3.5" /> Recordatorio:{" "}
+                                {formatDateTime(eventDateRaw)}
+                              </>
+                            )}
+                          </span>
+
+                          <div className="flex items-center gap-1.5">
+                            {isToday && (
+                              <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black uppercase">
+                                🔥 HOY
+                              </span>
+                            )}
+                            {isPast && (
+                              <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 border border-rose-200 text-[10px] font-black">
+                                ⚠️ Fecha pasada
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex items-start justify-between gap-2 pt-1">
+                          <div>
+                            <h3 className="text-base font-black text-slate-900">
+                              {item.fullName}
+                            </h3>
+                            <p className="text-xs text-slate-600">
+                              📞{" "}
+                              <strong className="font-mono">{item.phone}</strong>{" "}
+                              · {item.relationship} ·{" "}
+                              <strong className="text-emerald-700">
+                                {formatCurrencyMXN(item.estimatedSalary)}/mes
+                              </strong>
+                            </p>
+                          </div>
+                          <span className="px-2 py-0.5 rounded-md bg-slate-900 text-white text-[11px] font-bold shrink-0">
+                            {item.priorityScore} pts
+                          </span>
+                        </div>
+
+                        {item.notes && (
+                          <div className="rounded-xl bg-amber-50/90 border border-amber-200 px-3 py-2 text-xs text-amber-950">
+                            <strong>Contexto / Acuerdo:</strong> {item.notes}
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <a
+                            href={`tel:${item.phone}`}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition"
+                          >
+                            <Phone className="h-3.5 w-3.5" /> Llamar
+                          </a>
+                          <a
+                            href={`https://wa.me/52${
+                              item.phone
+                            }?text=${encodeURIComponent(
+                              isCita
+                                ? `¡Hola ${
+                                    item.fullName.split(" ")[0]
+                                  }! Te saluda ${
+                                    currentUser.name.split(" ")[0]
+                                  } para confirmar nuestra sesión de Diagnóstico Financiero agendada (${formatDateTime(
+                                    eventDateRaw
+                                  )}). ¡Nos vemos pronto!`
+                                : `¡Hola ${
+                                    item.fullName.split(" ")[0]
+                                  }! Te saluda ${
+                                    currentUser.name.split(" ")[0]
+                                  }, ¿cómo estás? Como acordamos, te busco en esta fecha.`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-teal-50 hover:bg-teal-100 text-teal-900 border border-teal-300 text-xs font-bold transition"
+                          >
+                            <MessageCircle className="h-3.5 w-3.5 text-teal-600" />{" "}
+                            Confirmar WA
+                          </a>
+                          <a
+                            href={buildGoogleCalendarUrl(
+                              item,
+                              currentUser.name
+                            )}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition"
+                            title="Agregar a tu Google Calendar"
+                          >
+                            🗓️ + Google Cal
+                          </a>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          {isCita && (
+                            <a
+                              href="/adn"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black transition"
+                            >
+                              🩺 Iniciar ADN
+                            </a>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() =>
+                              openContactHistoryModal(
+                                item,
+                                isCita ? "CITA" : "RECORDATORIO"
+                              )
+                            }
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition"
+                          >
+                            <History className="h-3.5 w-3.5" /> Bitácora /
+                            Reprogramar
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
 
@@ -3711,7 +4296,23 @@ export default function Proyecto200Client({
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                {supervisorsList.length > 0 && (
+                  <select
+                    value={adminSupervisorFilter}
+                    onChange={(e) => setAdminSupervisorFilter(e.target.value)}
+                    className="rounded-xl bg-slate-800 border border-amber-400/40 text-amber-200 px-3 py-2 text-xs font-bold"
+                    title="Filtrar por Desarrollador / Líder responsable"
+                  >
+                    <option value="ALL">👑 Todos los Desarrolladores</option>
+                    {supervisorsList.map((sup) => (
+                      <option key={sup.id} value={sup.id}>
+                        Equipo de: {sup.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
                 <button
                   type="button"
                   onClick={() => setAdminSubView("agentes")}
@@ -3725,6 +4326,18 @@ export default function Proyecto200Client({
                 </button>
                 <button
                   type="button"
+                  onClick={() => setAdminSubView("agenda")}
+                  className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition ${
+                    adminSubView === "agenda"
+                      ? "bg-emerald-400 text-slate-950"
+                      : "bg-emerald-500/20 text-emerald-200 hover:bg-emerald-500/30 border border-emerald-400/30"
+                  }`}
+                >
+                  <Calendar className="h-3.5 w-3.5" />
+                  Agenda de Citas ({adminExecutiveKpis.totalCitas})
+                </button>
+                <button
+                  type="button"
                   onClick={() => setAdminSubView("contactos")}
                   className={`px-3.5 py-2 rounded-xl text-xs font-bold transition ${
                     adminSubView === "contactos"
@@ -3732,7 +4345,7 @@ export default function Proyecto200Client({
                       : "bg-white/10 text-white hover:bg-white/20"
                   }`}
                 >
-                  Detalle de Contactos ({adminData?.allContacts?.length || 0})
+                  Detalle de Contactos ({filteredAdminContacts.length})
                 </button>
                 <button
                   type="button"
@@ -3787,14 +4400,20 @@ export default function Proyecto200Client({
                   </span>
                 </div>
               </div>
-              <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5">
-                <div className="text-[11px] text-emerald-300 font-bold uppercase">
-                  Citas Agendadas
+              <button
+                type="button"
+                onClick={() => setAdminSubView("agenda")}
+                className="bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-400/40 rounded-2xl p-3.5 text-left transition"
+                title="Clic para abrir la Agenda de Citas del Equipo"
+              >
+                <div className="text-[11px] text-emerald-300 font-bold uppercase flex items-center justify-between">
+                  <span>📅 Citas Agendadas</span>
+                  <ChevronRight className="h-3.5 w-3.5" />
                 </div>
                 <div className="text-2xl font-black text-emerald-400 mt-0.5">
                   {adminExecutiveKpis.totalCitas}
                 </div>
-              </div>
+              </button>
               <div className="bg-white/5 border border-white/10 rounded-2xl p-3.5">
                 <div className="text-[11px] text-rose-300 font-bold uppercase">
                   Quemados / Descalif.
@@ -4138,9 +4757,13 @@ export default function Proyecto200Client({
                           </div>
                         </div>
 
-                        {/* Pie de Tarjeta: Ratio Teléfono vs WhatsApp + Botón Auditar */}
-                        <div className="flex items-center justify-between gap-2 pt-1">
-                          <div className="text-[11px]">
+                        {/* Pie de Tarjeta: Ratio Teléfono vs WhatsApp + Actividad Hoy/7d + Botón Auditar */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                          <div className="flex flex-wrap items-center gap-1.5 text-[11px]">
+                            <span className="px-2 py-0.5 rounded-lg bg-indigo-50 text-indigo-900 border border-indigo-200 font-bold">
+                              ⚡ Hoy: {ag.touchesTodayCount || 0} · 7d:{" "}
+                              {ag.touchesWeekCount || 0}
+                            </span>
                             {totalLoggedTouches > 0 ? (
                               <span
                                 className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg font-bold ${
@@ -4154,12 +4777,26 @@ export default function Proyecto200Client({
                               </span>
                             ) : (
                               <span className="text-slate-400 font-semibold">
-                                Sin llamadas registradas aún
+                                Sin llamadas aún
                               </span>
                             )}
                           </div>
 
                           <div className="flex items-center gap-1.5 shrink-0">
+                            {ag.citasAgendadasCount > 0 && (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAdminSelectedAgentId(ag.agentId);
+                                  setAdminSubView("agenda");
+                                }}
+                                className="inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-black transition"
+                                title="Ver la Agenda de Citas de este asesor"
+                              >
+                                <Calendar className="h-3 w-3" />{" "}
+                                {ag.citasAgendadasCount} citas
+                              </button>
+                            )}
                             <button
                               type="button"
                               onClick={() =>
@@ -4168,7 +4805,7 @@ export default function Proyecto200Client({
                               title="Ocultar asesor de este tablero de seguimiento (conserva su cuenta activa)"
                               className="inline-flex items-center gap-1 px-2 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-800 text-[11px] font-bold transition"
                             >
-                              <EyeOff className="h-3 w-3" /> Ocultar del seguimiento
+                              <EyeOff className="h-3 w-3" /> Ocultar
                             </button>
                             <button
                               type="button"
@@ -4178,7 +4815,7 @@ export default function Proyecto200Client({
                               }}
                               className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-[11px] font-bold transition"
                             >
-                              <Eye className="h-3 w-3" /> Auditar ({ag.citasAgendadasCount} citas)
+                              <Eye className="h-3 w-3" /> Auditar
                             </button>
                           </div>
                         </div>
@@ -4196,9 +4833,9 @@ export default function Proyecto200Client({
                     Rendimiento y Avance hacia los 200 Contactos por Agente
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Haz clic en «Auditar Contactos» en cualquier agente para
-                    inspeccionar sus prospectos, estatus y motivos de
-                    descalificación.
+                    Haz clic en «Auditar Contactos» o en las citas de cualquier
+                    agente para inspeccionar su agenda, prospectos, estatus y
+                    motivos de descalificación.
                   </p>
                 </div>
               </div>
@@ -4213,7 +4850,7 @@ export default function Proyecto200Client({
                       <th className="py-3.5 px-4">Referidores</th>
                       <th className="py-3.5 px-4">Descalificados</th>
                       <th className="py-3.5 px-4">Citas Agendadas</th>
-                      <th className="py-3.5 px-4">Toques / Llamadas</th>
+                      <th className="py-3.5 px-4">Toques (Hoy / 7d / Total)</th>
                       <th className="py-3.5 px-4">Última Actividad</th>
                       <th className="py-3.5 px-4 text-right">Nivel Detalle</th>
                     </tr>
@@ -4236,6 +4873,11 @@ export default function Proyecto200Client({
                             <div className="text-xs text-slate-500">
                               {ag.email}
                             </div>
+                            {ag.reportsToName && (
+                              <div className="text-[10px] font-bold text-indigo-700 mt-0.5">
+                                👑 Desarrollador: {ag.reportsToName}
+                              </div>
+                            )}
                           </td>
                           <td className="py-3.5 px-4 min-w-[200px]">
                             <div className="flex items-center justify-between text-xs font-bold mb-1">
@@ -4271,12 +4913,26 @@ export default function Proyecto200Client({
                             {ag.descalificadosCount}
                           </td>
                           <td className="py-3.5 px-4">
-                            <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-black">
-                              {ag.citasAgendadasCount} citas
-                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setAdminSelectedAgentId(ag.agentId);
+                                setAdminSubView("agenda");
+                              }}
+                              className="px-2.5 py-1 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-xs font-black transition"
+                              title="Clic para ver la agenda de citas de este agente"
+                            >
+                              📅 {ag.citasAgendadasCount} citas
+                            </button>
                           </td>
-                          <td className="py-3.5 px-4 font-bold text-slate-800">
-                            {ag.totalAttempts}
+                          <td className="py-3.5 px-4">
+                            <div className="font-bold text-slate-900">
+                              Hoy: {ag.touchesTodayCount || 0} · 7d:{" "}
+                              {ag.touchesWeekCount || 0}
+                            </div>
+                            <div className="text-[11px] text-slate-500">
+                              Histórico: {ag.totalAttempts} toques
+                            </div>
                           </td>
                           <td className="py-3.5 px-4 text-xs text-slate-500">
                             {formatDateTime(ag.lastActivityAt)}
@@ -4291,7 +4947,7 @@ export default function Proyecto200Client({
                                 title="Ocultar del seguimiento (mantiene su cuenta activa)"
                                 className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-rose-100 text-slate-600 hover:text-rose-800 text-xs font-bold transition"
                               >
-                                <EyeOff className="h-3.5 w-3.5" /> Ocultar del seguimiento
+                                <EyeOff className="h-3.5 w-3.5" /> Ocultar
                               </button>
                               <button
                                 type="button"
@@ -4311,6 +4967,169 @@ export default function Proyecto200Client({
                   </tbody>
                 </table>
               </div>
+              </div>
+            </div>
+          )}
+
+          {/* Subvista 1.5: Agenda de Citas y Recordatorios del Equipo (Para Desarrolladores y Promotores) */}
+          {adminSubView === "agenda" && (
+            <div className="space-y-4">
+              <div className="bg-white rounded-3xl border border-slate-200 p-5 md:p-6 shadow-xs space-y-4">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900 text-[11px] font-black uppercase tracking-wider mb-1">
+                      <Calendar className="h-3.5 w-3.5 text-emerald-700" />
+                      Agenda de Acompañamiento y Supervisión
+                    </div>
+                    <h3 className="text-lg font-black text-slate-900">
+                      📅 Agenda Cronológica de Citas y Recordatorios del Equipo
+                    </h3>
+                    <p className="text-xs text-slate-600">
+                      Consulta día y hora exacta de las citas agendadas por tus
+                      asesores para acompañarlos a sesión de diagnóstico o dar
+                      seguimiento puntual en su Bitácora 360°.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2">
+                    <select
+                      value={adminSelectedAgentId}
+                      onChange={(e) => setAdminSelectedAgentId(e.target.value)}
+                      className="rounded-xl border border-slate-300 px-3 py-2 text-xs font-bold text-slate-900 bg-amber-50/60"
+                    >
+                      <option value="ALL">
+                        👥 Todos los Agentes en Seguimiento
+                      </option>
+                      {visibleAgentSummaries.map((ag: any) => (
+                        <option key={ag.agentId} value={ag.agentId}>
+                          {ag.name} ({ag.citasAgendadasCount} citas)
+                        </option>
+                      ))}
+                    </select>
+
+                    <select
+                      value={adminAgendaTimeframe}
+                      onChange={(e) =>
+                        setAdminAgendaTimeframe(e.target.value as any)
+                      }
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-800"
+                    >
+                      <option value="ALL">🗓️ Todas las fechas</option>
+                      <option value="TODAY">🔥 Citas de Hoy</option>
+                      <option value="WEEK">📆 Próximos 7 días</option>
+                      <option value="UPCOMING">🚀 Próximas vigentes</option>
+                    </select>
+                  </div>
+                </div>
+
+                {adminAgendaItems.length === 0 ? (
+                  <div className="py-12 text-center text-slate-500 text-sm">
+                    No hay citas ni recordatorios programados para este filtro.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {adminAgendaItems.map((c: any) => {
+                      const isCita = c.status === "CITA_AGENDADA";
+                      const rawDate = c.scheduledMeetingAt || c.nextActionAt;
+                      const dt = rawDate ? new Date(rawDate) : null;
+                      const startOfToday = new Date();
+                      startOfToday.setHours(0, 0, 0, 0);
+                      const endOfToday = new Date();
+                      endOfToday.setHours(23, 59, 59, 999);
+                      const isToday =
+                        dt && dt >= startOfToday && dt <= endOfToday;
+
+                      return (
+                        <div
+                          key={c.id}
+                          className={`rounded-2xl border p-4 shadow-2xs flex flex-col justify-between gap-3 ${
+                            isCita
+                              ? "bg-gradient-to-br from-emerald-50/50 via-white to-white border-emerald-300"
+                              : "bg-slate-50/50 border-slate-200"
+                          }`}
+                        >
+                          <div className="space-y-2">
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                              <span
+                                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-black ${
+                                  isCita
+                                    ? "bg-emerald-600 text-white"
+                                    : "bg-indigo-600 text-white"
+                                }`}
+                              >
+                                {isCita
+                                  ? `📅 Cita: ${formatDateTime(rawDate)}`
+                                  : `⏰ Recordatorio: ${formatDateTime(rawDate)}`}
+                              </span>
+
+                              <div className="flex items-center gap-1.5">
+                                {isToday && (
+                                  <span className="px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 text-[10px] font-black">
+                                    🔥 HOY
+                                  </span>
+                                )}
+                                <span className="px-2.5 py-0.5 rounded-lg bg-slate-900 text-amber-300 text-[11px] font-bold">
+                                  👤 {c.user?.name || c.user?.email || "Agente"}
+                                </span>
+                              </div>
+                            </div>
+
+                            <div className="flex items-start justify-between gap-2 pt-1">
+                              <div>
+                                <h4 className="text-base font-black text-slate-900">
+                                  {c.fullName}
+                                </h4>
+                                <p className="text-xs text-slate-600">
+                                  📞{" "}
+                                  <strong className="font-mono">
+                                    {c.phone}
+                                  </strong>{" "}
+                                  · {c.relationship} ·{" "}
+                                  <strong className="text-emerald-700">
+                                    {formatCurrencyMXN(c.estimatedSalary)}/mes
+                                  </strong>
+                                </p>
+                              </div>
+                              <span className="px-2 py-0.5 rounded bg-slate-200 text-slate-800 text-[11px] font-bold">
+                                {c.priorityScore} pts
+                              </span>
+                            </div>
+
+                            {c.notes && (
+                              <div className="rounded-xl bg-amber-50 border border-amber-200 px-3 py-2 text-xs text-amber-950">
+                                <strong>Notas en bitácora:</strong> {c.notes}
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                            <a
+                              href={buildGoogleCalendarUrl(
+                                c,
+                                c.user?.name || "Agente"
+                              )}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition"
+                            >
+                              🗓️ + Agregar a mi Google Calendar
+                            </a>
+
+                            <button
+                              type="button"
+                              onClick={() => openContactHistoryModal(c, "NOTA")}
+                              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-indigo-600 text-white text-xs font-bold transition"
+                            >
+                              <History className="h-3.5 w-3.5" /> Abrir
+                              Expediente 360° / Nota Coaching (
+                              {c.logs?.length || 0})
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -4472,11 +5291,20 @@ export default function Proyecto200Client({
                                 )}
                             </td>
                             <td className="py-3.5 px-4">
-                              <div className="text-xs font-bold text-slate-900">
-                                {c.status === "RECORDATORIO_PROGRAMADO"
-                                  ? "⏰ Recordatorio Programado"
-                                  : c.status}
-                              </div>
+                              {c.status === "CITA_AGENDADA" ? (
+                                <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-900 border border-emerald-300 text-xs font-black mb-1">
+                                  📅 Cita:{" "}
+                                  {formatDateTime(
+                                    c.scheduledMeetingAt || c.nextActionAt
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="text-xs font-bold text-slate-900">
+                                  {c.status === "RECORDATORIO_PROGRAMADO"
+                                    ? "⏰ Recordatorio Programado"
+                                    : c.status}
+                                </div>
+                              )}
                               <div className="text-[11px] text-slate-500">
                                 {c.attemptsCount} intentos •{" "}
                                 {c.status === "RECORDATORIO_PROGRAMADO" &&
