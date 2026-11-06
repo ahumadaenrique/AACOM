@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from 'react'
-import { Search, Calendar, Globe, BookOpen, ExternalLink, RefreshCw } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { Search, Calendar, BookOpen, ExternalLink, RefreshCw, Copy, Check, MessageCircle } from 'lucide-react'
 
 interface NewsArticle {
   id: string
@@ -24,6 +24,12 @@ interface FinancialIndicators {
   gbp: string | null
 }
 
+interface ParsedAdvisorImpact {
+  targetProduct: string | null
+  clientAngle: string
+  whatsappHook: string | null
+}
+
 const CATEGORIES = [
   "Todos",
   "Seguros y Fianzas",
@@ -32,27 +38,63 @@ const CATEGORIES = [
   "Insurtech e Innovación"
 ]
 
+function parseAdvisorImpact(raw?: string | null): ParsedAdvisorImpact {
+  if (!raw) {
+    return {
+      targetProduct: null,
+      clientAngle: '',
+      whatsappHook: null
+    }
+  }
+
+  const lines = raw.split('\n').map(l => l.trim()).filter(Boolean)
+  let targetProduct: string | null = null
+  let clientAngle = ''
+  let whatsappHook: string | null = null
+
+  for (const line of lines) {
+    if (line.startsWith('🎯 Ramo:')) {
+      targetProduct = line.replace('🎯 Ramo:', '').trim()
+    } else if (line.startsWith('💡 Ángulo con el cliente:')) {
+      clientAngle = line.replace('💡 Ángulo con el cliente:', '').trim()
+    } else if (line.startsWith('💬 Guion WhatsApp:')) {
+      whatsappHook = line.replace('💬 Guion WhatsApp:', '').trim().replace(/^["«]|["»]$/g, '')
+    }
+  }
+
+  if (!clientAngle) {
+    clientAngle = raw
+  }
+
+  return { targetProduct, clientAngle, whatsappHook }
+}
+
 export default function NewslettersClient({ 
   initialArticles, 
   isSuperAdmin = false,
   indicators = { udi: null, usd: null, eur: null, gbp: null },
-  agencyName = "AACOM"
+  agencyName = "aacomsoft",
+  needsAutoRefresh = false
 }: { 
   initialArticles: NewsArticle[]
   isSuperAdmin?: boolean
   indicators?: FinancialIndicators
   agencyName?: string
+  needsAutoRefresh?: boolean
 }) {
-  const [articles, setArticles] = useState<NewsArticle[]>(initialArticles)
+  const [articles] = useState<NewsArticle[]>(initialArticles)
   const [selectedCategory, setSelectedCategory] = useState<string>("Todos")
   const [searchQuery, setSearchQuery] = useState("")
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+  const autoRefreshTriggered = useRef(false)
 
-  // Handle manual curation refresh trigger
+  // Handle manual or automatic curation refresh trigger
   const handleRefresh = async () => {
+    if (isRefreshing) return
     setIsRefreshing(true)
     try {
-      const res = await fetch('/api/cron/newsletters?bypass=aacom123')
+      const res = await fetch('/api/cron/newsletters?bypass=aacom123', { cache: 'no-store' })
       if (res.ok) {
         const data = await res.json()
         if (data.success) {
@@ -63,6 +105,28 @@ export default function NewslettersClient({
       console.error("Failed to trigger news curation:", err)
     } finally {
       setIsRefreshing(false)
+    }
+  }
+
+  // Auto-refresh on first mount if the feed is stale or still has legacy mock articles
+  useEffect(() => {
+    if (needsAutoRefresh && !autoRefreshTriggered.current) {
+      autoRefreshTriggered.current = true
+      handleRefresh()
+    }
+  }, [needsAutoRefresh])
+
+  const handleCopyPitch = async (art: NewsArticle, parsed: ParsedAdvisorImpact) => {
+    const pitchText = parsed.whatsappHook
+      ? `${parsed.whatsappHook}\n\n📰 Nota completa (${art.sourceName || 'Finanzas'}): ${art.url}`
+      : `Hola, te comparto esta nota de ${art.sourceName || 'hoy'}: "${art.title}". ${parsed.clientAngle}\n\n📰 ${art.url}`
+
+    try {
+      await navigator.clipboard.writeText(pitchText)
+      setCopiedId(art.id)
+      setTimeout(() => setCopiedId(null), 2500)
+    } catch (err) {
+      console.error("Error al copiar al portapapeles:", err)
     }
   }
 
@@ -78,7 +142,7 @@ export default function NewslettersClient({
     return matchesCategory && matchesSearch
   })
 
-  // Format date helper (CDMX style Spanish format)
+  // Format date helper (CDMX style Spanish format + relative badge)
   const formatDate = (dateInput: Date | string) => {
     const date = new Date(dateInput)
     return date.toLocaleDateString('es-MX', {
@@ -118,15 +182,15 @@ export default function NewslettersClient({
                 </h1>
               </div>
               <div className="flex items-center gap-3">
-                {isSuperAdmin && (
+                {(isSuperAdmin || isRefreshing) && (
                   <button
                     onClick={handleRefresh}
                     disabled={isRefreshing}
                     className="flex items-center gap-2 bg-white dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700 text-xs font-bold px-4 py-2 rounded-lg transition-colors shadow-sm disabled:opacity-50"
-                    title="Actualizar feed de noticias con IA"
+                    title="Actualizar feed de noticias en vivo con IA"
                   >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    {isRefreshing ? 'Curando noticias...' : 'Actualizar con IA'}
+                    <RefreshCw className={`w-3.5 h-3.5 ${isRefreshing ? 'animate-spin text-emerald-600' : ''}`} />
+                    {isRefreshing ? 'Actualizando noticias de hoy con IA...' : 'Actualizar Noticias en Vivo'}
                   </button>
                 )}
               </div>
@@ -166,12 +230,12 @@ export default function NewslettersClient({
             
             {/* Top Meta Line */}
             <div className="flex flex-col md:flex-row justify-between items-center border-t border-zinc-300 dark:border-zinc-800 mt-4 pt-3 text-[11px] font-mono tracking-wider text-zinc-500 uppercase gap-2">
-              <div>Edición Financiera Especializada</div>
+              <div>Edición Financiera Especializada en Tiempo Real</div>
               <div className="flex items-center gap-2">
                 <Calendar className="w-3 h-3" />
                 {new Date().toLocaleDateString('es-MX', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
               </div>
-              <div>Curación con Inteligencia Artificial</div>
+              <div>Estrategia Comercial con IA para el Asesor</div>
             </div>
           </header>
 
@@ -202,7 +266,7 @@ export default function NewslettersClient({
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Buscar por tag o palabra clave..."
+                placeholder="Buscar por ramo, tag o palabra clave..."
                 className="w-full pl-9 pr-4 py-2 bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-800 rounded-lg text-xs focus:ring-1 focus:ring-zinc-950 focus:border-zinc-950 outline-none transition-shadow font-sans dark:text-zinc-100"
               />
             </div>
@@ -212,85 +276,144 @@ export default function NewslettersClient({
           {filteredArticles.length === 0 ? (
             <div className="text-center py-20 border border-dashed border-zinc-300 dark:border-zinc-800 rounded-2xl">
               <BookOpen className="w-10 h-10 text-zinc-400 mx-auto mb-4" />
-              <h3 className="whitepaper-title font-bold text-lg text-zinc-800 dark:text-zinc-200">No se encontraron noticias</h3>
+              <h3 className="whitepaper-title font-bold text-lg text-zinc-800 dark:text-zinc-200">
+                {isRefreshing ? 'Descargando y curando noticias financieras de hoy...' : 'No se encontraron noticias'}
+              </h3>
               <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1 max-w-sm mx-auto font-sans leading-relaxed">
-                Prueba buscando otro término o haz clic en "Actualizar con IA" para curar las últimas novedades financieras y del sector asegurador.
+                Prueba buscando otro término o haz clic en "Actualizar Noticias en Vivo" para obtener las últimas notas del sector asegurador y económico.
               </p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
-              {filteredArticles.map((art) => (
-                <article key={art.id} className="group flex flex-col justify-between border-b border-zinc-200 dark:border-zinc-800 pb-8 last:border-0 md:last:border-b">
-                  
-                  {/* Article header metadata */}
-                  <div className="flex items-center justify-between text-[10px] font-mono tracking-wider uppercase text-zinc-500 dark:text-zinc-400 mb-2">
-                    <span className="font-bold text-zinc-800 dark:text-zinc-300">
-                      {art.sourceName || "Finanzas"}
-                    </span>
-                    <span>{formatDate(art.publishedAt)}</span>
-                  </div>
+              {filteredArticles.map((art) => {
+                const parsedImpact = parseAdvisorImpact(art.advisorImpact)
+                const waShareText = parsedImpact.whatsappHook
+                  ? `${parsedImpact.whatsappHook}\n\n📰 ${art.url}`
+                  : `Hola, te comparto esta nota de ${art.sourceName || 'hoy'}: "${art.title}".\n\n📰 ${art.url}`
 
-                  {/* Title */}
-                  <h3 className="whitepaper-title text-xl md:text-2xl font-bold leading-tight text-zinc-950 dark:text-white group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors mb-3">
-                    <a href={art.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2">
-                      <span>{art.title}</span>
-                      <ExternalLink className="w-3.5 h-3.5 mt-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400" />
-                    </a>
-                  </h3>
-
-                  {/* Description / Summary */}
-                  {art.description && (
-                    <p className="font-sans text-[13.5px] leading-relaxed text-zinc-600 dark:text-zinc-400 mb-4 line-clamp-3">
-                      {art.description}
-                    </p>
-                  )}
-
-                  {/* Executive Advisor Impact Box */}
-                  {art.advisorImpact && (
-                    <div className="mb-4 p-3 rounded-lg bg-emerald-50/70 dark:bg-emerald-950/20 border border-emerald-200/60 dark:border-emerald-800/40 text-emerald-900 dark:text-emerald-300 text-xs leading-relaxed font-sans">
-                      <span className="font-semibold flex items-center gap-1.5 text-[11px] uppercase tracking-wider mb-1 font-mono text-emerald-700 dark:text-emerald-400">
-                        💡 Impacto para el Asesor
+                return (
+                  <article key={art.id} className="group flex flex-col justify-between border-b border-zinc-200 dark:border-zinc-800 pb-8 last:border-0 md:last:border-b">
+                    
+                    {/* Article header metadata */}
+                    <div className="flex items-center justify-between text-[10px] font-mono tracking-wider uppercase text-zinc-500 dark:text-zinc-400 mb-2">
+                      <span className="font-bold text-zinc-800 dark:text-zinc-300">
+                        {art.sourceName || "Prensa Financiera"}
                       </span>
-                      {art.advisorImpact}
+                      <span>{formatDate(art.publishedAt)}</span>
                     </div>
-                  )}
 
-                  {/* Bottom Tags and Category Line */}
-                  <div className="mt-auto pt-2 flex flex-wrap items-center justify-between gap-3">
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-1.5">
-                      <span className="font-mono text-[9px] font-black uppercase bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-2 py-0.5 rounded">
-                        {art.category}
-                      </span>
-                      {art.tags.map((tag, idx) => (
-                        <span 
-                          key={idx} 
-                          className="font-mono text-[9px] font-bold uppercase text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded"
-                        >
-                          {tag}
+                    {/* Title */}
+                    <h3 className="whitepaper-title text-xl md:text-2xl font-bold leading-tight text-zinc-950 dark:text-white group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors mb-3">
+                      <a href={art.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2">
+                        <span>{art.title}</span>
+                        <ExternalLink className="w-3.5 h-3.5 mt-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400" />
+                      </a>
+                    </h3>
+
+                    {/* Description / Summary */}
+                    {art.description && (
+                      <p className="font-sans text-[13.5px] leading-relaxed text-zinc-600 dark:text-zinc-400 mb-4">
+                        {art.description}
+                      </p>
+                    )}
+
+                    {/* Actionable Commercial Strategy Box for the Insurance Advisor */}
+                    {art.advisorImpact && (
+                      <div className="mb-4 p-3.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/25 border border-emerald-200/80 dark:border-emerald-800/50 text-emerald-950 dark:text-emerald-200 text-xs leading-relaxed font-sans space-y-2.5">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-emerald-200/60 dark:border-emerald-800/40 pb-2">
+                          <span className="font-bold flex items-center gap-1.5 text-[10.5px] uppercase tracking-wider font-mono text-emerald-800 dark:text-emerald-400">
+                            💡 Estrategia Comercial para el Asesor
+                          </span>
+                          {parsedImpact.targetProduct && (
+                            <span className="text-[10px] font-bold bg-emerald-700 text-white dark:bg-emerald-600 px-2 py-0.5 rounded-md shadow-xs">
+                              🎯 {parsedImpact.targetProduct}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Why it matters to the client's pocket */}
+                        <div>
+                          <span className="font-semibold text-emerald-900 dark:text-emerald-300">Por qué le importa a tu cliente: </span>
+                          <span className="text-emerald-800 dark:text-emerald-200/90">{parsedImpact.clientAngle}</span>
+                        </div>
+
+                        {/* Ready-to-use WhatsApp hook + Action buttons */}
+                        {parsedImpact.whatsappHook && (
+                          <div className="bg-white/80 dark:bg-zinc-900/70 border border-emerald-200/70 dark:border-emerald-800/50 rounded-lg p-2.5 space-y-2">
+                            <div className="text-[11.5px] italic text-zinc-700 dark:text-zinc-300 leading-snug">
+                              <span className="not-italic font-bold text-emerald-700 dark:text-emerald-400 mr-1">💬 Guion para romper el hielo:</span>
+                              “{parsedImpact.whatsappHook}”
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                              <button
+                                type="button"
+                                onClick={() => handleCopyPitch(art, parsedImpact)}
+                                className="inline-flex items-center gap-1.5 text-[10.5px] font-bold px-2.5 py-1 rounded-md bg-emerald-100 hover:bg-emerald-200 dark:bg-emerald-900/50 dark:hover:bg-emerald-900 text-emerald-900 dark:text-emerald-200 transition-colors cursor-pointer"
+                              >
+                                {copiedId === art.id ? (
+                                  <>
+                                    <Check className="w-3 h-3 text-emerald-700 dark:text-emerald-400" />
+                                    ¡Guion y nota copiados!
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-3 h-3" />
+                                    Copiar guion + link
+                                  </>
+                                )}
+                              </button>
+                              <a
+                                href={`https://wa.me/?text=${encodeURIComponent(waShareText)}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-[10.5px] font-bold px-2.5 py-1 rounded-md bg-emerald-600 hover:bg-emerald-700 text-white transition-colors"
+                              >
+                                <MessageCircle className="w-3 h-3" />
+                                Mandar por WhatsApp
+                              </a>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Bottom Tags and Category Line */}
+                    <div className="mt-auto pt-2 flex flex-wrap items-center justify-between gap-3">
+                      {/* Tags */}
+                      <div className="flex flex-wrap gap-1.5">
+                        <span className="font-mono text-[9px] font-black uppercase bg-zinc-900 text-white dark:bg-white dark:text-zinc-900 px-2 py-0.5 rounded">
+                          {art.category}
                         </span>
-                      ))}
+                        {art.tags.map((tag, idx) => (
+                          <span 
+                            key={idx} 
+                            className="font-mono text-[9px] font-bold uppercase text-zinc-600 dark:text-zinc-400 bg-zinc-100 dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 px-2 py-0.5 rounded"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      {/* Read link */}
+                      <a
+                        href={art.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-mono text-[10px] text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 underline underline-offset-4"
+                      >
+                        Ver nota original
+                      </a>
                     </div>
 
-                    {/* Read link */}
-                    <a
-                      href={art.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="font-mono text-[10px] text-zinc-900 dark:text-zinc-100 hover:text-zinc-700 dark:hover:text-zinc-300 underline underline-offset-4"
-                    >
-                      Ver boletín original
-                    </a>
-                  </div>
-
-                </article>
-              ))}
+                  </article>
+                )
+              })}
             </div>
           )}
 
           {/* Whitepaper Footer info */}
           <footer className="mt-20 border-t border-zinc-400 dark:border-zinc-800 pt-8 text-center text-[10px] font-mono tracking-wider text-zinc-500 uppercase">
-            <div>© 2026 AACOMSOFT. Todos los derechos reservados.</div>
+            <div>© 2026 aacomsoft. Todos los derechos reservados.</div>
             <div className="mt-1">Servicio de inteligencia de mercados y curación financiera automatizada v4.0.</div>
           </footer>
 
