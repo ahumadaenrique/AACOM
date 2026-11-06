@@ -777,6 +777,34 @@ async function injectColumns() {
     }
 
     console.log("Column injection completed successfully.");
+    await client.query(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "waNotify10am" BOOLEAN NOT NULL DEFAULT false;`);
+    await client.query(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "waNotify6pm" BOOLEAN NOT NULL DEFAULT false;`);
+    await client.query(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "waSelectedAgents" TEXT;`);
+    const waMigrationRes = await client.query(`SELECT "value" FROM "Setting" WHERE "key" = 'wa_admin_migration_v1';`);
+    if (waMigrationRes.rows.length === 0) {
+      await client.query(`
+        UPDATE "User" u
+        SET "waNotify10am" = true,
+            "waSelectedAgents" = COALESCE(u."waSelectedAgents", a."whatsAppPlannerAgents"),
+            "phone" = CASE
+              WHEN (u."phone" IS NULL OR TRIM(u."phone") = '') AND a."whatsAppPlannerPhones" IS NOT NULL AND TRIM(a."whatsAppPlannerPhones") <> ''
+              THEN TRIM(SPLIT_PART(a."whatsAppPlannerPhones", ',', 1))
+              ELSE u."phone"
+            END
+        FROM "Agency" a
+        WHERE u."agencyId" = a."id"
+          AND u."role" IN ('ADMIN', 'SUPER_ADMIN')
+          AND u."active" = true
+          AND a."enableWhatsAppPlanner" = true
+          AND a."whatsAppPlannerAgents" IS NOT NULL;
+      `);
+      await client.query(`
+        INSERT INTO "Setting" ("key", "value")
+        VALUES ('wa_admin_migration_v1', 'true')
+        ON CONFLICT ("key") DO UPDATE SET "value" = 'true';
+      `);
+      console.log("Migrated existing agency WhatsApp planner settings to admin users.");
+    }
   } catch (error) {
     console.warn("⚠️  inject_columns: Could not connect to DB or columns may already exist. Continuing build...");
     console.warn(error.message || error);

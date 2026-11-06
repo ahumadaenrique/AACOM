@@ -5,13 +5,14 @@ import { Activity, Server, Database, Globe, Mail, MessageSquare, CreditCard, Ref
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
-import { checkAllSystemsStatus, triggerDailyPlanReport } from "./actions";
+import { checkAllSystemsStatus, triggerDailyPlanReport, triggerDailyRealPointsReport } from "./actions";
 
 export default function SystemStatusClient() {
     const { toast } = useToast();
     const [systems, setSystems] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [triggeringCron, setTriggeringCron] = useState(false);
+    const [triggeringCron6pm, setTriggeringCron6pm] = useState(false);
     const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
     useEffect(() => {
@@ -31,15 +32,27 @@ export default function SystemStatusClient() {
     };
 
     const runWACron = async () => {
-        if (!confirm("¿Estás seguro de enviar los reportes diarios de WhatsApp ahora?")) return;
+        if (!confirm("¿Estás seguro de enviar los reportes diarios de Planeación (10am) por WhatsApp ahora?")) return;
         setTriggeringCron(true);
         const res = await triggerDailyPlanReport();
         if (res.success) {
-            toast({ title: "WhatsApp Enviados", description: `Se procesaron y enviaron ${res.sentCount} mensajes a agentes.` });
+            toast({ title: "WhatsApp 10am Enviados", description: `Se procesaron y enviaron ${res.sentCount} mensajes de planeación.` });
         } else {
             toast({ title: "Error", description: res.message, variant: "destructive" });
         }
         setTriggeringCron(false);
+    };
+
+    const runWACron6pm = async () => {
+        if (!confirm("¿Estás seguro de enviar los reportes de Puntos Reales (6pm) por WhatsApp ahora?")) return;
+        setTriggeringCron6pm(true);
+        const res = await triggerDailyRealPointsReport();
+        if (res.success) {
+            toast({ title: "WhatsApp 6pm Enviados", description: `Se procesaron y enviaron ${res.sentCount} mensajes de puntos reales.` });
+        } else {
+            toast({ title: "Error", description: res.message, variant: "destructive" });
+        }
+        setTriggeringCron6pm(false);
     };
 
     const getIcon = (id: string) => {
@@ -70,10 +83,14 @@ export default function SystemStatusClient() {
                     </p>
                 </div>
                 <div className="flex flex-col items-end gap-2">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                         <Button onClick={runWACron} disabled={triggeringCron} variant="secondary" className="flex items-center gap-2 bg-green-100 text-green-700 hover:bg-green-200 border border-green-300">
                             <MessageSquare className={`h-4 w-4 ${triggeringCron ? 'animate-pulse' : ''}`} />
-                            Probar Reporte WA
+                            Probar WA 10am
+                        </Button>
+                        <Button onClick={runWACron6pm} disabled={triggeringCron6pm} variant="secondary" className="flex items-center gap-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 border border-emerald-300">
+                            <MessageSquare className={`h-4 w-4 ${triggeringCron6pm ? 'animate-pulse' : ''}`} />
+                            Probar WA 6pm
                         </Button>
                         <Button onClick={loadStatus} disabled={loading} className="flex items-center gap-2">
                             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />

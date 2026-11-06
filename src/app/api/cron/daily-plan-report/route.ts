@@ -13,50 +13,95 @@ export async function GET(request: Request) {
     }
 
     try {
-        // 1. Get all agencies that have WhatsApp Planner enabled
+        // 1. Get all active agencies authorized by Super Admin for WhatsApp Notifications
         const agencies = await prisma.agency.findMany({
             where: {
                 active: true,
                 enableWhatsAppPlanner: true,
-                whatsAppPlannerPhones: { not: null }
             }
         });
 
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = (today.getMonth() + 1).toString().padStart(2, "0");
-        const day = today.getDate().toString().padStart(2, "0");
-        const dateStr = `${year}-${month}-${day}`;
+        // Date in Mexico City timezone (YYYY-MM-DD)
+        const dateStr = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+        const isoDateStr = `${dateStr}T00:00:00.000Z`;
 
         // Robust parsing of WhatsApp Sender Number to prevent Twilio API rejections
-        let rawWaFrom = process.env.TWILIO_WHATSAPP_NUMBER || process.env.TWILIO_PHONE_NUMBER || '+14155238886';
-        const cleanWaFrom = rawWaFrom.replace('whatsapp:', '').replace(/\s+/g, '').replace(/^\+/, '');
+        const rawWaFrom = process.env.TWILIO_WHATSAPP_NUMBER || process.env.TWILIO_PHONE_NUMBER || "+14155238886";
+        const cleanWaFrom = rawWaFrom.replace("whatsapp:", "").replace(/\s+/g, "").replace(/^\+/, "");
         const waFromNumber = `+${cleanWaFrom}`;
-        
-        // Plantilla
+
+        // Plantilla de Planeación (10:00 AM)
         const templateSid = process.env.TWILIO_WA_TEMPLATE_PLANNER_SID || "HX7f9aa2c868c568450acc5e5e9e3a3fab";
 
         let sentCount = 0;
 
         for (const agency of agencies) {
-            const agentIdsStr = agency.whatsAppPlannerAgents;
-            if (!agentIdsStr) continue;
+            // Find all active admins in this agency who opted in to the 10:00 AM report
+            const admins = await prisma.user.findMany({
+                where: {
+                    agencyId: agency.id,
+                    role: { in: ["ADMIN", "SUPER_ADMIN"] },
+                    active: true,
+                    waNotify10am: true,
+                    phone: { not: null },
+                    waSelectedAgents: { not: null },
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    phone: true,
+                    waSelectedAgents: true,
+                }
+            });
 
-            const agentIds = agentIdsStr.split(",").filter(id => id.trim() !== "");
-            if (agentIds.length === 0) continue;
+            // Build recipient list: [{ phone, agentIds: Set<string> }]
+            const recipients: { phone: string; agentIds: Set<string> }[] = [];
 
-            const targetPhonesStr = agency.whatsAppPlannerPhones;
-            if (!targetPhonesStr) continue;
-            
-            const targetPhones = targetPhonesStr.split(",").map(p => p.trim()).filter(p => p !== "");
-            if (targetPhones.length === 0) continue;
+            for (const admin of admins) {
+                const rawPhone = (admin.phone || "").trim();
+                const agentIds = (admin.waSelectedAgents || "")
+                    .split(",")
+                    .map(id => id.trim())
+                    .filter(Boolean);
+                if (rawPhone && agentIds.length > 0) {
+                    const digitsOnly = rawPhone.replace(/[\s()-]/g, "").replace(/^\+/, "");
+                    const formattedPhone = /^\d{10}$/.test(digitsOnly)
+                        ? `+52${digitsOnly}`
+                        : `+${digitsOnly}`;
+                    recipients.push({
+                        phone: formattedPhone,
+                        agentIds: new Set(agentIds),
+                    });
+                }
+            }
 
-            const isoDateStr = `${dateStr}T00:00:00.000Z`;
+            // Legacy fallback if no admin has individual config yet but agency had legacy phones & agents
+            if (recipients.length === 0 && agency.whatsAppPlannerPhones && agency.whatsAppPlannerAgents) {
+                const legacyAgents = agency.whatsAppPlannerAgents.split(",").map(id => id.trim()).filter(Boolean);
+                const legacyPhones = agency.whatsAppPlannerPhones.split(",").map(p => p.trim()).filter(Boolean);
+                if (legacyAgents.length > 0 && legacyPhones.length > 0) {
+                    for (const lp of legacyPhones) {
+                        const formattedPhone = lp.startsWith("+") ? lp : `+${lp}`;
+                        recipients.push({
+                            phone: formattedPhone,
+                            agentIds: new Set(legacyAgents),
+                        });
+                    }
+                }
+            }
 
-            // 2. Fetch users and their daily records
+            if (recipients.length === 0) continue;
+
+            // Collect union of all agent IDs requested across all admins in this agency
+            const allAgentIds = Array.from(
+                new Set(recipients.flatMap(r => Array.from(r.agentIds)))
+            );
+            if (allAgentIds.length === 0) continue;
+
+            // 2. Fetch users and their daily records (strictly scoped to agency.id)
             const users = await prisma.user.findMany({
                 where: {
-                    id: { in: agentIds },
+                    id: { in: allAgentIds },
                     agencyId: agency.id,
                     active: true,
                 },
@@ -67,10 +112,12 @@ export async function GET(request: Request) {
                 }
             });
 
-            // 3. Build the report and send per user
+            // Precompute the report variables per agent
+            const agentReports = new Map<string, { userName: string; totalPts: number; msgText: string }>();
+
             for (const user of users) {
                 let totalPts = 0;
-                let details = [];
+                const details: string[] = [];
 
                 for (const record of user.dailyRecords) {
                     const pts = record.planned || 0;
@@ -97,33 +144,51 @@ export async function GET(request: Request) {
                     msgText = `⚠️ Faltan ${missing} puntos para la meta ${detailsStr}. ¿Qué vas a hacer adicional?`;
                 }
 
-                if (twilioClient) {
-                    for (const phone of targetPhones) {
-                        try {
-                            const formattedPhone = phone.startsWith("+") ? phone : `+${phone}`;
-                            await twilioClient.messages.create({
-                                from: `whatsapp:${waFromNumber}`,
-                                to: `whatsapp:${formattedPhone}`,
-                                contentSid: templateSid,
-                                contentVariables: JSON.stringify({
-                                    "1": dateStr,
-                                    "2": userName,
-                                    "3": totalPts.toString(),
-                                    "4": msgText
+                agentReports.set(user.id, { userName, totalPts, msgText });
+            }
+
+            // 3. Send messages in parallel per recipient
+            if (twilioClient) {
+                const sendTasks: Promise<void>[] = [];
+
+                for (const recipient of recipients) {
+                    for (const agentId of Array.from(recipient.agentIds)) {
+                        const report = agentReports.get(agentId);
+                        if (!report) continue;
+
+                        sendTasks.push(
+                            twilioClient.messages
+                                .create({
+                                    from: `whatsapp:${waFromNumber}`,
+                                    to: `whatsapp:${recipient.phone}`,
+                                    contentSid: templateSid,
+                                    contentVariables: JSON.stringify({
+                                        "1": dateStr,
+                                        "2": report.userName,
+                                        "3": report.totalPts.toString(),
+                                        "4": report.msgText,
+                                    }),
                                 })
-                            });
-                            sentCount++;
-                        } catch (e) {
-                            console.error(`Error sending WhatsApp plan report to ${phone} for agent ${userName}:`, e);
-                        }
+                                .then(() => {
+                                    sentCount++;
+                                })
+                                .catch((e) => {
+                                    console.error(
+                                        `Error sending WhatsApp 10am plan report to ${recipient.phone} for agent ${report.userName}:`,
+                                        e
+                                    );
+                                })
+                        );
                     }
-                } else {
-                    console.warn("Twilio client is not configured, skipped sending messages.");
                 }
+
+                await Promise.allSettled(sendTasks);
+            } else {
+                console.warn("Twilio client is not configured, skipped sending 10am messages.");
             }
         }
 
-        return NextResponse.json({ success: true, sentCount });
+        return NextResponse.json({ success: true, sentCount, dateStr });
     } catch (error: any) {
         console.error("Cron daily plan report error:", error);
         return new NextResponse(error.message, { status: 500 });

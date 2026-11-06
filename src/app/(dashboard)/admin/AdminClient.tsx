@@ -68,6 +68,7 @@ import {
 import AdminCotizadorSettings from './AdminCotizadorSettings'
 import AdminModulesSettings from './AdminModulesSettings'
 import AdminMarketCgManager from './AdminMarketCgManager'
+import AdminWhatsAppSettings from './AdminWhatsAppSettings'
 
 export default function AdminClient() {
 
@@ -4935,6 +4936,9 @@ export default function AdminClient() {
         <div className="space-y-6 animate-in fade-in duration-300 pb-10">
           <div className="max-w-xl mx-auto space-y-6">
             
+            {/* Configuración Personal de Reportes WhatsApp (10am y 6pm) por Admin */}
+            <AdminWhatsAppSettings />
+
             {/* Toggles del Sistema */}
             <Card className="border shadow-sm">
               <CardHeader className="bg-slate-50 border-b pb-4">

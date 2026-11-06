@@ -272,3 +272,30 @@ export async function triggerDailyPlanReport() {
         return { success: false, message: e.message };
     }
 }
+
+export async function triggerDailyRealPointsReport() {
+    try {
+        const session = await auth();
+        if (!session?.user?.id) throw new Error("No autenticado");
+        
+        const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+        if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
+
+        const { GET: dailyRealPointsCronGet } = await import("@/app/api/cron/daily-real-points-report/route");
+        const req = new Request("http://localhost/api/cron/daily-real-points-report", {
+            headers: {
+                "Authorization": `Bearer ${process.env.CRON_SECRET || ''}`
+            }
+        });
+        
+        const res = await dailyRealPointsCronGet(req);
+        if (!res.ok) {
+            const errText = await res.text();
+            throw new Error(`Fallo al ejecutar el cron 6pm (HTTP ${res.status}): ${errText}`);
+        }
+        const data = await res.json();
+        return { success: true, sentCount: data.sentCount };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}

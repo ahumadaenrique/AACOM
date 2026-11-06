@@ -2932,6 +2932,177 @@ export async function getAdminSettings() {
     };
 }
 
+export async function getAdminWhatsAppSettings() {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                role: true,
+                phone: true,
+                agencyId: true,
+                waNotify10am: true,
+                waNotify6pm: true,
+                waSelectedAgents: true,
+            }
+        });
+
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const effectiveAgencyId = (session?.user?.agencyId || currentUser.agencyId || "aacom") as string;
+
+        const [agency, agents] = await Promise.all([
+            prisma.agency.findUnique({
+                where: { id: effectiveAgencyId },
+                select: {
+                    id: true,
+                    name: true,
+                    enableWhatsAppPlanner: true,
+                }
+            }),
+            prisma.user.findMany({
+                where: {
+                    agencyId: effectiveAgencyId,
+                    role: { in: ["AGENTE", "LITE_AGENTE"] },
+                    active: true,
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                },
+                orderBy: { name: "asc" }
+            })
+        ]);
+
+        const validAgentIdSet = new Set(agents.map(a => a.id));
+        const savedAgentIds = (currentUser.waSelectedAgents || "")
+            .split(",")
+            .map(id => id.trim())
+            .filter(id => id !== "" && validAgentIdSet.has(id));
+
+        return {
+            success: true,
+            agencyAuthorized: Boolean(agency?.enableWhatsAppPlanner),
+            agencyName: agency?.name || "Tu Agencia",
+            waNotify10am: Boolean(currentUser.waNotify10am),
+            waNotify6pm: Boolean(currentUser.waNotify6pm),
+            phone: currentUser.phone || "",
+            selectedAgents: savedAgentIds,
+            agents,
+        };
+    } catch (error: any) {
+        console.error("Error in getAdminWhatsAppSettings:", error);
+        return { success: false, message: error.message || "Error al cargar configuración de WhatsApp" };
+    }
+}
+
+export async function saveAdminWhatsAppSettings(data: {
+    waNotify10am: boolean;
+    waNotify6pm: boolean;
+    phone: string;
+    selectedAgents: string[];
+}) {
+    try {
+        const session = await auth();
+        if (!session?.user?.email) {
+            return { success: false, message: "No autenticado" };
+        }
+
+        enforceDemoSafety(session);
+
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: { id: true, role: true, agencyId: true }
+        });
+
+        if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
+            return { success: false, message: "Permisos insuficientes" };
+        }
+
+        const effectiveAgencyId = (session?.user?.agencyId || currentUser.agencyId || "aacom") as string;
+
+        const agency = await prisma.agency.findUnique({
+            where: { id: effectiveAgencyId },
+            select: { id: true, enableWhatsAppPlanner: true }
+        });
+
+        if (!agency?.enableWhatsAppPlanner && currentUser.role !== 'SUPER_ADMIN') {
+            return {
+                success: false,
+                message: "Tu agencia aún no tiene autorizado el servicio de notificaciones por WhatsApp."
+            };
+        }
+
+        // Clean and normalize phone number
+        let cleanPhone = (data.phone || "").trim().replace(/[\s()-]/g, "");
+        if (cleanPhone) {
+            const digitsOnly = cleanPhone.replace(/^\+/, "");
+            if (/^\d{10}$/.test(digitsOnly)) {
+                cleanPhone = `+52${digitsOnly}`;
+            } else if (!cleanPhone.startsWith("+")) {
+                cleanPhone = `+${digitsOnly}`;
+            }
+        }
+
+        if ((data.waNotify10am || data.waNotify6pm) && !cleanPhone) {
+            return {
+                success: false,
+                message: "Debes ingresar tu número de teléfono con código de país (ej. +52...) para recibir reportes por WhatsApp."
+            };
+        }
+
+        // Strict multi-tenant validation of selected agents
+        const validAgencyAgents = await prisma.user.findMany({
+            where: {
+                agencyId: effectiveAgencyId,
+                role: { in: ["AGENTE", "LITE_AGENTE"] },
+                active: true,
+            },
+            select: { id: true }
+        });
+        const validSet = new Set(validAgencyAgents.map(a => a.id));
+        const filteredAgentIds = (data.selectedAgents || []).filter(id => validSet.has(id));
+
+        if ((data.waNotify10am || data.waNotify6pm) && filteredAgentIds.length === 0) {
+            return {
+                success: false,
+                message: "Selecciona al menos un agente para incluir en tus reportes de WhatsApp."
+            };
+        }
+
+        await prisma.user.update({
+            where: { id: currentUser.id },
+            data: {
+                waNotify10am: Boolean(data.waNotify10am),
+                waNotify6pm: Boolean(data.waNotify6pm),
+                phone: cleanPhone || null,
+                waSelectedAgents: filteredAgentIds.length > 0 ? filteredAgentIds.join(",") : null,
+            }
+        });
+
+        revalidatePath("/admin");
+        return {
+            success: true,
+            phone: cleanPhone,
+            selectedAgents: filteredAgentIds,
+            message: "Configuración de WhatsApp guardada correctamente."
+        };
+    } catch (error: any) {
+        console.error("Error in saveAdminWhatsAppSettings:", error);
+        return { success: false, message: error.message || "Error al guardar la configuración de WhatsApp" };
+    }
+}
+
 export async function toggleAdminSetting(key: string, enabled: boolean, pin: string) {
     if (pin !== "5515015502") return { success: false, message: "PIN de seguridad incorrecto." };
     

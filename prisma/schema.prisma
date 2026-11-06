@@ -191,6 +191,9 @@ model User {
   linkedAgentId          String?
   referidorCommissionPct Float?                    @default(30)
   referidorBonusPct      Float?                    @default(0)
+  waNotify10am           Boolean                   @default(false)
+  waNotify6pm            Boolean                   @default(false)
+  waSelectedAgents       String?
   aiAgents             AIAgent[]
   activityLogs         ActivityLog[]
   adnDiagnostics       AdnDiagnostic[]
