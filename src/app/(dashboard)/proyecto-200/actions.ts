@@ -748,6 +748,12 @@ export async function createProject200Contact(input: {
         surveyReferralId: input.surveyReferralId || null,
         notes: input.notes ? String(input.notes).trim() : null,
       },
+      include: {
+        logs: {
+          orderBy: { createdAt: "desc" },
+          take: 50,
+        },
+      },
     });
 
     if (input.surveyReferralId) {
@@ -861,22 +867,6 @@ export async function updateProject200Contact(
       nextStatus = "POR_CONTACTAR";
     }
 
-    const updated = await prisma.project200Contact.update({
-      where: { id: contactId },
-      data: {
-        fullName: input.fullName !== undefined ? input.fullName.trim() : existing.fullName,
-        phone: nextPhone,
-        relationship: nextRel,
-        estimatedSalary: nextSalary,
-        closingProbability: nextProb,
-        classification: nextClassification,
-        disqualificationReason: nextClassification === "DESCALIFICADO" ? nextDisqReason : null,
-        status: nextStatus,
-        priorityScore,
-        notes: input.notes !== undefined ? input.notes : existing.notes,
-      },
-    });
-
     if (nextClassification !== existing.classification) {
       await prisma.project200Log.create({
         data: {
@@ -892,6 +882,28 @@ export async function updateProject200Contact(
         },
       });
     }
+
+    const updated = await prisma.project200Contact.update({
+      where: { id: contactId },
+      data: {
+        fullName: input.fullName !== undefined ? input.fullName.trim() : existing.fullName,
+        phone: nextPhone,
+        relationship: nextRel,
+        estimatedSalary: nextSalary,
+        closingProbability: nextProb,
+        classification: nextClassification,
+        disqualificationReason: nextClassification === "DESCALIFICADO" ? nextDisqReason : null,
+        status: nextStatus,
+        priorityScore,
+        notes: input.notes !== undefined ? input.notes : existing.notes,
+      },
+      include: {
+        logs: {
+          orderBy: { createdAt: "desc" },
+          take: 50,
+        },
+      },
+    });
 
     revalidatePath("/proyecto-200");
     return { success: true, contact: updated };
@@ -910,6 +922,7 @@ export async function recordGuidedProspectingAction(input: {
     | "CITA_AGENDADA"
     | "RECORDATORIO_PROGRAMADO"
     | "NO_CONTESTO"
+    | "DOBLE_TOQUE_RESCATE"
     | "SEGUIMIENTO_WHATSAPP"
     | "CONVERTIR_REFERIDOR"
     | "DESCALIFICAR";
@@ -986,7 +999,12 @@ export async function recordGuidedProspectingAction(input: {
       nextStatus = "EN_SEGUIMIENTO";
       // Programar siguiente toque automático en 4 horas para rotar la cola inmediatamente
       nextActionAt = new Date(now.getTime() + 4 * 60 * 60 * 1000);
-      outcomeText = `Intento #${contact.attemptsCount + 1}: No contestó / Buzón. Reprogramado automáticamente.`;
+      outcomeText = `Intento #${contact.attemptsCount + 1}: 📵 No contestó llamada / Buzón. Reprogramado en 4 hrs.`;
+    } else if (input.actionType === "DOBLE_TOQUE_RESCATE") {
+      nextStatus = "EN_SEGUIMIENTO";
+      // Llamada no contestada + WhatsApp de rescate enviado -> rotar 12 horas
+      nextActionAt = new Date(now.getTime() + 12 * 60 * 60 * 1000);
+      outcomeText = `Intento #${contact.attemptsCount + 1}: 📞 Llamada no contestada + 💬 WhatsApp de rescate enviado (Doble Toque).`;
     } else if (input.actionType === "SEGUIMIENTO_WHATSAPP") {
       nextStatus = "EN_SEGUIMIENTO";
       nextActionAt = new Date(now.getTime() + 18 * 60 * 60 * 1000);
@@ -1007,6 +1025,17 @@ export async function recordGuidedProspectingAction(input: {
       attemptsCount: newAttemptsCount,
     });
 
+    await prisma.project200Log.create({
+      data: {
+        contactId: contact.id,
+        userId: user.id,
+        agencyId: effectiveAgencyId,
+        actionType: input.actionType,
+        outcome: outcomeText,
+        notes: input.notes || null,
+      },
+    });
+
     const updated = await prisma.project200Contact.update({
       where: { id: contact.id },
       data: {
@@ -1024,16 +1053,11 @@ export async function recordGuidedProspectingAction(input: {
             : input.notes.trim()
           : contact.notes,
       },
-    });
-
-    await prisma.project200Log.create({
-      data: {
-        contactId: contact.id,
-        userId: user.id,
-        agencyId: effectiveAgencyId,
-        actionType: input.actionType,
-        outcome: outcomeText,
-        notes: input.notes || null,
+      include: {
+        logs: {
+          orderBy: { createdAt: "desc" },
+          take: 50,
+        },
       },
     });
 
@@ -1092,7 +1116,10 @@ export async function addProject200ContactLogAndSchedule(input: {
         };
       }
       actionType = "NOTA_BITACORA";
-      outcomeText = "📝 Comentario / acuerdo registrado en bitácora";
+      outcomeText =
+        contact.userId !== user.id && isAdmin
+          ? `👑 Nota de Coaching (${user.name || "Líder"}): Comentario registrado`
+          : "📝 Comentario / acuerdo registrado en bitácora";
     } else if (input.mode === "RECORDATORIO") {
       if (!input.scheduledDate) {
         return {
@@ -1212,7 +1239,22 @@ export async function getAdminProject200Analytics() {
     const effectiveAgencyId = user.agencyId || "aacom";
     const hiddenSettingKey = `proyecto200_hidden_agents_${effectiveAgencyId}`;
 
-    const [agencyAgents, allContacts, recentLogs, actionCountsByAgent, hiddenSetting] = await Promise.all([
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const startOf7DaysAgo = new Date();
+    startOf7DaysAgo.setDate(startOf7DaysAgo.getDate() - 7);
+    startOf7DaysAgo.setHours(0, 0, 0, 0);
+
+    const [
+      agencyAgents,
+      allContacts,
+      recentLogs,
+      actionCountsByAgent,
+      todayCountsByAgent,
+      weekCountsByAgent,
+      hiddenSetting,
+    ] = await Promise.all([
       prisma.user.findMany({
         where: {
           agencyId: effectiveAgencyId,
@@ -1225,6 +1267,14 @@ export async function getAdminProject200Analytics() {
           email: true,
           image: true,
           role: true,
+          reportsToId: true,
+          reportsTo: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+            },
+          },
           createdAt: true,
         },
         orderBy: { name: "asc" },
@@ -1266,6 +1316,24 @@ export async function getAdminProject200Analytics() {
         where: { agencyId: effectiveAgencyId },
         _count: { _all: true },
       }),
+      prisma.project200Log.groupBy({
+        by: ["userId"],
+        where: {
+          agencyId: effectiveAgencyId,
+          createdAt: { gte: startOfToday },
+          actionType: { notIn: ["ALTA_CONTACTO", "RECLASIFICACION"] },
+        },
+        _count: { _all: true },
+      }),
+      prisma.project200Log.groupBy({
+        by: ["userId"],
+        where: {
+          agencyId: effectiveAgencyId,
+          createdAt: { gte: startOf7DaysAgo },
+          actionType: { notIn: ["ALTA_CONTACTO", "RECLASIFICACION"] },
+        },
+        _count: { _all: true },
+      }),
       prisma.setting.findUnique({
         where: { key: hiddenSettingKey },
       }),
@@ -1291,6 +1359,8 @@ export async function getAdminProject200Analytics() {
         email: string;
         image: string | null;
         role: string;
+        reportsToId: string | null;
+        reportsToName: string | null;
         totalContacts: number;
         missingFor200: number;
         hasReached200: boolean;
@@ -1309,6 +1379,8 @@ export async function getAdminProject200Analytics() {
         citasAgendadasCount: number;
         recordatoriosProgramadosCount: number;
         totalAttempts: number;
+        touchesTodayCount: number;
+        touchesWeekCount: number;
         phoneTouchesCount: number;
         whatsappTouchesCount: number;
         whatsappRatioPct: number;
@@ -1324,6 +1396,8 @@ export async function getAdminProject200Analytics() {
         email: ag.email,
         image: ag.image,
         role: ag.role,
+        reportsToId: ag.reportsToId || null,
+        reportsToName: ag.reportsTo ? ag.reportsTo.name || ag.reportsTo.email : null,
         totalContacts: 0,
         missingFor200: 200,
         hasReached200: false,
@@ -1342,6 +1416,8 @@ export async function getAdminProject200Analytics() {
         citasAgendadasCount: 0,
         recordatoriosProgramadosCount: 0,
         totalAttempts: 0,
+        touchesTodayCount: 0,
+        touchesWeekCount: 0,
         phoneTouchesCount: 0,
         whatsappTouchesCount: 0,
         whatsappRatioPct: 0,
@@ -1359,6 +1435,8 @@ export async function getAdminProject200Analytics() {
           email: c.user.email,
           image: null,
           role: "AGENTE",
+          reportsToId: null,
+          reportsToName: null,
           totalContacts: 0,
           missingFor200: 200,
           hasReached200: false,
@@ -1377,6 +1455,8 @@ export async function getAdminProject200Analytics() {
           citasAgendadasCount: 0,
           recordatoriosProgramadosCount: 0,
           totalAttempts: 0,
+          touchesTodayCount: 0,
+          touchesWeekCount: 0,
           phoneTouchesCount: 0,
           whatsappTouchesCount: 0,
           whatsappRatioPct: 0,
@@ -1442,12 +1522,23 @@ export async function getAdminProject200Analytics() {
         grp.actionType === "CITA_AGENDADA" ||
         grp.actionType === "RECORDATORIO_PROGRAMADO" ||
         grp.actionType === "NO_CONTESTO" ||
+        grp.actionType === "DOBLE_TOQUE_RESCATE" ||
         grp.actionType === "CONVERTIR_REFERIDOR" ||
         grp.actionType === "DESCALIFICAR" ||
         grp.actionType === "VOLVER_PROSPECTO"
       ) {
         entry.phoneTouchesCount += cnt;
       }
+    }
+
+    for (const tGrp of todayCountsByAgent) {
+      const entry = agentMap.get(tGrp.userId);
+      if (entry) entry.touchesTodayCount = tGrp._count._all || 0;
+    }
+
+    for (const wGrp of weekCountsByAgent) {
+      const entry = agentMap.get(wGrp.userId);
+      if (entry) entry.touchesWeekCount = wGrp._count._all || 0;
     }
 
     for (const entry of Array.from(agentMap.values())) {
