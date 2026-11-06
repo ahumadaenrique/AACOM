@@ -13,6 +13,9 @@ export async function GET(request: Request) {
     }
 
     try {
+        const url = new URL(request.url);
+        const testUserId = url.searchParams.get("testUserId");
+
         // 1. Get all active agencies authorized by Super Admin for WhatsApp Notifications
         const agencies = await prisma.agency.findMany({
             where: {
@@ -45,7 +48,7 @@ export async function GET(request: Request) {
                     agencyId: agency.id,
                     role: { in: ["ADMIN", "SUPER_ADMIN"] },
                     active: true,
-                    waNotify6pm: true,
+                    ...(testUserId ? { id: testUserId } : { waNotify6pm: true }),
                     phone: { not: null },
                     waSelectedAgents: { not: null },
                 },

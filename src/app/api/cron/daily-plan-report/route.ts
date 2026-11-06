@@ -13,6 +13,9 @@ export async function GET(request: Request) {
     }
 
     try {
+        const url = new URL(request.url);
+        const testUserId = url.searchParams.get("testUserId");
+
         // 1. Get all active agencies authorized by Super Admin for WhatsApp Notifications
         const agencies = await prisma.agency.findMany({
             where: {
@@ -42,7 +45,7 @@ export async function GET(request: Request) {
                     agencyId: agency.id,
                     role: { in: ["ADMIN", "SUPER_ADMIN"] },
                     active: true,
-                    waNotify10am: true,
+                    ...(testUserId ? { id: testUserId } : { waNotify10am: true }),
                     phone: { not: null },
                     waSelectedAgents: { not: null },
                 },
@@ -75,8 +78,8 @@ export async function GET(request: Request) {
                 }
             }
 
-            // Legacy fallback if no admin has individual config yet but agency had legacy phones & agents
-            if (recipients.length === 0 && agency.whatsAppPlannerPhones && agency.whatsAppPlannerAgents) {
+            // Legacy fallback if no admin has individual config yet (only during normal cron, not single-user test)
+            if (!testUserId && recipients.length === 0 && agency.whatsAppPlannerPhones && agency.whatsAppPlannerAgents) {
                 const legacyAgents = agency.whatsAppPlannerAgents.split(",").map(id => id.trim()).filter(Boolean);
                 const legacyPhones = agency.whatsAppPlannerPhones.split(",").map(p => p.trim()).filter(Boolean);
                 if (legacyAgents.length > 0 && legacyPhones.length > 0) {

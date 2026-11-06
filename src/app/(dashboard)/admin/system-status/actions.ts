@@ -255,7 +255,7 @@ export async function triggerDailyPlanReport() {
         if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
 
         const { GET: dailyPlanCronGet } = await import("@/app/api/cron/daily-plan-report/route");
-        const req = new Request("http://localhost/api/cron/daily-plan-report", {
+        const req = new Request(`http://localhost/api/cron/daily-plan-report?testUserId=${encodeURIComponent(user.id)}`, {
             headers: {
                 "Authorization": `Bearer ${process.env.CRON_SECRET || ''}`
             }
@@ -282,7 +282,7 @@ export async function triggerDailyRealPointsReport() {
         if (user?.role !== "SUPER_ADMIN") throw new Error("Permisos insuficientes");
 
         const { GET: dailyRealPointsCronGet } = await import("@/app/api/cron/daily-real-points-report/route");
-        const req = new Request("http://localhost/api/cron/daily-real-points-report", {
+        const req = new Request(`http://localhost/api/cron/daily-real-points-report?testUserId=${encodeURIComponent(user.id)}`, {
             headers: {
                 "Authorization": `Bearer ${process.env.CRON_SECRET || ''}`
             }
