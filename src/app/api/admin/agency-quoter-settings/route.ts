@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { auth } from '@/auth'
+import { cookies } from 'next/headers'
 
 export async function POST(req: Request) {
   try {
@@ -17,7 +18,10 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 403 })
     }
 
-    if (!dbUser.agencyId) {
+    const impersonateId = dbUser.role === 'SUPER_ADMIN' ? cookies().get('impersonateAgencyId')?.value : undefined
+    const effectiveAgencyId = (impersonateId || (session.user as any)?.agencyId || dbUser.agencyId) as string
+
+    if (!effectiveAgencyId) {
       return NextResponse.json({ error: 'Usuario sin agencia' }, { status: 400 })
     }
 
@@ -31,7 +35,7 @@ export async function POST(req: Request) {
     } = body
 
     const updatedAgency = await prisma.agency.update({
-      where: { id: dbUser.agencyId },
+      where: { id: effectiveAgencyId },
       data: {
         quoterLifeCompany,
         quoterEnableVPL,

@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { RAMOS_CATALOGO, DEFAULT_COMPANIES, MONTH_NAMES_ES } from "@/lib/productionConstants";
 import { toUTCNoonDate } from "@/app/(dashboard)/cartera/dateUtils";
 
@@ -21,7 +22,13 @@ async function verifyAdminUser() {
     throw new Error("Acceso restringido para administradores.");
   }
 
-  return user;
+  const impersonateId = user.role === "SUPER_ADMIN" ? cookies().get("impersonateAgencyId")?.value : undefined;
+  const effectiveUserAgencyId = (impersonateId || (session.user as any)?.agencyId || user.agencyId || "aacom") as string;
+
+  return {
+    ...user,
+    agencyId: effectiveUserAgencyId,
+  };
 }
 
 // 1. Obtener o Sembrar Compañías de Seguros

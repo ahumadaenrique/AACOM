@@ -89,7 +89,7 @@ export default function AdminProduccion() {
   // Filters
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth);
-  const [selectedAgency, setSelectedAgency] = useState<string>("aacom");
+  const [selectedAgency, setSelectedAgency] = useState<string>("DEFAULT");
   const [filterAgentId, setFilterAgentId] = useState<string>("ALL");
   const [filterCompanyId, setFilterCompanyId] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -159,6 +159,9 @@ export default function AdminProduccion() {
       });
       if (res.success) {
         setData(res);
+        if (selectedAgency === "DEFAULT" && (res as any).selectedAgencyId) {
+          setSelectedAgency((res as any).selectedAgencyId);
+        }
       } else {
         setFeedback({ type: "error", text: res.message || "Error al cargar datos" });
       }

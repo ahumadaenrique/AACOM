@@ -2,6 +2,7 @@
 
 import { appendToSheet } from "@/lib/google-sheets";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { auth } from "@/auth";
 import { SALES_ACTIVITIES } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
@@ -1652,8 +1653,9 @@ export async function getAgencyModulesConfig(): Promise<{
             include: { agency: true }
         });
 
-        const agencyId = ((session?.user?.agencyId || user?.agencyId) as string) || 'aacom';
-        const agency = user?.agency || await prisma.agency.findUnique({ where: { id: agencyId } });
+        const impersonateId = user?.role === 'SUPER_ADMIN' ? cookies().get('impersonateAgencyId')?.value : undefined;
+        const agencyId = ((impersonateId || session?.user?.agencyId || user?.agencyId) as string) || 'aacom';
+        const agency = await prisma.agency.findUnique({ where: { id: agencyId } });
 
         const setting = await prisma.setting.findUnique({
             where: { key: `agency_modules_${agencyId}` }
@@ -2323,6 +2325,24 @@ export async function getCurrentUser() {
         if (!user) {
             return { success: false, message: "Usuario no encontrado" };
         }
+        const impersonateId = user.role === "SUPER_ADMIN" ? cookies().get("impersonateAgencyId")?.value : undefined;
+        const effectiveAgencyId = (impersonateId || session?.user?.agencyId || user.agencyId || "aacom") as string;
+        if (effectiveAgencyId && effectiveAgencyId !== user.agencyId) {
+            const impersonatedAgency = await prisma.agency.findUnique({
+                where: { id: effectiveAgencyId },
+                select: { id: true, slug: true, purchasedSeats: true, quoterLifeCompany: true, quoterEnableVPL: true, quoterEnableVPLPPR: true, quoterEnableUniversal: true, quoterShowAccumulatedPremium: true }
+            });
+            if (impersonatedAgency) {
+                return {
+                    success: true,
+                    user: {
+                        ...user,
+                        agencyId: effectiveAgencyId,
+                        agency: impersonatedAgency,
+                    }
+                };
+            }
+        }
         return { success: true, user };
     } catch (error: any) {
         console.error("Error fetching current user:", error);
@@ -2932,7 +2952,7 @@ export async function getAdminSettings() {
     };
 }
 
-export async function getAdminWhatsAppSettings() {
+export async function getAdminWhatsAppSettings(targetAdminId?: string) {
     try {
         const session = await auth();
         if (!session?.user?.email) {
@@ -2958,15 +2978,18 @@ export async function getAdminWhatsAppSettings() {
             return { success: false, message: "Permisos insuficientes" };
         }
 
-        const effectiveAgencyId = (session?.user?.agencyId || currentUser.agencyId || "aacom") as string;
+        const impersonateId = currentUser.role === 'SUPER_ADMIN' ? cookies().get('impersonateAgencyId')?.value : undefined;
+        const effectiveAgencyId = (impersonateId || session?.user?.agencyId || currentUser.agencyId || "aacom") as string;
 
-        const [agency, agents] = await Promise.all([
+        const [agency, agents, agencyAdmins] = await Promise.all([
             prisma.agency.findUnique({
                 where: { id: effectiveAgencyId },
                 select: {
                     id: true,
                     name: true,
                     enableWhatsAppPlanner: true,
+                    whatsAppPlannerAgents: true,
+                    whatsAppPlannerPhones: true,
                 }
             }),
             prisma.user.findMany({
@@ -2981,22 +3004,68 @@ export async function getAdminWhatsAppSettings() {
                     email: true,
                 },
                 orderBy: { name: "asc" }
+            }),
+            prisma.user.findMany({
+                where: {
+                    agencyId: effectiveAgencyId,
+                    role: { in: ["ADMIN", "SUPER_ADMIN"] },
+                    active: true,
+                },
+                select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                    role: true,
+                    phone: true,
+                    waNotify10am: true,
+                    waNotify6pm: true,
+                    waSelectedAgents: true,
+                },
+                orderBy: { createdAt: "asc" }
             })
         ]);
 
+        // Determine which admin's settings to display:
+        // - If Super Admin passed a specific targetAdminId from this agency, use that admin.
+        // - If Super Admin is impersonating another agency, default to that agency's first ADMIN.
+        // - Otherwise use currentUser.
+        let targetAdmin = currentUser;
+        if (currentUser.role === "SUPER_ADMIN") {
+            if (targetAdminId) {
+                const found = agencyAdmins.find(a => a.id === targetAdminId);
+                if (found) targetAdmin = { ...found, agencyId: effectiveAgencyId };
+            } else if (effectiveAgencyId !== currentUser.agencyId && agencyAdmins.length > 0) {
+                targetAdmin = { ...agencyAdmins[0], agencyId: effectiveAgencyId };
+            }
+        }
+
         const validAgentIdSet = new Set(agents.map(a => a.id));
-        const savedAgentIds = (currentUser.waSelectedAgents || "")
+        const rawSelectedStr = targetAdmin.waSelectedAgents || agency?.whatsAppPlannerAgents || "";
+        const savedAgentIds = rawSelectedStr
             .split(",")
             .map(id => id.trim())
             .filter(id => id !== "" && validAgentIdSet.has(id));
 
+        const fallbackPhone = agency?.whatsAppPlannerPhones
+            ? agency.whatsAppPlannerPhones.split(",")[0]?.trim() || ""
+            : "";
+
         return {
             success: true,
+            isSuperAdmin: currentUser.role === "SUPER_ADMIN",
+            agencyId: effectiveAgencyId,
             agencyAuthorized: Boolean(agency?.enableWhatsAppPlanner),
             agencyName: agency?.name || "Tu Agencia",
-            waNotify10am: Boolean(currentUser.waNotify10am),
-            waNotify6pm: Boolean(currentUser.waNotify6pm),
-            phone: currentUser.phone || "",
+            activeAdminId: targetAdmin.id,
+            activeAdminName: targetAdmin.name || targetAdmin.email,
+            agencyAdmins: agencyAdmins.map(a => ({
+                id: a.id,
+                name: a.name || a.email,
+                email: a.email,
+            })),
+            waNotify10am: Boolean(targetAdmin.waNotify10am),
+            waNotify6pm: Boolean(targetAdmin.waNotify6pm),
+            phone: targetAdmin.phone || fallbackPhone,
             selectedAgents: savedAgentIds,
             agents,
         };
@@ -3007,6 +3076,8 @@ export async function getAdminWhatsAppSettings() {
 }
 
 export async function saveAdminWhatsAppSettings(data: {
+    targetAdminId?: string;
+    agencyAuthorized?: boolean;
     waNotify10am: boolean;
     waNotify6pm: boolean;
     phone: string;
@@ -3029,12 +3100,29 @@ export async function saveAdminWhatsAppSettings(data: {
             return { success: false, message: "Permisos insuficientes" };
         }
 
-        const effectiveAgencyId = (session?.user?.agencyId || currentUser.agencyId || "aacom") as string;
+        const impersonateId = currentUser.role === 'SUPER_ADMIN' ? cookies().get('impersonateAgencyId')?.value : undefined;
+        const effectiveAgencyId = (impersonateId || session?.user?.agencyId || currentUser.agencyId || "aacom") as string;
 
-        const agency = await prisma.agency.findUnique({
+        let agency = await prisma.agency.findUnique({
             where: { id: effectiveAgencyId },
             select: { id: true, enableWhatsAppPlanner: true }
         });
+
+        // Allow Super Admin to toggle agency WhatsApp authorization directly from this panel
+        if (currentUser.role === 'SUPER_ADMIN' && typeof data.agencyAuthorized === 'boolean' && agency) {
+            agency = await prisma.agency.update({
+                where: { id: effectiveAgencyId },
+                data: { enableWhatsAppPlanner: data.agencyAuthorized },
+                select: { id: true, enableWhatsAppPlanner: true }
+            });
+        } else if (currentUser.role === 'SUPER_ADMIN' && (data.waNotify10am || data.waNotify6pm) && agency && !agency.enableWhatsAppPlanner) {
+            // Auto-authorize agency if Super Admin is turning on notifications for this agency
+            agency = await prisma.agency.update({
+                where: { id: effectiveAgencyId },
+                data: { enableWhatsAppPlanner: true },
+                select: { id: true, enableWhatsAppPlanner: true }
+            });
+        }
 
         if (!agency?.enableWhatsAppPlanner && currentUser.role !== 'SUPER_ADMIN') {
             return {
@@ -3057,7 +3145,7 @@ export async function saveAdminWhatsAppSettings(data: {
         if ((data.waNotify10am || data.waNotify6pm) && !cleanPhone) {
             return {
                 success: false,
-                message: "Debes ingresar tu número de teléfono con código de país (ej. +52...) para recibir reportes por WhatsApp."
+                message: "Debes ingresar el número de teléfono con código de país (ej. +52...) para recibir reportes por WhatsApp."
             };
         }
 
@@ -3076,12 +3164,39 @@ export async function saveAdminWhatsAppSettings(data: {
         if ((data.waNotify10am || data.waNotify6pm) && filteredAgentIds.length === 0) {
             return {
                 success: false,
-                message: "Selecciona al menos un agente para incluir en tus reportes de WhatsApp."
+                message: "Selecciona al menos un agente para incluir en los reportes de WhatsApp."
             };
         }
 
+        // Resolve which admin user record to update
+        let targetUserId = currentUser.id;
+        if (currentUser.role === 'SUPER_ADMIN') {
+            if (data.targetAdminId) {
+                const targetAdmin = await prisma.user.findFirst({
+                    where: {
+                        id: data.targetAdminId,
+                        agencyId: effectiveAgencyId,
+                        role: { in: ["ADMIN", "SUPER_ADMIN"] }
+                    },
+                    select: { id: true }
+                });
+                if (targetAdmin) targetUserId = targetAdmin.id;
+            } else if (effectiveAgencyId !== currentUser.agencyId) {
+                const firstAgencyAdmin = await prisma.user.findFirst({
+                    where: {
+                        agencyId: effectiveAgencyId,
+                        role: { in: ["ADMIN", "SUPER_ADMIN"] },
+                        active: true,
+                    },
+                    orderBy: { createdAt: "asc" },
+                    select: { id: true }
+                });
+                if (firstAgencyAdmin) targetUserId = firstAgencyAdmin.id;
+            }
+        }
+
         await prisma.user.update({
-            where: { id: currentUser.id },
+            where: { id: targetUserId },
             data: {
                 waNotify10am: Boolean(data.waNotify10am),
                 waNotify6pm: Boolean(data.waNotify6pm),
@@ -3091,8 +3206,10 @@ export async function saveAdminWhatsAppSettings(data: {
         });
 
         revalidatePath("/admin");
+        revalidatePath("/agencias");
         return {
             success: true,
+            agencyAuthorized: Boolean(agency?.enableWhatsAppPlanner),
             phone: cleanPhone,
             selectedAgents: filteredAgentIds,
             message: "Configuración de WhatsApp guardada correctamente."

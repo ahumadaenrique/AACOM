@@ -36,7 +36,7 @@ import {
 export default function AdminSatisfactionSurveys() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<any>(null);
-  const [selectedAgency, setSelectedAgency] = useState<string>("aacom");
+  const [selectedAgency, setSelectedAgency] = useState<string>("DEFAULT");
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [selectedAgentId, setSelectedAgentId] = useState<string>("ALL");
@@ -48,6 +48,9 @@ export default function AdminSatisfactionSurveys() {
       const res = await getAdminSatisfactionData(selectedAgency);
       if (res.success) {
         setData(res);
+        if (selectedAgency === "DEFAULT" && (res as any).selectedAgencyId) {
+          setSelectedAgency((res as any).selectedAgencyId);
+        }
       } else {
         alert(res.message || "Error al cargar datos.");
       }

@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { SurveyReferralInput, CreateSurveyInput, REFERRAL_STATUSES } from "@/lib/satisfactionConstants";
 export type { SurveyReferralInput, CreateSurveyInput };
 
@@ -322,9 +323,11 @@ export async function getAdminSatisfactionData(filterAgencyId?: string) {
     }
 
     // Agency scoping (SaaS Multi-tenancy Isolation)
+    const impersonateId = user.role === "SUPER_ADMIN" ? cookies().get("impersonateAgencyId")?.value : undefined;
+    const defaultAgencyId = (impersonateId || (session.user as any)?.agencyId || user.agencyId || "aacom") as string;
     const effectiveAgencyId = (user.role === "SUPER_ADMIN" && filterAgencyId && filterAgencyId !== "ALL" && filterAgencyId !== "DEFAULT")
       ? filterAgencyId
-      : (user.agencyId || "aacom");
+      : defaultAgencyId;
 
     const whereScope = { agencyId: effectiveAgencyId };
 

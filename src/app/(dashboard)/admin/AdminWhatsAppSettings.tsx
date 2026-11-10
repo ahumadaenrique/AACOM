@@ -6,12 +6,16 @@ import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { CheckSquare, Square, Loader2, MessageSquare, Lock, CheckCircle2 } from "lucide-react";
+import { CheckSquare, Square, Loader2, MessageSquare, Lock, CheckCircle2, ShieldCheck, Users } from "lucide-react";
 
 export default function AdminWhatsAppSettings() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+  const [agencyName, setAgencyName] = useState("");
   const [agencyAuthorized, setAgencyAuthorized] = useState(false);
+  const [agencyAdmins, setAgencyAdmins] = useState<{ id: string; name: string; email: string }[]>([]);
+  const [selectedAdminId, setSelectedAdminId] = useState<string>("");
   const [waNotify10am, setWaNotify10am] = useState(false);
   const [waNotify6pm, setWaNotify6pm] = useState(false);
   const [phone, setPhone] = useState("");
@@ -23,12 +27,17 @@ export default function AdminWhatsAppSettings() {
     loadSettings();
   }, []);
 
-  const loadSettings = async () => {
+  const loadSettings = async (targetAdminId?: string) => {
     setLoading(true);
+    setStatusMsg(null);
     try {
-      const res = await getAdminWhatsAppSettings();
+      const res = await getAdminWhatsAppSettings(targetAdminId);
       if (res.success) {
+        setIsSuperAdmin(Boolean(res.isSuperAdmin));
+        setAgencyName(res.agencyName || "Tu Agencia");
         setAgencyAuthorized(Boolean(res.agencyAuthorized));
+        setAgencyAdmins(res.agencyAdmins || []);
+        setSelectedAdminId(res.activeAdminId || "");
         setWaNotify10am(Boolean(res.waNotify10am));
         setWaNotify6pm(Boolean(res.waNotify6pm));
         setPhone(res.phone || "");
@@ -40,6 +49,11 @@ export default function AdminWhatsAppSettings() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleAdminChange = (newAdminId: string) => {
+    setSelectedAdminId(newAdminId);
+    loadSettings(newAdminId);
   };
 
   const handleToggleAgent = (agentId: string) => {
@@ -61,12 +75,15 @@ export default function AdminWhatsAppSettings() {
     setStatusMsg(null);
     try {
       const res = await saveAdminWhatsAppSettings({
+        targetAdminId: selectedAdminId || undefined,
+        agencyAuthorized: isSuperAdmin ? agencyAuthorized : undefined,
         waNotify10am,
         waNotify6pm,
         phone,
         selectedAgents,
       });
       if (res.success) {
+        if (typeof res.agencyAuthorized === "boolean") setAgencyAuthorized(res.agencyAuthorized);
         if (res.phone !== undefined) setPhone(res.phone);
         if (res.selectedAgents) setSelectedAgents(res.selectedAgents);
         setStatusMsg({
@@ -98,7 +115,7 @@ export default function AdminWhatsAppSettings() {
     );
   }
 
-  if (!agencyAuthorized) {
+  if (!agencyAuthorized && !isSuperAdmin) {
     return (
       <div className="p-5 border border-slate-200 rounded-xl bg-slate-50/80 flex items-start gap-3">
         <div className="p-2 rounded-lg bg-slate-200/70 text-slate-600 shrink-0 mt-0.5">
@@ -118,7 +135,51 @@ export default function AdminWhatsAppSettings() {
 
   return (
     <div className="flex flex-col p-5 border border-green-200 rounded-xl bg-green-50/30 gap-4 shadow-sm">
-      {/* Header & Switch 10:00 AM */}
+      {/* Cabecera de Agencia y Control Super Admin */}
+      <div className="flex flex-col gap-3 pb-3 border-b border-green-200/70">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 text-xs font-bold text-green-900 bg-green-100/80 border border-green-300 px-2.5 py-1 rounded-full">
+            <ShieldCheck className="h-3.5 w-3.5 text-green-700" />
+            Agencia activa: {agencyName}
+          </span>
+
+          {isSuperAdmin && (
+            <div className="flex items-center gap-2 bg-white/90 px-3 py-1.5 rounded-lg border border-green-300">
+              <Label htmlFor="superAdminAuthorizeWa" className="text-xs font-bold text-green-900 cursor-pointer">
+                Autorizar WhatsApp en esta Agencia
+              </Label>
+              <Switch
+                id="superAdminAuthorizeWa"
+                checked={agencyAuthorized}
+                onCheckedChange={setAgencyAuthorized}
+              />
+            </div>
+          )}
+        </div>
+
+        {isSuperAdmin && agencyAdmins.length > 0 && (
+          <div className="space-y-1">
+            <Label htmlFor="selectAgencyAdmin" className="text-xs font-bold text-green-900 flex items-center gap-1.5">
+              <Users className="h-3.5 w-3.5 text-green-700" />
+              Configurando Administrador de {agencyName}:
+            </Label>
+            <select
+              id="selectAgencyAdmin"
+              value={selectedAdminId}
+              onChange={(e) => handleAdminChange(e.target.value)}
+              className="w-full h-9 rounded-md border border-green-300 bg-white px-3 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-green-600"
+            >
+              {agencyAdmins.map((adm) => (
+                <option key={adm.id} value={adm.id}>
+                  {adm.name} ({adm.email})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+      </div>
+
+      {/* Switch 10:00 AM */}
       <div className="flex items-center justify-between gap-4">
         <div className="space-y-0.5">
           <Label
@@ -164,7 +225,7 @@ export default function AdminWhatsAppSettings() {
       <div className="flex flex-col gap-4 pt-3 border-t border-green-200/60">
         <div className="space-y-1.5">
           <Label htmlFor="adminWaPhone" className="text-xs text-green-900 font-bold">
-            Tu Teléfono Registrado (WhatsApp Destino)
+            Teléfono Registrado del Administrador (WhatsApp Destino)
           </Label>
           <Input
             id="adminWaPhone"
@@ -174,7 +235,7 @@ export default function AdminWhatsAppSettings() {
             className="h-9 text-sm bg-white border-green-200 focus-visible:ring-green-600"
           />
           <p className="text-[11px] text-green-700">
-            Los reportes te llegarán directamente a tu número registrado. Debe incluir código de país (ej. +52). Cada administrador de la agencia puede configurar su propio número sin límite.
+            Los reportes llegarán directamente a este número registrado. Debe incluir código de país (ej. +52). Cada administrador de la agencia puede configurar su propio número sin límite.
           </p>
         </div>
 
@@ -197,7 +258,7 @@ export default function AdminWhatsAppSettings() {
           <div className="flex flex-col gap-1 max-h-44 overflow-y-auto border border-green-200 rounded-md p-2 bg-white/80">
             {agents.length === 0 ? (
               <p className="text-xs text-muted-foreground p-2 text-center">
-                No hay agentes activos en tu agencia.
+                No hay agentes activos en {agencyName}.
               </p>
             ) : (
               agents.map((agent) => {
