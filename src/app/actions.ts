@@ -3046,10 +3046,6 @@ export async function getAdminWhatsAppSettings(targetAdminId?: string) {
             .map(id => id.trim())
             .filter(id => id !== "" && validAgentIdSet.has(id));
 
-        const fallbackPhone = agency?.whatsAppPlannerPhones
-            ? agency.whatsAppPlannerPhones.split(",")[0]?.trim() || ""
-            : "";
-
         return {
             success: true,
             isSuperAdmin: currentUser.role === "SUPER_ADMIN",
@@ -3065,7 +3061,7 @@ export async function getAdminWhatsAppSettings(targetAdminId?: string) {
             })),
             waNotify10am: Boolean(targetAdmin.waNotify10am),
             waNotify6pm: Boolean(targetAdmin.waNotify6pm),
-            phone: targetAdmin.phone || fallbackPhone,
+            phone: targetAdmin.phone || "",
             selectedAgents: savedAgentIds,
             agents,
         };
