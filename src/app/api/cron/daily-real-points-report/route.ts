@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { twilioClient } from "@/lib/twilio";
+import { twilioClient, normalizePhoneForTwilio } from "@/lib/twilio";
 import { SALES_ACTIVITIES } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
@@ -63,16 +63,12 @@ export async function GET(request: Request) {
             const recipients: { phone: string; agentIds: Set<string> }[] = [];
 
             for (const admin of admins) {
-                const rawPhone = (admin.phone || "").trim();
+                const formattedPhone = normalizePhoneForTwilio(admin.phone);
                 const agentIds = (admin.waSelectedAgents || "")
                     .split(",")
                     .map(id => id.trim())
                     .filter(Boolean);
-                if (rawPhone && agentIds.length > 0) {
-                    const digitsOnly = rawPhone.replace(/[\s()-]/g, "").replace(/^\+/, "");
-                    const formattedPhone = /^\d{10}$/.test(digitsOnly)
-                        ? `+52${digitsOnly}`
-                        : `+${digitsOnly}`;
+                if (formattedPhone && agentIds.length > 0) {
                     recipients.push({
                         phone: formattedPhone,
                         agentIds: new Set(agentIds),

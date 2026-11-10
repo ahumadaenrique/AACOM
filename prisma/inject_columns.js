@@ -780,6 +780,19 @@ async function injectColumns() {
     await client.query(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "waNotify10am" BOOLEAN NOT NULL DEFAULT false;`);
     await client.query(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "waNotify6pm" BOOLEAN NOT NULL DEFAULT false;`);
     await client.query(`ALTER TABLE "User" ADD COLUMN IF NOT EXISTS "waSelectedAgents" TEXT;`);
+    await client.query(`
+      UPDATE "User"
+      SET "phone" = CASE
+        WHEN LENGTH(REGEXP_REPLACE("phone", '[^0-9]', '', 'g')) = 10
+          THEN '+52' || REGEXP_REPLACE("phone", '[^0-9]', '', 'g')
+        WHEN LENGTH(REGEXP_REPLACE("phone", '[^0-9]', '', 'g')) = 13 AND REGEXP_REPLACE("phone", '[^0-9]', '', 'g') LIKE '521%'
+          THEN '+52' || SUBSTRING(REGEXP_REPLACE("phone", '[^0-9]', '', 'g') FROM 4)
+        WHEN LENGTH(REGEXP_REPLACE("phone", '[^0-9]', '', 'g')) = 12 AND REGEXP_REPLACE("phone", '[^0-9]', '', 'g') LIKE '52%'
+          THEN '+' || REGEXP_REPLACE("phone", '[^0-9]', '', 'g')
+        ELSE "phone"
+      END
+      WHERE "phone" IS NOT NULL AND TRIM("phone") <> '';
+    `);
     const waMigrationRes = await client.query(`SELECT "value" FROM "Setting" WHERE "key" = 'wa_admin_migration_v1';`);
     if (waMigrationRes.rows.length === 0) {
       await client.query(`

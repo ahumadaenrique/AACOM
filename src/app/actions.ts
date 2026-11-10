@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import webpush from "web-push";
 import { parseAgencyModulesConfig, DEFAULT_AGENCY_MODULES_CONFIG, type AgencyModulesConfig } from "@/lib/agencyModules";
+import { normalizePhoneForTwilio } from "@/lib/twilio";
 
 function enforceDemoSafety(session: any) {
     if (session?.user?.id === 'demo-user-id') {
@@ -788,7 +789,7 @@ export async function createAgentUser(data: { name: string; email: string; role:
                 email: normalizedEmail,
                 role: data.role,
                 agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string),
-                phone: data.phone || null,
+                phone: data.phone ? normalizePhoneForTwilio(data.phone) : null,
                 active: data.active !== undefined ? data.active : true,
                 password: hashedPassword,
                 mustChangePassword: true
@@ -2230,7 +2231,7 @@ export async function updateAgentProfile(userId: string, data: { name?: string; 
 
         const updateData: any = {};
         if (data.name !== undefined) updateData.name = data.name;
-        if (data.phone !== undefined) updateData.phone = data.phone;
+        if (data.phone !== undefined) updateData.phone = data.phone ? normalizePhoneForTwilio(data.phone) : "";
         if (data.image !== undefined) updateData.image = data.image; // Base64
         if (data.password !== undefined && data.password.trim() !== '') updateData.password = data.password;
         if (data.active !== undefined && (currentUser.role === 'ADMIN' || currentUser.role === 'SUPER_ADMIN')) updateData.active = data.active;
@@ -3061,7 +3062,7 @@ export async function getAdminWhatsAppSettings(targetAdminId?: string) {
             })),
             waNotify10am: Boolean(targetAdmin.waNotify10am),
             waNotify6pm: Boolean(targetAdmin.waNotify6pm),
-            phone: targetAdmin.phone || "",
+            phone: targetAdmin.phone ? normalizePhoneForTwilio(targetAdmin.phone) : "",
             selectedAgents: savedAgentIds,
             agents,
         };
@@ -3128,15 +3129,7 @@ export async function saveAdminWhatsAppSettings(data: {
         }
 
         // Clean and normalize phone number
-        let cleanPhone = (data.phone || "").trim().replace(/[\s()-]/g, "");
-        if (cleanPhone) {
-            const digitsOnly = cleanPhone.replace(/^\+/, "");
-            if (/^\d{10}$/.test(digitsOnly)) {
-                cleanPhone = `+52${digitsOnly}`;
-            } else if (!cleanPhone.startsWith("+")) {
-                cleanPhone = `+${digitsOnly}`;
-            }
-        }
+        const cleanPhone = normalizePhoneForTwilio(data.phone);
 
         if ((data.waNotify10am || data.waNotify6pm) && !cleanPhone) {
             return {
