@@ -3844,6 +3844,9 @@ export async function saveAgencyMarketInsurers(agencyId: string, insurers: strin
             create: { key: settingKey, value: JSON.stringify(insurers) },
         });
 
+        const { invalidateAllowedInsurersCache } = await import("@/lib/marketCgSearch");
+        invalidateAllowedInsurersCache(agencyId);
+
         return { success: true, allowedInsurers: insurers };
     } catch (error: any) {
         console.error("Error in saveAgencyMarketInsurers:", error);
@@ -3868,6 +3871,9 @@ export async function toggleMarketCgSaasGlobal(enabled: boolean) {
             update: { value: enabled ? "true" : "false" },
             create: { key: "market_cg_saas_enabled", value: enabled ? "true" : "false" },
         });
+
+        const { invalidateAllowedInsurersCache } = await import("@/lib/marketCgSearch");
+        invalidateAllowedInsurersCache();
 
         return { success: true, saasGlobalEnabled: enabled };
     } catch (error: any) {

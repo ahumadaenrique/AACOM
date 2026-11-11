@@ -8,6 +8,8 @@ import {
     uploadGlobalDocument, 
     deleteGlobalDocument,
     toggleAgencyPack,
+    toggleAgencyLibraryInsurer,
+    setAllAgencyLibraryInsurers,
     uploadAgencyDocument,
     deleteAgencyDocument,
     saveAgencyDocumentRecord,
@@ -20,7 +22,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { RefreshCw, Trash2, Upload, FileText, Plus, Folder, AlertCircle, FolderOpen, ChevronRight } from "lucide-react"
+import { RefreshCw, Trash2, Upload, FileText, Plus, Folder, AlertCircle, FolderOpen, ChevronRight, Building2, BookOpen } from "lucide-react"
 
 const CATEGORIES = ["Comercial", "Marketing", "Formatos", "Condiciones generales", "Otros"]
 
@@ -38,17 +40,58 @@ export default function BibliotecaAdmin() {
     // Formularios
     const [newPackName, setNewPackName] = useState("")
     const [newPackDesc, setNewPackDesc] = useState("")
+    const [busyInsurer, setBusyInsurer] = useState<string | null>(null)
 
     const fileInputRef = useRef<{ [key: string]: HTMLInputElement | null }>({})
     const agencyFileRef = useRef<HTMLInputElement | null>(null)
 
-    const loadData = async () => {
-        setLoading(true)
+    const loadData = async (silent: unknown = false) => {
+        const isSilent = silent === true
+        if (!isSilent) setLoading(true)
         const res = await getLibraryData()
         if (res.success) {
             setData(res)
         }
-        setLoading(false)
+        if (!isSilent) setLoading(false)
+    }
+
+    const handleToggleLibraryInsurer = async (insurerName: string, checked: boolean) => {
+        setBusyInsurer(insurerName)
+        setData((prev: any) => {
+            if (!prev) return prev
+            const current: string[] = prev.enabledLibraryInsurers || []
+            const next = checked
+                ? Array.from(new Set([...current, insurerName]))
+                : current.filter((x) => x !== insurerName)
+            return { ...prev, enabledLibraryInsurers: next }
+        })
+        try {
+            const res = await toggleAgencyLibraryInsurer(insurerName, checked)
+            if (!res.success) {
+                alert(res.message || "Error al actualizar compañía")
+                await loadData(true)
+            }
+        } finally {
+            setBusyInsurer(null)
+        }
+    }
+
+    const handleSetAllLibraryInsurers = async (enableAll: boolean) => {
+        setBusyInsurer("__ALL__")
+        setData((prev: any) => {
+            if (!prev) return prev
+            const allNames = (prev.allLibraryInsurers || []).map((i: any) => i.name)
+            return { ...prev, enabledLibraryInsurers: enableAll ? allNames : [] }
+        })
+        try {
+            const res = await setAllAgencyLibraryInsurers(enableAll)
+            if (!res.success) {
+                alert(res.message || "Error al actualizar compañías")
+                await loadData(true)
+            }
+        } finally {
+            setBusyInsurer(null)
+        }
     }
 
     useEffect(() => {
@@ -279,6 +322,92 @@ export default function BibliotecaAdmin() {
                 </Card>
             )}
 
+            {/* VISTA DEL ADMIN: CONDICIONES GENERALES POR COMPAÑÍA EN MI BIBLIOTECA */}
+            <Card className="border shadow-sm">
+                <CardHeader className="bg-slate-50/50 border-b">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div>
+                            <CardTitle className="text-slate-800 flex items-center gap-2">
+                                <BookOpen className="h-5 w-5 text-indigo-600" />
+                                Condiciones Generales por Compañía
+                                {data?.agencyName && (
+                                    <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
+                                        {data.agencyName}
+                                    </span>
+                                )}
+                            </CardTitle>
+                            <CardDescription className="mt-1">
+                                Prende o apaga las aseguradoras cuyos PDFs de Condiciones Generales deseas mostrar en &ldquo;Mi Biblioteca&rdquo; para tu equipo (independiente del Asistente IA).
+                            </CardDescription>
+                        </div>
+                        {(data?.allLibraryInsurers?.length || 0) > 0 && (
+                            <div className="flex items-center gap-2 shrink-0">
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={
+                                        busyInsurer === "__ALL__" ||
+                                        (data?.enabledLibraryInsurers?.length || 0) === (data?.allLibraryInsurers?.length || 0)
+                                    }
+                                    onClick={() => handleSetAllLibraryInsurers(true)}
+                                    className="h-8 text-xs font-semibold"
+                                >
+                                    Activar todas ({data?.allLibraryInsurers?.length || 0})
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    disabled={
+                                        busyInsurer === "__ALL__" ||
+                                        (data?.enabledLibraryInsurers?.length || 0) === 0
+                                    }
+                                    onClick={() => handleSetAllLibraryInsurers(false)}
+                                    className="h-8 text-xs font-semibold text-slate-600"
+                                >
+                                    Apagar todas
+                                </Button>
+                            </div>
+                        )}
+                    </div>
+                </CardHeader>
+                <CardContent className="p-6">
+                    {(data?.allLibraryInsurers?.length || 0) === 0 ? (
+                        <p className="text-sm text-slate-500 italic">No hay compañías cargadas en el catálogo de Condiciones Generales.</p>
+                    ) : (
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                            {data.allLibraryInsurers.map((ins: { name: string; count: number }) => {
+                                const isEnabled = (data?.enabledLibraryInsurers || []).includes(ins.name)
+                                return (
+                                    <div
+                                        key={ins.name}
+                                        className={`p-4 rounded-lg border flex items-start justify-between gap-4 transition-colors ${
+                                            isEnabled ? "bg-teal-50/30 border-teal-200" : "bg-white"
+                                        }`}
+                                    >
+                                        <div>
+                                            <h4 className="font-bold text-sm text-slate-800 flex items-center gap-2">
+                                                <Building2 className={`h-4 w-4 shrink-0 ${isEnabled ? "text-teal-600" : "text-slate-400"}`} />
+                                                {ins.name}
+                                            </h4>
+                                            <p className="text-xs text-slate-500 mt-1">
+                                                {ins.count} {ins.count === 1 ? "PDF incluido" : "PDFs incluidos"}
+                                            </p>
+                                        </div>
+                                        <Switch
+                                            checked={isEnabled}
+                                            disabled={busyInsurer === ins.name || busyInsurer === "__ALL__"}
+                                            onCheckedChange={(checked) => handleToggleLibraryInsurer(ins.name, checked)}
+                                        />
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+
             {/* VISTA DEL ADMIN: SUSCRIPCION A PACKS GLOBALES */}
             <Card className="border shadow-sm">
                 <CardHeader className="bg-slate-50/50 border-b">
@@ -300,7 +429,17 @@ export default function BibliotecaAdmin() {
                                     </div>
                                     <Switch 
                                         checked={isEnabled} 
-                                        onCheckedChange={(checked) => toggleAgencyPack(pack.id, checked).then(loadData)} 
+                                        onCheckedChange={(checked) => {
+                                            setData((prev: any) => {
+                                                if (!prev) return prev
+                                                const cur: string[] = prev.enabledPacksList || []
+                                                const next = checked
+                                                    ? Array.from(new Set([...cur, pack.id]))
+                                                    : cur.filter((id) => id !== pack.id)
+                                                return { ...prev, enabledPacksList: next }
+                                            })
+                                            toggleAgencyPack(pack.id, checked).then(() => loadData(true))
+                                        }} 
                                     />
                                 </div>
                             )

@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { put, del } from "@vercel/blob";
+import { revalidatePath } from "next/cache";
 
 const MAX_AGENCY_STORAGE_BYTES = 80 * 1024 * 1024; // 80 MB
 const ALLOWED_MIME_TYPES = [
@@ -249,19 +250,158 @@ export async function toggleAgencyPack(packId: string, enabled: boolean) {
     if (user?.role !== 'ADMIN' && user?.role !== 'SUPER_ADMIN') return { success: false, message: "No autorizado" };
     if (!user || !((session?.user?.agencyId || user.agencyId) as string)) return { success: false, message: "Sin agencia" };
 
+    const effectiveAgencyId = ((session?.user?.agencyId || user.agencyId) as string);
+
     try {
         if (enabled) {
             await prisma.agencyDocumentPack.upsert({
-                where: { agencyId_packId: { agencyId: ((session?.user?.agencyId || user.agencyId) as string), packId } },
-                create: { agencyId: ((session?.user?.agencyId || user.agencyId) as string), packId },
+                where: { agencyId_packId: { agencyId: effectiveAgencyId, packId } },
+                create: { agencyId: effectiveAgencyId, packId },
                 update: {}
             });
         } else {
             await prisma.agencyDocumentPack.delete({
-                where: { agencyId_packId: { agencyId: ((session?.user?.agencyId || user.agencyId) as string), packId } }
+                where: { agencyId_packId: { agencyId: effectiveAgencyId, packId } }
             });
         }
+        revalidatePath("/documentacion");
+        revalidatePath("/admin");
         return { success: true };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+async function getLibraryEnabledInsurersForAgency(
+    effectiveAgencyId: string,
+    allInsurerNames: string[]
+): Promise<string[]> {
+    const libraryKey = `library_cg_agency_insurers_${effectiveAgencyId}`;
+    const librarySetting = await prisma.setting.findUnique({ where: { key: libraryKey } });
+
+    if (librarySetting && librarySetting.value) {
+        try {
+            const parsed = JSON.parse(librarySetting.value);
+            if (Array.isArray(parsed)) {
+                return parsed.filter((x): x is string => typeof x === "string");
+            }
+        } catch {
+            // ignore malformed json
+        }
+    }
+
+    // Valor inicial antes de que el Admin personalice los switches de Biblioteca:
+    // - Para la agencia principal ("aacom"): todas las aseguradoras cargadas encendidas por defecto.
+    // - Para otras promotorías: hereda inicialmente lo que ya tenían configurado en market_cg_agency_insurers_${agencyId}
+    //   (ej. RC Mejorando Vidas conserva GNP Seguros + Insignia Life), y a partir de aquí Biblioteca y Asistente IA son independientes.
+    if (effectiveAgencyId === "aacom") {
+        return [...allInsurerNames];
+    }
+
+    const legacyAiSetting = await prisma.setting.findUnique({
+        where: { key: `market_cg_agency_insurers_${effectiveAgencyId}` },
+    });
+    if (legacyAiSetting && legacyAiSetting.value) {
+        try {
+            const parsed = JSON.parse(legacyAiSetting.value);
+            if (Array.isArray(parsed)) {
+                return parsed.filter((x): x is string => typeof x === "string");
+            }
+        } catch {
+            // ignore malformed json
+        }
+    }
+
+    return [];
+}
+
+export async function toggleAgencyLibraryInsurer(aseguradora: string, enabled: boolean) {
+    const session = await auth();
+    const user = session?.user?.email ? await prisma.user.findUnique({ where: { email: session.user.email } }) : null;
+    if (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") {
+        return { success: false, message: "No autorizado" };
+    }
+    const effectiveAgencyId = ((session?.user?.agencyId || user?.agencyId) as string);
+    if (!user || !effectiveAgencyId) {
+        return { success: false, message: "Sin agencia asignada" };
+    }
+
+    try {
+        const { ensureMarketCgSeeded } = await import("@/lib/marketCgSearch");
+        await ensureMarketCgSeeded();
+
+        const grouped = await prisma.marketCgDocument.groupBy({
+            by: ["aseguradora"],
+            _count: { id: true },
+        });
+        const allInsurerNames = grouped
+            .map((g) => g.aseguradora)
+            .filter(Boolean)
+            .sort((a, b) => a.localeCompare(b));
+
+        const current = await getLibraryEnabledInsurersForAgency(effectiveAgencyId, allInsurerNames);
+        const set = new Set(current);
+        if (enabled) {
+            set.add(aseguradora);
+        } else {
+            set.delete(aseguradora);
+        }
+        const nextList = Array.from(set);
+
+        const libraryKey = `library_cg_agency_insurers_${effectiveAgencyId}`;
+        await prisma.setting.upsert({
+            where: { key: libraryKey },
+            update: { value: JSON.stringify(nextList) },
+            create: { key: libraryKey, value: JSON.stringify(nextList) },
+        });
+
+        revalidatePath("/documentacion");
+        revalidatePath("/admin");
+
+        return { success: true, enabledLibraryInsurers: nextList };
+    } catch (e: any) {
+        return { success: false, message: e.message };
+    }
+}
+
+export async function setAllAgencyLibraryInsurers(enabled: boolean) {
+    const session = await auth();
+    const user = session?.user?.email ? await prisma.user.findUnique({ where: { email: session.user.email } }) : null;
+    if (user?.role !== "ADMIN" && user?.role !== "SUPER_ADMIN") {
+        return { success: false, message: "No autorizado" };
+    }
+    const effectiveAgencyId = ((session?.user?.agencyId || user?.agencyId) as string);
+    if (!user || !effectiveAgencyId) {
+        return { success: false, message: "Sin agencia asignada" };
+    }
+
+    try {
+        const { ensureMarketCgSeeded } = await import("@/lib/marketCgSearch");
+        await ensureMarketCgSeeded();
+
+        let nextList: string[] = [];
+        if (enabled) {
+            const grouped = await prisma.marketCgDocument.groupBy({
+                by: ["aseguradora"],
+                _count: { id: true },
+            });
+            nextList = grouped
+                .map((g) => g.aseguradora)
+                .filter(Boolean)
+                .sort((a, b) => a.localeCompare(b));
+        }
+
+        const libraryKey = `library_cg_agency_insurers_${effectiveAgencyId}`;
+        await prisma.setting.upsert({
+            where: { key: libraryKey },
+            update: { value: JSON.stringify(nextList) },
+            create: { key: libraryKey, value: JSON.stringify(nextList) },
+        });
+
+        revalidatePath("/documentacion");
+        revalidatePath("/admin");
+
+        return { success: true, enabledLibraryInsurers: nextList };
     } catch (e: any) {
         return { success: false, message: e.message };
     }
@@ -277,38 +417,55 @@ export async function getLibraryData() {
     if (!user || !((session?.user?.agencyId || user?.agencyId) as string)) return { success: false, message: "No autenticado", globalPacks: [], myPacks: [], agencyDocs: [], storage: null };
 
     try {
-        // SUPER ADMIN: Ve todos los packs
-        const isSuperAdmin = user.role === 'SUPER_ADMIN';
-        const isAdmin = user.role === 'ADMIN';
-
-        const allPacks = await prisma.documentPack.findMany({
-            include: { documents: true },
-            orderBy: { createdAt: 'desc' }
-        });
-
-        const enabledPacksMap = await prisma.agencyDocumentPack.findMany({
-            where: { agencyId: ((session?.user?.agencyId || user.agencyId) as string) }
-        }).then(res => new Set(res.map(r => r.packId)));
-
-        const agencyDocs = await prisma.agencyDocument.findMany({
-            where: { agencyId: ((session?.user?.agencyId || user.agencyId) as string) },
-            orderBy: { createdAt: 'desc' }
-        });
-
-        // Calculo de almacenamiento
         const effectiveAgencyId = ((session?.user?.agencyId || user.agencyId) as string);
-        const { usedBytes, maxBytes } = await getAgencyStorageUsage(effectiveAgencyId);
-        const { ensureMarketCgSeeded, getAllowedInsurersForAgency } = await import("@/lib/marketCgSearch");
+
+        const { ensureMarketCgSeeded } = await import("@/lib/marketCgSearch");
         await ensureMarketCgSeeded();
-        const isMainAgencyContext = effectiveAgencyId === "aacom";
-        const allowedInsurers = await getAllowedInsurersForAgency(effectiveAgencyId, isMainAgencyContext && isSuperAdmin);
+
+        const [allPacks, enabledPacksRows, agencyDocs, storageInfo, insurerGroups, activeAgency] = await Promise.all([
+            prisma.documentPack.findMany({
+                include: { documents: true },
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.agencyDocumentPack.findMany({
+                where: { agencyId: effectiveAgencyId }
+            }),
+            prisma.agencyDocument.findMany({
+                where: { agencyId: effectiveAgencyId },
+                orderBy: { createdAt: 'desc' }
+            }),
+            getAgencyStorageUsage(effectiveAgencyId),
+            prisma.marketCgDocument.groupBy({
+                by: ["aseguradora"],
+                _count: { id: true },
+            }),
+            prisma.agency.findUnique({
+                where: { id: effectiveAgencyId },
+                select: { id: true, name: true },
+            }),
+        ]);
+
+        const enabledPacksMap = new Set(enabledPacksRows.map((r) => r.packId));
+
+        const allLibraryInsurers = insurerGroups
+            .filter((g) => Boolean(g.aseguradora))
+            .map((g) => ({
+                name: g.aseguradora,
+                count: g._count.id,
+            }))
+            .sort((a, b) => a.name.localeCompare(b.name));
+
+        const allInsurerNames = allLibraryInsurers.map((i) => i.name);
+        const enabledLibraryInsurers = await getLibraryEnabledInsurersForAgency(
+            effectiveAgencyId,
+            allInsurerNames
+        );
+
         let marketCgDocs: any[] = [];
-        if (allowedInsurers === "ALL" || (Array.isArray(allowedInsurers) && allowedInsurers.length > 0)) {
+        if (enabledLibraryInsurers.length > 0) {
             marketCgDocs = await prisma.marketCgDocument.findMany({
                 where: {
-                    active: true,
-                    ...(isMainAgencyContext ? {} : { isGlobalAuthorized: true }),
-                    ...(Array.isArray(allowedInsurers) ? { aseguradora: { in: allowedInsurers } } : {}),
+                    aseguradora: { in: enabledLibraryInsurers },
                 },
                 orderBy: [{ aseguradora: "asc" }, { ramo: "asc" }, { year: "desc" }, { producto: "asc" }],
                 select: {
@@ -328,9 +485,12 @@ export async function getLibraryData() {
             success: true,
             allPacks, // Lista completa (Sirve para Super Admin, y para Admin para prender/apagar)
             enabledPacksList: Array.from(enabledPacksMap), // Cuales packs encendió la agencia
+            allLibraryInsurers, // Todas las compañías de Condiciones Generales cargadas (para switches de Admin)
+            enabledLibraryInsurers, // Compañías encendidas en Biblioteca para esta agencia
             agencyDocs, // Documentos privados
-            marketCgDocs, // Condiciones Generales de Aseguradoras autorizadas para la agencia
-            storage: { usedBytes, maxBytes },
+            marketCgDocs, // PDFs de Condiciones Generales visibles en Mi Biblioteca
+            agencyName: activeAgency?.name || "",
+            storage: { usedBytes: storageInfo.usedBytes, maxBytes: storageInfo.maxBytes },
             role: user.role
         };
     } catch (e: any) {

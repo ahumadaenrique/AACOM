@@ -35,8 +35,16 @@ let isSeeded = false;
 const allowedInsurersCache = new Map<string, { value: string[] | "ALL"; expiresAt: number }>();
 const ALLOWED_INSURERS_TTL_MS = 60_000;
 
+export function invalidateAllowedInsurersCache(agencyId?: string): void {
+    if (agencyId) {
+        allowedInsurersCache.delete(`agency:${agencyId}`);
+    } else {
+        allowedInsurersCache.clear();
+    }
+}
+
 /**
- * Garantiza que la tabla market_cg_documents esté sembrada en cualquier rama de base de datos (Dev o Prod).
+ * Garantiza que la tabla market_cg_documents esté sembrada y con todas sus URLs de PDF sincronizadas en cualquier rama de base de datos (Dev o Prod).
  */
 export async function ensureMarketCgSeeded(): Promise<void> {
     if (isSeeded) return;
@@ -69,18 +77,28 @@ export async function ensureMarketCgSeeded(): Promise<void> {
                 });
             }
 
-            const count = await prisma.marketCgDocument.count();
-            if (count > 0) {
+            const [count, urlSyncFlag] = await Promise.all([
+                prisma.marketCgDocument.count(),
+                prisma.setting.findUnique({ where: { key: "market_cg_catalog_urls_sync_v2" } }),
+            ]);
+
+            if (count > 0 && urlSyncFlag?.value === "true") {
                 isSeeded = true;
                 return;
             }
 
             const catalogPath = path.join(process.cwd(), "prisma", "market_cg_catalog.json");
-            if (!fs.existsSync(catalogPath)) return;
+            if (!fs.existsSync(catalogPath)) {
+                isSeeded = true;
+                return;
+            }
 
             const raw = fs.readFileSync(catalogPath, "utf8");
             const catalog = JSON.parse(raw);
-            if (!Array.isArray(catalog) || catalog.length === 0) return;
+            if (!Array.isArray(catalog) || catalog.length === 0) {
+                isSeeded = true;
+                return;
+            }
 
             const docRows = catalog.map((d: any) => ({
                 id: d.id,
@@ -122,6 +140,37 @@ export async function ensureMarketCgSeeded(): Promise<void> {
                     skipDuplicates: true,
                 });
             }
+
+            // Rellenar downloadUrl / productPageUrl si alguna fila previa de BD quedó sin liga de PDF
+            const missingUrlDocs = await prisma.marketCgDocument.findMany({
+                where: { OR: [{ downloadUrl: null }, { downloadUrl: "" }] },
+                select: { id: true, fileKey: true },
+            });
+            if (missingUrlDocs.length > 0) {
+                const catalogByKey = new Map<string, any>();
+                for (const d of catalog) {
+                    if (d.fileKey) catalogByKey.set(d.fileKey, d);
+                }
+                for (const row of missingUrlDocs) {
+                    const match = catalogByKey.get(row.fileKey);
+                    if (match && (match.downloadUrl || match.productPageUrl)) {
+                        await prisma.marketCgDocument.update({
+                            where: { id: row.id },
+                            data: {
+                                downloadUrl: match.downloadUrl || null,
+                                productPageUrl: match.productPageUrl || null,
+                            },
+                        });
+                    }
+                }
+            }
+
+            await prisma.setting.upsert({
+                where: { key: "market_cg_catalog_urls_sync_v2" },
+                update: { value: "true" },
+                create: { key: "market_cg_catalog_urls_sync_v2", value: "true" },
+            });
+
             isSeeded = true;
         } catch (err) {
             console.error("Error in ensureMarketCgSeeded:", err);

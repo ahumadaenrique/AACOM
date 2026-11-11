@@ -103,6 +103,7 @@ export default function AgentLibraryClient({ agencyName }: { agencyName: string 
     // Filtrar packs globales para que solo vea los que su admin prendió
     const enabledPacks = data?.allPacks?.filter((p: any) => data?.enabledPacksList?.includes(p.id)) || []
     const agencyDocs = data?.agencyDocs || []
+    const displayAgencyName = data?.agencyName || agencyName
 
     return (
         <div className="space-y-12 animate-in fade-in duration-500">
@@ -122,7 +123,7 @@ export default function AgentLibraryClient({ agencyName }: { agencyName: string 
                                 </Badge>
                             </div>
                             <p className="text-sm text-slate-500">
-                                Catálogo oficial de Condiciones Generales (CNSF) de las compañías habilitadas para {agencyName}.
+                                Catálogo oficial de Condiciones Generales (CNSF) de las compañías habilitadas para {displayAgencyName}.
                             </p>
                         </div>
                     </div>
@@ -316,7 +317,7 @@ export default function AgentLibraryClient({ agencyName }: { agencyName: string 
                         <FileText className="h-5 w-5 text-teal-700" />
                     </div>
                     <div>
-                        <h2 className="text-xl font-bold text-slate-800">Documentos de {agencyName}</h2>
+                        <h2 className="text-xl font-bold text-slate-800">Documentos de {displayAgencyName}</h2>
                         <p className="text-sm text-slate-500">Políticas internas, guías y formatos exclusivos de tu promotoría.</p>
                     </div>
                 </div>
