@@ -53,10 +53,15 @@ export default async function PortalClientesHubPage() {
       orderBy: { name: "asc" },
     }),
     (prisma as any).clientPortalItem
-      ? (prisma as any).clientPortalItem.findMany({
-          where: { userId: currentUser.id, isTemplate: true },
-          orderBy: { createdAt: "desc" },
-        })
+      ? (prisma as any).clientPortalItem
+          .findMany({
+            where: { userId: currentUser.id, isTemplate: true },
+            orderBy: { createdAt: "desc" },
+          })
+          .catch((err: any) => {
+            console.error("Error fetching agentTemplates in portal-clientes:", err);
+            return [];
+          })
       : Promise.resolve([]),
   ]);
 

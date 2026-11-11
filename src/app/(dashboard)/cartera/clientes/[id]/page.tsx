@@ -133,16 +133,26 @@ export default async function ClienteDetalle({
   const blindaje = analyzeClientBlindaje(client, adnDiagnostics, cotizaciones);
   const [clientPortalItems, agentTemplates] = await Promise.all([
     (prisma as any).clientPortalItem
-      ? (prisma as any).clientPortalItem.findMany({
-          where: { clientId: client.id },
-          orderBy: { createdAt: "desc" },
-        })
+      ? (prisma as any).clientPortalItem
+          .findMany({
+            where: { clientId: client.id },
+            orderBy: { createdAt: "desc" },
+          })
+          .catch((err: any) => {
+            console.error("Error fetching clientPortalItems:", err);
+            return [];
+          })
       : Promise.resolve([]),
     (prisma as any).clientPortalItem
-      ? (prisma as any).clientPortalItem.findMany({
-          where: { userId: session.user.id, isTemplate: true },
-          orderBy: { createdAt: "desc" },
-        })
+      ? (prisma as any).clientPortalItem
+          .findMany({
+            where: { userId: session.user.id, isTemplate: true },
+            orderBy: { createdAt: "desc" },
+          })
+          .catch((err: any) => {
+            console.error("Error fetching agentTemplates:", err);
+            return [];
+          })
       : Promise.resolve([]),
   ]);
   const ageInfo = calculateClientAgeInfo(client.birthDate);

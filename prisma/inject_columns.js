@@ -770,7 +770,12 @@ async function injectColumns() {
       );`,
       `CREATE INDEX IF NOT EXISTS "ClientPortalItem_clientId_idx" ON "ClientPortalItem"("clientId");`,
       `CREATE INDEX IF NOT EXISTS "ClientPortalItem_agencyId_idx" ON "ClientPortalItem"("agencyId");`,
-      `CREATE INDEX IF NOT EXISTS "ClientPortalItem_userId_idx" ON "ClientPortalItem"("userId");`
+      `CREATE INDEX IF NOT EXISTS "ClientPortalItem_userId_idx" ON "ClientPortalItem"("userId");`,
+      `ALTER TABLE "ClientPortalItem" ADD COLUMN IF NOT EXISTS "isTemplate" BOOLEAN NOT NULL DEFAULT false;`,
+      `ALTER TABLE "ClientPortalItem" ADD COLUMN IF NOT EXISTS "description" TEXT;`,
+      `ALTER TABLE "ClientPortalItem" ADD COLUMN IF NOT EXISTS "emergencyPhone" TEXT;`,
+      `ALTER TABLE "ClientPortalItem" ADD COLUMN IF NOT EXISTS "externalUrl" TEXT;`,
+      `ALTER TABLE "ClientPortalItem" ALTER COLUMN "clientId" DROP NOT NULL;`
     ];
     for (const q of soloAgentAndPortalQueries) {
       await client.query(q);
