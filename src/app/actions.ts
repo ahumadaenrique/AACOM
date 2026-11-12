@@ -1464,15 +1464,16 @@ export async function getDailyActivitySummary() {
             }
         });
 
-        // Recuperar tambiÃ©n el plan (DailyRecords con planned > 0 para hoy)
-        const startOfDay = new Date();
-        startOfDay.setHours(0, 0, 0, 0);
+        // Recuperar también el plan (DailyRecords con planned > 0 para hoy en zona horaria CDMX)
+        const cdmxDayStart = new Date(`${dateStr}T00:00:00.000Z`);
+        const cdmxDayEnd = new Date(`${dateStr}T23:59:59.999Z`);
 
         const dailyRecords = await prisma.dailyRecord.findMany({
             where: {
                 userId: user.id,
                 date: {
-                    gte: startOfDay
+                    gte: cdmxDayStart,
+                    lte: cdmxDayEnd,
                 }
             }
         });
@@ -1515,24 +1516,12 @@ export async function saveDailyPlan(plan: Record<string, number>) {
             return { success: false, message: "Usuario no encontrado" };
         }
 
-        const date = new Date();
-        date.setHours(0, 0, 0, 0);
+        const cdmxDateStr = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
+        const date = new Date(`${cdmxDateStr}T00:00:00.000Z`);
 
-        // Nombres y puntos de actividades por defecto
-        const activityDefinitions: Record<string, {name: string, value: number}> = {
-            "1": { name: "Llamada de contacto", value: 1 },
-            "2": { name: "Cita agendada", value: 3 },
-            "3": { name: "Cita Efectiva (ANF)", value: 5 },
-            "4": { name: "Cierre", value: 10 },
-            "5": { name: "Recluta", value: 10 },
-            "6": { name: "PÃ³liza Emitida", value: 10 },
-            "7": { name: "Referidos (3)", value: 1 },
-        };
-
-        // Guardar cada plan
+        // Guardar cada plan usando el catálogo oficial SALES_ACTIVITIES
         for (const [activityId, plannedCount] of Object.entries(plan)) {
-            // Asegurar que la Actividad exista en la BD (para satisfacer llave forÃ¡nea)
-            const def = activityDefinitions[activityId];
+            const def = SALES_ACTIVITIES.find((a) => a.id === activityId);
             if (!def) continue;
 
             await prisma.activity.upsert({
@@ -1557,7 +1546,8 @@ export async function saveDailyPlan(plan: Record<string, number>) {
             await prisma.dailyRecord.upsert({
                 where: uniqueQuery,
                 update: {
-                    planned: plannedCount
+                    planned: plannedCount,
+                    agencyId: user.agencyId,
                 },
                 create: {
                     userId: user.id,
@@ -1570,7 +1560,7 @@ export async function saveDailyPlan(plan: Record<string, number>) {
             });
         }
 
-        return { success: true, message: "PlaneaciÃ³n guardada exitosamente" };
+        return { success: true, message: "Planeación guardada exitosamente" };
     } catch (error: any) {
         console.error("Error saving daily plan:", error);
         return { success: false, message: error.message };
@@ -2119,7 +2109,7 @@ export async function deleteRankingAd() {
 export async function getAdminActivityReport(userId?: string, startDate?: string, endDate?: string) {
     const session = await auth();
     if (!session?.user?.email) {
-        return { success: false, message: "No autenticado", logs: [] };
+        return { success: false, message: "No autenticado", logs: [], dailyPlans: [] };
     }
 
     try {
@@ -2128,10 +2118,12 @@ export async function getAdminActivityReport(userId?: string, startDate?: string
         });
 
         if (!currentUser || (currentUser.role !== 'ADMIN' && currentUser.role !== 'SUPER_ADMIN')) {
-            return { success: false, message: "Permisos insuficientes", logs: [] };
+            return { success: false, message: "Permisos insuficientes", logs: [], dailyPlans: [] };
         }
 
-        const whereClause: any = { agencyId: ((session?.user?.agencyId || currentUser?.agencyId) as string) };
+        const effectiveAgencyId = ((session?.user?.agencyId || currentUser?.agencyId) as string);
+
+        const whereClause: any = { agencyId: effectiveAgencyId };
         if (userId && userId !== 'ALL') {
             whereClause.userId = userId;
         }
@@ -2142,54 +2134,122 @@ export async function getAdminActivityReport(userId?: string, startDate?: string
             if (endDate) whereClause.dateStr.lte = endDate;
         }
 
-        const logs = await prisma.activityLog.findMany({
-            where: whereClause,
-            include: {
-                user: {
-                    select: {
-                        name: true,
-                        email: true
-                    }
-                }
-            },
-            orderBy: [
-                { dateStr: 'desc' },
-                { createdAt: 'desc' }
-            ]
-        });
+        const planWhereClause: any = {
+            planned: { gt: 0 },
+            user: { agencyId: effectiveAgencyId },
+        };
+        if (userId && userId !== 'ALL') {
+            planWhereClause.userId = userId;
+        }
+        if (startDate || endDate) {
+            planWhereClause.date = {};
+            if (startDate) planWhereClause.date.gte = new Date(`${startDate}T00:00:00.000Z`);
+            if (endDate) planWhereClause.date.lte = new Date(`${endDate}T23:59:59.999Z`);
+        }
 
-        const logsWithRole = await prisma.activityLog.findMany({
-            where: whereClause,
-            include: {
-                user: {
-                    select: {
-                        id: true,
-                        name: true,
-                        email: true,
-                        role: true,
-                        active: true,
-                        linkedAgentId: true,
-                        referidorCommissionPct: true,
-                        referidorBonusPct: true,
-                        linkedAgent: {
-                            select: {
-                                id: true,
-                                name: true,
-                                email: true
+        const [logsWithRole, rawDailyPlans] = await Promise.all([
+            prisma.activityLog.findMany({
+                where: whereClause,
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            role: true,
+                            active: true,
+                            linkedAgentId: true,
+                            referidorCommissionPct: true,
+                            referidorBonusPct: true,
+                            linkedAgent: {
+                                select: {
+                                    id: true,
+                                    name: true,
+                                    email: true
+                                }
                             }
                         }
                     }
-                }
-            },
-            orderBy: [
-                { dateStr: 'desc' },
-                { createdAt: 'desc' }
-            ]
-        });
-        return { success: true, logs: logsWithRole };
+                },
+                orderBy: [
+                    { dateStr: 'desc' },
+                    { createdAt: 'desc' }
+                ]
+            }),
+            prisma.dailyRecord.findMany({
+                where: planWhereClause,
+                include: {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true,
+                            email: true,
+                            role: true,
+                            active: true,
+                        }
+                    }
+                },
+                orderBy: [
+                    { date: 'desc' },
+                    { activityId: 'asc' }
+                ]
+            })
+        ]);
+
+        const planGroupMap = new Map<string, {
+            userId: string;
+            userName: string;
+            userEmail: string;
+            userRole: string;
+            dateStr: string;
+            plannedPoints: number;
+            items: Array<{
+                activityId: string;
+                activityName: string;
+                plannedCount: number;
+                unitPoints: number;
+                subtotalPoints: number;
+            }>;
+        }>();
+
+        for (const rec of rawDailyPlans) {
+            const dateStr = rec.date.toISOString().split("T")[0];
+            const key = `${rec.userId}_${dateStr}`;
+            const act = SALES_ACTIVITIES.find((a) => a.id === rec.activityId);
+            if (!act || rec.planned <= 0) continue;
+
+            if (!planGroupMap.has(key)) {
+                planGroupMap.set(key, {
+                    userId: rec.userId,
+                    userName: rec.user?.name || rec.user?.email || "Agente",
+                    userEmail: rec.user?.email || "",
+                    userRole: rec.user?.role || "AGENTE",
+                    dateStr,
+                    plannedPoints: 0,
+                    items: [],
+                });
+            }
+
+            const group = planGroupMap.get(key)!;
+            const subtotal = rec.planned * act.value;
+            group.plannedPoints += subtotal;
+            group.items.push({
+                activityId: rec.activityId,
+                activityName: act.name,
+                plannedCount: rec.planned,
+                unitPoints: act.value,
+                subtotalPoints: subtotal,
+            });
+        }
+
+        const dailyPlans = Array.from(planGroupMap.values()).sort((a, b) =>
+            b.dateStr.localeCompare(a.dateStr) || b.plannedPoints - a.plannedPoints
+        );
+
+        return { success: true, logs: logsWithRole, dailyPlans };
     } catch (error: any) {
         console.error("Error fetching admin activity report:", error);
-        return { success: false, message: error.message, logs: [] };
+        return { success: false, message: error.message, logs: [], dailyPlans: [] };
     }
 }
 
