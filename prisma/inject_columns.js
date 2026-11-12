@@ -775,7 +775,14 @@ async function injectColumns() {
       `ALTER TABLE "ClientPortalItem" ADD COLUMN IF NOT EXISTS "description" TEXT;`,
       `ALTER TABLE "ClientPortalItem" ADD COLUMN IF NOT EXISTS "emergencyPhone" TEXT;`,
       `ALTER TABLE "ClientPortalItem" ADD COLUMN IF NOT EXISTS "externalUrl" TEXT;`,
-      `ALTER TABLE "ClientPortalItem" ALTER COLUMN "clientId" DROP NOT NULL;`
+      `ALTER TABLE "ClientPortalItem" ALTER COLUMN "clientId" DROP NOT NULL;`,
+      `CREATE INDEX IF NOT EXISTS "DailyRecord_agencyId_date_idx" ON "DailyRecord"("agencyId", "date");`,
+      `CREATE INDEX IF NOT EXISTS "DailyRecord_date_idx" ON "DailyRecord"("date");`,
+      `CREATE INDEX IF NOT EXISTS "ActivityLog_agencyId_dateStr_idx" ON "ActivityLog"("agencyId", "dateStr");`,
+      `CREATE INDEX IF NOT EXISTS "AdnDiagnostic_agencyId_createdAt_idx" ON "AdnDiagnostic"("agencyId", "createdAt");`,
+      `CREATE INDEX IF NOT EXISTS "AdnDiagnostic_userId_idx" ON "AdnDiagnostic"("userId");`,
+      `CREATE INDEX IF NOT EXISTS "Cotizacion_agencyId_createdAt_idx" ON "Cotizacion"("agencyId", "createdAt");`,
+      `CREATE INDEX IF NOT EXISTS "Content_agencyId_type_active_idx" ON "Content"("agencyId", "type", "active");`
     ];
     for (const q of soloAgentAndPortalQueries) {
       await client.query(q);

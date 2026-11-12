@@ -272,6 +272,8 @@ model DailyRecord {
   user       User     @relation(fields: [userId], references: [id])
 
   @@unique([userId, activityId, date])
+  @@index([agencyId, date])
+  @@index([date])
 }
 
 model Client {
@@ -384,6 +386,8 @@ model Content {
   updatedAt DateTime @updatedAt
   agencyId  String?
   agency    Agency?  @relation(fields: [agencyId], references: [id], onDelete: Cascade)
+
+  @@index([agencyId, type, active])
 }
 
 model CompanyRules {
@@ -415,6 +419,7 @@ model Cotizacion {
   user           User?    @relation(fields: [userId], references: [id])
 
   @@index([agencyId])
+  @@index([agencyId, createdAt])
   @@index([userId])
 }
 
@@ -474,6 +479,9 @@ model AdnDiagnostic {
   agencyId           String?
   agency             Agency?  @relation(fields: [agencyId], references: [id])
   user               User     @relation(fields: [userId], references: [id])
+
+  @@index([agencyId, createdAt])
+  @@index([userId])
 }
 
 model ActivityLog {
@@ -490,6 +498,7 @@ model ActivityLog {
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([agencyId])
+  @@index([agencyId, dateStr])
   @@index([userId])
   @@index([dateStr])
 }

@@ -1,8 +1,8 @@
 "use client"
 
-import React, { useState, useEffect } from "react"
+import React, { useState, useEffect, useRef } from "react"
 import Image from "next/image"
-import { getCotizaciones, getAdminDashboardStats, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, reorderAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, deleteRankingAd, getMonthlyAdnRankings, saveAgencyRankingMetric, type RankingMetricMode, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush, getFeedbackSurveys, requestAgentExpulsion, purgeAgentPortfolio } from "@/app/actions"
+import { getCotizaciones, getCotizacionDetail, getAdminDashboardStats, getAdminBootstrapData, getAdminActiveRankingBanner, saveUdiSetting, getUdiSetting, getAgents, createAgent, deleteAgent, getAdnDiagnostics, getAdnDiagnosticEvidencia, createAgentUser, getUsers, updateUserPassword, toggleUserActiveStatus, deleteUser, toggleAdnDiagnosticClosedStatus, getAnnouncements, createAnnouncement, toggleAnnouncementActiveStatus, deleteAnnouncement, reorderAnnouncement, getAdminActivityReport, updateAgentProfile, deleteActivityLogEntry, getCurrentUser, sendAdminPushNotification, createRankingAd, deleteRankingAd, getMonthlyAdnRankings, saveAgencyRankingMetric, type RankingMetricMode, getAdminSettings, toggleAdminSetting, getScheduledPushes, createScheduledPush, deleteScheduledPush, getFeedbackSurveys, requestAgentExpulsion, purgeAgentPortfolio } from "@/app/actions"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import BibliotecaAdmin from "./BibliotecaAdmin"
@@ -71,20 +71,26 @@ import AdminModulesSettings from './AdminModulesSettings'
 import AdminMarketCgManager from './AdminMarketCgManager'
 import AdminWhatsAppSettings from './AdminWhatsAppSettings'
 
-export default function AdminClient() {
+export default function AdminClient({ initialBootstrap }: { initialBootstrap?: any }) {
 
   // Admin Data states
   const [cotizaciones, setCotizaciones] = useState<any[]>([])
-  const [loading, setLoading] = useState<boolean>(true)
+  const [loading, setLoading] = useState<boolean>(!initialBootstrap)
   const [searchQuery, setSearchQuery] = useState<string>("")
   const [productFilter, setProductFilter] = useState<string>("todos")
   const [error, setError] = useState<string>("")
 
   // Dashboard Server Stats
-  const [agentStatsList, setAgentStatsList] = useState<any[]>([])
-  const [globalProductCounts, setGlobalProductCounts] = useState<any>({})
-  const [globalTotalCount, setGlobalTotalCount] = useState<number>(0)
-  const [globalTotalPrimasPesos, setGlobalTotalPrimasPesos] = useState<number>(0)
+  const [agentStatsList, setAgentStatsList] = useState<any[]>(initialBootstrap?.dashboardStats?.agentStatsList || [])
+  const [globalProductCounts, setGlobalProductCounts] = useState<any>(initialBootstrap?.dashboardStats?.globalProductCounts || {})
+  const [globalTotalCount, setGlobalTotalCount] = useState<number>(initialBootstrap?.dashboardStats?.totalCount || 0)
+  const [globalTotalPrimasPesos, setGlobalTotalPrimasPesos] = useState<number>(initialBootstrap?.dashboardStats?.totalPrimasPesos || 0)
+
+  // Lazy-loading tracker per Admin tab
+  const loadedTabsRef = useRef<Record<string, boolean>>({})
+  const hasRankingBannerRef = useRef<boolean>(Boolean(initialBootstrap?.hasRankingBanner))
+  const [loadingQuoteDetail, setLoadingQuoteDetail] = useState<boolean>(false)
+  const [loadingAdnEvidencia, setLoadingAdnEvidencia] = useState<boolean>(false)
 
   // Date Filters
   const [cotiMonth, setCotiMonth] = useState<string>("all")
@@ -102,8 +108,8 @@ export default function AdminClient() {
   const [docTitle, setDocTitle] = useState<string>("")
   const [docContent, setDocContent] = useState<string>("")
   const [docIsGlobalTemplate, setDocIsGlobalTemplate] = useState<boolean>(false)
-  const [currentUserRole, setCurrentUserRole] = useState<string>("ADMIN")
-  const [currentUserData, setCurrentUserData] = useState<any | null>(null)
+  const [currentUserRole, setCurrentUserRole] = useState<string>(initialBootstrap?.currentUser?.role || "ADMIN")
+  const [currentUserData, setCurrentUserData] = useState<any | null>(initialBootstrap?.currentUser || null)
   const [selectedDocId, setSelectedDocId] = useState<string | null>(null)
   const [savingDoc, setSavingDoc] = useState<boolean>(false)
   const [docMsg, setDocMsg] = useState<string>("")
@@ -119,7 +125,7 @@ export default function AdminClient() {
   const [agentMessage, setAgentMessage] = useState<string>("")
 
   // UDI Settings states (Correction 5: Admin sets UDI rate)
-  const [defaultUdi, setDefaultUdi] = useState<number>(8.25)
+  const [defaultUdi, setDefaultUdi] = useState<number>(initialBootstrap?.defaultUdi ?? 8.25)
   const [udiSaving, setUdiSaving] = useState<string>("")
   
   // ADN AACOM states
@@ -142,7 +148,7 @@ export default function AdminClient() {
   const [userRegistrationMessage, setUserRegistrationMessage] = useState<string>("")
   const [agentPhoneInput, setAgentPhoneInput] = useState<string>("")
   const [syncToAgentCheckbox, setSyncToAgentCheckbox] = useState<boolean>(true)
-  const [usersList, setUsersList] = useState<any[]>([])
+  const [usersList, setUsersList] = useState<any[]>(initialBootstrap?.users || [])
   const [loadingUsers, setLoadingUsers] = useState<boolean>(false)
   const [editingUserPasswordId, setEditingUserPasswordId] = useState<string | null>(null)
   const [newPasswordInput, setNewPasswordInput] = useState<string>("")
@@ -153,7 +159,7 @@ export default function AdminClient() {
   const [rankingBanner, setRankingBanner] = useState<string | null>(null)
   const [savingRankingBanner, setSavingRankingBanner] = useState<boolean>(false)
   const [rankingBannerMsg, setRankingBannerMsg] = useState<string>("")
-  const [rankingMetricMode, setRankingMetricMode] = useState<RankingMetricMode>("ADN")
+  const [rankingMetricMode, setRankingMetricMode] = useState<RankingMetricMode>((initialBootstrap?.rankingMetric as RankingMetricMode) || "ADN")
   const [savingRankingMetric, setSavingRankingMetric] = useState<boolean>(false)
   const [announcementLinkInput, setAnnouncementLinkInput] = useState<string>("")
   
@@ -478,18 +484,12 @@ export default function AdminClient() {
       const res = await toggleAdnDiagnosticClosedStatus(id)
       if (!res.success) {
         alert(res.message || "Error al actualizar estado")
-        const adnRes = await getAdnDiagnostics()
-        if (adnRes.success && adnRes.diagnostics) {
-          setAdnList(adnRes.diagnostics)
-        }
+        await fetchAdnRaw()
       }
     } catch (err) {
       console.error(err)
       alert("Error de red al actualizar estado")
-      const adnRes = await getAdnDiagnostics()
-      if (adnRes.success && adnRes.diagnostics) {
-        setAdnList(adnRes.diagnostics)
-      }
+      await fetchAdnRaw()
     }
   }
 
@@ -715,8 +715,9 @@ export default function AdminClient() {
     const month = cotiMonth === "all" ? undefined : parseInt(cotiMonth)
     const year = parseInt(cotiYear)
     try {
-      const res = await getCotizaciones({ month, year, limitTo30Days: false })
+      const res = await getCotizaciones({ month, year, limitTo30Days: false, excludeHeavyBlobs: true })
       if (res.success && res.cotizaciones) {
+        loadedTabsRef.current.historico = true
         setCotizaciones(res.cotizaciones)
       } else {
         setError(res.message || "Error al cargar las cotizaciones.")
@@ -734,8 +735,9 @@ export default function AdminClient() {
     const month = adnMonthFilter === "all" ? undefined : parseInt(adnMonthFilter)
     const year = parseInt(adnYearFilter)
     try {
-      const adnRes = await getAdnDiagnostics({ month, year, limitTo30Days: false })
+      const adnRes = await getAdnDiagnostics({ month, year, limitTo30Days: false, excludeEvidencia: true })
       if (adnRes.success && adnRes.diagnostics) {
+        loadedTabsRef.current.adn = true
         setAdnList(adnRes.diagnostics)
       }
     } catch (err) {
@@ -745,70 +747,171 @@ export default function AdminClient() {
     }
   }
 
-  // Effect to refetch raw data when filters change
+  const handleOpenQuoteModal = async (item: any) => {
+    setSelectedQuote(item)
+    if (item.projectionData !== undefined) return
+    setLoadingQuoteDetail(true)
+    try {
+      const res = await getCotizacionDetail(item.id)
+      if (res.success) {
+        const enriched = {
+          ...item,
+          coberturas: res.coberturas ?? null,
+          projectionData: res.projectionData ?? null,
+        }
+        setSelectedQuote((prev: any) => (prev?.id === item.id ? enriched : prev))
+        setCotizaciones((prev) => prev.map((q) => (q.id === item.id ? enriched : q)))
+      }
+    } catch (err) {
+      console.error("Error fetching quote detail:", err)
+    } finally {
+      setLoadingQuoteDetail(false)
+    }
+  }
+
+  const handleOpenAdnModal = async (adn: any) => {
+    setSelectedAdn(adn)
+    if (adn.modalidad !== "BASICO" || adn.evidenciaBase64 !== undefined) return
+    setLoadingAdnEvidencia(true)
+    try {
+      const res = await getAdnDiagnosticEvidencia(adn.id)
+      if (res.success) {
+        const enriched = { ...adn, evidenciaBase64: res.evidenciaBase64 ?? null }
+        setSelectedAdn((prev: any) => (prev?.id === adn.id ? enriched : prev))
+        setAdnList((prev) => prev.map((a) => (a.id === adn.id ? enriched : a)))
+      }
+    } catch (err) {
+      console.error("Error fetching ADN evidencia:", err)
+    } finally {
+      setLoadingAdnEvidencia(false)
+    }
+  }
+
+  // Effect to refetch raw data when filters change (only after that tab has been opened)
   useEffect(() => {
-    fetchCotizacionesRaw()
+    if (loadedTabsRef.current.historico) {
+      fetchCotizacionesRaw()
+    }
   }, [cotiMonth, cotiYear])
 
   useEffect(() => {
-    fetchAdnRaw()
+    if (loadedTabsRef.current.adn) {
+      fetchAdnRaw()
+    }
   }, [adnMonthFilter, adnYearFilter])
 
-  // Load cotizaciones and UDI setting from DB
+  // Lazy-load heavy tab datasets only when their tab becomes active
+  useEffect(() => {
+    if (activeTab === "productividad") {
+      if (hasRankingBannerRef.current && !loadedTabsRef.current.rankingBanner) {
+        loadedTabsRef.current.rankingBanner = true
+        getAdminActiveRankingBanner().then((res) => {
+          if (res.success) setRankingBanner(res.imageUrl)
+        })
+      }
+    } else if (activeTab === "historico") {
+      if (!loadedTabsRef.current.historico) {
+        loadedTabsRef.current.historico = true
+        fetchCotizacionesRaw()
+      }
+    } else if (activeTab === "adn") {
+      if (!loadedTabsRef.current.adn) {
+        loadedTabsRef.current.adn = true
+        fetchAdnRaw()
+      }
+    } else if (activeTab === "comunicados") {
+      if (!loadedTabsRef.current.comunicados) {
+        loadedTabsRef.current.comunicados = true
+        fetchAnnouncementsList()
+      }
+    } else if (activeTab === "actividad") {
+      if (!loadedTabsRef.current.actividad) {
+        loadedTabsRef.current.actividad = true
+        fetchActivityLogsList()
+      }
+    } else if (activeTab === "asistente") {
+      if (!loadedTabsRef.current.asistente) {
+        loadedTabsRef.current.asistente = true
+        fetchKnowledgeDocsList()
+      }
+    } else if (activeTab === "notificaciones") {
+      if (!loadedTabsRef.current.notificaciones) {
+        loadedTabsRef.current.notificaciones = true
+        Promise.all([getAdminSettings(), getScheduledPushes()])
+          .then(([settingsRes, schedRes]) => {
+            if (settingsRes) {
+              setPushPointsEnabled(settingsRes.pushPointsEnabled)
+              setPushPlanningEnabled(settingsRes.pushPlanningEnabled)
+            }
+            if (Array.isArray(schedRes)) {
+              setScheduledPushes(schedRes)
+            }
+          })
+          .catch((err) => console.error("Error loading push settings:", err))
+      }
+    }
+  }, [activeTab])
+
+  // Refresh bootstrap + active tab data from DB
   const loadData = async () => {
     setLoading(true)
     setError("")
-    setLoadingAdn(true)
+    loadedTabsRef.current = {}
     try {
-      const userPromise = getCurrentUser().then(res => {
-        if (res.success && res.user) {
-          setCurrentUserRole(res.user.role)
-          setCurrentUserData(res.user)
+      const bootRes = await getAdminBootstrapData()
+      if (bootRes.success) {
+        if (bootRes.currentUser) {
+          setCurrentUserRole(bootRes.currentUser.role)
+          setCurrentUserData(bootRes.currentUser)
         }
-      });
-
-      const statsPromise = getAdminDashboardStats().then(res => {
-        if (res.success) {
-          setAgentStatsList(res.agentStatsList || [])
-          setGlobalProductCounts(res.globalProductCounts || {})
-          setGlobalTotalCount(res.totalCount || 0)
-          setGlobalTotalPrimasPesos(res.totalPrimasPesos || 0)
+        if (bootRes.users) {
+          setUsersList(bootRes.users)
         }
-      });
-
-      const udiPromise = getUdiSetting().then(res => {
-        if (res.success && res.value) {
-          setDefaultUdi(res.value)
+        if (bootRes.dashboardStats) {
+          setAgentStatsList(bootRes.dashboardStats.agentStatsList || [])
+          setGlobalProductCounts(bootRes.dashboardStats.globalProductCounts || {})
+          setGlobalTotalCount(bootRes.dashboardStats.totalCount || 0)
+          setGlobalTotalPrimasPesos(bootRes.dashboardStats.totalPrimasPesos || 0)
         }
-      });
-
-      const rankingPromise = getMonthlyAdnRankings().then(res => {
-        if (res.success) {
-          if (res.rankingAd) setRankingBanner(res.rankingAd.imageUrl)
-          if (res.rankingMetric) setRankingMetricMode(res.rankingMetric as RankingMetricMode)
+        if (bootRes.defaultUdi !== undefined) {
+          setDefaultUdi(bootRes.defaultUdi)
         }
-      });
+        if (bootRes.rankingMetric) {
+          setRankingMetricMode(bootRes.rankingMetric as RankingMetricMode)
+        }
+        hasRankingBannerRef.current = Boolean(bootRes.hasRankingBanner)
+        if (!bootRes.hasRankingBanner) {
+          setRankingBanner(null)
+        }
+      }
 
-      await Promise.all([
-        userPromise,
-        statsPromise,
-        udiPromise,
-        rankingPromise,
-        fetchCotizacionesRaw(),
-        fetchAdnRaw(),
-        fetchAgentsList(),
-        fetchUsersList(),
-        fetchAnnouncementsList(),
-        fetchActivityLogsList(),
-        fetchKnowledgeDocsList()
-      ]);
-      
+      if (activeTab === "productividad" && bootRes.hasRankingBanner) {
+        loadedTabsRef.current.rankingBanner = true
+        const bannerRes = await getAdminActiveRankingBanner()
+        if (bannerRes.success) setRankingBanner(bannerRes.imageUrl)
+      } else if (activeTab === "historico") {
+        loadedTabsRef.current.historico = true
+        await fetchCotizacionesRaw()
+      } else if (activeTab === "adn") {
+        loadedTabsRef.current.adn = true
+        await fetchAdnRaw()
+      } else if (activeTab === "comunicados") {
+        loadedTabsRef.current.comunicados = true
+        await fetchAnnouncementsList()
+      } else if (activeTab === "actividad") {
+        loadedTabsRef.current.actividad = true
+        await fetchActivityLogsList()
+      } else if (activeTab === "asistente") {
+        loadedTabsRef.current.asistente = true
+        await fetchKnowledgeDocsList()
+      } else if (activeTab === "encuestas") {
+        await fetchSurveys()
+      }
     } catch (err) {
       console.error(err)
       setError("Fallo al conectar con el servidor.")
     } finally {
       setLoading(false)
-      setLoadingAdn(false)
     }
   }
 
@@ -1067,7 +1170,9 @@ export default function AdminClient() {
   }
 
   useEffect(() => {
-    loadData()
+    if (!initialBootstrap) {
+      loadData()
+    }
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search)
       const tabParam = params.get('tab')
@@ -1518,7 +1623,7 @@ export default function AdminClient() {
                   <div className="text-center py-6 text-muted-foreground text-xs">Sin registros de productos</div>
                 ) : (
                   Object.entries(globalProductCounts as Record<string, number>).map(([prod, count]) => {
-                    const pct = totalCount > 0 ? (count / totalCount) * 100 : 0
+                    const pct = globalTotalCount > 0 ? (count / globalTotalCount) * 100 : 0
                     return (
                       <div key={prod} className="space-y-1">
                         <div className="flex justify-between text-xs font-bold text-slate-700 dark:text-slate-300">
@@ -1912,7 +2017,7 @@ export default function AdminClient() {
                                             </TableCell>
                                             <TableCell className="text-center py-3.5 pr-4">
                                               <Button
-                                                onClick={() => setSelectedQuote(item)}
+                                                onClick={() => handleOpenQuoteModal(item)}
                                                 size="sm"
                                                 className="bg-teal-600 hover:bg-teal-700 text-white font-bold h-7 px-2.5 flex items-center gap-1 mx-auto text-[10px]"
                                               >
@@ -2735,7 +2840,7 @@ export default function AdminClient() {
                                                   )}
 
                                                   <Button
-                                                    onClick={() => setSelectedAdn(adn)}
+                                                    onClick={() => handleOpenAdnModal(adn)}
                                                     variant="ghost"
                                                     size="sm"
                                                     className="text-teal-600 hover:text-teal-700 hover:bg-teal-50 dark:hover:bg-teal-950/20 font-black text-xs flex items-center gap-1"
@@ -4642,7 +4747,12 @@ export default function AdminClient() {
                       </div>
 
                       {/* AJUSTE: Evidencia para Modalidad BASICA */}
-                      {selectedAdn.modalidad === 'BASICO' && selectedAdn.evidenciaBase64 && (
+                      {selectedAdn.modalidad === 'BASICO' && loadingAdnEvidencia && (
+                        <div className="border border-slate-200 p-6 rounded-xl text-center text-xs text-slate-500 bg-slate-50/40 flex items-center justify-center gap-2">
+                          <RefreshCw className="h-4 w-4 animate-spin text-teal-600" /> Cargando evidencia adjunta...
+                        </div>
+                      )}
+                      {selectedAdn.modalidad === 'BASICO' && !loadingAdnEvidencia && selectedAdn.evidenciaBase64 && (
                         <div className="border border-slate-200 p-4 rounded-xl space-y-2 bg-slate-50/40">
                           <span className="text-[9px] font-black text-slate-600 uppercase block tracking-wider">
                             Evidencia Adjunta (Ingreso y Gasto Total)
@@ -4737,7 +4847,12 @@ export default function AdminClient() {
             {/* Modal Body / Projection Re-render Area */}
             <div className="flex-1 overflow-y-auto p-6 space-y-6">
               
-              {!selectedQuote.projectionData ? (
+              {loadingQuoteDetail ? (
+                <div className="p-12 text-center space-y-3 rounded-xl border border-slate-200 bg-slate-50/50">
+                  <RefreshCw className="h-8 w-8 animate-spin text-teal-600 mx-auto" />
+                  <p className="text-xs font-bold text-slate-600">Cargando proyección detallada de la propuesta...</p>
+                </div>
+              ) : !selectedQuote.projectionData ? (
                 <div className="p-12 text-center space-y-3 bg-amber-50 rounded-xl border border-amber-200">
                   <ShieldCheck className="h-10 w-10 text-amber-500 mx-auto" />
                   <h4 className="font-bold text-amber-800 text-sm">Rescatado Parcial</h4>

@@ -2,6 +2,7 @@ import React from "react"
 import { auth } from "@/auth"
 import { prisma } from "@/lib/prisma"
 import { redirect } from "next/navigation"
+import { getAdminBootstrapData } from "@/app/actions"
 import AdminClient from "./AdminClient"
 
 export const dynamic = "force-dynamic"
@@ -15,7 +16,8 @@ export default async function AdminPage() {
     }
 
     const dbUser = await prisma.user.findUnique({
-        where: { email: session.user.email }
+        where: { email: session.user.email },
+        select: { id: true, role: true }
     })
 
     if (!dbUser || (dbUser.role !== 'ADMIN' && dbUser.role !== 'SUPER_ADMIN')) {
@@ -36,5 +38,7 @@ export default async function AdminPage() {
         )
     }
 
-    return <AdminClient />
+    const bootstrap = await getAdminBootstrapData()
+
+    return <AdminClient initialBootstrap={bootstrap.success ? bootstrap : undefined} />
 }
