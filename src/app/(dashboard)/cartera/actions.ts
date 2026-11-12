@@ -3,15 +3,20 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { clientSchema, policySchema } from "./schema";
 import {
   toUTCNoonDate,
   buildPolicyReceiptsDrafts,
 } from "./dateUtils";
+import {
+  classifyPolicyRamo,
+  canonicalCompanyName,
+} from "@/lib/ramosCatalog";
 import { z } from "zod";
 import { put, del } from "@vercel/blob";
 
-async function getSessionContext() {
+async function getSessionContext(requestedAgencyId?: string | null) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("No autorizado");
 
@@ -21,7 +26,20 @@ async function getSessionContext() {
   });
 
   const role = dbUser?.role || session.user.role || "AGENTE";
-  const agencyId = (session.user.agencyId || dbUser?.agencyId || "aacom") as string;
+  const impersonateId =
+    role === "SUPER_ADMIN" ? cookies().get("impersonateAgencyId")?.value : undefined;
+  const superAdminRequestedAgency =
+    role === "SUPER_ADMIN" &&
+    requestedAgencyId &&
+    requestedAgencyId !== "ALL" &&
+    requestedAgencyId !== "DEFAULT"
+      ? requestedAgencyId
+      : undefined;
+  const agencyId = (superAdminRequestedAgency ||
+    impersonateId ||
+    session.user.agencyId ||
+    dbUser?.agencyId ||
+    "aacom") as string;
   const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
 
   return {
@@ -32,58 +50,123 @@ async function getSessionContext() {
   };
 }
 
+async function shouldAutoApproveForActor(agencyId: string, isAdmin: boolean): Promise<boolean> {
+  if (isAdmin) return true;
+  try {
+    const cfg = await prisma.setting.findUnique({
+      where: { key: `ranking_config_${agencyId}` },
+    });
+    if (!cfg?.value) return true;
+    const parsed = JSON.parse(cfg.value);
+    if (parsed && parsed.requireAdminApproval === true) {
+      return false;
+    }
+  } catch {
+    // Fallback seguro: reflejo inmediato
+  }
+  return true;
+}
+
+export async function getCarteraFormCatalogs(targetAgencyId?: string) {
+  const ctx = await getSessionContext(targetAgencyId);
+
+  const [agencyAgents, agencyCompanies] = await Promise.all([
+    prisma.user.findMany({
+      where: {
+        agencyId: ctx.agencyId,
+        active: true,
+        role: { in: ["AGENTE", "AGENTE_LITE", "ADMIN", "SUPER_ADMIN"] },
+      },
+      select: { id: true, name: true, email: true, role: true },
+      orderBy: [{ name: "asc" }, { email: "asc" }],
+    }),
+    prisma.insuranceCompany.findMany({
+      where: { agencyId: ctx.agencyId },
+      select: { id: true, name: true, active: true, color: true },
+      orderBy: [{ active: "desc" }, { order: "asc" }, { name: "asc" }],
+    }),
+  ]);
+
+  return {
+    isAdmin: ctx.isAdmin,
+    currentUserId: ctx.userId,
+    agencyId: ctx.agencyId,
+    agencyAgents: agencyAgents.map((a) => ({
+      id: a.id,
+      name: a.name || a.email,
+      email: a.email,
+      role: a.role,
+    })),
+    agencyCompanies,
+  };
+}
+
 function inferRamoAndVigencia(
   product?: string | null,
   company?: string | null,
   explicitRamo?: string | null,
-  explicitTipo?: string | null
+  explicitTipo?: string | null,
+  explicitSubRamo?: string | null,
+  explicitVidaObjetivo?: string | null
 ) {
   const p = (product || "").toLowerCase();
   const c = (company || "").toLowerCase();
 
-  let ramo = explicitRamo || "VIDA_INDIVIDUAL";
-  if (!explicitRamo) {
+  let rawRamo = explicitRamo || "";
+  if (!rawRamo) {
     if (p.includes("gmm") || p.includes("gastos med") || p.includes("salud")) {
-      ramo = "GMM";
+      rawRamo = "GMM";
     } else if (p.includes("auto")) {
-      ramo = "AUTOS";
+      rawRamo = "AUTOS";
     } else if (p.includes("grupo") || p.includes("colectiv")) {
-      ramo = "VIDA_GRUPO";
+      rawRamo = "VIDA_GRUPO";
     } else if (p.includes("hogar") || p.includes("daño") || p.includes("pyme")) {
-      ramo = "DANOS";
+      rawRamo = "DANOS";
     } else if (p.includes("ppr") || p.includes("retiro") || p.includes("dotal")) {
-      ramo = "AHORRO_RETIRO";
+      rawRamo = "AHORRO_RETIRO";
     } else {
-      ramo = "VIDA_INDIVIDUAL";
+      rawRamo = "VIDA_INDIVIDUAL";
     }
   }
 
+  const classified = classifyPolicyRamo({
+    ramo: rawRamo,
+    subRamo: explicitSubRamo,
+    vidaObjetivo: explicitVidaObjetivo,
+    product,
+  });
+
+  // Valores base de Policy.ramo 100% retrocompatibles
+  let storedRamo = "VIDA_INDIVIDUAL";
+  if (classified.subRamoKey === "VIDA_GRUPO") storedRamo = "VIDA_GRUPO";
+  else if (classified.groupKey === "GMM") storedRamo = "GMM";
+  else if (classified.groupKey === "AUTOS") storedRamo = "AUTOS";
+  else if (classified.groupKey === "DANOS") storedRamo = "DANOS";
+  else if (classified.groupKey === "OTROS") storedRamo = "OTROS";
+
+  let storedSubRamo = "INDIVIDUAL";
+  if (classified.subRamoKey === "VIDA_GRUPO") storedSubRamo = "GRUPO";
+  else if (classified.subRamoKey === "GMM_COLECTIVO") storedSubRamo = "COLECTIVO";
+  else if (classified.subRamoKey === "AUTOS_FLOTILLA") storedSubRamo = "FLOTILLA";
+
   let tipoVigencia = explicitTipo || "LARGO_PLAZO";
   if (!explicitTipo) {
-    if (["GMM", "AUTOS", "VIDA_GRUPO", "DANOS"].includes(ramo)) {
+    if (["GMM", "AUTOS", "VIDA_GRUPO", "DANOS", "OTROS"].includes(storedRamo)) {
       tipoVigencia = "ANUAL_RENOVABLE";
     } else if (
       c.includes("insignia") ||
-      ["VIDA_INDIVIDUAL", "AHORRO_RETIRO"].includes(ramo)
+      storedRamo === "VIDA_INDIVIDUAL"
     ) {
       tipoVigencia = "LARGO_PLAZO";
     }
   }
 
-  return { ramo, tipoVigencia };
-}
-
-function mapCarteraRamoToProductionRamo(ramo?: string | null, product?: string | null): string {
-  const r = (ramo || "").toUpperCase();
-  const p = (product || "").toLowerCase();
-  if (r === "GMM") return "Gastos Médicos";
-  if (r === "AHORRO_RETIRO") {
-    if (p.includes("ahorro") || p.includes("dotal") || p.includes("educa")) {
-      return "Ahorro";
-    }
-    return "Retiro";
-  }
-  return "Protección";
+  return {
+    ramo: storedRamo,
+    subRamo: storedSubRamo,
+    vidaObjetivo: storedRamo === "VIDA_INDIVIDUAL" ? (classified.vidaObjetivo || "PROTECCION") : null,
+    tipoVigencia,
+  };
 }
 
 /**
@@ -97,7 +180,7 @@ export async function syncReceiptsForPolicy(
   if (policy.status === "CANCELADA" || policy.status === "TERMINADA") return;
 
   const drafts = buildPolicyReceiptsDrafts(policy, {
-    autoMarkHistoricalPaid: options.autoMarkHistoricalPaid ?? true,
+    autoMarkHistoricalPaid: options.autoMarkHistoricalPaid ?? false,
   });
 
   if (drafts.length === 0) return;
@@ -148,12 +231,14 @@ export async function ensurePoliciesHaveReceipts(policies: any[]) {
 }
 
 /**
- * Marca un recibo como PAGADO, actualiza el estatus de la póliza a VIGENTE y
- * sincroniza automáticamente con el módulo de Producción (AgentEmission) cuando es prima computable.
+ * Marca un recibo como PAGADO en Pesos (MXN), actualiza el estatus de la póliza a VIGENTE y
+ * alimenta en vivo Producción y Primas + Ranking directamente desde Mi Cartera
+ * (sin duplicar ni mutar filas históricas de AgentEmission).
  */
 export async function markReceiptAsPaid(data: {
   receiptId: string;
   paidDate?: string;
+  paidAmount?: number | null;
   paymentNotes?: string;
 }) {
   const ctx = await getSessionContext();
@@ -161,7 +246,10 @@ export async function markReceiptAsPaid(data: {
   const receipt = await prisma.policyReceipt.findFirst({
     where: ctx.isAdmin
       ? { id: data.receiptId, agencyId: ctx.agencyId }
-      : { id: data.receiptId, userId: ctx.userId },
+      : {
+          id: data.receiptId,
+          OR: [{ userId: ctx.userId }, { policy: { sharedWithUserId: ctx.userId } }],
+        },
     include: {
       policy: {
         include: { client: true },
@@ -174,101 +262,28 @@ export async function markReceiptAsPaid(data: {
   }
 
   const paidAtDate = toUTCNoonDate(data.paidDate) || new Date();
-  const paidYear = paidAtDate.getUTCFullYear();
-  const paidMonth = paidAtDate.getUTCMonth() + 1;
-
   const policy = receipt.policy;
-  const ramo = (policy.ramo || "VIDA_INDIVIDUAL").toUpperCase();
+  const resolvedPaidAmount =
+    data.paidAmount !== undefined &&
+    data.paidAmount !== null &&
+    !isNaN(Number(data.paidAmount)) &&
+    Number(data.paidAmount) > 0
+      ? Number(data.paidAmount)
+      : Number(receipt.amount) || 0;
 
-  // Regla de Negocio Asegurador (Etapa 2):
-  // - Vida Individual / Ahorro Retiro: Computa a Producción en su Primer Año (policyYear === 1).
-  // - GMM, Autos, Vida Grupo, Daños: Todos los recibos pagados computan a Producción.
-  const isComputableForProduction =
-    receipt.policyYear <= 1 ||
-    ["GMM", "AUTOS", "VIDA_GRUPO", "DANOS"].includes(ramo);
-
-  let syncedEmissionId = receipt.syncedEmissionId;
-
-  if (isComputableForProduction && (receipt.amount || 0) > 0) {
-    const prodRamo = mapCarteraRamoToProductionRamo(policy.ramo, policy.product);
-    const companyName = (policy.insuranceCompany || "Insignia Life").trim();
-    const clientName = (
-      policy.contractor ||
-      policy.client?.name ||
-      policy.insured ||
-      "Cliente Cartera"
-    ).trim();
-
-    // Buscar si existe la compañía en el catálogo aislado de la agencia
-    const targetCompanyAgencyId = policy.agencyId || ctx.agencyId;
-    const companyRecord = targetCompanyAgencyId
-      ? await prisma.insuranceCompany.findFirst({
-          where: {
-            agencyId: targetCompanyAgencyId,
-            name: { equals: companyName, mode: "insensitive" },
-          },
-          orderBy: { active: "desc" },
-        })
-      : null;
-
-    if (syncedEmissionId) {
-      const existingEmission = await prisma.agentEmission.findUnique({
-        where: { id: syncedEmissionId },
-      });
-      if (existingEmission) {
-        await prisma.agentEmission.update({
-          where: { id: syncedEmissionId },
-          data: {
-            primaPagada: receipt.amount,
-            primaEmitida: Math.max(existingEmission.primaEmitida, receipt.amount),
-            status: "PAGADA",
-            issueDate: paidAtDate,
-            year: paidYear,
-            month: paidMonth,
-          },
-        });
-      } else {
-        syncedEmissionId = null;
-      }
-    }
-
-    if (!syncedEmissionId) {
-      const createdEmission = await prisma.agentEmission.create({
-        data: {
-          agencyId: policy.agencyId || ctx.agencyId,
-          agentId: policy.userId,
-          companyId: companyRecord?.id || null,
-          companyName: companyRecord?.name || companyName,
-          policyNumber: `${policy.policyNumber}${
-            receipt.totalInstallments > 1
-              ? ` (Recibo ${receipt.receiptNumber}/${receipt.totalInstallments})`
-              : ""
-          }`,
-          clientName,
-          ramo: prodRamo,
-          issueDate: paidAtDate,
-          year: paidYear,
-          month: paidMonth,
-          primaEmitida: receipt.amount,
-          primaPagada: receipt.amount,
-          status: "PAGADA",
-          notes:
-            data.paymentNotes?.trim() ||
-            `Sincronizado automáticamente desde Cartera (Año Póliza ${receipt.policyYear})`,
-          createdById: ctx.userId,
-        },
-      });
-      syncedEmissionId = createdEmission.id;
-    }
-  }
+  const adminApproved = await shouldAutoApproveForActor(
+    policy.agencyId || ctx.agencyId,
+    ctx.isAdmin
+  );
 
   const updatedReceipt = await prisma.policyReceipt.update({
     where: { id: receipt.id },
     data: {
       status: "PAGADO",
       paidAt: paidAtDate,
+      paidAmount: resolvedPaidAmount,
+      adminApproved: policy.adminApproved === false ? adminApproved : true,
       paymentNotes: data.paymentNotes?.trim() || receipt.paymentNotes || null,
-      syncedEmissionId,
       updatedAt: new Date(),
     },
   });
@@ -291,171 +306,8 @@ export async function markReceiptAsPaid(data: {
   return {
     success: true,
     receipt: updatedReceipt,
-    syncedToProduction: !!syncedEmissionId,
+    syncedToProduction: true,
   };
-}
-
-/**
- * Sincroniza una póliza de Cartera hacia Producción (AgentEmission) y Ranking
- * únicamente cuando la póliza está activa y su inicio de vigencia (effectiveDate)
- * corresponde al año de evaluación (registrándose en su mes y año exactos de inicio de vigencia).
- */
-async function syncPolicyEmissionWithProduction(
-  policy: any,
-  actorUserId: string
-) {
-  if (!policy?.id) return;
-
-  const receiptsWithSync = await prisma.policyReceipt.findMany({
-    where: {
-      policyId: policy.id,
-      syncedEmissionId: { not: null },
-    },
-    orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
-  });
-
-  const existingSyncedIds = Array.from(
-    new Set(receiptsWithSync.map((r) => r.syncedEmissionId).filter(Boolean))
-  ) as string[];
-
-  const effDate = toUTCNoonDate(policy.effectiveDate);
-  const currentMxParts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: "America/Mexico_City",
-    year: "numeric",
-    month: "2-digit",
-  }).formatToParts(new Date());
-  const currentYear = Number(
-    currentMxParts.find((p) => p.type === "year")?.value ||
-      new Date().getFullYear()
-  );
-  const currentMonth = Number(
-    currentMxParts.find((p) => p.type === "month")?.value ||
-      new Date().getMonth() + 1
-  );
-
-  const isActiveStatus =
-    !policy.isArchived &&
-    policy.status !== "CANCELADA" &&
-    policy.status !== "TERMINADA";
-  const premiumAmount = Number(policy.annualPremium) || 0;
-
-  const effYear = effDate ? effDate.getUTCFullYear() : null;
-  const effMonth = effDate ? effDate.getUTCMonth() + 1 : null;
-
-  // Solo sincronizar a Producción/Ranking cuando el inicio de vigencia corresponde al mes y año de evaluación actual
-  const shouldSync =
-    isActiveStatus &&
-    premiumAmount > 0 &&
-    effDate !== null &&
-    effYear !== null &&
-    effMonth !== null &&
-    effYear === currentYear &&
-    effMonth === currentMonth;
-
-  if (!shouldSync) {
-    if (existingSyncedIds.length > 0) {
-      await prisma.agentEmission.deleteMany({
-        where: { id: { in: existingSyncedIds } },
-      });
-      await prisma.policyReceipt.updateMany({
-        where: { policyId: policy.id, syncedEmissionId: { in: existingSyncedIds } },
-        data: { syncedEmissionId: null },
-      });
-    }
-    return;
-  }
-
-  const prodRamo = mapCarteraRamoToProductionRamo(policy.ramo, policy.product);
-  const companyName = (policy.insuranceCompany || "Insignia Life").trim();
-
-  let clientName = (policy.contractor || policy.insured || "").trim();
-  if (!clientName && policy.clientId) {
-    const cl = await prisma.client.findUnique({
-      where: { id: policy.clientId },
-      select: { name: true },
-    });
-    clientName = cl?.name?.trim() || "";
-  }
-  if (!clientName) clientName = "Cliente Cartera";
-
-  const companyRecord = policy.agencyId
-    ? await prisma.insuranceCompany.findFirst({
-        where: {
-          agencyId: policy.agencyId,
-          name: { equals: companyName, mode: "insensitive" },
-        },
-        orderBy: { active: "desc" },
-      })
-    : null;
-
-  const firstReceipt = await prisma.policyReceipt.findFirst({
-    where: { policyId: policy.id },
-    orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
-  });
-
-  let syncedEmissionId =
-    firstReceipt?.syncedEmissionId || existingSyncedIds[0] || null;
-
-  if (syncedEmissionId) {
-    const existingEmission = await prisma.agentEmission.findUnique({
-      where: { id: syncedEmissionId },
-    });
-    if (existingEmission) {
-      await prisma.agentEmission.update({
-        where: { id: syncedEmissionId },
-        data: {
-          agentId: policy.userId,
-          companyId: companyRecord?.id || null,
-          companyName: companyRecord?.name || companyName,
-          policyNumber: policy.policyNumber,
-          clientName,
-          ramo: prodRamo,
-          issueDate: effDate!,
-          year: effYear!,
-          month: effMonth!,
-          primaEmitida: premiumAmount,
-          primaPagada: premiumAmount,
-          status: "PAGADA",
-        },
-      });
-    } else {
-      syncedEmissionId = null;
-    }
-  }
-
-  if (!syncedEmissionId) {
-    const createdEmission = await prisma.agentEmission.create({
-      data: {
-        agencyId: policy.agencyId,
-        agentId: policy.userId,
-        companyId: companyRecord?.id || null,
-        companyName: companyRecord?.name || companyName,
-        policyNumber: policy.policyNumber,
-        clientName,
-        ramo: prodRamo,
-        issueDate: effDate!,
-        year: effYear!,
-        month: effMonth!,
-        primaEmitida: premiumAmount,
-        primaPagada: premiumAmount,
-        status: "PAGADA",
-        notes: "Sincronizado automáticamente desde Mi Cartera",
-        createdById: actorUserId,
-      },
-    });
-    syncedEmissionId = createdEmission.id;
-  }
-
-  if (firstReceipt) {
-    await prisma.policyReceipt.update({
-      where: { id: firstReceipt.id },
-      data: {
-        status: "PAGADO",
-        paidAt: firstReceipt.paidAt || effDate!,
-        syncedEmissionId,
-      },
-    });
-  }
 }
 
 /**
@@ -478,22 +330,12 @@ export async function updateReceiptStatus(data: {
     throw new Error("Recibo no encontrado o sin permisos");
   }
 
-  // Si tenía una emisión sincronizada en Producción y se revierte el pago, eliminar la emisión sincronizada
-  if (receipt.syncedEmissionId) {
-    try {
-      await prisma.agentEmission.delete({
-        where: { id: receipt.syncedEmissionId },
-      });
-    } catch {
-      // Ignorar si ya fue borrada manualmente en producción
-    }
-  }
-
   const updated = await prisma.policyReceipt.update({
     where: { id: receipt.id },
     data: {
       status: data.status,
       paidAt: null,
+      paidAmount: null,
       syncedEmissionId: null,
       updatedAt: new Date(),
     },
@@ -513,8 +355,64 @@ export async function updateReceiptStatus(data: {
     revalidatePath(`/cartera/clientes/${receipt.policy.clientId}`);
   }
   revalidatePath("/admin");
+  revalidatePath("/admin/produccion");
+  revalidatePath("/ranking");
 
   return { success: true, receipt: updated };
+}
+
+export async function togglePolicyAdminApproval(policyId: string, approved: boolean) {
+  const ctx = await getSessionContext();
+  if (!ctx.isAdmin) {
+    throw new Error("Solo un Administrador puede aprobar o desaprobar pólizas.");
+  }
+
+  const existing = await prisma.policy.findFirst({
+    where: { id: policyId, agencyId: ctx.agencyId, isArchived: false },
+  });
+  if (!existing) throw new Error("Póliza no encontrada en tu agencia.");
+
+  await prisma.$transaction([
+    prisma.policy.update({
+      where: { id: policyId },
+      data: { adminApproved: approved },
+    }),
+    prisma.policyReceipt.updateMany({
+      where: { policyId },
+      data: { adminApproved: approved },
+    }),
+  ]);
+
+  revalidatePath("/cartera");
+  revalidatePath("/admin");
+  revalidatePath("/admin/produccion");
+  revalidatePath("/ranking");
+  return { success: true, adminApproved: approved };
+}
+
+export async function togglePolicyRenewalFlag(policyId: string, isRenewalCapture: boolean) {
+  const ctx = await getSessionContext();
+
+  const existing = await prisma.policy.findFirst({
+    where: ctx.isAdmin
+      ? { id: policyId, agencyId: ctx.agencyId, isArchived: false }
+      : { id: policyId, userId: ctx.userId, isArchived: false },
+  });
+  if (!existing) throw new Error("Póliza no encontrada o sin permisos.");
+
+  await prisma.policy.update({
+    where: { id: policyId },
+    data: {
+      isRenewalCapture,
+      subStatus: isRenewalCapture ? "RENOVACION" : (existing.subStatus === "RENOVACION" ? null : existing.subStatus),
+    },
+  });
+
+  revalidatePath("/cartera");
+  revalidatePath("/admin");
+  revalidatePath("/admin/produccion");
+  revalidatePath("/ranking");
+  return { success: true, isRenewalCapture };
 }
 
 export async function getClients() {
@@ -654,7 +552,10 @@ export async function getPolicies() {
   if (ctx.isAdmin) {
     whereClause.agencyId = ctx.agencyId;
   } else {
-    whereClause.userId = ctx.userId;
+    whereClause.OR = [
+      { userId: ctx.userId },
+      { sharedWithUserId: ctx.userId },
+    ];
   }
 
   return await prisma.policy.findMany({
@@ -662,14 +563,27 @@ export async function getPolicies() {
     include: {
       client: true,
       user: { select: { name: true } },
+      sharedWithUser: { select: { id: true, name: true } },
       receipts: { orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }] },
     },
     orderBy: { renewalDate: "asc" },
   });
 }
 
-export async function createPolicy(data: z.infer<typeof policySchema>) {
-  const ctx = await getSessionContext();
+async function resolveAgencyMemberId(agencyId: string, candidateId?: string | null): Promise<string | null> {
+  if (!candidateId || !candidateId.trim()) return null;
+  const user = await prisma.user.findFirst({
+    where: { id: candidateId.trim(), agencyId, active: true },
+    select: { id: true },
+  });
+  return user?.id || null;
+}
+
+export async function createPolicy(
+  data: z.infer<typeof policySchema>,
+  targetAgencyId?: string
+) {
+  const ctx = await getSessionContext(targetAgencyId);
   const parsed = policySchema.parse(data);
 
   let ownerUserId = ctx.userId;
@@ -682,6 +596,23 @@ export async function createPolicy(data: z.infer<typeof policySchema>) {
     });
     if (!clientExists) throw new Error("Cliente no encontrado");
     ownerUserId = clientExists.userId;
+  }
+
+  // Si un Admin asigna explícitamente un Agente Titular de la agencia, usarlo
+  if (ctx.isAdmin && parsed.ownerAgentId) {
+    const validOwner = await resolveAgencyMemberId(ctx.agencyId, parsed.ownerAgentId);
+    if (validOwner) ownerUserId = validOwner;
+  }
+
+  // Validar co-agente en póliza compartida (solo dentro de la misma agencia y distinto al titular)
+  let validSharedUserId: string | null = null;
+  let validSharedPct = 0;
+  if (parsed.sharedWithUserId && Number(parsed.sharedPercentage) > 0) {
+    const candidateShared = await resolveAgencyMemberId(ctx.agencyId, parsed.sharedWithUserId);
+    if (candidateShared && candidateShared !== ownerUserId) {
+      validSharedUserId = candidateShared;
+      validSharedPct = Math.min(100, Math.max(0, Number(parsed.sharedPercentage) || 0));
+    }
   }
 
   if (ctx.agencyId === "demo-agency-id") {
@@ -705,12 +636,21 @@ export async function createPolicy(data: z.infer<typeof policySchema>) {
     parsed.anniversaryMonth ||
     (effectiveDateUTC ? effectiveDateUTC.getUTCMonth() + 1 : null);
 
-  const { ramo, tipoVigencia } = inferRamoAndVigencia(
+  const { ramo, subRamo, vidaObjetivo, tipoVigencia } = inferRamoAndVigencia(
     parsed.product,
     parsed.insuranceCompany,
     parsed.ramo,
-    parsed.tipoVigencia
+    parsed.tipoVigencia,
+    parsed.subRamo,
+    parsed.vidaObjetivo
   );
+
+  const cleanCompany = parsed.insuranceCompany?.trim()
+    ? canonicalCompanyName(parsed.insuranceCompany.trim())
+    : null;
+
+  const adminApproved = await shouldAutoApproveForActor(ctx.agencyId, ctx.isAdmin);
+  const isRenewal = Boolean(parsed.isRenewalCapture) || parsed.subStatus === "RENOVACION";
 
   const policy = await prisma.policy.create({
     data: {
@@ -720,13 +660,19 @@ export async function createPolicy(data: z.infer<typeof policySchema>) {
       contractor: parsed.contractor?.trim() || null,
       insured: parsed.insured?.trim() || null,
       product: parsed.product?.trim() || null,
-      insuranceCompany: parsed.insuranceCompany?.trim() || null,
+      insuranceCompany: cleanCompany,
       ramo,
+      subRamo,
+      vidaObjetivo,
       tipoVigencia,
       currency: parsed.currency || "MXN",
       originalPremium: parsed.originalPremium ?? null,
       status: parsed.status || "VIGENTE",
-      subStatus: parsed.subStatus || null,
+      subStatus: isRenewal ? "RENOVACION" : (parsed.subStatus || null),
+      isRenewalCapture: isRenewal,
+      adminApproved,
+      sharedWithUserId: validSharedUserId,
+      sharedPercentage: validSharedPct,
       effectiveDate: effectiveDateUTC,
       renewalDate: renewalDateUTC,
       anniversaryDay: annivDay,
@@ -741,11 +687,39 @@ export async function createPolicy(data: z.infer<typeof policySchema>) {
     },
   });
 
-  // Generar recibos del ciclo actual para la nueva póliza
-  await syncReceiptsForPolicy(policy, { autoMarkHistoricalPaid: true });
+  // Generar recibos del ciclo actual SIN auto-marcar pagados si no fue confirmado
+  await syncReceiptsForPolicy(policy, { autoMarkHistoricalPaid: false });
 
-  // Sincronizar automáticamente con Producción y Ranking si el inicio de vigencia corresponde al periodo de evaluación
-  await syncPolicyEmissionWithProduction(policy, ctx.userId);
+  // Si el usuario marcó "Primer recibo ya pagado", registrar el pago exacto en el Recibo #1
+  if (parsed.firstReceiptPaid) {
+    const firstReceipt = await prisma.policyReceipt.findFirst({
+      where: { policyId: policy.id },
+      orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
+    });
+    if (firstReceipt) {
+      const paidAt =
+        toUTCNoonDate(parsed.firstReceiptPaidDate) ||
+        effectiveDateUTC ||
+        new Date();
+      const paidAmount =
+        parsed.firstReceiptPaidAmount !== undefined &&
+        parsed.firstReceiptPaidAmount !== null &&
+        Number(parsed.firstReceiptPaidAmount) > 0
+          ? Number(parsed.firstReceiptPaidAmount)
+          : Number(firstReceipt.amount) || 0;
+
+      await prisma.policyReceipt.update({
+        where: { id: firstReceipt.id },
+        data: {
+          status: "PAGADO",
+          paidAt,
+          paidAmount,
+          adminApproved,
+          paymentNotes: "Primer recibo marcado como pagado al capturar póliza",
+        },
+      });
+    }
+  }
 
   revalidatePath("/cartera");
   revalidatePath("/cartera/clientes");
@@ -767,6 +741,22 @@ export async function updatePolicy(id: string, data: z.infer<typeof policySchema
   });
   if (!existing) throw new Error("Póliza no encontrada o sin permisos");
 
+  let nextOwnerUserId = existing.userId;
+  if (ctx.isAdmin && parsed.ownerAgentId) {
+    const validOwner = await resolveAgencyMemberId(ctx.agencyId, parsed.ownerAgentId);
+    if (validOwner) nextOwnerUserId = validOwner;
+  }
+
+  let validSharedUserId: string | null = null;
+  let validSharedPct = 0;
+  if (parsed.sharedWithUserId && Number(parsed.sharedPercentage) > 0) {
+    const candidateShared = await resolveAgencyMemberId(ctx.agencyId, parsed.sharedWithUserId);
+    if (candidateShared && candidateShared !== nextOwnerUserId) {
+      validSharedUserId = candidateShared;
+      validSharedPct = Math.min(100, Math.max(0, Number(parsed.sharedPercentage) || 0));
+    }
+  }
+
   const effectiveDateUTC = toUTCNoonDate(parsed.effectiveDate);
   const renewalDateUTC = toUTCNoonDate(parsed.renewalDate);
 
@@ -777,11 +767,13 @@ export async function updatePolicy(id: string, data: z.infer<typeof policySchema
     parsed.anniversaryMonth ||
     (effectiveDateUTC ? effectiveDateUTC.getUTCMonth() + 1 : existing.anniversaryMonth);
 
-  const { ramo, tipoVigencia } = inferRamoAndVigencia(
+  const { ramo, subRamo, vidaObjetivo, tipoVigencia } = inferRamoAndVigencia(
     parsed.product,
     parsed.insuranceCompany,
     parsed.ramo,
-    parsed.tipoVigencia
+    parsed.tipoVigencia,
+    parsed.subRamo,
+    parsed.vidaObjetivo
   );
 
   const paymentOrPremiumChanged =
@@ -789,21 +781,37 @@ export async function updatePolicy(id: string, data: z.infer<typeof policySchema
     existing.annualPremium !== (parsed.annualPremium || 0) ||
     existing.effectiveDate?.getTime() !== effectiveDateUTC?.getTime();
 
+  const cleanCompany = parsed.insuranceCompany?.trim()
+    ? canonicalCompanyName(parsed.insuranceCompany.trim())
+    : null;
+
+  const isRenewal = Boolean(parsed.isRenewalCapture) || parsed.subStatus === "RENOVACION";
+
   const policy = await prisma.policy.update({
     where: { id },
     data: {
+      userId: nextOwnerUserId,
       policyNumber: parsed.policyNumber.trim(),
       clientId: parsed.clientId !== undefined ? (parsed.clientId || null) : existing.clientId,
       contractor: parsed.contractor?.trim() || null,
       insured: parsed.insured?.trim() || null,
       product: parsed.product?.trim() || null,
-      insuranceCompany: parsed.insuranceCompany?.trim() || null,
+      insuranceCompany: cleanCompany,
       ramo,
+      subRamo,
+      vidaObjetivo,
       tipoVigencia,
       currency: parsed.currency || existing.currency || "MXN",
       originalPremium: parsed.originalPremium !== undefined ? parsed.originalPremium : existing.originalPremium,
       status: parsed.status || existing.status || "VIGENTE",
-      subStatus: parsed.subStatus !== undefined ? (parsed.subStatus || null) : existing.subStatus,
+      subStatus: isRenewal
+        ? "RENOVACION"
+        : parsed.subStatus !== undefined
+        ? (parsed.subStatus || null)
+        : existing.subStatus,
+      isRenewalCapture: isRenewal,
+      sharedWithUserId: validSharedUserId,
+      sharedPercentage: validSharedPct,
       effectiveDate: effectiveDateUTC,
       renewalDate: renewalDateUTC,
       anniversaryDay: annivDay,
@@ -817,12 +825,17 @@ export async function updatePolicy(id: string, data: z.infer<typeof policySchema
     },
   });
 
+  if (nextOwnerUserId !== existing.userId) {
+    await prisma.policyReceipt.updateMany({
+      where: { policyId: id },
+      data: { userId: nextOwnerUserId },
+    });
+  }
+
   await syncReceiptsForPolicy(policy, {
-    autoMarkHistoricalPaid: true,
+    autoMarkHistoricalPaid: false,
     replacePending: paymentOrPremiumChanged,
   });
-
-  await syncPolicyEmissionWithProduction(policy, ctx.userId);
 
   revalidatePath("/cartera");
   revalidatePath("/cartera/clientes");
@@ -842,16 +855,6 @@ export async function deletePolicy(id: string) {
       : { id, userId: ctx.userId },
   });
   if (!existing) throw new Error("Póliza no encontrada o sin permisos");
-
-  // Eliminar emisiones sincronizadas en Producción antes de archivar
-  const syncedReceipts = await prisma.policyReceipt.findMany({
-    where: { policyId: id, syncedEmissionId: { not: null } },
-    select: { syncedEmissionId: true },
-  });
-  const syncedIds = syncedReceipts.map((r) => r.syncedEmissionId).filter(Boolean) as string[];
-  if (syncedIds.length > 0) {
-    await prisma.agentEmission.deleteMany({ where: { id: { in: syncedIds } } });
-  }
 
   await prisma.policy.update({
     where: { id },
@@ -1036,7 +1039,14 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
       const renewalDateUTC = safeDateUTCNoon(row.renewalDate);
       const productStr = row.product ? String(row.product).trim() : null;
       const companyStr = row.insuranceCompany ? String(row.insuranceCompany).trim() : null;
-      const { ramo, tipoVigencia } = inferRamoAndVigencia(productStr, companyStr, row.ramo, row.tipoVigencia);
+      const { ramo, subRamo, vidaObjetivo, tipoVigencia } = inferRamoAndVigencia(
+        productStr,
+        companyStr,
+        row.ramo,
+        row.tipoVigencia,
+        row.subRamo,
+        row.vidaObjetivo
+      );
 
       const annivDay = effectiveDateUTC ? effectiveDateUTC.getUTCDate() : null;
       const annivMonth = effectiveDateUTC ? effectiveDateUTC.getUTCMonth() + 1 : null;
@@ -1051,8 +1061,10 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
             contractor: clientName,
             insured: row.insured ? String(row.insured).trim() : clientName,
             product: productStr,
-            insuranceCompany: companyStr,
+            insuranceCompany: companyStr ? canonicalCompanyName(companyStr) : null,
             ramo,
+            subRamo,
+            vidaObjetivo,
             tipoVigencia,
             currency: row.currency ? String(row.currency).trim().toUpperCase() : "MXN",
             status: "VIGENTE",
@@ -1108,6 +1120,9 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
 
     revalidatePath("/cartera");
     revalidatePath("/cartera/clientes");
+    revalidatePath("/admin");
+    revalidatePath("/admin/produccion");
+    revalidatePath("/ranking");
     return { success: true, createdClients, createdPolicies, updatedPolicies };
   } catch (e: any) {
     console.error("Upload error:", e);
@@ -1164,8 +1179,8 @@ export async function extractPolicyFromPdfAction(formData: FormData) {
 }
 
 /**
- * ETAPA 3: Crea (o vincula) el Cliente + crea la Póliza + genera sus Recibos en 1 solo paso
- * a partir de la lectura inteligente de una carátula PDF.
+ * Crea (o vincula) el Cliente + crea la Póliza + genera sus Recibos en 1 solo paso
+ * (con soporte para Agente Titular asignado por Admin, Póliza Compartida y Primer Recibo Pagado).
  */
 export async function createClientAndPolicyFromAi(payload: {
   existingClientId?: string | null;
@@ -1174,9 +1189,10 @@ export async function createClientAndPolicyFromAi(payload: {
   clientEmail?: string | null;
   clientPhone?: string | null;
   clientBirthDate?: string | null;
+  targetAgencyId?: string;
   policyData: z.infer<typeof policySchema>;
 }) {
-  const ctx = await getSessionContext();
+  const ctx = await getSessionContext(payload.targetAgencyId);
 
   const cleanName = (payload.clientName || payload.policyData.contractor || "").trim();
   const validatedClient = clientSchema.parse({
@@ -1190,10 +1206,15 @@ export async function createClientAndPolicyFromAi(payload: {
   // Validar también la póliza antes de crear el cliente para evitar crear clientes huérfanos si la póliza es inválida
   policySchema.parse(payload.policyData);
 
+  let targetOwnerUserId = ctx.userId;
+  if (ctx.isAdmin && payload.policyData.ownerAgentId) {
+    const validOwner = await resolveAgencyMemberId(ctx.agencyId, payload.policyData.ownerAgentId);
+    if (validOwner) targetOwnerUserId = validOwner;
+  }
+
   let targetClientId = payload.existingClientId || null;
 
   if (!targetClientId) {
-    // Buscar si ya existe un cliente con ese nombre exacto para este agente/agencia
     const existingClient = await prisma.client.findFirst({
       where: ctx.isAdmin
         ? { agencyId: ctx.agencyId, name: { equals: validatedClient.name, mode: "insensitive" }, isArchived: false }
@@ -1202,7 +1223,6 @@ export async function createClientAndPolicyFromAi(payload: {
 
     if (existingClient) {
       targetClientId = existingClient.id;
-      // Enriquecer datos del cliente si estaban vacíos
       await prisma.client.update({
         where: { id: existingClient.id },
         data: {
@@ -1216,7 +1236,7 @@ export async function createClientAndPolicyFromAi(payload: {
       const createdClient = await prisma.client.create({
         data: {
           agencyId: ctx.agencyId,
-          userId: ctx.userId,
+          userId: targetOwnerUserId,
           name: validatedClient.name,
           rfc: validatedClient.rfc?.trim().toUpperCase() || null,
           email: validatedClient.email?.trim() || null,
@@ -1228,10 +1248,13 @@ export async function createClientAndPolicyFromAi(payload: {
     }
   }
 
-  const createdPolicy = await createPolicy({
-    ...payload.policyData,
-    clientId: targetClientId,
-  });
+  const createdPolicy = await createPolicy(
+    {
+      ...payload.policyData,
+      clientId: targetClientId,
+    },
+    payload.targetAgencyId
+  );
 
   revalidatePath("/cartera");
   revalidatePath("/cartera/clientes");
@@ -1243,4 +1266,3 @@ export async function createClientAndPolicyFromAi(payload: {
     policy: createdPolicy,
   };
 }
-

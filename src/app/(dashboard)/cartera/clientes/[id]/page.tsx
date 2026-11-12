@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import {
   Card,
   CardContent,
@@ -43,10 +44,10 @@ import {
   computePolicyCycleInfo,
   formatDateSafe,
   calculateClientAgeInfo,
-  RAMO_LABELS,
   STATUS_CONFIG,
   SUB_STATUS_LABELS,
 } from "../../dateUtils";
+import { classifyPolicyRamo } from "@/lib/ramosCatalog";
 import { ensurePoliciesHaveReceipts } from "../../actions";
 import { analyzeClientBlindaje } from "../../protectionGapUtils";
 
@@ -66,7 +67,12 @@ export default async function ClienteDetalle({
   });
   const isAdmin =
     currentUser?.role === "ADMIN" || currentUser?.role === "SUPER_ADMIN";
-  const effectiveAgencyId = (session.user.agencyId ||
+  const impersonateAgencyId =
+    currentUser?.role === "SUPER_ADMIN"
+      ? cookies().get("impersonateAgencyId")?.value
+      : undefined;
+  const effectiveAgencyId = (impersonateAgencyId ||
+    session.user.agencyId ||
     currentUser?.agencyId ||
     "aacom") as string;
 
@@ -78,6 +84,7 @@ export default async function ClienteDetalle({
       policies: {
         where: { isArchived: false },
         include: {
+          sharedWithUser: { select: { id: true, name: true } },
           receipts: {
             orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
           },
@@ -100,6 +107,7 @@ export default async function ClienteDetalle({
         policies: {
           where: { isArchived: false },
           include: {
+            sharedWithUser: { select: { id: true, name: true } },
             receipts: {
               orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
             },
@@ -581,9 +589,17 @@ export default async function ClienteDetalle({
                             <div className="text-sm font-medium">
                               {policy.product || "No especificado"}
                             </div>
-                            <div className="text-[11px] text-muted-foreground">
-                              {RAMO_LABELS[policy.ramo || "VIDA_INDIVIDUAL"] ||
-                                policy.ramo}
+                            <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
+                              <span>{classifyPolicyRamo(policy).fullLabel}</span>
+                              {policy.sharedWithUserId && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] px-1.5 py-0 bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30"
+                                >
+                                  🤝 Compartida {policy.sharedPercentage || 0}%{" "}
+                                  {policy.sharedWithUser?.name ? `(${policy.sharedWithUser.name})` : ""}
+                                </Badge>
+                              )}
                             </div>
                           </TableCell>
 

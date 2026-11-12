@@ -5,57 +5,28 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { RAMOS_CATALOGO, DEFAULT_COMPANIES, MONTH_NAMES_ES } from "@/lib/productionConstants";
-import { toUTCNoonDate } from "@/app/(dashboard)/cartera/dateUtils";
+import {
+  buildPolicyReceiptsDrafts,
+  toUTCNoonDate,
+} from "@/app/(dashboard)/cartera/dateUtils";
+import {
+  BusinessScope,
+  CanonicalSubRamoKey,
+  PeriodMode,
+  RamoGroupKey,
+  VidaObjetivoKey,
+  canonicalCompanyName,
+  classifyPolicyRamo,
+  getDefaultSubPeriodForMonth,
+  mapHistoricalEmissionRamoToPolicy,
+  normalizeCompanyKey,
+  resolvePeriodDateRange,
+  toYmdKey,
+} from "@/lib/ramosCatalog";
+import { computeAgencyCarteraProduction } from "@/lib/carteraProductionEngine";
 
 const MIGRATION_SETTING_KEY = "production_companies_multitenant_v1";
 let isProductionCompaniesMigratedInMemory = false;
-
-function normalizeCompanyKey(raw: string | null | undefined): string {
-  return (raw || "")
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, " ");
-}
-
-function canonicalCompanyName(raw: string | null | undefined): string {
-  const key = normalizeCompanyKey(raw);
-  switch (key) {
-    case "insignia":
-    case "insignia life":
-      return "Insignia Life";
-    case "gnp":
-    case "gnp seguros":
-    case "grupo nacional provincial":
-      return "GNP Seguros";
-    case "la latino":
-    case "la latino seguros":
-    case "la latinoamericana":
-    case "la latinoamericana seguros":
-      return "La Latinoamericana Seguros";
-    case "plan seguro":
-      return "Plan Seguro";
-    case "smnyl":
-    case "monterrey":
-    case "seguros monterrey":
-    case "seguros monterrey nyl":
-      return "Seguros Monterrey NYL";
-    case "axa":
-    case "axa seguros":
-      return "AXA Seguros";
-    case "metlife":
-      return "MetLife";
-    case "qualitas":
-      return "Quálitas";
-    case "mapfre":
-      return "Mapfre";
-    case "allianz":
-      return "Allianz";
-    default:
-      return (raw || "").trim();
-  }
-}
 
 // Helper to check admin access
 async function verifyAdminUser() {
@@ -71,8 +42,12 @@ async function verifyAdminUser() {
     throw new Error("Acceso restringido para administradores.");
   }
 
-  const impersonateId = user.role === "SUPER_ADMIN" ? cookies().get("impersonateAgencyId")?.value : undefined;
-  const effectiveUserAgencyId = (impersonateId || (session.user as any)?.agencyId || user.agencyId || "aacom") as string;
+  const impersonateId =
+    user.role === "SUPER_ADMIN" ? cookies().get("impersonateAgencyId")?.value : undefined;
+  const effectiveUserAgencyId = (impersonateId ||
+    (session.user as any)?.agencyId ||
+    user.agencyId ||
+    "aacom") as string;
 
   return {
     ...user,
@@ -97,8 +72,7 @@ function resolveTargetAgencyId(
 
 /**
  * Migración única e idempotente para aislar el catálogo InsuranceCompany
- * estrictamente por agencyId (eliminando filas globales agencyId = null)
- * y reconectar emisiones históricas.
+ * estrictamente por agencyId (eliminando filas globales agencyId = null).
  */
 async function ensureProductionCompaniesMigratedOnce() {
   if (isProductionCompaniesMigratedInMemory) return;
@@ -120,7 +94,6 @@ async function ensureProductionCompaniesMigratedOnce() {
       }),
     ]);
 
-    // Conservar logotipos y colores previamente cargados en filas globales o de agencia
     const sharedLogoByKey = new Map<string, string>();
     const sharedColorByKey = new Map<string, string>();
     for (const c of allCompanies) {
@@ -202,7 +175,6 @@ async function ensureProductionCompaniesMigratedOnce() {
         }
       }
 
-      // Incluir cualquier compañía personalizada existente propia de esa agencia o presente en sus emisiones
       for (const existingComp of agencyExistingCompanies) {
         const canonName = canonicalCompanyName(existingComp.name);
         const k = normalizeCompanyKey(canonName);
@@ -239,10 +211,7 @@ async function ensureProductionCompaniesMigratedOnce() {
         }
       }
 
-      // Materializar filas aisladas para esta agencia y eliminar duplicados internos
       const resolvedCompanyIdByKey = new Map<string, { id: string; name: string }>();
-      const matchedExistingIds = new Set<string>();
-
       for (const [k, desired] of Array.from(desiredMap.entries())) {
         const candidates = agencyExistingCompanies.filter(
           (c) => normalizeCompanyKey(canonicalCompanyName(c.name)) === k
@@ -250,7 +219,6 @@ async function ensureProductionCompaniesMigratedOnce() {
 
         if (candidates.length > 0) {
           const primary = candidates.find((c) => !!c.logoUrl) || candidates[0];
-          matchedExistingIds.add(primary.id);
           const updated = await prisma.insuranceCompany.update({
             where: { id: primary.id },
             data: {
@@ -284,7 +252,6 @@ async function ensureProductionCompaniesMigratedOnce() {
         }
       }
 
-      // Reconectar todas las emisiones de esta agencia a su propia fila InsuranceCompany
       for (const em of agencyEmissions) {
         const k = normalizeCompanyKey(canonicalCompanyName(em.companyName));
         const targetComp = resolvedCompanyIdByKey.get(k);
@@ -300,7 +267,6 @@ async function ensureProductionCompaniesMigratedOnce() {
       }
     }
 
-    // Eliminar todas las filas globales huérfanas (agencyId IS NULL) para impedir contaminación futura
     await prisma.insuranceCompany.deleteMany({
       where: { agencyId: null },
     });
@@ -317,10 +283,6 @@ async function ensureProductionCompaniesMigratedOnce() {
   }
 }
 
-/**
- * Inicializa el catálogo aislado de 8 aseguradoras base APAGADAS (0 activas)
- * cuando una agencia nueva entra por primera vez al módulo.
- */
 async function ensureAgencyCompaniesSeeded(agencyId: string) {
   if (!agencyId || agencyId === "ALL" || agencyId === "DEFAULT") return;
 
@@ -341,15 +303,12 @@ async function ensureAgencyCompaniesSeeded(agencyId: string) {
           },
         });
       } catch {
-        // Ignorar colisiones si dos peticiones concurrentes inicializan la misma agencia
+        // Ignorar colisiones concurrentes
       }
     }
   }
 }
 
-/**
- * Fusiona y limpia duplicados dentro de una misma agencia preservando logos y emisiones.
- */
 async function deduplicateAgencyCompaniesIfNeeded<
   T extends {
     id: string;
@@ -453,9 +412,7 @@ export async function getInsuranceCompanies(agencyId?: string) {
     await ensureAgencyCompaniesSeeded(effectiveAgencyId);
 
     const rawCompanies = await prisma.insuranceCompany.findMany({
-      where: {
-        agencyId: effectiveAgencyId,
-      },
+      where: { agencyId: effectiveAgencyId },
       orderBy: [{ active: "desc" }, { order: "asc" }, { name: "asc" }],
     });
 
@@ -512,7 +469,6 @@ export async function saveInsuranceCompany(data: {
       revalidatePath("/admin/produccion");
       return { success: true, company: updated };
     } else {
-      // Si ya existe en esta misma agencia (ej. apagada), la reactivamos y actualizamos sin duplicar
       const agencyCompanies = await prisma.insuranceCompany.findMany({
         where: { agencyId: targetAgencyId },
       });
@@ -526,7 +482,7 @@ export async function saveInsuranceCompany(data: {
         savedCompany = await prisma.insuranceCompany.update({
           where: { id: duplicateInAgency.id },
           data: {
-            name: nameTrimmed,
+            name: canonicalCompanyName(nameTrimmed) || nameTrimmed,
             ...(data.logoUrl ? { logoUrl: data.logoUrl } : {}),
             ...(data.color ? { color: data.color } : {}),
             ...(data.order !== undefined ? { order: data.order } : {}),
@@ -537,27 +493,13 @@ export async function saveInsuranceCompany(data: {
         savedCompany = await prisma.insuranceCompany.create({
           data: {
             agencyId: targetAgencyId,
-            name: nameTrimmed,
+            name: canonicalCompanyName(nameTrimmed) || nameTrimmed,
             logoUrl: data.logoUrl || null,
             color: data.color || "#0284c7",
             order: data.order ?? agencyCompanies.length + 1,
             active: data.active ?? true,
           },
         });
-      }
-
-      // Reconectar emisiones sin vínculo en esta misma agencia cuyo nombre coincida
-      const unlinkedEmissions = await prisma.agentEmission.findMany({
-        where: { agencyId: targetAgencyId, companyId: null },
-        select: { id: true, companyName: true },
-      });
-      for (const em of unlinkedEmissions) {
-        if (normalizeCompanyKey(canonicalCompanyName(em.companyName)) === targetKey) {
-          await prisma.agentEmission.update({
-            where: { id: em.id },
-            data: { companyId: savedCompany.id },
-          });
-        }
       }
 
       revalidatePath("/admin");
@@ -593,22 +535,6 @@ export async function toggleInsuranceCompanyActive(
       data: { active },
     });
 
-    if (active) {
-      const targetKey = normalizeCompanyKey(canonicalCompanyName(existing.name));
-      const unlinkedEmissions = await prisma.agentEmission.findMany({
-        where: { agencyId: targetAgencyId, companyId: null },
-        select: { id: true, companyName: true },
-      });
-      for (const em of unlinkedEmissions) {
-        if (normalizeCompanyKey(canonicalCompanyName(em.companyName)) === targetKey) {
-          await prisma.agentEmission.update({
-            where: { id: em.id },
-            data: { companyId: updated.id },
-          });
-        }
-      }
-    }
-
     revalidatePath("/admin");
     revalidatePath("/admin/produccion");
     return { success: true, company: updated };
@@ -637,7 +563,6 @@ export async function deleteInsuranceCompany(companyId: string, agencyId?: strin
     );
 
     if (isBaseCatalogCompany) {
-      // Las 8 compañías base se apagan para esta agencia sin borrar la fila ni romper vínculos históricos
       await prisma.insuranceCompany.update({
         where: { id: existing.id },
         data: { active: false },
@@ -657,7 +582,7 @@ export async function deleteInsuranceCompany(companyId: string, agencyId?: strin
   }
 }
 
-// 4. Crear Emisión Manual de Póliza
+// 4-6. Emisiones Históricas Manuales (Conservadas por compatibilidad; la operación vive en Mi Cartera)
 export async function createEmission(data: {
   agentId: string;
   companyId?: string;
@@ -665,7 +590,7 @@ export async function createEmission(data: {
   policyNumber?: string;
   clientName?: string;
   ramo?: string;
-  issueDate: string; // "YYYY-MM-DD"
+  issueDate: string;
   primaEmitida: number;
   primaPagada: number;
   status?: string;
@@ -673,7 +598,6 @@ export async function createEmission(data: {
 }) {
   try {
     const user = await verifyAdminUser();
-
     if (!data.agentId) throw new Error("Debes seleccionar un agente.");
     if (!data.companyName?.trim()) throw new Error("Debes especificar la aseguradora.");
 
@@ -681,11 +605,11 @@ export async function createEmission(data: {
     if (!dateObj || isNaN(dateObj.getTime())) throw new Error("Fecha de emisión inválida.");
 
     const year = dateObj.getUTCFullYear();
-    const month = dateObj.getUTCMonth() + 1; // 1-indexed
+    const month = dateObj.getUTCMonth() + 1;
 
     const agent = await prisma.user.findUnique({
       where: { id: data.agentId },
-      select: { id: true, agencyId: true, name: true },
+      select: { id: true, agencyId: true },
     });
     if (!agent) throw new Error("Agente no encontrado.");
     if (user.role !== "SUPER_ADMIN" && agent.agencyId !== user.agencyId) {
@@ -732,20 +656,22 @@ export async function createEmission(data: {
   }
 }
 
-// 5. Actualizar Emisión de Póliza
-export async function updateEmission(id: string, data: {
-  agentId?: string;
-  companyId?: string;
-  companyName?: string;
-  policyNumber?: string;
-  clientName?: string;
-  ramo?: string;
-  issueDate?: string;
-  primaEmitida?: number;
-  primaPagada?: number;
-  status?: string;
-  notes?: string;
-}) {
+export async function updateEmission(
+  id: string,
+  data: {
+    agentId?: string;
+    companyId?: string;
+    companyName?: string;
+    policyNumber?: string;
+    clientName?: string;
+    ramo?: string;
+    issueDate?: string;
+    primaEmitida?: number;
+    primaPagada?: number;
+    status?: string;
+    notes?: string;
+  }
+) {
   try {
     const user = await verifyAdminUser();
 
@@ -813,7 +739,6 @@ export async function updateEmission(id: string, data: {
   }
 }
 
-// 6. Eliminar Emisión de Póliza
 export async function deleteEmission(id: string) {
   try {
     const user = await verifyAdminUser();
@@ -885,6 +810,7 @@ export async function updateAgentBudget(data: {
     });
 
     revalidatePath("/admin");
+    revalidatePath("/admin/produccion");
     return { success: true, budget };
   } catch (error: any) {
     console.error("Error updateAgentBudget:", error);
@@ -897,9 +823,8 @@ export async function syncBudgetsFromPea(year: number, month: number, agencyId?:
   try {
     const user = await verifyAdminUser();
     const effectiveAgencyId = resolveTargetAgencyId(user, agencyId);
-    const monthName = MONTH_NAMES_ES[month - 1]; // e.g. "Septiembre"
+    const monthName = MONTH_NAMES_ES[month - 1];
 
-    // Search reviewed PEAs strictly for this agency
     const reviews = await prisma.performanceReview.findMany({
       where: {
         agencyId: effectiveAgencyId,
@@ -914,7 +839,7 @@ export async function syncBudgetsFromPea(year: number, month: number, agencyId?:
           },
         ],
       },
-      orderBy: { createdAt: "asc" }, // First reviewed takes precedence
+      orderBy: { createdAt: "asc" },
     });
 
     let syncedCount = 0;
@@ -946,6 +871,7 @@ export async function syncBudgetsFromPea(year: number, month: number, agencyId?:
     }
 
     revalidatePath("/admin");
+    revalidatePath("/admin/produccion");
     return { success: true, syncedCount, totalFound: reviews.length };
   } catch (error: any) {
     console.error("Error syncBudgetsFromPea:", error);
@@ -953,33 +879,70 @@ export async function syncBudgetsFromPea(year: number, month: number, agencyId?:
   }
 }
 
-// 9. Cargar Todo el Dashboard de Producción (100% Aislado por Agencia)
+// 9. Cargar Dashboard Unificado de Producción (Fuente Única: Mi Cartera en MXN)
 export async function getProductionDashboardData(options: {
   year: number;
   month: number;
   agencyId?: string;
   agentId?: string;
   companyId?: string;
+  periodMode?: PeriodMode;
+  subPeriod?: number;
+  startDate?: string;
+  endDate?: string;
+  businessScope?: BusinessScope;
+  ramoGroupFilter?: RamoGroupKey | "ALL";
+  subRamoFilter?: CanonicalSubRamoKey | "ALL";
+  vidaObjetivoFilter?: VidaObjetivoKey | "ALL";
+  onlyAdminApproved?: boolean;
 }) {
   try {
     await ensureProductionCompaniesMigratedOnce();
     const user = await verifyAdminUser();
     const { year, month } = options;
 
-    // SaaS Multi-tenancy Isolation:
-    // Regular admins can NEVER access data outside their agency.
-    // Super admins default to user.agencyId (including impersonateAgencyId cookie) unless selecting another agency.
     const effectiveAgencyId = resolveTargetAgencyId(user, options.agencyId);
-
     await ensureAgencyCompaniesSeeded(effectiveAgencyId);
 
-    // 1. Fetch ALL companies strictly belonging to THIS agency (never agencyId = null)
-    const rawAgencyCompanies = await prisma.insuranceCompany.findMany({
-      where: {
-        agencyId: effectiveAgencyId,
-      },
-      orderBy: [{ active: "desc" }, { order: "asc" }, { name: "asc" }],
+    const periodMode: PeriodMode = options.periodMode || "MENSUAL";
+    const subPeriod =
+      options.subPeriod ?? getDefaultSubPeriodForMonth(periodMode, month);
+    const periodInfo = resolvePeriodDateRange({
+      periodMode,
+      year,
+      subPeriod,
+      startDate: options.startDate,
+      endDate: options.endDate,
     });
+
+    const [rawAgencyCompanies, agents, agencies, legacyEmissionsCount] = await Promise.all([
+      prisma.insuranceCompany.findMany({
+        where: { agencyId: effectiveAgencyId },
+        orderBy: [{ active: "desc" }, { order: "asc" }, { name: "asc" }],
+      }),
+      prisma.user.findMany({
+        where: {
+          agencyId: effectiveAgencyId,
+          active: true,
+          role: { in: ["AGENTE", "AGENTE_LITE", "ADMIN", "SUPER_ADMIN"] },
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          image: true,
+          agencyId: true,
+          agency: { select: { id: true, name: true } },
+        },
+        orderBy: { name: "asc" },
+      }),
+      user.role === "SUPER_ADMIN"
+        ? prisma.agency.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } })
+        : Promise.resolve([]),
+      prisma.agentEmission.count({
+        where: { agencyId: effectiveAgencyId },
+      }),
+    ]);
 
     const allAgencyCompanies = await deduplicateAgencyCompaniesIfNeeded(
       effectiveAgencyId,
@@ -990,208 +953,189 @@ export async function getProductionDashboardData(options: {
       .filter((c) => c.active)
       .sort((a, b) => (a.order - b.order) || a.name.localeCompare(b.name));
 
-    const companyIdByNormalizedName = new Map<string, string>();
-    for (const comp of allAgencyCompanies) {
-      companyIdByNormalizedName.set(normalizeCompanyKey(canonicalCompanyName(comp.name)), comp.id);
-    }
-
-    // 2. Fetch all agents strictly belonging to this agency
-    const agents = await prisma.user.findMany({
-      where: {
-        agencyId: effectiveAgencyId,
-        active: true,
-        role: { in: ["AGENTE", "AGENTE_LITE", "ADMIN", "SUPER_ADMIN"] },
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-        agencyId: true,
-        agency: { select: { id: true, name: true } },
-      },
-      orderBy: { name: "asc" },
-    });
-
-    // 3. Fetch emissions strictly for this agency
-    let companyFilterCondition: any = {};
+    let filterCompanyKey: string | undefined;
     if (options.companyId && options.companyId !== "ALL") {
       const selectedCompObj = allAgencyCompanies.find((c) => c.id === options.companyId);
       if (selectedCompObj) {
-        companyFilterCondition = {
-          OR: [
-            { companyId: selectedCompObj.id },
-            { companyName: { equals: selectedCompObj.name, mode: "insensitive" } },
-          ],
-        };
-      } else {
-        companyFilterCondition = { companyId: options.companyId };
+        filterCompanyKey = normalizeCompanyKey(canonicalCompanyName(selectedCompObj.name));
       }
     }
 
-    const emissionsWhere: any = {
-      year,
-      month,
+    const carteraProd = await computeAgencyCarteraProduction({
       agencyId: effectiveAgencyId,
-      ...(options.agentId && options.agentId !== "ALL" ? { agentId: options.agentId } : {}),
-      ...companyFilterCondition,
-    };
-
-    const emissions = await prisma.agentEmission.findMany({
-      where: emissionsWhere,
-      orderBy: { issueDate: "desc" },
-      include: {
-        agent: { select: { id: true, name: true, email: true, image: true } },
-        company: { select: { id: true, name: true, logoUrl: true, color: true } },
-      },
+      startYmd: periodInfo.startYmd,
+      endYmd: periodInfo.endYmd,
+      businessScope: options.businessScope || "NUEVA",
+      ramoGroupFilter: options.ramoGroupFilter || "ALL",
+      subRamoFilter: options.subRamoFilter || "ALL",
+      vidaObjetivoFilter: options.vidaObjetivoFilter || "ALL",
+      onlyAdminApproved: options.onlyAdminApproved ?? false,
+      filterAgentId:
+        options.agentId && options.agentId !== "ALL" ? options.agentId : undefined,
+      filterCompanyKey,
     });
 
-    // 4. Fetch budgets strictly for this agency
-    const budgets = await prisma.agentMonthlyBudget.findMany({
-      where: {
-        year,
-        month,
-        agencyId: effectiveAgencyId,
-      },
-    });
-    const budgetMap = new Map<string, any>();
-    budgets.forEach((b) => budgetMap.set(b.agentId, b));
+    // Fetch budgets for all months included in the selected period
+    const budgets =
+      periodInfo.monthsIncluded.length > 0
+        ? await prisma.agentMonthlyBudget.findMany({
+            where: {
+              agencyId: effectiveAgencyId,
+              OR: periodInfo.monthsIncluded.map((m) => ({
+                year: m.year,
+                month: m.month,
+              })),
+            },
+          })
+        : [];
 
-    // 5. Agencies for Super Admin
-    const agencies = user.role === "SUPER_ADMIN"
-      ? await prisma.agency.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } })
-      : [];
+    const periodBudgetByAgent = new Map<string, number>();
+    const selectedMonthBudgetMap = new Map<string, any>();
+    for (const b of budgets) {
+      periodBudgetByAgent.set(
+        b.agentId,
+        (periodBudgetByAgent.get(b.agentId) || 0) + (Number(b.budgetPE) || 0)
+      );
+      if (b.year === year && b.month === month) {
+        selectedMonthBudgetMap.set(b.agentId, b);
+      }
+    }
 
-    // Calculate Global KPIs
-    const totalPolicies = emissions.length;
-    const totalPE = emissions.reduce((acc, curr) => acc + (curr.primaEmitida || 0), 0);
-    const totalPPC = emissions.reduce((acc, curr) => acc + (curr.primaPagada || 0), 0);
+    const activeAgentsInScope =
+      options.agentId && options.agentId !== "ALL"
+        ? agents.filter((a) => a.id === options.agentId)
+        : agents;
 
     let totalBudget = 0;
-    const activeAgentsInScope = options.agentId && options.agentId !== "ALL"
-      ? agents.filter((a) => a.id === options.agentId)
-      : agents;
-
     activeAgentsInScope.forEach((ag) => {
-      const b = budgetMap.get(ag.id);
-      if (b && b.budgetPE) {
-        totalBudget += b.budgetPE;
-      }
+      totalBudget += periodBudgetByAgent.get(ag.id) || 0;
     });
 
-    const compliancePercent = totalBudget > 0 ? Math.round((totalPE / totalBudget) * 100) : 0;
+    const totalPolicies = carteraProd.totals.uniquePoliciesCount;
+    const totalPE = carteraProd.totals.totalPE;
+    const totalPPC = carteraProd.totals.totalPPC;
+    const compliancePercent =
+      totalBudget > 0 ? Math.round((totalPE / totalBudget) * 100) : 0;
 
-    // Helper para resolver el companyId efectivo dentro de esta agencia (incluyendo fallback por nombre)
-    const resolveEmissionCompanyKey = (em: { companyId: string | null; companyName: string }) => {
-      if (em.companyId && allAgencyCompanies.some((c) => c.id === em.companyId)) {
-        return em.companyId;
-      }
-      const matchedId = companyIdByNormalizedName.get(
-        normalizeCompanyKey(canonicalCompanyName(em.companyName))
-      );
-      return matchedId || em.companyId || em.companyName;
-    };
+    // Breakdown by active agency company + detect insurers with Cartera policies but inactive in columns
+    const activeKeyMap = new Map<string, (typeof companies)[number]>();
+    for (const c of companies) {
+      activeKeyMap.set(normalizeCompanyKey(canonicalCompanyName(c.name)), c);
+    }
 
-    // Breakdown by Company
-    const companyStatsMap = new Map<string, {
-      companyId: string;
-      name: string;
-      logoUrl: string | null;
-      color: string;
-      policies: number;
-      pe: number;
-      ppc: number;
-    }>();
+    const allCatalogByKey = new Map<string, (typeof allAgencyCompanies)[number]>();
+    for (const c of allAgencyCompanies) {
+      allCatalogByKey.set(normalizeCompanyKey(canonicalCompanyName(c.name)), c);
+    }
 
-    // Pre-populate with active companies of this agency
-    companies.forEach((comp) => {
-      companyStatsMap.set(comp.id, {
+    const prodByCompKey = new Map<string, (typeof carteraProd.byCompany)[number]>();
+    for (const pc of carteraProd.byCompany) {
+      prodByCompKey.set(pc.companyKey, pc);
+    }
+
+    const byCompany = companies.map((comp) => {
+      const k = normalizeCompanyKey(canonicalCompanyName(comp.name));
+      const prod = prodByCompKey.get(k);
+      const pe = prod?.totalPE || 0;
+      const ppc = prod?.totalPPC || 0;
+      return {
         companyId: comp.id,
         name: comp.name,
         logoUrl: comp.logoUrl,
         color: comp.color || "#0284c7",
-        policies: 0,
-        pe: 0,
-        ppc: 0,
-      });
+        policies: prod?.count || 0,
+        pe,
+        ppc,
+        pePercentage: totalPE > 0 ? Math.round((pe / totalPE) * 100) : 0,
+      };
     });
 
-    emissions.forEach((em) => {
-      const cId = resolveEmissionCompanyKey(em);
-      let comp = companyStatsMap.get(cId);
-      if (!comp) {
-        const knownAgencyComp = allAgencyCompanies.find((c) => c.id === cId);
-        comp = {
-          companyId: cId,
-          name: knownAgencyComp?.name || em.companyName,
-          logoUrl: knownAgencyComp?.logoUrl || em.company?.logoUrl || null,
-          color: knownAgencyComp?.color || em.company?.color || "#0284c7",
-          policies: 0,
-          pe: 0,
-          ppc: 0,
+    const unmappedInsurersSummary = carteraProd.byCompany
+      .filter((pc) => !activeKeyMap.has(pc.companyKey) && (pc.totalPE > 0 || pc.totalPPC > 0 || pc.count > 0))
+      .map((pc) => {
+        const existingInCatalog = allCatalogByKey.get(pc.companyKey);
+        return {
+          companyKey: pc.companyKey,
+          companyName: pc.companyName,
+          count: pc.count,
+          totalPE: pc.totalPE,
+          totalPPC: pc.totalPPC,
+          existingCompanyId: existingInCatalog?.id || null,
         };
-        companyStatsMap.set(cId, comp);
+      });
+
+    // Legacy byRamo compatibility mapped from RAMOS_CATALOGO + canonical sub-ramos
+    const byRamo = RAMOS_CATALOGO.map((r) => {
+      let pe = 0;
+      let ppc = 0;
+      let count = 0;
+      if (r.id === "Protección") {
+        const v = carteraProd.byVidaObjetivo.find((x) => x.key === "PROTECCION");
+        pe = v?.totalPE || 0;
+        ppc = v?.totalPPC || 0;
+        count = v?.count || 0;
+      } else if (r.id === "Ahorro") {
+        const v = carteraProd.byVidaObjetivo.find((x) => x.key === "AHORRO");
+        pe = v?.totalPE || 0;
+        ppc = v?.totalPPC || 0;
+        count = v?.count || 0;
+      } else if (r.id === "Retiro") {
+        const v = carteraProd.byVidaObjetivo.find((x) => x.key === "RETIRO");
+        pe = v?.totalPE || 0;
+        ppc = v?.totalPPC || 0;
+        count = v?.count || 0;
+      } else if (r.id === "Educación") {
+        const v = carteraProd.byVidaObjetivo.find((x) => x.key === "EDUCACION");
+        pe = v?.totalPE || 0;
+        ppc = v?.totalPPC || 0;
+        count = v?.count || 0;
+      } else if (r.id === "Gastos Médicos") {
+        const v = carteraProd.byRamoGroup.find((x) => x.key === "GMM");
+        pe = v?.totalPE || 0;
+        ppc = v?.totalPPC || 0;
+        count = v?.count || 0;
+      } else if (r.id === "Autos") {
+        const v = carteraProd.byRamoGroup.find((x) => x.key === "AUTOS");
+        pe = v?.totalPE || 0;
+        ppc = v?.totalPPC || 0;
+        count = v?.count || 0;
+      } else if (r.id === "Daños") {
+        const v = carteraProd.byRamoGroup.find((x) => x.key === "DANOS");
+        pe = v?.totalPE || 0;
+        ppc = v?.totalPPC || 0;
+        count = v?.count || 0;
+      } else if (r.id === "Otro") {
+        const v = carteraProd.byRamoGroup.find((x) => x.key === "OTROS");
+        const vg = carteraProd.bySubRamo.find((x) => x.key === "VIDA_GRUPO");
+        pe = (v?.totalPE || 0) + (vg?.totalPE || 0);
+        ppc = (v?.totalPPC || 0) + (vg?.totalPPC || 0);
+        count = (v?.count || 0) + (vg?.count || 0);
       }
-      comp.policies += 1;
-      comp.pe += em.primaEmitida || 0;
-      comp.ppc += em.primaPagada || 0;
-    });
+      return { ramo: r.id, count, pe, ppc };
+    }).filter((x) => x.count > 0 || x.pe > 0 || x.ppc > 0);
 
-    const byCompany = Array.from(companyStatsMap.values())
-      .filter((c) => c.policies > 0 || companies.some((orig) => orig.id === c.companyId))
-      .map((c) => ({
-        ...c,
-        pePercentage: totalPE > 0 ? Math.round((c.pe / totalPE) * 100) : 0,
-      }));
-
-    // Breakdown by Ramo
-    const ramoStatsMap = new Map<string, { ramo: string; count: number; pe: number; ppc: number }>();
-    RAMOS_CATALOGO.forEach((r) => {
-      ramoStatsMap.set(r.id, { ramo: r.id, count: 0, pe: 0, ppc: 0 });
-    });
-
-    emissions.forEach((em) => {
-      const rKey = em.ramo || "Protección";
-      let rItem = ramoStatsMap.get(rKey);
-      if (!rItem) {
-        rItem = { ramo: rKey, count: 0, pe: 0, ppc: 0 };
-        ramoStatsMap.set(rKey, rItem);
-      }
-      rItem.count += 1;
-      rItem.pe += em.primaEmitida || 0;
-      rItem.ppc += em.primaPagada || 0;
-    });
-
-    const byRamo = Array.from(ramoStatsMap.values()).filter((r) => r.count > 0);
-
-    // Matrix Table Data: Agent Rows x Active Agency Companies
-    const displayCompanies = [...companies];
-
+    // Build agentMatrix
     const agentMatrix = activeAgentsInScope.map((agent) => {
-      const agentEmissions = emissions.filter((e) => e.agentId === agent.id);
-      const companyEmissionsMap = new Map<string, { policies: number; pe: number; ppc: number }>();
-
-      agentEmissions.forEach((em) => {
-        const cId = resolveEmissionCompanyKey(em);
-        const cur = companyEmissionsMap.get(cId) || { policies: 0, pe: 0, ppc: 0 };
-        cur.policies += 1;
-        cur.pe += em.primaEmitida || 0;
-        cur.ppc += em.primaPagada || 0;
-        companyEmissionsMap.set(cId, cur);
-      });
-
-      const agentTotalPolicies = agentEmissions.length;
-      const agentTotalPE = agentEmissions.reduce((acc, curr) => acc + (curr.primaEmitida || 0), 0);
-      const agentTotalPPC = agentEmissions.reduce((acc, curr) => acc + (curr.primaPagada || 0), 0);
-
-      const bRecord = budgetMap.get(agent.id);
-      const agentBudget = bRecord?.budgetPE || 0;
-      const agentCompliance = agentBudget > 0 ? Math.round((agentTotalPE / agentBudget) * 100) : 0;
-
+      const agentEntry = carteraProd.byAgent.get(agent.id);
       const companiesData: Record<string, { policies: number; pe: number; ppc: number }> = {};
-      displayCompanies.forEach((comp) => {
-        companiesData[comp.id] = companyEmissionsMap.get(comp.id) || { policies: 0, pe: 0, ppc: 0 };
-      });
+
+      for (const comp of companies) {
+        const compKey = normalizeCompanyKey(canonicalCompanyName(comp.name));
+        const cell = agentEntry?.byCompany[compKey];
+        companiesData[comp.id] = {
+          policies: cell?.count || 0,
+          pe: Number((cell?.totalPE || 0).toFixed(2)),
+          ppc: Number((cell?.totalPPC || 0).toFixed(2)),
+        };
+      }
+
+      const agentTotalPolicies = agentEntry?.policyCount || 0;
+      const agentTotalPE = Number((agentEntry?.totalPE || 0).toFixed(2));
+      const agentTotalPPC = Number((agentEntry?.totalPPC || 0).toFixed(2));
+      const agentBudget = Number((periodBudgetByAgent.get(agent.id) || 0).toFixed(2));
+      const selectedMonthBudget = selectedMonthBudgetMap.get(agent.id);
+      const agentCompliance =
+        agentBudget > 0 ? Math.round((agentTotalPE / agentBudget) * 100) : 0;
 
       return {
         agentId: agent.id,
@@ -1203,15 +1147,18 @@ export async function getProductionDashboardData(options: {
         totalPE: agentTotalPE,
         totalPPC: agentTotalPPC,
         budget: agentBudget,
-        budgetSource: bRecord?.source || "NONE",
-        budgetRecordId: bRecord?.id || null,
+        selectedMonthBudgetPE: selectedMonthBudget?.budgetPE ?? 0,
+        budgetSource: selectedMonthBudget?.source || "NONE",
+        budgetRecordId: selectedMonthBudget?.id || null,
         compliancePercent: agentCompliance,
-        hasEmissionsOrBudget: agentTotalPolicies > 0 || agentBudget > 0,
+        hasEmissionsOrBudget:
+          agentTotalPolicies > 0 || agentTotalPE > 0 || agentTotalPPC > 0 || agentBudget > 0,
       };
     });
 
     agentMatrix.sort((a, b) => {
       if (b.totalPE !== a.totalPE) return b.totalPE - a.totalPE;
+      if (b.totalPPC !== a.totalPPC) return b.totalPPC - a.totalPPC;
       if (b.totalPolicies !== a.totalPolicies) return b.totalPolicies - a.totalPolicies;
       return a.agentName.localeCompare(b.agentName);
     });
@@ -1222,18 +1169,28 @@ export async function getProductionDashboardData(options: {
       userAgencyId: user.agencyId,
       selectedAgencyId: effectiveAgencyId,
       agencies,
-      companies: displayCompanies,
+      companies,
       catalogCompanies: allAgencyCompanies,
       agents,
-      emissions,
+      emissions: [],
+      ledgerRows: carteraProd.ledgerRows,
+      periodInfo,
+      unmappedInsurersSummary,
+      legacyEmissionsCount,
       kpis: {
         totalPolicies,
+        emittedPoliciesCount: carteraProd.totals.emittedPoliciesCount,
+        paidReceiptsCount: carteraProd.totals.paidReceiptsCount,
+        pendingApprovalCount: carteraProd.totals.pendingApprovalCount,
         totalPE,
         totalPPC,
         totalBudget,
         compliancePercent,
         byCompany,
         byRamo,
+        byRamoGroup: carteraProd.byRamoGroup,
+        bySubRamo: carteraProd.bySubRamo,
+        byVidaObjetivo: carteraProd.byVidaObjetivo,
       },
       agentMatrix,
     };
@@ -1246,7 +1203,1051 @@ export async function getProductionDashboardData(options: {
       catalogCompanies: [],
       agents: [],
       emissions: [],
+      ledgerRows: [],
       agentMatrix: [],
+    };
+  }
+}
+
+// =====================================================================
+// EVALUADOR HISTÓRICO ANTES VS. DESPUÉS Y CONCILIACIÓN NO DESTRUCTIVA
+// =====================================================================
+
+function normalizeClientForAudit(raw: string | null | undefined): string {
+  return (raw || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function parseEmissionNoteMeta(notes: string | null | undefined) {
+  const txt = notes || "";
+  const fracMatch = txt.match(/recibo\s*#?\s*(\d+)\s*(?:\/|de)\s*(\d+)/i);
+  const singleReceiptMatch = !fracMatch ? txt.match(/recibo\s*#?\s*(\d+)/i) : null;
+  const pctMatch =
+    txt.match(/participaci[oó]n\s*(\d+(?:\.\d+)?)\s*%/i) ||
+    txt.match(/(\d+(?:\.\d+)?)\s*%/);
+
+  return {
+    receiptNum: fracMatch
+      ? parseInt(fracMatch[1], 10)
+      : singleReceiptMatch
+      ? parseInt(singleReceiptMatch[1], 10)
+      : null,
+    totalInstallments: fracMatch ? parseInt(fracMatch[2], 10) : null,
+    standaloneReceiptId: singleReceiptMatch ? singleReceiptMatch[1] : null,
+    explicitPct: pctMatch ? parseFloat(pctMatch[1]) : null,
+  };
+}
+
+function subtractMonthsUTC(date: Date, months: number): Date {
+  const y = date.getUTCFullYear();
+  const m = date.getUTCMonth() - months;
+  const d = date.getUTCDate();
+  const target = new Date(Date.UTC(y, m, 1, 12, 0, 0));
+  const lastDay = new Date(
+    Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0, 12, 0, 0)
+  ).getUTCDate();
+  target.setUTCDate(Math.min(d, lastDay));
+  return target;
+}
+
+interface ParsedLogicalGroup {
+  groupKey: string;
+  policyNumber: string;
+  isSyntheticFolio: boolean;
+  primaryEmissionId: string;
+  emissionIds: string[];
+  clientName: string;
+  companyName: string;
+  companyKey: string;
+  rawRamo: string;
+  mappedRamo: ReturnType<typeof mapHistoricalEmissionRamoToPolicy>;
+  ownerAgentId: string;
+  ownerAgentName: string;
+  sharedWithUserId: string | null;
+  sharedWithAgentName: string | null;
+  sharedPercentage: number;
+  isShared: boolean;
+  isFractionalMultiMonth: boolean;
+  estimatedEffectiveYmd: string;
+  estimatedEffectiveDateUTC: Date;
+  estimatedAnnualPremium: number;
+  paymentMethod: string;
+  beforeTotalPE: number;
+  beforeTotalPPC: number;
+  notesCombined: string;
+  receiptEvents: Array<{
+    emissionId: string;
+    month: number;
+    year: number;
+    issueYmd: string;
+    receiptNumber: number;
+    totalInstallments: number;
+    pe: number;
+    ppc: number;
+  }>;
+}
+
+async function buildHistoricalLogicalGroups(
+  agencyId: string,
+  targetYear: number
+): Promise<{
+  emissions: any[];
+  logicalGroups: ParsedLogicalGroup[];
+}> {
+  const emissions = await prisma.agentEmission.findMany({
+    where: { agencyId, year: targetYear },
+    include: {
+      agent: { select: { id: true, name: true, email: true } },
+    },
+    orderBy: [{ issueDate: "asc" }, { createdAt: "asc" }],
+  });
+
+  // Group pass 1: rows with folio
+  const folioBuckets = new Map<string, any[]>();
+  const noFolioRows: any[] = [];
+
+  for (const em of emissions) {
+    const cleanFolio = (em.policyNumber || "").trim();
+    if (cleanFolio) {
+      const k = `FOLIO:${cleanFolio.toUpperCase()}`;
+      const list = folioBuckets.get(k) || [];
+      list.push(em);
+      folioBuckets.set(k, list);
+    } else {
+      noFolioRows.push(em);
+    }
+  }
+
+  // Group pass 2: attach no-folio rows to matching folio bucket if receiptId OR (client+company+year+month) matches
+  for (const em of noFolioRows) {
+    const meta = parseEmissionNoteMeta(em.notes);
+    const normClient = normalizeClientForAudit(em.clientName);
+    const compKey = normalizeCompanyKey(canonicalCompanyName(em.companyName));
+    let matchedKey: string | null = null;
+
+    for (const [fKey, list] of Array.from(folioBuckets.entries())) {
+      const hasReceiptMatch =
+        meta.standaloneReceiptId &&
+        list.some((cand) => {
+          const cMeta = parseEmissionNoteMeta(cand.notes);
+          return cMeta.standaloneReceiptId === meta.standaloneReceiptId;
+        });
+
+      const hasContextMatch =
+        normClient &&
+        list.some(
+          (cand) =>
+            normalizeClientForAudit(cand.clientName) === normClient &&
+            normalizeCompanyKey(canonicalCompanyName(cand.companyName)) === compKey &&
+            cand.month === em.month &&
+            cand.year === em.year
+        );
+
+      if (hasReceiptMatch || hasContextMatch) {
+        matchedKey = fKey;
+        break;
+      }
+    }
+
+    if (matchedKey) {
+      folioBuckets.get(matchedKey)!.push(em);
+    } else {
+      folioBuckets.set(`NOFOLIO:${em.id}`, [em]);
+    }
+  }
+
+  const logicalGroups: ParsedLogicalGroup[] = [];
+
+  for (const [gKey, rows] of Array.from(folioBuckets.entries())) {
+    rows.sort(
+      (a, b) => new Date(a.issueDate).getTime() - new Date(b.issueDate).getTime()
+    );
+    const first = rows[0];
+    const explicitFolio = rows.find((r) => (r.policyNumber || "").trim())?.policyNumber?.trim();
+    const policyNumber = explicitFolio || `HIST-${first.id.slice(-6).toUpperCase()}`;
+    const isSyntheticFolio = !explicitFolio;
+
+    const beforeTotalPE = rows.reduce((s, r) => s + (Number(r.primaEmitida) || 0), 0);
+    const beforeTotalPPC = rows.reduce((s, r) => s + (Number(r.primaPagada) || 0), 0);
+
+    // Agent participation resolution
+    const agentShares = new Map<
+      string,
+      { agentId: string; name: string; totalPE: number; totalPPC: number; pctFromNote: number | null }
+    >();
+    for (const r of rows) {
+      const m = parseEmissionNoteMeta(r.notes);
+      const cur = agentShares.get(r.agentId) || {
+        agentId: r.agentId,
+        name: r.agent?.name || r.agent?.email || "Agente",
+        totalPE: 0,
+        totalPPC: 0,
+        pctFromNote: null,
+      };
+      cur.totalPE += Number(r.primaEmitida) || 0;
+      cur.totalPPC += Number(r.primaPagada) || 0;
+      if (m.explicitPct && m.explicitPct > 0 && m.explicitPct < 100) {
+        cur.pctFromNote = m.explicitPct;
+      }
+      agentShares.set(r.agentId, cur);
+    }
+
+    const orderedAgents = Array.from(agentShares.values()).sort(
+      (a, b) => (b.totalPE || b.totalPPC) - (a.totalPE || a.totalPPC)
+    );
+    const owner = orderedAgents[0];
+    const second = orderedAgents.length > 1 ? orderedAgents[1] : null;
+
+    let sharedPercentage = 0;
+    if (second) {
+      const totalAmt = (owner.totalPE || owner.totalPPC) + (second.totalPE || second.totalPPC);
+      if (second.pctFromNote) {
+        sharedPercentage = Number(second.pctFromNote.toFixed(2));
+      } else if (owner.pctFromNote) {
+        sharedPercentage = Number((100 - owner.pctFromNote).toFixed(2));
+      } else if (totalAmt > 0) {
+        sharedPercentage = Number(
+          (((second.totalPE || second.totalPPC) / totalAmt) * 100).toFixed(2)
+        );
+      } else {
+        sharedPercentage = 50;
+      }
+    }
+
+    // Group rows by month/date event (combining co-participations in the same month)
+    const eventMap = new Map<
+      string,
+      {
+        emissionId: string;
+        month: number;
+        year: number;
+        issueDate: Date;
+        pe: number;
+        ppc: number;
+        receiptNum: number | null;
+        totalInstallments: number | null;
+      }
+    >();
+
+    for (const r of rows) {
+      const meta = parseEmissionNoteMeta(r.notes);
+      const bucketKey = meta.receiptNum
+        ? `R:${meta.receiptNum}:${meta.totalInstallments || 0}:${r.year}-${r.month}`
+        : `M:${r.year}-${r.month}`;
+      const prev = eventMap.get(bucketKey);
+      if (!prev) {
+        eventMap.set(bucketKey, {
+          emissionId: r.id,
+          month: r.month,
+          year: r.year,
+          issueDate: new Date(r.issueDate),
+          pe: Number(r.primaEmitida) || 0,
+          ppc: Number(r.primaPagada) || 0,
+          receiptNum: meta.totalInstallments ? meta.receiptNum : null,
+          totalInstallments: meta.totalInstallments,
+        });
+      } else {
+        prev.pe += Number(r.primaEmitida) || 0;
+        prev.ppc += Number(r.primaPagada) || 0;
+        if (new Date(r.issueDate).getTime() < prev.issueDate.getTime()) {
+          prev.issueDate = new Date(r.issueDate);
+        }
+      }
+    }
+
+    const events = Array.from(eventMap.values()).sort(
+      (a, b) => a.issueDate.getTime() - b.issueDate.getTime()
+    );
+
+    const parsedTotals = events
+      .map((e) => e.totalInstallments)
+      .filter((x): x is number => typeof x === "number" && x > 1);
+    const totalInstallments =
+      parsedTotals.length > 0
+        ? Math.max(...parsedTotals)
+        : events.length > 1
+        ? 12
+        : 1;
+
+    const paymentMethod =
+      totalInstallments === 12
+        ? "Mensual"
+        : totalInstallments === 4
+        ? "Trimestral"
+        : totalInstallments === 2
+        ? "Semestral"
+        : "Anual";
+
+    const parsedNums = events
+      .map((e) => e.receiptNum)
+      .filter((x): x is number => typeof x === "number" && x >= 1);
+    const minReceiptNum = parsedNums.length > 0 ? Math.min(...parsedNums) : 1;
+
+    const earliestDate = events[0].issueDate;
+    const monthsPerInstallment = Math.max(1, Math.round(12 / totalInstallments));
+    const estimatedEffectiveDateUTC =
+      minReceiptNum > 1
+        ? subtractMonthsUTC(earliestDate, (minReceiptNum - 1) * monthsPerInstallment)
+        : earliestDate;
+    const estimatedEffectiveYmd = toYmdKey(estimatedEffectiveDateUTC) || `${targetYear}-01-01`;
+
+    const avgEventPE =
+      events.reduce((s, e) => s + (e.pe || e.ppc), 0) / Math.max(1, events.length);
+    const estimatedAnnualPremium = Number(
+      (parsedTotals.length > 0 || events.length > 1
+        ? avgEventPE * totalInstallments
+        : beforeTotalPE || beforeTotalPPC
+      ).toFixed(2)
+    );
+
+    const isFractionalMultiMonth = parsedTotals.length > 0 || events.length > 1;
+    const receiptEvents = events.map((ev, idx) => ({
+      emissionId: ev.emissionId,
+      month: ev.month,
+      year: ev.year,
+      issueYmd: toYmdKey(ev.issueDate) || `${ev.year}-${String(ev.month).padStart(2, "0")}-15`,
+      receiptNumber: ev.receiptNum || minReceiptNum + idx,
+      totalInstallments,
+      pe: Number(ev.pe.toFixed(2)),
+      ppc: Number(ev.ppc.toFixed(2)),
+    }));
+
+    const canonCompany = canonicalCompanyName(first.companyName || "Sin Aseguradora") || "Sin Aseguradora";
+    const companyKey = normalizeCompanyKey(canonCompany);
+    const notesCombined = rows
+      .map((r) => r.notes)
+      .filter(Boolean)
+      .join(" | ");
+    const clientName =
+      rows.find((r) => (r.clientName || "").trim())?.clientName?.trim() || "Cliente Sin Nombre";
+    const mappedRamo = mapHistoricalEmissionRamoToPolicy(first.ramo, notesCombined, clientName);
+
+    logicalGroups.push({
+      groupKey: gKey,
+      policyNumber,
+      isSyntheticFolio,
+      primaryEmissionId: first.id,
+      emissionIds: rows.map((r) => r.id),
+      clientName,
+      companyName: canonCompany,
+      companyKey,
+      rawRamo: first.ramo || "Protección",
+      mappedRamo,
+      ownerAgentId: owner.agentId,
+      ownerAgentName: owner.name,
+      sharedWithUserId: second ? second.agentId : null,
+      sharedWithAgentName: second ? second.name : null,
+      sharedPercentage,
+      isShared: Boolean(second),
+      isFractionalMultiMonth,
+      estimatedEffectiveYmd,
+      estimatedEffectiveDateUTC,
+      estimatedAnnualPremium,
+      paymentMethod,
+      beforeTotalPE: Number(beforeTotalPE.toFixed(2)),
+      beforeTotalPPC: Number(beforeTotalPPC.toFixed(2)),
+      notesCombined,
+      receiptEvents,
+    });
+  }
+
+  return { emissions, logicalGroups };
+}
+
+export async function getProductionReconciliationAudit(options?: {
+  year?: number;
+  agencyId?: string;
+}) {
+  try {
+    const user = await verifyAdminUser();
+    const effectiveAgencyId = resolveTargetAgencyId(user, options?.agencyId);
+    const targetYear = options?.year || new Date().getFullYear();
+
+    const [{ emissions, logicalGroups }, policies, yearCarteraProd] = await Promise.all([
+      buildHistoricalLogicalGroups(effectiveAgencyId, targetYear),
+      prisma.policy.findMany({
+        where: {
+          isArchived: false,
+          deletedAt: null,
+          OR: [
+            { agencyId: effectiveAgencyId },
+            { agencyId: null, user: { agencyId: effectiveAgencyId } },
+          ],
+        },
+        include: {
+          client: { select: { id: true, name: true } },
+          user: { select: { id: true, name: true, email: true } },
+          sharedWithUser: { select: { id: true, name: true, email: true } },
+          receipts: { orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }] },
+        },
+      }),
+      computeAgencyCarteraProduction({
+        agencyId: effectiveAgencyId,
+        startYmd: `${targetYear}-01-01`,
+        endYmd: `${targetYear}-12-31`,
+        businessScope: "NUEVA",
+        onlyAdminApproved: false,
+      }),
+    ]);
+
+    const policyByNumber = new Map<string, (typeof policies)[number]>();
+    const policyBySourceEmission = new Map<string, (typeof policies)[number]>();
+    for (const p of policies) {
+      if (p.policyNumber) {
+        policyByNumber.set(p.policyNumber.trim().toUpperCase(), p);
+      }
+      if (p.sourceEmissionId) {
+        policyBySourceEmission.set(p.sourceEmissionId, p);
+      }
+    }
+
+    const matchedPolicyIds = new Set<string>();
+    const reconciliationItems: any[] = [];
+    let additionalProjectedPE = 0;
+    let additionalProjectedPPC = 0;
+
+    for (const g of logicalGroups) {
+      let existing =
+        g.emissionIds
+          .map((eid) => policyBySourceEmission.get(eid))
+          .find(Boolean) ||
+        (!g.isSyntheticFolio
+          ? policyByNumber.get(g.policyNumber.trim().toUpperCase())
+          : undefined);
+
+      if (existing) {
+        matchedPolicyIds.add(existing.id);
+      }
+
+      if (!existing) {
+        // Falta en Cartera
+        const peInTargetYear =
+          g.estimatedEffectiveYmd >= `${targetYear}-01-01` &&
+          g.estimatedEffectiveYmd <= `${targetYear}-12-31`
+            ? g.estimatedAnnualPremium
+            : 0;
+        additionalProjectedPE += peInTargetYear;
+        additionalProjectedPPC += g.beforeTotalPPC;
+
+        reconciliationItems.push({
+          groupKey: g.groupKey,
+          status: "FALTA_EN_CARTERA",
+          policyNumber: g.policyNumber,
+          isSyntheticFolio: g.isSyntheticFolio,
+          clientName: g.clientName,
+          companyName: g.companyName,
+          ownerAgentId: g.ownerAgentId,
+          ownerAgentName: g.ownerAgentName,
+          sharedWithUserId: g.sharedWithUserId,
+          sharedWithAgentName: g.sharedWithAgentName,
+          sharedPercentage: g.sharedPercentage,
+          isShared: g.isShared,
+          isFractionalMultiMonth: g.isFractionalMultiMonth,
+          ramoLabel: g.mappedRamo.subRamoKey,
+          paymentMethod: g.paymentMethod,
+          beforePE: g.beforeTotalPE,
+          beforePPC: g.beforeTotalPPC,
+          afterPE: 0,
+          afterPPC: 0,
+          existingPolicyId: null,
+          existingCompanyName: null,
+          estimatedEffectiveYmd: g.estimatedEffectiveYmd,
+          estimatedAnnualPremium: g.estimatedAnnualPremium,
+          differences: [
+            "No existe aún en Mi Cartera",
+            ...(g.isShared
+              ? [`Co-participación detectada (${g.ownerAgentName} / ${g.sharedWithAgentName} ${g.sharedPercentage}%)`]
+              : []),
+            ...(g.isFractionalMultiMonth
+              ? [`Póliza fraccionada multi-mes (${g.receiptEvents.length} recibos registrados)`]
+              : []),
+          ],
+          receiptEvents: g.receiptEvents,
+        });
+      } else {
+        const differences: string[] = [];
+        const existingCompCanon = canonicalCompanyName(existing.insuranceCompany);
+        if (normalizeCompanyKey(existingCompCanon) !== g.companyKey) {
+          differences.push(
+            `Aseguradora distinta: Cartera dice "${existing.insuranceCompany || "Sin especificar"}" vs Producción "${g.companyName}"`
+          );
+        }
+
+        if (g.isShared && (!existing.sharedWithUserId || Number(existing.sharedPercentage) <= 0)) {
+          differences.push(
+            `Falta configurar co-agente compartido: ${g.sharedWithAgentName} (${g.sharedPercentage}%)`
+          );
+        }
+
+        const existingEffYmd = toYmdKey(existing.effectiveDate);
+        const existingIsNewInYear =
+          !existing.isRenewalCapture &&
+          existing.subStatus !== "RENOVACION" &&
+          existingEffYmd &&
+          existingEffYmd >= `${targetYear}-01-01` &&
+          existingEffYmd <= `${targetYear}-12-31`;
+        const afterPE = existingIsNewInYear ? Number(existing.annualPremium) || 0 : 0;
+
+        let afterPPC = 0;
+        let expectedUnpaidPPC = 0;
+        for (const ev of g.receiptEvents) {
+          const matchingRec = existing.receipts.find(
+            (r) =>
+              r.policyYear === 1 &&
+              (r.receiptNumber === ev.receiptNumber ||
+                (g.receiptEvents.length === 1 && r.receiptNumber === 1))
+          );
+          if (matchingRec && matchingRec.status === "PAGADO") {
+            afterPPC += Number(matchingRec.paidAmount ?? matchingRec.amount ?? 0);
+          } else if (ev.ppc > 0) {
+            expectedUnpaidPPC += ev.ppc;
+            differences.push(
+              `Recibo #${ev.receiptNumber} cobrado en Producción ($${ev.ppc.toLocaleString("es-MX")}) sigue pendiente en Cartera`
+            );
+          }
+        }
+
+        // Fallback sum of all Year 1 PAGADO receipts if receipt numbering differs
+        const totalCarteraPaidY1 = existing.receipts
+          .filter((r) => r.status === "PAGADO" && r.policyYear <= 1)
+          .reduce((s, r) => s + Number(r.paidAmount ?? r.amount ?? 0), 0);
+        if (afterPPC === 0 && totalCarteraPaidY1 > 0 && expectedUnpaidPPC === 0) {
+          afterPPC = totalCarteraPaidY1;
+        }
+
+        additionalProjectedPPC += expectedUnpaidPPC;
+
+        const status =
+          differences.length === 0 ? "CONCILIADO_EXACTO" : "EXISTE_CON_DIFERENCIA";
+
+        reconciliationItems.push({
+          groupKey: g.groupKey,
+          status,
+          policyNumber: g.policyNumber,
+          isSyntheticFolio: false,
+          clientName: g.clientName,
+          companyName: g.companyName,
+          ownerAgentId: g.ownerAgentId,
+          ownerAgentName: g.ownerAgentName,
+          sharedWithUserId: g.sharedWithUserId,
+          sharedWithAgentName: g.sharedWithAgentName,
+          sharedPercentage: g.sharedPercentage,
+          isShared: g.isShared,
+          isFractionalMultiMonth: g.isFractionalMultiMonth,
+          ramoLabel: classifyPolicyRamo(existing).fullLabel,
+          paymentMethod: existing.paymentMethod || g.paymentMethod,
+          beforePE: g.beforeTotalPE,
+          beforePPC: g.beforeTotalPPC,
+          afterPE: Number(afterPE.toFixed(2)),
+          afterPPC: Number(afterPPC.toFixed(2)),
+          existingPolicyId: existing.id,
+          existingCompanyName: existing.insuranceCompany,
+          estimatedEffectiveYmd: existingEffYmd || g.estimatedEffectiveYmd,
+          estimatedAnnualPremium: existing.annualPremium || g.estimatedAnnualPremium,
+          differences,
+          receiptEvents: g.receiptEvents,
+        });
+      }
+    }
+
+    // Policies in Mi Cartera with effectiveDate in targetYear NOT present in AgentEmission
+    const carteraOnlyItems = policies
+      .filter((p) => {
+        if (matchedPolicyIds.has(p.id)) return false;
+        const effYmd = toYmdKey(p.effectiveDate);
+        return Boolean(
+          effYmd &&
+            effYmd >= `${targetYear}-01-01` &&
+            effYmd <= `${targetYear}-12-31`
+        );
+      })
+      .map((p) => {
+        const ramoInfo = classifyPolicyRamo(p);
+        const paidTotal = (p.receipts || [])
+          .filter((r) => r.status === "PAGADO")
+          .reduce((s, r) => s + Number(r.paidAmount ?? r.amount ?? 0), 0);
+        return {
+          policyId: p.id,
+          clientId: p.clientId,
+          policyNumber: p.policyNumber,
+          clientName: p.contractor || p.client?.name || "Cliente",
+          insuranceCompany: p.insuranceCompany || "Sin aseguradora",
+          agentName: p.user?.name || p.user?.email || "Agente",
+          effectiveDate: toYmdKey(p.effectiveDate),
+          annualPremium: Number(p.annualPremium) || 0,
+          paidTotal: Number(paidTotal.toFixed(2)),
+          ramoLabel: ramoInfo.fullLabel,
+          isRenewalCapture: Boolean(p.isRenewalCapture) || p.subStatus === "RENOVACION",
+          subStatus: p.subStatus,
+        };
+      });
+
+    // Monthly comparison (1..12)
+    const monthlyComparison: any[] = [];
+    for (let m = 1; m <= 12; m++) {
+      const mStr = String(m).padStart(2, "0");
+      const mStart = `${targetYear}-${mStr}-01`;
+      const mEnd = `${targetYear}-${mStr}-31`;
+
+      const monthEmissions = emissions.filter((e) => e.month === m);
+      const beforePE = monthEmissions.reduce((s, e) => s + (Number(e.primaEmitida) || 0), 0);
+      const beforePPC = monthEmissions.reduce((s, e) => s + (Number(e.primaPagada) || 0), 0);
+
+      let afterPE = 0;
+      let afterPPC = 0;
+      for (const p of policies) {
+        if (p.status === "CANCELADA" || p.subStatus === "NO_TOMADA") continue;
+        const effYmd = toYmdKey(p.effectiveDate);
+        if (
+          !p.isRenewalCapture &&
+          p.subStatus !== "RENOVACION" &&
+          effYmd &&
+          effYmd >= mStart &&
+          effYmd <= mEnd
+        ) {
+          afterPE += Number(p.annualPremium) || 0;
+        }
+        for (const r of p.receipts || []) {
+          if (r.status !== "PAGADO" || r.policyYear > 1) continue;
+          const pYmd = toYmdKey(r.paidAt || r.dueDate);
+          if (pYmd && pYmd >= mStart && pYmd <= mEnd) {
+            afterPPC += Number(r.paidAmount ?? r.amount ?? 0);
+          }
+        }
+      }
+
+      if (beforePE > 0 || beforePPC > 0 || afterPE > 0 || afterPPC > 0) {
+        monthlyComparison.push({
+          month: m,
+          monthName: MONTH_NAMES_ES[m - 1],
+          beforeCount: monthEmissions.length,
+          beforePE: Number(beforePE.toFixed(2)),
+          beforePPC: Number(beforePPC.toFixed(2)),
+          afterPE: Number(afterPE.toFixed(2)),
+          afterPPC: Number(afterPPC.toFixed(2)),
+          diffPE: Number((afterPE - beforePE).toFixed(2)),
+          diffPPC: Number((afterPPC - beforePPC).toFixed(2)),
+        });
+      }
+    }
+
+    // Agent comparison
+    const agentCompMap = new Map<
+      string,
+      {
+        agentId: string;
+        agentName: string;
+        beforePE: number;
+        beforePPC: number;
+        afterPE: number;
+        afterPPC: number;
+      }
+    >();
+    for (const em of emissions) {
+      const cur = agentCompMap.get(em.agentId) || {
+        agentId: em.agentId,
+        agentName: em.agent?.name || em.agent?.email || "Agente",
+        beforePE: 0,
+        beforePPC: 0,
+        afterPE: 0,
+        afterPPC: 0,
+      };
+      cur.beforePE += Number(em.primaEmitida) || 0;
+      cur.beforePPC += Number(em.primaPagada) || 0;
+      agentCompMap.set(em.agentId, cur);
+    }
+
+    const agencyUsers = await prisma.user.findMany({
+      where: { agencyId: effectiveAgencyId },
+      select: { id: true, name: true, email: true },
+    });
+    const userNameMap = new Map(agencyUsers.map((u) => [u.id, u.name || u.email]));
+
+    for (const [agId, entry] of Array.from(yearCarteraProd.byAgent.entries())) {
+      const cur = agentCompMap.get(agId) || {
+        agentId: agId,
+        agentName: userNameMap.get(agId) || "Agente",
+        beforePE: 0,
+        beforePPC: 0,
+        afterPE: 0,
+        afterPPC: 0,
+      };
+      cur.afterPE += entry.totalPE;
+      cur.afterPPC += entry.totalPPC;
+      agentCompMap.set(agId, cur);
+    }
+
+    const agentComparison = Array.from(agentCompMap.values())
+      .map((a) => ({
+        ...a,
+        beforePE: Number(a.beforePE.toFixed(2)),
+        beforePPC: Number(a.beforePPC.toFixed(2)),
+        afterPE: Number(a.afterPE.toFixed(2)),
+        afterPPC: Number(a.afterPPC.toFixed(2)),
+        diffPE: Number((a.afterPE - a.beforePE).toFixed(2)),
+        diffPPC: Number((a.afterPPC - a.beforePPC).toFixed(2)),
+      }))
+      .sort((a, b) => b.beforePE + b.afterPE - (a.beforePE + a.afterPE));
+
+    const kpiBefore = {
+      emissionRowsCount: emissions.length,
+      uniquePoliciesCount: logicalGroups.length,
+      totalPE: Number(
+        emissions.reduce((s, e) => s + (Number(e.primaEmitida) || 0), 0).toFixed(2)
+      ),
+      totalPPC: Number(
+        emissions.reduce((s, e) => s + (Number(e.primaPagada) || 0), 0).toFixed(2)
+      ),
+    };
+
+    const kpiAfter = {
+      policiesCount: yearCarteraProd.totals.uniquePoliciesCount,
+      totalPE: yearCarteraProd.totals.totalPE,
+      totalPPC: yearCarteraProd.totals.totalPPC,
+    };
+
+    const kpiProjectedAfterReconcile = {
+      totalPE: Number((kpiAfter.totalPE + additionalProjectedPE).toFixed(2)),
+      totalPPC: Number((kpiAfter.totalPPC + additionalProjectedPPC).toFixed(2)),
+    };
+
+    return {
+      success: true,
+      year: targetYear,
+      agencyId: effectiveAgencyId,
+      kpiBefore,
+      kpiAfter,
+      kpiProjectedAfterReconcile,
+      monthlyComparison,
+      agentComparison,
+      reconciliationItems,
+      carteraOnlyItems,
+      summaryCounts: {
+        totalGroups: reconciliationItems.length,
+        exactMatch: reconciliationItems.filter((i) => i.status === "CONCILIADO_EXACTO").length,
+        withDifference: reconciliationItems.filter((i) => i.status === "EXISTE_CON_DIFERENCIA").length,
+        missingInCartera: reconciliationItems.filter((i) => i.status === "FALTA_EN_CARTERA").length,
+      },
+    };
+  } catch (error: any) {
+    console.error("Error getProductionReconciliationAudit:", error);
+    return {
+      success: false,
+      message: error.message || "Error al generar evaluación Antes vs. Después",
+    };
+  }
+}
+
+export async function reconcileHistoricalEmissionsToCartera(params: {
+  agencyId?: string;
+  year?: number;
+  groupKeys?: string[];
+  dryRun?: boolean;
+}) {
+  try {
+    const user = await verifyAdminUser();
+    const effectiveAgencyId = resolveTargetAgencyId(user, params.agencyId);
+    const targetYear = params.year || new Date().getFullYear();
+    const dryRun = Boolean(params.dryRun);
+
+    const { logicalGroups } = await buildHistoricalLogicalGroups(
+      effectiveAgencyId,
+      targetYear
+    );
+
+    const selectedKeys =
+      params.groupKeys && params.groupKeys.length > 0
+        ? new Set(params.groupKeys)
+        : null;
+
+    const targetGroups = selectedKeys
+      ? logicalGroups.filter((g) => selectedKeys.has(g.groupKey))
+      : logicalGroups;
+
+    let createdPolicies = 0;
+    let updatedPolicies = 0;
+    let markedReceiptsPaid = 0;
+    let skippedCrossTenant = 0;
+    const warnings: string[] = [];
+    const previewActions: Array<{
+      groupKey: string;
+      policyNumber: string;
+      clientName: string;
+      action: string;
+      details: string;
+    }> = [];
+
+    for (const g of targetGroups) {
+      const existingBySource = await prisma.policy.findFirst({
+        where: {
+          agencyId: effectiveAgencyId,
+          sourceEmissionId: { in: g.emissionIds },
+          isArchived: false,
+        },
+        include: { receipts: true },
+      });
+
+      const existingByFolio =
+        !existingBySource && !g.isSyntheticFolio
+          ? await prisma.policy.findUnique({
+              where: { policyNumber: g.policyNumber },
+              include: { receipts: true },
+            })
+          : null;
+
+      if (
+        existingByFolio &&
+        existingByFolio.agencyId &&
+        existingByFolio.agencyId !== effectiveAgencyId
+      ) {
+        skippedCrossTenant++;
+        warnings.push(
+          `Póliza ${g.policyNumber} omitida porque ya pertenece a otra agencia.`
+        );
+        continue;
+      }
+
+      const existing = existingBySource || existingByFolio;
+
+      if (!existing) {
+        if (dryRun) {
+          createdPolicies++;
+          const paidCount = g.receiptEvents.filter((r) => r.ppc > 0).length;
+          markedReceiptsPaid += paidCount;
+          previewActions.push({
+            groupKey: g.groupKey,
+            policyNumber: g.policyNumber,
+            clientName: g.clientName,
+            action: "CREAR_EN_CARTERA",
+            details: `Crear póliza ${g.companyName} (${g.mappedRamo.subRamoKey}), vigencia ${g.estimatedEffectiveYmd}, prima anual $${g.estimatedAnnualPremium.toLocaleString("es-MX")}${
+              g.isShared ? `, compartida con ${g.sharedWithAgentName} (${g.sharedPercentage}%)` : ""
+            } y ${paidCount} recibo(s) pagado(s).`,
+          });
+          continue;
+        }
+
+        // Find or create Client within same agency & owner
+        let client = await prisma.client.findFirst({
+          where: {
+            agencyId: effectiveAgencyId,
+            name: { equals: g.clientName, mode: "insensitive" },
+            isArchived: false,
+          },
+        });
+        if (!client) {
+          client = await prisma.client.create({
+            data: {
+              agencyId: effectiveAgencyId,
+              userId: g.ownerAgentId,
+              name: g.clientName,
+              notes: "Cliente creado automáticamente por Conciliación Producción -> Mi Cartera",
+            },
+          });
+        }
+
+        const newPolicy = await prisma.policy.create({
+          data: {
+            agencyId: effectiveAgencyId,
+            userId: g.ownerAgentId,
+            clientId: client.id,
+            policyNumber: g.policyNumber,
+            contractor: g.clientName,
+            insured: g.clientName,
+            product: g.rawRamo,
+            insuranceCompany: g.companyName,
+            ramo: g.mappedRamo.ramo,
+            subRamo: g.mappedRamo.subRamo,
+            vidaObjetivo: g.mappedRamo.vidaObjetivo,
+            tipoVigencia: g.mappedRamo.tipoVigencia,
+            currency: "MXN",
+            status: "VIGENTE",
+            subStatus: "NUEVA",
+            isRenewalCapture: false,
+            adminApproved: true,
+            sharedWithUserId: g.sharedWithUserId,
+            sharedPercentage: g.sharedPercentage,
+            sourceEmissionId: g.primaryEmissionId,
+            effectiveDate: toUTCNoonDate(g.estimatedEffectiveYmd) || g.estimatedEffectiveDateUTC,
+            annualPremium: g.estimatedAnnualPremium,
+            paymentMethod: g.paymentMethod,
+            observations: g.notesCombined || "Conciliada desde historial de Producción",
+          },
+        });
+
+        const drafts = buildPolicyReceiptsDrafts(newPolicy, {
+          autoMarkHistoricalPaid: false,
+        });
+        if (drafts.length > 0) {
+          await prisma.policyReceipt.createMany({
+            data: drafts,
+            skipDuplicates: true,
+          });
+        }
+
+        const insertedReceipts = await prisma.policyReceipt.findMany({
+          where: { policyId: newPolicy.id, policyYear: 1 },
+          orderBy: { receiptNumber: "asc" },
+        });
+
+        for (const ev of g.receiptEvents) {
+          if (ev.ppc <= 0) continue;
+          const targetRec =
+            insertedReceipts.find((r) => r.receiptNumber === ev.receiptNumber) ||
+            insertedReceipts.find((r) => r.status !== "PAGADO");
+          if (targetRec) {
+            await prisma.policyReceipt.update({
+              where: { id: targetRec.id },
+              data: {
+                status: "PAGADO",
+                paidAt: toUTCNoonDate(ev.issueYmd),
+                paidAmount: ev.ppc,
+                adminApproved: true,
+                paymentNotes: `Conciliado desde emisión histórica (${ev.issueYmd})`,
+              },
+            });
+            markedReceiptsPaid++;
+          }
+        }
+
+        createdPolicies++;
+      } else {
+        // Enrich existing policy non-destructively
+        const updateData: any = {};
+        const reasons: string[] = [];
+
+        if (!existing.sourceEmissionId) {
+          updateData.sourceEmissionId = g.primaryEmissionId;
+        }
+        if (
+          normalizeCompanyKey(canonicalCompanyName(existing.insuranceCompany)) !== g.companyKey &&
+          g.companyName &&
+          g.companyName !== "Sin Aseguradora"
+        ) {
+          updateData.insuranceCompany = g.companyName;
+          reasons.push(`Aseguradora -> ${g.companyName}`);
+        }
+        if (g.isShared && (!existing.sharedWithUserId || Number(existing.sharedPercentage) <= 0)) {
+          updateData.sharedWithUserId = g.sharedWithUserId;
+          updateData.sharedPercentage = g.sharedPercentage;
+          reasons.push(`Co-agente ${g.sharedWithAgentName} (${g.sharedPercentage}%)`);
+        }
+        if (!existing.subRamo) {
+          updateData.subRamo = g.mappedRamo.subRamo;
+        }
+        if (!existing.vidaObjetivo && g.mappedRamo.vidaObjetivo) {
+          updateData.vidaObjetivo = g.mappedRamo.vidaObjetivo;
+        }
+
+        let receiptsToMarkPaid = 0;
+        if (dryRun) {
+          for (const ev of g.receiptEvents) {
+            if (ev.ppc <= 0) continue;
+            const matchRec = existing.receipts.find(
+              (r) =>
+                r.policyYear === 1 &&
+                (r.receiptNumber === ev.receiptNumber ||
+                  (g.receiptEvents.length === 1 && r.receiptNumber === 1))
+            );
+            if (!matchRec || matchRec.status !== "PAGADO") {
+              receiptsToMarkPaid++;
+              reasons.push(`Marcar recibo #${ev.receiptNumber} pagado ($${ev.ppc})`);
+            }
+          }
+          if (reasons.length > 0) {
+            updatedPolicies++;
+            markedReceiptsPaid += receiptsToMarkPaid;
+            previewActions.push({
+              groupKey: g.groupKey,
+              policyNumber: g.policyNumber,
+              clientName: g.clientName,
+              action: "ENRIQUECER_EXISTENTE",
+              details: reasons.join(" • "),
+            });
+          }
+          continue;
+        }
+
+        if (Object.keys(updateData).length > 0) {
+          await prisma.policy.update({
+            where: { id: existing.id },
+            data: updateData,
+          });
+        }
+
+        let currentReceipts = existing.receipts;
+        if (currentReceipts.length === 0) {
+          const drafts = buildPolicyReceiptsDrafts(existing, { autoMarkHistoricalPaid: false });
+          if (drafts.length > 0) {
+            await prisma.policyReceipt.createMany({ data: drafts, skipDuplicates: true });
+            currentReceipts = await prisma.policyReceipt.findMany({
+              where: { policyId: existing.id },
+              orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
+            });
+          }
+        }
+
+        for (const ev of g.receiptEvents) {
+          if (ev.ppc <= 0) continue;
+          const matchRec =
+            currentReceipts.find(
+              (r) =>
+                r.policyYear === 1 &&
+                (r.receiptNumber === ev.receiptNumber ||
+                  (g.receiptEvents.length === 1 && r.receiptNumber === 1))
+            ) || currentReceipts.find((r) => r.policyYear === 1 && r.status !== "PAGADO");
+
+          if (matchRec && matchRec.status !== "PAGADO") {
+            await prisma.policyReceipt.update({
+              where: { id: matchRec.id },
+              data: {
+                status: "PAGADO",
+                paidAt: toUTCNoonDate(ev.issueYmd),
+                paidAmount: ev.ppc,
+                adminApproved: true,
+                paymentNotes:
+                  matchRec.paymentNotes ||
+                  `Conciliado desde emisión histórica (${ev.issueYmd})`,
+              },
+            });
+            receiptsToMarkPaid++;
+            markedReceiptsPaid++;
+          }
+        }
+
+        if (Object.keys(updateData).length > 0 || receiptsToMarkPaid > 0) {
+          updatedPolicies++;
+        }
+      }
+    }
+
+    if (!dryRun) {
+      revalidatePath("/cartera");
+      revalidatePath("/cartera/clientes");
+      revalidatePath("/admin");
+      revalidatePath("/admin/produccion");
+      revalidatePath("/ranking");
+    }
+
+    return {
+      success: true,
+      dryRun,
+      createdPolicies,
+      updatedPolicies,
+      markedReceiptsPaid,
+      skippedCrossTenant,
+      warnings,
+      previewActions,
+    };
+  } catch (error: any) {
+    console.error("Error reconcileHistoricalEmissionsToCartera:", error);
+    return {
+      success: false,
+      message: error.message || "Error al conciliar historial hacia Mi Cartera",
     };
   }
 }

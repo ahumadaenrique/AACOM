@@ -1080,6 +1080,25 @@ async function injectColumns() {
       }
 
       // Deduplicación atómica y candado UNIQUE por (agencyId, LOWER(TRIM(name)))
+      await client.query(`
+        ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "subRamo" TEXT;
+        ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "vidaObjetivo" TEXT;
+        ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "sharedWithUserId" TEXT;
+        ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "sharedPercentage" DOUBLE PRECISION DEFAULT 0;
+        ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "adminApproved" BOOLEAN NOT NULL DEFAULT true;
+        ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "isRenewalCapture" BOOLEAN NOT NULL DEFAULT false;
+        ALTER TABLE "Policy" ADD COLUMN IF NOT EXISTS "sourceEmissionId" TEXT;
+
+        CREATE INDEX IF NOT EXISTS "Policy_effectiveDate_idx" ON "Policy"("effectiveDate");
+        CREATE INDEX IF NOT EXISTS "Policy_sharedWithUserId_idx" ON "Policy"("sharedWithUserId");
+
+        ALTER TABLE "PolicyReceipt" ADD COLUMN IF NOT EXISTS "paidAmount" DOUBLE PRECISION;
+        ALTER TABLE "PolicyReceipt" ADD COLUMN IF NOT EXISTS "adminApproved" BOOLEAN NOT NULL DEFAULT true;
+
+        CREATE INDEX IF NOT EXISTS "PolicyReceipt_paidAt_idx" ON "PolicyReceipt"("paidAt");
+      `);
+      console.log("Verified additive Policy & PolicyReceipt unification columns.");
+
       await client.query(`DELETE FROM "InsuranceCompany" WHERE "agencyId" IS NULL;`);
       const normDedupKey = (raw) =>
         String(raw || '')

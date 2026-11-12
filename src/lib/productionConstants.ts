@@ -31,3 +31,20 @@ export const MONTH_NAMES_ES = [
   "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
 ];
+
+export {
+  RAMO_GROUPS,
+  SUB_RAMOS_CATALOG,
+  SUB_RAMO_MAP,
+  VIDA_OBJETIVOS_CATALOG,
+  classifyPolicyRamo,
+  mapFormSelectionToPolicyFields,
+  resolvePeriodDateRange,
+  canonicalCompanyName,
+  normalizeCompanyKey,
+  type RamoGroupKey,
+  type CanonicalSubRamoKey,
+  type VidaObjetivoKey,
+  type PeriodMode,
+  type BusinessScope,
+} from "./ramosCatalog";

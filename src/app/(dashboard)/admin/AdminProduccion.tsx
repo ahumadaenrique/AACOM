@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useTransition } from "react";
-import Image from "next/image";
+import React, { useState, useEffect, useTransition, useMemo } from "react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -23,16 +23,32 @@ import {
 import { Switch } from "@/components/ui/switch";
 import {
   getProductionDashboardData,
-  createEmission,
-  updateEmission,
-  deleteEmission,
   updateAgentBudget,
   syncBudgetsFromPea,
   saveInsuranceCompany,
   toggleInsuranceCompanyActive,
   deleteInsuranceCompany,
+  getProductionReconciliationAudit,
+  reconcileHistoricalEmissionsToCartera,
 } from "@/app/actions/productionActions";
-import { RAMOS_CATALOGO, DEFAULT_COMPANIES } from "@/lib/productionConstants";
+import {
+  markReceiptAsPaid,
+  togglePolicyAdminApproval,
+  togglePolicyRenewalFlag,
+} from "@/app/(dashboard)/cartera/actions";
+import QuickPdfAiPolicyDialog from "@/app/(dashboard)/cartera/QuickPdfAiPolicyDialog";
+import { DEFAULT_COMPANIES } from "@/lib/productionConstants";
+import {
+  BusinessScope,
+  CanonicalSubRamoKey,
+  PeriodMode,
+  RAMO_GROUPS,
+  RamoGroupKey,
+  SUB_RAMOS_CATALOG,
+  VIDA_OBJETIVOS_CATALOG,
+  VidaObjetivoKey,
+  getDefaultSubPeriodForMonth,
+} from "@/lib/ramosCatalog";
 import {
   Shield,
   Award,
@@ -40,7 +56,6 @@ import {
   DollarSign,
   Calendar,
   Building2,
-  Users,
   FileSpreadsheet,
   Plus,
   RefreshCw,
@@ -57,13 +72,15 @@ import {
   FileText,
   Upload,
   Download,
-  Check,
-  ChevronRight,
   Target,
-  Sparkles,
   Layers,
   Eye,
-  X,
+  Scale,
+  FlaskConical,
+  ArrowRightLeft,
+  Users,
+  Check,
+  XCircle,
 } from "lucide-react";
 
 const MONTHS = [
@@ -81,24 +98,69 @@ const MONTHS = [
   { value: 12, name: "Diciembre" },
 ];
 
+const BIMESTRES = [
+  { value: 1, name: "1er Bimestre (Ene–Feb)" },
+  { value: 2, name: "2do Bimestre (Mar–Abr)" },
+  { value: 3, name: "3er Bimestre (May–Jun)" },
+  { value: 4, name: "4to Bimestre (Jul–Ago)" },
+  { value: 5, name: "5to Bimestre (Sep–Oct)" },
+  { value: 6, name: "6to Bimestre (Nov–Dic)" },
+];
+
+const TRIMESTRES = [
+  { value: 1, name: "1er Trimestre Q1 (Ene–Mar)" },
+  { value: 2, name: "2do Trimestre Q2 (Abr–Jun)" },
+  { value: 3, name: "3er Trimestre Q3 (Jul–Sep)" },
+  { value: 4, name: "4to Trimestre Q4 (Oct–Dic)" },
+];
+
+const SEMESTRES = [
+  { value: 1, name: "1er Semestre (Ene–Jun)" },
+  { value: 2, name: "2do Semestre (Jul–Dic)" },
+];
+
 const currentYear = new Date().getFullYear();
 const currentMonth = new Date().getMonth() + 1;
 
 export default function AdminProduccion() {
-  const [activeSubTab, setActiveSubTab] = useState<"dashboard" | "ingreso" | "companias">("dashboard");
+  const [activeSubTab, setActiveSubTab] = useState<
+    "dashboard" | "ingreso" | "companias" | "evaluador"
+  >("dashboard");
   const [isPending, startTransition] = useTransition();
 
-  // Filters
+  // Filters & Temporality
+  const [periodMode, setPeriodMode] = useState<PeriodMode>("MENSUAL");
   const [selectedYear, setSelectedYear] = useState<number>(currentYear);
   const [selectedMonth, setSelectedMonth] = useState<number>(currentMonth);
+  const [subPeriod, setSubPeriod] = useState<number>(currentMonth);
+  const [customStartDate, setCustomStartDate] = useState<string>(
+    `${currentYear}-${String(currentMonth).padStart(2, "0")}-01`
+  );
+  const [customEndDate, setCustomEndDate] = useState<string>(
+    `${currentYear}-${String(currentMonth).padStart(2, "0")}-28`
+  );
+  const [businessScope, setBusinessScope] = useState<BusinessScope>("NUEVA");
+  const [ramoGroupFilter, setRamoGroupFilter] = useState<RamoGroupKey | "ALL">("ALL");
+  const [subRamoFilter, setSubRamoFilter] = useState<CanonicalSubRamoKey | "ALL">("ALL");
+  const [vidaObjetivoFilter, setVidaObjetivoFilter] = useState<VidaObjetivoKey | "ALL">("ALL");
+
   const [selectedAgency, setSelectedAgency] = useState<string>("DEFAULT");
   const [filterAgentId, setFilterAgentId] = useState<string>("ALL");
   const [filterCompanyId, setFilterCompanyId] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState<string>("");
 
-  // Data State
+  // Dashboard Data State
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState<boolean>(true);
+
+  // Evaluator (Antes vs Después) State
+  const [auditData, setAuditData] = useState<any>(null);
+  const [auditLoading, setAuditLoading] = useState<boolean>(false);
+  const [auditFilter, setAuditFilter] = useState<
+    "ALL" | "FALTA_EN_CARTERA" | "EXISTE_CON_DIFERENCIA" | "CONCILIADO_EXACTO"
+  >("ALL");
+  const [selectedGroupKeys, setSelectedGroupKeys] = useState<string[]>([]);
+  const [dryRunResult, setDryRunResult] = useState<any>(null);
 
   // Modal: Edit Budget
   const [budgetModalOpen, setBudgetModalOpen] = useState(false);
@@ -114,50 +176,56 @@ export default function AdminProduccion() {
   const [companyLogoUrlInput, setCompanyLogoUrlInput] = useState("");
   const [companyOrderInput, setCompanyOrderInput] = useState(0);
 
-  // Form: Ingreso de Póliza
-  const [formAgentId, setFormAgentId] = useState("");
-  const [formCompanyId, setFormCompanyId] = useState("");
-  const [formPolicyNumber, setFormPolicyNumber] = useState("");
-  const [formClientName, setFormClientName] = useState("");
-  const [formRamo, setFormRamo] = useState("Protección");
-  const [formIssueDate, setFormIssueDate] = useState(() => new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" }));
-  const [formPrimaEmitida, setFormPrimaEmitida] = useState<string>("");
-  const [formPrimaPagada, setFormPrimaPagada] = useState<string>("");
-  const [formNotes, setFormNotes] = useState("");
-  const [editingEmissionId, setEditingEmissionId] = useState<string | null>(null);
-
   // Modal: Detalle de Pólizas por Asesor
   const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [detailAgent, setDetailAgent] = useState<any>(null);
   const [detailCompanyFilter, setDetailCompanyFilter] = useState<string>("ALL");
   const [detailSearchQuery, setDetailSearchQuery] = useState<string>("");
 
-  // Modal: Modificación Directa de Póliza
-  const [editPolicyModalOpen, setEditPolicyModalOpen] = useState(false);
-  const [editPolicyData, setEditPolicyData] = useState<any>(null);
-  const [editAgentId, setEditAgentId] = useState("");
-  const [editCompanyId, setEditCompanyId] = useState("");
-  const [editPolicyNumber, setEditPolicyNumber] = useState("");
-  const [editClientName, setEditClientName] = useState("");
-  const [editRamo, setEditRamo] = useState("Protección");
-  const [editIssueDate, setEditIssueDate] = useState("");
-  const [editPrimaEmitida, setEditPrimaEmitida] = useState("");
-  const [editPrimaPagada, setEditPrimaPagada] = useState("");
-  const [editStatus, setEditStatus] = useState("EMITIDA");
-  const [editNotes, setEditNotes] = useState("");
+  // Modal: Cobrar Recibo desde Cartera Unificada
+  const [payModalOpen, setPayModalOpen] = useState(false);
+  const [payTargetPolicy, setPayTargetPolicy] = useState<any>(null);
+  const [payReceiptId, setPayReceiptId] = useState<string>("");
+  const [payDateInput, setPayDateInput] = useState<string>(() =>
+    new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" })
+  );
+  const [payAmountInput, setPayAmountInput] = useState<string>("");
+  const [payNotesInput, setPayNotesInput] = useState<string>("");
 
   // Feedback banner
-  const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+
+  const handlePeriodModeChange = (nextMode: PeriodMode) => {
+    setPeriodMode(nextMode);
+    if (nextMode === "MENSUAL") {
+      setSubPeriod(selectedMonth);
+    } else {
+      setSubPeriod(getDefaultSubPeriodForMonth(nextMode, selectedMonth));
+    }
+  };
 
   const fetchData = async () => {
     setLoading(true);
     try {
+      const effectiveMonth =
+        periodMode === "MENSUAL" ? subPeriod : selectedMonth;
       const res = await getProductionDashboardData({
         year: selectedYear,
-        month: selectedMonth,
+        month: effectiveMonth,
         agencyId: selectedAgency,
         agentId: filterAgentId,
         companyId: filterCompanyId,
+        periodMode,
+        subPeriod: periodMode === "MENSUAL" ? selectedMonth : subPeriod,
+        startDate: periodMode === "CUSTOM" ? customStartDate : undefined,
+        endDate: periodMode === "CUSTOM" ? customEndDate : undefined,
+        businessScope,
+        ramoGroupFilter,
+        subRamoFilter,
+        vidaObjetivoFilter,
       });
       if (res.success) {
         setData(res);
@@ -169,146 +237,108 @@ export default function AdminProduccion() {
       }
     } catch (err: any) {
       console.error(err);
-      setFeedback({ type: "error", text: "Error de conexión" });
+      setFeedback({ type: "error", text: "Error de conexión al cargar producción" });
     } finally {
       setLoading(false);
     }
   };
 
+  const fetchAudit = async (agencyOverride?: string) => {
+    setAuditLoading(true);
+    setDryRunResult(null);
+    try {
+      const res = await getProductionReconciliationAudit({
+        year: selectedYear,
+        agencyId: agencyOverride || selectedAgency,
+      });
+      if (res.success) {
+        setAuditData(res);
+        const pendingKeys = (res.reconciliationItems || [])
+          .filter((i: any) => i.status !== "CONCILIADO_EXACTO")
+          .map((i: any) => i.groupKey);
+        setSelectedGroupKeys(pendingKeys);
+      } else {
+        setFeedback({ type: "error", text: res.message || "Error al auditar historial" });
+      }
+    } catch (err: any) {
+      console.error(err);
+      setFeedback({ type: "error", text: "Error al ejecutar evaluador Antes vs Después" });
+    } finally {
+      setAuditLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchData();
-  }, [selectedYear, selectedMonth, selectedAgency, filterAgentId, filterCompanyId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    periodMode,
+    selectedYear,
+    selectedMonth,
+    subPeriod,
+    customStartDate,
+    customEndDate,
+    businessScope,
+    ramoGroupFilter,
+    subRamoFilter,
+    vidaObjetivoFilter,
+    selectedAgency,
+    filterAgentId,
+    filterCompanyId,
+  ]);
 
-  // Set default agent and company when data loads or agency switches
   useEffect(() => {
-    if (data?.agents?.length > 0) {
-      const hasAgentInCurrentAgency = data.agents.some((a: any) => a.id === formAgentId);
-      if (!formAgentId || !hasAgentInCurrentAgency) {
-        setFormAgentId(data.agents[0].id);
-      }
-    } else {
-      setFormAgentId("");
+    if (activeSubTab === "evaluador") {
+      fetchAudit();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeSubTab, selectedYear, selectedAgency]);
 
-    if (data?.companies?.length > 0) {
-      const hasCompanyInCurrentAgency = data.companies.some((c: any) => c.id === formCompanyId);
-      if (!formCompanyId || !hasCompanyInCurrentAgency) {
-        setFormCompanyId(data.companies[0].id);
-      }
-    } else {
-      setFormCompanyId("");
-    }
-  }, [data]);
-
-  // Helper currency format
-  const formatMoney = (val: number) => {
-    return new Intl.NumberFormat("es-MX", {
+  const formatMoney = (val: number) =>
+    new Intl.NumberFormat("es-MX", {
       style: "currency",
       currency: "MXN",
       maximumFractionDigits: 0,
     }).format(val || 0);
-  };
 
-  // Helper Ramo icon
-  const getRamoIcon = (ramo: string) => {
-    switch (ramo) {
-      case "Protección": return <Shield className="h-4 w-4" />;
-      case "Ahorro": return <PiggyBank className="h-4 w-4" />;
-      case "Educación": return <GraduationCap className="h-4 w-4" />;
-      case "Retiro": return <Palmtree className="h-4 w-4" />;
-      case "Gastos Médicos": return <HeartPulse className="h-4 w-4" />;
-      case "Autos": return <Car className="h-4 w-4" />;
-      case "Daños": return <Building2 className="h-4 w-4" />;
-      default: return <FileText className="h-4 w-4" />;
+  const formatMoneyExact = (val: number) =>
+    new Intl.NumberFormat("es-MX", {
+      style: "currency",
+      currency: "MXN",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(val || 0);
+
+  const getRamoIcon = (key: string) => {
+    switch (key) {
+      case "PROTECCION":
+      case "VIDA":
+      case "VIDA_INDIVIDUAL":
+        return <Shield className="h-4 w-4" />;
+      case "VIDA_GRUPO":
+        return <Users className="h-4 w-4" />;
+      case "AHORRO":
+        return <PiggyBank className="h-4 w-4" />;
+      case "EDUCACION":
+        return <GraduationCap className="h-4 w-4" />;
+      case "RETIRO":
+        return <Palmtree className="h-4 w-4" />;
+      case "GMM":
+      case "GMM_INDIVIDUAL":
+      case "GMM_COLECTIVO":
+        return <HeartPulse className="h-4 w-4" />;
+      case "AUTOS":
+      case "AUTOS_INDIVIDUAL":
+      case "AUTOS_FLOTILLA":
+        return <Car className="h-4 w-4" />;
+      case "DANOS":
+        return <Building2 className="h-4 w-4" />;
+      default:
+        return <FileText className="h-4 w-4" />;
     }
   };
 
-  // 1. Submit Emission Form
-  const handleSubmitEmission = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setFeedback(null);
-
-    const selectedComp = data?.companies?.find((c: any) => c.id === formCompanyId);
-    const companyName = selectedComp?.name || "Aseguradora";
-
-    startTransition(async () => {
-      let res;
-      if (editingEmissionId) {
-        res = await updateEmission(editingEmissionId, {
-          agentId: formAgentId,
-          companyId: formCompanyId,
-          companyName,
-          policyNumber: formPolicyNumber,
-          clientName: formClientName,
-          ramo: formRamo,
-          issueDate: formIssueDate,
-          primaEmitida: parseFloat(formPrimaEmitida) || 0,
-          primaPagada: parseFloat(formPrimaPagada) || 0,
-          notes: formNotes,
-        });
-      } else {
-        res = await createEmission({
-          agentId: formAgentId,
-          companyId: formCompanyId,
-          companyName,
-          policyNumber: formPolicyNumber,
-          clientName: formClientName,
-          ramo: formRamo,
-          issueDate: formIssueDate,
-          primaEmitida: parseFloat(formPrimaEmitida) || 0,
-          primaPagada: parseFloat(formPrimaPagada) || 0,
-          notes: formNotes,
-        });
-      }
-
-      if (res.success) {
-        setFeedback({
-          type: "success",
-          text: editingEmissionId ? "¡Póliza actualizada exitosamente!" : "¡Póliza registrada con éxito en el sistema!",
-        });
-        // Reset form
-        setFormPolicyNumber("");
-        setFormClientName("");
-        setFormPrimaEmitida("");
-        setFormPrimaPagada("");
-        setFormNotes("");
-        setEditingEmissionId(null);
-        await fetchData();
-      } else {
-        setFeedback({ type: "error", text: res.message || "Error al guardar la póliza" });
-      }
-    });
-  };
-
-  // 2. Edit Emission
-  const handleEditEmissionClick = (em: any) => {
-    setEditingEmissionId(em.id);
-    setFormAgentId(em.agentId);
-    setFormCompanyId(em.companyId || "");
-    setFormPolicyNumber(em.policyNumber || "");
-    setFormClientName(em.clientName || "");
-    setFormRamo(em.ramo || "Protección");
-    setFormIssueDate(new Date(em.issueDate).toISOString().split("T")[0]);
-    setFormPrimaEmitida(em.primaEmitida?.toString() || "");
-    setFormPrimaPagada(em.primaPagada?.toString() || "");
-    setFormNotes(em.notes || "");
-    setActiveSubTab("ingreso");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  // 3. Delete Emission
-  const handleDeleteEmission = async (id: string) => {
-    if (!confirm("¿Seguro que deseas eliminar esta póliza emitida?")) return;
-    const res = await deleteEmission(id);
-    if (res.success) {
-      setFeedback({ type: "success", text: "Póliza eliminada del sistema." });
-      fetchData();
-    } else {
-      alert("Error: " + res.message);
-    }
-  };
-
-  // 3.1 Abrir Detalle de Pólizas por Asesor
+  // Detail Modal open
   const handleOpenDetailModal = (agent: any, companyId: string = "ALL") => {
     setDetailAgent(agent);
     setDetailCompanyFilter(companyId);
@@ -316,101 +346,16 @@ export default function AdminProduccion() {
     setDetailModalOpen(true);
   };
 
-  // 3.2 Abrir Modal de Edición Directa de Póliza
-  const handleOpenEditPolicyModal = (em: any) => {
-    setEditPolicyData(em);
-    setEditAgentId(em.agentId);
-    setEditCompanyId(em.companyId || "");
-    setEditPolicyNumber(em.policyNumber || "");
-    setEditClientName(em.clientName || "");
-    setEditRamo(em.ramo || "Protección");
-    setEditIssueDate(new Date(em.issueDate).toISOString().split("T")[0]);
-    setEditPrimaEmitida(em.primaEmitida?.toString() || "0");
-    setEditPrimaPagada(em.primaPagada?.toString() || "0");
-    setEditStatus(em.status || "EMITIDA");
-    setEditNotes(em.notes || "");
-    setEditPolicyModalOpen(true);
-  };
-
-  // 3.3 Guardar Cambios de Póliza Modificada (Ajuste Manual)
-  const handleSaveEditedPolicy = async () => {
-    if (!editPolicyData?.id) return;
-    if (!editAgentId) {
-      alert("Selecciona un asesor.");
-      return;
-    }
-    const selectedComp = companies.find((c: any) => c.id === editCompanyId);
-    const companyName = selectedComp?.name || editPolicyData.companyName || "Aseguradora";
-
-    startTransition(async () => {
-      const res = await updateEmission(editPolicyData.id, {
-        agentId: editAgentId,
-        companyId: editCompanyId,
-        companyName,
-        policyNumber: editPolicyNumber,
-        clientName: editClientName,
-        ramo: editRamo,
-        issueDate: editIssueDate,
-        primaEmitida: parseFloat(editPrimaEmitida) || 0,
-        primaPagada: parseFloat(editPrimaPagada) || 0,
-        status: editStatus,
-        notes: editNotes,
-      });
-
-      if (res.success) {
-        setEditPolicyModalOpen(false);
-        setEditPolicyData(null);
-        setFeedback({
-          type: "success",
-          text: "¡Póliza actualizada exitosamente! Las primas y avances han sido recalculados.",
-        });
-        await fetchData();
-      } else {
-        alert("Error al actualizar la póliza: " + res.message);
-      }
-    });
-  };
-
-  // 3.4 Eliminar Póliza desde Modal de Detalle
-  const handleDeletePolicyFromDetail = async (emissionId: string) => {
-    if (!confirm("¿Seguro que deseas eliminar esta póliza? Esta acción restará sus primas de los resultados.")) return;
-    startTransition(async () => {
-      const res = await deleteEmission(emissionId);
-      if (res.success) {
-        setFeedback({ type: "success", text: "Póliza eliminada con éxito." });
-        await fetchData();
-      } else {
-        alert("Error al eliminar póliza: " + res.message);
-      }
-    });
-  };
-
-  // 3.5 Registrar Rápido para este Asesor
-  const handleQuickAddForAgent = (agentId: string, companyId?: string) => {
-    setDetailModalOpen(false);
-    setFormAgentId(agentId);
-    if (companyId && companyId !== "ALL") {
-      setFormCompanyId(companyId);
-    }
-    setEditingEmissionId(null);
-    setFormPolicyNumber("");
-    setFormClientName("");
-    setFormPrimaEmitida("");
-    setFormPrimaPagada("");
-    setFormNotes("");
-    setActiveSubTab("ingreso");
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  // 4. Open Budget Edit Modal
+  // Budget Modal
   const handleOpenBudgetModal = (row: any) => {
     setEditingBudgetAgent(row);
-    setBudgetInputValue(row.budget?.toString() || "0");
+    setBudgetInputValue(
+      String(row.selectedMonthBudgetPE ?? row.budget ?? 0)
+    );
     setBudgetNotes("");
     setBudgetModalOpen(true);
   };
 
-  // 5. Save Agent Budget
   const handleSaveBudget = async () => {
     if (!editingBudgetAgent) return;
     const val = parseFloat(budgetInputValue) || 0;
@@ -427,7 +372,7 @@ export default function AdminProduccion() {
         setBudgetModalOpen(false);
         setFeedback({
           type: "success",
-          text: `Presupuesto de ${editingBudgetAgent.agentName} actualizado a ${formatMoney(val)}.`,
+          text: `Presupuesto de ${editingBudgetAgent.agentName} (${MONTHS.find((m) => m.value === selectedMonth)?.name} ${selectedYear}) actualizado a ${formatMoney(val)}.`,
         });
         fetchData();
       } else {
@@ -436,14 +381,13 @@ export default function AdminProduccion() {
     });
   };
 
-  // 6. Sync PEA Budgets
   const handleSyncPea = async () => {
     startTransition(async () => {
       const res = await syncBudgetsFromPea(selectedYear, selectedMonth, selectedAgency);
       if (res.success) {
         setFeedback({
           type: "success",
-          text: `Sincronización completada: se importaron ${res.syncedCount} presupuestos de PEAs autorizados para ${MONTHS.find(m => m.value === selectedMonth)?.name}.`,
+          text: `Sincronización completada: se importaron ${res.syncedCount} presupuestos de PEAs autorizados para ${MONTHS.find((m) => m.value === selectedMonth)?.name}.`,
         });
         fetchData();
       } else {
@@ -452,7 +396,7 @@ export default function AdminProduccion() {
     });
   };
 
-  // 7. Save Company
+  // Company Actions
   const handleSaveCompany = async () => {
     if (!companyNameInput.trim()) {
       alert("El nombre de la aseguradora es obligatorio.");
@@ -475,7 +419,10 @@ export default function AdminProduccion() {
         setCompanyNameInput("");
         setCompanyColorInput("#0284c7");
         setCompanyLogoUrlInput("");
-        setFeedback({ type: "success", text: "Aseguradora guardada exitosamente para esta agencia." });
+        setFeedback({
+          type: "success",
+          text: "Aseguradora guardada exitosamente para esta agencia.",
+        });
         fetchData();
       } else {
         alert("Error: " + res.message);
@@ -483,7 +430,30 @@ export default function AdminProduccion() {
     });
   };
 
-  // 7.1 Toggle Company Active Switch (Isolated per Agency)
+  const handleQuickEnableCompany = async (item: {
+    companyName: string;
+    existingCompanyId: string | null;
+  }) => {
+    startTransition(async () => {
+      const res = item.existingCompanyId
+        ? await toggleInsuranceCompanyActive(item.existingCompanyId, true, selectedAgency)
+        : await saveInsuranceCompany({
+            name: item.companyName,
+            active: true,
+            agencyId: selectedAgency,
+          });
+      if (res.success) {
+        setFeedback({
+          type: "success",
+          text: `✓ ${item.companyName} activada para que aparezca como columna en tu tablero.`,
+        });
+        await fetchData();
+      } else {
+        setFeedback({ type: "error", text: res.message || "Error al activar aseguradora" });
+      }
+    });
+  };
+
   const handleToggleCompanyActive = async (comp: any, nextActive: boolean) => {
     setData((prev: any) => {
       if (!prev) return prev;
@@ -515,16 +485,13 @@ export default function AdminProduccion() {
     }
   };
 
-  // 8. Handle Logo Image Upload with Client-Side Compression
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-
     if (file.size > 5 * 1024 * 1024) {
       alert("El logo no debe exceder 5MB.");
       return;
     }
-
     const reader = new FileReader();
     reader.onload = (event) => {
       const rawUrl = event.target?.result as string;
@@ -532,7 +499,6 @@ export default function AdminProduccion() {
         setCompanyLogoUrlInput(rawUrl);
         return;
       }
-
       const img = new window.Image();
       img.onload = () => {
         try {
@@ -544,8 +510,7 @@ export default function AdminProduccion() {
           const ctx = canvas.getContext("2d");
           if (ctx) {
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-            const compressed = canvas.toDataURL("image/webp", 0.9);
-            setCompanyLogoUrlInput(compressed);
+            setCompanyLogoUrlInput(canvas.toDataURL("image/webp", 0.9));
           } else {
             setCompanyLogoUrlInput(rawUrl);
           }
@@ -553,47 +518,192 @@ export default function AdminProduccion() {
           setCompanyLogoUrlInput(rawUrl);
         }
       };
-      img.onerror = () => {
-        setCompanyLogoUrlInput(rawUrl);
-      };
+      img.onerror = () => setCompanyLogoUrlInput(rawUrl);
       img.src = rawUrl;
     };
     reader.readAsDataURL(file);
   };
 
-  // 9. Export to CSV (with Excel UTF-8 BOM)
-  const handleExportCSV = () => {
-    if (!data?.emissions) return;
+  // Inline Cartera Actions: Approval, Renewal Flag, Payment Modal
+  const handleToggleAdminApproval = async (policyId: string, nextVal: boolean) => {
+    startTransition(async () => {
+      try {
+        await togglePolicyAdminApproval(policyId, nextVal);
+        setFeedback({
+          type: "success",
+          text: nextVal
+            ? "✓ Póliza aprobada por Administración."
+            : "Póliza marcada como pendiente de visto bueno.",
+        });
+        await fetchData();
+      } catch (e: any) {
+        setFeedback({ type: "error", text: e?.message || "Error al actualizar visto bueno" });
+      }
+    });
+  };
 
-    const monthLabel = MONTHS.find((m) => m.value === selectedMonth)?.name || selectedMonth;
-    const filename = `Produccion_${monthLabel}_${selectedYear}.csv`;
+  const handleToggleRenewalFlag = async (policyId: string, nextVal: boolean) => {
+    startTransition(async () => {
+      try {
+        await togglePolicyRenewalFlag(policyId, nextVal);
+        setFeedback({
+          type: "success",
+          text: nextVal
+            ? "🔄 Póliza clasificada como Renovación (Año 2+)."
+            : "✨ Póliza clasificada como Venta Nueva (Año 1).",
+        });
+        await fetchData();
+        if (activeSubTab === "evaluador") {
+          await fetchAudit();
+        }
+      } catch (e: any) {
+        setFeedback({ type: "error", text: e?.message || "Error al cambiar clasificación" });
+      }
+    });
+  };
+
+  const openPayModal = (row: any) => {
+    const unpaid = (row.receipts || []).find((r: any) => r.status !== "PAGADO") || row.receipts?.[0];
+    if (!unpaid) {
+      setFeedback({
+        type: "error",
+        text: `La póliza ${row.policyNumber} no tiene recibos pendientes.`,
+      });
+      return;
+    }
+    setPayTargetPolicy(row);
+    setPayReceiptId(unpaid.id);
+    setPayDateInput(
+      unpaid.dueDate ||
+        new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" })
+    );
+    setPayAmountInput(String(Number((unpaid.paidAmount ?? unpaid.amount ?? 0).toFixed(2))));
+    setPayNotesInput("");
+    setPayModalOpen(true);
+  };
+
+  const handleConfirmReceiptPayment = async () => {
+    if (!payReceiptId) return;
+    startTransition(async () => {
+      try {
+        const parsedAmt = Number(payAmountInput);
+        await markReceiptAsPaid({
+          receiptId: payReceiptId,
+          paidDate: payDateInput,
+          paidAmount:
+            payAmountInput !== "" && Number.isFinite(parsedAmt) && parsedAmt >= 0
+              ? parsedAmt
+              : undefined,
+          paymentNotes: payNotesInput,
+        });
+        setPayModalOpen(false);
+        setFeedback({
+          type: "success",
+          text: `✓ Recibo pagado en Mi Cartera para la póliza ${payTargetPolicy?.policyNumber} (${formatMoneyExact(parsedAmt || 0)} MXN).`,
+        });
+        await fetchData();
+      } catch (e: any) {
+        setFeedback({ type: "error", text: e?.message || "Error al registrar cobro" });
+      }
+    });
+  };
+
+  // Reconciliation Actions
+  const handleRunDryRunReconcile = async () => {
+    if (selectedGroupKeys.length === 0) {
+      setFeedback({ type: "error", text: "Selecciona al menos un registro para simular." });
+      return;
+    }
+    startTransition(async () => {
+      const res = await reconcileHistoricalEmissionsToCartera({
+        agencyId: selectedAgency,
+        year: selectedYear,
+        groupKeys: selectedGroupKeys,
+        dryRun: true,
+      });
+      if (res.success) {
+        setDryRunResult(res);
+      } else {
+        setFeedback({ type: "error", text: res.message || "Error en simulación" });
+      }
+    });
+  };
+
+  const handleExecuteReconcile = async () => {
+    if (selectedGroupKeys.length === 0) {
+      setFeedback({ type: "error", text: "Selecciona al menos un registro para conciliar." });
+      return;
+    }
+    if (
+      !confirm(
+        `Se conciliarán ${selectedGroupKeys.length} póliza(s) hacia Mi Cartera de forma idempotente (sin duplicar ni borrar registros históricos de Producción). ¿Continuar?`
+      )
+    ) {
+      return;
+    }
+    startTransition(async () => {
+      const res = await reconcileHistoricalEmissionsToCartera({
+        agencyId: selectedAgency,
+        year: selectedYear,
+        groupKeys: selectedGroupKeys,
+        dryRun: false,
+      });
+      if (res.success) {
+        setDryRunResult(null);
+        setFeedback({
+          type: "success",
+          text: `✓ Conciliación aplicada: ${res.createdPolicies} póliza(s) creada(s) en Mi Cartera, ${res.updatedPolicies} enriquecida(s), ${res.markedReceiptsPaid} recibo(s) pagado(s).`,
+        });
+        await fetchData();
+        await fetchAudit();
+      } else {
+        setFeedback({ type: "error", text: res.message || "Error al conciliar" });
+      }
+    });
+  };
+
+  // CSV Exports
+  const handleExportCSV = () => {
+    const rowsData = data?.ledgerRows || [];
+    if (rowsData.length === 0) return;
+
+    const label = (data?.periodInfo?.label || `${selectedYear}`).replace(/\s+/g, "_");
+    const filename = `Produccion_Cartera_${label}.csv`;
 
     const headers = [
-      "Agente",
-      "Email Agente",
-      "Aseguradora",
       "Folio / Poliza",
-      "Cliente Asegurado",
-      "Ramo",
-      "Fecha Emision",
-      "Prima Emitida (PE)",
-      "Prima Pagada (PPC)",
-      "Estatus",
-      "Notas",
+      "Aseguradora",
+      "Asesor Titular",
+      "Co-Agente",
+      "% Compartida",
+      "Cliente",
+      "Grupo Ramo",
+      "Sub-ramo",
+      "Objetivo Vida",
+      "Inicio Vigencia",
+      "PE en Periodo MXN",
+      "PPC en Periodo MXN",
+      "Recibos Pagados Periodo",
+      "Renovacion",
+      "Visto Bueno Admin",
     ];
 
-    const rows = data.emissions.map((em: any) => [
-      `"${em.agent?.name || em.agent?.email || ""}"`,
-      `"${em.agent?.email || ""}"`,
-      `"${em.companyName || ""}"`,
-      `"${em.policyNumber || ""}"`,
-      `"${em.clientName || ""}"`,
-      `"${em.ramo || ""}"`,
-      `"${new Date(em.issueDate).toLocaleDateString("es-MX", { timeZone: "UTC" })}"`,
-      em.primaEmitida || 0,
-      em.primaPagada || 0,
-      `"${em.status || ""}"`,
-      `"${(em.notes || "").replace(/"/g, '""')}"`,
+    const rows = rowsData.map((r: any) => [
+      `"${r.policyNumber || ""}"`,
+      `"${r.canonicalCompany || r.insuranceCompany || ""}"`,
+      `"${r.ownerAgentName || ""}"`,
+      `"${r.sharedWithAgentName || ""}"`,
+      r.sharedPercentage || 0,
+      `"${(r.clientName || "").replace(/"/g, '""')}"`,
+      `"${r.ramoInfo?.groupLabel || ""}"`,
+      `"${r.ramoInfo?.subRamoLabel || ""}"`,
+      `"${r.ramoInfo?.vidaObjetivoLabel || ""}"`,
+      `"${r.effectiveDate || ""}"`,
+      r.peInPeriod || 0,
+      r.ppcInPeriod || 0,
+      r.paidReceiptsInPeriod || 0,
+      r.isRenewalCapture ? "SI" : "NO",
+      r.adminApproved ? "APROBADA" : "PENDIENTE",
     ]);
 
     const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r: any[]) => r.join(","))].join("\r\n");
@@ -606,183 +716,386 @@ export default function AdminProduccion() {
     document.body.removeChild(link);
   };
 
+  const handleExportAuditCSV = () => {
+    const items = auditData?.reconciliationItems || [];
+    if (items.length === 0) return;
+    const headers = [
+      "Estatus Conciliacion",
+      "Poliza",
+      "Cliente",
+      "Aseguradora Produccion",
+      "Aseguradora Cartera",
+      "Agente Titular",
+      "Co-Agente",
+      "% Co-Agente",
+      "Antes PE MXN",
+      "Despues PE MXN",
+      "Antes PPC MXN",
+      "Despues PPC MXN",
+      "Hallazgos",
+    ];
+    const rows = items.map((i: any) => [
+      `"${i.status}"`,
+      `"${i.policyNumber}"`,
+      `"${(i.clientName || "").replace(/"/g, '""')}"`,
+      `"${i.companyName || ""}"`,
+      `"${i.existingCompanyName || ""}"`,
+      `"${i.ownerAgentName || ""}"`,
+      `"${i.sharedWithAgentName || ""}"`,
+      i.sharedPercentage || 0,
+      i.beforePE || 0,
+      i.afterPE || 0,
+      i.beforePPC || 0,
+      i.afterPPC || 0,
+      `"${(i.differences || []).join(" | ").replace(/"/g, '""')}"`,
+    ]);
+    const csvContent = "\uFEFF" + [headers.join(","), ...rows.map((r: any[]) => r.join(","))].join("\r\n");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.setAttribute("download", `Auditoria_Antes_Despues_${selectedYear}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const kpis = data?.kpis;
   const companies = data?.companies || [];
   const catalogCompanies = data?.catalogCompanies || companies;
   const agentMatrix = data?.agentMatrix || [];
-  const emissions = data?.emissions || [];
+  const ledgerRows = data?.ledgerRows || [];
   const agencies = data?.agencies || [];
+  const periodInfo = data?.periodInfo;
+  const periodLabel = periodInfo?.label || `${MONTHS.find((m) => m.value === selectedMonth)?.name} ${selectedYear}`;
   const currentAgencyName =
     agencies.find((ag: any) => ag.id === selectedAgency)?.name || "esta promotoría";
-  const monthName = MONTHS.find((m) => m.value === selectedMonth)?.name || "";
 
-  // Filter emissions in table by search query
-  const filteredEmissions = emissions.filter((em: any) => {
-    if (!searchQuery) return true;
-    const q = searchQuery.toLowerCase();
-    return (
-      (em.agent?.name || "").toLowerCase().includes(q) ||
-      (em.clientName || "").toLowerCase().includes(q) ||
-      (em.policyNumber || "").toLowerCase().includes(q) ||
-      (em.companyName || "").toLowerCase().includes(q) ||
-      (em.ramo || "").toLowerCase().includes(q)
+  const filteredLedgerRows = useMemo(() => {
+    if (!searchQuery.trim()) return ledgerRows;
+    const q = searchQuery.toLowerCase().trim();
+    return ledgerRows.filter(
+      (r: any) =>
+        (r.policyNumber || "").toLowerCase().includes(q) ||
+        (r.clientName || "").toLowerCase().includes(q) ||
+        (r.ownerAgentName || "").toLowerCase().includes(q) ||
+        (r.sharedWithAgentName || "").toLowerCase().includes(q) ||
+        (r.canonicalCompany || "").toLowerCase().includes(q) ||
+        (r.ramoInfo?.fullLabel || "").toLowerCase().includes(q)
     );
-  });
+  }, [ledgerRows, searchQuery]);
+
+  const filteredAuditItems = useMemo(() => {
+    const items = auditData?.reconciliationItems || [];
+    if (auditFilter === "ALL") return items;
+    return items.filter((i: any) => i.status === auditFilter);
+  }, [auditData, auditFilter]);
+
+  const visibleSubRamoCards = useMemo(() => {
+    if (ramoGroupFilter === "ALL") return SUB_RAMOS_CATALOG;
+    return SUB_RAMOS_CATALOG.filter((sr) => sr.groupKey === ramoGroupFilter);
+  }, [ramoGroupFilter]);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Top Controls & Navigation Bar */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-4 border-b border-slate-200 dark:border-zinc-800">
+      <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 pb-4 border-b border-slate-200 dark:border-zinc-800">
         <div>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded-xl bg-gradient-to-tr from-teal-700 to-emerald-600 flex items-center justify-center text-white shadow-md">
               <Award className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-zinc-100 flex items-center gap-2">
-                Resultados de Producción
-                <span className="text-sm font-bold text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/40 px-2.5 py-0.5 rounded-full border border-teal-200 dark:border-teal-800">
-                  {monthName} {selectedYear}
+              <h2 className="text-xl md:text-2xl font-black text-slate-900 dark:text-zinc-100 flex flex-wrap items-center gap-2">
+                Resultados de Producción y Primas
+                <span className="text-xs font-bold text-teal-700 dark:text-teal-400 bg-teal-50 dark:bg-teal-950/40 px-2.5 py-0.5 rounded-full border border-teal-200 dark:border-teal-800">
+                  {periodLabel}
                 </span>
               </h2>
               <p className="text-xs font-medium text-slate-500 dark:text-zinc-400">
-                Control de emisiones, primas por aseguradora y avance vs presupuesto mensual PEA.
+                Fuente única en vivo desde <strong>Mi Cartera 360° (MXN)</strong> • Sin doble captura.
               </p>
             </div>
           </div>
         </div>
 
-        {/* Sub-tab Navigation */}
-        <div className="flex bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-200 dark:border-zinc-800 w-full md:w-auto">
-          <button
-            onClick={() => setActiveSubTab("dashboard")}
-            className={`flex-1 md:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-              activeSubTab === "dashboard"
-                ? "bg-white dark:bg-zinc-800 text-teal-700 dark:text-teal-400 shadow-sm"
-                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
-            }`}
-          >
-            <Award className="h-3.5 w-3.5" /> Dashboard de Resultados
-          </button>
-          <button
-            onClick={() => setActiveSubTab("ingreso")}
-            className={`flex-1 md:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-              activeSubTab === "ingreso"
-                ? "bg-white dark:bg-zinc-800 text-teal-700 dark:text-teal-400 shadow-sm"
-                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
-            }`}
-          >
-            <Plus className="h-3.5 w-3.5" /> Ingreso de Pólizas
-            {emissions.length > 0 && (
-              <Badge className="ml-1 bg-teal-600 text-white font-mono text-[10px] px-1.5 py-0">
-                {emissions.length}
-              </Badge>
-            )}
-          </button>
-          <button
-            onClick={() => setActiveSubTab("companias")}
-            className={`flex-1 md:flex-initial px-4 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 ${
-              activeSubTab === "companias"
-                ? "bg-white dark:bg-zinc-800 text-teal-700 dark:text-teal-400 shadow-sm"
-                : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
-            }`}
-          >
-            <Building2 className="h-3.5 w-3.5" /> Aseguradoras & Logos
-          </button>
+        {/* Sub-tab Navigation + Direct Cartera Capture */}
+        <div className="flex flex-wrap items-center gap-2 w-full xl:w-auto justify-between xl:justify-end">
+          <div className="flex flex-wrap bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-200 dark:border-zinc-800">
+            <button
+              onClick={() => setActiveSubTab("dashboard")}
+              className={`px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeSubTab === "dashboard"
+                  ? "bg-white dark:bg-zinc-800 text-teal-700 dark:text-teal-400 shadow-sm"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
+              }`}
+            >
+              <Award className="h-3.5 w-3.5" /> Dashboard
+            </button>
+            <button
+              onClick={() => setActiveSubTab("ingreso")}
+              className={`px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeSubTab === "ingreso"
+                  ? "bg-white dark:bg-zinc-800 text-teal-700 dark:text-teal-400 shadow-sm"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
+              }`}
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5" /> Pólizas y Cobranza
+              {ledgerRows.length > 0 && (
+                <Badge className="ml-0.5 bg-teal-600 text-white font-mono text-[10px] px-1.5 py-0">
+                  {ledgerRows.length}
+                </Badge>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveSubTab("evaluador")}
+              className={`px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeSubTab === "evaluador"
+                  ? "bg-white dark:bg-zinc-800 text-indigo-700 dark:text-indigo-400 shadow-sm"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
+              }`}
+            >
+              <Scale className="h-3.5 w-3.5" /> Evaluador Antes vs. Después
+            </button>
+            <button
+              onClick={() => setActiveSubTab("companias")}
+              className={`px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                activeSubTab === "companias"
+                  ? "bg-white dark:bg-zinc-800 text-teal-700 dark:text-teal-400 shadow-sm"
+                  : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
+              }`}
+            >
+              <Building2 className="h-3.5 w-3.5" /> Aseguradoras
+            </button>
+          </div>
+
+          <QuickPdfAiPolicyDialog
+            targetAgencyId={selectedAgency}
+            buttonLabel="Capturar en Mi Cartera"
+            buttonClassName="bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold shadow-sm"
+            onSavedSuccess={fetchData}
+          />
         </div>
       </div>
 
-      {/* Filter Toolbar (Month, Year, Agency, Export, Sync) */}
+      {/* Filter & Temporality Toolbar */}
       <Card className="border border-slate-200 dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950">
-        <CardContent className="p-3.5 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-2.5">
-            {/* Mes */}
-            <div className="flex items-center gap-1.5">
-              <Calendar className="h-4 w-4 text-slate-400" />
-              <select
-                value={selectedMonth}
-                onChange={(e) => setSelectedMonth(parseInt(e.target.value))}
-                className="text-xs font-bold py-1.5 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm cursor-pointer"
-              >
-                {MONTHS.map((m) => (
-                  <option key={m.value} value={m.value}>
-                    {m.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Año */}
-            <select
-              value={selectedYear}
-              onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-              className="text-xs font-bold py-1.5 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm cursor-pointer"
-            >
-              {[2024, 2025, 2026, 2027].map((y) => (
-                <option key={y} value={y}>
-                  {y}
-                </option>
-              ))}
-            </select>
-
-            {/* Super Admin Agency */}
-            {data?.currentUserRole === "SUPER_ADMIN" && agencies.length > 0 && (
+        <CardContent className="p-3.5 space-y-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Temporalidad */}
               <div className="flex items-center gap-1.5">
-                <Building2 className="h-4 w-4 text-slate-400" />
+                <Calendar className="h-4 w-4 text-slate-400" />
                 <select
-                  value={selectedAgency}
-                  onChange={(e) => {
-                    setFilterAgentId("ALL");
-                    setFilterCompanyId("ALL");
-                    setSelectedAgency(e.target.value);
-                  }}
-                  className="text-xs font-bold py-1.5 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm cursor-pointer"
+                  value={periodMode}
+                  onChange={(e) => handlePeriodModeChange(e.target.value as PeriodMode)}
+                  className="text-xs font-bold py-1.5 px-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm cursor-pointer"
                 >
-                  {agencies.map((ag: any) => (
-                    <option key={ag.id} value={ag.id}>
-                      {ag.name}
+                  <option value="MENSUAL">Mensual</option>
+                  <option value="BIMESTRAL">Bimestral</option>
+                  <option value="TRIMESTRAL">Trimestral</option>
+                  <option value="SEMESTRAL">Semestral</option>
+                  <option value="ANUAL">Anual</option>
+                  <option value="CUSTOM">Rango Libre</option>
+                </select>
+              </div>
+
+              {/* Sub-periodo contextual */}
+              {periodMode === "MENSUAL" && (
+                <select
+                  value={selectedMonth}
+                  onChange={(e) => {
+                    const m = parseInt(e.target.value, 10);
+                    setSelectedMonth(m);
+                    setSubPeriod(m);
+                  }}
+                  className="text-xs font-bold py-1.5 px-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm cursor-pointer"
+                >
+                  {MONTHS.map((m) => (
+                    <option key={m.value} value={m.value}>
+                      {m.name}
                     </option>
                   ))}
                 </select>
-              </div>
-            )}
+              )}
+
+              {periodMode === "BIMESTRAL" && (
+                <select
+                  value={subPeriod}
+                  onChange={(e) => setSubPeriod(parseInt(e.target.value, 10))}
+                  className="text-xs font-bold py-1.5 px-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm cursor-pointer"
+                >
+                  {BIMESTRES.map((b) => (
+                    <option key={b.value} value={b.value}>
+                      {b.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {periodMode === "TRIMESTRAL" && (
+                <select
+                  value={subPeriod}
+                  onChange={(e) => setSubPeriod(parseInt(e.target.value, 10))}
+                  className="text-xs font-bold py-1.5 px-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm cursor-pointer"
+                >
+                  {TRIMESTRES.map((t) => (
+                    <option key={t.value} value={t.value}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {periodMode === "SEMESTRAL" && (
+                <select
+                  value={subPeriod}
+                  onChange={(e) => setSubPeriod(parseInt(e.target.value, 10))}
+                  className="text-xs font-bold py-1.5 px-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm cursor-pointer"
+                >
+                  {SEMESTRES.map((s) => (
+                    <option key={s.value} value={s.value}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              {periodMode !== "CUSTOM" ? (
+                <select
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(parseInt(e.target.value, 10))}
+                  className="text-xs font-bold py-1.5 px-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm cursor-pointer"
+                >
+                  {[2024, 2025, 2026, 2027].map((y) => (
+                    <option key={y} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <input
+                    type="date"
+                    value={customStartDate}
+                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    className="text-xs font-semibold py-1 px-2 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"
+                  />
+                  <span className="text-xs text-slate-400">a</span>
+                  <input
+                    type="date"
+                    value={customEndDate}
+                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    className="text-xs font-semibold py-1 px-2 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900"
+                  />
+                </div>
+              )}
+
+              {/* Super Admin Agency */}
+              {data?.currentUserRole === "SUPER_ADMIN" && agencies.length > 0 && (
+                <div className="flex items-center gap-1.5">
+                  <Building2 className="h-4 w-4 text-slate-400" />
+                  <select
+                    value={selectedAgency}
+                    onChange={(e) => {
+                      setFilterAgentId("ALL");
+                      setFilterCompanyId("ALL");
+                      setSelectedAgency(e.target.value);
+                    }}
+                    className="text-xs font-bold py-1.5 px-2.5 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm cursor-pointer"
+                  >
+                    {agencies.map((ag: any) => (
+                      <option key={ag.id} value={ag.id}>
+                        {ag.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                onClick={handleSyncPea}
+                variant="outline"
+                size="sm"
+                disabled={isPending || loading}
+                className="text-xs font-bold flex items-center gap-1.5 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50"
+                title="Importar presupuestos mensuales de PEAs autorizados para este mes"
+              >
+                <Target className="h-3.5 w-3.5 text-purple-600" />
+                Sincronizar PEA
+              </Button>
+
+              <Button
+                onClick={handleExportCSV}
+                variant="outline"
+                size="sm"
+                disabled={ledgerRows.length === 0}
+                className="text-xs font-bold flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50"
+              >
+                <Download className="h-3.5 w-3.5 text-emerald-600" />
+                Descargar CSV
+              </Button>
+
+              <Button
+                onClick={fetchData}
+                variant="ghost"
+                size="sm"
+                disabled={loading}
+                className="text-slate-500 hover:text-slate-900 p-2"
+                title="Actualizar datos"
+              >
+                <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              </Button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Button
-              onClick={handleSyncPea}
-              variant="outline"
-              size="sm"
-              disabled={isPending || loading}
-              className="text-xs font-bold flex items-center gap-1.5 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800 hover:bg-purple-50"
-              title="Importar presupuestos mensuales de PEAs autorizados para este mes"
-            >
-              <Target className="h-3.5 w-3.5 text-purple-600" />
-              Sincronizar PEA
-            </Button>
+          {/* Segunda fila: Alcance Comercial (Nueva vs Renovación vs Ambas) & Filtro Ramo activo */}
+          <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 dark:border-zinc-800">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="text-[11px] font-black uppercase tracking-wider text-slate-500 mr-1">
+                Alcance Comercial:
+              </span>
+              {(
+                [
+                  { id: "NUEVA", label: "✨ Venta Nueva (Año 1)" },
+                  { id: "RENOVACION", label: "🔄 Renovaciones (Año 2+)" },
+                  { id: "AMBAS", label: "📊 Ambas (Total Cartera)" },
+                ] as const
+              ).map((opt) => (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setBusinessScope(opt.id)}
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition ${
+                    businessScope === opt.id
+                      ? "bg-teal-700 text-white border-teal-700 shadow-sm"
+                      : "bg-slate-50 dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-teal-400"
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
 
-            <Button
-              onClick={handleExportCSV}
-              variant="outline"
-              size="sm"
-              disabled={emissions.length === 0}
-              className="text-xs font-bold flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50"
-              title="Descargar archivo CSV compatible con Excel"
-            >
-              <Download className="h-3.5 w-3.5 text-emerald-600" />
-              Descargar CSV
-            </Button>
-
-            <Button
-              onClick={fetchData}
-              variant="ghost"
-              size="sm"
-              disabled={loading}
-              className="text-slate-500 hover:text-slate-900 p-2"
-              title="Actualizar datos"
-            >
-              <RefreshCw className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
-            </Button>
+            {(ramoGroupFilter !== "ALL" ||
+              subRamoFilter !== "ALL" ||
+              vidaObjetivoFilter !== "ALL") && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setRamoGroupFilter("ALL");
+                  setSubRamoFilter("ALL");
+                  setVidaObjetivoFilter("ALL");
+                }}
+                className="h-7 text-xs font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50"
+              >
+                <XCircle className="h-3.5 w-3.5 mr-1" />
+                Limpiar filtro de Ramo ({subRamoFilter !== "ALL" ? subRamoFilter : ramoGroupFilter})
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -831,28 +1144,57 @@ export default function AdminProduccion() {
             </div>
           )}
 
+          {/* Unmapped insurers alert (policies exist in Mi Cartera for an inactive/missing company) */}
+          {!loading && (data?.unmappedInsurersSummary?.length || 0) > 0 && (
+            <div className="p-4 rounded-xl border border-indigo-200 dark:border-indigo-900 bg-indigo-50/70 dark:bg-indigo-950/30 space-y-2">
+              <div className="text-xs font-bold text-indigo-900 dark:text-indigo-200 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-indigo-600 shrink-0" />
+                Hay pólizas en Mi Cartera para aseguradoras aún apagadas en columnas del tablero:
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {data.unmappedInsurersSummary.map((u: any) => (
+                  <Button
+                    key={u.companyKey}
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={isPending}
+                    onClick={() => handleQuickEnableCompany(u)}
+                    className="h-7 text-xs font-bold bg-white dark:bg-zinc-900 border-indigo-300 text-indigo-800 dark:text-indigo-200 hover:bg-indigo-100"
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Activar {u.companyName} ({u.count} pól., PE {formatMoney(u.totalPE)}, PPC {formatMoney(u.totalPPC)})
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Header Banner */}
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-900 via-teal-800 to-emerald-900 p-6 text-white shadow-xl">
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-black tracking-widest uppercase text-emerald-300 bg-white/10 px-2.5 py-0.5 rounded-md">
-                    Resultados de Producción
+                    Producción Unificada en Vivo
                   </span>
-                  <span className="text-xs text-teal-200 font-medium italic">
-                    Más que seguros, tu tranquilidad
+                  <span className="text-xs text-teal-200 font-medium">
+                    {businessScope === "NUEVA"
+                      ? "Venta Nueva (Año 1)"
+                      : businessScope === "RENOVACION"
+                      ? "Renovaciones (Año 2+)"
+                      : "Nueva + Renovaciones"}
                   </span>
                 </div>
-                <h1 className="text-3xl md:text-4xl font-black tracking-tight text-white uppercase">
-                  {monthName} {selectedYear}
+                <h1 className="text-2xl md:text-4xl font-black tracking-tight text-white uppercase">
+                  {periodLabel}
                 </h1>
                 <p className="text-xs text-teal-100/80 font-medium">
-                  Seguimiento de primas emitidas (PE), primas pagadas (PPC) y cumplimiento del plan mensual.
+                  Primas en MXN calculadas desde Mi Cartera (PE por inicio de vigencia • PPC por fecha real de cobro del recibo).
                 </p>
               </div>
 
-              {/* Badges Rápidos */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 <div className="text-right">
                   <div className="text-xs text-teal-200 font-semibold">Tasa de Cumplimiento</div>
                   <div className="text-2xl font-black text-emerald-300">
@@ -861,20 +1203,16 @@ export default function AdminProduccion() {
                 </div>
               </div>
             </div>
-
-            {/* Background Decorative Rings */}
             <div className="absolute right-0 top-0 -mr-16 -mt-16 w-64 h-64 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
-            <div className="absolute left-1/3 bottom-0 w-48 h-48 bg-teal-400/10 rounded-full blur-2xl pointer-events-none" />
           </div>
 
-          {/* KPI Cards (4 Columnas) */}
+          {/* KPI Cards */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {/* Total Pólizas */}
             <Card className="border border-slate-200 dark:border-zinc-800 shadow-sm bg-gradient-to-br from-white to-teal-50/40 dark:from-zinc-950 dark:to-teal-950/10">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-black uppercase tracking-wider text-teal-700 dark:text-teal-400">
-                    Total de Pólizas
+                    Pólizas Activas en Periodo
                   </span>
                   <div className="h-8 w-8 rounded-full bg-teal-100 dark:bg-teal-900/50 flex items-center justify-center text-teal-700 dark:text-teal-300">
                     <TrendingUp className="h-4 w-4" />
@@ -884,17 +1222,16 @@ export default function AdminProduccion() {
                   {kpis?.totalPolicies || 0}
                 </div>
                 <p className="text-[11px] font-bold text-slate-500 mt-1">
-                  Pólizas cerradas en el mes
+                  {kpis?.emittedPoliciesCount || 0} emitidas • {kpis?.paidReceiptsCount || 0} recibos cobrados
                 </p>
               </CardContent>
             </Card>
 
-            {/* Prima Emitida (PE) */}
             <Card className="border border-slate-200 dark:border-zinc-800 shadow-sm bg-gradient-to-br from-white to-blue-50/40 dark:from-zinc-950 dark:to-blue-950/10">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-400">
-                    Prima Emitida (PE)
+                    Prima Emitida (PE MXN)
                   </span>
                   <div className="h-8 w-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center text-blue-700 dark:text-blue-300">
                     <Shield className="h-4 w-4" />
@@ -904,17 +1241,16 @@ export default function AdminProduccion() {
                   {formatMoney(kpis?.totalPE || 0)}
                 </div>
                 <p className="text-[11px] font-bold text-slate-500 mt-1">
-                  Volumen total emitido
+                  Prima anualizada en pesos mexicanos
                 </p>
               </CardContent>
             </Card>
 
-            {/* Prima Pagada (PPC/PP) */}
             <Card className="border border-slate-200 dark:border-zinc-800 shadow-sm bg-gradient-to-br from-white to-emerald-50/40 dark:from-zinc-950 dark:to-emerald-950/10">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
-                    Prima Pagada (PPC/PP)
+                    Prima Pagada (PPC MXN)
                   </span>
                   <div className="h-8 w-8 rounded-full bg-emerald-100 dark:bg-emerald-900/50 flex items-center justify-center text-emerald-700 dark:text-emerald-300">
                     <DollarSign className="h-4 w-4" />
@@ -924,17 +1260,16 @@ export default function AdminProduccion() {
                   {formatMoney(kpis?.totalPPC || 0)}
                 </div>
                 <p className="text-[11px] font-bold text-slate-500 mt-1">
-                  Cobro efectivo ingresado
+                  Recibos cobrados en el periodo
                 </p>
               </CardContent>
             </Card>
 
-            {/* Presupuesto PEA Meta */}
             <Card className="border border-slate-200 dark:border-zinc-800 shadow-sm bg-gradient-to-br from-white to-purple-50/40 dark:from-zinc-950 dark:to-purple-950/10">
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[11px] font-black uppercase tracking-wider text-purple-700 dark:text-purple-400">
-                    Presupuesto PEA (Meta)
+                    Presupuesto PEA ({periodInfo?.monthsIncluded?.length || 1}m)
                   </span>
                   <div className="h-8 w-8 rounded-full bg-purple-100 dark:bg-purple-900/50 flex items-center justify-center text-purple-700 dark:text-purple-300">
                     <Target className="h-4 w-4" />
@@ -959,16 +1294,160 @@ export default function AdminProduccion() {
             </Card>
           </div>
 
+          {/* SECCIÓN INTERACTIVA POR RAMOS Y SUB-RAMOS (MXN) */}
+          <Card className="border border-slate-200 dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950">
+            <CardHeader className="py-3.5 border-b border-slate-200 dark:border-zinc-800">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-2.5">
+                <div>
+                  <CardTitle className="text-sm font-black uppercase tracking-wider text-slate-700 dark:text-zinc-200 flex items-center gap-2">
+                    <Layers className="h-4 w-4 text-teal-700" />
+                    Producción por Ramos y Sub-ramos (MXN)
+                  </CardTitle>
+                  <CardDescription className="text-[11px]">
+                    Haz clic en cualquier grupo o sub-ramo para filtrar el tablero y ver su detalle en vivo.
+                  </CardDescription>
+                </div>
+
+                <div className="flex flex-wrap gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setRamoGroupFilter("ALL");
+                      setSubRamoFilter("ALL");
+                      setVidaObjetivoFilter("ALL");
+                    }}
+                    className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition ${
+                      ramoGroupFilter === "ALL" && subRamoFilter === "ALL"
+                        ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-100 dark:text-zinc-900"
+                        : "bg-slate-50 dark:bg-zinc-900 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700"
+                    }`}
+                  >
+                    Todos
+                  </button>
+                  {RAMO_GROUPS.map((g) => {
+                    const gStat = kpis?.byRamoGroup?.find((b: any) => b.key === g.key);
+                    const active = ramoGroupFilter === g.key;
+                    return (
+                      <button
+                        key={g.key}
+                        type="button"
+                        onClick={() => {
+                          setRamoGroupFilter(active ? "ALL" : g.key);
+                          setSubRamoFilter("ALL");
+                          if (g.key !== "VIDA") setVidaObjetivoFilter("ALL");
+                        }}
+                        className={`px-2.5 py-1 rounded-lg text-[11px] font-bold border transition flex items-center gap-1 ${
+                          active
+                            ? "bg-teal-700 text-white border-teal-700"
+                            : "bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-teal-400"
+                        }`}
+                      >
+                        <span>{g.label}</span>
+                        {gStat && (gStat.totalPE > 0 || gStat.totalPPC > 0) && (
+                          <span className="opacity-75 font-mono text-[10px]">
+                            ({gStat.count})
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-4 space-y-3">
+              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-2.5">
+                {visibleSubRamoCards.map((sr) => {
+                  const stat = kpis?.bySubRamo?.find((b: any) => b.key === sr.key);
+                  const isActive = subRamoFilter === sr.key;
+                  return (
+                    <button
+                      key={sr.key}
+                      type="button"
+                      onClick={() => {
+                        const next = isActive ? "ALL" : sr.key;
+                        setSubRamoFilter(next);
+                        if (next !== "VIDA_INDIVIDUAL") setVidaObjetivoFilter("ALL");
+                      }}
+                      className={`p-3 rounded-xl border text-left transition flex flex-col justify-between gap-1 ${
+                        isActive
+                          ? "border-teal-600 bg-teal-50/70 dark:bg-teal-950/40 ring-2 ring-teal-500/30"
+                          : "border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hover:border-teal-400"
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-1">
+                        <div className="h-7 w-7 rounded-full bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 flex items-center justify-center shrink-0">
+                          {getRamoIcon(sr.key)}
+                        </div>
+                        <Badge variant="outline" className="text-[10px] font-mono px-1.5 py-0">
+                          {stat?.count || 0} pól.
+                        </Badge>
+                      </div>
+                      <div className="text-xs font-black text-slate-900 dark:text-zinc-100 leading-tight mt-1">
+                        {sr.label}
+                      </div>
+                      <div className="space-y-0.5 text-[10px] font-mono">
+                        <div className="text-slate-700 dark:text-zinc-300 font-bold">
+                          PE: {formatMoney(stat?.totalPE || 0)}
+                        </div>
+                        <div className="text-emerald-700 dark:text-emerald-400 font-bold">
+                          PPC: {formatMoney(stat?.totalPPC || 0)}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Sub-desglose Vida Individual (Protección / Ahorro / Retiro / Educación) */}
+              {(ramoGroupFilter === "ALL" ||
+                ramoGroupFilter === "VIDA" ||
+                subRamoFilter === "VIDA_INDIVIDUAL") && (
+                <div className="pt-2 border-t border-slate-100 dark:border-zinc-800 flex flex-wrap items-center gap-2">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-blue-700 dark:text-blue-300">
+                    Objetivo Vida Individual:
+                  </span>
+                  {VIDA_OBJETIVOS_CATALOG.map((vo) => {
+                    const st = kpis?.byVidaObjetivo?.find((x: any) => x.key === vo.key);
+                    const active = vidaObjetivoFilter === vo.key;
+                    return (
+                      <button
+                        key={vo.key}
+                        type="button"
+                        onClick={() => {
+                          const next = active ? "ALL" : vo.key;
+                          setVidaObjetivoFilter(next);
+                          if (next !== "ALL") setSubRamoFilter("VIDA_INDIVIDUAL");
+                        }}
+                        className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition flex items-center gap-1.5 ${
+                          active
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-blue-50/60 dark:bg-blue-950/30 text-blue-800 dark:text-blue-200 border-blue-200 dark:border-blue-800 hover:bg-blue-100"
+                        }`}
+                      >
+                        {getRamoIcon(vo.key)}
+                        <span>{vo.label}:</span>
+                        <span className="font-mono">
+                          {st?.count || 0} • PE {formatMoney(st?.totalPE || 0)}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* TABLA PRINCIPAL DE PRODUCCIÓN (MATRIZ AGENTES X ASEGURADORAS) */}
           <Card className="border border-slate-200 dark:border-zinc-800 shadow-md bg-white dark:bg-zinc-950 overflow-hidden">
             <CardHeader className="py-4 border-b border-slate-200 dark:border-zinc-800 bg-slate-50/60 dark:bg-zinc-900/40">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <CardTitle className="text-base font-black text-slate-900 dark:text-zinc-100 flex items-center gap-2">
                   <Award className="h-5 w-5 text-teal-700 dark:text-teal-400" />
-                  Tabla de Emisiones por Asesor y Aseguradora
+                  Tabla de Emisiones por Asesor y Aseguradora (MXN)
                 </CardTitle>
                 <span className="text-xs text-slate-500 font-medium">
-                  {agentMatrix.length} agentes registrados • Da clic en el lápiz de presupuesto para editar la meta
+                  {agentMatrix.length} agentes registrados • Da clic en cualquier asesor para ver sus pólizas en Mi Cartera
                 </span>
               </div>
             </CardHeader>
@@ -976,21 +1455,24 @@ export default function AdminProduccion() {
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
-                  {/* Table Header with Company Logos */}
                   <thead>
                     <tr className="bg-slate-100 dark:bg-zinc-900 border-b border-slate-300 dark:border-zinc-800 text-slate-700 dark:text-zinc-300">
-                      <th rowSpan={2} className="py-3 px-3 font-black uppercase tracking-wider sticky left-0 bg-slate-100 dark:bg-zinc-900 z-10 border-r border-slate-200 dark:border-zinc-800 min-w-[160px]">
+                      <th
+                        rowSpan={2}
+                        className="py-3 px-3 font-black uppercase tracking-wider sticky left-0 bg-slate-100 dark:bg-zinc-900 z-10 border-r border-slate-200 dark:border-zinc-800 min-w-[160px]"
+                      >
                         Agente / Asesor
                       </th>
 
-                      {/* Header for each Company */}
                       {companies.map((comp: any) => (
                         <th
                           key={comp.id}
                           colSpan={3}
                           className="py-2.5 px-2 text-center font-black border-r border-slate-200 dark:border-zinc-800 bg-teal-900 text-white"
                           style={{
-                            backgroundColor: comp.name.toLowerCase().includes("insignia") ? "#134e4a" : undefined,
+                            backgroundColor: comp.name.toLowerCase().includes("insignia")
+                              ? "#134e4a"
+                              : undefined,
                           }}
                         >
                           <div className="flex items-center justify-center gap-2">
@@ -1008,19 +1490,26 @@ export default function AdminProduccion() {
                         </th>
                       ))}
 
-                      {/* Summary Columns */}
-                      <th colSpan={3} className="py-2.5 px-2 text-center font-black bg-slate-800 text-white border-r border-slate-700">
+                      <th
+                        colSpan={3}
+                        className="py-2.5 px-2 text-center font-black bg-slate-800 text-white border-r border-slate-700"
+                      >
                         Totales Generales
                       </th>
-                      <th rowSpan={2} className="py-3 px-3 text-center font-black uppercase bg-purple-900 text-white border-r border-purple-800 min-w-[110px]">
+                      <th
+                        rowSpan={2}
+                        className="py-3 px-3 text-center font-black uppercase bg-purple-900 text-white border-r border-purple-800 min-w-[110px]"
+                      >
                         Presupuesto PEA
                       </th>
-                      <th rowSpan={2} className="py-3 px-3 text-center font-black uppercase bg-emerald-900 text-white min-w-[90px]">
+                      <th
+                        rowSpan={2}
+                        className="py-3 px-3 text-center font-black uppercase bg-emerald-900 text-white min-w-[90px]"
+                      >
                         % Avance
                       </th>
                     </tr>
 
-                    {/* Sub-headers: Pólizas, PE, PPC */}
                     <tr className="bg-slate-200 dark:bg-zinc-800 border-b border-slate-300 dark:border-zinc-700 text-[10px] font-black uppercase text-slate-600 dark:text-zinc-400">
                       {companies.map((comp: any) => (
                         <React.Fragment key={comp.id}>
@@ -1036,7 +1525,6 @@ export default function AdminProduccion() {
                         </React.Fragment>
                       ))}
 
-                      {/* Totals sub-headers */}
                       <th className="py-1.5 px-2 text-center bg-slate-300 dark:bg-zinc-700 text-slate-800 dark:text-zinc-200 border-r border-slate-400 w-12">
                         Pól.
                       </th>
@@ -1049,12 +1537,14 @@ export default function AdminProduccion() {
                     </tr>
                   </thead>
 
-                  {/* Body Rows */}
                   <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/80">
                     {agentMatrix.length === 0 ? (
                       <tr>
-                        <td colSpan={companies.length * 3 + 6} className="py-12 text-center text-slate-500 font-semibold">
-                          No hay agentes ni pólizas registradas para {monthName} {selectedYear}.
+                        <td
+                          colSpan={companies.length * 3 + 6}
+                          className="py-12 text-center text-slate-500 font-semibold"
+                        >
+                          No hay agentes ni pólizas registradas para {periodLabel}.
                         </td>
                       </tr>
                     ) : (
@@ -1071,67 +1561,75 @@ export default function AdminProduccion() {
                                 : "opacity-60 hover:opacity-100 bg-white dark:bg-zinc-950"
                             }`}
                           >
-                            {/* Agent Column (Clickable to open Detail Modal) */}
                             <td
                               onClick={() => handleOpenDetailModal(row, "ALL")}
                               className="py-2.5 px-3 font-bold text-slate-900 dark:text-zinc-100 sticky left-0 bg-inherit z-10 border-r border-slate-200 dark:border-zinc-800 cursor-pointer group hover:bg-teal-50/70 dark:hover:bg-teal-950/30 transition-colors"
-                              title="Haz clic para ver el detalle de pólizas de este asesor"
                             >
                               <div className="flex items-center justify-between gap-2">
                                 <div className="flex items-center gap-2 min-w-0">
                                   <div className="h-6 w-6 rounded-full bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-300 flex items-center justify-center font-black text-[10px] shrink-0">
                                     {row.agentName.charAt(0).toUpperCase()}
                                   </div>
-                                  <span className="truncate max-w-[130px] text-xs group-hover:text-teal-700 dark:group-hover:text-teal-300 group-hover:underline" title={row.agentName}>
+                                  <span
+                                    className="truncate max-w-[130px] text-xs group-hover:text-teal-700 dark:group-hover:text-teal-300 group-hover:underline"
+                                    title={row.agentName}
+                                  >
                                     {row.agentName}
                                   </span>
                                 </div>
                                 <span className="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] bg-teal-100 text-teal-800 dark:bg-teal-900/80 dark:text-teal-200 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5 shrink-0">
-                                  <Eye className="h-2.5 w-2.5" /> Pólizas
+                                  <Eye className="h-2.5 w-2.5" /> Ver
                                 </span>
                               </div>
                             </td>
 
-                            {/* Data for each Company */}
                             {companies.map((comp: any) => {
-                              const cData = row.companiesData[comp.id] || { policies: 0, pe: 0, ppc: 0 };
-                              const hasValues = cData.policies > 0 || cData.pe > 0;
+                              const cData = row.companiesData[comp.id] || {
+                                policies: 0,
+                                pe: 0,
+                                ppc: 0,
+                              };
                               return (
                                 <React.Fragment key={comp.id}>
                                   <td
-                                    onClick={() => cData.policies > 0 && handleOpenDetailModal(row, comp.id)}
+                                    onClick={() =>
+                                      cData.policies > 0 && handleOpenDetailModal(row, comp.id)
+                                    }
                                     className={`py-2.5 px-2 text-center border-r border-slate-100 dark:border-zinc-800 font-mono ${
                                       cData.policies > 0
-                                        ? "font-black text-teal-700 dark:text-teal-400 cursor-pointer hover:bg-teal-100/60 dark:hover:bg-teal-900/40"
+                                        ? "font-black text-teal-700 dark:text-teal-400 cursor-pointer hover:bg-teal-100/60"
                                         : "text-slate-300 dark:text-zinc-700"
                                     }`}
-                                    title={cData.policies > 0 ? `Ver ${cData.policies} póliza(s) de ${comp.name}` : undefined}
                                   >
                                     {cData.policies > 0 ? (
-                                      <span className="inline-block px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-950/60 border border-teal-200/60 text-teal-800 dark:text-teal-300 font-black hover:scale-105 transition-transform">
+                                      <span className="inline-block px-1.5 py-0.5 rounded bg-teal-50 dark:bg-teal-950/60 border border-teal-200/60 text-teal-800 dark:text-teal-300 font-black">
                                         {cData.policies}
                                       </span>
-                                    ) : "-"}
+                                    ) : (
+                                      "-"
+                                    )}
                                   </td>
                                   <td
-                                    onClick={() => cData.pe > 0 && handleOpenDetailModal(row, comp.id)}
+                                    onClick={() =>
+                                      cData.pe > 0 && handleOpenDetailModal(row, comp.id)
+                                    }
                                     className={`py-2.5 px-2 text-right border-r border-slate-100 dark:border-zinc-800 font-mono ${
                                       cData.pe > 0
-                                        ? "font-bold text-slate-900 dark:text-zinc-100 cursor-pointer hover:bg-teal-50/60 dark:hover:bg-teal-950/30"
+                                        ? "font-bold text-slate-900 dark:text-zinc-100 cursor-pointer"
                                         : "text-slate-300 dark:text-zinc-700"
                                     }`}
-                                    title={cData.pe > 0 ? `Ver detalle de primas en ${comp.name}` : undefined}
                                   >
                                     {cData.pe > 0 ? formatMoney(cData.pe).replace("$", "") : "-"}
                                   </td>
                                   <td
-                                    onClick={() => cData.ppc > 0 && handleOpenDetailModal(row, comp.id)}
+                                    onClick={() =>
+                                      cData.ppc > 0 && handleOpenDetailModal(row, comp.id)
+                                    }
                                     className={`py-2.5 px-2 text-right border-r border-slate-100 dark:border-zinc-800 font-mono ${
                                       cData.ppc > 0
-                                        ? "font-semibold text-emerald-700 dark:text-emerald-400 cursor-pointer hover:bg-emerald-50/60 dark:hover:bg-emerald-950/30"
+                                        ? "font-semibold text-emerald-700 dark:text-emerald-400 cursor-pointer"
                                         : "text-slate-300 dark:text-zinc-700"
                                     }`}
-                                    title={cData.ppc > 0 ? `Ver detalle de primas pagadas en ${comp.name}` : undefined}
                                   >
                                     {cData.ppc > 0 ? formatMoney(cData.ppc).replace("$", "") : "-"}
                                   </td>
@@ -1139,42 +1637,31 @@ export default function AdminProduccion() {
                               );
                             })}
 
-                            {/* Summary Columns for Agent (Clickable to open Detail) */}
                             <td
-                              onClick={() => row.totalPolicies > 0 && handleOpenDetailModal(row, "ALL")}
+                              onClick={() =>
+                                row.totalPolicies > 0 && handleOpenDetailModal(row, "ALL")
+                              }
                               className={`py-2.5 px-2 text-center font-mono font-black border-r border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/40 ${
                                 row.totalPolicies > 0
-                                  ? "text-teal-700 dark:text-teal-400 cursor-pointer hover:bg-teal-100/60 dark:hover:bg-teal-900/50"
+                                  ? "text-teal-700 dark:text-teal-400 cursor-pointer"
                                   : "text-slate-900 dark:text-zinc-100"
                               }`}
-                              title={row.totalPolicies > 0 ? `Ver todas las ${row.totalPolicies} pólizas de ${row.agentName}` : undefined}
                             >
-                              {row.totalPolicies > 0 ? (
-                                <span className="inline-block px-1.5 py-0.5 rounded bg-teal-100 dark:bg-teal-900/80 font-black text-teal-900 dark:text-teal-200 hover:scale-105 transition-transform">
-                                  {row.totalPolicies}
-                                </span>
-                              ) : "-"}
+                              {row.totalPolicies > 0 ? row.totalPolicies : "-"}
                             </td>
                             <td
                               onClick={() => row.totalPE > 0 && handleOpenDetailModal(row, "ALL")}
-                              className={`py-2.5 px-2 text-right font-mono font-black text-slate-900 dark:text-zinc-100 bg-slate-50 dark:bg-zinc-900/40 border-r border-slate-200 dark:border-zinc-800 ${
-                                row.totalPE > 0 ? "cursor-pointer hover:bg-teal-50 dark:hover:bg-teal-950/30" : ""
-                              }`}
-                              title={row.totalPE > 0 ? "Ver detalle de primas emitidas" : undefined}
+                              className="py-2.5 px-2 text-right font-mono font-black text-slate-900 dark:text-zinc-100 bg-slate-50 dark:bg-zinc-900/40 border-r border-slate-200 dark:border-zinc-800 cursor-pointer"
                             >
                               {row.totalPE > 0 ? formatMoney(row.totalPE).replace("$", "") : "-"}
                             </td>
                             <td
                               onClick={() => row.totalPPC > 0 && handleOpenDetailModal(row, "ALL")}
-                              className={`py-2.5 px-2 text-right font-mono font-black text-emerald-700 dark:text-emerald-400 bg-slate-50 dark:bg-zinc-900/40 border-r border-slate-200 dark:border-zinc-800 ${
-                                row.totalPPC > 0 ? "cursor-pointer hover:bg-emerald-50 dark:hover:bg-emerald-950/30" : ""
-                              }`}
-                              title={row.totalPPC > 0 ? "Ver detalle de primas pagadas" : undefined}
+                              className="py-2.5 px-2 text-right font-mono font-black text-emerald-700 dark:text-emerald-400 bg-slate-50 dark:bg-zinc-900/40 border-r border-slate-200 dark:border-zinc-800 cursor-pointer"
                             >
                               {row.totalPPC > 0 ? formatMoney(row.totalPPC).replace("$", "") : "-"}
                             </td>
 
-                            {/* Budget Column (Editable) */}
                             <td className="py-2.5 px-2 text-right font-mono border-r border-slate-200 dark:border-zinc-800 bg-purple-50/30 dark:bg-purple-950/20">
                               <div className="flex items-center justify-end gap-1">
                                 <span className="font-bold text-purple-900 dark:text-purple-300">
@@ -1184,14 +1671,13 @@ export default function AdminProduccion() {
                                   type="button"
                                   onClick={() => handleOpenBudgetModal(row)}
                                   className="text-purple-500 hover:text-purple-700 p-0.5 rounded hover:bg-purple-100"
-                                  title={`Editar presupuesto (${row.budgetSource === 'PEA_AUTO' ? 'Viene de PEA' : 'Manual'})`}
+                                  title="Editar presupuesto del mes seleccionado"
                                 >
                                   <Edit className="h-3 w-3" />
                                 </button>
                               </div>
                             </td>
 
-                            {/* Compliance % Column */}
                             <td className="py-2.5 px-2 text-center font-bold font-mono">
                               {row.budget > 0 ? (
                                 <span
@@ -1215,7 +1701,6 @@ export default function AdminProduccion() {
                     )}
                   </tbody>
 
-                  {/* Table Footer: TOTALES GENERALES */}
                   {agentMatrix.length > 0 && (
                     <tfoot>
                       <tr className="bg-slate-900 text-white font-black text-xs border-t-2 border-slate-900">
@@ -1223,18 +1708,20 @@ export default function AdminProduccion() {
                           TOTALES
                         </td>
 
-                        {/* Sum per Company */}
                         {companies.map((comp: any) => {
                           const cPolicies = agentMatrix.reduce(
-                            (acc: number, curr: any) => acc + (curr.companiesData[comp.id]?.policies || 0),
+                            (acc: number, curr: any) =>
+                              acc + (curr.companiesData[comp.id]?.policies || 0),
                             0
                           );
                           const cPE = agentMatrix.reduce(
-                            (acc: number, curr: any) => acc + (curr.companiesData[comp.id]?.pe || 0),
+                            (acc: number, curr: any) =>
+                              acc + (curr.companiesData[comp.id]?.pe || 0),
                             0
                           );
                           const cPPC = agentMatrix.reduce(
-                            (acc: number, curr: any) => acc + (curr.companiesData[comp.id]?.ppc || 0),
+                            (acc: number, curr: any) =>
+                              acc + (curr.companiesData[comp.id]?.ppc || 0),
                             0
                           );
                           return (
@@ -1252,7 +1739,6 @@ export default function AdminProduccion() {
                           );
                         })}
 
-                        {/* Global Totals */}
                         <td className="py-3 px-2 text-center font-mono bg-slate-950 border-r border-slate-800 text-emerald-400">
                           {kpis?.totalPolicies || 0}
                         </td>
@@ -1262,13 +1748,9 @@ export default function AdminProduccion() {
                         <td className="py-3 px-2 text-right font-mono bg-slate-950 border-r border-slate-800 text-emerald-400">
                           {formatMoney(kpis?.totalPPC || 0).replace("$", "")}
                         </td>
-
-                        {/* Total Budget */}
                         <td className="py-3 px-2 text-right font-mono bg-purple-950 border-r border-purple-900 text-purple-200">
                           {formatMoney(kpis?.totalBudget || 0).replace("$", "")}
                         </td>
-
-                        {/* Global Compliance */}
                         <td className="py-3 px-2 text-center font-mono bg-emerald-950 text-emerald-300">
                           {kpis?.compliancePercent || 0}%
                         </td>
@@ -1279,375 +1761,177 @@ export default function AdminProduccion() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Desglose Inferior por Ramos (Estilo Iconos Reporte AACOM) */}
-          <div className="pt-2">
-            <h3 className="text-xs font-black uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-2">
-              <Layers className="h-4 w-4 text-teal-700" />
-              Distribución por Ramos de Protección y Ahorro
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-3">
-              {RAMOS_CATALOGO.map((ramo) => {
-                const rStat = kpis?.byRamo?.find((r: any) => r.ramo === ramo.id);
-                return (
-                  <div
-                    key={ramo.id}
-                    className="p-3 rounded-xl border border-slate-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 shadow-sm flex flex-col items-center text-center space-y-1.5"
-                  >
-                    <div className="h-8 w-8 rounded-full bg-teal-50 dark:bg-teal-950/50 text-teal-700 dark:text-teal-400 flex items-center justify-center">
-                      {getRamoIcon(ramo.id)}
-                    </div>
-                    <span className="text-xs font-bold text-slate-800 dark:text-zinc-200 truncate w-full">
-                      {ramo.id}
-                    </span>
-                    <span className="text-[11px] font-mono font-black text-teal-700 dark:text-teal-400">
-                      {rStat ? formatMoney(rStat.pe) : "$0"}
-                    </span>
-                    <span className="text-[10px] text-slate-400">
-                      {rStat?.count || 0} {rStat?.count === 1 ? "póliza" : "pólizas"}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
         </div>
       )}
 
-      {/* SUBTAB 2: INGRESO Y CAPTURA MANUAL DE PÓLIZAS */}
+      {/* SUBTAB 2: PÓLIZAS Y COBRANZA DESDE MI CARTERA (SIN DOBLE CAPTURA) */}
       {activeSubTab === "ingreso" && (
         <div className="space-y-6">
-          <Card className="border border-slate-200 dark:border-zinc-800 shadow-md bg-white dark:bg-zinc-950">
-            <CardHeader className="border-b border-slate-200 dark:border-zinc-800 pb-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-lg font-black text-slate-900 dark:text-zinc-100 flex items-center gap-2">
-                    <Plus className="h-5 w-5 text-teal-700" />
-                    {editingEmissionId ? "Editar Emisión de Póliza" : "Capturar Nueva Emisión de Póliza"}
-                  </CardTitle>
-                  <CardDescription className="text-xs mt-1">
-                    Registra los valores de la póliza cerrada por el agente para integrarla en tiempo real al reporte mensual.
-                  </CardDescription>
-                </div>
-                {editingEmissionId && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setEditingEmissionId(null);
-                      setFormPolicyNumber("");
-                      setFormClientName("");
-                      setFormPrimaEmitida("");
-                      setFormPrimaPagada("");
-                      setFormNotes("");
-                    }}
-                    className="text-xs text-red-600 border-red-300"
-                  >
-                    Cancelar edición ✕
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-
-            <CardContent className="p-6">
-              <form onSubmit={handleSubmitEmission} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Agente */}
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-1">
-                      Agente / Asesor *
-                    </label>
-                    <select
-                      value={formAgentId}
-                      onChange={(e) => setFormAgentId(e.target.value)}
-                      required
-                      className="w-full text-sm font-semibold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
-                    >
-                      {data?.agents?.map((ag: any) => (
-                        <option key={ag.id} value={ag.id}>
-                          {ag.name || ag.email}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Aseguradora */}
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-1">
-                      Compañía de Seguros *
-                    </label>
-                    {companies.length === 0 ? (
-                      <button
-                        type="button"
-                        onClick={() => setActiveSubTab("companias")}
-                        className="w-full text-left text-xs font-bold py-2.5 px-3 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 transition-colors"
-                      >
-                        Sin aseguradoras activas — clic aquí para encenderlas →
-                      </button>
-                    ) : (
-                      <select
-                        value={formCompanyId}
-                        onChange={(e) => setFormCompanyId(e.target.value)}
-                        required
-                        className="w-full text-sm font-semibold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
-                      >
-                        {companies.map((comp: any) => (
-                          <option key={comp.id} value={comp.id}>
-                            {comp.name}
-                          </option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-
-                  {/* Fecha de Emisión */}
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-1">
-                      Fecha de Emisión *
-                    </label>
-                    <Input
-                      type="date"
-                      value={formIssueDate}
-                      onChange={(e) => setFormIssueDate(e.target.value)}
-                      required
-                      className="text-sm font-medium"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* Folio / Póliza */}
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-1">
-                      Número / Folio de Póliza
-                    </label>
-                    <Input
-                      type="text"
-                      placeholder="Ej. POL-128391"
-                      value={formPolicyNumber}
-                      onChange={(e) => setFormPolicyNumber(e.target.value)}
-                      className="text-sm font-mono"
-                    />
-                  </div>
-
-                  {/* Cliente */}
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-1">
-                      Nombre del Cliente Asegurado
-                    </label>
-                    <Input
-                      type="text"
-                      placeholder="Ej. Dr. Mario Estrada"
-                      value={formClientName}
-                      onChange={(e) => setFormClientName(e.target.value)}
-                      className="text-sm"
-                    />
-                  </div>
-
-                  {/* Ramo */}
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-1">
-                      Ramo / Producto
-                    </label>
-                    <select
-                      value={formRamo}
-                      onChange={(e) => setFormRamo(e.target.value)}
-                      className="w-full text-sm font-semibold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
-                    >
-                      {RAMOS_CATALOGO.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.name}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* Prima Emitida PE */}
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-blue-700 dark:text-blue-400 mb-1">
-                      Prima Emitida (PE) en MXN *
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-2.5 font-bold text-slate-400">$</span>
-                      <Input
-                        type="number"
-                        step="any"
-                        placeholder="Ej. 45000"
-                        value={formPrimaEmitida}
-                        onChange={(e) => setFormPrimaEmitida(e.target.value)}
-                        required
-                        className="pl-7 font-mono font-bold text-base"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Prima Pagada PPC */}
-                  <div>
-                    <label className="block text-xs font-black uppercase tracking-wider text-emerald-700 dark:text-emerald-400 mb-1">
-                      Prima Pagada / Cobrada (PPC / PP) en MXN *
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-2.5 font-bold text-slate-400">$</span>
-                      <Input
-                        type="number"
-                        step="any"
-                        placeholder="Ej. 32000"
-                        value={formPrimaPagada}
-                        onChange={(e) => setFormPrimaPagada(e.target.value)}
-                        required
-                        className="pl-7 font-mono font-bold text-base text-emerald-700 dark:text-emerald-400"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Notas */}
-                <div>
-                  <label className="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-1">
-                    Observaciones / Notas
-                  </label>
-                  <Input
-                    type="text"
-                    placeholder="Detalles adicionales, número de recibo o condiciones de la emisión..."
-                    value={formNotes}
-                    onChange={(e) => setFormNotes(e.target.value)}
-                    className="text-sm"
-                  />
-                </div>
-
-                {/* Submit button */}
-                <div className="pt-2">
-                  <Button
-                    type="submit"
-                    disabled={isPending}
-                    className="w-full py-6 text-base font-black bg-gradient-to-r from-teal-700 to-emerald-600 hover:from-teal-800 hover:to-emerald-700 text-white shadow-lg shadow-teal-700/20"
-                  >
-                    {isPending ? (
-                      <>
-                        <RefreshCw className="h-5 w-5 animate-spin mr-2" /> Guardando emisión...
-                      </>
-                    ) : editingEmissionId ? (
-                      <>
-                        <Check className="h-5 w-5 mr-2" /> Actualizar Póliza
-                      </>
-                    ) : (
-                      <>
-                        <Plus className="h-5 w-5 mr-2" /> Registrar Póliza
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </CardContent>
-          </Card>
-
-          {/* Historial de Pólizas Capturadas en el Mes */}
           <Card className="border border-slate-200 dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 overflow-hidden">
             <CardHeader className="py-4 border-b border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/40">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <CardTitle className="text-base font-black text-slate-800 dark:text-zinc-100 flex items-center gap-2">
-                  <FileSpreadsheet className="h-4 w-4 text-teal-700" />
-                  Pólizas Registradas en {monthName} {selectedYear} ({filteredEmissions.length})
-                </CardTitle>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div>
+                  <CardTitle className="text-base font-black text-slate-800 dark:text-zinc-100 flex items-center gap-2">
+                    <FileSpreadsheet className="h-4 w-4 text-teal-700" />
+                    Pólizas y Cobranza Unificada — {periodLabel} ({filteredLedgerRows.length})
+                  </CardTitle>
+                  <CardDescription className="text-xs mt-0.5">
+                    Toda captura nueva se guarda directo en <strong>Mi Cartera</strong> y alimenta automáticamente Producción y Ranking en MXN.
+                  </CardDescription>
+                </div>
 
-                {/* Buscador */}
-                <div className="relative w-full sm:w-72">
-                  <Search className="h-3.5 w-3.5 absolute left-3 top-3 text-slate-400" />
-                  <Input
-                    type="text"
-                    placeholder="Buscar por cliente, póliza o agente..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-8 text-xs py-1.5 bg-white dark:bg-zinc-900"
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="relative w-full sm:w-64">
+                    <Search className="h-3.5 w-3.5 absolute left-3 top-3 text-slate-400" />
+                    <Input
+                      type="text"
+                      placeholder="Buscar póliza, cliente, agente..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="pl-8 text-xs py-1.5 bg-white dark:bg-zinc-900"
+                    />
+                  </div>
+                  <QuickPdfAiPolicyDialog
+                    targetAgencyId={selectedAgency}
+                    buttonLabel="+ Nueva Póliza en Cartera"
+                    buttonClassName="bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold"
+                    onSavedSuccess={fetchData}
                   />
                 </div>
               </div>
             </CardHeader>
 
             <CardContent className="p-0">
-              {filteredEmissions.length === 0 ? (
-                <div className="py-16 text-center text-slate-500 text-xs">
-                  No hay emisiones capturadas para los filtros seleccionados.
+              {filteredLedgerRows.length === 0 ? (
+                <div className="py-16 text-center text-slate-500 text-xs space-y-2">
+                  <p>No hay pólizas con emisión o cobranza dentro del rango {periodLabel}.</p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-50 dark:bg-zinc-900 text-[10px] font-black uppercase text-slate-500 border-b border-slate-200 dark:border-zinc-800">
                       <tr>
-                        <th className="py-2.5 px-3">Fecha</th>
-                        <th className="py-2.5 px-3">Asesor</th>
+                        <th className="py-2.5 px-3">Vigencia</th>
+                        <th className="py-2.5 px-3">Asesor(es)</th>
                         <th className="py-2.5 px-3">Aseguradora</th>
                         <th className="py-2.5 px-3">Cliente / Folio</th>
-                        <th className="py-2.5 px-3">Ramo</th>
-                        <th className="py-2.5 px-3 text-right">Prima Emitida (PE)</th>
-                        <th className="py-2.5 px-3 text-right">Prima Pagada (PPC)</th>
-                        <th className="py-2.5 px-3 text-center">Acciones</th>
+                        <th className="py-2.5 px-3">Ramo / Sub-ramo</th>
+                        <th className="py-2.5 px-3 text-right">PE Periodo</th>
+                        <th className="py-2.5 px-3 text-right">PPC Periodo</th>
+                        <th className="py-2.5 px-3 text-center">Clasificación / Visto Bueno</th>
+                        <th className="py-2.5 px-3 text-center">Cobranza</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-zinc-800">
-                      {filteredEmissions.map((em: any) => (
-                        <tr key={em.id} className="hover:bg-slate-50/70 dark:hover:bg-zinc-900/50 transition-colors">
-                          <td className="py-2.5 px-3 font-mono text-slate-600 dark:text-zinc-400">
-                            {new Date(em.issueDate).toLocaleDateString("es-MX", {
-                              day: "2-digit",
-                              month: "short",
-                              timeZone: "UTC",
-                            })}
-                          </td>
-                          <td className="py-2.5 px-3 font-bold text-slate-900 dark:text-zinc-100">
-                            {em.agent?.name || em.agent?.email}
-                          </td>
-                          <td className="py-2.5 px-3 font-semibold text-slate-700 dark:text-zinc-300">
-                            {em.companyName}
-                          </td>
-                          <td className="py-2.5 px-3">
-                            <div className="font-medium text-slate-800 dark:text-zinc-200">
-                              {em.clientName || <span className="italic text-slate-400">Sin cliente</span>}
-                            </div>
-                            {em.policyNumber && (
-                              <div className="text-[10px] font-mono text-slate-400">
-                                {em.policyNumber}
+                      {filteredLedgerRows.map((row: any) => {
+                        const hasUnpaidReceipt = (row.receipts || []).some(
+                          (r: any) => r.status !== "PAGADO"
+                        );
+                        return (
+                          <tr
+                            key={row.policyId}
+                            className="hover:bg-slate-50/70 dark:hover:bg-zinc-900/50 transition-colors"
+                          >
+                            <td className="py-2.5 px-3 font-mono text-slate-600 dark:text-zinc-400 whitespace-nowrap">
+                              {row.effectiveDate || "-"}
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <div className="font-bold text-slate-900 dark:text-zinc-100">
+                                {row.ownerAgentName}
                               </div>
-                            )}
-                          </td>
-                          <td className="py-2.5 px-3">
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-zinc-300">
-                              {getRamoIcon(em.ramo)} {em.ramo}
-                            </span>
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100">
-                            {formatMoney(em.primaEmitida)}
-                          </td>
-                          <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400">
-                            {formatMoney(em.primaPagada)}
-                          </td>
-                          <td className="py-2.5 px-3 text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleEditEmissionClick(em)}
-                                className="h-7 w-7 p-0 text-slate-500 hover:text-teal-700"
-                                title="Editar"
-                              >
-                                <Edit className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteEmission(em.id)}
-                                className="h-7 w-7 p-0 text-slate-500 hover:text-red-600"
-                                title="Eliminar"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                              {row.sharedWithUserId && (
+                                <Badge
+                                  variant="outline"
+                                  className="mt-0.5 text-[10px] px-1.5 py-0 bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/40 dark:text-blue-300"
+                                >
+                                  🤝 {row.sharedPercentage}% {row.sharedWithAgentName}
+                                </Badge>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-3 font-semibold text-slate-700 dark:text-zinc-300">
+                              {row.canonicalCompany}
+                            </td>
+                            <td className="py-2.5 px-3">
+                              {row.clientId ? (
+                                <Link
+                                  href={`/cartera/clientes/${row.clientId}`}
+                                  className="font-bold text-primary hover:underline block"
+                                >
+                                  {row.clientName}
+                                </Link>
+                              ) : (
+                                <span className="font-bold text-slate-800 dark:text-zinc-200 block">
+                                  {row.clientName}
+                                </span>
+                              )}
+                              <div className="text-[10px] font-mono text-slate-400">
+                                {row.policyNumber} • {row.paymentMethod || "Anual"}
+                              </div>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-700 dark:text-zinc-300">
+                                {getRamoIcon(row.ramoInfo?.subRamoKey)}
+                                {row.ramoInfo?.fullLabel}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono font-bold text-slate-900 dark:text-zinc-100 whitespace-nowrap">
+                              {formatMoney(row.peInPeriod)}
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
+                              {formatMoney(row.ppcInPeriod)}
+                            </td>
+                            <td className="py-2.5 px-3 text-center">
+                              <div className="flex flex-col items-center gap-1">
+                                <button
+                                  type="button"
+                                  disabled={isPending}
+                                  onClick={() =>
+                                    handleToggleAdminApproval(row.policyId, !row.adminApproved)
+                                  }
+                                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold border transition ${
+                                    row.adminApproved
+                                      ? "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300"
+                                      : "bg-amber-50 text-amber-700 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300"
+                                  }`}
+                                  title="Alternar Visto Bueno de Administración"
+                                >
+                                  {row.adminApproved ? "✓ Aprobada" : "⏳ Pend. Visto Bueno"}
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={isPending}
+                                  onClick={() =>
+                                    handleToggleRenewalFlag(row.policyId, !row.isRenewalCapture)
+                                  }
+                                  className="text-[10px] text-slate-500 hover:text-indigo-600 underline"
+                                >
+                                  {row.isRenewalCapture ? "🔄 Renovación" : "✨ Venta Nueva"}
+                                </button>
+                              </div>
+                            </td>
+                            <td className="py-2.5 px-3 text-center">
+                              {hasUnpaidReceipt ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openPayModal(row)}
+                                  className="h-7 text-[11px] font-bold border-emerald-300 text-emerald-700 hover:bg-emerald-50"
+                                >
+                                  <DollarSign className="h-3 w-3 mr-1" />
+                                  Cobrar Recibo
+                                </Button>
+                              ) : (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[10px] bg-emerald-50 text-emerald-700 border-emerald-200"
+                                >
+                                  ✓ Pagos al día
+                                </Badge>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -1657,7 +1941,466 @@ export default function AdminProduccion() {
         </div>
       )}
 
-      {/* SUBTAB 3: CATÁLOGO DE ASEGURADORAS & LOGOS (AISLADO POR AGENCIA) */}
+      {/* SUBTAB 4: EVALUADOR ANTES VS. DESPUÉS Y CONCILIADOR NO DESTRUCTIVO */}
+      {activeSubTab === "evaluador" && (
+        <div className="space-y-6">
+          <Card className="border border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-r from-indigo-50/70 via-white to-teal-50/60 dark:from-indigo-950/20 dark:via-zinc-950 dark:to-teal-950/20">
+            <CardHeader className="py-4">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div>
+                  <CardTitle className="text-base font-black flex items-center gap-2 text-indigo-950 dark:text-indigo-200">
+                    <Scale className="h-5 w-5 text-indigo-600" />
+                    Evaluador Antes vs. Después — Año {selectedYear} (Auditable y No Destructivo)
+                  </CardTitle>
+                  <CardDescription className="text-xs mt-1">
+                    Compara la <strong>Foto Antes</strong> (tabla histórica anterior de Producción) contra la{" "}
+                    <strong>Foto Después</strong> (datos vivos en Mi Cartera). Tus registros históricos no se borran ni se modifican jamás.
+                  </CardDescription>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={auditLoading}
+                    onClick={() => fetchAudit()}
+                    className="text-xs font-bold"
+                  >
+                    <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${auditLoading ? "animate-spin" : ""}`} />
+                    Re-auditar {selectedYear}
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    disabled={!auditData?.reconciliationItems?.length}
+                    onClick={handleExportAuditCSV}
+                    className="text-xs font-bold"
+                  >
+                    <Download className="h-3.5 w-3.5 mr-1.5" />
+                    Exportar Auditoría CSV
+                  </Button>
+                </div>
+              </div>
+            </CardHeader>
+          </Card>
+
+          {auditLoading || !auditData ? (
+            <Card>
+              <CardContent className="py-16 text-center text-sm text-muted-foreground">
+                Analizando historial de Producción vs. Mi Cartera {selectedYear}...
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              {/* 4 Tarjetas Comparativas Antes vs Después */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <Card className="border-slate-200 dark:border-zinc-800">
+                  <CardContent className="p-4">
+                    <span className="text-[11px] font-black uppercase text-slate-500">
+                      Foto Antes • PE {selectedYear}
+                    </span>
+                    <div className="text-2xl font-black text-slate-900 dark:text-zinc-100 mt-1">
+                      {formatMoneyExact(auditData.kpiBefore?.totalPE || 0)}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      {auditData.kpiBefore?.emissionRowsCount || 0} capturas /{" "}
+                      {auditData.kpiBefore?.uniquePoliciesCount || 0} pólizas lógicas
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-indigo-200 dark:border-indigo-800">
+                  <CardContent className="p-4">
+                    <span className="text-[11px] font-black uppercase text-indigo-600 dark:text-indigo-400">
+                      Foto Después • PE Actual en Cartera
+                    </span>
+                    <div className="text-2xl font-black text-indigo-700 dark:text-indigo-300 mt-1">
+                      {formatMoneyExact(auditData.kpiAfter?.totalPE || 0)}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Proyectado tras conciliar:{" "}
+                      <strong>{formatMoneyExact(auditData.kpiProjectedAfterReconcile?.totalPE || 0)}</strong>
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-slate-200 dark:border-zinc-800">
+                  <CardContent className="p-4">
+                    <span className="text-[11px] font-black uppercase text-slate-500">
+                      Foto Antes • PPC {selectedYear}
+                    </span>
+                    <div className="text-2xl font-black text-slate-900 dark:text-zinc-100 mt-1">
+                      {formatMoneyExact(auditData.kpiBefore?.totalPPC || 0)}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Cobranza histórica registrada
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-emerald-200 dark:border-emerald-800">
+                  <CardContent className="p-4">
+                    <span className="text-[11px] font-black uppercase text-emerald-600 dark:text-emerald-400">
+                      Foto Después • PPC Actual en Cartera
+                    </span>
+                    <div className="text-2xl font-black text-emerald-700 dark:text-emerald-300 mt-1">
+                      {formatMoneyExact(auditData.kpiAfter?.totalPPC || 0)}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-1">
+                      Proyectado tras conciliar:{" "}
+                      <strong>{formatMoneyExact(auditData.kpiProjectedAfterReconcile?.totalPPC || 0)}</strong>
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Comparativas Mes por Mes y por Agente */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <Card>
+                  <CardHeader className="py-3 border-b">
+                    <CardTitle className="text-sm font-black">Comparativa Mes por Mes ({selectedYear})</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0 overflow-x-auto">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-muted/40 text-[10px] uppercase font-black text-muted-foreground">
+                        <tr>
+                          <th className="py-2 px-3">Mes</th>
+                          <th className="py-2 px-3 text-right">Antes PE</th>
+                          <th className="py-2 px-3 text-right">Después PE</th>
+                          <th className="py-2 px-3 text-right">Antes PPC</th>
+                          <th className="py-2 px-3 text-right">Después PPC</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {(auditData.monthlyComparison || []).map((m: any) => (
+                          <tr key={m.month}>
+                            <td className="py-2 px-3 font-bold">{m.monthName}</td>
+                            <td className="py-2 px-3 text-right font-mono">{formatMoney(m.beforePE)}</td>
+                            <td className="py-2 px-3 text-right font-mono font-bold text-indigo-700 dark:text-indigo-300">
+                              {formatMoney(m.afterPE)}
+                            </td>
+                            <td className="py-2 px-3 text-right font-mono">{formatMoney(m.beforePPC)}</td>
+                            <td className="py-2 px-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                              {formatMoney(m.afterPPC)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="py-3 border-b">
+                    <CardTitle className="text-sm font-black">Comparativa por Agente ({selectedYear})</CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0 overflow-x-auto">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-muted/40 text-[10px] uppercase font-black text-muted-foreground">
+                        <tr>
+                          <th className="py-2 px-3">Agente</th>
+                          <th className="py-2 px-3 text-right">Antes PE</th>
+                          <th className="py-2 px-3 text-right">Después PE</th>
+                          <th className="py-2 px-3 text-right">Antes PPC</th>
+                          <th className="py-2 px-3 text-right">Después PPC</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {(auditData.agentComparison || []).map((a: any) => (
+                          <tr key={a.agentId}>
+                            <td className="py-2 px-3 font-bold truncate max-w-[150px]">{a.agentName}</td>
+                            <td className="py-2 px-3 text-right font-mono">{formatMoney(a.beforePE)}</td>
+                            <td className="py-2 px-3 text-right font-mono font-bold text-indigo-700 dark:text-indigo-300">
+                              {formatMoney(a.afterPE)}
+                            </td>
+                            <td className="py-2 px-3 text-right font-mono">{formatMoney(a.beforePPC)}</td>
+                            <td className="py-2 px-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                              {formatMoney(a.afterPPC)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Preview de Simulación Dry-Run */}
+              {dryRunResult && (
+                <Card className="border-amber-300 dark:border-amber-800 bg-amber-50/70 dark:bg-amber-950/30">
+                  <CardHeader className="py-3 border-b border-amber-200 dark:border-amber-900">
+                    <CardTitle className="text-sm font-black text-amber-950 dark:text-amber-200 flex items-center gap-2">
+                      <FlaskConical className="h-4 w-4 text-amber-600" />
+                      Simulación (Dry-Run) sin cambios aplicados en Base de Datos
+                    </CardTitle>
+                    <CardDescription className="text-xs text-amber-900/80 dark:text-amber-200/80">
+                      Se crearían <strong>{dryRunResult.createdPolicies}</strong> póliza(s) nuevas en Mi Cartera, se enriquecerían{" "}
+                      <strong>{dryRunResult.updatedPolicies}</strong> existente(s) y se marcarían{" "}
+                      <strong>{dryRunResult.markedReceiptsPaid}</strong> recibo(s) como PAGADO.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-3 max-h-60 overflow-y-auto space-y-1.5 text-xs">
+                    {(dryRunResult.previewActions || []).map((act: any) => (
+                      <div key={act.groupKey} className="p-2 rounded bg-white/80 dark:bg-zinc-900/80 border flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <Badge variant="outline" className="text-[10px] mr-2 font-mono">
+                            {act.action}
+                          </Badge>
+                          <strong>{act.policyNumber}</strong> ({act.clientName})
+                        </div>
+                        <span className="text-[11px] text-muted-foreground">{act.details}</span>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Tabla de Hallazgos por Póliza + Barra de Conciliación */}
+              <Card>
+                <CardHeader className="py-4 border-b">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    <div>
+                      <CardTitle className="text-sm font-black">
+                        Auditoría Detallada por Póliza ({auditData.summaryCounts?.totalGroups || 0})
+                      </CardTitle>
+                      <div className="flex flex-wrap gap-1.5 mt-2">
+                        {(
+                          [
+                            { id: "ALL", label: `Todos (${auditData.summaryCounts?.totalGroups || 0})` },
+                            {
+                              id: "FALTA_EN_CARTERA",
+                              label: `Falta en Cartera (${auditData.summaryCounts?.missingInCartera || 0})`,
+                            },
+                            {
+                              id: "EXISTE_CON_DIFERENCIA",
+                              label: `Con Diferencia (${auditData.summaryCounts?.withDifference || 0})`,
+                            },
+                            {
+                              id: "CONCILIADO_EXACTO",
+                              label: `Conciliado (${auditData.summaryCounts?.exactMatch || 0})`,
+                            },
+                          ] as const
+                        ).map((tab) => (
+                          <button
+                            key={tab.id}
+                            type="button"
+                            onClick={() => setAuditFilter(tab.id)}
+                            className={`px-2.5 py-1 rounded-full text-[11px] font-bold border transition ${
+                              auditFilter === tab.id
+                                ? "bg-indigo-600 text-white border-indigo-600"
+                                : "bg-muted/40 text-muted-foreground border-border"
+                            }`}
+                          >
+                            {tab.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        disabled={isPending || selectedGroupKeys.length === 0}
+                        onClick={handleRunDryRunReconcile}
+                        className="text-xs font-bold border-amber-300 text-amber-800 hover:bg-amber-50"
+                      >
+                        <FlaskConical className="h-3.5 w-3.5 mr-1.5" />
+                        Simular Conciliación ({selectedGroupKeys.length})
+                      </Button>
+                      <Button
+                        type="button"
+                        size="sm"
+                        disabled={isPending || selectedGroupKeys.length === 0}
+                        onClick={handleExecuteReconcile}
+                        className="text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white"
+                      >
+                        <ArrowRightLeft className="h-3.5 w-3.5 mr-1.5" />
+                        Conciliar Seleccionados hacia Mi Cartera
+                      </Button>
+                    </div>
+                  </div>
+                </CardHeader>
+
+                <CardContent className="p-0 overflow-x-auto">
+                  <table className="w-full text-xs text-left">
+                    <thead className="bg-muted/40 text-[10px] uppercase font-black text-muted-foreground border-b">
+                      <tr>
+                        <th className="py-2.5 px-3 w-8">
+                          <input
+                            type="checkbox"
+                            checked={
+                              filteredAuditItems.filter((i: any) => i.status !== "CONCILIADO_EXACTO").length > 0 &&
+                              filteredAuditItems
+                                .filter((i: any) => i.status !== "CONCILIADO_EXACTO")
+                                .every((i: any) => selectedGroupKeys.includes(i.groupKey))
+                            }
+                            onChange={(e) => {
+                              const pend = filteredAuditItems
+                                .filter((i: any) => i.status !== "CONCILIADO_EXACTO")
+                                .map((i: any) => i.groupKey);
+                              setSelectedGroupKeys(e.target.checked ? pend : []);
+                            }}
+                          />
+                        </th>
+                        <th className="py-2.5 px-3">Estatus</th>
+                        <th className="py-2.5 px-3">Póliza / Cliente</th>
+                        <th className="py-2.5 px-3">Agente / Co-Agente</th>
+                        <th className="py-2.5 px-3">Aseguradora</th>
+                        <th className="py-2.5 px-3 text-right">Antes PE / PPC</th>
+                        <th className="py-2.5 px-3 text-right">Después PE / PPC</th>
+                        <th className="py-2.5 px-3">Hallazgos / Diferencias</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {filteredAuditItems.map((item: any) => {
+                        const checked = selectedGroupKeys.includes(item.groupKey);
+                        return (
+                          <tr key={item.groupKey} className="hover:bg-muted/20">
+                            <td className="py-2.5 px-3">
+                              {item.status !== "CONCILIADO_EXACTO" && (
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={(e) => {
+                                    setSelectedGroupKeys((prev) =>
+                                      e.target.checked
+                                        ? [...prev, item.groupKey]
+                                        : prev.filter((k) => k !== item.groupKey)
+                                    );
+                                  }}
+                                />
+                              )}
+                            </td>
+                            <td className="py-2.5 px-3 whitespace-nowrap">
+                              <Badge
+                                variant="outline"
+                                className={`text-[10px] font-bold ${
+                                  item.status === "CONCILIADO_EXACTO"
+                                    ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    : item.status === "EXISTE_CON_DIFERENCIA"
+                                    ? "bg-amber-50 text-amber-800 border-amber-300"
+                                    : "bg-rose-50 text-rose-700 border-rose-300"
+                                }`}
+                              >
+                                {item.status === "CONCILIADO_EXACTO"
+                                  ? "✓ Conciliado"
+                                  : item.status === "EXISTE_CON_DIFERENCIA"
+                                  ? "⚠ Con Diferencia"
+                                  : "➕ Falta en Cartera"}
+                              </Badge>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <div className="font-mono font-bold">{item.policyNumber}</div>
+                              <div className="text-[11px] text-muted-foreground">{item.clientName}</div>
+                            </td>
+                            <td className="py-2.5 px-3">
+                              <div className="font-semibold">{item.ownerAgentName}</div>
+                              {item.isShared && (
+                                <Badge variant="outline" className="text-[10px] mt-0.5 bg-blue-50 text-blue-700 border-blue-200">
+                                  🤝 {item.sharedWithAgentName} ({item.sharedPercentage}%)
+                                </Badge>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-3">{item.companyName}</td>
+                            <td className="py-2.5 px-3 text-right font-mono whitespace-nowrap">
+                              <div>{formatMoneyExact(item.beforePE)}</div>
+                              <div className="text-emerald-700 dark:text-emerald-400">
+                                {formatMoneyExact(item.beforePPC)}
+                              </div>
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono whitespace-nowrap">
+                              <div>{formatMoneyExact(item.afterPE)}</div>
+                              <div className="text-emerald-700 dark:text-emerald-400">
+                                {formatMoneyExact(item.afterPPC)}
+                              </div>
+                            </td>
+                            <td className="py-2.5 px-3 max-w-xs">
+                              {item.differences?.length > 0 ? (
+                                <ul className="list-disc pl-4 space-y-0.5 text-[11px] text-muted-foreground">
+                                  {item.differences.map((d: string, i: number) => (
+                                    <li key={i}>{d}</li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <span className="text-[11px] text-emerald-700 font-semibold">
+                                  Coincidencia exacta
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </CardContent>
+              </Card>
+
+              {/* Pólizas que SOLO existen en Mi Cartera (ej. importaciones Excel de renovaciones) */}
+              {(auditData.carteraOnlyItems?.length || 0) > 0 && (
+                <Card>
+                  <CardHeader className="py-3 border-b">
+                    <CardTitle className="text-sm font-black">
+                      Pólizas en Mi Cartera sin registro previo en Producción ({auditData.carteraOnlyItems.length})
+                    </CardTitle>
+                    <CardDescription className="text-xs">
+                      Si alguna póliza importada (ej. de Excel) corresponde a una Renovación de años anteriores, márcala como Renovación para que no infle la Venta Nueva.
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0 overflow-x-auto">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-muted/40 text-[10px] uppercase font-black text-muted-foreground border-b">
+                        <tr>
+                          <th className="py-2 px-3">Póliza</th>
+                          <th className="py-2 px-3">Cliente</th>
+                          <th className="py-2 px-3">Agente</th>
+                          <th className="py-2 px-3">Vigencia</th>
+                          <th className="py-2 px-3 text-right">Prima Anual MXN</th>
+                          <th className="py-2 px-3 text-center">Clasificación</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y">
+                        {auditData.carteraOnlyItems.map((c: any) => (
+                          <tr key={c.policyId}>
+                            <td className="py-2 px-3 font-mono font-bold">{c.policyNumber}</td>
+                            <td className="py-2 px-3">{c.clientName}</td>
+                            <td className="py-2 px-3">{c.agentName}</td>
+                            <td className="py-2 px-3 font-mono">{c.effectiveDate}</td>
+                            <td className="py-2 px-3 text-right font-mono font-bold">
+                              {formatMoney(c.annualPremium)}
+                            </td>
+                            <td className="py-2 px-3 text-center">
+                              <Button
+                                type="button"
+                                size="sm"
+                                variant={c.isRenewalCapture ? "secondary" : "outline"}
+                                disabled={isPending}
+                                onClick={() =>
+                                  handleToggleRenewalFlag(c.policyId, !c.isRenewalCapture)
+                                }
+                                className="h-7 text-[11px] font-bold"
+                              >
+                                {c.isRenewalCapture
+                                  ? "🔄 Marcada como Renovación (Clic para revertir)"
+                                  : "🔄 Marcar como Renovación (Año 2+)"}
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </CardContent>
+                </Card>
+              )}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* SUBTAB 3: CATÁLOGO DE ASEGURADORAS & LOGOS */}
       {activeSubTab === "companias" && (
         <div className="space-y-6">
           <Card className="border border-slate-200 dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950">
@@ -1672,7 +2415,7 @@ export default function AdminProduccion() {
                     </Badge>
                   </CardTitle>
                   <CardDescription className="text-xs mt-1">
-                    Configuración exclusiva y aislada para <strong>{currentAgencyName}</strong>. Encender, apagar, subir logos o agregar compañías aquí nunca afecta a ninguna otra promotoría.
+                    Configuración exclusiva y aislada para <strong>{currentAgencyName}</strong>. Nunca afecta a ninguna otra promotoría.
                   </CardDescription>
                 </div>
                 <Button
@@ -1695,7 +2438,9 @@ export default function AdminProduccion() {
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 {catalogCompanies.map((comp: any) => {
                   const isBaseCompany = DEFAULT_COMPANIES.some(
-                    (base) => base.name.trim().toLowerCase() === String(comp.name || "").trim().toLowerCase()
+                    (base) =>
+                      base.name.trim().toLowerCase() ===
+                      String(comp.name || "").trim().toLowerCase()
                   );
                   return (
                     <div
@@ -1746,7 +2491,6 @@ export default function AdminProduccion() {
                           <div
                             className="h-3 w-3 rounded-full border border-white shadow-sm shrink-0"
                             style={{ backgroundColor: comp.color || "#0284c7" }}
-                            title={`Color de marca: ${comp.color}`}
                           />
                         </div>
                       </div>
@@ -1773,16 +2517,13 @@ export default function AdminProduccion() {
                             variant="ghost"
                             size="sm"
                             onClick={async () => {
-                              if (!confirm(`¿Eliminar la aseguradora personalizada "${comp.name}" de ${currentAgencyName}?`)) return;
+                              if (!confirm(`¿Eliminar "${comp.name}" de ${currentAgencyName}?`))
+                                return;
                               const res = await deleteInsuranceCompany(comp.id, selectedAgency);
-                              if (res.success) {
-                                fetchData();
-                              } else {
-                                alert("Error: " + res.message);
-                              }
+                              if (res.success) fetchData();
+                              else alert("Error: " + res.message);
                             }}
                             className="text-xs text-slate-400 hover:text-red-600 p-1"
-                            title="Eliminar aseguradora personalizada de esta agencia"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
@@ -1806,7 +2547,8 @@ export default function AdminProduccion() {
               Presupuesto Mensual: {editingBudgetAgent?.agentName}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Modifica el presupuesto pactado para {monthName} {selectedYear}. Esta modificación quedará registrada como ajuste administrativo manual.
+              Modifica el presupuesto pactado para{" "}
+              {MONTHS.find((m) => m.value === selectedMonth)?.name} {selectedYear}.
             </DialogDescription>
           </DialogHeader>
 
@@ -1826,14 +2568,13 @@ export default function AdminProduccion() {
                 />
               </div>
             </div>
-
             <div>
               <label className="block text-xs font-black uppercase text-slate-600 mb-1">
                 Motivo / Notas del Ajuste (Opcional)
               </label>
               <Input
                 type="text"
-                placeholder="Ej. Re-negociación de meta o corrección de captura..."
+                placeholder="Ej. Re-negociación de meta..."
                 value={budgetNotes}
                 onChange={(e) => setBudgetNotes(e.target.value)}
                 className="text-xs"
@@ -1866,7 +2607,7 @@ export default function AdminProduccion() {
               {editingCompany ? `Editar: ${editingCompany.name}` : "Nueva Aseguradora"}
             </DialogTitle>
             <DialogDescription className="text-xs">
-              Configura el nombre, color distintivo y sube el logotipo de la compañía de seguros.
+              Configura el nombre, color distintivo y logotipo oficial.
             </DialogDescription>
           </DialogHeader>
 
@@ -1877,7 +2618,7 @@ export default function AdminProduccion() {
               </label>
               <Input
                 type="text"
-                placeholder="Ej. Insignia Life"
+                placeholder="Ej. GNP Seguros"
                 value={companyNameInput}
                 onChange={(e) => setCompanyNameInput(e.target.value)}
                 className="text-sm font-semibold"
@@ -1904,27 +2645,25 @@ export default function AdminProduccion() {
                   />
                 </div>
               </div>
-
               <div>
                 <label className="block text-xs font-black uppercase text-slate-600 mb-1">
-                  Orden de Aparición
+                  Orden
                 </label>
                 <Input
                   type="number"
                   value={companyOrderInput}
-                  onChange={(e) => setCompanyOrderInput(parseInt(e.target.value) || 0)}
+                  onChange={(e) => setCompanyOrderInput(parseInt(e.target.value, 10) || 0)}
                   className="text-xs font-mono"
                 />
               </div>
             </div>
 
-            {/* Logo Preview and Upload */}
             <div>
               <label className="block text-xs font-black uppercase text-slate-600 mb-1">
                 Logotipo Oficial
               </label>
-              <div className="p-3 rounded-lg border border-slate-200 dark:border-zinc-800 bg-slate-50 dark:bg-zinc-900/50 flex items-center gap-3">
-                <div className="h-12 w-20 rounded bg-white dark:bg-zinc-950 border border-slate-200 flex items-center justify-center p-1 shrink-0">
+              <div className="p-3 rounded-lg border bg-slate-50 dark:bg-zinc-900/50 flex items-center gap-3">
+                <div className="h-12 w-20 rounded bg-white dark:bg-zinc-950 border flex items-center justify-center p-1 shrink-0">
                   {companyLogoUrlInput ? (
                     <img
                       src={companyLogoUrlInput}
@@ -1935,11 +2674,10 @@ export default function AdminProduccion() {
                     <span className="text-[10px] text-slate-400">Sin logo</span>
                   )}
                 </div>
-
                 <div className="space-y-1 flex-1">
-                  <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 text-xs font-bold hover:bg-teal-100">
+                  <label className="cursor-pointer inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-teal-50 dark:bg-teal-950/60 text-teal-700 dark:text-teal-300 border border-teal-200 text-xs font-bold">
                     <Upload className="h-3.5 w-3.5" />
-                    Subir Imagen (PNG/JPG)
+                    Subir Imagen
                     <input
                       type="file"
                       accept="image/*"
@@ -1959,19 +2697,6 @@ export default function AdminProduccion() {
                 </div>
               </div>
             </div>
-
-            <div>
-              <label className="block text-xs font-black uppercase text-slate-600 mb-1">
-                O URL Directa de Imagen (Opcional)
-              </label>
-              <Input
-                type="url"
-                placeholder="https://..."
-                value={companyLogoUrlInput.startsWith("data:") ? "" : companyLogoUrlInput}
-                onChange={(e) => setCompanyLogoUrlInput(e.target.value)}
-                className="text-xs font-mono"
-              />
-            </div>
           </div>
 
           <DialogFooter>
@@ -1990,47 +2715,50 @@ export default function AdminProduccion() {
         </DialogContent>
       </Dialog>
 
-      {/* MODAL 3: DETALLE DE PÓLIZAS POR ASESOR */}
+      {/* MODAL 3: DETALLE DE PÓLIZAS POR ASESOR (DESDE MI CARTERA) */}
       <Dialog open={detailModalOpen} onOpenChange={setDetailModalOpen}>
-        <DialogContent className="w-[96vw] max-w-5xl h-[92vh] max-h-[92vh] flex flex-col p-0 overflow-hidden rounded-2xl">
-          {/* Header */}
+        <DialogContent className="w-[96vw] max-w-5xl h-[90vh] max-h-[90vh] flex flex-col p-0 overflow-hidden rounded-2xl">
           <div className="p-4 sm:p-5 border-b border-slate-200 dark:border-zinc-800 bg-slate-50/80 dark:bg-zinc-900/80 shrink-0">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <div>
                 <DialogTitle className="text-base sm:text-lg font-black flex items-center gap-2 text-slate-900 dark:text-zinc-100">
-                  <FileSpreadsheet className="h-5 w-5 text-teal-700 dark:text-teal-400 shrink-0" />
+                  <FileSpreadsheet className="h-5 w-5 text-teal-700 shrink-0" />
                   <span className="truncate">Detalle de Pólizas — {detailAgent?.agentName}</span>
                 </DialogTitle>
                 <DialogDescription className="text-xs text-slate-500 mt-0.5">
-                  Pólizas emitidas en {monthName} {selectedYear} • {detailAgent?.agentEmail || detailAgent?.agentName}
+                  {periodLabel} • Primas en MXN calculadas desde Mi Cartera
                 </DialogDescription>
               </div>
 
-              {/* Total KPI Badges for this Agent */}
-              <div className="flex items-center gap-2 self-start sm:self-auto">
+              <div className="flex items-center gap-2">
                 <div className="px-3 py-1.5 rounded-lg bg-teal-50 dark:bg-teal-950/60 border border-teal-200 dark:border-teal-800/60 text-right">
-                  <span className="block text-[10px] font-black uppercase text-teal-600 dark:text-teal-400">Total Emitido</span>
-                  <span className="text-xs sm:text-sm font-black font-mono text-teal-950 dark:text-teal-100">
+                  <span className="block text-[10px] font-black uppercase text-teal-600">
+                    PE Asesor
+                  </span>
+                  <span className="text-xs sm:text-sm font-black font-mono">
                     {formatMoney(detailAgent?.totalPE || 0)}
                   </span>
                 </div>
                 <div className="px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800/60 text-right">
-                  <span className="block text-[10px] font-black uppercase text-emerald-600 dark:text-emerald-400">Total Pagado</span>
-                  <span className="text-xs sm:text-sm font-black font-mono text-emerald-950 dark:text-emerald-100">
+                  <span className="block text-[10px] font-black uppercase text-emerald-600">
+                    PPC Asesor
+                  </span>
+                  <span className="text-xs sm:text-sm font-black font-mono text-emerald-700 dark:text-emerald-300">
                     {formatMoney(detailAgent?.totalPPC || 0)}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Filter Bar inside Modal */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 mt-3 pt-3 border-t border-slate-200/80 dark:border-zinc-800">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 mt-3 pt-3 border-t">
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-slate-500 whitespace-nowrap">Aseguradora:</span>
+                <span className="text-xs font-bold text-slate-500 whitespace-nowrap">
+                  Aseguradora:
+                </span>
                 <select
                   value={detailCompanyFilter}
                   onChange={(e) => setDetailCompanyFilter(e.target.value)}
-                  className="flex-1 sm:flex-initial text-xs font-semibold py-1.5 px-2.5 rounded-md border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
+                  className="text-xs font-semibold py-1.5 px-2.5 rounded-md border bg-white dark:bg-zinc-900"
                 >
                   <option value="ALL">Todas las Aseguradoras</option>
                   {companies.map((c: any) => (
@@ -2052,526 +2780,233 @@ export default function AdminProduccion() {
                     className="pl-8 h-8 text-xs"
                   />
                 </div>
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => handleQuickAddForAgent(detailAgent?.agentId, detailCompanyFilter)}
-                  className="h-8 text-xs font-bold text-teal-700 hover:text-teal-800 border-teal-300 dark:border-teal-700 shrink-0"
-                >
-                  <Plus className="h-3.5 w-3.5 mr-1" /> Nueva Póliza
-                </Button>
+                <QuickPdfAiPolicyDialog
+                  defaultAgentId={detailAgent?.agentId}
+                  targetAgencyId={selectedAgency}
+                  buttonLabel="+ Nueva Póliza"
+                  buttonClassName="h-8 text-xs font-bold bg-teal-700 hover:bg-teal-800 text-white"
+                  onSavedSuccess={fetchData}
+                />
               </div>
             </div>
           </div>
 
-          {/* Body: Policies List */}
-          <div className="p-3 sm:p-5 overflow-y-auto flex-1 space-y-3">
+          <div className="p-3 sm:p-5 overflow-y-auto flex-1">
             {(() => {
-              const agentPolicies = (data?.emissions || []).filter((em: any) => {
-                if (em.agentId !== detailAgent?.agentId) return false;
-                if (detailCompanyFilter !== "ALL" && em.companyId !== detailCompanyFilter) return false;
+              const selectedCompName =
+                detailCompanyFilter !== "ALL"
+                  ? companies.find((c: any) => c.id === detailCompanyFilter)?.name?.toLowerCase()
+                  : null;
+              const agentPolicies = ledgerRows.filter((row: any) => {
+                const participates =
+                  row.ownerAgentId === detailAgent?.agentId ||
+                  row.sharedWithUserId === detailAgent?.agentId;
+                if (!participates) return false;
+                if (
+                  selectedCompName &&
+                  (row.canonicalCompany || "").toLowerCase() !== selectedCompName
+                ) {
+                  return false;
+                }
                 if (detailSearchQuery.trim()) {
                   const q = detailSearchQuery.toLowerCase();
-                  const matchClient = (em.clientName || "").toLowerCase().includes(q);
-                  const matchPolicy = (em.policyNumber || "").toLowerCase().includes(q);
-                  const matchCompany = (em.companyName || "").toLowerCase().includes(q);
-                  if (!matchClient && !matchPolicy && !matchCompany) return false;
+                  if (
+                    !(row.clientName || "").toLowerCase().includes(q) &&
+                    !(row.policyNumber || "").toLowerCase().includes(q) &&
+                    !(row.canonicalCompany || "").toLowerCase().includes(q)
+                  ) {
+                    return false;
+                  }
                 }
                 return true;
               });
 
               if (agentPolicies.length === 0) {
                 return (
-                  <div className="py-12 text-center space-y-3">
-                    <div className="h-12 w-12 rounded-full bg-slate-100 dark:bg-zinc-800 flex items-center justify-center mx-auto text-slate-400">
-                      <FileSpreadsheet className="h-6 w-6" />
-                    </div>
-                    <p className="text-sm font-semibold text-slate-600 dark:text-zinc-400">
-                      No se encontraron pólizas registradas para este filtro en {monthName} {selectedYear}.
-                    </p>
-                    <Button
-                      size="sm"
-                      onClick={() => handleQuickAddForAgent(detailAgent?.agentId, detailCompanyFilter)}
-                      className="bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs"
-                    >
-                      <Plus className="h-4 w-4 mr-1.5" /> Registrar Primera Póliza
-                    </Button>
+                  <div className="py-12 text-center text-sm text-muted-foreground">
+                    No se encontraron pólizas en Mi Cartera para este asesor en {periodLabel}.
                   </div>
                 );
               }
 
               return (
-                <div className="space-y-3">
-                  {/* MOBILE VIEW: Tarjetas interactivas ultra legibles */}
-                  <div className="block md:hidden space-y-3">
-                    {agentPolicies.map((em: any) => {
-                      const ramoItem = RAMOS_CATALOGO.find((r) => r.id === em.ramo) || {
-                        color: "text-blue-600 bg-blue-50 border-blue-200",
-                        name: em.ramo || "Protección",
-                      };
-
-                      return (
-                        <div
-                          key={em.id}
-                          className="bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 rounded-xl p-3.5 shadow-sm space-y-3"
-                        >
-                          {/* Fila 1: Cliente & Estatus */}
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
-                              <h4 className="font-bold text-sm text-slate-900 dark:text-zinc-100 truncate">
-                                {em.clientName || "Sin nombre de cliente"}
-                              </h4>
-                              <div className="flex items-center gap-2 mt-1">
-                                {em.policyNumber ? (
-                                  <Badge variant="outline" className="font-mono text-[10px] bg-slate-50 dark:bg-zinc-800">
-                                    Folio: {em.policyNumber}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-[10px] text-slate-400 italic">Sin folio</span>
-                                )}
-                                <span className="text-[10px] font-mono text-slate-500">
-                                  {new Date(em.issueDate).toLocaleDateString("es-MX", {
-                                    day: "2-digit",
-                                    month: "2-digit",
-                                    year: "numeric",
-                                    timeZone: "UTC",
-                                  })}
-                                </span>
-                              </div>
-                            </div>
-
-                            <Badge
-                              variant="outline"
-                              className={`text-[10px] font-black shrink-0 ${
-                                em.status === "PAGADA"
-                                  ? "bg-emerald-50 text-emerald-700 border-emerald-300"
-                                  : em.status === "CANCELADA"
-                                  ? "bg-red-50 text-red-700 border-red-300"
-                                  : "bg-blue-50 text-blue-700 border-blue-300"
-                              }`}
-                            >
-                              {em.status || "EMITIDA"}
-                            </Badge>
-                          </div>
-
-                          {/* Fila 2: Aseguradora & Ramo */}
-                          <div className="flex items-center justify-between text-xs pt-1 border-t border-slate-100 dark:border-zinc-800/80">
-                            <div className="flex items-center gap-1.5 truncate">
-                              <div
-                                className="h-2.5 w-2.5 rounded-full shrink-0"
-                                style={{ backgroundColor: em.company?.color || "#0284c7" }}
-                              />
-                              <span className="font-bold text-slate-700 dark:text-zinc-300 truncate">
-                                {em.companyName}
-                              </span>
-                            </div>
-
-                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border shrink-0 ${ramoItem.color}`}>
-                              {getRamoIcon(em.ramo)}
-                              {em.ramo || "Protección"}
-                            </span>
-                          </div>
-
-                          {/* Fila 3: Primas PE y PPC */}
-                          <div className="grid grid-cols-2 gap-2 bg-slate-50 dark:bg-zinc-800/50 p-2.5 rounded-lg border border-slate-100 dark:border-zinc-800">
-                            <div>
-                              <span className="block text-[9px] uppercase font-bold text-slate-500">Prima Emitida (PE)</span>
-                              <span className="text-xs font-mono font-black text-slate-900 dark:text-zinc-100">
-                                {formatMoney(em.primaEmitida)}
-                              </span>
-                            </div>
-                            <div className="text-right">
-                              <span className="block text-[9px] uppercase font-bold text-emerald-600 dark:text-emerald-400">Prima Pagada (PPC)</span>
-                              <span className="text-xs font-mono font-black text-emerald-700 dark:text-emerald-400">
-                                {formatMoney(em.primaPagada)}
-                              </span>
-                            </div>
-                          </div>
-
-                          {/* Notas si existen */}
-                          {em.notes && (
-                            <p className="text-[11px] text-slate-500 dark:text-zinc-400 bg-slate-50 dark:bg-zinc-900 px-2.5 py-1.5 rounded border border-dashed border-slate-200 dark:border-zinc-800">
-                              <span className="font-bold">Nota:</span> {em.notes}
-                            </p>
-                          )}
-
-                          {/* Botones de Acción Móvil */}
-                          <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-100 dark:border-zinc-800">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleOpenEditPolicyModal(em)}
-                              className="h-8 px-3 text-xs font-bold text-blue-600 border-blue-200 hover:bg-blue-50 dark:border-blue-900 flex-1 justify-center"
-                            >
-                              <Edit className="h-3.5 w-3.5 mr-1.5" /> Editar Póliza
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => handleDeletePolicyFromDetail(em.id)}
-                              className="h-8 px-2.5 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
-                              title="Eliminar póliza"
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
-                  {/* DESKTOP VIEW: Tabla completa con scroll horizontal responsivo */}
-                  <div className="hidden md:block border border-slate-200 dark:border-zinc-800 rounded-xl overflow-x-auto shadow-sm">
-                    <table className="w-full text-left text-xs min-w-[760px]">
-                      <thead className="bg-slate-100 dark:bg-zinc-900 border-b border-slate-200 dark:border-zinc-800 text-[11px] font-black uppercase text-slate-600 dark:text-zinc-400">
-                        <tr>
-                          <th className="py-2.5 px-3">Folio / Póliza</th>
-                          <th className="py-2.5 px-3">Cliente Asegurado</th>
-                          <th className="py-2.5 px-3">Aseguradora</th>
-                          <th className="py-2.5 px-3">Ramo</th>
-                          <th className="py-2.5 px-3">Fecha</th>
-                          <th className="py-2.5 px-3 text-right">Prima Emitida (PE)</th>
-                          <th className="py-2.5 px-3 text-right">Prima Pagada (PPC)</th>
-                          <th className="py-2.5 px-3 text-center">Estatus</th>
-                          <th className="py-2.5 px-3 text-center">Acciones</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/80 bg-white dark:bg-zinc-950">
-                        {agentPolicies.map((em: any) => {
-                          const ramoItem = RAMOS_CATALOGO.find((r) => r.id === em.ramo) || {
-                            color: "text-blue-600 bg-blue-50 border-blue-200",
-                            name: em.ramo || "Protección",
-                          };
-
-                          return (
-                            <tr key={em.id} className="hover:bg-slate-50 dark:hover:bg-zinc-900/50 transition-colors">
-                              {/* Folio */}
-                              <td className="py-3 px-3 font-mono font-bold text-slate-800 dark:text-zinc-200 whitespace-nowrap">
-                                {em.policyNumber ? (
-                                  <Badge variant="outline" className="font-mono text-[10px] bg-slate-50 dark:bg-zinc-900">
-                                    {em.policyNumber}
-                                  </Badge>
-                                ) : (
-                                  <span className="text-slate-400 italic text-[11px]">Sin folio</span>
-                                )}
-                              </td>
-
-                              {/* Cliente & Notas */}
-                              <td className="py-3 px-3">
-                                <span className="font-bold text-slate-900 dark:text-zinc-100 block">
-                                  {em.clientName || "Sin nombre de cliente"}
-                                </span>
-                                {em.notes && (
-                                  <span className="text-[11px] text-slate-500 dark:text-zinc-400 block truncate max-w-[220px]" title={em.notes}>
-                                    Nota: {em.notes}
-                                  </span>
-                                )}
-                              </td>
-
-                              {/* Aseguradora */}
-                              <td className="py-3 px-3 whitespace-nowrap">
-                                <div className="flex items-center gap-1.5">
-                                  <div
-                                    className="h-2.5 w-2.5 rounded-full shrink-0"
-                                    style={{ backgroundColor: em.company?.color || "#0284c7" }}
-                                  />
-                                  <span className="font-bold text-slate-800 dark:text-zinc-200 truncate max-w-[130px]">
-                                    {em.companyName}
-                                  </span>
-                                </div>
-                              </td>
-
-                              {/* Ramo */}
-                              <td className="py-3 px-3 whitespace-nowrap">
-                                <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${ramoItem.color}`}>
-                                  {getRamoIcon(em.ramo)}
-                                  {em.ramo || "Protección"}
-                                </span>
-                              </td>
-
-                              {/* Fecha */}
-                              <td className="py-3 px-3 text-slate-600 dark:text-zinc-400 font-mono text-[11px] whitespace-nowrap">
-                                {new Date(em.issueDate).toLocaleDateString("es-MX", {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                  year: "numeric",
-                                  timeZone: "UTC",
-                                })}
-                              </td>
-
-                              {/* PE */}
-                              <td className="py-3 px-3 text-right font-mono font-black text-slate-900 dark:text-zinc-100 whitespace-nowrap">
-                                {formatMoney(em.primaEmitida)}
-                              </td>
-
-                              {/* PPC */}
-                              <td className="py-3 px-3 text-right font-mono font-black text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
-                                {formatMoney(em.primaPagada)}
-                              </td>
-
-                              {/* Estatus */}
-                              <td className="py-3 px-3 text-center whitespace-nowrap">
-                                <Badge
-                                  variant="outline"
-                                  className={`text-[10px] font-black ${
-                                    em.status === "PAGADA"
-                                      ? "bg-emerald-50 text-emerald-700 border-emerald-300"
-                                      : em.status === "CANCELADA"
-                                      ? "bg-red-50 text-red-700 border-red-300"
-                                      : "bg-blue-50 text-blue-700 border-blue-300"
-                                  }`}
-                                >
-                                  {em.status || "EMITIDA"}
+                <div className="border rounded-xl overflow-x-auto">
+                  <table className="w-full text-left text-xs min-w-[700px]">
+                    <thead className="bg-slate-100 dark:bg-zinc-900 border-b text-[11px] font-black uppercase text-slate-600">
+                      <tr>
+                        <th className="py-2.5 px-3">Folio / Póliza</th>
+                        <th className="py-2.5 px-3">Cliente</th>
+                        <th className="py-2.5 px-3">Aseguradora</th>
+                        <th className="py-2.5 px-3">Sub-ramo</th>
+                        <th className="py-2.5 px-3">Vigencia</th>
+                        <th className="py-2.5 px-3 text-right">PE (MXN)</th>
+                        <th className="py-2.5 px-3 text-right">PPC (MXN)</th>
+                        <th className="py-2.5 px-3 text-center">Acción</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y">
+                      {agentPolicies.map((row: any) => {
+                        const sharePct =
+                          row.sharedWithUserId === detailAgent?.agentId
+                            ? row.sharedPercentage
+                            : row.sharedWithUserId
+                            ? 100 - row.sharedPercentage
+                            : 100;
+                        const weight = sharePct / 100;
+                        const hasUnpaid = (row.receipts || []).some(
+                          (r: any) => r.status !== "PAGADO"
+                        );
+                        return (
+                          <tr key={row.policyId} className="hover:bg-slate-50 dark:hover:bg-zinc-900/40">
+                            <td className="py-2.5 px-3 font-mono font-bold">
+                              {row.policyNumber}
+                              {row.sharedWithUserId && (
+                                <Badge variant="outline" className="ml-1.5 text-[10px] bg-blue-50 text-blue-700 border-blue-200">
+                                  {sharePct}%
                                 </Badge>
-                              </td>
-
-                              {/* Botones de Acción: Editar y Eliminar */}
-                              <td className="py-3 px-3 text-center whitespace-nowrap">
-                                <div className="flex items-center justify-center gap-1">
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleOpenEditPolicyModal(em)}
-                                    className="h-7 px-2 text-xs font-bold text-blue-600 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-950/50"
-                                    title="Modificar valores de la póliza"
-                                  >
-                                    <Edit className="h-3.5 w-3.5 mr-1" /> Editar
-                                  </Button>
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => handleDeletePolicyFromDetail(em.id)}
-                                    className="h-7 px-1.5 text-xs text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/50"
-                                    title="Eliminar póliza"
-                                  >
-                                    <Trash2 className="h-3.5 w-3.5" />
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-3">
+                              {row.clientId ? (
+                                <Link
+                                  href={`/cartera/clientes/${row.clientId}`}
+                                  className="font-bold text-primary hover:underline"
+                                >
+                                  {row.clientName}
+                                </Link>
+                              ) : (
+                                <span className="font-bold">{row.clientName}</span>
+                              )}
+                            </td>
+                            <td className="py-2.5 px-3">{row.canonicalCompany}</td>
+                            <td className="py-2.5 px-3">{row.ramoInfo?.fullLabel}</td>
+                            <td className="py-2.5 px-3 font-mono">{row.effectiveDate || "-"}</td>
+                            <td className="py-2.5 px-3 text-right font-mono font-bold">
+                              {formatMoney((row.peInPeriod || 0) * weight)}
+                            </td>
+                            <td className="py-2.5 px-3 text-right font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                              {formatMoney((row.ppcInPeriod || 0) * weight)}
+                            </td>
+                            <td className="py-2.5 px-3 text-center">
+                              {hasUnpaid ? (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => openPayModal(row)}
+                                  className="h-7 text-[11px] font-bold border-emerald-300 text-emerald-700"
+                                >
+                                  Cobrar Recibo
+                                </Button>
+                              ) : (
+                                <span className="text-[11px] text-emerald-600 font-semibold">
+                                  ✓ Pagada
+                                </span>
+                              )}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               );
             })()}
           </div>
 
-          {/* Footer */}
-          <div className="p-3 sm:p-4 border-t border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 flex items-center justify-between shrink-0">
-            <span className="text-[11px] sm:text-xs text-slate-500 font-medium truncate mr-2">
-              Los cambios recalculan las metas en tiempo real.
+          <div className="p-3 sm:p-4 border-t flex items-center justify-between shrink-0">
+            <span className="text-[11px] text-slate-500">
+              Cifras ponderadas por participación cuando la póliza es compartida.
             </span>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setDetailModalOpen(false)}
-              className="font-bold text-xs shrink-0"
-            >
-              Cerrar Detalle
+            <Button variant="outline" size="sm" onClick={() => setDetailModalOpen(false)}>
+              Cerrar
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* MODAL 4: MODIFICACIÓN MANUAL DE PÓLIZA */}
-      <Dialog open={editPolicyModalOpen} onOpenChange={setEditPolicyModalOpen}>
-        <DialogContent className="w-[95vw] max-w-lg max-h-[92vh] flex flex-col p-0 overflow-hidden rounded-2xl">
-          <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-zinc-800 shrink-0">
-            <DialogTitle className="text-base font-black flex items-center gap-2 text-slate-900 dark:text-zinc-100">
-              <Edit className="h-5 w-5 text-blue-600" />
-              Modificar Póliza Ingresada
+      {/* MODAL 4: COBRAR RECIBO DE PÓLIZA EN VIVO */}
+      <Dialog open={payModalOpen} onOpenChange={setPayModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-black flex items-center gap-2">
+              <Check className="h-5 w-5 text-emerald-600" />
+              Registrar Pago en Mi Cartera — {payTargetPolicy?.policyNumber}
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-500 mt-1">
-              Corrige los valores de primas, folio, fechas o datos generales de esta póliza emitida.
+            <DialogDescription className="text-xs">
+              {payTargetPolicy?.clientName} • Se reflejará automáticamente en PPC del periodo elegido.
             </DialogDescription>
-          </div>
+          </DialogHeader>
 
-          <div className="space-y-4 p-4 sm:p-6 overflow-y-auto flex-1">
-            {/* Asesor */}
+          <div className="space-y-3 py-2">
             <div>
-              <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
-                Asesor / Agente *
-              </label>
+              <label className="block text-xs font-bold mb-1">Recibo a Cobrar</label>
               <select
-                value={editAgentId}
-                onChange={(e) => setEditAgentId(e.target.value)}
-                className="w-full text-xs font-semibold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
+                value={payReceiptId}
+                onChange={(e) => {
+                  const rid = e.target.value;
+                  setPayReceiptId(rid);
+                  const found = (payTargetPolicy?.receipts || []).find((r: any) => r.id === rid);
+                  if (found) {
+                    setPayAmountInput(String(Number((found.paidAmount ?? found.amount ?? 0).toFixed(2))));
+                    if (found.dueDate) setPayDateInput(found.dueDate);
+                  }
+                }}
+                className="w-full text-xs font-semibold py-2 px-3 rounded-lg border bg-white dark:bg-zinc-900"
               >
-                {data?.agents?.map((ag: any) => (
-                  <option key={ag.id} value={ag.id}>
-                    {ag.name} ({ag.email})
-                  </option>
-                ))}
+                {(payTargetPolicy?.receipts || [])
+                  .filter((r: any) => r.status !== "PAGADO")
+                  .map((r: any) => (
+                    <option key={r.id} value={r.id}>
+                      Recibo {r.receiptNumber}/{r.totalInstallments} (Año {r.policyYear}) —{" "}
+                      {formatMoneyExact(r.amount)} • Vence {r.dueDate}
+                    </option>
+                  ))}
               </select>
             </div>
 
-            {/* Aseguradora y Ramo */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
-                  Compañía Aseguradora *
-                </label>
-                <select
-                  value={editCompanyId}
-                  onChange={(e) => setEditCompanyId(e.target.value)}
-                  className="w-full text-xs font-semibold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
-                >
-                  {companies.map((c: any) => (
-                    <option key={c.id} value={c.id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
-                  Ramo de Seguro *
-                </label>
-                <select
-                  value={editRamo}
-                  onChange={(e) => setEditRamo(e.target.value)}
-                  className="w-full text-xs font-semibold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
-                >
-                  {RAMOS_CATALOGO.map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Folio y Cliente */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
-                  Folio / Número de Póliza
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Ej. POL-12345"
-                  value={editPolicyNumber}
-                  onChange={(e) => setEditPolicyNumber(e.target.value)}
-                  className="text-xs font-mono"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
-                  Cliente Asegurado
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Ej. Juan Pérez"
-                  value={editClientName}
-                  onChange={(e) => setEditClientName(e.target.value)}
-                  className="text-xs font-semibold"
-                />
-              </div>
-            </div>
-
-            {/* Fecha de Emisión y Estatus */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
-                  Fecha de Emisión *
-                </label>
+                <label className="block text-xs font-bold mb-1">Fecha Contable de Pago</label>
                 <Input
                   type="date"
-                  value={editIssueDate}
-                  onChange={(e) => setEditIssueDate(e.target.value)}
-                  className="text-xs font-mono"
+                  value={payDateInput}
+                  onChange={(e) => setPayDateInput(e.target.value)}
                 />
               </div>
-
               <div>
-                <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
-                  Estatus de la Póliza
-                </label>
-                <select
-                  value={editStatus}
-                  onChange={(e) => setEditStatus(e.target.value)}
-                  className="w-full text-xs font-semibold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
-                >
-                  <option value="EMITIDA">EMITIDA</option>
-                  <option value="PAGADA">PAGADA</option>
-                  <option value="PENDIENTE">PENDIENTE</option>
-                  <option value="CANCELADA">CANCELADA</option>
-                </select>
+                <label className="block text-xs font-bold mb-1">Monto Cobrado (MXN)</label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={payAmountInput}
+                  onChange={(e) => setPayAmountInput(e.target.value)}
+                />
               </div>
             </div>
 
-            {/* PRIMAS: PE y PPC (Destacadas) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 p-3 rounded-xl bg-slate-50 dark:bg-zinc-900/60 border border-slate-200 dark:border-zinc-800">
-              <div>
-                <label className="block text-xs font-black uppercase text-slate-800 dark:text-zinc-200 mb-1">
-                  Prima Emitida (PE) en MXN *
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2 text-sm font-bold text-slate-400">$</span>
-                  <Input
-                    type="number"
-                    step="any"
-                    value={editPrimaEmitida}
-                    onChange={(e) => setEditPrimaEmitida(e.target.value)}
-                    className="pl-7 text-sm font-mono font-black"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-black uppercase text-emerald-800 dark:text-emerald-300 mb-1">
-                  Prima Pagada (PPC) en MXN *
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3 top-2 text-sm font-bold text-emerald-500">$</span>
-                  <Input
-                    type="number"
-                    step="any"
-                    value={editPrimaPagada}
-                    onChange={(e) => setEditPrimaPagada(e.target.value)}
-                    className="pl-7 text-sm font-mono font-black text-emerald-700 dark:text-emerald-400"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Notas */}
             <div>
-              <label className="block text-xs font-black uppercase text-slate-600 dark:text-zinc-400 mb-1">
-                Notas / Observaciones
-              </label>
+              <label className="block text-xs font-bold mb-1">Nota de Pago (Opcional)</label>
               <Input
                 type="text"
-                placeholder="Observaciones de cobranza, póliza anual, etc."
-                value={editNotes}
-                onChange={(e) => setEditNotes(e.target.value)}
-                className="text-xs"
+                placeholder="Ej. Pago aplicado en aseguradora"
+                value={payNotesInput}
+                onChange={(e) => setPayNotesInput(e.target.value)}
               />
             </div>
           </div>
 
-          <DialogFooter className="p-4 sm:p-5 border-t border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 flex flex-row items-center justify-end gap-2 shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setEditPolicyModalOpen(false)}
-              className="flex-1 sm:flex-initial"
-            >
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setPayModalOpen(false)}>
               Cancelar
             </Button>
             <Button
               size="sm"
-              onClick={handleSaveEditedPolicy}
-              disabled={isPending}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold flex-1 sm:flex-initial"
+              disabled={isPending || !payReceiptId}
+              onClick={handleConfirmReceiptPayment}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold"
             >
-              {isPending ? "Guardando Cambios..." : "Guardar Cambios"}
+              {isPending ? "Aplicando..." : "Confirmar Cobro (MXN)"}
             </Button>
           </DialogFooter>
         </DialogContent>

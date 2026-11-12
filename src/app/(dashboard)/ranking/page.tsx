@@ -1,12 +1,23 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { getMonthlyAdnRankings, saveAgencyRankingMetric, type RankingMetricMode } from "@/app/actions";
+import {
+    getMonthlyAdnRankings,
+    saveAgencyRankingConfig,
+    type RankingMetricMode,
+    type AgencyRankingConfig
+} from "@/app/actions";
+import {
+    SUB_RAMOS_CATALOG,
+    getDefaultSubPeriodForMonth,
+    type BusinessScope,
+    type CanonicalSubRamoKey,
+    type PeriodMode
+} from "@/lib/ramosCatalog";
 import { resolveImageUrl } from "@/lib/utils";
 import { 
     Trophy, 
     Sparkles, 
-    Award, 
     TrendingUp, 
     Loader2, 
     ZoomIn, 
@@ -15,9 +26,10 @@ import {
     Megaphone,
     Settings2,
     CheckCircle2,
-    DollarSign,
-    Zap,
-    FileCheck2
+    CalendarRange,
+    Layers,
+    ShieldCheck,
+    SlidersHorizontal
 } from "lucide-react";
 
 interface UserRank {
@@ -61,44 +73,120 @@ const METRIC_OPTIONS: {
     },
     {
         id: "PRIMA_PAGADA",
-        label: "Por Primas Pagadas",
+        label: "Por Primas Pagadas (MXN)",
         shortLabel: "Prima Pagada",
         emoji: "💰",
-        description: "Suma de Prima Pagada registrada en el módulo de Producción y Primas"
+        description: "Suma de Prima Pagada (PPC en MXN) acumulada desde Mi Cartera"
     },
     {
         id: "PRIMA_EMITIDA",
-        label: "Por Primas Emitidas",
+        label: "Por Primas Emitidas (MXN)",
         shortLabel: "Prima Emitida",
         emoji: "📈",
-        description: "Suma de Prima Emitida registrada en el módulo de Producción y Primas"
+        description: "Suma de Prima Emitida Anual (PE en MXN) registrada en Mi Cartera"
     }
 ];
+
+const PERIOD_MODE_OPTIONS: { id: PeriodMode; label: string }[] = [
+    { id: "MENSUAL", label: "Mensual" },
+    { id: "BIMESTRAL", label: "Bimestral" },
+    { id: "TRIMESTRAL", label: "Trimestral" },
+    { id: "SEMESTRAL", label: "Semestral" },
+    { id: "ANUAL", label: "Anual" },
+    { id: "CUSTOM", label: "Personalizado" },
+];
+
+const BUSINESS_SCOPE_OPTIONS: { id: BusinessScope; label: string }[] = [
+    { id: "AMBAS", label: "Nueva + Renovaciones" },
+    { id: "NUEVA", label: "Solo Negocio Nuevo" },
+    { id: "RENOVACION", label: "Solo Renovaciones" },
+];
+
+interface PeriodInfo {
+    periodMode: PeriodMode;
+    year: number;
+    subPeriod: number;
+    startYmd: string;
+    endYmd: string;
+    label: string;
+}
 
 export default function RankingPage() {
     const now = new Date();
     const [selectedMonth, setSelectedMonth] = useState<number>(now.getMonth());
     const [selectedYear, setSelectedYear] = useState<number>(now.getFullYear());
+    const [selectedSubPeriod, setSelectedSubPeriod] = useState<number | undefined>(undefined);
     
     const [rankings, setRankings] = useState<UserRank[]>([]);
     const [campaignAd, setCampaignAd] = useState<RankingAd | null>(null);
     const [agencyName, setAgencyName] = useState<string>("la Agencia");
     const [rankingMetric, setRankingMetric] = useState<RankingMetricMode>("ADN");
+    const [rankingConfig, setRankingConfig] = useState<AgencyRankingConfig>({
+        metric: "ADN",
+        periodMode: "MENSUAL",
+        businessScope: "AMBAS",
+        allowedSubRamos: [],
+        requireAdminApproval: false,
+    });
+    const [periodInfo, setPeriodInfo] = useState<PeriodInfo | null>(null);
+    const [customStartInput, setCustomStartInput] = useState<string>("");
+    const [customEndInput, setCustomEndInput] = useState<string>("");
+    const [showAdvancedConfig, setShowAdvancedConfig] = useState<boolean>(false);
+
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [savingMetric, setSavingMetric] = useState<boolean>(false);
     const [savedFeedback, setSavedFeedback] = useState<string>("");
     const [loading, setLoading] = useState(true);
     const [selectedAd, setSelectedAd] = useState<RankingAd | null>(null);
 
-    const loadRankings = async (overrideMetric?: RankingMetricMode) => {
+    const loadRankings = async (opts?: {
+        overrideMetric?: RankingMetricMode;
+        periodMode?: PeriodMode;
+        subPeriod?: number;
+        customStartDate?: string;
+        customEndDate?: string;
+        businessScope?: BusinessScope;
+        allowedSubRamos?: CanonicalSubRamoKey[];
+        requireAdminApproval?: boolean;
+    }) => {
         try {
             setLoading(true);
-            const res = await getMonthlyAdnRankings(selectedMonth, selectedYear, overrideMetric);
+            const res = await getMonthlyAdnRankings(
+                selectedMonth,
+                selectedYear,
+                opts?.overrideMetric,
+                opts
+                    ? {
+                        periodMode: opts.periodMode,
+                        subPeriod: opts.subPeriod,
+                        customStartDate: opts.customStartDate,
+                        customEndDate: opts.customEndDate,
+                        businessScope: opts.businessScope,
+                        allowedSubRamos: opts.allowedSubRamos,
+                        requireAdminApproval: opts.requireAdminApproval,
+                    }
+                    : selectedSubPeriod !== undefined
+                        ? { subPeriod: selectedSubPeriod }
+                        : undefined
+            );
             if (res.success) {
                 setRankings(res.rankings as any);
                 setCampaignAd(res.rankingAd as any);
                 if (res.agencyName) setAgencyName(res.agencyName);
                 if (res.rankingMetric) setRankingMetric(res.rankingMetric as RankingMetricMode);
+                if (res.rankingConfig) {
+                    const cfg = res.rankingConfig as AgencyRankingConfig;
+                    setRankingConfig(cfg);
+                    if (cfg.customStartDate) setCustomStartInput(cfg.customStartDate);
+                    if (cfg.customEndDate) setCustomEndInput(cfg.customEndDate);
+                }
+                if (res.periodInfo) {
+                    const pInfo = res.periodInfo as PeriodInfo;
+                    setPeriodInfo(pInfo);
+                    setSelectedSubPeriod(pInfo.subPeriod);
+                    if (!customStartInput && pInfo.startYmd) setCustomStartInput(pInfo.startYmd);
+                    if (!customEndInput && pInfo.endYmd) setCustomEndInput(pInfo.endYmd);
+                }
                 if (res.isAdmin !== undefined) setIsAdmin(Boolean(res.isAdmin));
             }
         } catch (err) {
@@ -110,25 +198,55 @@ export default function RankingPage() {
 
     useEffect(() => {
         loadRankings();
-    }, [selectedMonth, selectedYear]);
+    }, [selectedMonth, selectedYear, selectedSubPeriod]);
 
-    const handleChangeAgencyMetric = async (newMetric: RankingMetricMode) => {
-        if (newMetric === rankingMetric || savingMetric) return;
+    const handleSaveConfigPatch = async (patch: Partial<AgencyRankingConfig>, nextSubPeriod?: number) => {
+        if (savingMetric) return;
         try {
             setSavingMetric(true);
             setSavedFeedback("");
-            const saveRes = await saveAgencyRankingMetric(newMetric);
-            if (saveRes.success) {
-                setRankingMetric(newMetric);
-                await loadRankings(newMetric);
-                setSavedFeedback("✓ Criterio guardado para toda tu promotoría");
+            const saveRes = await saveAgencyRankingConfig(patch);
+            if (saveRes.success && saveRes.config) {
+                const updated = saveRes.config;
+                setRankingConfig(updated);
+                setRankingMetric(updated.metric);
+                const resolvedSub =
+                    nextSubPeriod ??
+                    (patch.periodMode
+                        ? getDefaultSubPeriodForMonth(updated.periodMode, selectedMonth + 1)
+                        : selectedSubPeriod);
+                if (patch.periodMode) setSelectedSubPeriod(resolvedSub);
+                await loadRankings({
+                    overrideMetric: updated.metric,
+                    periodMode: updated.periodMode,
+                    subPeriod: resolvedSub,
+                    customStartDate: updated.customStartDate,
+                    customEndDate: updated.customEndDate,
+                    businessScope: updated.businessScope,
+                    allowedSubRamos: updated.allowedSubRamos,
+                    requireAdminApproval: updated.requireAdminApproval,
+                });
+                setSavedFeedback("✓ Configuración guardada para toda tu promotoría");
                 setTimeout(() => setSavedFeedback(""), 4000);
             }
         } catch (err) {
-            console.error("Error saving agency ranking metric:", err);
+            console.error("Error saving agency ranking config:", err);
         } finally {
             setSavingMetric(false);
         }
+    };
+
+    const handleToggleSubRamo = (subKey: CanonicalSubRamoKey | "ALL") => {
+        if (subKey === "ALL") {
+            handleSaveConfigPatch({ allowedSubRamos: [] });
+            return;
+        }
+        const current = rankingConfig.allowedSubRamos || [];
+        const exists = current.includes(subKey);
+        const next = exists
+            ? current.filter((k) => k !== subKey)
+            : [...current, subKey];
+        handleSaveConfigPatch({ allowedSubRamos: next });
     };
 
     // Format compact badge value for avatar corner pill
@@ -250,12 +368,12 @@ export default function RankingPage() {
 
     return (
         <div className="flex flex-col gap-6 w-full max-w-lg mx-auto py-2 md:max-w-6xl md:px-0">
-            {/* ADMIN CONFIGURATION BAR: CHOOSE AGENCY RANKING METRIC */}
+            {/* ADMIN CONFIGURATION BAR: CHOOSE AGENCY RANKING METRIC & RULES */}
             {isAdmin && (
-                <div className="mx-4 md:mx-0 rounded-2xl border border-teal-200/80 dark:border-teal-900/60 bg-gradient-to-r from-teal-50/90 via-emerald-50/50 to-slate-50 dark:from-teal-950/30 dark:via-zinc-900 dark:to-zinc-900 p-4 shadow-sm">
+                <div className="mx-4 md:mx-0 rounded-2xl border border-teal-200/80 dark:border-teal-900/60 bg-gradient-to-r from-teal-50/90 via-emerald-50/50 to-slate-50 dark:from-teal-950/30 dark:via-zinc-900 dark:to-zinc-900 p-4 shadow-sm space-y-4">
                     <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
                         <div className="space-y-0.5">
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                                 <Settings2 className="h-4 w-4 text-teal-600 dark:text-teal-400" />
                                 <span className="text-xs font-black uppercase tracking-wider text-teal-800 dark:text-teal-300">
                                     Configuración de Promotoría • Criterio Oficial del Ranking
@@ -267,33 +385,210 @@ export default function RankingPage() {
                                 )}
                             </div>
                             <p className="text-[11px] text-slate-600 dark:text-zinc-400">
-                                Elige cómo deseas evaluar y mostrar el Ranking de Agentes para toda tu promotoría:
+                                Parametriza qué métrica, temporalidad, sub-ramos y reglas verá toda tu promotoría en el Ranking.
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
-                            {METRIC_OPTIONS.map((opt) => {
-                                const active = rankingMetric === opt.id;
-                                return (
-                                    <button
-                                        key={opt.id}
-                                        type="button"
-                                        disabled={savingMetric}
-                                        onClick={() => handleChangeAgencyMetric(opt.id)}
-                                        className={`px-3 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
-                                            active
-                                                ? "bg-teal-600 text-white border-teal-600 shadow-sm ring-2 ring-teal-500/30"
-                                                : "bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-800 hover:border-teal-400 hover:bg-teal-50/40"
-                                        }`}
-                                    >
-                                        <span>{opt.emoji}</span>
-                                        <span>{opt.shortLabel}</span>
-                                        {active && <CheckCircle2 className="h-3.5 w-3.5 ml-0.5 shrink-0" />}
-                                    </button>
-                                );
-                            })}
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2">
+                                {METRIC_OPTIONS.map((opt) => {
+                                    const active = rankingMetric === opt.id;
+                                    return (
+                                        <button
+                                            key={opt.id}
+                                            type="button"
+                                            disabled={savingMetric}
+                                            onClick={() => handleSaveConfigPatch({ metric: opt.id })}
+                                            className={`px-3 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center justify-center gap-1.5 cursor-pointer border ${
+                                                active
+                                                    ? "bg-teal-600 text-white border-teal-600 shadow-sm ring-2 ring-teal-500/30"
+                                                    : "bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-800 hover:border-teal-400 hover:bg-teal-50/40"
+                                            }`}
+                                        >
+                                            <span>{opt.emoji}</span>
+                                            <span>{opt.shortLabel}</span>
+                                            {active && <CheckCircle2 className="h-3.5 w-3.5 ml-0.5 shrink-0" />}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setShowAdvancedConfig((v) => !v)}
+                                className={`px-3 py-2 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer border ${
+                                    showAdvancedConfig
+                                        ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-100 dark:text-zinc-900"
+                                        : "bg-white dark:bg-zinc-900 text-teal-700 dark:text-teal-300 border-teal-300 dark:border-teal-800 hover:bg-teal-50"
+                                }`}
+                            >
+                                <SlidersHorizontal className="h-3.5 w-3.5" />
+                                <span>{showAdvancedConfig ? "Ocultar Filtros" : "Temporalidad y Ramos"}</span>
+                            </button>
                         </div>
                     </div>
+
+                    {showAdvancedConfig && (
+                        <div className="pt-3 border-t border-teal-200/70 dark:border-teal-900/50 grid grid-cols-1 lg:grid-cols-2 gap-4">
+                            {/* Temporalidad & Negocio */}
+                            <div className="space-y-3 bg-white/75 dark:bg-zinc-950/60 p-3.5 rounded-xl border border-teal-100 dark:border-zinc-800">
+                                <div>
+                                    <label className="text-[11px] font-black uppercase tracking-wider text-teal-800 dark:text-teal-300 flex items-center gap-1.5 mb-2">
+                                        <CalendarRange className="h-3.5 w-3.5" /> Temporalidad Oficial
+                                    </label>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {PERIOD_MODE_OPTIONS.map((p) => {
+                                            const active = rankingConfig.periodMode === p.id;
+                                            return (
+                                                <button
+                                                    key={p.id}
+                                                    type="button"
+                                                    disabled={savingMetric}
+                                                    onClick={() => handleSaveConfigPatch({ periodMode: p.id })}
+                                                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold border cursor-pointer transition-all ${
+                                                        active
+                                                            ? "bg-teal-600 text-white border-teal-600"
+                                                            : "bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-teal-400"
+                                                    }`}
+                                                >
+                                                    {p.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                    {rankingConfig.periodMode === "CUSTOM" && (
+                                        <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                                            <input
+                                                type="date"
+                                                value={customStartInput}
+                                                onChange={(e) => setCustomStartInput(e.target.value)}
+                                                className="text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900"
+                                            />
+                                            <span className="text-xs text-muted-foreground font-bold">a</span>
+                                            <input
+                                                type="date"
+                                                value={customEndInput}
+                                                onChange={(e) => setCustomEndInput(e.target.value)}
+                                                className="text-xs px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-zinc-700 bg-white dark:bg-zinc-900"
+                                            />
+                                            <button
+                                                type="button"
+                                                disabled={savingMetric || !customStartInput || !customEndInput}
+                                                onClick={() =>
+                                                    handleSaveConfigPatch({
+                                                        periodMode: "CUSTOM",
+                                                        customStartDate: customStartInput,
+                                                        customEndDate: customEndInput,
+                                                    })
+                                                }
+                                                className="px-3 py-1.5 rounded-lg bg-teal-600 text-white text-xs font-bold hover:bg-teal-700 disabled:opacity-50 cursor-pointer"
+                                            >
+                                                Aplicar Rango
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="text-[11px] font-black uppercase tracking-wider text-teal-800 dark:text-teal-300 flex items-center gap-1.5 mb-2">
+                                        <Layers className="h-3.5 w-3.5" /> Alcance de Negocio (Primas Cartera)
+                                    </label>
+                                    <div className="flex flex-wrap gap-1.5">
+                                        {BUSINESS_SCOPE_OPTIONS.map((sc) => {
+                                            const active = rankingConfig.businessScope === sc.id;
+                                            return (
+                                                <button
+                                                    key={sc.id}
+                                                    type="button"
+                                                    disabled={savingMetric}
+                                                    onClick={() => handleSaveConfigPatch({ businessScope: sc.id })}
+                                                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold border cursor-pointer transition-all ${
+                                                        active
+                                                            ? "bg-slate-900 text-white border-slate-900 dark:bg-zinc-100 dark:text-zinc-900"
+                                                            : "bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-teal-400"
+                                                    }`}
+                                                >
+                                                    {sc.label}
+                                                </button>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center justify-between gap-3 pt-1">
+                                    <div className="flex items-center gap-2">
+                                        <ShieldCheck className="h-4 w-4 text-teal-600 dark:text-teal-400 shrink-0" />
+                                        <div>
+                                            <p className="text-[11px] font-extrabold text-slate-800 dark:text-zinc-200">
+                                                Solo pólizas con Visto Bueno Admin
+                                            </p>
+                                            <p className="text-[10px] text-muted-foreground">
+                                                Si está desactivado, cuentan todas las pólizas vigentes capturadas en Mi Cartera.
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="button"
+                                        disabled={savingMetric}
+                                        onClick={() =>
+                                            handleSaveConfigPatch({
+                                                requireAdminApproval: !rankingConfig.requireAdminApproval,
+                                            })
+                                        }
+                                        className={`px-3 py-1.5 rounded-full text-[11px] font-black transition-all cursor-pointer border shrink-0 ${
+                                            rankingConfig.requireAdminApproval
+                                                ? "bg-emerald-600 text-white border-emerald-600"
+                                                : "bg-slate-100 dark:bg-zinc-800 text-slate-600 dark:text-zinc-300 border-slate-200 dark:border-zinc-700"
+                                        }`}
+                                    >
+                                        {rankingConfig.requireAdminApproval ? "ACTIVADO" : "DESACTIVADO"}
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Sub-ramos permitidos */}
+                            <div className="bg-white/75 dark:bg-zinc-950/60 p-3.5 rounded-xl border border-teal-100 dark:border-zinc-800 space-y-2">
+                                <label className="text-[11px] font-black uppercase tracking-wider text-teal-800 dark:text-teal-300 block">
+                                    Ramos y Sub-ramos incluidos en el Ranking (MXN)
+                                </label>
+                                <p className="text-[10px] text-muted-foreground">
+                                    Por defecto participan todos los ramos. Selecciona sub-ramos específicos si tu concurso es solo de Vida, GMM, Autos, etc.
+                                </p>
+                                <div className="flex flex-wrap gap-1.5 pt-1">
+                                    <button
+                                        type="button"
+                                        disabled={savingMetric}
+                                        onClick={() => handleToggleSubRamo("ALL")}
+                                        className={`px-2.5 py-1.5 rounded-lg text-[11px] font-extrabold border cursor-pointer transition-all ${
+                                            rankingConfig.allowedSubRamos.length === 0
+                                                ? "bg-teal-600 text-white border-teal-600"
+                                                : "bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-teal-400"
+                                        }`}
+                                    >
+                                        ✓ Todos los Ramos
+                                    </button>
+                                    {SUB_RAMOS_CATALOG.map((sr) => {
+                                        const active = rankingConfig.allowedSubRamos.includes(sr.key);
+                                        return (
+                                            <button
+                                                key={sr.key}
+                                                type="button"
+                                                disabled={savingMetric}
+                                                onClick={() => handleToggleSubRamo(sr.key)}
+                                                className={`px-2.5 py-1.5 rounded-lg text-[11px] font-bold border cursor-pointer transition-all ${
+                                                    active
+                                                        ? "bg-teal-600 text-white border-teal-600 shadow-sm"
+                                                        : "bg-white dark:bg-zinc-900 text-slate-700 dark:text-zinc-300 border-slate-200 dark:border-zinc-700 hover:border-teal-400"
+                                                }`}
+                                            >
+                                                {sr.label}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             )}
 
@@ -310,34 +605,100 @@ export default function RankingPage() {
                         </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <select 
-                            value={selectedMonth} 
-                            onChange={(e) => setSelectedMonth(Number(e.target.value))}
-                            className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary dark:text-primary text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider outline-none focus:ring-2 focus:ring-primary transition-all cursor-pointer"
-                        >
-                            {months.map((m, i) => (
-                                <option key={i} value={i}>{m}</option>
-                            ))}
-                        </select>
-                        
-                        <select 
-                            value={selectedYear} 
-                            onChange={(e) => setSelectedYear(Number(e.target.value))}
-                            className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary dark:text-primary text-xs font-black px-3 py-1.5 rounded-full outline-none focus:ring-2 focus:ring-primary transition-all cursor-pointer"
-                        >
-                            {years.map(y => (
-                                <option key={y} value={y}>{y}</option>
-                            ))}
-                        </select>
+                    <div className="flex flex-wrap items-center gap-2">
+                        {rankingConfig.periodMode === "MENSUAL" && (
+                            <select 
+                                value={selectedMonth} 
+                                onChange={(e) => {
+                                    const m = Number(e.target.value);
+                                    setSelectedMonth(m);
+                                    setSelectedSubPeriod(m + 1);
+                                }}
+                                className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary dark:text-primary text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider outline-none focus:ring-2 focus:ring-primary transition-all cursor-pointer"
+                            >
+                                {months.map((m, i) => (
+                                    <option key={i} value={i}>{m}</option>
+                                ))}
+                            </select>
+                        )}
+
+                        {rankingConfig.periodMode === "BIMESTRAL" && (
+                            <select
+                                value={selectedSubPeriod || getDefaultSubPeriodForMonth("BIMESTRAL", selectedMonth + 1)}
+                                onChange={(e) => setSelectedSubPeriod(Number(e.target.value))}
+                                className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider outline-none cursor-pointer"
+                            >
+                                <option value={1}>Bimestre 1 (Ene–Feb)</option>
+                                <option value={2}>Bimestre 2 (Mar–Abr)</option>
+                                <option value={3}>Bimestre 3 (May–Jun)</option>
+                                <option value={4}>Bimestre 4 (Jul–Ago)</option>
+                                <option value={5}>Bimestre 5 (Sep–Oct)</option>
+                                <option value={6}>Bimestre 6 (Nov–Dic)</option>
+                            </select>
+                        )}
+
+                        {rankingConfig.periodMode === "TRIMESTRAL" && (
+                            <select
+                                value={selectedSubPeriod || getDefaultSubPeriodForMonth("TRIMESTRAL", selectedMonth + 1)}
+                                onChange={(e) => setSelectedSubPeriod(Number(e.target.value))}
+                                className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider outline-none cursor-pointer"
+                            >
+                                <option value={1}>Trimestre 1 (Ene–Mar)</option>
+                                <option value={2}>Trimestre 2 (Abr–Jun)</option>
+                                <option value={3}>Trimestre 3 (Jul–Sep)</option>
+                                <option value={4}>Trimestre 4 (Oct–Dic)</option>
+                            </select>
+                        )}
+
+                        {rankingConfig.periodMode === "SEMESTRAL" && (
+                            <select
+                                value={selectedSubPeriod || getDefaultSubPeriodForMonth("SEMESTRAL", selectedMonth + 1)}
+                                onChange={(e) => setSelectedSubPeriod(Number(e.target.value))}
+                                className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider outline-none cursor-pointer"
+                            >
+                                <option value={1}>Semestre 1 (Ene–Jun)</option>
+                                <option value={2}>Semestre 2 (Jul–Dic)</option>
+                            </select>
+                        )}
+
+                        {rankingConfig.periodMode !== "CUSTOM" ? (
+                            <select 
+                                value={selectedYear} 
+                                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                                className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary dark:text-primary text-xs font-black px-3 py-1.5 rounded-full outline-none focus:ring-2 focus:ring-primary transition-all cursor-pointer"
+                            >
+                                {years.map(y => (
+                                    <option key={y} value={y}>{y}</option>
+                                ))}
+                            </select>
+                        ) : (
+                            <span className="bg-primary/10 border border-primary/20 text-primary text-xs font-black px-3 py-1.5 rounded-full">
+                                {periodInfo?.label || "Rango personalizado"}
+                            </span>
+                        )}
                     </div>
                 </div>
-                <p className="text-xs text-muted-foreground font-medium flex items-center gap-1.5">
+                <p className="text-xs text-muted-foreground font-medium flex flex-wrap items-center gap-1.5">
                     <TrendingUp className="h-3.5 w-3.5 text-primary shrink-0" />
                     <span>
                         Líderes de <strong>{agencyName}</strong> ordenados por{" "}
-                        <strong>{currentMetricInfo.description.toLowerCase()}</strong> en {months[selectedMonth].toLowerCase()} del {selectedYear}.
+                        <strong>{currentMetricInfo.description.toLowerCase()}</strong> ({periodInfo?.label || `${months[selectedMonth]} ${selectedYear}`}).
                     </span>
+                    {(rankingMetric === "PRIMA_PAGADA" || rankingMetric === "PRIMA_EMITIDA") && rankingConfig.businessScope !== "AMBAS" && (
+                        <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-zinc-800 text-[10px] font-bold">
+                            {rankingConfig.businessScope === "NUEVA" ? "Solo Negocio Nuevo" : "Solo Renovaciones"}
+                        </span>
+                    )}
+                    {(rankingMetric === "PRIMA_PAGADA" || rankingMetric === "PRIMA_EMITIDA") && rankingConfig.allowedSubRamos.length > 0 && (
+                        <span className="px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-300 text-[10px] font-bold">
+                            Sub-ramos filtrados: {rankingConfig.allowedSubRamos.length}
+                        </span>
+                    )}
+                    {(rankingMetric === "PRIMA_PAGADA" || rankingMetric === "PRIMA_EMITIDA") && rankingConfig.requireAdminApproval && (
+                        <span className="px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
+                            Solo Visto Bueno Admin
+                        </span>
+                    )}
                 </p>
             </div>
 
@@ -402,7 +763,7 @@ export default function RankingPage() {
                                     </div>
                                     {secondaryText && (
                                         <span className="text-[10px] font-bold text-muted-foreground">
-                                            {secondaryText} en el mes
+                                            {secondaryText} en el periodo
                                         </span>
                                     )}
                                 </div>

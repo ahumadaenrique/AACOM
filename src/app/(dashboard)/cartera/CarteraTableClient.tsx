@@ -26,10 +26,10 @@ import {
   computePolicyCycleInfo,
   computeReceiptLiveStatus,
   formatDateSafe,
-  RAMO_LABELS,
   STATUS_CONFIG,
   SUB_STATUS_LABELS,
 } from "./dateUtils";
+import { classifyPolicyRamo, SUB_RAMOS_CATALOG } from "@/lib/ramosCatalog";
 import PolicyActions from "./clientes/[id]/PolicyActions";
 import PolicyUpload from "./clientes/[id]/PolicyUpload";
 
@@ -46,19 +46,22 @@ export default function CarteraTableClient({
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [emissionFilter, setEmissionFilter] = useState<"ALL" | "NUEVA" | "RENOVACION">("ALL");
 
-  const uniqueAgents = useMemo(
-    () =>
-      Array.from(
-        new Set(policies.map((p) => p.user?.name).filter(Boolean))
-      ) as string[],
-    [policies]
-  );
+  const uniqueAgents = useMemo(() => {
+    const names = new Set<string>();
+    for (const p of policies) {
+      if (p.user?.name) names.add(p.user.name);
+      if (p.sharedWithUser?.name) names.add(p.sharedWithUser.name);
+    }
+    return Array.from(names).sort();
+  }, [policies]);
 
   const enrichedPolicies = useMemo(
     () =>
       policies.map((p) => {
         const cycle = computePolicyCycleInfo(p);
+        const ramoInfo = classifyPolicyRamo(p);
         const isRenewal =
+          Boolean(p.isRenewalCapture) ||
           p.subStatus === "RENOVACION" ||
           (p.subStatus !== "NUEVA" && (cycle.currentPolicyYear || 1) >= 2);
         const emissionType: "NUEVA" | "RENOVACION" = isRenewal
@@ -72,13 +75,14 @@ export default function CarteraTableClient({
           const live = computeReceiptLiveStatus(r);
           if (live.liveStatus === "PAGADO" || r.status === "PAGADO") {
             paidReceiptsCount++;
-            paidReceiptsAmount += Number(r.amount || 0);
+            paidReceiptsAmount += Number(r.paidAmount ?? r.amount ?? 0);
           }
         }
 
         return {
           ...p,
           cycle,
+          ramoInfo,
           emissionType,
           paidReceiptsCount,
           paidReceiptsAmount,
@@ -91,11 +95,21 @@ export default function CarteraTableClient({
   // Resumen dedicado de GMM y Autos: Nuevas vs Renovaciones (QA C2)
   const gmmAutosBreakdown = useMemo(() => {
     const targetPolicies = enrichedPolicies.filter((p) => {
-      const r = p.ramo || "VIDA_INDIVIDUAL";
-      if (ramoFilter === "GMM" || ramoFilter === "AUTOS") {
-        return r === ramoFilter;
+      if (
+        ramoFilter === "GMM" ||
+        ramoFilter === "GMM_INDIVIDUAL" ||
+        ramoFilter === "GMM_COLECTIVO"
+      ) {
+        return p.ramoInfo.groupKey === "GMM";
       }
-      return r === "GMM" || r === "AUTOS";
+      if (
+        ramoFilter === "AUTOS" ||
+        ramoFilter === "AUTOS_INDIVIDUAL" ||
+        ramoFilter === "AUTOS_FLOTILLA"
+      ) {
+        return p.ramoInfo.groupKey === "AUTOS";
+      }
+      return p.ramoInfo.groupKey === "GMM" || p.ramoInfo.groupKey === "AUTOS";
     });
     let nuevasCount = 0;
     let nuevasPremium = 0;
@@ -128,7 +142,7 @@ export default function CarteraTableClient({
   // Resumen dedicado de Vida Grupo contando recibos pagados (QA C5)
   const vidaGrupoMetrics = useMemo(() => {
     const vgPolicies = enrichedPolicies.filter(
-      (p) => (p.ramo || "") === "VIDA_GRUPO"
+      (p) => p.ramoInfo.subRamoKey === "VIDA_GRUPO"
     );
     let activeCount = 0;
     let totalPaidReceipts = 0;
@@ -168,10 +182,15 @@ export default function CarteraTableClient({
         policy.insuranceCompany?.toLowerCase().includes(term);
 
       const matchesAgent =
-        agentFilter === "ALL" || policy.user?.name === agentFilter;
+        agentFilter === "ALL" ||
+        policy.user?.name === agentFilter ||
+        policy.sharedWithUser?.name === agentFilter;
 
-      const policyRamo = policy.ramo || "VIDA_INDIVIDUAL";
-      const matchesRamo = ramoFilter === "ALL" || policyRamo === ramoFilter;
+      const matchesRamo =
+        ramoFilter === "ALL" ||
+        policy.ramoInfo.subRamoKey === ramoFilter ||
+        policy.ramoInfo.groupKey === ramoFilter ||
+        (policy.ramo || "VIDA_INDIVIDUAL") === ramoFilter;
 
       const matchesStatus =
         statusFilter === "ALL" || policy.cycle.computedStatus === statusFilter;
@@ -223,7 +242,7 @@ export default function CarteraTableClient({
         isAdmin ? p.user?.name || "Sin Asignar" : null,
         p.contractor || p.client?.name || "",
         p.insured || p.contractor || "",
-        RAMO_LABELS[p.ramo || "VIDA_INDIVIDUAL"] || p.ramo || "Vida Individual",
+        p.ramoInfo.fullLabel,
         p.emissionType === "NUEVA" ? "Nueva (Año 1)" : `Renovación (Año ${p.cycle.currentPolicyYear || 2})`,
         p.product || "",
         p.insuranceCompany || "",
@@ -380,14 +399,14 @@ export default function CarteraTableClient({
           </div>
 
           <Select value={ramoFilter} onValueChange={setRamoFilter}>
-            <SelectTrigger className="w-full sm:w-48">
+            <SelectTrigger className="w-full sm:w-52">
               <SelectValue placeholder="Todos los Ramos" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">Todos los Ramos</SelectItem>
-              {Object.entries(RAMO_LABELS).map(([key, label]) => (
-                <SelectItem key={key} value={key}>
-                  {label}
+              <SelectItem value="ALL">Todos los Ramos / Sub-ramos</SelectItem>
+              {SUB_RAMOS_CATALOG.map((sr) => (
+                <SelectItem key={sr.key} value={sr.key}>
+                  {sr.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -484,7 +503,16 @@ export default function CarteraTableClient({
 
                   {isAdmin && (
                     <TableCell className="text-xs font-semibold text-indigo-600 dark:text-indigo-400">
-                      {policy.user?.name || "Sin Asignar"}
+                      <div>{policy.user?.name || "Sin Asignar"}</div>
+                      {policy.sharedWithUserId && (
+                        <Badge
+                          variant="outline"
+                          className="mt-0.5 text-[10px] px-1.5 py-0 bg-blue-500/10 text-blue-700 dark:text-blue-300 border-blue-500/30"
+                        >
+                          🤝 Compartida {policy.sharedPercentage || 0}%{" "}
+                          {policy.sharedWithUser?.name ? `con ${policy.sharedWithUser.name}` : ""}
+                        </Badge>
+                      )}
                     </TableCell>
                   )}
 
@@ -513,17 +541,22 @@ export default function CarteraTableClient({
                       {policy.product || "No especificado"}
                     </div>
                     <div className="text-[11px] text-muted-foreground flex items-center gap-1.5 flex-wrap">
-                      <span>
-                        {RAMO_LABELS[policy.ramo || "VIDA_INDIVIDUAL"] ||
-                          policy.ramo}
-                      </span>
-                      {(policy.ramo === "VIDA_GRUPO" ||
+                      <span>{policy.ramoInfo.fullLabel}</span>
+                      {(policy.ramoInfo.subRamoKey === "VIDA_GRUPO" ||
                         ramoFilter === "VIDA_GRUPO") && (
                         <Badge
                           variant="outline"
                           className="text-[10px] px-1.5 py-0 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border-emerald-500/30"
                         >
                           ✓ {policy.paidReceiptsCount || 0} recibo(s) pagado(s)
+                        </Badge>
+                      )}
+                      {policy.adminApproved === false && (
+                        <Badge
+                          variant="outline"
+                          className="text-[10px] px-1.5 py-0 bg-amber-500/10 text-amber-700 dark:text-amber-300 border-amber-500/30"
+                        >
+                          ⏳ Pend. Visto Bueno
                         </Badge>
                       )}
                     </div>

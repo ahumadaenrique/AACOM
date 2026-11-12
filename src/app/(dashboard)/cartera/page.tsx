@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { cookies } from "next/headers";
 import { Users, Upload } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -22,12 +23,20 @@ export default async function CarteraDashboard() {
     where: { id: session.user.id },
     select: { role: true, agencyId: true },
   });
-  const currentAgencyId = (session.user.agencyId || dbUser?.agencyId || "aacom") as string;
+  let currentAgencyId = (session.user.agencyId || dbUser?.agencyId || "aacom") as string;
+  if (dbUser?.role === "SUPER_ADMIN") {
+    const impersonateCookie = cookies().get("impersonateAgencyId")?.value;
+    if (impersonateCookie) currentAgencyId = impersonateCookie;
+  }
   const isAdmin = dbUser?.role === "ADMIN" || dbUser?.role === "SUPER_ADMIN";
 
   const policiesWhereClause: any = isAdmin
     ? { agencyId: currentAgencyId, isArchived: false }
-    : { userId: session.user.id, isArchived: false };
+    : {
+        agencyId: currentAgencyId,
+        isArchived: false,
+        OR: [{ userId: session.user.id }, { sharedWithUserId: session.user.id }],
+      };
 
   const clientsWhereClause: any = isAdmin
     ? { agencyId: currentAgencyId, isArchived: false }
@@ -38,6 +47,7 @@ export default async function CarteraDashboard() {
     include: {
       client: true,
       user: { select: { name: true } },
+      sharedWithUser: { select: { id: true, name: true } },
       receipts: {
         orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
       },
@@ -53,6 +63,7 @@ export default async function CarteraDashboard() {
       include: {
         client: true,
         user: { select: { name: true } },
+        sharedWithUser: { select: { id: true, name: true } },
         receipts: {
           orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
         },

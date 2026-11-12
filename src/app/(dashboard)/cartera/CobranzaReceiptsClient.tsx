@@ -32,8 +32,8 @@ import {
   computeReceiptLiveStatus,
   formatDateSafe,
   toDateInputValue,
-  RAMO_LABELS,
 } from "./dateUtils";
+import { classifyPolicyRamo } from "@/lib/ramosCatalog";
 import { markReceiptAsPaid, updateReceiptStatus } from "./actions";
 
 export default function CobranzaReceiptsClient({
@@ -46,6 +46,7 @@ export default function CobranzaReceiptsClient({
   const [userSelectedTab, setUserSelectedTab] = useState<"GRACIA" | "PROXIMOS" | "PAGADOS" | null>(null);
   const [selectedReceipt, setSelectedReceipt] = useState<any | null>(null);
   const [paidDate, setPaidDate] = useState<string>(() => toDateInputValue(new Date()));
+  const [paidAmountInput, setPaidAmountInput] = useState<string>("");
   const [paymentNotes, setPaymentNotes] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [revertingId, setRevertingId] = useState<string | null>(null);
@@ -137,6 +138,8 @@ export default function CobranzaReceiptsClient({
   const openPayDialog = (receipt: any) => {
     setSelectedReceipt(receipt);
     setPaidDate(toDateInputValue(new Date()));
+    const defaultAmt = Number(receipt?.paidAmount ?? receipt?.amount ?? 0);
+    setPaidAmountInput(defaultAmt > 0 ? String(Number(defaultAmt.toFixed(2))) : "0");
     setPaymentNotes("");
   };
 
@@ -144,9 +147,14 @@ export default function CobranzaReceiptsClient({
     if (!selectedReceipt) return;
     setIsSubmitting(true);
     try {
+      const parsedAmt = Number(paidAmountInput);
       const res = await markReceiptAsPaid({
         receiptId: selectedReceipt.id,
         paidDate,
+        paidAmount:
+          paidAmountInput !== "" && Number.isFinite(parsedAmt) && parsedAmt >= 0
+            ? parsedAmt
+            : undefined,
         paymentNotes,
       });
 
@@ -311,10 +319,11 @@ export default function CobranzaReceiptsClient({
                 r.graceEndDate,
                 "dd 'de' MMM yyyy"
               );
+              const effectiveAmount = r.paidAmount ?? r.amount ?? 0;
               const amountFormatted = new Intl.NumberFormat("es-MX", {
                 style: "currency",
                 currency: "MXN",
-              }).format(r.amount || 0);
+              }).format(effectiveAmount);
 
               const waText =
                 r.live.liveStatus === "EN_GRACIA" ||
@@ -322,11 +331,10 @@ export default function CobranzaReceiptsClient({
                   ? `Hola ${clientName}, espero que estés muy bien. Te escribo para recordarte que el recibo ${r.receiptNumber}/${r.totalInstallments} de tu póliza ${policy.policyNumber} (${policy.product || policy.insuranceCompany || ""}) por ${amountFormatted} inició vigencia el ${dueFormatted} y se encuentra dentro de su periodo de gracia (fecha límite: ${graceFormatted}). ¿Me confirmas si ya quedó aplicado o si te apoyo con tu línea de pago para mantener tu cobertura intacta?`
                   : `Hola ${clientName}, te saludo con gusto. Te recuerdo que el próximo ${dueFormatted} corresponde el pago del recibo ${r.receiptNumber}/${r.totalInstallments} de tu póliza ${policy.policyNumber} (${policy.product || policy.insuranceCompany || ""}) por ${amountFormatted}. Quedo atento por si necesitas tu ficha o cargo domiciliado.`;
 
+              const ramoInfo = classifyPolicyRamo(policy);
               const isComputable =
                 r.policyYear <= 1 ||
-                ["GMM", "AUTOS", "VIDA_GRUPO", "DANOS"].includes(
-                  (policy.ramo || "").toUpperCase()
-                );
+                ramoInfo.subRamoKey !== "VIDA_INDIVIDUAL";
 
               return (
                 <div
@@ -388,7 +396,7 @@ export default function CobranzaReceiptsClient({
                     <span className="text-xs text-muted-foreground">
                       Póliza <strong className="text-foreground">{policy.policyNumber}</strong> •{" "}
                       {policy.product || "Plan"} ({policy.insuranceCompany}) •{" "}
-                      {RAMO_LABELS[policy.ramo || "VIDA_INDIVIDUAL"] || policy.ramo} •{" "}
+                      {ramoInfo.fullLabel} •{" "}
                       Fecha de pago: <strong>{formatDateSafe(r.dueDate, "dd/MM/yyyy")}</strong>{" "}
                       (Fecha límite para pagar:{" "}
                       <strong>{formatDateSafe(r.graceEndDate, "dd/MM/yyyy")}</strong>)
@@ -487,17 +495,30 @@ export default function CobranzaReceiptsClient({
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label>Fecha de Aplicación / Pago Contable</Label>
-              <Input
-                type="date"
-                value={paidDate}
-                onChange={(e) => setPaidDate(e.target.value)}
-              />
-              <p className="text-[11px] text-muted-foreground">
-                Si este recibo corresponde a Primer Año (Vida) o a GMM/Autos/Grupo, se sumará automáticamente a tu Producción del mes seleccionado.
-              </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label>Fecha de Aplicación / Pago Contable</Label>
+                <Input
+                  type="date"
+                  value={paidDate}
+                  onChange={(e) => setPaidDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Monto Real Cobrado en Pesos (MXN)</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={paidAmountInput}
+                  onChange={(e) => setPaidAmountInput(e.target.value)}
+                  placeholder="Ej. 3837.37"
+                />
+              </div>
             </div>
+            <p className="text-[11px] text-muted-foreground">
+              Puedes ajustar el monto exacto en MXN si hubo variación por tipo de cambio UDI/USD. Se reflejará automáticamente en Producción y Ranking del periodo de la fecha contable.
+            </p>
 
             <div className="space-y-1.5">
               <Label>Referencia o Nota de Pago (Opcional)</Label>

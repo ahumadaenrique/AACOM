@@ -1,16 +1,25 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import {
   createClientAndPolicyFromAi,
+  getCarteraFormCatalogs,
 } from "./actions";
 import { uploadAndExtractPolicyPdfSmart } from "./pdfClientHelper";
 import {
-  RAMO_LABELS,
   COMMON_INSURERS,
   PAYMENT_METHODS,
+  getInstallmentsForPaymentMethod,
   toDateInputValue,
 } from "./dateUtils";
+import {
+  SUB_RAMOS_CATALOG,
+  VIDA_OBJETIVOS_CATALOG,
+  CanonicalSubRamoKey,
+  VidaObjetivoKey,
+  mapFormSelectionToPolicyFields,
+  classifyPolicyRamo,
+} from "@/lib/ramosCatalog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -32,19 +41,36 @@ import {
   Settings2,
   ChevronDown,
   ChevronUp,
+  Users,
+  DollarSign,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-const getInitialFormState = () => ({
+interface CatalogAgent {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface CatalogCompany {
+  id: string;
+  name: string;
+  active: boolean;
+  color: string | null;
+}
+
+const getInitialFormState = (defaultAgentId?: string) => ({
   clientName: "",
   clientRfc: "",
   clientPhone: "",
   clientEmail: "",
   clientBirthDate: "",
   policyNumber: "",
-  insuranceCompany: "Insignia Life",
+  insuranceCompany: "",
   product: "",
-  ramo: "VIDA_INDIVIDUAL",
+  subRamoKey: "VIDA_INDIVIDUAL" as CanonicalSubRamoKey,
+  vidaObjetivo: "PROTECCION" as VidaObjetivoKey,
   tipoVigencia: "LARGO_PLAZO",
   effectiveDate: toDateInputValue(new Date()),
   renewalDate: "",
@@ -53,12 +79,31 @@ const getInitialFormState = () => ({
   annualPremium: "" as string | number,
   originalPremium: "" as string | number,
   observations: "",
+  ownerAgentId: defaultAgentId || "",
+  isShared: false,
+  sharedWithUserId: "",
+  sharedPercentage: "50",
+  firstReceiptPaid: false,
+  firstReceiptPaidDate: toDateInputValue(new Date()),
+  firstReceiptPaidAmount: "",
+  firstReceiptAmountEdited: false,
+  isRenewalCapture: false,
 });
 
 export default function QuickPdfAiPolicyDialog({
   existingClients = [],
+  defaultAgentId,
+  targetAgencyId,
+  buttonLabel = "Nueva Póliza",
+  buttonClassName,
+  onSavedSuccess,
 }: {
   existingClients?: { id: string; name: string; phone?: string | null }[];
+  defaultAgentId?: string;
+  targetAgencyId?: string;
+  buttonLabel?: string;
+  buttonClassName?: string;
+  onSavedSuccess?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
@@ -68,14 +113,46 @@ export default function QuickPdfAiPolicyDialog({
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [formError, setFormError] = useState<string>("");
 
-  const [formState, setFormState] = useState(getInitialFormState);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState("");
+  const [agencyAgents, setAgencyAgents] = useState<CatalogAgent[]>([]);
+  const [agencyCompanies, setAgencyCompanies] = useState<CatalogCompany[]>([]);
+
+  const [formState, setFormState] = useState(() =>
+    getInitialFormState(defaultAgentId)
+  );
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const router = useRouter();
 
+  useEffect(() => {
+    if (!open) return;
+    let cancelled = false;
+    getCarteraFormCatalogs(targetAgencyId)
+      .then((cat) => {
+        if (cancelled) return;
+        setIsAdmin(cat.isAdmin);
+        setCurrentUserId(cat.currentUserId);
+        setAgencyAgents(cat.agencyAgents);
+        setAgencyCompanies(cat.agencyCompanies);
+        setFormState((prev) => ({
+          ...prev,
+          ownerAgentId:
+            prev.ownerAgentId ||
+            defaultAgentId ||
+            cat.currentUserId ||
+            "",
+        }));
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [open, defaultAgentId, targetAgencyId]);
+
   const resetDialogState = () => {
-    setFormState(getInitialFormState());
+    setFormState(getInitialFormState(defaultAgentId || currentUserId));
     setFileName(null);
     setPdfUrl(null);
     setShowAdvanced(false);
@@ -85,8 +162,33 @@ export default function QuickPdfAiPolicyDialog({
 
   const handleOpenChange = (nextOpen: boolean) => {
     setOpen(nextOpen);
-    resetDialogState();
+    if (!nextOpen) {
+      resetDialogState();
+    } else {
+      setFormState(getInitialFormState(defaultAgentId || currentUserId));
+      setFormError("");
+    }
   };
+
+  const activeAgencyInsurers = useMemo(
+    () => agencyCompanies.filter((c) => c.active),
+    [agencyCompanies]
+  );
+
+  const mergedInsurerSuggestions = useMemo(() => {
+    const names = [
+      ...agencyCompanies.map((c) => c.name),
+      ...COMMON_INSURERS.filter((i) => i !== "Otra"),
+    ];
+    return Array.from(new Set(names));
+  }, [agencyCompanies]);
+
+  const suggestedInstallmentAmount = useMemo(() => {
+    const prem = Number(formState.annualPremium) || 0;
+    if (prem <= 0) return "";
+    const installments = getInstallmentsForPaymentMethod(formState.paymentMethod);
+    return (prem / installments).toFixed(2);
+  }, [formState.annualPremium, formState.paymentMethod]);
 
   const handleClientNameChange = (val: string) => {
     const matched = existingClients.find(
@@ -123,24 +225,38 @@ export default function QuickPdfAiPolicyDialog({
         setShowAdvanced(true);
       }
 
+      const classified = classifyPolicyRamo({
+        ramo: ext.ramo,
+        subRamo: ext.subRamo,
+        vidaObjetivo: ext.vidaObjetivo,
+        product: ext.product,
+        observations: ext.observations,
+        contractor: ext.contractor,
+      });
+
+      const effDate = ext.effectiveDate || formState.effectiveDate || "";
+
       setFormState((prev) => ({
+        ...prev,
         clientName: ext.contractor || ext.insured || prev.clientName || "",
         clientRfc: ext.contractorRfc || prev.clientRfc || "",
         clientPhone: ext.contractorPhone || prev.clientPhone || "",
         clientEmail: ext.contractorEmail || prev.clientEmail || "",
         clientBirthDate: ext.insuredBirthDate || prev.clientBirthDate || "",
         policyNumber: ext.policyNumber || prev.policyNumber || "",
-        insuranceCompany: ext.insuranceCompany || "Insignia Life",
+        insuranceCompany: ext.insuranceCompany || prev.insuranceCompany || "",
         product: ext.product || prev.product || "",
-        ramo: ext.ramo || "VIDA_INDIVIDUAL",
-        tipoVigencia: ext.tipoVigencia || "LARGO_PLAZO",
-        effectiveDate: ext.effectiveDate || prev.effectiveDate || "",
+        subRamoKey: classified.subRamoKey,
+        vidaObjetivo: classified.vidaObjetivo || "PROTECCION",
+        tipoVigencia: ext.tipoVigencia || prev.tipoVigencia,
+        effectiveDate: effDate,
         renewalDate: ext.renewalDate || prev.renewalDate || "",
         paymentMethod: ext.paymentMethod || "Anual",
         currency: ext.currency || "MXN",
         annualPremium: ext.annualPremium || prev.annualPremium || 0,
         originalPremium: ext.originalPremium ?? "",
         observations: ext.observations || prev.observations || "",
+        firstReceiptPaidDate: effDate || prev.firstReceiptPaidDate,
       }));
 
       toast({
@@ -185,10 +301,17 @@ export default function QuickPdfAiPolicyDialog({
       return;
     }
 
+    if (!formState.insuranceCompany.trim()) {
+      const msg = "Por favor, selecciona o escribe la aseguradora.";
+      setFormError(msg);
+      toast({ title: "Aseguradora requerida", description: msg, variant: "destructive" });
+      return;
+    }
+
     const premiumRaw = String(formState.annualPremium ?? "").trim();
     const premiumNum = Number(premiumRaw);
     if (!premiumRaw || isNaN(premiumNum) || premiumNum <= 0) {
-      const msg = "La prima anual debe ser un monto positivo mayor a $0 (no se permiten valores negativos ni en cero).";
+      const msg = "La prima anual debe ser un monto positivo mayor a $0 MXN.";
       setFormError(msg);
       toast({ title: "Prima anual inválida", description: msg, variant: "destructive" });
       return;
@@ -229,6 +352,45 @@ export default function QuickPdfAiPolicyDialog({
       return;
     }
 
+    let sharedUserId: string | null = null;
+    let sharedPct = 0;
+    if (formState.isShared) {
+      sharedPct = Number(formState.sharedPercentage);
+      if (!formState.sharedWithUserId) {
+        const msg = "Selecciona al segundo agente con quien se comparte la póliza.";
+        setFormError(msg);
+        toast({ title: "Agente compartido requerido", description: msg, variant: "destructive" });
+        return;
+      }
+      const effectiveOwner = formState.ownerAgentId || currentUserId;
+      if (formState.sharedWithUserId === effectiveOwner) {
+        const msg = "El agente compartido debe ser distinto al agente titular.";
+        setFormError(msg);
+        toast({ title: "Agentes idénticos", description: msg, variant: "destructive" });
+        return;
+      }
+      if (isNaN(sharedPct) || sharedPct <= 0 || sharedPct >= 100) {
+        const msg = "El porcentaje del co-agente debe estar entre 1% y 99%.";
+        setFormError(msg);
+        toast({ title: "Porcentaje inválido", description: msg, variant: "destructive" });
+        return;
+      }
+      sharedUserId = formState.sharedWithUserId;
+    }
+
+    const mappedRamo = mapFormSelectionToPolicyFields(
+      formState.subRamoKey,
+      formState.vidaObjetivo
+    );
+
+    const paidAmountToSend = formState.firstReceiptPaid
+      ? Number(
+          formState.firstReceiptAmountEdited && formState.firstReceiptPaidAmount !== ""
+            ? formState.firstReceiptPaidAmount
+            : suggestedInstallmentAmount || premiumNum
+        )
+      : null;
+
     setIsSaving(true);
     try {
       await createClientAndPolicyFromAi({
@@ -237,14 +399,26 @@ export default function QuickPdfAiPolicyDialog({
         clientEmail: formState.clientEmail || null,
         clientPhone: formState.clientPhone || null,
         clientBirthDate: formState.clientBirthDate || null,
+        targetAgencyId,
         policyData: {
           policyNumber: formState.policyNumber,
           contractor: formState.clientName,
           insured: formState.clientName,
-          insuranceCompany: formState.insuranceCompany,
+          insuranceCompany: formState.insuranceCompany.trim(),
           product: formState.product,
-          ramo: formState.ramo,
+          ramo: mappedRamo.ramo,
+          subRamo: mappedRamo.subRamo,
+          vidaObjetivo: mappedRamo.vidaObjetivo,
           tipoVigencia: formState.tipoVigencia,
+          ownerAgentId: isAdmin && formState.ownerAgentId ? formState.ownerAgentId : null,
+          sharedWithUserId: sharedUserId,
+          sharedPercentage: sharedPct,
+          firstReceiptPaid: formState.firstReceiptPaid,
+          firstReceiptPaidDate: formState.firstReceiptPaid
+            ? (formState.firstReceiptPaidDate || formState.effectiveDate || null)
+            : null,
+          firstReceiptPaidAmount: paidAmountToSend,
+          isRenewalCapture: formState.isRenewalCapture,
           effectiveDate: formState.effectiveDate || null,
           renewalDate: formState.renewalDate || null,
           paymentMethod: formState.paymentMethod,
@@ -261,12 +435,15 @@ export default function QuickPdfAiPolicyDialog({
       });
 
       toast({
-        title: "✅ Póliza guardada en tu Cartera",
-        description: `Póliza ${formState.policyNumber} registrada con sus recibos programados.`,
+        title: "✅ Póliza guardada en Mi Cartera",
+        description: formState.firstReceiptPaid
+          ? `Póliza ${formState.policyNumber} registrada con primer recibo pagado y reflejada en Producción.`
+          : `Póliza ${formState.policyNumber} registrada con recibos pendientes de cobro.`,
       });
       resetDialogState();
       setOpen(false);
       router.refresh();
+      if (onSavedSuccess) onSavedSuccess();
     } catch (err: any) {
       const errMsg = err?.message || "Revisa los campos capturados.";
       setFormError(errMsg);
@@ -283,22 +460,32 @@ export default function QuickPdfAiPolicyDialog({
   const selectClassName =
     "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
+  const sharedPctNum = Math.min(99, Math.max(0, Number(formState.sharedPercentage) || 0));
+  const ownerPctNum = 100 - sharedPctNum;
+  const effectiveOwnerId = formState.ownerAgentId || currentUserId;
+  const coAgentCandidates = agencyAgents.filter((a) => a.id !== effectiveOwnerId);
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm">
+        <Button
+          className={
+            buttonClassName ||
+            "bg-indigo-600 hover:bg-indigo-700 text-white shadow-sm"
+          }
+        >
           <Plus className="w-4 h-4 mr-1.5" />
-          Nueva Póliza
+          {buttonLabel}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-indigo-500" />
-            Registrar Nueva Póliza
+            Registrar Nueva Póliza (Cartera ↔ Producción)
           </DialogTitle>
           <DialogDescription>
-            Sube la carátula en PDF para llenar todo automáticamente con IA, o captura los 7 datos básicos manualmente.
+            Captura una sola vez: alimenta Mi Cartera, Cobranza, Producción y Ranking en tiempo real.
           </DialogDescription>
         </DialogHeader>
 
@@ -319,7 +506,7 @@ export default function QuickPdfAiPolicyDialog({
                   Leyendo carátula PDF con Gemini IA...
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  Extrayendo cliente, vigencia, prima y aseguradora
+                  Extrayendo cliente, ramo, vigencia, prima y aseguradora
                 </p>
               </div>
             </div>
@@ -367,7 +554,36 @@ export default function QuickPdfAiPolicyDialog({
         </div>
 
         <form onSubmit={handleSave} noValidate className="grid gap-3.5 md:grid-cols-2 pt-1">
-          {/* 7 CAMPOS ESENCIALES */}
+          {/* SELECTOR DE AGENTE TITULAR (SOLO ADMIN) */}
+          {isAdmin && agencyAgents.length > 0 && (
+            <div className="space-y-1.5 md:col-span-2 p-2.5 rounded-lg border bg-indigo-50/50 dark:bg-indigo-950/20">
+              <Label className="text-xs font-bold text-indigo-700 dark:text-indigo-300">
+                👤 Agente Titular de la Póliza (Vista Admin)
+              </Label>
+              <select
+                className={selectClassName}
+                value={formState.ownerAgentId}
+                onChange={(e) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    ownerAgentId: e.target.value,
+                    sharedWithUserId:
+                      prev.sharedWithUserId === e.target.value
+                        ? ""
+                        : prev.sharedWithUserId,
+                  }))
+                }
+              >
+                {agencyAgents.map((ag) => (
+                  <option key={ag.id} value={ag.id}>
+                    {ag.name} ({ag.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* CLIENTE */}
           <div className="space-y-1.5 md:col-span-2">
             <Label>Cliente / Contratante *</Label>
             <Input
@@ -401,38 +617,91 @@ export default function QuickPdfAiPolicyDialog({
             <Input
               list="quick-insurers"
               value={formState.insuranceCompany}
+              placeholder="Selecciona o escribe aseguradora..."
               onChange={(e) =>
                 setFormState({ ...formState, insuranceCompany: e.target.value })
               }
             />
             <datalist id="quick-insurers">
-              {COMMON_INSURERS.map((ins) => (
+              {mergedInsurerSuggestions.map((ins) => (
                 <option key={ins} value={ins} />
               ))}
             </datalist>
+            {activeAgencyInsurers.length > 0 && (
+              <div className="flex flex-wrap gap-1 pt-0.5">
+                {activeAgencyInsurers.slice(0, 5).map((comp) => (
+                  <button
+                    key={comp.id}
+                    type="button"
+                    onClick={() =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        insuranceCompany: comp.name,
+                      }))
+                    }
+                    className={`text-[10px] px-2 py-0.5 rounded-full border transition ${
+                      formState.insuranceCompany.toLowerCase() ===
+                      comp.name.toLowerCase()
+                        ? "bg-indigo-600 text-white border-indigo-600 font-semibold"
+                        : "bg-muted/60 hover:bg-muted text-muted-foreground"
+                    }`}
+                  >
+                    {comp.name}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
+          {/* RAMO Y SUB-RAMO HOMOLOGADO */}
           <div className="space-y-1.5">
-            <Label>Ramo *</Label>
+            <Label>Ramo y Sub-ramo *</Label>
             <select
               className={selectClassName}
-              value={formState.ramo}
+              value={formState.subRamoKey}
               onChange={(e) => {
-                const r = e.target.value;
-                setFormState({
-                  ...formState,
-                  ramo: r,
-                  tipoVigencia: ["GMM", "AUTOS", "VIDA_GRUPO", "DANOS"].includes(r)
-                    ? "ANUAL_RENOVABLE"
-                    : "LARGO_PLAZO",
-                });
+                const nextKey = e.target.value as CanonicalSubRamoKey;
+                const def = mapFormSelectionToPolicyFields(
+                  nextKey,
+                  formState.vidaObjetivo
+                );
+                setFormState((prev) => ({
+                  ...prev,
+                  subRamoKey: nextKey,
+                  tipoVigencia: def.defaultVigencia,
+                }));
               }}
             >
-              {Object.entries(RAMO_LABELS).map(([k, v]) => (
-                <option key={k} value={k}>
-                  {v}
-                </option>
-              ))}
+              <optgroup label="Vida">
+                {SUB_RAMOS_CATALOG.filter((s) => s.groupKey === "VIDA").map((s) => (
+                  <option key={s.key} value={s.key}>
+                    {s.label}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Gastos Médicos">
+                {SUB_RAMOS_CATALOG.filter((s) => s.groupKey === "GMM").map((s) => (
+                  <option key={s.key} value={s.key}>
+                    {s.label}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Autos">
+                {SUB_RAMOS_CATALOG.filter((s) => s.groupKey === "AUTOS").map((s) => (
+                  <option key={s.key} value={s.key}>
+                    {s.label}
+                  </option>
+                ))}
+              </optgroup>
+              <optgroup label="Daños y Otros">
+                {SUB_RAMOS_CATALOG.filter(
+                  (s) => s.groupKey === "DANOS" || s.groupKey === "OTROS"
+                ).map((s) => (
+                  <option key={s.key} value={s.key}>
+                    {s.label}
+                  </option>
+                ))}
+              </optgroup>
             </select>
           </div>
 
@@ -443,19 +712,56 @@ export default function QuickPdfAiPolicyDialog({
               onChange={(e) =>
                 setFormState({ ...formState, product: e.target.value })
               }
-              placeholder="Ej. Temporal 20, Orvi 99, Alfa Medical..."
+              placeholder="Ej. Temporal 20, VPL, Alfa Medical..."
             />
           </div>
 
+          {/* OBJETIVO COMERCIAL (SOLO VIDA INDIVIDUAL) */}
+          {formState.subRamoKey === "VIDA_INDIVIDUAL" && (
+            <div className="space-y-1.5 md:col-span-2">
+              <Label className="text-xs">Objetivo Comercial (Vida Individual)</Label>
+              <div className="flex flex-wrap gap-1.5">
+                {VIDA_OBJETIVOS_CATALOG.map((obj) => {
+                  const selected = formState.vidaObjetivo === obj.key;
+                  return (
+                    <button
+                      key={obj.key}
+                      type="button"
+                      onClick={() =>
+                        setFormState((prev) => ({
+                          ...prev,
+                          vidaObjetivo: obj.key,
+                        }))
+                      }
+                      className={`px-3 py-1 rounded-md text-xs font-medium border transition ${
+                        selected
+                          ? "bg-blue-600 text-white border-blue-600 shadow-sm"
+                          : "bg-background text-muted-foreground hover:bg-muted"
+                      }`}
+                    >
+                      {obj.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-1.5">
-            <Label>Inicio de Vigencia</Label>
+            <Label>Inicio de Vigencia / Emisión *</Label>
             <Input
               type="date"
               min="1980-01-01"
               max="2100-12-31"
               value={formState.effectiveDate}
               onChange={(e) =>
-                setFormState({ ...formState, effectiveDate: e.target.value })
+                setFormState((prev) => ({
+                  ...prev,
+                  effectiveDate: e.target.value,
+                  firstReceiptPaidDate: prev.firstReceiptPaid
+                    ? prev.firstReceiptPaidDate
+                    : e.target.value,
+                }))
               }
             />
           </div>
@@ -478,7 +784,7 @@ export default function QuickPdfAiPolicyDialog({
           </div>
 
           <div className="space-y-1.5">
-            <Label>Prima Anual en Pesos (MXN) *</Label>
+            <Label>Prima Anual Emitida en Pesos (MXN) *</Label>
             <Input
               type="number"
               step="0.01"
@@ -506,6 +812,143 @@ export default function QuickPdfAiPolicyDialog({
             />
           </div>
 
+          {/* CHECKBOX: PRIMER RECIBO YA PAGADO */}
+          <div className="md:col-span-2 p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-2.5">
+            <label className="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded border-emerald-500 accent-emerald-600"
+                checked={formState.firstReceiptPaid}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setFormState((prev) => ({
+                    ...prev,
+                    firstReceiptPaid: checked,
+                    firstReceiptPaidDate:
+                      prev.firstReceiptPaidDate ||
+                      prev.effectiveDate ||
+                      toDateInputValue(new Date()),
+                  }));
+                }}
+              />
+              <span className="text-xs font-semibold flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300">
+                <DollarSign className="w-3.5 h-3.5" />
+                El primer recibo ya fue pagado (computa de inmediato en Prima Pagada MXN)
+              </span>
+            </label>
+
+            {formState.firstReceiptPaid && (
+              <div className="grid gap-3 md:grid-cols-2 pt-1">
+                <div className="space-y-1">
+                  <Label className="text-xs">Fecha real de pago</Label>
+                  <Input
+                    type="date"
+                    value={formState.firstReceiptPaidDate}
+                    onChange={(e) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        firstReceiptPaidDate: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">
+                    Monto pagado en MXN (editable)
+                  </Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder={suggestedInstallmentAmount || "0.00"}
+                    value={
+                      formState.firstReceiptAmountEdited
+                        ? formState.firstReceiptPaidAmount
+                        : suggestedInstallmentAmount
+                    }
+                    onChange={(e) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        firstReceiptPaidAmount: e.target.value,
+                        firstReceiptAmountEdited: true,
+                      }))
+                    }
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* TOGGLE: PÓLIZA COMPARTIDA ENTRE 2 AGENTES */}
+          <div className="md:col-span-2 p-3 rounded-lg border bg-muted/20 space-y-2.5">
+            <label className="flex items-center gap-2.5 cursor-pointer select-none">
+              <input
+                type="checkbox"
+                className="h-4 w-4 rounded accent-indigo-600"
+                checked={formState.isShared}
+                onChange={(e) =>
+                  setFormState((prev) => ({
+                    ...prev,
+                    isShared: e.target.checked,
+                  }))
+                }
+              />
+              <span className="text-xs font-semibold flex items-center gap-1.5">
+                <Users className="w-3.5 h-3.5 text-indigo-600" />
+                ¿Póliza compartida entre 2 agentes? (divide PE y PPC en Producción/Ranking)
+              </span>
+            </label>
+
+            {formState.isShared && (
+              <div className="grid gap-3 md:grid-cols-3 pt-1">
+                <div className="space-y-1 md:col-span-2">
+                  <Label className="text-xs">Segundo Agente (Co-participante) *</Label>
+                  <select
+                    className={selectClassName}
+                    value={formState.sharedWithUserId}
+                    onChange={(e) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        sharedWithUserId: e.target.value,
+                      }))
+                    }
+                  >
+                    <option value="">Selecciona un agente de tu agencia...</option>
+                    {coAgentCandidates.map((ag) => (
+                      <option key={ag.id} value={ag.id}>
+                        {ag.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">% para Segundo Agente</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="99"
+                    step="0.01"
+                    value={formState.sharedPercentage}
+                    onChange={(e) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        sharedPercentage: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div className="md:col-span-3 text-[11px] text-muted-foreground flex items-center justify-between bg-background px-2.5 py-1.5 rounded border">
+                  <span>
+                    Titular: <strong>{ownerPctNum.toFixed(1)}%</strong>
+                  </span>
+                  <span>
+                    Compartido: <strong>{sharedPctNum.toFixed(1)}%</strong>
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* OPCIONES AVANZADAS COLAPSABLES */}
           <div className="md:col-span-2 pt-1">
             <button
@@ -516,7 +959,7 @@ export default function QuickPdfAiPolicyDialog({
               <Settings2 className="w-3.5 h-3.5" />
               {showAdvanced
                 ? "Ocultar opciones avanzadas"
-                : "Opciones avanzadas (Moneda UDI/USD, Fin de vigencia, RFC, Notas)"}
+                : "Opciones avanzadas (Moneda UDI/USD, Renovación Año 2+, RFC, Notas)"}
               {showAdvanced ? (
                 <ChevronUp className="w-3.5 h-3.5" />
               ) : (
@@ -583,6 +1026,25 @@ export default function QuickPdfAiPolicyDialog({
                 />
               </div>
 
+              <div className="md:col-span-2">
+                <label className="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                  <input
+                    type="checkbox"
+                    className="h-4 w-4 rounded accent-amber-600"
+                    checked={formState.isRenewalCapture}
+                    onChange={(e) =>
+                      setFormState((prev) => ({
+                        ...prev,
+                        isRenewalCapture: e.target.checked,
+                      }))
+                    }
+                  />
+                  <span>
+                    🔄 Marcar como Renovación histórica (Año 2+ — no cuenta como Venta Nueva Año 1)
+                  </span>
+                </label>
+              </div>
+
               <div className="space-y-1 md:col-span-2">
                 <Label>Observaciones / Suma Asegurada</Label>
                 <Input
@@ -613,7 +1075,7 @@ export default function QuickPdfAiPolicyDialog({
               ) : (
                 <CheckCircle2 className="w-4 h-4 mr-2" />
               )}
-              Guardar Póliza
+              Guardar Póliza en Cartera
             </Button>
           </div>
         </form>

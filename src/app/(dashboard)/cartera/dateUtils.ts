@@ -322,6 +322,7 @@ export interface GeneratedReceiptDraft {
   amount: number;
   status: string;
   paidAt: Date | null;
+  paidAmount?: number | null;
 }
 
 /**
@@ -391,6 +392,7 @@ export function buildPolicyReceiptsDrafts(
       amount: installmentAmount,
       status,
       paidAt,
+      paidAmount: status === "PAGADO" ? installmentAmount : null,
     });
   }
 
@@ -536,6 +538,7 @@ export const RAMO_LABELS: Record<string, string> = {
   AUTOS: "Autos",
   VIDA_GRUPO: "Vida Grupo",
   DANOS: "Daños / Hogar / PyME",
+  OTROS: "Otros",
 };
 
 export const STATUS_CONFIG: Record<
@@ -574,9 +577,11 @@ export const SUB_STATUS_LABELS: Record<string, string> = {
 
 export const COMMON_INSURERS = [
   "Insignia Life",
+  "La Latinoamericana Seguros",
+  "Plan Seguro",
   "GNP Seguros",
   "AXA Seguros",
-  "Seguros Monterrey (SMNYL)",
+  "Seguros Monterrey NYL",
   "MetLife",
   "Allianz",
   "Prudential",

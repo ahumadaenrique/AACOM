@@ -80,6 +80,8 @@ export default function ImportarCartera() {
               policyNumber: row[14]
                 ? String(row[14]).trim()
                 : `POL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
+              ramo: row[15] ? String(row[15]).trim() : "",
+              vidaObjetivo: row[16] ? String(row[16]).trim() : "",
             };
           })
           .filter(
@@ -157,6 +159,8 @@ export default function ImportarCartera() {
         "Teléfono (Celular)",
         "Correo Electrónico",
         "Número de Póliza",
+        "Ramo / Sub-ramo (Opcional)",
+        "Objetivo Vida (Opcional)",
       ],
       [
         "Ejemplo: Juan Pérez García",

@@ -33,22 +33,33 @@ export default function PolicyReceiptsDialog({ policy }: { policy: any }) {
   const [open, setOpen] = useState(false);
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const [paidDate, setPaidDate] = useState<string>(() => toDateInputValue(new Date()));
+  const [paidAmounts, setPaidAmounts] = useState<Record<string, string>>({});
   const router = useRouter();
   const { toast } = useToast();
 
   const receipts = policy?.receipts || [];
 
-  const handleMarkPaid = async (receiptId: string) => {
-    setLoadingId(receiptId);
+  const handleMarkPaid = async (receipt: any) => {
+    setLoadingId(receipt.id);
     try {
+      const rawAmount = paidAmounts[receipt.id];
+      const parsedAmount =
+        rawAmount !== undefined && rawAmount !== ""
+          ? Number(rawAmount)
+          : Number(receipt.paidAmount ?? receipt.amount ?? 0);
+
       const res = await markReceiptAsPaid({
-        receiptId,
+        receiptId: receipt.id,
         paidDate: paidDate || toDateInputValue(new Date()),
+        paidAmount:
+          Number.isFinite(parsedAmount) && parsedAmount >= 0
+            ? parsedAmount
+            : undefined,
       });
       toast({
         title: "Recibo marcado como pagado",
         description: res.syncedToProduction
-          ? "Prima sincronizada automáticamente en el módulo de Producción."
+          ? "Prima pagada (MXN) reflejada automáticamente en Producción y Ranking."
           : "Recibo actualizado.",
       });
       router.refresh();
@@ -169,17 +180,53 @@ export default function PolicyReceiptsDialog({ policy }: { policy: any }) {
                         )}
                       </TableCell>
                       <TableCell className="text-right font-medium text-xs whitespace-nowrap">
-                        {new Intl.NumberFormat("es-MX", {
-                          style: "currency",
-                          currency: "MXN",
-                        }).format(r.amount || 0)}
+                        {!isPaid ? (
+                          <div className="flex items-center justify-end gap-1">
+                            <span className="text-[10px] text-muted-foreground">$</span>
+                            <input
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={
+                                paidAmounts[r.id] !== undefined
+                                  ? paidAmounts[r.id]
+                                  : String(Number((r.paidAmount ?? r.amount ?? 0).toFixed(2)))
+                              }
+                              onChange={(e) =>
+                                setPaidAmounts((prev) => ({
+                                  ...prev,
+                                  [r.id]: e.target.value,
+                                }))
+                              }
+                              title="Monto real pagado en MXN (editable por UDI/USD)"
+                              className="h-7 w-24 rounded border border-input bg-background px-2 text-right text-xs"
+                            />
+                          </div>
+                        ) : (
+                          <div>
+                            {new Intl.NumberFormat("es-MX", {
+                              style: "currency",
+                              currency: "MXN",
+                            }).format(r.paidAmount ?? r.amount ?? 0)}
+                            {r.paidAmount != null &&
+                              Math.abs(r.paidAmount - (r.amount || 0)) > 0.01 && (
+                                <div className="text-[10px] text-muted-foreground">
+                                  Est.:{" "}
+                                  {new Intl.NumberFormat("es-MX", {
+                                    style: "currency",
+                                    currency: "MXN",
+                                  }).format(r.amount || 0)}
+                                </div>
+                              )}
+                          </div>
+                        )}
                       </TableCell>
                       <TableCell className="text-center">
                         {!isPaid ? (
                           <Button
                             size="sm"
                             disabled={loadingId === r.id}
-                            onClick={() => handleMarkPaid(r.id)}
+                            onClick={() => handleMarkPaid(r)}
                             className="h-7 text-xs bg-emerald-600 hover:bg-emerald-700 text-white"
                           >
                             {loadingId === r.id ? (

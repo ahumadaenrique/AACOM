@@ -1,22 +1,31 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { policySchema, PolicyFormValues } from "../../schema";
 import {
   createPolicy,
   updatePolicy,
+  getCarteraFormCatalogs,
 } from "../../actions";
 import { uploadAndExtractPolicyPdfSmart } from "../../pdfClientHelper";
 import {
   toDateInputValue,
-  RAMO_LABELS,
   STATUS_CONFIG,
   SUB_STATUS_LABELS,
   COMMON_INSURERS,
   PAYMENT_METHODS,
+  getInstallmentsForPaymentMethod,
 } from "../../dateUtils";
+import {
+  SUB_RAMOS_CATALOG,
+  VIDA_OBJETIVOS_CATALOG,
+  CanonicalSubRamoKey,
+  VidaObjetivoKey,
+  classifyPolicyRamo,
+  mapFormSelectionToPolicyFields,
+} from "@/lib/ramosCatalog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -36,8 +45,24 @@ import {
   ChevronDown,
   ChevronUp,
   Settings2,
+  Users,
+  DollarSign,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+
+interface CatalogAgent {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+interface CatalogCompany {
+  id: string;
+  name: string;
+  active: boolean;
+  color: string | null;
+}
 
 export default function PolicyFormDialog({
   clientId,
@@ -54,33 +79,63 @@ export default function PolicyFormDialog({
   const [extractedFileName, setExtractedFileName] = useState<string | null>(null);
   const pdfInputRef = useRef<HTMLInputElement>(null);
 
-  const { toast } = useToast();
-  const router = useRouter();
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState("");
+  const [agencyAgents, setAgencyAgents] = useState<CatalogAgent[]>([]);
+  const [agencyCompanies, setAgencyCompanies] = useState<CatalogCompany[]>([]);
 
   const isEditing = !!policy;
 
-  const getInitialValues = (): PolicyFormValues => ({
-    clientId: clientId || policy?.clientId || "",
-    policyNumber: policy?.policyNumber || "",
-    contractor: policy?.contractor || "",
-    insured: policy?.insured || "",
-    product: policy?.product || "",
-    insuranceCompany: policy?.insuranceCompany || "Insignia Life",
-    ramo: policy?.ramo || "VIDA_INDIVIDUAL",
-    tipoVigencia: policy?.tipoVigencia || "LARGO_PLAZO",
-    currency: policy?.currency || "MXN",
-    originalPremium: policy?.originalPremium ?? undefined,
-    status: policy?.status || "VIGENTE",
-    subStatus: policy?.subStatus || "",
-    annualPremium: policy?.annualPremium || ("" as any),
-    paymentMethod: policy?.paymentMethod || "Anual",
-    effectiveDate: toDateInputValue(policy?.effectiveDate || new Date()),
-    renewalDate: toDateInputValue(policy?.renewalDate),
-    approximateCommission: policy?.approximateCommission || 0,
-    approximateBonus: policy?.approximateBonus || 0,
-    observations: policy?.observations || "",
-    pdfUrl: policy?.pdfUrl || null,
-  });
+  const initialClassified = classifyPolicyRamo(policy || { ramo: "VIDA_INDIVIDUAL" });
+  const [selectedSubRamoKey, setSelectedSubRamoKey] = useState<CanonicalSubRamoKey>(
+    initialClassified.subRamoKey
+  );
+  const [selectedVidaObjetivo, setSelectedVidaObjetivo] = useState<VidaObjetivoKey>(
+    initialClassified.vidaObjetivo || "PROTECCION"
+  );
+  const [isShared, setIsShared] = useState<boolean>(
+    Boolean(policy?.sharedWithUserId && (policy?.sharedPercentage || 0) > 0)
+  );
+  const [firstReceiptAmountEdited, setFirstReceiptAmountEdited] = useState(false);
+
+  const { toast } = useToast();
+  const router = useRouter();
+
+  const getInitialValues = (): PolicyFormValues => {
+    const cls = classifyPolicyRamo(policy || { ramo: "VIDA_INDIVIDUAL" });
+    const mapped = mapFormSelectionToPolicyFields(cls.subRamoKey, cls.vidaObjetivo);
+    return {
+      clientId: clientId || policy?.clientId || "",
+      policyNumber: policy?.policyNumber || "",
+      contractor: policy?.contractor || "",
+      insured: policy?.insured || "",
+      product: policy?.product || "",
+      insuranceCompany: policy?.insuranceCompany || "",
+      ramo: policy?.ramo || mapped.ramo,
+      subRamo: policy?.subRamo || mapped.subRamo,
+      vidaObjetivo: policy?.vidaObjetivo || mapped.vidaObjetivo,
+      tipoVigencia: policy?.tipoVigencia || mapped.defaultVigencia,
+      currency: policy?.currency || "MXN",
+      originalPremium: policy?.originalPremium ?? null,
+      status: policy?.status || "VIGENTE",
+      subStatus: policy?.subStatus || "",
+      annualPremium: policy?.annualPremium || ("" as any),
+      paymentMethod: policy?.paymentMethod || "Anual",
+      effectiveDate: toDateInputValue(policy?.effectiveDate || new Date()),
+      renewalDate: toDateInputValue(policy?.renewalDate),
+      approximateCommission: policy?.approximateCommission || 0,
+      approximateBonus: policy?.approximateBonus || 0,
+      observations: policy?.observations || "",
+      pdfUrl: policy?.pdfUrl || null,
+      ownerAgentId: policy?.userId || "",
+      sharedWithUserId: policy?.sharedWithUserId || "",
+      sharedPercentage: policy?.sharedPercentage || 50,
+      firstReceiptPaid: false,
+      firstReceiptPaidDate: toDateInputValue(policy?.effectiveDate || new Date()),
+      firstReceiptPaidAmount: null,
+      isRenewalCapture: Boolean(policy?.isRenewalCapture) || policy?.subStatus === "RENOVACION",
+    };
+  };
 
   const form = useForm<PolicyFormValues>({
     resolver: zodResolver(policySchema),
@@ -88,31 +143,89 @@ export default function PolicyFormDialog({
   });
 
   useEffect(() => {
-    if (open) {
-      form.reset(getInitialValues());
-      setExtractedFileName(null);
-      setShowAdvanced(
-        isEditing &&
-          (policy?.currency !== "MXN" ||
-            Boolean(policy?.subStatus) ||
-            Boolean(policy?.observations))
-      );
-    }
+    if (!open) return;
+    let cancelled = false;
+    const cls = classifyPolicyRamo(policy || { ramo: "VIDA_INDIVIDUAL" });
+    setSelectedSubRamoKey(cls.subRamoKey);
+    setSelectedVidaObjetivo(cls.vidaObjetivo || "PROTECCION");
+    setIsShared(Boolean(policy?.sharedWithUserId && (policy?.sharedPercentage || 0) > 0));
+    setFirstReceiptAmountEdited(false);
+    form.reset(getInitialValues());
+    setExtractedFileName(null);
+    setShowAdvanced(
+      isEditing &&
+        (policy?.currency !== "MXN" ||
+          Boolean(policy?.subStatus) ||
+          Boolean(policy?.observations))
+    );
+
+    getCarteraFormCatalogs()
+      .then((cat) => {
+        if (cancelled) return;
+        setIsAdmin(cat.isAdmin);
+        setCurrentUserId(cat.currentUserId);
+        setAgencyAgents(cat.agencyAgents);
+        setAgencyCompanies(cat.agencyCompanies);
+        if (!policy?.userId && cat.currentUserId) {
+          form.setValue("ownerAgentId", cat.currentUserId);
+        }
+        const activeList = cat.agencyCompanies.filter((c) => c.active);
+        if (!isEditing && !form.getValues("insuranceCompany") && activeList.length === 1) {
+          form.setValue("insuranceCompany", activeList[0].name);
+        }
+      })
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, policy]);
 
-  const watchedRamo = form.watch("ramo");
   const watchedCurrency = form.watch("currency");
   const watchedTipoVigencia = form.watch("tipoVigencia");
+  const watchedPremium = form.watch("annualPremium");
+  const watchedPaymentMethod = form.watch("paymentMethod");
+  const watchedFirstReceiptPaid = form.watch("firstReceiptPaid");
+  const watchedOwnerAgentId = form.watch("ownerAgentId");
+  const watchedSharedWithUserId = form.watch("sharedWithUserId");
+  const watchedSharedPercentage = form.watch("sharedPercentage");
+  const watchedIsRenewalCapture = form.watch("isRenewalCapture");
+  const watchedCompany = form.watch("insuranceCompany");
 
-  const handleRamoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const newRamo = e.target.value;
-    form.setValue("ramo", newRamo);
-    if (["GMM", "AUTOS", "VIDA_GRUPO", "DANOS"].includes(newRamo)) {
-      form.setValue("tipoVigencia", "ANUAL_RENOVABLE");
-    } else {
-      form.setValue("tipoVigencia", "LARGO_PLAZO");
-    }
+  const activeAgencyInsurers = useMemo(
+    () => agencyCompanies.filter((c) => c.active),
+    [agencyCompanies]
+  );
+
+  const mergedInsurerSuggestions = useMemo(() => {
+    const names = [
+      ...agencyCompanies.map((c) => c.name),
+      ...COMMON_INSURERS.filter((i) => i !== "Otra"),
+    ];
+    return Array.from(new Set(names));
+  }, [agencyCompanies]);
+
+  const suggestedInstallmentAmount = useMemo(() => {
+    const prem = Number(watchedPremium) || 0;
+    if (prem <= 0) return "";
+    const installments = getInstallmentsForPaymentMethod(watchedPaymentMethod || "Anual");
+    return Number((prem / installments).toFixed(2));
+  }, [watchedPremium, watchedPaymentMethod]);
+
+  const handleSubRamoChange = (nextSubRamo: CanonicalSubRamoKey) => {
+    setSelectedSubRamoKey(nextSubRamo);
+    const mapped = mapFormSelectionToPolicyFields(nextSubRamo, selectedVidaObjetivo);
+    form.setValue("ramo", mapped.ramo);
+    form.setValue("subRamo", mapped.subRamo);
+    form.setValue("vidaObjetivo", mapped.vidaObjetivo);
+    form.setValue("tipoVigencia", mapped.defaultVigencia);
+  };
+
+  const handleVidaObjetivoChange = (nextObj: VidaObjetivoKey) => {
+    setSelectedVidaObjetivo(nextObj);
+    const mapped = mapFormSelectionToPolicyFields(selectedSubRamoKey, nextObj);
+    form.setValue("vidaObjetivo", mapped.vidaObjetivo);
   };
 
   const handlePdfAiUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,14 +245,34 @@ export default function PolicyFormDialog({
     try {
       const res = await uploadAndExtractPolicyPdfSmart(file);
       const ext = res.extracted;
+      const cls = classifyPolicyRamo({
+        ramo: ext.ramo,
+        subRamo: ext.subRamo,
+        vidaObjetivo: ext.vidaObjetivo,
+        product: ext.product,
+        observations: ext.observations,
+        contractor: ext.contractor,
+      });
+      const mapped = mapFormSelectionToPolicyFields(
+        cls.subRamoKey,
+        cls.vidaObjetivo || "PROTECCION"
+      );
+      setSelectedSubRamoKey(cls.subRamoKey);
+      if (cls.vidaObjetivo) setSelectedVidaObjetivo(cls.vidaObjetivo);
+
       if (ext.policyNumber) form.setValue("policyNumber", ext.policyNumber);
       if (ext.insuranceCompany) form.setValue("insuranceCompany", ext.insuranceCompany);
       if (ext.product) form.setValue("product", ext.product);
-      if (ext.ramo) form.setValue("ramo", ext.ramo);
-      if (ext.tipoVigencia) form.setValue("tipoVigencia", ext.tipoVigencia);
+      form.setValue("ramo", mapped.ramo);
+      form.setValue("subRamo", mapped.subRamo);
+      form.setValue("vidaObjetivo", mapped.vidaObjetivo);
+      form.setValue("tipoVigencia", ext.tipoVigencia || mapped.defaultVigencia);
       if (ext.contractor) form.setValue("contractor", ext.contractor);
       if (ext.insured) form.setValue("insured", ext.insured);
-      if (ext.effectiveDate) form.setValue("effectiveDate", ext.effectiveDate);
+      if (ext.effectiveDate) {
+        form.setValue("effectiveDate", ext.effectiveDate);
+        form.setValue("firstReceiptPaidDate", ext.effectiveDate);
+      }
       if (ext.renewalDate) form.setValue("renewalDate", ext.renewalDate);
       if (ext.paymentMethod) form.setValue("paymentMethod", ext.paymentMethod);
       if (ext.currency) form.setValue("currency", ext.currency);
@@ -173,12 +306,73 @@ export default function PolicyFormDialog({
 
   const onSubmit = async (data: PolicyFormValues) => {
     try {
+      const mapped = mapFormSelectionToPolicyFields(
+        selectedSubRamoKey,
+        selectedVidaObjetivo
+      );
+
+      let sharedUserId: string | null = null;
+      let sharedPct = 0;
+      if (isShared) {
+        if (!data.sharedWithUserId) {
+          toast({
+            title: "Agente compartido requerido",
+            description: "Selecciona al segundo agente con quien compartes la póliza.",
+            variant: "destructive",
+          });
+          return;
+        }
+        const effectiveOwner = data.ownerAgentId || currentUserId;
+        if (data.sharedWithUserId === effectiveOwner) {
+          toast({
+            title: "Agentes idénticos",
+            description: "El agente compartido debe ser distinto al agente titular.",
+            variant: "destructive",
+          });
+          return;
+        }
+        const pctNum = Number(data.sharedPercentage) || 0;
+        if (pctNum <= 0 || pctNum >= 100) {
+          toast({
+            title: "Porcentaje inválido",
+            description: "El porcentaje del co-agente debe estar entre 1% y 99%.",
+            variant: "destructive",
+          });
+          return;
+        }
+        sharedUserId = data.sharedWithUserId;
+        sharedPct = pctNum;
+      }
+
+      const payload: PolicyFormValues = {
+        ...data,
+        ramo: mapped.ramo,
+        subRamo: mapped.subRamo,
+        vidaObjetivo: mapped.vidaObjetivo,
+        ownerAgentId: isAdmin && data.ownerAgentId ? data.ownerAgentId : null,
+        sharedWithUserId: sharedUserId,
+        sharedPercentage: sharedPct,
+        firstReceiptPaidAmount:
+          !isEditing && data.firstReceiptPaid
+            ? Number(
+                firstReceiptAmountEdited && data.firstReceiptPaidAmount != null
+                  ? data.firstReceiptPaidAmount
+                  : suggestedInstallmentAmount || data.annualPremium || 0
+              )
+            : null,
+      };
+
       if (isEditing) {
-        await updatePolicy(policy.id, data);
+        await updatePolicy(policy.id, payload);
         toast({ title: "Póliza actualizada correctamente" });
       } else {
-        await createPolicy(data);
-        toast({ title: "Póliza creada correctamente" });
+        await createPolicy(payload);
+        toast({
+          title: "Póliza creada correctamente",
+          description: payload.firstReceiptPaid
+            ? "Primer recibo marcado como pagado y reflejado en Producción."
+            : undefined,
+        });
       }
 
       setOpen(false);
@@ -263,7 +457,25 @@ export default function PolicyFormDialog({
         </div>
 
         <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="grid gap-3.5 md:grid-cols-2">
-          {/* 7 CAMPOS ESENCIALES */}
+          {isAdmin && agencyAgents.length > 0 && (
+            <div className="space-y-1.5 md:col-span-2">
+              <Label className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+                Agente Titular Responsable *
+              </Label>
+              <select
+                className={selectClassName}
+                value={watchedOwnerAgentId || ""}
+                onChange={(e) => form.setValue("ownerAgentId", e.target.value)}
+              >
+                {agencyAgents.map((ag) => (
+                  <option key={ag.id} value={ag.id}>
+                    {ag.name} ({ag.email})
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="space-y-1.5">
             <Label>Número de Póliza *</Label>
             <Input {...form.register("policyNumber")} placeholder="Ej. 308299" />
@@ -277,39 +489,89 @@ export default function PolicyFormDialog({
           <div className="space-y-1.5">
             <Label>Aseguradora *</Label>
             <Input
-              list="insurers-datalist"
+              list="policy-dialog-insurers-list"
               {...form.register("insuranceCompany")}
               placeholder="Selecciona o escribe aseguradora"
             />
-            <datalist id="insurers-datalist">
-              {COMMON_INSURERS.map((ins) => (
+            <datalist id="policy-dialog-insurers-list">
+              {mergedInsurerSuggestions.map((ins) => (
                 <option key={ins} value={ins} />
               ))}
             </datalist>
+            {activeAgencyInsurers.length > 0 && (
+              <div className="flex flex-wrap gap-1 pt-0.5">
+                {activeAgencyInsurers.map((comp) => (
+                  <button
+                    key={comp.id}
+                    type="button"
+                    onClick={() => form.setValue("insuranceCompany", comp.name)}
+                    className={`text-[10px] px-2 py-0.5 rounded-full border transition ${
+                      (watchedCompany || "").toLowerCase() === comp.name.toLowerCase()
+                        ? "bg-teal-600 text-white border-teal-600 font-bold"
+                        : "bg-muted/50 text-muted-foreground hover:bg-muted border-border"
+                    }`}
+                  >
+                    {comp.name}
+                  </button>
+                ))}
+              </div>
+            )}
+            {form.formState.errors.insuranceCompany && (
+              <p className="text-xs text-red-500">
+                {form.formState.errors.insuranceCompany.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-1.5">
-            <Label>Ramo *</Label>
+            <Label>Ramo y Sub-ramo *</Label>
             <select
               className={selectClassName}
-              value={watchedRamo || "VIDA_INDIVIDUAL"}
-              onChange={handleRamoChange}
+              value={selectedSubRamoKey}
+              onChange={(e) => handleSubRamoChange(e.target.value as CanonicalSubRamoKey)}
             >
-              {Object.entries(RAMO_LABELS).map(([key, label]) => (
-                <option key={key} value={key}>
-                  {label}
+              {SUB_RAMOS_CATALOG.map((sr) => (
+                <option key={sr.key} value={sr.key}>
+                  {sr.groupLabel} — {sr.label}
                 </option>
               ))}
             </select>
           </div>
 
-          <div className="space-y-1.5">
-            <Label>Producto / Plan</Label>
-            <Input
-              {...form.register("product")}
-              placeholder="Ej. Temporal 20, Orvi 99, Alfa Medical..."
-            />
-          </div>
+          {selectedSubRamoKey === "VIDA_INDIVIDUAL" ? (
+            <div className="space-y-1.5">
+              <Label>Objetivo Vida Individual</Label>
+              <select
+                className={selectClassName}
+                value={selectedVidaObjetivo}
+                onChange={(e) => handleVidaObjetivoChange(e.target.value as VidaObjetivoKey)}
+              >
+                {VIDA_OBJETIVOS_CATALOG.map((obj) => (
+                  <option key={obj.key} value={obj.key}>
+                    {obj.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <div className="space-y-1.5">
+              <Label>Producto / Plan</Label>
+              <Input
+                {...form.register("product")}
+                placeholder="Ej. Plan Médico, Colectivo, Flotilla..."
+              />
+            </div>
+          )}
+
+          {selectedSubRamoKey === "VIDA_INDIVIDUAL" && (
+            <div className="space-y-1.5 md:col-span-2">
+              <Label>Producto / Plan Comercial</Label>
+              <Input
+                {...form.register("product")}
+                placeholder="Ej. Temporal 20, Orvi 99, Imagina Ser, Star Dotal..."
+              />
+            </div>
+          )}
 
           <div className="space-y-1.5">
             <Label>Inicio de Vigencia</Label>
@@ -341,7 +603,7 @@ export default function PolicyFormDialog({
           </div>
 
           <div className="space-y-1.5 md:col-span-2">
-            <Label>Prima Anual en Pesos (MXN) *</Label>
+            <Label>Prima Anual Emitida en Pesos (MXN) *</Label>
             <Input
               type="number"
               step="0.01"
@@ -353,6 +615,138 @@ export default function PolicyFormDialog({
                 {form.formState.errors.annualPremium.message}
               </p>
             )}
+          </div>
+
+          {/* PRIMER RECIBO PAGADO (NUEVA CREACIÓN) */}
+          {!isEditing && (
+            <div className="md:col-span-2 p-3 rounded-lg border border-emerald-500/30 bg-emerald-500/5 space-y-2.5">
+              <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-emerald-800 dark:text-emerald-300">
+                <input
+                  type="checkbox"
+                  checked={Boolean(watchedFirstReceiptPaid)}
+                  onChange={(e) => {
+                    form.setValue("firstReceiptPaid", e.target.checked);
+                    if (e.target.checked && !form.getValues("firstReceiptPaidDate")) {
+                      form.setValue("firstReceiptPaidDate", form.getValues("effectiveDate") || toDateInputValue(new Date()));
+                    }
+                  }}
+                  className="rounded border-emerald-500"
+                />
+                <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+                El primer recibo ya fue pagado (reflejar PPC de inmediato en Producción)
+              </label>
+
+              {watchedFirstReceiptPaid && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                  <div className="space-y-1">
+                    <Label className="text-[11px]">Fecha de Pago del 1er Recibo</Label>
+                    <Input
+                      type="date"
+                      {...form.register("firstReceiptPaidDate")}
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-[11px]">Monto Real Pagado en MXN (Editable)</Label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={
+                        firstReceiptAmountEdited
+                          ? String(form.watch("firstReceiptPaidAmount") ?? "")
+                          : String(suggestedInstallmentAmount || "")
+                      }
+                      onChange={(e) => {
+                        setFirstReceiptAmountEdited(true);
+                        form.setValue(
+                          "firstReceiptPaidAmount",
+                          e.target.value === "" ? null : Number(e.target.value)
+                        );
+                      }}
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* PÓLIZA COMPARTIDA ENTRE 2 AGENTES */}
+          <div className="md:col-span-2 p-3 rounded-lg border border-blue-500/30 bg-blue-500/5 space-y-2.5">
+            <label className="flex items-center gap-2 cursor-pointer text-xs font-semibold text-blue-800 dark:text-blue-300">
+              <input
+                type="checkbox"
+                checked={isShared}
+                onChange={(e) => {
+                  const checked = e.target.checked;
+                  setIsShared(checked);
+                  if (!checked) {
+                    form.setValue("sharedWithUserId", "");
+                    form.setValue("sharedPercentage", 0);
+                  } else {
+                    form.setValue("sharedPercentage", 50);
+                  }
+                }}
+                className="rounded border-blue-500"
+              />
+              <Users className="w-3.5 h-3.5 text-blue-600" />
+              ¿Póliza compartida entre 2 agentes? (Split % de PE y PPC)
+            </label>
+
+            {isShared && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 pt-1">
+                <div className="sm:col-span-2 space-y-1">
+                  <Label className="text-[11px]">Co-Agente Participante</Label>
+                  <select
+                    className={selectClassName}
+                    value={watchedSharedWithUserId || ""}
+                    onChange={(e) => form.setValue("sharedWithUserId", e.target.value)}
+                  >
+                    <option value="">Selecciona agente...</option>
+                    {agencyAgents
+                      .filter((a) => a.id !== (watchedOwnerAgentId || currentUserId))
+                      .map((ag) => (
+                        <option key={ag.id} value={ag.id}>
+                          {ag.name} ({ag.email})
+                        </option>
+                      ))}
+                  </select>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[11px]">% Co-Agente (1-99)</Label>
+                  <Input
+                    type="number"
+                    min="1"
+                    max="99"
+                    value={watchedSharedPercentage || 50}
+                    onChange={(e) =>
+                      form.setValue("sharedPercentage", Number(e.target.value) || 0)
+                    }
+                  />
+                  <span className="text-[10px] text-muted-foreground block">
+                    Titular: {Math.max(0, 100 - (Number(watchedSharedPercentage) || 0))}%
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* CAPTURA DE RENOVACIÓN */}
+          <div className="md:col-span-2">
+            <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
+              <input
+                type="checkbox"
+                checked={Boolean(watchedIsRenewalCapture)}
+                onChange={(e) => {
+                  form.setValue("isRenewalCapture", e.target.checked);
+                  if (e.target.checked) {
+                    form.setValue("subStatus", "RENOVACION");
+                  } else if (form.getValues("subStatus") === "RENOVACION") {
+                    form.setValue("subStatus", "");
+                  }
+                }}
+              />
+              🔄 Captura de Renovación (Año 2+): no contar en Ranking/Tablero de Venta Nueva
+            </label>
           </div>
 
           {/* BOTÓN DE REVELACIÓN PROGRESIVA */}

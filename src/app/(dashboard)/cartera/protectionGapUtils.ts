@@ -71,9 +71,10 @@ export function analyzeClientBlindaje(
 
   const vidaPolicies = activePolicies.filter((p: any) => {
     const r = (p.ramo || "").toUpperCase();
+    const obj = (p.vidaObjetivo || "").toUpperCase();
     const prod = (p.product || "").toLowerCase();
     return (
-      r === "VIDA_INDIVIDUAL" ||
+      (r === "VIDA_INDIVIDUAL" && obj !== "RETIRO" && obj !== "AHORRO" && obj !== "EDUCACION") ||
       r === "VIDA_GRUPO" ||
       prod.includes("temporal") ||
       prod.includes("orvi") ||
@@ -84,9 +85,11 @@ export function analyzeClientBlindaje(
 
   const retiroPolicies = activePolicies.filter((p: any) => {
     const r = (p.ramo || "").toUpperCase();
+    const obj = (p.vidaObjetivo || "").toUpperCase();
     const prod = (p.product || "").toLowerCase();
     return (
       r === "AHORRO_RETIRO" ||
+      (r === "VIDA_INDIVIDUAL" && (obj === "RETIRO" || obj === "AHORRO" || obj === "EDUCACION")) ||
       prod.includes("ppr") ||
       prod.includes("retiro") ||
       prod.includes("dotal") ||

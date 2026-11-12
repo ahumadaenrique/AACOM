@@ -212,6 +212,7 @@ model User {
   agentReviews         PerformanceReview[]       @relation("AgentReviews")
   evaluatedReviews     PerformanceReview[]       @relation("EvaluatedReviews")
   policies             Policy[]
+  sharedPolicies       Policy[]                  @relation("SharedPolicies")
   pollVotes            PollVote[]
   pushSubscriptions    PushSubscription[]
   Task                 Task[]
@@ -336,9 +337,17 @@ model Policy {
   observations          String?
   product               String?
   agencyId              String?
+  subRamo               String?
+  vidaObjetivo          String?
+  sharedWithUserId      String?
+  sharedPercentage      Float?          @default(0)
+  adminApproved         Boolean         @default(true)
+  isRenewalCapture      Boolean         @default(false)
+  sourceEmissionId      String?
   agency                Agency?         @relation(fields: [agencyId], references: [id])
   client                Client?         @relation(fields: [clientId], references: [id], onDelete: SetNull)
   user                  User            @relation(fields: [userId], references: [id])
+  sharedWithUser        User?           @relation("SharedPolicies", fields: [sharedWithUserId], references: [id], onDelete: SetNull)
   receipts              PolicyReceipt[]
 
   @@index([agencyId])
@@ -346,6 +355,8 @@ model Policy {
   @@index([userId])
   @@index([status])
   @@index([isArchived])
+  @@index([effectiveDate])
+  @@index([sharedWithUserId])
 }
 
 model PolicyReceipt {
@@ -361,6 +372,8 @@ model PolicyReceipt {
   amount            Float     @default(0)
   status            String    @default("PENDIENTE")
   paidAt            DateTime?
+  paidAmount        Float?
+  adminApproved     Boolean   @default(true)
   paymentNotes      String?
   syncedEmissionId  String?
   createdAt         DateTime  @default(now())
@@ -373,6 +386,7 @@ model PolicyReceipt {
   @@index([userId])
   @@index([dueDate])
   @@index([status])
+  @@index([paidAt])
 }
 
 model Content {

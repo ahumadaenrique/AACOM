@@ -1534,15 +1534,15 @@ export default function AdminClient({ initialBootstrap }: { initialBootstrap?: a
                     <Award className="h-4.5 w-4.5" /> Configuración del Ranking y Campaña de Premiación (#1)
                   </CardTitle>
                   <CardDescription className="text-xs">
-                    Elige el criterio oficial para ordenar el Ranking de tu promotoría y sube tu campaña de incentivos.
+                    Elige el criterio oficial para ordenar el Ranking (Primas en MXN desde Mi Cartera, ADN o 25 Puntos) y sube tu campaña de incentivos.
                   </CardDescription>
                 </div>
                 <div className="flex flex-wrap items-center gap-1.5">
                   {([
                     { id: "ADN" as RankingMetricMode, label: "🧬 Por ADN's" },
                     { id: "POINTS_25" as RankingMetricMode, label: "⚡ 25 Puntos" },
-                    { id: "PRIMA_PAGADA" as RankingMetricMode, label: "💰 Primas Pagadas" },
-                    { id: "PRIMA_EMITIDA" as RankingMetricMode, label: "📈 Primas Emitidas" },
+                    { id: "PRIMA_PAGADA" as RankingMetricMode, label: "💰 Primas Pagadas (MXN)" },
+                    { id: "PRIMA_EMITIDA" as RankingMetricMode, label: "📈 Primas Emitidas (MXN)" },
                   ]).map((opt) => {
                     const active = rankingMetricMode === opt.id;
                     return (
@@ -1561,6 +1561,12 @@ export default function AdminClient({ initialBootstrap }: { initialBootstrap?: a
                       </button>
                     );
                   })}
+                  <a
+                    href="/ranking"
+                    className="px-3 py-1.5 rounded-lg text-xs font-extrabold bg-white text-amber-800 border border-amber-300 hover:bg-amber-50 transition-all"
+                  >
+                    Temporalidad, Ramos y Visto Bueno →
+                  </a>
                 </div>
               </div>
             </CardHeader>

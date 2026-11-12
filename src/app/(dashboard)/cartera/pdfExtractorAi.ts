@@ -4,7 +4,9 @@ export interface ExtractedPolicyData {
   policyNumber: string;
   insuranceCompany: string;
   product: string;
-  ramo: "VIDA_INDIVIDUAL" | "AHORRO_RETIRO" | "GMM" | "AUTOS" | "VIDA_GRUPO" | "DANOS";
+  ramo: "VIDA_INDIVIDUAL" | "AHORRO_RETIRO" | "GMM" | "AUTOS" | "VIDA_GRUPO" | "DANOS" | "OTROS";
+  subRamo?: "INDIVIDUAL" | "GRUPO" | "COLECTIVO" | "FLOTILLA";
+  vidaObjetivo?: "PROTECCION" | "AHORRO" | "RETIRO" | "EDUCACION" | null;
   tipoVigencia: "LARGO_PLAZO" | "ANUAL_RENOVABLE";
   contractor: string;
   contractorRfc: string;
@@ -21,20 +23,26 @@ export interface ExtractedPolicyData {
   observations: string;
 }
 
-const EXTRACTION_PROMPT = `Eres un experto suscriptor y analista de pólizas de seguros en México (Insignia Life, GNP, AXA, Seguros Monterrey New York Life, MetLife, Allianz, Prudential, Mapfre, Quálitas, Skandia, Bupa, Chubb, Zurich).
+const EXTRACTION_PROMPT = `Eres un experto suscriptor y analista de pólizas de seguros en México (Insignia Life, La Latinoamericana Seguros, Plan Seguro, GNP, AXA, Seguros Monterrey New York Life, MetLife, Allianz, Prudential, Mapfre, Quálitas, Skandia, Bupa, Chubb, Zurich).
 Analiza el documento PDF adjunto (carátula de póliza de seguro) y extrae con precisión quirúrgica los datos solicitados en formato JSON estricto.
 
 REGLAS DE EXTRACCIÓN PARA MÉXICO:
 1. "policyNumber": Número de póliza exacto (sin la palabra "Póliza", solo el identificador alfanumérico).
-2. "insuranceCompany": Nombre comercial limpio de la aseguradora (ej. "Insignia Life", "GNP Seguros", "AXA Seguros", "Seguros Monterrey (SMNYL)", "MetLife", "Allianz", "Prudential", "Mapfre", "Quálitas").
+2. "insuranceCompany": Nombre comercial limpio de la aseguradora (ej. "Insignia Life", "La Latinoamericana Seguros", "Plan Seguro", "GNP Seguros", "AXA Seguros", "Seguros Monterrey NYL", "MetLife", "Allianz", "Prudential", "Mapfre", "Quálitas").
 3. "product": Nombre del plan o producto en la carátula (ej. "Temporal 20", "Orvi 99", "Vida Pagos Limitados", "Alfa Medical", "Línea Azul", "Imagina Ser").
 4. "ramo": Clasifica en uno de estos valores exactos:
-   - "VIDA_INDIVIDUAL" (seguros de vida protección, temporales, vitalicios, pagos limitados)
-   - "AHORRO_RETIRO" (PPR, planes de retiro Art. 151/93, dotales mixtos o educativos)
-   - "GMM" (Gastos Médicos Mayores o salud individual/familiar)
-   - "AUTOS" (seguro de automóviles o pickups)
+   - "VIDA_INDIVIDUAL" (seguros de vida individual: protección, ahorro, retiro/PPR o educación)
    - "VIDA_GRUPO" (vida colectivo o empresarial)
+   - "GMM" (Gastos Médicos Mayores o salud individual o colectiva)
+   - "AUTOS" (seguro de automóviles o flotillas)
    - "DANOS" (hogar, empresarial, responsabilidad civil, daños)
+   - "OTROS" (otros seguros distintos a los anteriores)
+   4b. "subRamo": Clasifica el sub-ramo exacto según el tipo:
+   - "INDIVIDUAL" (si es Vida Individual, GMM Individual, Autos Individual, Daños u Otros)
+   - "GRUPO" (si es Vida Grupo)
+   - "COLECTIVO" (si es GMM Colectivo / Empresarial / PyME)
+   - "FLOTILLA" (si es Autos Flotilla / Empresarial)
+   4c. "vidaObjetivo": SOLO si es "VIDA_INDIVIDUAL", indica el objetivo comercial: "PROTECCION", "AHORRO", "RETIRO" o "EDUCACION" (o null para otros ramos).
 5. "tipoVigencia":
    - "LARGO_PLAZO" si es Vida Individual o Ahorro/Retiro (plazo > 1 año, ej. 10, 15, 20 años o vitalicio).
    - "ANUAL_RENOVABLE" si es GMM, Autos, Daños o Vida Grupo de vigencia anual.
@@ -186,13 +194,17 @@ export function extractPolicyFromPdfBufferLocal(
   const cleanFileName = fileName.replace(/\.pdf$/i, "");
 
   // 1. Aseguradora
-  let insuranceCompany = "Insignia Life";
-  if (/GNP|GRUPO NACIONAL PROVINCIAL/i.test(text) || /GNP/i.test(cleanFileName)) {
+  let insuranceCompany = "";
+  if (/LATINOAMERICANA|LA\s+LATINO\b/i.test(text) || /LATINO/i.test(cleanFileName)) {
+    insuranceCompany = "La Latinoamericana Seguros";
+  } else if (/PLAN\s+SEGURO/i.test(text) || /PLAN\s*SEGURO/i.test(cleanFileName)) {
+    insuranceCompany = "Plan Seguro";
+  } else if (/GNP|GRUPO NACIONAL PROVINCIAL/i.test(text) || /GNP/i.test(cleanFileName)) {
     insuranceCompany = "GNP Seguros";
   } else if (/\bAXA\b/i.test(text) || /AXA/i.test(cleanFileName)) {
     insuranceCompany = "AXA Seguros";
   } else if (/MONTERREY|SMNYL|NEW YORK LIFE/i.test(text) || /SMNYL|MONTERREY/i.test(cleanFileName)) {
-    insuranceCompany = "Seguros Monterrey (SMNYL)";
+    insuranceCompany = "Seguros Monterrey NYL";
   } else if (/METLIFE/i.test(text) || /METLIFE/i.test(cleanFileName)) {
     insuranceCompany = "MetLife";
   } else if (/ALLIANZ/i.test(text) || /ALLIANZ/i.test(cleanFileName)) {
@@ -236,23 +248,57 @@ export function extractPolicyFromPdfBufferLocal(
 
   // 5. Ramo y Producto
   let ramo: ExtractedPolicyData["ramo"] = "VIDA_INDIVIDUAL";
+  let subRamo: ExtractedPolicyData["subRamo"] = "INDIVIDUAL";
+  let vidaObjetivo: ExtractedPolicyData["vidaObjetivo"] = "PROTECCION";
   let tipoVigencia: ExtractedPolicyData["tipoVigencia"] = "LARGO_PLAZO";
   let product = "";
 
-  if (/GASTOS\s*M[EÉ]DICOS|ALFA\s*MEDICAL|L[IÍ]NEA\s*AZUL|SALUD|VIP\s*M[EÉ]DICO/i.test(text)) {
-    ramo = "GMM";
+  if (/VIDA\s*GRUPO/i.test(text)) {
+    ramo = "VIDA_GRUPO";
+    subRamo = "GRUPO";
+    vidaObjetivo = null;
     tipoVigencia = "ANUAL_RENOVABLE";
-    product = "Gastos Médicos Mayores";
+    product = "Vida Grupo";
+  } else if (/GASTOS\s*M[EÉ]DICOS|ALFA\s*MEDICAL|L[IÍ]NEA\s*AZUL|SALUD|VIP\s*M[EÉ]DICO|PLAN\s*SEGURO/i.test(text)) {
+    ramo = "GMM";
+    subRamo = /COLECTIV|EMPRESARIAL|GRUPO/i.test(text) ? "COLECTIVO" : "INDIVIDUAL";
+    vidaObjetivo = null;
+    tipoVigencia = "ANUAL_RENOVABLE";
+    product = subRamo === "COLECTIVO" ? "Gastos Médicos Colectivo" : "Gastos Médicos Mayores";
   } else if (/AUTOM[OÓ]VIL|VEH[IÍ]CULO|SERIE\s*VIN|PLACAS|COBERTURA\s*AMPLIA/i.test(text)) {
     ramo = "AUTOS";
+    subRamo = /FLOTILLA|FLOTA/i.test(text) ? "FLOTILLA" : "INDIVIDUAL";
+    vidaObjetivo = null;
     tipoVigencia = "ANUAL_RENOVABLE";
-    product = "Seguro de Auto";
-  } else if (/RETIRO|PPR|ART[IÍ]CULO\s*151|IMAGINA\s*SER|CONSOLIDA|OPTIMAXX|DOTAL/i.test(text)) {
-    ramo = "AHORRO_RETIRO";
+    product = subRamo === "FLOTILLA" ? "Seguro de Flotilla" : "Seguro de Auto";
+  } else if (/RETIRO|PPR|ART[IÍ]CULO\s*151|IMAGINA\s*SER|CONSOLIDA|OPTIMAXX/i.test(text)) {
+    ramo = "VIDA_INDIVIDUAL";
+    subRamo = "INDIVIDUAL";
+    vidaObjetivo = "RETIRO";
     tipoVigencia = "LARGO_PLAZO";
-    product = "Plan de Ahorro / Retiro";
+    product = "Plan de Retiro / PPR";
+  } else if (/DOTAL|AHORRO|INVER/i.test(text)) {
+    ramo = "VIDA_INDIVIDUAL";
+    subRamo = "INDIVIDUAL";
+    vidaObjetivo = "AHORRO";
+    tipoVigencia = "LARGO_PLAZO";
+    product = "Plan de Ahorro";
+  } else if (/EDUCA|SEGU\s*BECA|UNIVERSI/i.test(text)) {
+    ramo = "VIDA_INDIVIDUAL";
+    subRamo = "INDIVIDUAL";
+    vidaObjetivo = "EDUCACION";
+    tipoVigencia = "LARGO_PLAZO";
+    product = "Plan Educacional";
+  } else if (/DA[ÑN]OS|HOGAR|RESPONSABILIDAD\s*CIVIL|PYME/i.test(text)) {
+    ramo = "DANOS";
+    subRamo = "INDIVIDUAL";
+    vidaObjetivo = null;
+    tipoVigencia = "ANUAL_RENOVABLE";
+    product = "Seguro de Daños";
   } else {
     ramo = "VIDA_INDIVIDUAL";
+    subRamo = "INDIVIDUAL";
+    vidaObjetivo = "PROTECCION";
     tipoVigencia = "LARGO_PLAZO";
     if (/VITALICIO/i.test(text)) product = "Vitalicio";
     else if (/TEMPORAL/i.test(text)) product = "Temporal";
@@ -290,6 +336,8 @@ export function extractPolicyFromPdfBufferLocal(
     insuranceCompany,
     product,
     ramo,
+    subRamo,
+    vidaObjetivo,
     tipoVigencia,
     contractor,
     contractorRfc,
@@ -390,22 +438,43 @@ export async function extractPolicyWithGeminiFromPdfBase64(
           .trim();
         const parsed = JSON.parse(cleaned);
 
+        const parsedRamo = [
+          "VIDA_INDIVIDUAL",
+          "AHORRO_RETIRO",
+          "GMM",
+          "AUTOS",
+          "VIDA_GRUPO",
+          "DANOS",
+          "OTROS",
+        ].includes(parsed.ramo)
+          ? parsed.ramo
+          : "VIDA_INDIVIDUAL";
+
+        const parsedSubRamo = ["INDIVIDUAL", "GRUPO", "COLECTIVO", "FLOTILLA"].includes(
+          parsed.subRamo
+        )
+          ? parsed.subRamo
+          : parsedRamo === "VIDA_GRUPO"
+          ? "GRUPO"
+          : "INDIVIDUAL";
+
+        const parsedVidaObj = ["PROTECCION", "AHORRO", "RETIRO", "EDUCACION"].includes(
+          parsed.vidaObjetivo
+        )
+          ? parsed.vidaObjetivo
+          : parsedRamo === "AHORRO_RETIRO"
+          ? "RETIRO"
+          : parsedRamo === "VIDA_INDIVIDUAL"
+          ? "PROTECCION"
+          : null;
+
         return {
           policyNumber: String(parsed.policyNumber || "").trim(),
-          insuranceCompany: String(
-            parsed.insuranceCompany || "Insignia Life"
-          ).trim(),
+          insuranceCompany: String(parsed.insuranceCompany || "").trim(),
           product: String(parsed.product || "").trim(),
-          ramo: ([
-            "VIDA_INDIVIDUAL",
-            "AHORRO_RETIRO",
-            "GMM",
-            "AUTOS",
-            "VIDA_GRUPO",
-            "DANOS",
-          ].includes(parsed.ramo)
-            ? parsed.ramo
-            : "VIDA_INDIVIDUAL") as ExtractedPolicyData["ramo"],
+          ramo: (parsedRamo === "AHORRO_RETIRO" ? "VIDA_INDIVIDUAL" : parsedRamo) as ExtractedPolicyData["ramo"],
+          subRamo: parsedSubRamo,
+          vidaObjetivo: parsedVidaObj,
           tipoVigencia:
             parsed.tipoVigencia === "ANUAL_RENOVABLE"
               ? "ANUAL_RENOVABLE"

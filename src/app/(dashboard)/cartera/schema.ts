@@ -49,7 +49,22 @@ export const policySchema = z.object({
   product: z.string().optional().nullable(),
   insuranceCompany: z.string().optional().nullable(),
   ramo: z.string().optional().default("VIDA_INDIVIDUAL"),
+  subRamo: z.string().optional().nullable(),
+  vidaObjetivo: z.string().optional().nullable(),
   tipoVigencia: z.string().optional().default("LARGO_PLAZO"),
+  ownerAgentId: z.string().optional().nullable(),
+  sharedWithUserId: z.string().optional().nullable(),
+  sharedPercentage: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? 0 : Number(v)),
+    z.number({ invalid_type_error: "El porcentaje compartido debe ser numérico" }).min(0).max(100).optional().nullable()
+  ),
+  firstReceiptPaid: z.boolean().optional().default(false),
+  firstReceiptPaidDate: z.union([z.string(), z.date()]).optional().nullable(),
+  firstReceiptPaidAmount: z.preprocess(
+    (v) => (v === "" || v === null || v === undefined ? null : Number(v)),
+    z.number({ invalid_type_error: "El monto pagado debe ser numérico" }).min(0).nullable().optional()
+  ),
+  isRenewalCapture: z.boolean().optional().default(false),
   currency: z.string().optional().default("MXN"),
   originalPremium: z.preprocess(
     (v) => (v === "" || v === null || v === undefined ? null : Number(v)),

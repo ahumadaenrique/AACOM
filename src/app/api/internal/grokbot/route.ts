@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { SALES_ACTIVITIES } from "@/lib/constants";
+import { resolvePeriodDateRange } from "@/lib/ramosCatalog";
+import { computeAgencyCarteraProduction } from "@/lib/carteraProductionEngine";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -470,7 +472,13 @@ export async function GET(req: NextRequest) {
       const filteredAgentIds = resolveAgentFilterIds(agencyUsers, searchParams);
       const targetUserIds = filteredAgentIds ?? allAgencyUserIds;
 
-      const [emissions, budgets, rankingSetting] = await Promise.all([
+      const periodRange = resolvePeriodDateRange({
+        periodMode: month !== null ? "MENSUAL" : "ANUAL",
+        year,
+        subPeriod: month ?? 1,
+      });
+
+      const [emissions, budgets, rankingSetting, carteraEngine] = await Promise.all([
         prisma.agentEmission.findMany({
           where: {
             agencyId: lockedAgencyId,
@@ -490,6 +498,13 @@ export async function GET(req: NextRequest) {
         }),
         prisma.setting.findUnique({
           where: { key: `ranking_metric_${lockedAgencyId}` },
+        }),
+        computeAgencyCarteraProduction({
+          agencyId: lockedAgencyId,
+          startYmd: periodRange.startYmd,
+          endYmd: periodRange.endYmd,
+          filterAgentId:
+            filteredAgentIds && filteredAgentIds.length === 1 ? filteredAgentIds[0] : undefined,
         }),
       ]);
 
@@ -628,7 +643,7 @@ export async function GET(req: NextRequest) {
             agentName: u?.name || u?.email || "Agente",
             agentEmail: u?.email || "",
             companyName: em.companyName,
-            policyNumber: em.policyNumber,
+          policyNumber: em.policyNumber,
             clientName: em.clientName,
             ramo: em.ramo,
             issueDate: em.issueDate,
@@ -640,6 +655,16 @@ export async function GET(req: NextRequest) {
             notes: em.notes,
           };
         }),
+        carteraUnified: {
+          currency: "MXN",
+          period: periodRange,
+          totals: carteraEngine.totals,
+          byRamoGroup: carteraEngine.byRamoGroup,
+          bySubRamo: carteraEngine.bySubRamo,
+          byVidaObjetivo: carteraEngine.byVidaObjetivo,
+          byCompany: carteraEngine.byCompany,
+          policiesCountInLedger: carteraEngine.ledgerRows.length,
+        },
       });
     }
 
@@ -830,8 +855,15 @@ export async function GET(req: NextRequest) {
       const targetUserIds = filteredAgentIds ?? allAgencyUserIds;
 
       const policyWhere: any = {
-        userId: { in: targetUserIds },
-        OR: [{ agencyId: lockedAgencyId }, { agencyId: null }],
+        AND: [
+          {
+            OR: [
+              { userId: { in: targetUserIds } },
+              { sharedWithUserId: { in: targetUserIds } },
+            ],
+          },
+          { OR: [{ agencyId: lockedAgencyId }, { agencyId: null }] },
+        ],
         isArchived: false,
         deletedAt: null,
       };
@@ -845,16 +877,14 @@ export async function GET(req: NextRequest) {
         policyWhere.insuranceCompany = { contains: companyParam, mode: "insensitive" };
       }
       if (searchParam) {
-        policyWhere.AND = [
-          {
-            OR: [
-              { policyNumber: { contains: searchParam, mode: "insensitive" } },
-              { contractor: { contains: searchParam, mode: "insensitive" } },
-              { insured: { contains: searchParam, mode: "insensitive" } },
-              { client: { name: { contains: searchParam, mode: "insensitive" } } },
-            ],
-          },
-        ];
+        policyWhere.AND.push({
+          OR: [
+            { policyNumber: { contains: searchParam, mode: "insensitive" } },
+            { contractor: { contains: searchParam, mode: "insensitive" } },
+            { insured: { contains: searchParam, mode: "insensitive" } },
+            { client: { name: { contains: searchParam, mode: "insensitive" } } },
+          ],
+        });
       }
 
       const horizonDate = new Date(cdmx.now.getTime() + upcomingDays * 24 * 60 * 60 * 1000);
@@ -892,6 +922,8 @@ export async function GET(req: NextRequest) {
             insuranceCompany: true,
             product: true,
             ramo: true,
+            subRamo: true,
+            vidaObjetivo: true,
             tipoVigencia: true,
             currency: true,
             annualPremium: true,
@@ -903,6 +935,10 @@ export async function GET(req: NextRequest) {
             approximateBonus: true,
             observations: true,
             userId: true,
+            sharedWithUserId: true,
+            sharedPercentage: true,
+            adminApproved: true,
+            isRenewalCapture: true,
             client: {
               select: {
                 id: true,
@@ -938,6 +974,8 @@ export async function GET(req: NextRequest) {
             dueDate: true,
             graceEndDate: true,
             amount: true,
+            paidAmount: true,
+            paidAt: true,
             status: true,
             paymentNotes: true,
             policy: {
