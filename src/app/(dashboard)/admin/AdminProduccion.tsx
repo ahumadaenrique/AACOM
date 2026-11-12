@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import {
   getProductionDashboardData,
   createEmission,
@@ -28,9 +29,10 @@ import {
   updateAgentBudget,
   syncBudgetsFromPea,
   saveInsuranceCompany,
+  toggleInsuranceCompanyActive,
   deleteInsuranceCompany,
 } from "@/app/actions/productionActions";
-import { RAMOS_CATALOGO } from "@/lib/productionConstants";
+import { RAMOS_CATALOGO, DEFAULT_COMPANIES } from "@/lib/productionConstants";
 import {
   Shield,
   Award,
@@ -177,13 +179,24 @@ export default function AdminProduccion() {
     fetchData();
   }, [selectedYear, selectedMonth, selectedAgency, filterAgentId, filterCompanyId]);
 
-  // Set default agent and company when data loads
+  // Set default agent and company when data loads or agency switches
   useEffect(() => {
-    if (data?.agents?.length > 0 && !formAgentId) {
-      setFormAgentId(data.agents[0].id);
+    if (data?.agents?.length > 0) {
+      const hasAgentInCurrentAgency = data.agents.some((a: any) => a.id === formAgentId);
+      if (!formAgentId || !hasAgentInCurrentAgency) {
+        setFormAgentId(data.agents[0].id);
+      }
+    } else {
+      setFormAgentId("");
     }
-    if (data?.companies?.length > 0 && !formCompanyId) {
-      setFormCompanyId(data.companies[0].id);
+
+    if (data?.companies?.length > 0) {
+      const hasCompanyInCurrentAgency = data.companies.some((c: any) => c.id === formCompanyId);
+      if (!formCompanyId || !hasCompanyInCurrentAgency) {
+        setFormCompanyId(data.companies[0].id);
+      }
+    } else {
+      setFormCompanyId("");
     }
   }, [data]);
 
@@ -462,12 +475,44 @@ export default function AdminProduccion() {
         setCompanyNameInput("");
         setCompanyColorInput("#0284c7");
         setCompanyLogoUrlInput("");
-        setFeedback({ type: "success", text: "Aseguradora guardada exitosamente." });
+        setFeedback({ type: "success", text: "Aseguradora guardada exitosamente para esta agencia." });
         fetchData();
       } else {
         alert("Error: " + res.message);
       }
     });
+  };
+
+  // 7.1 Toggle Company Active Switch (Isolated per Agency)
+  const handleToggleCompanyActive = async (comp: any, nextActive: boolean) => {
+    setData((prev: any) => {
+      if (!prev) return prev;
+      const updatedCatalog = (prev.catalogCompanies || []).map((c: any) =>
+        c.id === comp.id ? { ...c, active: nextActive } : c
+      );
+      const updatedActive = updatedCatalog
+        .filter((c: any) => c.active)
+        .sort((a: any, b: any) => (a.order - b.order) || a.name.localeCompare(b.name));
+      return {
+        ...prev,
+        catalogCompanies: updatedCatalog,
+        companies: updatedActive,
+      };
+    });
+
+    const res = await toggleInsuranceCompanyActive(comp.id, nextActive, selectedAgency);
+    if (res.success) {
+      setFeedback({
+        type: "success",
+        text: nextActive
+          ? `✓ ${comp.name} activada para esta promotoría.`
+          : `✓ ${comp.name} desactivada para esta promotoría (sin afectar a otras agencias).`,
+      });
+      fetchData();
+    } else {
+      alert("Error: " + res.message);
+      fetchData();
+    }
   };
 
   // 8. Handle Logo Image Upload with Client-Side Compression
@@ -563,9 +608,12 @@ export default function AdminProduccion() {
 
   const kpis = data?.kpis;
   const companies = data?.companies || [];
+  const catalogCompanies = data?.catalogCompanies || companies;
   const agentMatrix = data?.agentMatrix || [];
   const emissions = data?.emissions || [];
   const agencies = data?.agencies || [];
+  const currentAgencyName =
+    agencies.find((ag: any) => ag.id === selectedAgency)?.name || "esta promotoría";
   const monthName = MONTHS.find((m) => m.value === selectedMonth)?.name || "";
 
   // Filter emissions in table by search query
@@ -683,7 +731,11 @@ export default function AdminProduccion() {
                 <Building2 className="h-4 w-4 text-slate-400" />
                 <select
                   value={selectedAgency}
-                  onChange={(e) => setSelectedAgency(e.target.value)}
+                  onChange={(e) => {
+                    setFilterAgentId("ALL");
+                    setFilterCompanyId("ALL");
+                    setSelectedAgency(e.target.value);
+                  }}
                   className="text-xs font-bold py-1.5 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm cursor-pointer"
                 >
                   {agencies.map((ag: any) => (
@@ -758,10 +810,28 @@ export default function AdminProduccion() {
         </div>
       )}
 
-      {/* SUBTAB 1: DASHBOARD DE RESULTADOS (DISEÑO FIEL Y SUPERIOR AL REPORTE AACOM) */}
+      {/* SUBTAB 1: DASHBOARD DE RESULTADOS */}
       {activeSubTab === "dashboard" && (
         <div className="space-y-6">
-          {/* Header Banner Estilo Reporte AACOM */}
+          {!loading && companies.length === 0 && (
+            <div className="p-4 rounded-xl border border-amber-300 dark:border-amber-800 bg-amber-50/80 dark:bg-amber-950/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div className="text-xs text-amber-900 dark:text-amber-200">
+                <strong className="font-black">Aún no hay aseguradoras activadas en esta promotoría.</strong>{" "}
+                Enciende las compañías con las que trabaja tu equipo para habilitar sus columnas en el tablero.
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => setActiveSubTab("companias")}
+                className="text-xs font-bold bg-amber-600 hover:bg-amber-700 text-white shrink-0"
+              >
+                <Building2 className="h-3.5 w-3.5 mr-1.5" />
+                Activar Aseguradoras
+              </Button>
+            </div>
+          )}
+
+          {/* Header Banner */}
           <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-teal-900 via-teal-800 to-emerald-900 p-6 text-white shadow-xl">
             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
               <div className="space-y-1">
@@ -1307,18 +1377,28 @@ export default function AdminProduccion() {
                     <label className="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-zinc-400 mb-1">
                       Compañía de Seguros *
                     </label>
-                    <select
-                      value={formCompanyId}
-                      onChange={(e) => setFormCompanyId(e.target.value)}
-                      required
-                      className="w-full text-sm font-semibold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
-                    >
-                      {companies.map((comp: any) => (
-                        <option key={comp.id} value={comp.id}>
-                          {comp.name}
-                        </option>
-                      ))}
-                    </select>
+                    {companies.length === 0 ? (
+                      <button
+                        type="button"
+                        onClick={() => setActiveSubTab("companias")}
+                        className="w-full text-left text-xs font-bold py-2.5 px-3 rounded-lg border border-amber-300 bg-amber-50 text-amber-900 hover:bg-amber-100 transition-colors"
+                      >
+                        Sin aseguradoras activas — clic aquí para encenderlas →
+                      </button>
+                    ) : (
+                      <select
+                        value={formCompanyId}
+                        onChange={(e) => setFormCompanyId(e.target.value)}
+                        required
+                        className="w-full text-sm font-semibold py-2 px-3 rounded-lg border border-slate-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-sm"
+                      >
+                        {companies.map((comp: any) => (
+                          <option key={comp.id} value={comp.id}>
+                            {comp.name}
+                          </option>
+                        ))}
+                      </select>
+                    )}
                   </div>
 
                   {/* Fecha de Emisión */}
@@ -1577,19 +1657,22 @@ export default function AdminProduccion() {
         </div>
       )}
 
-      {/* SUBTAB 3: CATÁLOGO DE ASEGURADORAS & LOGOS */}
+      {/* SUBTAB 3: CATÁLOGO DE ASEGURADORAS & LOGOS (AISLADO POR AGENCIA) */}
       {activeSubTab === "companias" && (
         <div className="space-y-6">
           <Card className="border border-slate-200 dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950">
             <CardHeader className="py-4 border-b border-slate-200 dark:border-zinc-800">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div>
-                  <CardTitle className="text-base font-black text-slate-800 dark:text-zinc-100 flex items-center gap-2">
+                  <CardTitle className="text-base font-black text-slate-800 dark:text-zinc-100 flex flex-wrap items-center gap-2">
                     <Building2 className="h-5 w-5 text-teal-700" />
-                    Catálogo de Aseguradoras & Logos
+                    <span>Catálogo de Aseguradoras & Logos</span>
+                    <Badge className="bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 font-bold text-[11px]">
+                      {companies.length} activas de {catalogCompanies.length}
+                    </Badge>
                   </CardTitle>
                   <CardDescription className="text-xs mt-1">
-                    Administra las compañías aseguradoras y sube sus logotipos para que el dashboard sea sumamente gráfico.
+                    Configuración exclusiva y aislada para <strong>{currentAgencyName}</strong>. Encender, apagar, subir logos o agregar compañías aquí nunca afecta a ninguna otra promotoría.
                   </CardDescription>
                 </div>
                 <Button
@@ -1598,10 +1681,10 @@ export default function AdminProduccion() {
                     setCompanyNameInput("");
                     setCompanyColorInput("#0284c7");
                     setCompanyLogoUrlInput("");
-                    setCompanyOrderInput(companies.length + 1);
+                    setCompanyOrderInput(catalogCompanies.length + 1);
                     setCompanyModalOpen(true);
                   }}
-                  className="text-xs font-bold bg-teal-700 hover:bg-teal-800 text-white"
+                  className="text-xs font-bold bg-teal-700 hover:bg-teal-800 text-white shrink-0"
                 >
                   <Plus className="h-4 w-4 mr-1.5" /> Nueva Aseguradora
                 </Button>
@@ -1610,75 +1693,104 @@ export default function AdminProduccion() {
 
             <CardContent className="p-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-                {companies.map((comp: any) => (
-                  <div
-                    key={comp.id}
-                    className="p-4 rounded-xl border border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/50 flex flex-col justify-between gap-3 hover:shadow-md transition-shadow"
-                  >
-                    <div className="space-y-2">
-                      <div className="h-16 rounded-lg bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 p-2 flex items-center justify-center">
-                        {comp.logoUrl ? (
-                          <img
-                            src={comp.logoUrl}
-                            alt={comp.name}
-                            className="max-h-full max-w-full object-contain"
+                {catalogCompanies.map((comp: any) => {
+                  const isBaseCompany = DEFAULT_COMPANIES.some(
+                    (base) => base.name.trim().toLowerCase() === String(comp.name || "").trim().toLowerCase()
+                  );
+                  return (
+                    <div
+                      key={comp.id}
+                      className={`p-4 rounded-xl border flex flex-col justify-between gap-3 transition-all ${
+                        comp.active
+                          ? "border-teal-300 dark:border-teal-800 bg-teal-50/30 dark:bg-teal-950/20 shadow-sm"
+                          : "border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/40 opacity-75"
+                      }`}
+                    >
+                      <div className="space-y-2.5">
+                        <div className="flex items-center justify-between gap-2">
+                          <span
+                            className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full border ${
+                              comp.active
+                                ? "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800"
+                                : "bg-slate-200/70 text-slate-500 border-slate-300 dark:bg-zinc-800 dark:text-zinc-400 dark:border-zinc-700"
+                            }`}
+                          >
+                            {comp.active ? "Activa" : "Inactiva"}
+                          </span>
+                          <Switch
+                            checked={!!comp.active}
+                            onCheckedChange={(checked) => handleToggleCompanyActive(comp, checked)}
+                            className="data-[state=checked]:bg-teal-600"
                           />
-                        ) : (
-                          <div className="flex items-center gap-1.5 text-slate-400 font-bold text-xs">
-                            <Building2 className="h-5 w-5" />
-                            Sin logo cargado
-                          </div>
+                        </div>
+
+                        <div className="h-16 rounded-lg bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800 p-2 flex items-center justify-center">
+                          {comp.logoUrl ? (
+                            <img
+                              src={comp.logoUrl}
+                              alt={comp.name}
+                              className="max-h-full max-w-full object-contain"
+                            />
+                          ) : (
+                            <div className="flex items-center gap-1.5 text-slate-400 font-bold text-xs">
+                              <Building2 className="h-5 w-5" />
+                              Sin logo cargado
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between">
+                          <span className="font-black text-sm text-slate-900 dark:text-zinc-100 truncate">
+                            {comp.name}
+                          </span>
+                          <div
+                            className="h-3 w-3 rounded-full border border-white shadow-sm shrink-0"
+                            style={{ backgroundColor: comp.color || "#0284c7" }}
+                            title={`Color de marca: ${comp.color}`}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-zinc-800">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingCompany(comp);
+                            setCompanyNameInput(comp.name);
+                            setCompanyColorInput(comp.color || "#0284c7");
+                            setCompanyLogoUrlInput(comp.logoUrl || "");
+                            setCompanyOrderInput(comp.order || 0);
+                            setCompanyModalOpen(true);
+                          }}
+                          className="text-xs font-bold text-teal-700 hover:text-teal-800 p-1"
+                        >
+                          <Edit className="h-3.5 w-3.5 mr-1" /> Editar Logo
+                        </Button>
+
+                        {!isBaseCompany && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={async () => {
+                              if (!confirm(`¿Eliminar la aseguradora personalizada "${comp.name}" de ${currentAgencyName}?`)) return;
+                              const res = await deleteInsuranceCompany(comp.id, selectedAgency);
+                              if (res.success) {
+                                fetchData();
+                              } else {
+                                alert("Error: " + res.message);
+                              }
+                            }}
+                            className="text-xs text-slate-400 hover:text-red-600 p-1"
+                            title="Eliminar aseguradora personalizada de esta agencia"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         )}
                       </div>
-
-                      <div className="flex items-center justify-between">
-                        <span className="font-black text-sm text-slate-900 dark:text-zinc-100 truncate">
-                          {comp.name}
-                        </span>
-                        <div
-                          className="h-3 w-3 rounded-full border border-white shadow-sm shrink-0"
-                          style={{ backgroundColor: comp.color || "#0284c7" }}
-                          title={`Color de marca: ${comp.color}`}
-                        />
-                      </div>
                     </div>
-
-                    <div className="flex items-center justify-between pt-2 border-t border-slate-200 dark:border-zinc-800">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditingCompany(comp);
-                          setCompanyNameInput(comp.name);
-                          setCompanyColorInput(comp.color || "#0284c7");
-                          setCompanyLogoUrlInput(comp.logoUrl || "");
-                          setCompanyOrderInput(comp.order || 0);
-                          setCompanyModalOpen(true);
-                        }}
-                        className="text-xs font-bold text-teal-700 hover:text-teal-800 p-1"
-                      >
-                        <Edit className="h-3.5 w-3.5 mr-1" /> Editar Logo
-                      </Button>
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={async () => {
-                          if (!confirm(`¿Eliminar la aseguradora ${comp.name}?`)) return;
-                          const res = await deleteInsuranceCompany(comp.id);
-                          if (res.success) {
-                            fetchData();
-                          } else {
-                            alert("Error: " + res.message);
-                          }
-                        }}
-                        className="text-xs text-slate-400 hover:text-red-600 p-1"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>

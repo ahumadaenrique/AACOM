@@ -199,14 +199,17 @@ export async function markReceiptAsPaid(data: {
       "Cliente Cartera"
     ).trim();
 
-    // Buscar si existe la compañía en el catálogo de InsuranceCompany
-    const companyRecord = await prisma.insuranceCompany.findFirst({
-      where: {
-        active: true,
-        name: { equals: companyName, mode: "insensitive" },
-        OR: [{ agencyId: policy.agencyId }, { agencyId: null }],
-      },
-    });
+    // Buscar si existe la compañía en el catálogo aislado de la agencia
+    const targetCompanyAgencyId = policy.agencyId || ctx.agencyId;
+    const companyRecord = targetCompanyAgencyId
+      ? await prisma.insuranceCompany.findFirst({
+          where: {
+            agencyId: targetCompanyAgencyId,
+            name: { equals: companyName, mode: "insensitive" },
+          },
+          orderBy: { active: "desc" },
+        })
+      : null;
 
     if (syncedEmissionId) {
       const existingEmission = await prisma.agentEmission.findUnique({
@@ -375,13 +378,15 @@ async function syncPolicyEmissionWithProduction(
   }
   if (!clientName) clientName = "Cliente Cartera";
 
-  const companyRecord = await prisma.insuranceCompany.findFirst({
-    where: {
-      active: true,
-      name: { equals: companyName, mode: "insensitive" },
-      OR: [{ agencyId: policy.agencyId }, { agencyId: null }],
-    },
-  });
+  const companyRecord = policy.agencyId
+    ? await prisma.insuranceCompany.findFirst({
+        where: {
+          agencyId: policy.agencyId,
+          name: { equals: companyName, mode: "insensitive" },
+        },
+        orderBy: { active: "desc" },
+      })
+    : null;
 
   const firstReceipt = await prisma.policyReceipt.findFirst({
     where: { policyId: policy.id },

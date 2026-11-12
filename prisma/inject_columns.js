@@ -782,7 +782,8 @@ async function injectColumns() {
       `CREATE INDEX IF NOT EXISTS "AdnDiagnostic_agencyId_createdAt_idx" ON "AdnDiagnostic"("agencyId", "createdAt");`,
       `CREATE INDEX IF NOT EXISTS "AdnDiagnostic_userId_idx" ON "AdnDiagnostic"("userId");`,
       `CREATE INDEX IF NOT EXISTS "Cotizacion_agencyId_createdAt_idx" ON "Cotizacion"("agencyId", "createdAt");`,
-      `CREATE INDEX IF NOT EXISTS "Content_agencyId_type_active_idx" ON "Content"("agencyId", "type", "active");`
+      `CREATE INDEX IF NOT EXISTS "Content_agencyId_type_active_idx" ON "Content"("agencyId", "type", "active");`,
+      `CREATE INDEX IF NOT EXISTS "InsuranceCompany_agencyId_active_idx" ON "InsuranceCompany"("agencyId", "active");`
     ];
     for (const q of soloAgentAndPortalQueries) {
       await client.query(q);
@@ -829,6 +830,249 @@ async function injectColumns() {
         ON CONFLICT ("key") DO UPDATE SET "value" = 'true';
       `);
       console.log("Migrated existing agency WhatsApp planner settings to admin users.");
+    }
+
+    const prodCompMigRes = await client.query(`SELECT "value" FROM "Setting" WHERE "key" = 'production_companies_multitenant_v1';`);
+    if (prodCompMigRes.rows.length === 0 || prodCompMigRes.rows[0].value !== 'true') {
+      const crypto = require('crypto');
+      const normKey = (raw) =>
+        String(raw || '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, ' ');
+      const canonName = (raw) => {
+        const k = normKey(raw);
+        switch (k) {
+          case 'insignia':
+          case 'insignia life':
+            return 'Insignia Life';
+          case 'gnp':
+          case 'gnp seguros':
+          case 'grupo nacional provincial':
+            return 'GNP Seguros';
+          case 'la latino':
+          case 'la latino seguros':
+          case 'la latinoamericana':
+          case 'la latinoamericana seguros':
+            return 'La Latinoamericana Seguros';
+          case 'plan seguro':
+            return 'Plan Seguro';
+          case 'smnyl':
+          case 'monterrey':
+          case 'seguros monterrey':
+          case 'seguros monterrey nyl':
+            return 'Seguros Monterrey NYL';
+          case 'axa':
+          case 'axa seguros':
+            return 'AXA Seguros';
+          case 'metlife':
+            return 'MetLife';
+          case 'qualitas':
+            return 'Quálitas';
+          case 'mapfre':
+            return 'Mapfre';
+          case 'allianz':
+            return 'Allianz';
+          default:
+            return String(raw || '').trim();
+        }
+      };
+
+      const baseCatalog = [
+        { name: 'Insignia Life', color: '#1e3a8a', order: 1 },
+        { name: 'GNP Seguros', color: '#ea580c', order: 2 },
+        { name: 'Seguros Monterrey NYL', color: '#0284c7', order: 3 },
+        { name: 'AXA Seguros', color: '#dc2626', order: 4 },
+        { name: 'MetLife', color: '#0891b2', order: 5 },
+        { name: 'Quálitas', color: '#7c3aed', order: 6 },
+        { name: 'Mapfre', color: '#b91c1c', order: 7 },
+        { name: 'Allianz', color: '#1d4ed8', order: 8 },
+      ];
+
+      const agenciesRes = await client.query(`SELECT "id", "name", "slug" FROM "Agency";`);
+      const companiesRes = await client.query(`SELECT "id", "agencyId", "name", "logoUrl", "color", "order", "active" FROM "InsuranceCompany" ORDER BY "order" ASC, "createdAt" ASC;`);
+      const emissionsRes = await client.query(`SELECT "id", "agencyId", "companyId", "companyName" FROM "AgentEmission";`);
+
+      const sharedLogoByKey = new Map();
+      const sharedColorByKey = new Map();
+      for (const c of companiesRes.rows) {
+        const k = normKey(canonName(c.name));
+        if (c.logoUrl && !sharedLogoByKey.has(k)) sharedLogoByKey.set(k, c.logoUrl);
+        if (c.color && !sharedColorByKey.has(k)) sharedColorByKey.set(k, c.color);
+      }
+
+      for (const agency of agenciesRes.rows) {
+        const isMainAgency = agency.id === 'aacom' || agency.slug === 'aacom';
+        const isRcMejorandoVidas =
+          /mejorando\s*vidas/i.test(agency.name || '') ||
+          /mejorando/i.test(agency.slug || '');
+
+        const agencyEmissions = emissionsRes.rows.filter((e) => e.agencyId === agency.id);
+        const agencyExistingCompanies = companiesRes.rows.filter((c) => c.agencyId === agency.id);
+        const desiredMap = new Map();
+
+        if (isMainAgency) {
+          const mainActiveList = [
+            { name: 'Insignia Life', color: '#1e3a8a', order: 1 },
+            { name: 'La Latinoamericana Seguros', color: '#0284c7', order: 2 },
+            { name: 'Plan Seguro', color: '#16a34a', order: 3 },
+          ];
+          for (const item of mainActiveList) {
+            const k = normKey(item.name);
+            desiredMap.set(k, {
+              name: item.name,
+              color: sharedColorByKey.get(k) || item.color,
+              order: item.order,
+              active: true,
+              logoUrl: sharedLogoByKey.get(k) || null,
+            });
+          }
+          let nextOrder = 4;
+          for (const base of baseCatalog) {
+            const k = normKey(base.name);
+            if (!desiredMap.has(k)) {
+              desiredMap.set(k, {
+                name: base.name,
+                color: sharedColorByKey.get(k) || base.color,
+                order: nextOrder++,
+                active: false,
+                logoUrl: sharedLogoByKey.get(k) || null,
+              });
+            }
+          }
+        } else if (isRcMejorandoVidas) {
+          for (const base of baseCatalog) {
+            const k = normKey(base.name);
+            const isGnp = k === normKey('GNP Seguros');
+            desiredMap.set(k, {
+              name: base.name,
+              color: sharedColorByKey.get(k) || base.color,
+              order: isGnp ? 1 : base.order + 1,
+              active: isGnp,
+              logoUrl: sharedLogoByKey.get(k) || null,
+            });
+          }
+        } else {
+          const emittedKeys = new Set(
+            agency.id === 'demo-agency-id'
+              ? []
+              : agencyEmissions.map((e) => normKey(canonName(e.companyName)))
+          );
+          for (const base of baseCatalog) {
+            const k = normKey(base.name);
+            desiredMap.set(k, {
+              name: base.name,
+              color: base.color,
+              order: base.order,
+              active: emittedKeys.has(k),
+              logoUrl: sharedLogoByKey.get(k) || null,
+            });
+          }
+        }
+
+        for (const existingComp of agencyExistingCompanies) {
+          const cName = canonName(existingComp.name);
+          const k = normKey(cName);
+          const prev = desiredMap.get(k);
+          if (prev) {
+            if (existingComp.logoUrl) prev.logoUrl = existingComp.logoUrl;
+            if (existingComp.color) prev.color = existingComp.color;
+          } else if (!isRcMejorandoVidas || k !== normKey('Insignia Life')) {
+            desiredMap.set(k, {
+              name: cName,
+              color: existingComp.color || '#0284c7',
+              order: desiredMap.size + 1,
+              active: isMainAgency
+                ? false
+                : isRcMejorandoVidas
+                ? k === normKey('GNP Seguros')
+                : !!existingComp.active,
+              logoUrl: existingComp.logoUrl || null,
+            });
+          }
+        }
+
+        for (const em of agencyEmissions) {
+          const cName = canonName(em.companyName);
+          const k = normKey(cName);
+          if (k && !desiredMap.has(k)) {
+            desiredMap.set(k, {
+              name: cName,
+              color: sharedColorByKey.get(k) || '#0284c7',
+              order: desiredMap.size + 1,
+              active: true,
+              logoUrl: sharedLogoByKey.get(k) || null,
+            });
+          }
+        }
+
+        const resolvedCompanyByKey = new Map();
+        for (const [k, desired] of desiredMap.entries()) {
+          const candidates = agencyExistingCompanies.filter(
+            (c) => normKey(canonName(c.name)) === k
+          );
+          if (candidates.length > 0) {
+            const primary = candidates.find((c) => !!c.logoUrl) || candidates[0];
+            await client.query(
+              `UPDATE "InsuranceCompany"
+               SET "agencyId" = $1, "name" = $2, "color" = $3, "logoUrl" = $4, "order" = $5, "active" = $6, "updatedAt" = CURRENT_TIMESTAMP
+               WHERE "id" = $7;`,
+              [
+                agency.id,
+                desired.name,
+                primary.color || desired.color,
+                primary.logoUrl || desired.logoUrl || null,
+                desired.order,
+                desired.active,
+                primary.id,
+              ]
+            );
+            resolvedCompanyByKey.set(k, { id: primary.id, name: desired.name });
+            for (const dup of candidates) {
+              if (dup.id !== primary.id) {
+                await client.query(`DELETE FROM "InsuranceCompany" WHERE "id" = $1;`, [dup.id]);
+              }
+            }
+          } else {
+            const newId = 'ic_' + crypto.randomUUID().replace(/-/g, '').slice(0, 22);
+            await client.query(
+              `INSERT INTO "InsuranceCompany" ("id", "agencyId", "name", "color", "logoUrl", "order", "active", "createdAt", "updatedAt")
+               VALUES ($1, $2, $3, $4, $5, $6, $7, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);`,
+              [
+                newId,
+                agency.id,
+                desired.name,
+                desired.color,
+                desired.logoUrl || null,
+                desired.order,
+                desired.active,
+              ]
+            );
+            resolvedCompanyByKey.set(k, { id: newId, name: desired.name });
+          }
+        }
+
+        for (const em of agencyEmissions) {
+          const k = normKey(canonName(em.companyName));
+          const targetComp = resolvedCompanyByKey.get(k);
+          if (targetComp && (em.companyId !== targetComp.id || em.companyName !== targetComp.name)) {
+            await client.query(
+              `UPDATE "AgentEmission" SET "companyId" = $1, "companyName" = $2, "updatedAt" = CURRENT_TIMESTAMP WHERE "id" = $3;`,
+              [targetComp.id, targetComp.name, em.id]
+            );
+          }
+        }
+      }
+
+      await client.query(`DELETE FROM "InsuranceCompany" WHERE "agencyId" IS NULL;`);
+      await client.query(`
+        INSERT INTO "Setting" ("key", "value")
+        VALUES ('production_companies_multitenant_v1', 'true')
+        ON CONFLICT ("key") DO UPDATE SET "value" = 'true';
+      `);
+      console.log("Migrated InsuranceCompany catalog to strict per-agency isolation (v1).");
     }
   } catch (error) {
     console.warn("⚠️  inject_columns: Could not connect to DB or columns may already exist. Continuing build...");

@@ -1046,6 +1046,7 @@ model InsuranceCompany {
   emissions AgentEmission[]
 
   @@index([agencyId])
+  @@index([agencyId, active])
   @@index([order])
 }
 
