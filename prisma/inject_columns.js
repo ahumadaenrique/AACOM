@@ -832,8 +832,12 @@ async function injectColumns() {
       console.log("Migrated existing agency WhatsApp planner settings to admin users.");
     }
 
-    const prodCompMigRes = await client.query(`SELECT "value" FROM "Setting" WHERE "key" = 'production_companies_multitenant_v1';`);
-    if (prodCompMigRes.rows.length === 0 || prodCompMigRes.rows[0].value !== 'true') {
+    await client.query('BEGIN');
+    try {
+      await client.query('SELECT pg_advisory_xact_lock(94827165);');
+
+      const prodCompMigRes = await client.query(`SELECT "value" FROM "Setting" WHERE "key" = 'production_companies_multitenant_v1';`);
+      if (prodCompMigRes.rows.length === 0 || prodCompMigRes.rows[0].value !== 'true') {
       const crypto = require('crypto');
       const normKey = (raw) =>
         String(raw || '')
@@ -1073,6 +1077,131 @@ async function injectColumns() {
         ON CONFLICT ("key") DO UPDATE SET "value" = 'true';
       `);
       console.log("Migrated InsuranceCompany catalog to strict per-agency isolation (v1).");
+      }
+
+      // Deduplicación atómica y candado UNIQUE por (agencyId, LOWER(TRIM(name)))
+      await client.query(`DELETE FROM "InsuranceCompany" WHERE "agencyId" IS NULL;`);
+      const normDedupKey = (raw) =>
+        String(raw || '')
+          .normalize('NFD')
+          .replace(/[\u0300-\u036f]/g, '')
+          .trim()
+          .toLowerCase()
+          .replace(/\s+/g, ' ');
+      const canonDedupName = (raw) => {
+        const k = normDedupKey(raw);
+        switch (k) {
+          case 'insignia':
+          case 'insignia life':
+            return 'Insignia Life';
+          case 'gnp':
+          case 'gnp seguros':
+          case 'grupo nacional provincial':
+            return 'GNP Seguros';
+          case 'la latino':
+          case 'la latino seguros':
+          case 'la latinoamericana':
+          case 'la latinoamericana seguros':
+            return 'La Latinoamericana Seguros';
+          case 'plan seguro':
+            return 'Plan Seguro';
+          case 'smnyl':
+          case 'monterrey':
+          case 'seguros monterrey':
+          case 'seguros monterrey nyl':
+            return 'Seguros Monterrey NYL';
+          case 'axa':
+          case 'axa seguros':
+            return 'AXA Seguros';
+          case 'metlife':
+            return 'MetLife';
+          case 'qualitas':
+            return 'Quálitas';
+          case 'mapfre':
+            return 'Mapfre';
+          case 'allianz':
+            return 'Allianz';
+          default:
+            return String(raw || '').trim();
+        }
+      };
+
+      const allCompsWithCounts = await client.query(`
+        SELECT c."id", c."agencyId", c."name", c."logoUrl", c."color", c."order", c."active", c."createdAt",
+               COALESCE(em_cnt.cnt, 0)::int AS "emissionCount"
+        FROM "InsuranceCompany" c
+        LEFT JOIN (
+          SELECT "companyId", COUNT(*) AS cnt
+          FROM "AgentEmission"
+          WHERE "companyId" IS NOT NULL
+          GROUP BY "companyId"
+        ) em_cnt ON em_cnt."companyId" = c."id"
+        WHERE c."agencyId" IS NOT NULL
+        ORDER BY c."order" ASC, c."createdAt" ASC;
+      `);
+
+      const groups = new Map();
+      for (const row of allCompsWithCounts.rows) {
+        const groupKey = `${row.agencyId}::${normDedupKey(canonDedupName(row.name))}`;
+        if (!groups.has(groupKey)) groups.set(groupKey, []);
+        groups.get(groupKey).push(row);
+      }
+
+      let mergedDuplicatesCount = 0;
+      for (const [, group] of groups.entries()) {
+        if (group.length <= 1) continue;
+
+        group.sort((a, b) => {
+          if (b.emissionCount !== a.emissionCount) return b.emissionCount - a.emissionCount;
+          const aLogo = a.logoUrl ? 1 : 0;
+          const bLogo = b.logoUrl ? 1 : 0;
+          if (bLogo !== aLogo) return bLogo - aLogo;
+          if ((a.order || 999) !== (b.order || 999)) return (a.order || 999) - (b.order || 999);
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+        });
+
+        const winner = group[0];
+        const losers = group.slice(1);
+        const bestLogo = winner.logoUrl || (group.find((r) => !!r.logoUrl) || {}).logoUrl || null;
+        const bestColor = winner.color || (group.find((r) => !!r.color) || {}).color || '#0284c7';
+        const bestOrder = Math.min(...group.map((r) => (typeof r.order === 'number' ? r.order : 999)));
+        const canonical = canonDedupName(winner.name) || winner.name.trim();
+
+        await client.query(
+          `UPDATE "InsuranceCompany"
+           SET "name" = $1, "logoUrl" = $2, "color" = $3, "order" = $4, "updatedAt" = CURRENT_TIMESTAMP
+           WHERE "id" = $5;`,
+          [canonical, bestLogo, bestColor, bestOrder, winner.id]
+        );
+
+        const loserIds = losers.map((l) => l.id);
+        await client.query(
+          `UPDATE "AgentEmission"
+           SET "companyId" = $1, "updatedAt" = CURRENT_TIMESTAMP
+           WHERE "companyId" = ANY($2::text[]);`,
+          [winner.id, loserIds]
+        );
+
+        await client.query(
+          `DELETE FROM "InsuranceCompany" WHERE "id" = ANY($1::text[]);`,
+          [loserIds]
+        );
+        mergedDuplicatesCount += loserIds.length;
+      }
+
+      await client.query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS "InsuranceCompany_agency_lower_name_uidx"
+        ON "InsuranceCompany" ("agencyId", LOWER(TRIM("name")))
+        WHERE "agencyId" IS NOT NULL;
+      `);
+
+      await client.query('COMMIT');
+      if (mergedDuplicatesCount > 0) {
+        console.log(`Merged and removed ${mergedDuplicatesCount} duplicate InsuranceCompany rows.`);
+      }
+    } catch (txErr) {
+      try { await client.query('ROLLBACK'); } catch (_) {}
+      console.warn('⚠️  InsuranceCompany lock/dedup warning:', txErr.message || txErr);
     }
   } catch (error) {
     console.warn("⚠️  inject_columns: Could not connect to DB or columns may already exist. Continuing build...");

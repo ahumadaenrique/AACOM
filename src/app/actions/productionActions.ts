@@ -330,17 +330,117 @@ async function ensureAgencyCompaniesSeeded(agencyId: string) {
 
   if (existingCount === 0) {
     for (const comp of DEFAULT_COMPANIES) {
-      await prisma.insuranceCompany.create({
-        data: {
-          agencyId,
-          name: comp.name,
-          color: comp.color,
-          order: comp.order,
-          active: false,
-        },
-      });
+      try {
+        await prisma.insuranceCompany.create({
+          data: {
+            agencyId,
+            name: comp.name,
+            color: comp.color,
+            order: comp.order,
+            active: false,
+          },
+        });
+      } catch {
+        // Ignorar colisiones si dos peticiones concurrentes inicializan la misma agencia
+      }
     }
   }
+}
+
+/**
+ * Fusiona y limpia duplicados dentro de una misma agencia preservando logos y emisiones.
+ */
+async function deduplicateAgencyCompaniesIfNeeded<
+  T extends {
+    id: string;
+    agencyId: string | null;
+    name: string;
+    logoUrl: string | null;
+    color: string | null;
+    order: number;
+    active: boolean;
+    createdAt: Date;
+  }
+>(agencyId: string, rows: T[]): Promise<T[]> {
+  const groups = new Map<string, T[]>();
+  for (const r of rows) {
+    const k = normalizeCompanyKey(canonicalCompanyName(r.name));
+    const arr = groups.get(k) || [];
+    arr.push(r);
+    groups.set(k, arr);
+  }
+
+  let hasDuplicates = false;
+  for (const arr of Array.from(groups.values())) {
+    if (arr.length > 1) {
+      hasDuplicates = true;
+      break;
+    }
+  }
+  if (!hasDuplicates) return rows;
+
+  const emissionCounts = await prisma.agentEmission.groupBy({
+    by: ["companyId"],
+    where: { agencyId, companyId: { not: null } },
+    _count: { _all: true },
+  });
+  const countMap = new Map<string, number>();
+  for (const g of emissionCounts) {
+    if (g.companyId) countMap.set(g.companyId, g._count._all);
+  }
+
+  const cleanList: T[] = [];
+  for (const arr of Array.from(groups.values())) {
+    if (arr.length === 1) {
+      cleanList.push(arr[0]);
+      continue;
+    }
+
+    arr.sort((a, b) => {
+      const ca = countMap.get(a.id) || 0;
+      const cb = countMap.get(b.id) || 0;
+      if (cb !== ca) return cb - ca;
+      const la = a.logoUrl ? 1 : 0;
+      const lb = b.logoUrl ? 1 : 0;
+      if (lb !== la) return lb - la;
+      if (a.order !== b.order) return a.order - b.order;
+      return a.createdAt.getTime() - b.createdAt.getTime();
+    });
+
+    const winner = arr[0];
+    const losers = arr.slice(1);
+    const bestLogo = winner.logoUrl || arr.find((x) => !!x.logoUrl)?.logoUrl || null;
+    const bestColor = winner.color || arr.find((x) => !!x.color)?.color || "#0284c7";
+    const bestOrder = Math.min(...arr.map((x) => x.order));
+    const canon = canonicalCompanyName(winner.name) || winner.name.trim();
+
+    const updatedWinner = (await prisma.insuranceCompany.update({
+      where: { id: winner.id },
+      data: {
+        name: canon,
+        logoUrl: bestLogo,
+        color: bestColor,
+        order: bestOrder,
+      },
+    })) as unknown as T;
+
+    const loserIds = losers.map((l) => l.id);
+    await prisma.agentEmission.updateMany({
+      where: { companyId: { in: loserIds } },
+      data: { companyId: winner.id },
+    });
+    await prisma.insuranceCompany.deleteMany({
+      where: { id: { in: loserIds } },
+    });
+
+    cleanList.push(updatedWinner);
+  }
+
+  return cleanList.sort((a, b) => {
+    if (a.active !== b.active) return a.active ? -1 : 1;
+    if (a.order !== b.order) return a.order - b.order;
+    return a.name.localeCompare(b.name);
+  });
 }
 
 // 1. Obtener Compañías Activas de la Agencia
@@ -352,13 +452,17 @@ export async function getInsuranceCompanies(agencyId?: string) {
 
     await ensureAgencyCompaniesSeeded(effectiveAgencyId);
 
-    const companies = await prisma.insuranceCompany.findMany({
+    const rawCompanies = await prisma.insuranceCompany.findMany({
       where: {
         agencyId: effectiveAgencyId,
-        active: true,
       },
-      orderBy: [{ order: "asc" }, { name: "asc" }],
+      orderBy: [{ active: "desc" }, { order: "asc" }, { name: "asc" }],
     });
+
+    const cleanAll = await deduplicateAgencyCompaniesIfNeeded(effectiveAgencyId, rawCompanies);
+    const companies = cleanAll
+      .filter((c) => c.active)
+      .sort((a, b) => (a.order - b.order) || a.name.localeCompare(b.name));
 
     return { success: true, companies };
   } catch (error: any) {
@@ -870,12 +974,17 @@ export async function getProductionDashboardData(options: {
     await ensureAgencyCompaniesSeeded(effectiveAgencyId);
 
     // 1. Fetch ALL companies strictly belonging to THIS agency (never agencyId = null)
-    const allAgencyCompanies = await prisma.insuranceCompany.findMany({
+    const rawAgencyCompanies = await prisma.insuranceCompany.findMany({
       where: {
         agencyId: effectiveAgencyId,
       },
       orderBy: [{ active: "desc" }, { order: "asc" }, { name: "asc" }],
     });
+
+    const allAgencyCompanies = await deduplicateAgencyCompaniesIfNeeded(
+      effectiveAgencyId,
+      rawAgencyCompanies
+    );
 
     const companies = allAgencyCompanies
       .filter((c) => c.active)
