@@ -203,8 +203,27 @@ export const VIDA_OBJETIVOS_CATALOG: Array<{
   },
 ];
 
+function normRamoToken(val?: string | null): string {
+  return String(val || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toUpperCase()
+    .replace(/[\s\-/.]+/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "");
+}
+
+function normPlainText(val?: string | null): string {
+  return String(val || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
 export function getVidaObjetivoLabel(obj?: string | null): string {
-  const norm = String(obj || "").trim().toUpperCase();
+  const norm = normRamoToken(obj);
   const found = VIDA_OBJETIVOS_CATALOG.find((v) => v.key === norm);
   return found ? found.label : "Protección";
 }
@@ -227,62 +246,112 @@ export function classifyPolicyRamo(policy: {
   observations?: string | null;
   contractor?: string | null;
 }): ClassifiedPolicyRamo {
-  const rawRamo = String(policy.ramo || "VIDA_INDIVIDUAL").trim().toUpperCase();
-  const rawSubRamo = String(policy.subRamo || "").trim().toUpperCase();
-  const rawObjetivo = String(policy.vidaObjetivo || "").trim().toUpperCase();
+  const rawRamo = normRamoToken(policy.ramo || "VIDA_INDIVIDUAL");
+  const rawSubRamo = normRamoToken(policy.subRamo);
+  const rawObjetivo = normRamoToken(policy.vidaObjetivo);
   const contextText = `${policy.product || ""} ${policy.observations || ""} ${policy.contractor || ""}`;
+  const contextNorm = normPlainText(contextText);
 
   let subRamoKey: CanonicalSubRamoKey = "VIDA_INDIVIDUAL";
   let vidaObjetivo: VidaObjetivoKey | null = null;
 
-  if (
+  const isVidaGroupRamo =
     rawRamo === "VIDA_GRUPO" ||
-    (rawRamo === "VIDA_INDIVIDUAL" && rawSubRamo === "GRUPO")
-  ) {
+    rawRamo === "VIDA_COLECTIVO" ||
+    rawRamo === "VIDA_EMPRESARIAL" ||
+    (rawRamo.startsWith("VIDA") && (rawSubRamo === "GRUPO" || rawSubRamo === "COLECTIVO"));
+
+  const isGmmRamo =
+    rawRamo === "GMM" ||
+    rawRamo.startsWith("GMM_") ||
+    rawRamo.startsWith("GASTOS_MEDICOS") ||
+    rawRamo === "SALUD";
+
+  const isAutosRamo =
+    rawRamo === "AUTOS" ||
+    rawRamo === "AUTO" ||
+    rawRamo.startsWith("AUTOS_") ||
+    rawRamo.startsWith("AUTO_") ||
+    rawRamo === "AUTOMOVILES" ||
+    rawRamo === "VEHICULOS" ||
+    rawRamo === "FLOTILLA" ||
+    rawRamo === "FLOTILLAS";
+
+  const isDanosRamo =
+    rawRamo === "DANOS" ||
+    rawRamo === "DANO" ||
+    rawRamo.startsWith("DANO") ||
+    ["HOGAR", "CASA_HABITACION", "EMPRESARIAL", "PYME", "INCENDIO", "RC", "RESPONSABILIDAD_CIVIL", "TRANSPORTE"].includes(rawRamo);
+
+  const isOtrosRamo =
+    ["OTROS", "OTRO", "MASCOTAS", "VIAJE", "FUNERARIO", "ACCIDENTES_PERSONALES"].includes(rawRamo);
+
+  const isVidaIndividualRamo =
+    !isVidaGroupRamo &&
+    (rawRamo === "" ||
+      rawRamo.startsWith("VIDA") ||
+      [
+        "AHORRO_RETIRO",
+        "PROTECCION",
+        "AHORRO",
+        "RETIRO",
+        "PPR",
+        "RETIRO_PPR",
+        "EDUCACION",
+        "DOTAL",
+      ].includes(rawRamo));
+
+  if (isVidaGroupRamo) {
     subRamoKey = "VIDA_GRUPO";
-  } else if (rawRamo === "VIDA_INDIVIDUAL" || rawRamo === "AHORRO_RETIRO" || rawRamo === "VIDA") {
+  } else if (isVidaIndividualRamo) {
     subRamoKey = "VIDA_INDIVIDUAL";
 
-    if (
-      rawObjetivo === "PROTECCION" ||
-      rawObjetivo === "AHORRO" ||
-      rawObjetivo === "RETIRO" ||
-      rawObjetivo === "EDUCACION"
-    ) {
-      vidaObjetivo = rawObjetivo as VidaObjetivoKey;
-    } else if (
-      rawRamo === "AHORRO_RETIRO" ||
-      /ppr|retiro|art[íi]culo\s*151|imagina\s*ser|consolida|optimaxx/i.test(contextText)
-    ) {
+    if (rawObjetivo === "PROTECCION") {
+      vidaObjetivo = "PROTECCION";
+    } else if (rawObjetivo === "AHORRO" || rawObjetivo === "DOTAL") {
+      vidaObjetivo = "AHORRO";
+    } else if (rawObjetivo === "RETIRO" || rawObjetivo === "PPR" || rawObjetivo === "RETIRO_PPR") {
       vidaObjetivo = "RETIRO";
-    } else if (/educa|universi|profesional|segu\s*beca|beca/i.test(contextText)) {
+    } else if (rawObjetivo === "EDUCACION" || rawObjetivo === "BECA") {
       vidaObjetivo = "EDUCACION";
-    } else if (/ahorro|dotal|meta|inversi[oó]n|vpl/i.test(contextText)) {
+    } else if (rawRamo === "AHORRO_RETIRO" || rawRamo === "RETIRO" || rawRamo === "PPR" || rawRamo === "RETIRO_PPR") {
+      vidaObjetivo = "RETIRO";
+    } else if (rawRamo === "EDUCACION") {
+      vidaObjetivo = "EDUCACION";
+    } else if (rawRamo === "AHORRO" || rawRamo === "DOTAL") {
+      vidaObjetivo = "AHORRO";
+    } else if (rawRamo === "PROTECCION") {
+      vidaObjetivo = "PROTECCION";
+    } else if (/ppr|retiro|articulo\s*151|imagina\s*ser|consolida|optimaxx/.test(contextNorm)) {
+      vidaObjetivo = "RETIRO";
+    } else if (/educa|universi|profesional|segu\s*beca|beca/.test(contextNorm)) {
+      vidaObjetivo = "EDUCACION";
+    } else if (/ahorro|dotal|meta|inversion|vpl/.test(contextNorm)) {
       vidaObjetivo = "AHORRO";
     } else {
       vidaObjetivo = "PROTECCION";
     }
-  } else if (rawRamo === "GMM") {
-    if (
+  } else if (isGmmRamo) {
+    const gmmIsColectivo =
+      rawRamo.includes("COLECTIV") ||
+      rawRamo.includes("GRUPO") ||
       rawSubRamo === "COLECTIVO" ||
-      (!rawSubRamo && /colectiv|empresarial|grupo|pyme|s\.?\s*a\.?\s*de\s*c\.?\s*v|\bs\.?c\.?\b/i.test(contextText))
-    ) {
-      subRamoKey = "GMM_COLECTIVO";
-    } else {
-      subRamoKey = "GMM_INDIVIDUAL";
-    }
-  } else if (rawRamo === "AUTOS") {
-    if (
-      rawSubRamo === "FLOTILLA" ||
-      (!rawSubRamo && /flotilla|flota|empresarial/i.test(contextText))
-    ) {
-      subRamoKey = "AUTOS_FLOTILLA";
-    } else {
-      subRamoKey = "AUTOS_INDIVIDUAL";
-    }
-  } else if (rawRamo === "DANOS") {
+      rawSubRamo === "GRUPO" ||
+      (!rawSubRamo &&
+        !rawRamo.includes("INDIV") &&
+        /colectiv|empresarial|grupo|pyme|s\.?\s*a\.?\s*de\s*c\.?\s*v|\bs\.?c\.?\b/.test(contextNorm));
+    subRamoKey = gmmIsColectivo ? "GMM_COLECTIVO" : "GMM_INDIVIDUAL";
+  } else if (isAutosRamo) {
+    const autosIsFlotilla =
+      rawRamo.includes("FLOT") ||
+      rawSubRamo.includes("FLOT") ||
+      (!rawSubRamo &&
+        !rawRamo.includes("INDIV") &&
+        /flotilla|flota|empresarial/.test(contextNorm));
+    subRamoKey = autosIsFlotilla ? "AUTOS_FLOTILLA" : "AUTOS_INDIVIDUAL";
+  } else if (isDanosRamo) {
     subRamoKey = "DANOS";
-  } else if (rawRamo === "OTROS") {
+  } else if (isOtrosRamo) {
     subRamoKey = "OTROS";
   } else {
     subRamoKey = "OTROS";
@@ -325,6 +394,83 @@ export function mapFormSelectionToPolicyFields(
     subRamo: def.policySubRamo,
     vidaObjetivo: subRamoKey === "VIDA_INDIVIDUAL" ? (vidaObjetivo || "PROTECCION") : null,
     defaultVigencia: def.defaultVigencia,
+  };
+}
+
+export function resolveImportedRowRamo(input: {
+  ramo?: string | null;
+  subRamo?: string | null;
+  vidaObjetivo?: string | null;
+  product?: string | null;
+  insuranceCompany?: string | null;
+  observations?: string | null;
+  contractor?: string | null;
+  explicitTipoVigencia?: string | null;
+}): {
+  classified: ClassifiedPolicyRamo;
+  ramo: string;
+  subRamo: string;
+  vidaObjetivo: VidaObjetivoKey | null;
+  tipoVigencia: string;
+} {
+  const explicit = String(input.ramo || "").trim();
+  const p = normPlainText(input.product);
+  const c = normPlainText(input.insuranceCompany);
+
+  let rawRamo = explicit;
+  if (!rawRamo) {
+    if (p.includes("gmm") || p.includes("gastos med") || p.includes("salud")) {
+      rawRamo = "GMM";
+    } else if (p.includes("flotilla") || p.includes("flota")) {
+      rawRamo = "AUTOS_FLOTILLA";
+    } else if (p.includes("auto") || p.includes("vehicul")) {
+      rawRamo = "AUTOS";
+    } else if (p.includes("vida grupo") || p.includes("grupo") || p.includes("colectiv")) {
+      rawRamo = "VIDA_GRUPO";
+    } else if (
+      p.includes("hogar") ||
+      p.includes("dano") ||
+      p.includes("pyme") ||
+      p.includes("incendio") ||
+      /\brc\b/.test(p)
+    ) {
+      rawRamo = "DANOS";
+    } else if (p.includes("ppr") || p.includes("retiro") || p.includes("articulo 151")) {
+      rawRamo = "RETIRO";
+    } else if (p.includes("educa") || p.includes("beca")) {
+      rawRamo = "EDUCACION";
+    } else if (p.includes("ahorro") || p.includes("dotal")) {
+      rawRamo = "AHORRO";
+    } else {
+      rawRamo = "VIDA_INDIVIDUAL";
+    }
+  }
+
+  const classified = classifyPolicyRamo({
+    ramo: rawRamo,
+    subRamo: input.subRamo,
+    vidaObjetivo: input.vidaObjetivo,
+    product: input.product,
+    observations: input.observations,
+    contractor: input.contractor,
+  });
+
+  const mapped = mapFormSelectionToPolicyFields(
+    classified.subRamoKey,
+    classified.vidaObjetivo
+  );
+
+  let tipoVigencia = input.explicitTipoVigencia || mapped.defaultVigencia;
+  if (!input.explicitTipoVigencia && mapped.ramo === "VIDA_INDIVIDUAL" && c.includes("insignia")) {
+    tipoVigencia = "LARGO_PLAZO";
+  }
+
+  return {
+    classified,
+    ramo: mapped.ramo,
+    subRamo: mapped.subRamo,
+    vidaObjetivo: mapped.vidaObjetivo,
+    tipoVigencia,
   };
 }
 

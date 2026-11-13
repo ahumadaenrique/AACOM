@@ -12,6 +12,7 @@ import {
 import {
   classifyPolicyRamo,
   canonicalCompanyName,
+  resolveImportedRowRamo,
 } from "@/lib/ramosCatalog";
 import { z } from "zod";
 import { put, del } from "@vercel/blob";
@@ -107,65 +108,26 @@ function inferRamoAndVigencia(
   explicitRamo?: string | null,
   explicitTipo?: string | null,
   explicitSubRamo?: string | null,
-  explicitVidaObjetivo?: string | null
+  explicitVidaObjetivo?: string | null,
+  observations?: string | null,
+  contractor?: string | null
 ) {
-  const p = (product || "").toLowerCase();
-  const c = (company || "").toLowerCase();
-
-  let rawRamo = explicitRamo || "";
-  if (!rawRamo) {
-    if (p.includes("gmm") || p.includes("gastos med") || p.includes("salud")) {
-      rawRamo = "GMM";
-    } else if (p.includes("auto")) {
-      rawRamo = "AUTOS";
-    } else if (p.includes("grupo") || p.includes("colectiv")) {
-      rawRamo = "VIDA_GRUPO";
-    } else if (p.includes("hogar") || p.includes("daño") || p.includes("pyme")) {
-      rawRamo = "DANOS";
-    } else if (p.includes("ppr") || p.includes("retiro") || p.includes("dotal")) {
-      rawRamo = "AHORRO_RETIRO";
-    } else {
-      rawRamo = "VIDA_INDIVIDUAL";
-    }
-  }
-
-  const classified = classifyPolicyRamo({
-    ramo: rawRamo,
+  const resolved = resolveImportedRowRamo({
+    ramo: explicitRamo,
     subRamo: explicitSubRamo,
     vidaObjetivo: explicitVidaObjetivo,
     product,
+    insuranceCompany: company,
+    observations,
+    contractor,
+    explicitTipoVigencia: explicitTipo,
   });
 
-  // Valores base de Policy.ramo 100% retrocompatibles
-  let storedRamo = "VIDA_INDIVIDUAL";
-  if (classified.subRamoKey === "VIDA_GRUPO") storedRamo = "VIDA_GRUPO";
-  else if (classified.groupKey === "GMM") storedRamo = "GMM";
-  else if (classified.groupKey === "AUTOS") storedRamo = "AUTOS";
-  else if (classified.groupKey === "DANOS") storedRamo = "DANOS";
-  else if (classified.groupKey === "OTROS") storedRamo = "OTROS";
-
-  let storedSubRamo = "INDIVIDUAL";
-  if (classified.subRamoKey === "VIDA_GRUPO") storedSubRamo = "GRUPO";
-  else if (classified.subRamoKey === "GMM_COLECTIVO") storedSubRamo = "COLECTIVO";
-  else if (classified.subRamoKey === "AUTOS_FLOTILLA") storedSubRamo = "FLOTILLA";
-
-  let tipoVigencia = explicitTipo || "LARGO_PLAZO";
-  if (!explicitTipo) {
-    if (["GMM", "AUTOS", "VIDA_GRUPO", "DANOS", "OTROS"].includes(storedRamo)) {
-      tipoVigencia = "ANUAL_RENOVABLE";
-    } else if (
-      c.includes("insignia") ||
-      storedRamo === "VIDA_INDIVIDUAL"
-    ) {
-      tipoVigencia = "LARGO_PLAZO";
-    }
-  }
-
   return {
-    ramo: storedRamo,
-    subRamo: storedSubRamo,
-    vidaObjetivo: storedRamo === "VIDA_INDIVIDUAL" ? (classified.vidaObjetivo || "PROTECCION") : null,
-    tipoVigencia,
+    ramo: resolved.ramo,
+    subRamo: resolved.subRamo,
+    vidaObjetivo: resolved.vidaObjetivo,
+    tipoVigencia: resolved.tipoVigencia,
   };
 }
 
@@ -1039,13 +1001,16 @@ export async function uploadPoliciesLayout(parsedData: any[]) {
       const renewalDateUTC = safeDateUTCNoon(row.renewalDate);
       const productStr = row.product ? String(row.product).trim() : null;
       const companyStr = row.insuranceCompany ? String(row.insuranceCompany).trim() : null;
+      const obsStr = row.observations ? String(row.observations).trim() : null;
       const { ramo, subRamo, vidaObjetivo, tipoVigencia } = inferRamoAndVigencia(
         productStr,
         companyStr,
-        row.ramo,
+        row.subRamoKey || row.ramo,
         row.tipoVigencia,
         row.subRamo,
-        row.vidaObjetivo
+        row.vidaObjetivo,
+        obsStr,
+        clientName
       );
 
       const annivDay = effectiveDateUTC ? effectiveDateUTC.getUTCDate() : null;

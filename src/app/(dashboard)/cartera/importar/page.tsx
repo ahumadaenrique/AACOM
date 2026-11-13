@@ -23,11 +23,20 @@ import { useToast } from "@/hooks/use-toast";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatDateSafe, toDateInputValue } from "../dateUtils";
+import {
+  SUB_RAMOS_CATALOG,
+  VIDA_OBJETIVOS_CATALOG,
+  resolveImportedRowRamo,
+  mapFormSelectionToPolicyFields,
+  type CanonicalSubRamoKey,
+  type VidaObjetivoKey,
+} from "@/lib/ramosCatalog";
 
 export default function ImportarCartera() {
   const [file, setFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [parsedData, setParsedData] = useState<any[]>([]);
+  const [showAllRows, setShowAllRows] = useState(false);
   const { toast } = useToast();
   const router = useRouter();
 
@@ -62,16 +71,31 @@ export default function ImportarCartera() {
 
         const parsed = rows
           .map((row: any) => {
+            const clientName = row[0] ? String(row[0]).trim() : "";
+            const product = row[2] ? String(row[2]).trim() : "";
+            const insuranceCompany = row[3] ? String(row[3]).trim() : "";
+            const observations = row[8] ? String(row[8]).trim() : "";
+            const rawRamo = row[15] ? String(row[15]).trim() : "";
+            const rawObjetivo = row[16] ? String(row[16]).trim() : "";
+            const resolved = resolveImportedRowRamo({
+              ramo: rawRamo,
+              vidaObjetivo: rawObjetivo,
+              product,
+              insuranceCompany,
+              observations,
+              contractor: clientName,
+            });
+
             return {
-              clientName: row[0] ? String(row[0]).trim() : "",
+              clientName,
               birthDate: normalizeExcelDate(row[1]),
-              product: row[2] ? String(row[2]).trim() : "",
-              insuranceCompany: row[3] ? String(row[3]).trim() : "",
+              product,
+              insuranceCompany,
               effectiveDate: normalizeExcelDate(row[4]),
               renewalDate: normalizeExcelDate(row[5]),
               anniversary: row[6] || null,
               annualPremium: row[7] || 0,
-              observations: row[8] ? String(row[8]).trim() : "",
+              observations,
               paymentMethod: row[9] ? String(row[9]).trim() : "",
               approximateCommission: row[10] || 0,
               approximateBonus: row[11] || 0,
@@ -80,8 +104,11 @@ export default function ImportarCartera() {
               policyNumber: row[14]
                 ? String(row[14]).trim()
                 : `POL-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-              ramo: row[15] ? String(row[15]).trim() : "",
-              vidaObjetivo: row[16] ? String(row[16]).trim() : "",
+              ramo: resolved.ramo,
+              subRamo: resolved.subRamo,
+              subRamoKey: resolved.classified.subRamoKey,
+              vidaObjetivo: resolved.vidaObjetivo || "",
+              tipoVigencia: resolved.tipoVigencia,
             };
           })
           .filter(
@@ -91,6 +118,7 @@ export default function ImportarCartera() {
           );
 
         setParsedData(parsed);
+        setShowAllRows(false);
       } catch {
         toast({
           title: "Error al procesar",
@@ -140,6 +168,31 @@ export default function ImportarCartera() {
     }
   };
 
+  const handlePreviewRamoChange = (
+    rowIndex: number,
+    nextSubRamoKey: CanonicalSubRamoKey,
+    nextObjetivo?: VidaObjetivoKey | null
+  ) => {
+    setParsedData((prev) =>
+      prev.map((item, idx) => {
+        if (idx !== rowIndex) return item;
+        const targetObj =
+          nextSubRamoKey === "VIDA_INDIVIDUAL"
+            ? ((nextObjetivo ?? (item.vidaObjetivo || "PROTECCION")) as VidaObjetivoKey)
+            : null;
+        const mapped = mapFormSelectionToPolicyFields(nextSubRamoKey, targetObj);
+        return {
+          ...item,
+          subRamoKey: nextSubRamoKey,
+          ramo: mapped.ramo,
+          subRamo: mapped.subRamo,
+          vidaObjetivo: mapped.vidaObjetivo || "",
+          tipoVigencia: mapped.defaultVigencia,
+        };
+      })
+    );
+  };
+
   const downloadTemplate = () => {
     const wb = xlsx.utils.book_new();
     const ws_data = [
@@ -178,6 +231,46 @@ export default function ImportarCartera() {
         "5512345678",
         "juan.perez@ejemplo.com",
         "308299",
+        "Vida Individual",
+        "Protección",
+      ],
+      [
+        "Ejemplo: María López Soto",
+        "1990-08-20",
+        "Gastos Médicos Flex",
+        "GNP Seguros",
+        "2026-01-15",
+        "2027-01-15",
+        "Enero",
+        38900,
+        "Coaseguro 10%, Deducible $25,000",
+        "Anual",
+        0,
+        0,
+        "5587654321",
+        "maria.lopez@ejemplo.com",
+        "GMM-99210",
+        "GMM Individual",
+        "",
+      ],
+      [
+        "Ejemplo: Logística del Norte SA de CV",
+        "",
+        "Flotilla Utilitarios (12 unidades)",
+        "Quálitas",
+        "2026-02-01",
+        "2027-02-01",
+        "Febrero",
+        185000,
+        "Cobertura Amplia Flotilla",
+        "Semestral",
+        0,
+        0,
+        "5511223344",
+        "flota@ejemplo.com",
+        "FLT-44100",
+        "Autos Flotilla",
+        "",
       ],
     ];
     const ws = xlsx.utils.aoa_to_sheet(ws_data);
@@ -186,6 +279,22 @@ export default function ImportarCartera() {
     ws["!cols"] = wscols;
 
     xlsx.utils.book_append_sheet(wb, ws, "Layout Cartera");
+
+    const catalogRows = [
+      ["Columna P: Ramo / Sub-ramo (Valores Válidos)", "Columna Q: Objetivo Vida (solo si es Vida Individual)", "Notas"],
+      ["Vida Individual", "Protección", "Si dejas Columna P vacía, se detecta automáticamente desde Producto"],
+      ["Vida Grupo", "Ahorro", "Colectivo / Prestación empresarial de Vida"],
+      ["GMM Individual", "Retiro", "También acepta PPR / Artículo 151"],
+      ["GMM Colectivo", "Educación", "Gastos Médicos empresariales / PyME"],
+      ["Autos Individual", "", "Vehículo particular"],
+      ["Autos Flotilla", "", "Flotillas comerciales o empresariales"],
+      ["Daños", "", "Hogar, Empresarial, PyME, Incendio, RC, Transporte"],
+      ["Otros", "", "Cualquier otro ramo no listado"],
+    ];
+    const wsCatalog = xlsx.utils.aoa_to_sheet(catalogRows);
+    wsCatalog["!cols"] = [{ wch: 44 }, { wch: 48 }, { wch: 58 }];
+    xlsx.utils.book_append_sheet(wb, wsCatalog, "Catálogo Ramos");
+
     xlsx.writeFile(wb, "Layout_Cartera_Modelo.xlsx");
   };
 
@@ -296,32 +405,88 @@ export default function ImportarCartera() {
           <CardHeader>
             <CardTitle>Vista Previa de Datos ({parsedData.length} filas)</CardTitle>
             <CardDescription>
-              Verifica que las fechas y montos se hayan leído correctamente antes de confirmar.
+              Verifica fechas, montos en MXN y el Ramo / Sub-ramo detectado (puedes ajustarlo aquí antes de confirmar).
             </CardDescription>
+            <div className="flex flex-wrap gap-1.5 pt-2">
+              {SUB_RAMOS_CATALOG.map((sr) => {
+                const count = parsedData.filter((r) => r.subRamoKey === sr.key).length;
+                if (count === 0) return null;
+                return (
+                  <span
+                    key={sr.key}
+                    className={`inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-0.5 rounded-full border ${sr.colorClass}`}
+                  >
+                    <span>{sr.label}:</span>
+                    <span>{count}</span>
+                  </span>
+                );
+              })}
+            </div>
           </CardHeader>
-          <CardContent className="overflow-auto max-h-[400px]">
+          <CardContent className="overflow-auto max-h-[480px]">
             <table className="w-full text-sm text-left">
-              <thead className="text-xs uppercase bg-muted text-muted-foreground sticky top-0">
+              <thead className="text-xs uppercase bg-muted text-muted-foreground sticky top-0 z-10">
                 <tr>
-                  <th className="px-4 py-3">Póliza</th>
-                  <th className="px-4 py-3">Cliente</th>
-                  <th className="px-4 py-3">Producto</th>
-                  <th className="px-4 py-3">Aseguradora</th>
-                  <th className="px-4 py-3">Inicio Vigencia</th>
-                  <th className="px-4 py-3 text-right">Prima Anual</th>
+                  <th className="px-3 py-3">Póliza</th>
+                  <th className="px-3 py-3">Cliente</th>
+                  <th className="px-3 py-3">Producto</th>
+                  <th className="px-3 py-3">Ramo / Sub-ramo</th>
+                  <th className="px-3 py-3">Aseguradora</th>
+                  <th className="px-3 py-3">Inicio Vigencia</th>
+                  <th className="px-3 py-3 text-right">Prima Anual</th>
                 </tr>
               </thead>
               <tbody>
-                {parsedData.slice(0, 50).map((row, i) => (
+                {(showAllRows ? parsedData : parsedData.slice(0, 50)).map((row, i) => (
                   <tr key={i} className="border-b">
-                    <td className="px-4 py-3 font-mono text-xs">{row.policyNumber}</td>
-                    <td className="px-4 py-3 font-medium">{row.clientName}</td>
-                    <td className="px-4 py-3">{row.product}</td>
-                    <td className="px-4 py-3">{row.insuranceCompany}</td>
-                    <td className="px-4 py-3 text-xs">
+                    <td className="px-3 py-2.5 font-mono text-xs">{row.policyNumber}</td>
+                    <td className="px-3 py-2.5 font-medium">{row.clientName}</td>
+                    <td className="px-3 py-2.5 text-xs">{row.product || "-"}</td>
+                    <td className="px-3 py-2.5">
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <select
+                          value={row.subRamoKey || "VIDA_INDIVIDUAL"}
+                          onChange={(e) =>
+                            handlePreviewRamoChange(
+                              i,
+                              e.target.value as CanonicalSubRamoKey,
+                              row.vidaObjetivo || null
+                            )
+                          }
+                          className="h-7 text-xs font-semibold rounded-md border border-input bg-background px-2 py-0.5"
+                        >
+                          {SUB_RAMOS_CATALOG.map((sr) => (
+                            <option key={sr.key} value={sr.key}>
+                              {sr.label}
+                            </option>
+                          ))}
+                        </select>
+                        {row.subRamoKey === "VIDA_INDIVIDUAL" && (
+                          <select
+                            value={row.vidaObjetivo || "PROTECCION"}
+                            onChange={(e) =>
+                              handlePreviewRamoChange(
+                                i,
+                                "VIDA_INDIVIDUAL",
+                                e.target.value as VidaObjetivoKey
+                              )
+                            }
+                            className="h-7 text-[11px] font-medium rounded-md border border-input bg-muted/40 px-2 py-0.5"
+                          >
+                            {VIDA_OBJETIVOS_CATALOG.map((obj) => (
+                              <option key={obj.key} value={obj.key}>
+                                {obj.shortLabel}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5 text-xs">{row.insuranceCompany || "-"}</td>
+                    <td className="px-3 py-2.5 text-xs">
                       {formatDateSafe(row.effectiveDate, "dd/MM/yyyy", "-")}
                     </td>
-                    <td className="px-4 py-3 text-right font-medium">
+                    <td className="px-3 py-2.5 text-right font-medium">
                       $
                       {Number(
                         String(row.annualPremium || 0).replace(/[^0-9.-]+/g, "")
@@ -332,9 +497,21 @@ export default function ImportarCartera() {
               </tbody>
             </table>
             {parsedData.length > 50 && (
-              <p className="text-xs text-center text-muted-foreground mt-4">
-                Mostrando los primeros 50 registros de {parsedData.length}.
-              </p>
+              <div className="flex items-center justify-center gap-3 mt-4">
+                <p className="text-xs text-muted-foreground">
+                  {showAllRows
+                    ? `Mostrando las ${parsedData.length} pólizas.`
+                    : `Mostrando los primeros 50 registros de ${parsedData.length}.`}
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowAllRows((v) => !v)}
+                >
+                  {showAllRows ? "Ver solo 50" : `Mostrar todas (${parsedData.length})`}
+                </Button>
+              </div>
             )}
           </CardContent>
           <CardFooter className="flex justify-end gap-2 bg-muted/20 py-4">
