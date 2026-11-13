@@ -37,6 +37,7 @@ import {
   togglePolicyRenewalFlag,
 } from "@/app/(dashboard)/cartera/actions";
 import QuickPdfAiPolicyDialog from "@/app/(dashboard)/cartera/QuickPdfAiPolicyDialog";
+import GrokbotBridgePanel from "@/components/admin/GrokbotBridgePanel";
 import { DEFAULT_COMPANIES } from "@/lib/productionConstants";
 import {
   BusinessScope,
@@ -81,6 +82,7 @@ import {
   Users,
   Check,
   XCircle,
+  Bot,
 } from "lucide-react";
 
 const MONTHS = [
@@ -124,7 +126,7 @@ const currentMonth = new Date().getMonth() + 1;
 
 export default function AdminProduccion() {
   const [activeSubTab, setActiveSubTab] = useState<
-    "dashboard" | "ingreso" | "companias" | "evaluador"
+    "dashboard" | "ingreso" | "companias" | "evaluador" | "grokbot"
   >("dashboard");
   const [isPending, startTransition] = useTransition();
 
@@ -765,6 +767,16 @@ export default function AdminProduccion() {
   const agentMatrix = data?.agentMatrix || [];
   const ledgerRows = data?.ledgerRows || [];
   const agencies = data?.agencies || [];
+  const effectiveUiAgencyId =
+    selectedAgency === "DEFAULT" ? data?.selectedAgencyId : selectedAgency;
+  const isMainAacomAgency = effectiveUiAgencyId === "aacom";
+
+  useEffect(() => {
+    if (activeSubTab === "grokbot" && effectiveUiAgencyId && !isMainAacomAgency) {
+      setActiveSubTab("dashboard");
+    }
+  }, [activeSubTab, effectiveUiAgencyId, isMainAacomAgency]);
+
   const periodInfo = data?.periodInfo;
   const periodLabel = periodInfo?.label || `${MONTHS.find((m) => m.value === selectedMonth)?.name} ${selectedYear}`;
   const currentAgencyName =
@@ -866,6 +878,18 @@ export default function AdminProduccion() {
             >
               <Building2 className="h-3.5 w-3.5" /> Aseguradoras
             </button>
+            {isMainAacomAgency && (
+              <button
+                onClick={() => setActiveSubTab("grokbot")}
+                className={`px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  activeSubTab === "grokbot"
+                    ? "bg-white dark:bg-zinc-800 text-indigo-700 dark:text-indigo-400 shadow-sm"
+                    : "text-slate-600 dark:text-zinc-400 hover:text-slate-900"
+                }`}
+              >
+                <Bot className="h-3.5 w-3.5" /> Puente Grokbot
+              </button>
+            )}
           </div>
 
           <QuickPdfAiPolicyDialog
@@ -2536,6 +2560,11 @@ export default function AdminProduccion() {
             </CardContent>
           </Card>
         </div>
+      )}
+
+      {/* SUBTAB 5: PUENTE GROKBOT (EXCLUSIVO PROMOTORÍA TITULAR) */}
+      {activeSubTab === "grokbot" && isMainAacomAgency && (
+        <GrokbotBridgePanel onDataMutated={fetchData} />
       )}
 
       {/* MODAL 1: EDITAR PRESUPUESTO MENSUAL PEA */}

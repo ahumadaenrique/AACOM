@@ -1528,3 +1528,82 @@ model ClientPortalItem {
   @@index([agencyId])
   @@index([userId])
 }
+
+model GrokbotAgentMap {
+  id                String   @id @default(cuid())
+  agencyId          String
+  insurerKey        String
+  externalAgentCode String
+  externalAgentName String?
+  userId            String?
+  autoMatched       Boolean  @default(false)
+  updatedById       String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([agencyId, insurerKey, externalAgentCode])
+  @@index([agencyId])
+  @@index([userId])
+  @@map("grokbot_agent_maps")
+}
+
+model GrokbotSyncBatch {
+  id               String            @id @default(cuid())
+  agencyId         String
+  batchDateStr     String
+  source           String
+  triggeredBy      String            @default("GROKBOT_API")
+  status           String            @default("APPLIED")
+  totalParsed      Int               @default(0)
+  appliedCount     Int               @default(0)
+  quarantinedCount Int               @default(0)
+  skippedCount     Int               @default(0)
+  totalAppliedMxn  Float             @default(0)
+  summaryJson      Json?
+  rolledBackAt     DateTime?
+  rolledBackById   String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  items            GrokbotSyncItem[]
+
+  @@index([agencyId, batchDateStr])
+  @@index([agencyId, createdAt])
+  @@map("grokbot_sync_batches")
+}
+
+model GrokbotSyncItem {
+  id                 String           @id @default(cuid())
+  batchId            String
+  agencyId           String
+  externalKey        String           @unique
+  insurerKey         String
+  itemType           String
+  policyNumber       String
+  receiptRef         String?
+  clientName         String?
+  externalAgentCode  String
+  externalAgentName  String?
+  secondaryAgentCode String?
+  mappedUserId       String?
+  amountMxn          Float            @default(0)
+  eventDateStr       String?
+  appliedDateStr     String?
+  status             String           @default("QUARANTINED")
+  quarantineReason   String?
+  rawPayloadJson     Json
+  rollbackLedgerJson Json?
+  appliedAt          DateTime?
+  rolledBackAt       DateTime?
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+
+  batch              GrokbotSyncBatch @relation(fields: [batchId], references: [id], onDelete: Cascade)
+
+  @@index([batchId])
+  @@index([agencyId, status])
+  @@index([agencyId, appliedDateStr])
+  @@index([agencyId, eventDateStr])
+  @@index([agencyId, externalAgentCode, status])
+  @@map("grokbot_sync_items")
+}

@@ -1222,6 +1222,106 @@ async function injectColumns() {
       try { await client.query('ROLLBACK'); } catch (_) {}
       console.warn('⚠️  InsuranceCompany lock/dedup warning:', txErr.message || txErr);
     }
+
+    // =========================================================================
+    // Tablas del Puente Blindado de Ingesta Grokbot (Idempotentes)
+    // =========================================================================
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS "grokbot_agent_maps" (
+        "id" TEXT NOT NULL,
+        "agencyId" TEXT NOT NULL,
+        "insurerKey" TEXT NOT NULL,
+        "externalAgentCode" TEXT NOT NULL,
+        "externalAgentName" TEXT,
+        "userId" TEXT,
+        "autoMatched" BOOLEAN NOT NULL DEFAULT false,
+        "updatedById" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "grokbot_agent_maps_pkey" PRIMARY KEY ("id")
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS "grokbot_agent_maps_agencyId_insurerKey_externalAgentCode_key"
+        ON "grokbot_agent_maps"("agencyId", "insurerKey", "externalAgentCode");
+      CREATE INDEX IF NOT EXISTS "grokbot_agent_maps_agencyId_idx" ON "grokbot_agent_maps"("agencyId");
+      CREATE INDEX IF NOT EXISTS "grokbot_agent_maps_userId_idx" ON "grokbot_agent_maps"("userId");
+
+      CREATE TABLE IF NOT EXISTS "grokbot_sync_batches" (
+        "id" TEXT NOT NULL,
+        "agencyId" TEXT NOT NULL,
+        "batchDateStr" TEXT NOT NULL,
+        "source" TEXT NOT NULL,
+        "triggeredBy" TEXT NOT NULL DEFAULT 'GROKBOT_API',
+        "status" TEXT NOT NULL DEFAULT 'APPLIED',
+        "totalParsed" INTEGER NOT NULL DEFAULT 0,
+        "appliedCount" INTEGER NOT NULL DEFAULT 0,
+        "quarantinedCount" INTEGER NOT NULL DEFAULT 0,
+        "skippedCount" INTEGER NOT NULL DEFAULT 0,
+        "totalAppliedMxn" DOUBLE PRECISION NOT NULL DEFAULT 0,
+        "summaryJson" JSONB,
+        "rolledBackAt" TIMESTAMP(3),
+        "rolledBackById" TEXT,
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "grokbot_sync_batches_pkey" PRIMARY KEY ("id")
+      );
+      CREATE INDEX IF NOT EXISTS "grokbot_sync_batches_agencyId_batchDateStr_idx"
+        ON "grokbot_sync_batches"("agencyId", "batchDateStr");
+      CREATE INDEX IF NOT EXISTS "grokbot_sync_batches_agencyId_createdAt_idx"
+        ON "grokbot_sync_batches"("agencyId", "createdAt");
+
+      CREATE TABLE IF NOT EXISTS "grokbot_sync_items" (
+        "id" TEXT NOT NULL,
+        "batchId" TEXT NOT NULL,
+        "agencyId" TEXT NOT NULL,
+        "externalKey" TEXT NOT NULL,
+        "insurerKey" TEXT NOT NULL,
+        "itemType" TEXT NOT NULL,
+        "policyNumber" TEXT NOT NULL,
+        "receiptRef" TEXT,
+        "clientName" TEXT,
+        "externalAgentCode" TEXT NOT NULL,
+        "externalAgentName" TEXT,
+        "secondaryAgentCode" TEXT,
+        "mappedUserId" TEXT,
+        "amountMxn" DOUBLE PRECISION NOT NULL DEFAULT 0,
+        "eventDateStr" TEXT,
+        "appliedDateStr" TEXT,
+        "status" TEXT NOT NULL DEFAULT 'QUARANTINED',
+        "quarantineReason" TEXT,
+        "rawPayloadJson" JSONB NOT NULL,
+        "rollbackLedgerJson" JSONB,
+        "appliedAt" TIMESTAMP(3),
+        "rolledBackAt" TIMESTAMP(3),
+        "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        CONSTRAINT "grokbot_sync_items_pkey" PRIMARY KEY ("id")
+      );
+      CREATE UNIQUE INDEX IF NOT EXISTS "grokbot_sync_items_externalKey_key"
+        ON "grokbot_sync_items"("externalKey");
+      CREATE INDEX IF NOT EXISTS "grokbot_sync_items_batchId_idx"
+        ON "grokbot_sync_items"("batchId");
+      CREATE INDEX IF NOT EXISTS "grokbot_sync_items_agencyId_status_idx"
+        ON "grokbot_sync_items"("agencyId", "status");
+      CREATE INDEX IF NOT EXISTS "grokbot_sync_items_agencyId_appliedDateStr_idx"
+        ON "grokbot_sync_items"("agencyId", "appliedDateStr");
+      CREATE INDEX IF NOT EXISTS "grokbot_sync_items_agencyId_eventDateStr_idx"
+        ON "grokbot_sync_items"("agencyId", "eventDateStr");
+      CREATE INDEX IF NOT EXISTS "grokbot_sync_items_agencyId_externalAgentCode_status_idx"
+        ON "grokbot_sync_items"("agencyId", "externalAgentCode", "status");
+    `);
+    await client.query(`
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint WHERE conname = 'grokbot_sync_items_batchId_fkey'
+        ) THEN
+          ALTER TABLE "grokbot_sync_items"
+          ADD CONSTRAINT "grokbot_sync_items_batchId_fkey"
+          FOREIGN KEY ("batchId") REFERENCES "grokbot_sync_batches"("id")
+          ON DELETE CASCADE ON UPDATE CASCADE;
+        END IF;
+      END $$;
+    `);
   } catch (error) {
     console.warn("⚠️  inject_columns: Could not connect to DB or columns may already exist. Continuing build...");
     console.warn(error.message || error);
