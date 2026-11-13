@@ -769,13 +769,22 @@ export default function AdminProduccion() {
   const agencies = data?.agencies || [];
   const effectiveUiAgencyId =
     selectedAgency === "DEFAULT" ? data?.selectedAgencyId : selectedAgency;
-  const isMainAacomAgency = effectiveUiAgencyId === "aacom";
+  const selectedUiAgencyObj = agencies.find((ag: any) => ag.id === effectiveUiAgencyId);
+  const isSelectedMainAgency = Boolean(
+    selectedUiAgencyObj
+      ? selectedUiAgencyObj.id === "aacom" || selectedUiAgencyObj.slug === "aacom"
+      : data?.canAccessGrokbotBridge && effectiveUiAgencyId === data?.selectedAgencyId
+  );
+  const canShowGrokbotBridge =
+    data?.currentUserRole === "SUPER_ADMIN" &&
+    Boolean(data?.canAccessGrokbotBridge) &&
+    isSelectedMainAgency;
 
   useEffect(() => {
-    if (activeSubTab === "grokbot" && effectiveUiAgencyId && !isMainAacomAgency) {
+    if (activeSubTab === "grokbot" && data && !canShowGrokbotBridge) {
       setActiveSubTab("dashboard");
     }
-  }, [activeSubTab, effectiveUiAgencyId, isMainAacomAgency]);
+  }, [activeSubTab, data, canShowGrokbotBridge]);
 
   const periodInfo = data?.periodInfo;
   const periodLabel = periodInfo?.label || `${MONTHS.find((m) => m.value === selectedMonth)?.name} ${selectedYear}`;
@@ -878,7 +887,7 @@ export default function AdminProduccion() {
             >
               <Building2 className="h-3.5 w-3.5" /> Aseguradoras
             </button>
-            {isMainAacomAgency && (
+            {canShowGrokbotBridge && (
               <button
                 onClick={() => setActiveSubTab("grokbot")}
                 className={`px-3 py-2 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
@@ -2563,7 +2572,7 @@ export default function AdminProduccion() {
       )}
 
       {/* SUBTAB 5: PUENTE GROKBOT (EXCLUSIVO PROMOTORÍA TITULAR) */}
-      {activeSubTab === "grokbot" && isMainAacomAgency && (
+      {activeSubTab === "grokbot" && canShowGrokbotBridge && (
         <GrokbotBridgePanel onDataMutated={fetchData} />
       )}
 

@@ -30,19 +30,14 @@ async function verifyAacomExclusiveAdmin() {
     select: { id: true, role: true, agencyId: true, name: true, active: true },
   });
 
-  if (!user || !user.active || (user.role !== "ADMIN" && user.role !== "SUPER_ADMIN")) {
-    throw new Error("Acceso restringido para administradores.");
+  if (!user || !user.active || user.role !== "SUPER_ADMIN") {
+    throw new Error("Acceso exclusivo para Super Administrador.");
   }
 
   const aacomAgency = await resolveLockedAacomAgency();
-  const impersonateId =
-    user.role === "SUPER_ADMIN" ? cookies().get("impersonateAgencyId")?.value : undefined;
+  const impersonateId = cookies().get("impersonateAgencyId")?.value;
 
-  if (user.role !== "SUPER_ADMIN" && user.agencyId !== aacomAgency.id) {
-    throw new Error("El puente Grokbot es exclusivo de la promotoría titular.");
-  }
-
-  if (user.role === "SUPER_ADMIN" && impersonateId && impersonateId !== aacomAgency.id) {
+  if (impersonateId && impersonateId !== aacomAgency.id) {
     throw new Error("El puente Grokbot solo está disponible dentro de la promotoría titular.");
   }
 

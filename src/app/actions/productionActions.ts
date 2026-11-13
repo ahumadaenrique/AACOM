@@ -937,7 +937,7 @@ export async function getProductionDashboardData(options: {
         orderBy: { name: "asc" },
       }),
       user.role === "SUPER_ADMIN"
-        ? prisma.agency.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } })
+        ? prisma.agency.findMany({ select: { id: true, name: true, slug: true }, orderBy: { name: "asc" } })
         : Promise.resolve([]),
       prisma.agentEmission.count({
         where: { agencyId: effectiveAgencyId },
@@ -1163,11 +1163,23 @@ export async function getProductionDashboardData(options: {
       return a.agentName.localeCompare(b.agentName);
     });
 
+    const selectedAgencyObj =
+      user.role === "SUPER_ADMIN"
+        ? agencies.find((ag) => ag.id === effectiveAgencyId)
+        : null;
+    const canAccessGrokbotBridge =
+      user.role === "SUPER_ADMIN" &&
+      Boolean(
+        selectedAgencyObj &&
+          (selectedAgencyObj.id === "aacom" || selectedAgencyObj.slug === "aacom")
+      );
+
     return {
       success: true,
       currentUserRole: user.role,
       userAgencyId: user.agencyId,
       selectedAgencyId: effectiveAgencyId,
+      canAccessGrokbotBridge,
       agencies,
       companies,
       catalogCompanies: allAgencyCompanies,
