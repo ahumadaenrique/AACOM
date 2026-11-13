@@ -372,8 +372,10 @@ model PolicyReceipt {
   amount            Float     @default(0)
   status            String    @default("PENDIENTE")
   paidAt            DateTime?
-  paidAmount        Float?
-  adminApproved     Boolean   @default(true)
+  paidAmount           Float?
+  computableAmount     Float?
+  agentAllocationsJson Json?
+  adminApproved        Boolean   @default(true)
   paymentNotes      String?
   syncedEmissionId  String?
   createdAt         DateTime  @default(now())

@@ -1308,6 +1308,9 @@ async function injectColumns() {
         ON "grokbot_sync_items"("agencyId", "eventDateStr");
       CREATE INDEX IF NOT EXISTS "grokbot_sync_items_agencyId_externalAgentCode_status_idx"
         ON "grokbot_sync_items"("agencyId", "externalAgentCode", "status");
+
+      ALTER TABLE "PolicyReceipt" ADD COLUMN IF NOT EXISTS "computableAmount" DOUBLE PRECISION;
+      ALTER TABLE "PolicyReceipt" ADD COLUMN IF NOT EXISTS "agentAllocationsJson" JSONB;
     `);
     await client.query(`
       DO $$

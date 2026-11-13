@@ -9,10 +9,12 @@ import {
   GROKBOT_SETTING_KEYS,
   InsurerKey,
   applyQuarantinedItems,
+  ensureGrokbotV2Ready,
   getCdmxTodayYmd,
   getGrokbotBridgeSecurityState,
   normalizeIncomingGrokbotPayload,
   previewRollbackByDateRange,
+  provisionAllKnownBridgeAgents,
   resolveLockedAacomAgency,
   rollbackBatchById,
   rollbackByDateRange,
@@ -53,6 +55,7 @@ function revalidateProductionPaths() {
 export async function getGrokbotBridgeDashboard() {
   try {
     const { agency } = await verifyAacomExclusiveAdmin();
+    await ensureGrokbotV2Ready();
     const todayYmd = getCdmxTodayYmd();
 
     const [
@@ -468,5 +471,28 @@ export async function executeGrokbotRollbackBatchAction(batchId: string) {
   } catch (err: any) {
     console.error("executeGrokbotRollbackBatchAction error:", err);
     return { success: false, message: err?.message || "Error revirtiendo lote." };
+  }
+}
+
+export async function syncGrokbotLiteAgentsAction() {
+  try {
+    const { agency } = await verifyAacomExclusiveAdmin();
+    await ensureGrokbotV2Ready();
+    const provisionResult = await provisionAllKnownBridgeAgents(agency.id);
+    const applyResult = await applyQuarantinedItems({
+      forceApproveAnomalies: true,
+    });
+    revalidateProductionPaths();
+    return {
+      success: true,
+      mappedCodesCount: provisionResult.size,
+      appliedCount: applyResult.appliedCount,
+    };
+  } catch (err: any) {
+    console.error("syncGrokbotLiteAgentsAction error:", err);
+    return {
+      success: false,
+      message: err?.message || "Error sincronizando claves y perfiles AGENTE_LITE.",
+    };
   }
 }

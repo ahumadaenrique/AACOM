@@ -1,4 +1,6 @@
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
 import { addDays, addMonths, differenceInCalendarDays } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import {
@@ -20,6 +22,7 @@ export const GROKBOT_SETTING_KEYS = {
   KEY_SHA256: "grokbot_ingest_key_sha256_aacom",
   KEY_HINT: "grokbot_ingest_key_hint_aacom",
   PAUSED: "grokbot_ingest_paused_aacom",
+  MIGRATED_V2: "grokbot_parser_v2_migrated_aacom",
 } as const;
 
 export type InsurerKey = "INSIGNIA" | "LATINO";
@@ -39,6 +42,8 @@ export interface RollbackLedger {
     renewalDate: string | null;
     sharedWithUserId: string | null;
     sharedPercentage: number | null;
+    isRenewalCapture?: boolean | null;
+    subStatus?: string | null;
   } | null;
   createdPendingReceiptIds?: string[];
   replacedUnpaidReceipts?: Array<{
@@ -56,6 +61,8 @@ export interface RollbackLedger {
     status: string;
     paidAt: string | null;
     paidAmount: number | null;
+    computableAmount?: number | null;
+    agentAllocationsJson?: any | null;
     amount: number;
     paymentNotes: string | null;
     syncedEmissionId: string | null;
@@ -73,6 +80,8 @@ export interface RollbackLedger {
 export interface AgentShareSpec {
   externalCode: string;
   externalName: string | null;
+  paidMxn: number;
+  computableMxn: number;
   amountMxn: number;
   mappedUserId: string | null;
 }
@@ -96,6 +105,8 @@ export interface NormalizedGrokbotItem {
   receiptNumber: number;
   isExtraContribution: boolean;
   isRenewalCapture: boolean;
+  paidAmountMxn: number;
+  computableAmountMxn: number;
   amountMxn: number;
   annualPremiumEstimateMxn: number;
   effectiveYmd: string;
@@ -274,8 +285,124 @@ export async function verifyGrokbotIngestToken(
 }
 
 // =========================================================================
-// MAPEO DE AGENTES (AUTO-EMPAREJAMIENTO ÚNICO SIN AMBIGÜEDADES)
+// MAPEO DE AGENTES (CORE MULTI-CLAVE + AUTO-CREACIÓN AGENTE_LITE)
 // =========================================================================
+
+const CORE_AGENT_KEY_ALIASES: Record<string, string[]> = {
+  "INSIGNIA:7804": ["MIGUEL", "CRUZ"],
+  "LATINO:11670": ["MIGUEL", "CRUZ"],
+  "INSIGNIA:10797": ["ALEJANDRA", "AHUMADA"],
+  "INSIGNIA:91476": ["ALEJANDRA", "AHUMADA"],
+  "LATINO:11830": ["ALEJANDRA", "AHUMADA"],
+  "INSIGNIA:8725": ["ENRIQUE", "AHUMADA"],
+  "INSIGNIA:91209": ["ENRIQUE", "AHUMADA"],
+  "LATINO:11627": ["ENRIQUE", "AHUMADA"],
+  "INSIGNIA:8889": ["DALIA", "SANDOVAL"],
+  "LATINO:11454": ["DALIA", "SANDOVAL"],
+  "INSIGNIA:8832": ["JORGE", "ARAOZ"],
+  "INSIGNIA:9873": ["ROBERTO", "ROSALES"],
+  "LATINO:12124": ["FERNANDA", "ALEJANDRE"],
+  "INSIGNIA:9895": ["FRANCISCO", "ARIAS"],
+  "LATINO:12125": ["FRANCISCO", "ARIAS"],
+  "INSIGNIA:11006": ["OMAR", "DIAZ"],
+  "INSIGNIA:9179": ["ARELI", "ARCE"],
+  "LATINO:11898": ["RAYO", "CARRERA"],
+  "INSIGNIA:6371": ["CLAUDIA", "QUIJADA"],
+  "INSIGNIA:773": ["VICTOR", "MARIN"],
+  "INSIGNIA:10701": ["MARGARITA", "HABANA"],
+};
+
+export interface KnownBridgeAgentEntry {
+  insurerKey: InsurerKey;
+  externalAgentCode: string;
+  externalAgentName: string;
+  cleanDisplayName: string;
+}
+
+export const KNOWN_BRIDGE_AGENT_CATALOG: KnownBridgeAgentEntry[] = [
+  { insurerKey: "INSIGNIA", externalAgentCode: "10001", externalAgentName: "VIRGEN CASTRO, CAROLINA", cleanDisplayName: "Carolina Virgen Castro" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "10004", externalAgentName: "VILLAR VILLASENOR, SANTIAGO", cleanDisplayName: "Santiago Villar Villaseñor" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "10701", externalAgentName: "HABANA DOMINGUEZ, MARGARITA VIRIDIANA", cleanDisplayName: "Margarita Viridiana Habana Domínguez" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "10797", externalAgentName: "AHUMADA BERMUDEZ, ALEJANDRA", cleanDisplayName: "Alejandra Ahumada" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "11006", externalAgentName: "DIAZ ACOSTA, OMAR", cleanDisplayName: "Omar Díaz Acosta" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "2319", externalAgentName: "ANA LUISA AVALOS  REYNOSO", cleanDisplayName: "Ana Luisa Avalos Reynoso" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "3341", externalAgentName: "ESTRADA MARQUEZ, MARIA ESTHER", cleanDisplayName: "María Esther Estrada Márquez" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "6032", externalAgentName: "BENITA BORDES, MARIA JOSE", cleanDisplayName: "María José Benita Bordes" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "6371", externalAgentName: "QUIJADA PEREZ, CLAUDIA", cleanDisplayName: "Claudia Quijada Pérez" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "6529", externalAgentName: "RAUL COKA BARRIGA, AGENTE DE SEGUROS S.A. DE C.V.", cleanDisplayName: "Raúl Coka Barriga Agente de Seguros" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "73233", externalAgentName: "ACEVEDO HERNANDEZ, JOSE ISABEL", cleanDisplayName: "José Isabel Acevedo Hernández" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "773", externalAgentName: "MARIN GARCIA, VICTOR GERONIMO", cleanDisplayName: "Víctor Gerónimo Marín García" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "7804", externalAgentName: "CRUZ CALVILLO, MIGUEL ANGEL", cleanDisplayName: "Miguel Ángel Cruz Calvillo" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "791", externalAgentName: "MARIA CRISTINA TORRE MORALES", cleanDisplayName: "María Cristina Torre Morales" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "8249", externalAgentName: "INTERMEDIACION NEXUS AGENTES DE SEGUROS Y DE FIANZAS SA DE CV", cleanDisplayName: "Intermediación Nexus" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "8472", externalAgentName: "WEG, AGENTE DE SEGUROS Y DE FIANZAS SA DE CV", cleanDisplayName: "WEG Agente de Seguros" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "8679", externalAgentName: "CARAPIA SANCHEZ, MARIA DE LOURDES", cleanDisplayName: "María de Lourdes Carapia Sánchez" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "8725", externalAgentName: "AHUMADA BERMUDEZ, ENRIQUE", cleanDisplayName: "Enrique Ahumada" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "8832", externalAgentName: "ARAOZ ESTRADA, JORGE ANTONIO", cleanDisplayName: "Jorge Antonio Araoz Estrada" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "8845", externalAgentName: "ESPINOSA MANCERA, SAMANTHA ELOISA", cleanDisplayName: "Samantha Eloísa Espinosa Mancera" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "886", externalAgentName: "SERAFIN HERNANDEZ, JOSE ANGEL", cleanDisplayName: "José Ángel Serafín Hernández" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "8889", externalAgentName: "SANDOVAL ORTEGA, DALIA", cleanDisplayName: "Dalia Sandoval Ortega" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "9055", externalAgentName: "CALLEJA ASCENCIO, JUAN MANUEL", cleanDisplayName: "Juan Manuel Calleja Ascencio" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "9060", externalAgentName: "PEREZ ZARATE, RODRIGO", cleanDisplayName: "Rodrigo Pérez Zárate" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "9117", externalAgentName: "JULIETTE BEAUR, AGATHE", cleanDisplayName: "Agathe Juliette Beaur" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "91209", externalAgentName: "AHUMADA ANDRADE COMERCIALIZACION SAS DE CV", cleanDisplayName: "Enrique Ahumada" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "91476", externalAgentName: "AHUMADA ANDRADE COMERCIALIZACION SAS DE CV", cleanDisplayName: "Alejandra Ahumada" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "9179", externalAgentName: "ARCE RUIZ, ARELI ISABEL", cleanDisplayName: "Areli Arce" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "9213", externalAgentName: "ESCOBAR LERMA, GUILLERMO", cleanDisplayName: "Guillermo Escobar Lerma" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "9227", externalAgentName: "EDSEGUROS Y ASOCIADOS, AGENTE DE SEGUROS Y DE FIANZAS", cleanDisplayName: "Edseguros y Asociados" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "9518", externalAgentName: "DIAZ GOMEZ, ALEJANDRA", cleanDisplayName: "Alejandra Díaz Gómez" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "9873", externalAgentName: "ROSALES AGUIRRE, ROBERTO", cleanDisplayName: "Roberto Rosales Aguirre" },
+  { insurerKey: "INSIGNIA", externalAgentCode: "9895", externalAgentName: "ARIAS MEJIA, FRANCISCO JAVIER", cleanDisplayName: "Francisco Javier Arias Mejía" },
+  { insurerKey: "LATINO", externalAgentCode: "11454", externalAgentName: "DALIA SANDOVAL ORTEGA", cleanDisplayName: "Dalia Sandoval Ortega" },
+  { insurerKey: "LATINO", externalAgentCode: "11627", externalAgentName: "ENRIQUE AHUMADA BERMUDEZ", cleanDisplayName: "Enrique Ahumada" },
+  { insurerKey: "LATINO", externalAgentCode: "11670", externalAgentName: "MIGUEL ANGEL CRUZ CALVILLO", cleanDisplayName: "Miguel Ángel Cruz Calvillo" },
+  { insurerKey: "LATINO", externalAgentCode: "11830", externalAgentName: "ALEJANDRA AHUMADA BERMUDEZ", cleanDisplayName: "Alejandra Ahumada" },
+  { insurerKey: "LATINO", externalAgentCode: "11898", externalAgentName: "MARIA DEL RAYO CARRERA FERNANDEZ", cleanDisplayName: "María del Rayo Carrera Fernández" },
+  { insurerKey: "LATINO", externalAgentCode: "12124", externalAgentName: "MARIA FERNANDA ALEJANDRE CEARSOLO", cleanDisplayName: "María Fernanda Alejandre Cearsolo" },
+  { insurerKey: "LATINO", externalAgentCode: "12125", externalAgentName: "FRANCISCO JAVIER  ARIAS  MEJIA", cleanDisplayName: "Francisco Javier Arias Mejía" },
+];
+
+const KNOWN_CATALOG_DISPLAY_BY_KEY = new Map(
+  KNOWN_BRIDGE_AGENT_CATALOG.map((e) => [`${e.insurerKey}:${e.externalAgentCode}`, e.cleanDisplayName])
+);
+
+function toSpanishTitleCase(raw: string): string {
+  const minor = new Set(["DE", "DEL", "LA", "LAS", "LOS", "Y", "SA", "CV", "SAS", "SC"]);
+  return raw
+    .trim()
+    .split(/\s+/)
+    .map((word, idx) => {
+      const upper = word.toUpperCase();
+      if (upper === "WEG" || upper === "SA" || upper === "CV" || upper === "SAS") return upper;
+      if (idx > 0 && minor.has(upper)) return upper.toLowerCase();
+      return upper.charAt(0) + upper.slice(1).toLowerCase();
+    })
+    .join(" ");
+}
+
+function formatExternalAgentDisplayName(
+  mapKey: string,
+  rawName: string | null | undefined,
+  externalCode: string
+): string {
+  const catalogName = KNOWN_CATALOG_DISPLAY_BY_KEY.get(mapKey);
+  if (catalogName) return catalogName;
+
+  const cleaned = cleanPersonName(rawName);
+  if (!cleaned) return `Agente ${externalCode}`;
+
+  const upper = cleaned.toUpperCase();
+  const isCorporate = /(S\.?A\.?\s+DE\s+C\.?V\.?|S\.?A\.?S\.?|AGENTE\s+DE\s+SEGUROS|ASOCIADOS|INTERMEDIACION)/i.test(
+    upper
+  );
+  if (!isCorporate && cleaned.includes(",")) {
+    const [lastPart, firstPart] = cleaned.split(",").map((s) => s.trim());
+    if (firstPart && lastPart) {
+      return toSpanishTitleCase(`${firstPart} ${lastPart}`);
+    }
+  }
+  return toSpanishTitleCase(cleaned);
+}
 
 async function ensureAgentMaps(
   agencyId: string,
@@ -289,98 +416,218 @@ async function ensureAgentMaps(
     where: { agencyId },
   });
   const mapByKey = new Map<string, string | null>();
-  const seenKeySet = new Set<string>();
+  const existingRowByKey = new Map<string, (typeof existingMaps)[number]>();
 
   for (const m of existingMaps) {
     const k = `${m.insurerKey}:${m.externalAgentCode}`;
     mapByKey.set(k, m.userId || null);
-    seenKeySet.add(k);
+    existingRowByKey.set(k, m);
   }
 
-  const missing: Array<{
+  const toResolve: Array<{
     insurerKey: InsurerKey;
     externalAgentCode: string;
     externalAgentName: string | null;
   }> = [];
+  const queuedKeys = new Set<string>();
 
   for (const c of candidates) {
     const code = c.externalAgentCode.trim();
     if (!code) continue;
     const k = `${c.insurerKey}:${code}`;
-    if (!seenKeySet.has(k)) {
-      seenKeySet.add(k);
-      missing.push({
+    if (queuedKeys.has(k)) continue;
+    const existing = existingRowByKey.get(k);
+    if (!existing || !existing.userId) {
+      queuedKeys.add(k);
+      toResolve.push({
         insurerKey: c.insurerKey,
         externalAgentCode: code,
-        externalAgentName: c.externalAgentName,
+        externalAgentName: c.externalAgentName || existing?.externalAgentName || null,
       });
     }
   }
 
-  if (missing.length > 0) {
+  // También resolver cualquier registro previo guardado con userId = null
+  for (const existing of existingMaps) {
+    if (!existing.userId) {
+      const k = `${existing.insurerKey}:${existing.externalAgentCode}`;
+      if (!queuedKeys.has(k)) {
+        queuedKeys.add(k);
+        toResolve.push({
+          insurerKey: existing.insurerKey as InsurerKey,
+          externalAgentCode: existing.externalAgentCode,
+          externalAgentName: existing.externalAgentName || null,
+        });
+      }
+    }
+  }
+
+  if (toResolve.length > 0) {
+    await prisma.agency.updateMany({
+      where: { id: agencyId, allowLiteAgents: false },
+      data: { allowLiteAgents: true },
+    });
+
     const agencyUsers = await prisma.user.findMany({
       where: {
         agencyId,
         active: true,
         role: { in: ["AGENTE", "AGENTE_LITE", "ADMIN", "SUPER_ADMIN"] },
       },
-      select: { id: true, name: true },
+      select: { id: true, name: true, role: true },
     });
 
-    const userTokenIndex = agencyUsers.map((u) => ({
+    const userTokenIndex: Array<{
+      id: string;
+      role: string;
+      tokens: string[];
+    }> = agencyUsers.map((u) => ({
       id: u.id,
+      role: u.role,
       tokens: normalizeNameTokens(u.name),
     }));
 
-    for (const m of missing) {
-      const extTokens = normalizeNameTokens(m.externalAgentName);
-      let matchedUserId: string | null = null;
-      let autoMatched = false;
+    const rankUsers = (list: typeof userTokenIndex) =>
+      [...list].sort((a, b) => {
+        const scoreRole = (r: string) =>
+          r === "AGENTE" ? 0 : r === "SUPER_ADMIN" ? 1 : r === "ADMIN" ? 2 : 3;
+        return scoreRole(a.role) - scoreRole(b.role);
+      });
 
-      if (extTokens.length >= 2) {
-        const extSet = new Set(extTokens);
-        const exactMatches = userTokenIndex.filter((u) => {
-          if (u.tokens.length < 2) return false;
-          const uSet = new Set(u.tokens);
-          if (uSet.size !== extSet.size) return false;
-          return Array.from(uSet).every((t) => extSet.has(t));
-        });
-        if (exactMatches.length === 1) {
-          matchedUserId = exactMatches[0].id;
-          autoMatched = true;
+    for (const m of toResolve) {
+      const mapKey = `${m.insurerKey}:${m.externalAgentCode}`;
+      const aliasTokens = CORE_AGENT_KEY_ALIASES[mapKey];
+      let matchedUserId: string | null = null;
+      const isDualCorporateRazon =
+        mapKey === "INSIGNIA:91209" || mapKey === "INSIGNIA:91476";
+
+      // 1. Regla explícita de alias multi-clave del equipo núcleo
+      if (aliasTokens && aliasTokens.length >= 2) {
+        const aliasMatches = rankUsers(
+          userTokenIndex.filter((u) => {
+            const uSet = new Set(u.tokens);
+            return aliasTokens.every((t) => uSet.has(t));
+          })
+        );
+        if (aliasMatches.length > 0) {
+          matchedUserId = aliasMatches[0].id;
         }
       }
 
-      const mapKey = `${m.insurerKey}:${m.externalAgentCode}`;
-      try {
-        await prisma.grokbotAgentMap.create({
-          data: {
+      // 2. Emparejamiento por subconjunto de tokens de nombre normalizado (mín. 2 palabras)
+      const displayName = formatExternalAgentDisplayName(
+        mapKey,
+        m.externalAgentName,
+        m.externalAgentCode
+      );
+      if (!matchedUserId && !isDualCorporateRazon) {
+        const extTokens = normalizeNameTokens(displayName || m.externalAgentName);
+        if (extTokens.length >= 2) {
+          const extSet = new Set(extTokens);
+          const tokenMatches = rankUsers(
+            userTokenIndex.filter((u) => {
+              if (u.tokens.length < 2) return false;
+              const uSet = new Set(u.tokens);
+              return (
+                u.tokens.every((t) => extSet.has(t)) ||
+                extTokens.every((t) => uSet.has(t))
+              );
+            })
+          );
+          if (tokenMatches.length === 1 || (tokenMatches.length > 1 && aliasTokens)) {
+            matchedUserId = tokenMatches[0].id;
+          }
+        }
+      }
+
+      // 3. Auto-provisionar perfil AGENTE_LITE en la agencia titular si aún no existe usuario
+      if (!matchedUserId) {
+        const cleanSlugCode = m.externalAgentCode
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "");
+        const baseEmail = `lite.${m.insurerKey.toLowerCase()}.${cleanSlugCode || "ext"}@agentes.aacomsoft.com`;
+
+        let candidateEmail = baseEmail;
+        const emailOwner = await prisma.user.findUnique({
+          where: { email: candidateEmail },
+          select: { id: true, agencyId: true, active: true },
+        });
+
+        if (emailOwner) {
+          if (emailOwner.agencyId === agencyId && emailOwner.active) {
+            matchedUserId = emailOwner.id;
+          } else {
+            candidateEmail = `lite.${m.insurerKey.toLowerCase()}.${cleanSlugCode}.${crypto
+              .randomBytes(2)
+              .toString("hex")}@agentes.aacomsoft.com`;
+          }
+        }
+
+        if (!matchedUserId) {
+          const hashedPassword = await bcrypt.hash(
+            crypto.randomBytes(20).toString("hex"),
+            10
+          );
+          const createdLite = await prisma.user.create({
+            data: {
+              name: displayName,
+              email: candidateEmail,
+              password: hashedPassword,
+              role: "AGENTE_LITE",
+              agencyId,
+              active: true,
+              mustChangePassword: true,
+            },
+            select: { id: true, name: true, role: true },
+          });
+          matchedUserId = createdLite.id;
+          userTokenIndex.push({
+            id: createdLite.id,
+            role: createdLite.role,
+            tokens: normalizeNameTokens(createdLite.name),
+          });
+        }
+      }
+
+      await prisma.grokbotAgentMap.upsert({
+        where: {
+          agencyId_insurerKey_externalAgentCode: {
             agencyId,
             insurerKey: m.insurerKey,
             externalAgentCode: m.externalAgentCode,
-            externalAgentName: m.externalAgentName,
-            userId: matchedUserId,
-            autoMatched,
           },
-        });
-        mapByKey.set(mapKey, matchedUserId);
-      } catch {
-        // Concurrent request may have created it; re-read safely
-        const found = await prisma.grokbotAgentMap.findUnique({
-          where: {
-            agencyId_insurerKey_externalAgentCode: {
-              agencyId,
-              insurerKey: m.insurerKey,
-              externalAgentCode: m.externalAgentCode,
-            },
-          },
-        });
-        mapByKey.set(mapKey, found?.userId || null);
-      }
+        },
+        create: {
+          agencyId,
+          insurerKey: m.insurerKey,
+          externalAgentCode: m.externalAgentCode,
+          externalAgentName: m.externalAgentName,
+          userId: matchedUserId,
+          autoMatched: true,
+        },
+        update: {
+          externalAgentName: m.externalAgentName ?? undefined,
+          userId: matchedUserId,
+          autoMatched: true,
+        },
+      });
+      mapByKey.set(mapKey, matchedUserId);
     }
   }
 
   return mapByKey;
+}
+
+export async function provisionAllKnownBridgeAgents(agencyId?: string) {
+  const targetAgencyId = agencyId || (await resolveLockedAacomAgency()).id;
+  return ensureAgentMaps(
+    targetAgencyId,
+    KNOWN_BRIDGE_AGENT_CATALOG.map((e) => ({
+      insurerKey: e.insurerKey,
+      externalAgentCode: e.externalAgentCode,
+      externalAgentName: e.externalAgentName,
+    }))
+  );
 }
 
 // =========================================================================
@@ -418,7 +665,7 @@ function mapInsigniaPaymentMethod(rawFormaPago: unknown, parsedTotalInst: number
   if (raw.includes("MENSUAL")) return { paymentMethod: "Mensual", totalInstallments: 12 };
   if (raw.includes("TRIMESTRAL")) return { paymentMethod: "Trimestral", totalInstallments: 4 };
   if (raw.includes("SEMESTRAL")) return { paymentMethod: "Semestral", totalInstallments: 2 };
-  if (raw.includes("ANUAL") || raw === "AGENTE" || raw === "CONTADO") {
+  if (raw.includes("ANUAL") || raw === "CONTADO") {
     return { paymentMethod: "Anual", totalInstallments: 1 };
   }
   if (parsedTotalInst === 12) return { paymentMethod: "Mensual", totalInstallments: 12 };
@@ -451,13 +698,14 @@ function parseInsigniaPayload(rawInput: any, todayYmd: string): NormalizedGrokbo
   const rows = extractInsigniaArray(rawInput);
   if (rows.length === 0) return [];
 
-  // Agrupar por (numeroPoliza, idRecibo) para manejar co-agentes y cancelaciones/re-aplicaciones
+  // Agrupar por (numeroPoliza, recibo) para consolidar co-agentes y cancelaciones/re-aplicaciones
+  // (idRecibo se repite entre mensualidades de un mismo año póliza; recibo es el folio individual)
   const groups = new Map<string, any[]>();
   for (const r of rows) {
     const pol = String(r?.numeroPoliza ?? "").trim();
-    const recId = String(r?.idRecibo ?? r?.recibo ?? "").trim();
-    if (!pol || !recId) continue;
-    const key = `${pol}::${recId}`;
+    const recFolio = String(r?.recibo ?? r?.idRecibo ?? "").trim();
+    if (!pol || !recFolio) continue;
+    const key = `${pol}::${recFolio}`;
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key)!.push(r);
   }
@@ -469,49 +717,74 @@ function parseInsigniaPayload(rawInput: any, todayYmd: string): NormalizedGrokbo
     const rep = positiveRows[0] || groupRows[0];
 
     const pol = String(rep.numeroPoliza).trim();
-    const idRecibo = String(rep.idRecibo ?? rep.recibo).trim();
-    const externalKey = `INSIGNIA:${pol}:${idRecibo}`;
+    const recFolio = String(rep.recibo ?? rep.idRecibo).trim();
+    const externalKey = `INSIGNIA:${pol}:${recFolio}`;
+    const agr = String(rep.ramoAgrupador ?? "").trim().toUpperCase();
 
-    // Consolidar monto neto por agente (absorbe +X / -X / +X contables del mismo agente)
+    // Consolidar monto pagado y monto computable por agente (absorbe +X / -X / +X contables del mismo agente)
     const perAgent = new Map<
       string,
-      { code: string; name: string | null; netMxn: number; latestDateRaw: string }
+      {
+        code: string;
+        name: string | null;
+        paidMxn: number;
+        compMxn: number;
+        latestDateRaw: string;
+      }
     >();
 
     for (const r of groupRows) {
       const code = String(r?.idAgente ?? "").trim() || "UNKNOWN";
       const name = cleanPersonName(r?.nomAgente) || null;
-      const amt = Number(r?.primaTotalRecibo ?? r?.primaBaseCmptMn ?? 0) || 0;
+      const paidAmt = Number(r?.primaTotalRecibo ?? r?.primaBaseCmptMn ?? 0) || 0;
+      const compAmt =
+        agr === "VII"
+          ? Number(r?.primaComputableMn ?? r?.primaTotalRecibo ?? r?.primaBaseCmptMn ?? 0) || 0
+          : paidAmt;
+
       const prev = perAgent.get(code) || {
         code,
         name,
-        netMxn: 0,
+        paidMxn: 0,
+        compMxn: 0,
         latestDateRaw: String(r?.fechaContableRecibo || ""),
       };
-      prev.netMxn = Number((prev.netMxn + amt).toFixed(2));
-      if (amt > 0 && r?.fechaContableRecibo) {
+      prev.paidMxn += paidAmt;
+      prev.compMxn += compAmt;
+      if (paidAmt > 0 && r?.fechaContableRecibo) {
         prev.latestDateRaw = String(r.fechaContableRecibo);
       }
       if (!prev.name && name) prev.name = name;
       perAgent.set(code, prev);
     }
 
-    const activeAgents = Array.from(perAgent.values()).filter((a) => Math.abs(a.netMxn) >= 0.01);
-    const groupTotalMxn = Number(
+    for (const a of Array.from(perAgent.values())) {
+      a.paidMxn = Number(a.paidMxn.toFixed(6));
+      a.compMxn = Number(a.compMxn.toFixed(6));
+    }
+
+    const activeAgents = Array.from(perAgent.values()).filter(
+      (a) => Math.abs(a.paidMxn) >= 0.01 || Math.abs(a.compMxn) >= 0.01
+    );
+    const groupPaidMxn = Number(
       Array.from(perAgent.values())
-        .reduce((s, a) => s + a.netMxn, 0)
-        .toFixed(2)
+        .reduce((s, a) => s + a.paidMxn, 0)
+        .toFixed(6)
+    );
+    const groupComputableMxn = Number(
+      Array.from(perAgent.values())
+        .reduce((s, a) => s + a.compMxn, 0)
+        .toFixed(6)
     );
 
     const parsedCons = parseInsigniaConsecutivo(rep.consecutivo);
     const pmInfo = mapInsigniaPaymentMethod(rep.formaPago, parsedCons.totalInstallments);
-    const agr = String(rep.ramoAgrupador ?? "").trim().toUpperCase();
     const isExtraContribution = agr === "AE" || parsedCons.receiptNumber === 0;
     const isRenewalCapture = agr === "VIR";
     const policyYear = Math.max(1, parseInt(String(rep.anioPoliza || "1").trim(), 10) || 1);
 
     // AE ("0 DE 12" / "0 DE 0") recibe un consecutivo determinista único (>= 9000) para no chocar con @@unique
-    const idDigits = parseInt(idRecibo.replace(/\D/g, "").slice(-4), 10) || 1;
+    const idDigits = parseInt(recFolio.replace(/\D/g, "").slice(-4), 10) || 1;
     const receiptNumber = isExtraContribution
       ? 9000 + (idDigits % 999) + 1
       : parsedCons.receiptNumber;
@@ -530,29 +803,29 @@ function parseInsigniaPayload(rawInput: any, todayYmd: string): NormalizedGrokbo
     const product = cleanPersonName(rep.producto, "Insignia Life");
     const ramoMeta = mapInsigniaRamoHint(rep.ramoAgrupador, rep.ramo, product);
 
-    const sortedPositiveAgents = [...activeAgents]
-      .filter((a) => a.netMxn > 0)
-      .sort((a, b) => b.netMxn - a.netMxn);
+    const positiveAgents = activeAgents
+      .filter((a) => a.compMxn > 0 || a.paidMxn > 0)
+      .sort((a, b) => b.compMxn - a.compMxn || b.paidMxn - a.paidMxn);
+    const negativeAgents = activeAgents
+      .filter((a) => !(a.compMxn > 0 || a.paidMxn > 0))
+      .sort((a, b) => Math.abs(b.compMxn) - Math.abs(a.compMxn));
+    const orderedAgents = [...positiveAgents, ...negativeAgents];
 
-    const primaryAgent = sortedPositiveAgents[0] || Array.from(perAgent.values())[0];
-    const secondaryAgent = sortedPositiveAgents[1] || null;
+    const primaryAgent = orderedAgents[0] || Array.from(perAgent.values())[0];
+    const secondaryAgent = orderedAgents[1] || null;
 
     let skipReason: string | undefined;
     let quarantineReason: string | undefined;
 
-    if (Math.abs(groupTotalMxn) < 0.01) {
+    if (Math.abs(groupPaidMxn) < 0.01 && Math.abs(groupComputableMxn) < 0.01) {
       skipReason = "COMPENSATED_ZERO_NET";
-    } else if (groupTotalMxn < 0) {
-      quarantineReason = "NEGATIVE_RECEIPT_ADJUSTMENT";
-    } else if (groupTotalMxn > 10_000_000) {
+    } else if (Math.abs(groupPaidMxn) > 15_000_000) {
       quarantineReason = "SANITY_LIMIT_EXCEEDED";
-    } else if (sortedPositiveAgents.length > 2) {
-      quarantineReason = "MULTI_AGENT_SPLIT_MANUAL";
     }
 
     const annualPremiumEstimateMxn = isExtraContribution
       ? 0
-      : Number((Math.max(0, groupTotalMxn) * pmInfo.totalInstallments).toFixed(2));
+      : Number((Math.max(0, groupPaidMxn) * pmInfo.totalInstallments).toFixed(2));
 
     out.push({
       externalKey,
@@ -560,7 +833,7 @@ function parseInsigniaPayload(rawInput: any, todayYmd: string): NormalizedGrokbo
       insurerCanonicalName: "Insignia Life",
       itemType: "INSIGNIA_RECEIPT",
       policyNumber: pol,
-      receiptRef: idRecibo,
+      receiptRef: recFolio,
       clientName,
       insuredName,
       product,
@@ -573,16 +846,20 @@ function parseInsigniaPayload(rawInput: any, todayYmd: string): NormalizedGrokbo
       receiptNumber,
       isExtraContribution,
       isRenewalCapture,
-      amountMxn: groupTotalMxn,
+      paidAmountMxn: groupPaidMxn,
+      computableAmountMxn: groupComputableMxn,
+      amountMxn: groupComputableMxn,
       annualPremiumEstimateMxn,
       effectiveYmd,
       renewalYmd,
       eventDateStr,
       dueDateStr: eventDateStr,
-      agentShares: sortedPositiveAgents.map((a) => ({
+      agentShares: orderedAgents.map((a) => ({
         externalCode: a.code,
         externalName: a.name,
-        amountMxn: a.netMxn,
+        paidMxn: a.paidMxn,
+        computableMxn: a.compMxn,
+        amountMxn: a.compMxn,
         mappedUserId: null,
       })),
       externalAgentCode: primaryAgent?.code || "UNKNOWN",
@@ -700,9 +977,7 @@ function parseLatinoPayload(rawInput: any, todayYmd: string): NormalizedGrokbotI
       let quarantineReason: string | undefined;
       if (Math.abs(netMxn) < 0.01) {
         skipReason = "COMPENSATED_ZERO_NET";
-      } else if (netMxn < 0) {
-        quarantineReason = "NEGATIVE_NET_ADJUSTMENT";
-      } else if (netMxn > 15_000_000) {
+      } else if (Math.abs(netMxn) > 15_000_000) {
         quarantineReason = "SANITY_LIMIT_EXCEEDED";
       }
 
@@ -730,18 +1005,22 @@ function parseLatinoPayload(rawInput: any, todayYmd: string): NormalizedGrokbotI
         receiptNumber: 1,
         isExtraContribution: false,
         isRenewalCapture,
+        paidAmountMxn: netMxn,
+        computableAmountMxn: netMxn,
         amountMxn: netMxn,
-        annualPremiumEstimateMxn: Math.max(0, netMxn),
+        annualPremiumEstimateMxn: netMxn,
         effectiveYmd: vigDesdeYmd,
         renewalYmd: vigHastaYmd,
         eventDateStr,
         dueDateStr: vigDesdeYmd,
         agentShares:
-          netMxn > 0
+          Math.abs(netMxn) >= 0.01
             ? [
                 {
                   externalCode: agentCode,
                   externalName: agentName,
+                  paidMxn: netMxn,
+                  computableMxn: netMxn,
                   amountMxn: netMxn,
                   mappedUserId: null,
                 },
@@ -813,6 +1092,8 @@ function parseLatinoPayload(rawInput: any, todayYmd: string): NormalizedGrokbotI
           receiptNumber: 1,
           isExtraContribution: false,
           isRenewalCapture: String(rep?.inI_REN ?? "").trim().toUpperCase() === "R",
+          paidAmountMxn: 0,
+          computableAmountMxn: 0,
           amountMxn: 0,
           annualPremiumEstimateMxn: 0,
           effectiveYmd: parseYmdStrict(rep?.f_INI_VIGENCIA, periodStart),
@@ -867,9 +1148,7 @@ function parseLatinoPayload(rawInput: any, todayYmd: string): NormalizedGrokbotI
       let quarantineReason: string | undefined;
       if (Math.abs(netMxn) < 0.01) {
         skipReason = "COMPENSATED_ZERO_NET";
-      } else if (netMxn < 0) {
-        quarantineReason = "NEGATIVE_RECEIPT_ADJUSTMENT";
-      } else if (netMxn > 15_000_000) {
+      } else if (Math.abs(netMxn) > 15_000_000) {
         quarantineReason = "SANITY_LIMIT_EXCEEDED";
       }
 
@@ -910,6 +1189,8 @@ function parseLatinoPayload(rawInput: any, todayYmd: string): NormalizedGrokbotI
         receiptNumber: 1,
         isExtraContribution: false,
         isRenewalCapture,
+        paidAmountMxn: netMxn,
+        computableAmountMxn: netMxn,
         amountMxn: netMxn,
         annualPremiumEstimateMxn:
           netMxn > 0
@@ -920,11 +1201,13 @@ function parseLatinoPayload(rawInput: any, todayYmd: string): NormalizedGrokbotI
         eventDateStr,
         dueDateStr,
         agentShares:
-          netMxn > 0
+          Math.abs(netMxn) >= 0.01
             ? [
                 {
                   externalCode: agentCode,
                   externalName: agentName,
+                  paidMxn: netMxn,
+                  computableMxn: netMxn,
                   amountMxn: netMxn,
                   mappedUserId: null,
                 },
@@ -980,12 +1263,26 @@ export function normalizeIncomingGrokbotPayload(
       ? "LATINO"
       : "INSIGNIA";
 
-  // Orden: LATINO_EMISSION primero, luego INSIGNIA_RECEIPT y LATINO_RECEIPT
+  // Orden determinístico: LATINO_EMISSION primero (positivos antes de endosos negativos),
+  // luego INSIGNIA_RECEIPT (VII/VG año 1 antes de AE/VIR/negativos), luego LATINO_RECEIPT
   const items = [...latinoItems, ...insigniaItems].sort((a, b) => {
     const rank = (t: ItemType) =>
       t === "LATINO_EMISSION" ? 0 : t === "INSIGNIA_RECEIPT" ? 1 : 2;
     const dr = rank(a.itemType) - rank(b.itemType);
     if (dr !== 0) return dr;
+    if (a.itemType === "INSIGNIA_RECEIPT") {
+      if (a.isExtraContribution !== b.isExtraContribution) {
+        return a.isExtraContribution ? 1 : -1;
+      }
+      if (a.isRenewalCapture !== b.isRenewalCapture) {
+        return a.isRenewalCapture ? 1 : -1;
+      }
+      if (a.policyYear !== b.policyYear) return a.policyYear - b.policyYear;
+      if (a.receiptNumber !== b.receiptNumber) return a.receiptNumber - b.receiptNumber;
+    }
+    const aPos = a.paidAmountMxn >= 0 ? 0 : 1;
+    const bPos = b.paidAmountMxn >= 0 ? 0 : 1;
+    if (aPos !== bPos) return aPos - bPos;
     return a.eventDateStr.localeCompare(b.eventDateStr);
   });
 
@@ -1014,16 +1311,22 @@ async function applyNormalizedItemToDatabase(params: {
   if (!primaryShare?.mappedUserId) {
     return { applied: false, quarantineReason: "UNMAPPED_AGENT" };
   }
-  if (secondaryShare && !secondaryShare.mappedUserId) {
+  if (item.agentShares.some((s) => !s.mappedUserId)) {
     return { applied: false, quarantineReason: "UNMAPPED_SHARED_AGENT" };
   }
 
   const primaryUserId = primaryShare.mappedUserId;
   const secondaryUserId = secondaryShare?.mappedUserId || null;
+  const denomComp = Math.abs(item.computableAmountMxn) >= 0.01 ? item.computableAmountMxn : item.amountMxn;
   const sharedPercentage =
-    secondaryShare && item.amountMxn > 0
-      ? Number(((secondaryShare.amountMxn / item.amountMxn) * 100).toFixed(2))
+    secondaryShare && Math.abs(denomComp) >= 0.01
+      ? Math.min(100, Math.max(0, Number(((Math.abs(secondaryShare.computableMxn ?? secondaryShare.amountMxn) / Math.abs(denomComp)) * 100).toFixed(2))))
       : 0;
+  const agentAllocations = item.agentShares.map((s) => ({
+    userId: s.mappedUserId!,
+    paidMxn: Number((s.paidMxn ?? s.amountMxn).toFixed(6)),
+    computableMxn: Number((s.computableMxn ?? s.amountMxn).toFixed(6)),
+  }));
 
   const companyLookupKey = normalizeCompanyKey(
     canonicalCompanyName(item.insurerCanonicalName)
@@ -1213,6 +1516,35 @@ async function applyNormalizedItemToDatabase(params: {
           shouldSnapshotPolicy = true;
         }
 
+        // Si VIR creó primero una póliza mixta VII+VIR y luego llega su Año 1 (VII/AE Y1), limpiar marca de renovación en Policy
+        if (
+          item.insurerKey === "INSIGNIA" &&
+          !item.isRenewalCapture &&
+          item.policyYear === 1 &&
+          policyRecord.isRenewalCapture
+        ) {
+          policyPatch.isRenewalCapture = false;
+          policyPatch.subStatus = null;
+          shouldSnapshotPolicy = true;
+        }
+
+        // En La Latino, ajustar prima anual con endosos/cancelaciones posteriores (sin duplicar emisión inicial del mismo día)
+        if (
+          item.itemType === "LATINO_EMISSION" &&
+          !(
+            toYmdKey(policyRecord.effectiveDate) === item.effectiveYmd &&
+            item.amountMxn > 0 &&
+            (Number(policyRecord.annualPremium) || 0) > 0
+          )
+        ) {
+          const basePremium =
+            policyPatch.annualPremium !== undefined
+              ? Number(policyPatch.annualPremium)
+              : Number(policyRecord.annualPremium) || 0;
+          policyPatch.annualPremium = Number((basePremium + item.amountMxn).toFixed(2));
+          shouldSnapshotPolicy = true;
+        }
+
         // En La Latino, si LATINO_EMISSION dejó paymentMethod="Anual" sin recibos pagados y llega cobranza fraccionada
         const hasAnyPaidReceipt = (policyRecord.receipts || []).some(
           (r) => r.status === "PAGADO"
@@ -1306,6 +1638,8 @@ async function applyNormalizedItemToDatabase(params: {
               : null,
             sharedWithUserId: policyRecord.sharedWithUserId,
             sharedPercentage: policyRecord.sharedPercentage,
+            isRenewalCapture: policyRecord.isRenewalCapture,
+            subStatus: policyRecord.subStatus,
           };
           await tx.policy.update({
             where: { id: policyRecord.id },
@@ -1327,50 +1661,60 @@ async function applyNormalizedItemToDatabase(params: {
       }
 
       // 3. MARCAR O CREAR RECIBO PAGADO (SOLO PARA INSIGNIA_RECEIPT O LATINO_RECEIPT)
-      let touchedReceiptId: string | null = null;
       const paidDateUTC =
         toUTCNoonDate(item.eventDateStr) || toUTCNoonDate(item.dueDateStr)!;
       const dueDateUTC = toUTCNoonDate(item.dueDateStr) || paidDateUTC;
 
       if (item.itemType === "INSIGNIA_RECEIPT" || item.itemType === "LATINO_RECEIPT") {
         let targetReceipt: (typeof policyRecord.receipts)[number] | null = null;
+        const recMarker = item.receiptRef ? `[recibo:${item.receiptRef}]` : null;
 
-        if (item.itemType === "INSIGNIA_RECEIPT") {
-          if (!item.isExtraContribution && item.receiptNumber > 0) {
-            targetReceipt =
+        if (recMarker) {
+          targetReceipt =
+            policyRecord.receipts.find((r) =>
+              (r.paymentNotes || "").includes(recMarker)
+            ) || null;
+        }
+
+        if (!targetReceipt && item.itemType === "INSIGNIA_RECEIPT") {
+          if (
+            !item.isExtraContribution &&
+            item.paidAmountMxn > 0 &&
+            item.receiptNumber > 0
+          ) {
+            const candidateSlot =
               policyRecord.receipts.find(
                 (r) =>
                   r.policyYear === item.policyYear &&
                   r.receiptNumber === item.receiptNumber
               ) || null;
+            // Nunca sobrescribir un recibo ya PAGADO proveniente de otro folio [recibo:...]
+            if (
+              candidateSlot &&
+              (candidateSlot.status !== "PAGADO" ||
+                !(candidateSlot.paymentNotes || "").includes("[recibo:"))
+            ) {
+              targetReceipt = candidateSlot;
+            }
           }
-        } else {
-          // LATINO_RECEIPT: buscar por referencia [recibo:...] o recibo no pagado cercano en fecha
-          const recMarker = `[recibo:${item.receiptRef}]`;
-          targetReceipt =
-            policyRecord.receipts.find((r) =>
-              (r.paymentNotes || "").includes(recMarker)
-            ) || null;
-
-          if (!targetReceipt) {
-            const targetDueCal = toCalendarDateLocal(dueDateUTC) || new Date();
-            const unpaidCandidates = policyRecord.receipts.filter(
-              (r) => r.status !== "PAGADO"
-            );
-            if (unpaidCandidates.length > 0) {
-              unpaidCandidates.sort((a, b) => {
-                const aCal = toCalendarDateLocal(a.dueDate) || targetDueCal;
-                const bCal = toCalendarDateLocal(b.dueDate) || targetDueCal;
-                return (
-                  Math.abs(differenceInCalendarDays(aCal, targetDueCal)) -
-                  Math.abs(differenceInCalendarDays(bCal, targetDueCal))
-                );
-              });
-              const closestCal =
-                toCalendarDateLocal(unpaidCandidates[0].dueDate) || targetDueCal;
-              if (Math.abs(differenceInCalendarDays(closestCal, targetDueCal)) <= 50) {
-                targetReceipt = unpaidCandidates[0];
-              }
+        } else if (!targetReceipt && item.itemType === "LATINO_RECEIPT" && item.paidAmountMxn > 0) {
+          const targetDueCal = toCalendarDateLocal(dueDateUTC) || new Date();
+          const unpaidCandidates = policyRecord.receipts.filter(
+            (r) => r.status !== "PAGADO"
+          );
+          if (unpaidCandidates.length > 0) {
+            unpaidCandidates.sort((a, b) => {
+              const aCal = toCalendarDateLocal(a.dueDate) || targetDueCal;
+              const bCal = toCalendarDateLocal(b.dueDate) || targetDueCal;
+              return (
+                Math.abs(differenceInCalendarDays(aCal, targetDueCal)) -
+                Math.abs(differenceInCalendarDays(bCal, targetDueCal))
+              );
+            });
+            const closestCal =
+              toCalendarDateLocal(unpaidCandidates[0].dueDate) || targetDueCal;
+            if (Math.abs(differenceInCalendarDays(closestCal, targetDueCal)) <= 50) {
+              targetReceipt = unpaidCandidates[0];
             }
           }
         }
@@ -1378,6 +1722,8 @@ async function applyNormalizedItemToDatabase(params: {
         const noteRef = item.receiptRef
           ? `Pago sincronizado Grokbot [recibo:${item.receiptRef}] ${grokTag}`
           : `Pago sincronizado Grokbot ${grokTag}`;
+        const paidMxnVal = item.paidAmountMxn ?? item.amountMxn;
+        const computableMxnVal = item.computableAmountMxn ?? item.amountMxn;
 
         if (targetReceipt) {
           ledger.updatedReceiptSnapshot = {
@@ -1385,6 +1731,8 @@ async function applyNormalizedItemToDatabase(params: {
             status: targetReceipt.status,
             paidAt: targetReceipt.paidAt ? targetReceipt.paidAt.toISOString() : null,
             paidAmount: targetReceipt.paidAmount,
+            computableAmount: (targetReceipt as any).computableAmount ?? null,
+            agentAllocationsJson: (targetReceipt as any).agentAllocationsJson ?? null,
             amount: targetReceipt.amount,
             paymentNotes: targetReceipt.paymentNotes,
             syncedEmissionId: targetReceipt.syncedEmissionId,
@@ -1393,32 +1741,42 @@ async function applyNormalizedItemToDatabase(params: {
           const shouldPreserveManualAmount =
             targetReceipt.status === "PAGADO" &&
             targetReceipt.paidAmount !== null &&
-            Math.abs(Number(targetReceipt.paidAmount) - item.amountMxn) <= 1;
+            !(targetReceipt.paymentNotes || "").includes("[GROKBOT:") &&
+            Math.abs(Number(targetReceipt.paidAmount) - paidMxnVal) <= 1;
 
-          const updatedRec = await tx.policyReceipt.update({
+          await tx.policyReceipt.update({
             where: { id: targetReceipt.id },
             data: {
               status: "PAGADO",
               paidAt: targetReceipt.paidAt || paidDateUTC,
               paidAmount: shouldPreserveManualAmount
                 ? targetReceipt.paidAmount
-                : item.amountMxn,
+                : paidMxnVal,
+              computableAmount: computableMxnVal,
+              agentAllocationsJson: agentAllocations as any,
               adminApproved: true,
               paymentNotes: targetReceipt.paymentNotes
                 ? `${targetReceipt.paymentNotes} | ${noteRef}`
                 : noteRef,
             },
           });
-          touchedReceiptId = updatedRec.id;
         } else {
-          // Encontrar slot seguro de receiptNumber en ese policyYear sin chocar con @@unique
+          // Encontrar slot seguro de receiptNumber en ese policyYear sin chocar con @@unique ni consumir cuotas futuras
           const sameYearNumbers = new Set(
             policyRecord.receipts
               .filter((r) => r.policyYear === item.policyYear)
               .map((r) => r.receiptNumber)
           );
-          let nextReceiptNum =
+          const baseNum =
             item.itemType === "INSIGNIA_RECEIPT" ? item.receiptNumber : 1;
+          let nextReceiptNum = baseNum;
+          if (paidMxnVal < 0) {
+            nextReceiptNum = 8001;
+          } else if (item.isExtraContribution) {
+            nextReceiptNum = baseNum >= 9001 ? baseNum : 9001;
+          } else if (sameYearNumbers.has(baseNum) || baseNum <= 0) {
+            nextReceiptNum = 7001;
+          }
           while (sameYearNumbers.has(nextReceiptNum) || nextReceiptNum <= 0) {
             nextReceiptNum += 1;
           }
@@ -1431,162 +1789,27 @@ async function applyNormalizedItemToDatabase(params: {
             data: {
               policyId: policyRecord.id,
               agencyId,
-              userId: policyRecord.userId,
+              userId: primaryUserId || policyRecord.userId,
               receiptNumber: nextReceiptNum,
               totalInstallments: item.totalInstallments,
               policyYear: item.policyYear,
               dueDate: dueDateUTC,
               graceEndDate: graceDate,
-              amount: item.amountMxn,
+              amount: paidMxnVal,
               status: "PAGADO",
               paidAt: paidDateUTC,
-              paidAmount: item.amountMxn,
+              paidAmount: paidMxnVal,
+              computableAmount: computableMxnVal,
+              agentAllocationsJson: agentAllocations as any,
               adminApproved: true,
               paymentNotes: noteRef,
             },
           });
           ledger.createdReceiptId = createdRec.id;
-          touchedReceiptId = createdRec.id;
         }
       }
 
-      // 4. SINCRONIZAR CON HISTORIAL DE PRODUCCIÓN (AgentEmission)
-      const issueUTC = toUTCNoonDate(item.eventDateStr) || paidDateUTC;
-      const issueYear = issueUTC.getUTCFullYear();
-      const issueMonth = issueUTC.getUTCMonth() + 1;
-      const effYear =
-        policyRecord.effectiveDate?.getUTCFullYear() ||
-        parseInt(item.effectiveYmd.slice(0, 4), 10) ||
-        issueYear;
-
-      const emissionNotesTag = `${grokTag}${
-        item.receiptRef ? ` Recibo ${item.receiptNumber}/${item.totalInstallments}` : ""
-      }`;
-
-      for (const share of item.agentShares) {
-        if (!share.mappedUserId || share.amountMxn <= 0) continue;
-
-        const existingByTag = await tx.agentEmission.findFirst({
-          where: {
-            agencyId,
-            agentId: share.mappedUserId,
-            notes: { contains: grokTag },
-          },
-        });
-        if (existingByTag) continue;
-
-        // Si es LATINO_RECEIPT y existe una emisión EMITIDA sin cobrar del mismo año/mes, enlazarla en lugar de duplicar fila
-        if (item.itemType === "LATINO_RECEIPT") {
-          const pendingEmission = await tx.agentEmission.findFirst({
-            where: {
-              agencyId,
-              agentId: share.mappedUserId,
-              policyNumber: item.policyNumber,
-              year: issueYear,
-              primaPagada: { lte: 0.01 },
-            },
-            orderBy: { createdAt: "desc" },
-          });
-
-          if (pendingEmission) {
-            ledger.updatedEmissionSnapshots!.push({
-              id: pendingEmission.id,
-              primaEmitida: pendingEmission.primaEmitida,
-              primaPagada: pendingEmission.primaPagada,
-              status: pendingEmission.status,
-              notes: pendingEmission.notes,
-            });
-            await tx.agentEmission.update({
-              where: { id: pendingEmission.id },
-              data: {
-                primaPagada: Number(
-                  ((pendingEmission.primaPagada || 0) + share.amountMxn).toFixed(2)
-                ),
-                status: "PAGADA",
-                notes: pendingEmission.notes
-                  ? `${pendingEmission.notes} | ${emissionNotesTag}`
-                  : emissionNotesTag,
-              },
-            });
-            if (touchedReceiptId && !ledger.updatedReceiptSnapshot?.syncedEmissionId) {
-              await tx.policyReceipt.update({
-                where: { id: touchedReceiptId },
-                data: { syncedEmissionId: pendingEmission.id },
-              });
-            }
-            continue;
-          }
-        }
-
-        // Calcular Prima Emitida correspondiente (para no duplicar PE en mensualidades)
-        const shareRatio =
-          item.amountMxn > 0 ? share.amountMxn / item.amountMxn : 1;
-        let primaEmitida = 0;
-        let primaPagada = 0;
-        let emissionStatus = "EMITIDA";
-
-        if (item.itemType === "LATINO_EMISSION") {
-          primaEmitida = share.amountMxn;
-          primaPagada = 0;
-          emissionStatus = "EMITIDA";
-        } else {
-          primaPagada = share.amountMxn;
-          emissionStatus = "PAGADA";
-          const qualifiesInitialEmission =
-            item.itemType === "INSIGNIA_RECEIPT" &&
-            !item.isExtraContribution &&
-            !item.isRenewalCapture &&
-            item.policyYear === 1 &&
-            item.receiptNumber === 1 &&
-            effYear === issueYear;
-
-          if (qualifiesInitialEmission) {
-            const alreadyHasYearPe = await tx.agentEmission.findFirst({
-              where: {
-                agencyId,
-                agentId: share.mappedUserId,
-                policyNumber: item.policyNumber,
-                year: issueYear,
-                primaEmitida: { gt: 0 },
-              },
-              select: { id: true },
-            });
-            if (!alreadyHasYearPe) {
-              primaEmitida = Number(
-                (item.annualPremiumEstimateMxn * shareRatio).toFixed(2)
-              );
-            }
-          }
-        }
-
-        const createdEm = await tx.agentEmission.create({
-          data: {
-            agencyId,
-            agentId: share.mappedUserId,
-            companyId: compMeta?.id || null,
-            companyName: canonicalCompany,
-            policyNumber: item.policyNumber,
-            clientName: policyRecord.contractor || item.clientName,
-            ramo: ramoResolved.classified.groupLabel,
-            issueDate: issueUTC,
-            year: issueYear,
-            month: issueMonth,
-            primaEmitida,
-            primaPagada,
-            status: emissionStatus,
-            notes: emissionNotesTag,
-          },
-        });
-        ledger.createdEmissionIds.push(createdEm.id);
-
-        if (touchedReceiptId && !ledger.updatedReceiptSnapshot?.syncedEmissionId) {
-          await tx.policyReceipt.update({
-            where: { id: touchedReceiptId },
-            data: { syncedEmissionId: createdEm.id },
-          });
-        }
-      }
-
+      // Nota: La Foto Antes (AgentEmission) no se modifica para preservar el comparativo histórico intacto.
       return { applied: true as const, ledger };
     });
   } catch (err: any) {
@@ -1612,9 +1835,12 @@ export async function runGrokbotIngestion(params: {
   dryRun?: boolean;
   triggeredBy?: "GROKBOT_API" | "ADMIN_UI";
 }): Promise<RunGrokbotIngestResult> {
+  const dryRun = Boolean(params.dryRun);
+  if (!dryRun) {
+    await ensureGrokbotV2Ready();
+  }
   const agency = await resolveLockedAacomAgency();
   const batchDateStr = getCdmxTodayYmd();
-  const dryRun = Boolean(params.dryRun);
   const triggeredBy = params.triggeredBy || "GROKBOT_API";
 
   const { source, items } = normalizeIncomingGrokbotPayload(
@@ -1718,9 +1944,10 @@ export async function runGrokbotIngestion(params: {
       let qReason = item.quarantineReason;
       if (!qReason) {
         const primary = item.agentShares[0];
-        const secondary = item.agentShares[1];
         if (!primary?.mappedUserId) qReason = "UNMAPPED_AGENT";
-        else if (secondary && !secondary.mappedUserId) qReason = "UNMAPPED_SHARED_AGENT";
+        else if (item.agentShares.some((s) => !s.mappedUserId)) {
+          qReason = "UNMAPPED_SHARED_AGENT";
+        }
       }
 
       if (qReason) {
@@ -2250,6 +2477,11 @@ async function executeReverseRollbackOnItems(params: {
               status: rSnap.status,
               paidAt: rSnap.paidAt ? new Date(rSnap.paidAt) : null,
               paidAmount: rSnap.paidAmount,
+              computableAmount: rSnap.computableAmount ?? null,
+              agentAllocationsJson:
+                rSnap.agentAllocationsJson !== undefined && rSnap.agentAllocationsJson !== null
+                  ? rSnap.agentAllocationsJson
+                  : Prisma.DbNull,
               amount: rSnap.amount,
               paymentNotes: rSnap.paymentNotes,
               syncedEmissionId: rSnap.syncedEmissionId,
@@ -2282,6 +2514,10 @@ async function executeReverseRollbackOnItems(params: {
               annualPremium: pSnap.annualPremium,
               paymentMethod: pSnap.paymentMethod,
               contractor: pSnap.contractor,
+              ...(pSnap.isRenewalCapture !== undefined && pSnap.isRenewalCapture !== null
+                ? { isRenewalCapture: Boolean(pSnap.isRenewalCapture) }
+                : {}),
+              ...(pSnap.subStatus !== undefined ? { subStatus: pSnap.subStatus } : {}),
             },
           });
 
@@ -2530,9 +2766,113 @@ export async function rollbackBatchById(params: {
     },
   });
 
-  return executeReverseRollbackOnItems({
+  const summary = await executeReverseRollbackOnItems({
     agencyId: agency.id,
     items,
     adminUserId: params.adminUserId,
   });
+
+  // Liberar también ítems QUARANTINED / SKIPPED / IGNORED del mismo lote para evitar bloqueos de externalKey
+  const remainingNonApplied = await prisma.grokbotSyncItem.findMany({
+    where: {
+      agencyId: agency.id,
+      batchId: params.batchId,
+      status: { not: "ROLLED_BACK" },
+    },
+    select: { id: true, externalKey: true },
+  });
+
+  if (remainingNonApplied.length > 0) {
+    const stamp = Date.now();
+    for (let idx = 0; idx < remainingNonApplied.length; idx++) {
+      const rem = remainingNonApplied[idx];
+      const cleanBaseKey = rem.externalKey.split("#rb_")[0];
+      await prisma.grokbotSyncItem.update({
+        where: { id: rem.id },
+        data: {
+          status: "ROLLED_BACK",
+          rolledBackAt: new Date(),
+          externalKey: `${cleanBaseKey}#rb_${stamp}_q_${idx}`,
+        },
+      });
+    }
+  }
+
+  await prisma.grokbotSyncBatch.update({
+    where: { id: params.batchId },
+    data: {
+      status: "ROLLED_BACK",
+      appliedCount: 0,
+      quarantinedCount: 0,
+      totalAppliedMxn: 0,
+      rolledBackAt: new Date(),
+      rolledBackById: params.adminUserId || null,
+    },
+  });
+
+  return summary;
+}
+
+export async function ensureGrokbotV2Ready(): Promise<{
+  migratedNow: boolean;
+  rolledBackBatchesCount: number;
+  mappedCodesCount: number;
+}> {
+  const agency = await resolveLockedAacomAgency();
+  const existingSetting = await prisma.setting.findUnique({
+    where: { key: GROKBOT_SETTING_KEYS.MIGRATED_V2 },
+  });
+
+  if (existingSetting?.value === "done_v2") {
+    const nullMapsCount = await prisma.grokbotAgentMap.count({
+      where: { agencyId: agency.id, userId: null },
+    });
+    if (nullMapsCount > 0) {
+      const m = await provisionAllKnownBridgeAgents(agency.id);
+      return {
+        migratedNow: false,
+        rolledBackBatchesCount: 0,
+        mappedCodesCount: m.size,
+      };
+    }
+    return {
+      migratedNow: false,
+      rolledBackBatchesCount: 0,
+      mappedCodesCount: 0,
+    };
+  }
+
+  const pendingBatches = await prisma.grokbotSyncBatch.findMany({
+    where: {
+      agencyId: agency.id,
+      status: { not: "ROLLED_BACK" },
+    },
+    orderBy: { createdAt: "desc" },
+    select: { id: true },
+  });
+
+  for (const b of pendingBatches) {
+    await rollbackBatchById({ batchId: b.id });
+  }
+
+  await prisma.agentEmission.deleteMany({
+    where: {
+      agencyId: agency.id,
+      notes: { contains: "[GROKBOT:" },
+    },
+  });
+
+  const provisioned = await provisionAllKnownBridgeAgents(agency.id);
+
+  await prisma.setting.upsert({
+    where: { key: GROKBOT_SETTING_KEYS.MIGRATED_V2 },
+    create: { key: GROKBOT_SETTING_KEYS.MIGRATED_V2, value: "done_v2" },
+    update: { value: "done_v2" },
+  });
+
+  return {
+    migratedNow: true,
+    rolledBackBatchesCount: pendingBatches.length,
+    mappedCodesCount: provisioned.size,
+  };
 }

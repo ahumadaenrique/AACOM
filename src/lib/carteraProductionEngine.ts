@@ -92,6 +92,7 @@ export interface CarteraLedgerRow {
     dueDate: string | null;
     amount: number;
     paidAmount: number | null;
+    computableAmount: number | null;
     status: string;
     paidAt: string | null;
     paymentNotes: string | null;
@@ -298,7 +299,17 @@ export async function computeAgencyCarteraProduction(
         ? shares.filter((s) => s.agentId === filterAgentId)
         : shares;
 
-    if (scopedShares.length === 0) {
+    const hasReceiptAllocationForFilterAgent =
+      Boolean(filterAgentId && filterAgentId !== "ALL") &&
+      (p.receipts || []).some(
+        (r) =>
+          Array.isArray((r as any).agentAllocationsJson) &&
+          ((r as any).agentAllocationsJson as Array<{ userId?: string }>).some(
+            (a) => a?.userId === filterAgentId
+          )
+      );
+
+    if (scopedShares.length === 0 && !hasReceiptAllocationForFilterAgent) {
       continue;
     }
 
@@ -309,7 +320,23 @@ export async function computeAgencyCarteraProduction(
     let isPeRenewalEvent = false;
 
     if (!isCancelledOrNTU && effYmd) {
-      if (!isPolicyMarkedRenewal && effYmd >= startYmd && effYmd <= endYmd) {
+      if (ramoInfo.subRamoKey === "VIDA_GRUPO") {
+        if (effYmd >= startYmd && effYmd <= endYmd) {
+          isPeNewEvent = true;
+        } else if (
+          p.tipoVigencia === "ANUAL_RENOVABLE" &&
+          p.status !== "TERMINADA" &&
+          effYmd < startYmd
+        ) {
+          for (let y = startYear; y <= endYear; y++) {
+            const annivYmd = getAnniversaryYmdInYear(effYmd, y);
+            if (annivYmd && annivYmd >= startYmd && annivYmd <= endYmd) {
+              isPeNewEvent = true;
+              break;
+            }
+          }
+        }
+      } else if (!isPolicyMarkedRenewal && effYmd >= startYmd && effYmd <= endYmd) {
         isPeNewEvent = true;
       } else if (isPolicyMarkedRenewal && effYmd >= startYmd && effYmd <= endYmd) {
         isPeRenewalEvent = true;
@@ -337,8 +364,11 @@ export async function computeAgencyCarteraProduction(
     const rawPeForPolicy = peQualifies ? policyAnnualMXN : 0;
 
     // Determine PPC in period from PAGADO receipts (MXN)
-    let rawPpcForPolicy = 0;
+    let weightedPpcTotal = 0;
     let policyPaidReceiptsInPeriod = 0;
+    const ppcByAgentForPolicy = new Map<string, number>();
+    const paidReceiptsByAgentForPolicy = new Map<string, number>();
+    let policyHasMultiAgentReceipts = false;
 
     for (const r of p.receipts || []) {
       if (r.status !== "PAGADO") continue;
@@ -349,7 +379,11 @@ export async function computeAgencyCarteraProduction(
       if (!paidYmd || paidYmd < startYmd || paidYmd > endYmd) continue;
 
       const isRenewalReceipt =
-        (r.policyYear || 1) >= 2 || isPolicyMarkedRenewal;
+        ramoInfo.subRamoKey === "VIDA_GRUPO"
+          ? false
+          : ramoInfo.subRamoKey === "VIDA_INDIVIDUAL"
+          ? (r.policyYear || 1) >= 2
+          : (r.policyYear || 1) >= 2 || isPolicyMarkedRenewal;
 
       const receiptQualifies =
         (businessScope === "NUEVA" && !isRenewalReceipt) ||
@@ -358,9 +392,47 @@ export async function computeAgencyCarteraProduction(
 
       if (!receiptQualifies) continue;
 
-      const receiptMXN = Number(r.paidAmount ?? r.amount) || 0;
-      rawPpcForPolicy += receiptMXN;
-      policyPaidReceiptsInPeriod += 1;
+      const rawAllocs = Array.isArray((r as any).agentAllocationsJson)
+        ? ((r as any).agentAllocationsJson as Array<{
+            userId?: string;
+            paidMxn?: number;
+            computableMxn?: number;
+          }>)
+        : null;
+
+      if (rawAllocs && rawAllocs.length > 0) {
+        if (rawAllocs.length > 1) policyHasMultiAgentReceipts = true;
+        const matchingAllocs =
+          filterAgentId && filterAgentId !== "ALL"
+            ? rawAllocs.filter((a) => a?.userId === filterAgentId)
+            : rawAllocs;
+        if (matchingAllocs.length === 0) continue;
+
+        policyPaidReceiptsInPeriod += 1;
+        for (const al of matchingAllocs) {
+          if (!al?.userId) continue;
+          const part = Number(al.computableMxn ?? al.paidMxn ?? 0) || 0;
+          weightedPpcTotal += part;
+          ppcByAgentForPolicy.set(al.userId, (ppcByAgentForPolicy.get(al.userId) || 0) + part);
+          paidReceiptsByAgentForPolicy.set(
+            al.userId,
+            (paidReceiptsByAgentForPolicy.get(al.userId) || 0) + 1
+          );
+        }
+      } else {
+        if (scopedShares.length === 0) continue;
+        const receiptMXN = Number((r as any).computableAmount ?? r.paidAmount ?? r.amount) || 0;
+        policyPaidReceiptsInPeriod += 1;
+        for (const s of scopedShares) {
+          const part = receiptMXN * s.weight;
+          weightedPpcTotal += part;
+          ppcByAgentForPolicy.set(s.agentId, (ppcByAgentForPolicy.get(s.agentId) || 0) + part);
+          paidReceiptsByAgentForPolicy.set(
+            s.agentId,
+            (paidReceiptsByAgentForPolicy.get(s.agentId) || 0) + 1
+          );
+        }
+      }
     }
 
     // Track pending approval items that would have contributed in this range
@@ -378,9 +450,12 @@ export async function computeAgencyCarteraProduction(
 
     const totalShareWeightInFilter = scopedShares.reduce((sum, s) => sum + s.weight, 0);
     const weightedPeTotal = Number((rawPeForPolicy * totalShareWeightInFilter).toFixed(2));
-    const weightedPpcTotal = Number((rawPpcForPolicy * totalShareWeightInFilter).toFixed(2));
+    weightedPpcTotal = Number(weightedPpcTotal.toFixed(6));
 
-    const hasActivity = weightedPeTotal > 0 || weightedPpcTotal > 0 || (peQualifies && rawPeForPolicy > 0);
+    const hasActivity =
+      Math.abs(weightedPeTotal) >= 0.01 ||
+      Math.abs(weightedPpcTotal) >= 0.01 ||
+      (peQualifies && Math.abs(rawPeForPolicy) >= 0.01 && scopedShares.length > 0);
     if (!hasActivity) {
       continue;
     }
@@ -441,20 +516,32 @@ export async function computeAgencyCarteraProduction(
     compEntry.totalPPC += weightedPpcTotal;
     compEntry.policyIds.add(p.id);
 
-    // Aggregate per Agent (respecting co-agent split weights)
-    for (const share of scopedShares) {
-      const aEntry = ensureAgentEntry(share.agentId);
-      const pePart = rawPeForPolicy * share.weight;
-      const ppcPart = rawPpcForPolicy * share.weight;
+    // Aggregate per Agent (respecting co-agent split weights & receipt-level agentAllocationsJson)
+    const peWeightByAgent = new Map(scopedShares.map((s) => [s.agentId, s.weight]));
+    const participatingAgentIds = new Set<string>([
+      ...scopedShares.map((s) => s.agentId),
+      ...Array.from(ppcByAgentForPolicy.keys()),
+    ]);
 
+    for (const agentId of Array.from(participatingAgentIds)) {
+      const peWeight = peWeightByAgent.get(agentId) || 0;
+      const pePart = rawPeForPolicy * peWeight;
+      const ppcPart = ppcByAgentForPolicy.get(agentId) || 0;
+      const agentPaidReceipts = paidReceiptsByAgentForPolicy.get(agentId) || 0;
+
+      if (Math.abs(pePart) < 0.01 && Math.abs(ppcPart) < 0.01 && !(peQualifies && peWeight > 0 && Math.abs(rawPeForPolicy) >= 0.01)) {
+        continue;
+      }
+
+      const aEntry = ensureAgentEntry(agentId);
       aEntry.totalPE += pePart;
       aEntry.totalPPC += ppcPart;
       aEntry.policyCount += 1;
       if (pePart > 0) aEntry.emittedCount += 1;
-      if (policyPaidReceiptsInPeriod > 0) {
-        aEntry.paidReceiptsCount += policyPaidReceiptsInPeriod;
+      if (agentPaidReceipts > 0) {
+        aEntry.paidReceiptsCount += agentPaidReceipts;
       }
-      if (hasValidCoAgent) {
+      if (hasValidCoAgent || policyHasMultiAgentReceipts) {
         aEntry.sharedPoliciesCount += 1;
       }
 
@@ -468,7 +555,7 @@ export async function computeAgencyCarteraProduction(
       }
       aEntry.byCompany[compKey].totalPE += pePart;
       aEntry.byCompany[compKey].totalPPC += ppcPart;
-      aEntry.byCompany[compKey].count += share.weight;
+      aEntry.byCompany[compKey].count += peWeight > 0 ? peWeight : 1;
     }
 
     ledgerRows.push({
@@ -486,7 +573,7 @@ export async function computeAgencyCarteraProduction(
       annualPremium: policyAnnualMXN,
       effectiveDate: effYmd,
       peInPeriod: weightedPeTotal,
-      ppcInPeriod: weightedPpcTotal,
+      ppcInPeriod: Number(weightedPpcTotal.toFixed(2)),
       paidReceiptsInPeriod: policyPaidReceiptsInPeriod,
       isEmittedInPeriod: peQualifies && rawPeForPolicy > 0,
       isRenewalCapture: isPolicyMarkedRenewal,
@@ -509,6 +596,10 @@ export async function computeAgencyCarteraProduction(
         dueDate: toYmdKey(r.dueDate),
         amount: Number(r.amount) || 0,
         paidAmount: r.paidAmount !== null && r.paidAmount !== undefined ? Number(r.paidAmount) : null,
+        computableAmount:
+          (r as any).computableAmount !== null && (r as any).computableAmount !== undefined
+            ? Number((r as any).computableAmount)
+            : null,
         status: r.status,
         paidAt: toYmdKey(r.paidAt),
         paymentNotes: r.paymentNotes || null,

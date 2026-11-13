@@ -378,7 +378,7 @@ export async function GET(req: NextRequest) {
       );
 
       const agentSummaries = targetUsers
-        .filter((u) => ["AGENTE", "AGENTE_LITE", "REFERIDOR", "ADMIN"].includes(u.role))
+        .filter((u) => ["AGENTE", "AGENTE_LITE", "REFERIDOR", "ADMIN", "SUPER_ADMIN"].includes(u.role))
         .map((u) => {
           const userPlans = dailyPlans.filter((p) => p.userId === u.id);
           const userLogs = allRangeLogsForRollup.filter((l) => l.userId === u.id);
@@ -478,7 +478,8 @@ export async function GET(req: NextRequest) {
         subPeriod: month ?? 1,
       });
 
-      const [emissions, budgets, rankingSetting, carteraEngine] = await Promise.all([
+      const [emissions, budgets, rankingSetting, carteraEngine, carteraRenovaciones] =
+        await Promise.all([
         prisma.agentEmission.findMany({
           where: {
             agencyId: lockedAgencyId,
@@ -506,6 +507,14 @@ export async function GET(req: NextRequest) {
           filterAgentId:
             filteredAgentIds && filteredAgentIds.length === 1 ? filteredAgentIds[0] : undefined,
         }),
+        computeAgencyCarteraProduction({
+          agencyId: lockedAgencyId,
+          startYmd: periodRange.startYmd,
+          endYmd: periodRange.endYmd,
+          businessScope: "RENOVACION",
+          filterAgentId:
+            filteredAgentIds && filteredAgentIds.length === 1 ? filteredAgentIds[0] : undefined,
+        }),
       ]);
 
       const byAgentMap = new Map<
@@ -525,7 +534,7 @@ export async function GET(req: NextRequest) {
 
       for (const u of agencyUsers) {
         if (!targetUserIds.includes(u.id)) continue;
-        if (!["AGENTE", "AGENTE_LITE", "ADMIN"].includes(u.role)) continue;
+        if (!["AGENTE", "AGENTE_LITE", "ADMIN", "SUPER_ADMIN"].includes(u.role)) continue;
         if (!u.active && filteredAgentIds === null) continue;
         byAgentMap.set(u.id, {
           agentId: u.id,
@@ -663,6 +672,23 @@ export async function GET(req: NextRequest) {
           bySubRamo: carteraEngine.bySubRamo,
           byVidaObjetivo: carteraEngine.byVidaObjetivo,
           byCompany: carteraEngine.byCompany,
+          byAgent: Array.from(carteraEngine.byAgent.entries())
+            .map(([agId, entry]) => {
+              const u = userMap.get(agId);
+              return {
+                agentId: agId,
+                name: u?.name || u?.email || "Agente",
+                email: u?.email || "",
+                role: u?.role || "AGENTE",
+                totalPE: Number(entry.totalPE.toFixed(2)),
+                totalPPC: Number(entry.totalPPC.toFixed(2)),
+                policiesCount: entry.policyCount,
+                receiptsCount: entry.paidReceiptsCount,
+              };
+            })
+            .sort((a, b) => b.totalPPC - a.totalPPC),
+          renovacionesTotals: carteraRenovaciones.totals,
+          renovacionesBySubRamo: carteraRenovaciones.bySubRamo,
           policiesCountInLedger: carteraEngine.ledgerRows.length,
         },
       });

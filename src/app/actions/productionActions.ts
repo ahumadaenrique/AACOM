@@ -1312,7 +1312,11 @@ async function buildHistoricalLogicalGroups(
   logicalGroups: ParsedLogicalGroup[];
 }> {
   const emissions = await prisma.agentEmission.findMany({
-    where: { agencyId, year: targetYear },
+    where: {
+      agencyId,
+      year: targetYear,
+      OR: [{ notes: null }, { NOT: { notes: { contains: "[GROKBOT:" } } }],
+    },
     include: {
       agent: { select: { id: true, name: true, email: true } },
     },
@@ -1705,17 +1709,24 @@ export async function getProductionReconciliationAudit(options?: {
           existingEffYmd <= `${targetYear}-12-31`;
         const afterPE = existingIsNewInYear ? Number(existing.annualPremium) || 0 : 0;
 
+        const ramoInfo = classifyPolicyRamo(existing);
+        const isVidaGrupo = ramoInfo.subRamoKey === "VIDA_GRUPO";
         let afterPPC = 0;
         let expectedUnpaidPPC = 0;
         for (const ev of g.receiptEvents) {
           const matchingRec = existing.receipts.find(
             (r) =>
-              r.policyYear === 1 &&
+              (isVidaGrupo || r.policyYear === 1) &&
               (r.receiptNumber === ev.receiptNumber ||
                 (g.receiptEvents.length === 1 && r.receiptNumber === 1))
           );
           if (matchingRec && matchingRec.status === "PAGADO") {
-            afterPPC += Number(matchingRec.paidAmount ?? matchingRec.amount ?? 0);
+            afterPPC += Number(
+              (matchingRec as any).computableAmount ??
+                matchingRec.paidAmount ??
+                matchingRec.amount ??
+                0
+            );
           } else if (ev.ppc > 0) {
             expectedUnpaidPPC += ev.ppc;
             differences.push(
@@ -1724,11 +1735,15 @@ export async function getProductionReconciliationAudit(options?: {
           }
         }
 
-        // Fallback sum of all Year 1 PAGADO receipts if receipt numbering differs
+        // Fallback sum of all Year 1 (or any year for VG) PAGADO receipts if receipt numbering differs
         const totalCarteraPaidY1 = existing.receipts
-          .filter((r) => r.status === "PAGADO" && r.policyYear <= 1)
-          .reduce((s, r) => s + Number(r.paidAmount ?? r.amount ?? 0), 0);
-        if (afterPPC === 0 && totalCarteraPaidY1 > 0 && expectedUnpaidPPC === 0) {
+          .filter((r) => r.status === "PAGADO" && (isVidaGrupo || r.policyYear <= 1))
+          .reduce(
+            (s, r) =>
+              s + Number((r as any).computableAmount ?? r.paidAmount ?? r.amount ?? 0),
+            0
+          );
+        if (afterPPC === 0 && totalCarteraPaidY1 !== 0 && expectedUnpaidPPC === 0) {
           afterPPC = totalCarteraPaidY1;
         }
 
@@ -1782,7 +1797,11 @@ export async function getProductionReconciliationAudit(options?: {
         const ramoInfo = classifyPolicyRamo(p);
         const paidTotal = (p.receipts || [])
           .filter((r) => r.status === "PAGADO")
-          .reduce((s, r) => s + Number(r.paidAmount ?? r.amount ?? 0), 0);
+          .reduce(
+            (s, r) =>
+              s + Number((r as any).computableAmount ?? r.paidAmount ?? r.amount ?? 0),
+            0
+          );
         return {
           policyId: p.id,
           clientId: p.clientId,
@@ -1814,10 +1833,11 @@ export async function getProductionReconciliationAudit(options?: {
       let afterPPC = 0;
       for (const p of policies) {
         if (p.status === "CANCELADA" || p.subStatus === "NO_TOMADA") continue;
+        const pRamo = classifyPolicyRamo(p);
+        const isVidaGrupo = pRamo.subRamoKey === "VIDA_GRUPO";
         const effYmd = toYmdKey(p.effectiveDate);
         if (
-          !p.isRenewalCapture &&
-          p.subStatus !== "RENOVACION" &&
+          (isVidaGrupo || (!p.isRenewalCapture && p.subStatus !== "RENOVACION")) &&
           effYmd &&
           effYmd >= mStart &&
           effYmd <= mEnd
@@ -1825,15 +1845,23 @@ export async function getProductionReconciliationAudit(options?: {
           afterPE += Number(p.annualPremium) || 0;
         }
         for (const r of p.receipts || []) {
-          if (r.status !== "PAGADO" || r.policyYear > 1) continue;
+          if (r.status !== "PAGADO") continue;
+          if (!isVidaGrupo && r.policyYear > 1) continue;
           const pYmd = toYmdKey(r.paidAt || r.dueDate);
           if (pYmd && pYmd >= mStart && pYmd <= mEnd) {
-            afterPPC += Number(r.paidAmount ?? r.amount ?? 0);
+            afterPPC += Number(
+              (r as any).computableAmount ?? r.paidAmount ?? r.amount ?? 0
+            );
           }
         }
       }
 
-      if (beforePE > 0 || beforePPC > 0 || afterPE > 0 || afterPPC > 0) {
+      if (
+        Math.abs(beforePE) >= 0.01 ||
+        Math.abs(beforePPC) >= 0.01 ||
+        Math.abs(afterPE) >= 0.01 ||
+        Math.abs(afterPPC) >= 0.01
+      ) {
         monthlyComparison.push({
           month: m,
           monthName: MONTH_NAMES_ES[m - 1],

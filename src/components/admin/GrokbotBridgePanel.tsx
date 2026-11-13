@@ -28,6 +28,7 @@ import {
   resolveQuarantinedItemAction,
   runManualGrokbotJsonIngest,
   saveGrokbotAgentMapping,
+  syncGrokbotLiteAgentsAction,
   toggleGrokbotIngestPause,
 } from "@/app/actions/grokbotSyncActions";
 import {
@@ -180,6 +181,25 @@ export default function GrokbotBridgePanel({ onDataMutated }: GrokbotBridgePanel
         await loadDashboard();
       } else {
         setFeedback({ type: "error", text: res.message || "Error cambiando pausa" });
+      }
+    });
+  };
+
+  const handleSyncLiteAgents = () => {
+    startTransition(async () => {
+      const res = await syncGrokbotLiteAgentsAction();
+      if (res.success) {
+        setFeedback({
+          type: "success",
+          text: `${res.mappedCodesCount || 0} claves sincronizadas y perfiles AGENTE_LITE verificados.${(res.appliedCount || 0) > 0 ? ` ${res.appliedCount} registro(s) en cuarentena aplicados.` : ""}`,
+        });
+        await loadDashboard();
+        if ((res.appliedCount || 0) > 0) onDataMutated?.();
+      } else {
+        setFeedback({
+          type: "error",
+          text: res.message || "Error al sincronizar claves y perfiles AGENTE_LITE.",
+        });
       }
     });
   };
@@ -363,7 +383,7 @@ export default function GrokbotBridgePanel({ onDataMutated }: GrokbotBridgePanel
      "insignia": <JSON completo de /primas.json>,
      "latino": <JSON completo de /latino/todo.json>
    }
-3. Nota de seguridad: No calcules comisiones, tipos de cambio ni deducciones; aacomsoft valida determinísticamente, filtra duplicados/cancelaciones en $0 y manda a cuarentena cualquier clave sin asignar.
+3. Nota de seguridad: No calcules comisiones, tipos de cambio ni deducciones; aacomsoft valida determinísticamente (VI 1er año usa prima computable, VG todos los años en producción y ajustes negativos automáticos), filtra duplicados/cancelaciones en $0 y manda a cuarentena solo claves sin asignar o anomalías.
 4. Repórtame el resumen devuelto: counts.applied, totalAppliedMxn, counts.quarantined y unmappedAgents.`;
   };
 
@@ -680,9 +700,22 @@ export default function GrokbotBridgePanel({ onDataMutated }: GrokbotBridgePanel
                 sincronizarán al instante.
               </CardDescription>
             </div>
-            <Badge variant="outline" className="font-mono text-[11px]">
-              {agentMaps.length} claves detectadas
-            </Badge>
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                disabled={isPending}
+                onClick={handleSyncLiteAgents}
+                className="h-8 text-xs font-bold gap-1.5 border-teal-300 text-teal-700 hover:bg-teal-50 dark:border-teal-800 dark:text-teal-300"
+              >
+                <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
+                Sincronizar Claves y Perfiles Agente_Lite
+              </Button>
+              <Badge variant="outline" className="font-mono text-[11px]">
+                {agentMaps.length} claves detectadas
+              </Badge>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="p-0">
