@@ -10,6 +10,7 @@ import {
   LEVELS_CONFIG
 } from '@/lib/roleplay/gamification';
 import { BADGES } from '@/lib/roleplay/badges';
+import { resolveAdvisorFirmContext, sanitizeExternalCoachText } from '@/lib/roleplay/firmContext';
 import { generateObject } from 'ai';
 import { createGoogleGenerativeAI } from '@ai-sdk/google';
 import { z } from 'zod';
@@ -48,7 +49,20 @@ export async function POST(req: Request) {
     const [user, stats] = await Promise.all([
       prisma.user.findUnique({
         where: { id: userId },
-        select: { id: true, role: true, agencyId: true, voiceSecondsBalance: true }
+        select: {
+          id: true,
+          role: true,
+          agencyId: true,
+          voiceSecondsBalance: true,
+          agency: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              accountType: true
+            }
+          }
+        }
       }),
       prisma.roleplayStats.findUnique({ where: { userId } })
     ]);
@@ -58,6 +72,7 @@ export async function POST(req: Request) {
     }
 
     const agencyId = user?.agencyId || null;
+    const { displayFirmName, isPrimaryAacomAgency } = resolveAdvisorFirmContext(user?.agency);
 
     const userTurns = transcript.filter((m: any) => m.source === 'user');
     const agentMessages = userTurns.map((m: any) => (m.message || '').toLowerCase()).join(' ');
@@ -187,7 +202,9 @@ export async function POST(req: Request) {
 
       A) LO QUE SÍ DEBE MENCIONAR EL ASESOR OBLIGATORIAMENTE (LOS 5 PILARES):
       1. PRESENTARSE CON SU NOMBRE (pilar1NombreAsesor): Que el agente diga su nombre.
-      2. PRESENTAR A LA EMPRESA (pilar2NombreEmpresa): Son 100% VÁLIDAS cualquiera de estas formas: "Grupo AACOM", "AACOM Seguros", "AACOM", "AACOMSoft", el nombre de su promotoría, o transcripciones fonéticas del micrófono como "Acom", "Acomsoft", "Grupo Acom", "Acom Seguros", "Grupo ACO", "Aconseguros", "Grupo A como". NUNCA penalices por la transcripción fonética si dijo alguna de estas.
+      ${isPrimaryAacomAgency
+        ? `2. PRESENTAR A LA EMPRESA (pilar2NombreEmpresa): Son 100% VÁLIDAS cualquiera de estas formas: "${displayFirmName}", "Grupo AACOM", "AACOM Seguros", "AACOM", "aacomsoft", el nombre de su promotoría, o transcripciones fonéticas del micrófono como "Acom", "Acomsoft", "Grupo Acom", "Acom Seguros", "Grupo ACO", "Aconseguros", "Grupo A como". NUNCA penalices por la transcripción fonética si dijo alguna de estas.`
+        : `2. PRESENTAR A LA EMPRESA O DESPACHO (pilar2NombreEmpresa): Son 100% VÁLIDAS cualquiera de estas formas: "${displayFirmName}" (incluyendo cualquier variante fonética o parcial captada por el micrófono), o cualquier nombre comercial de su promotoría, agencia, firma o despacho patrimonial/financiero. NUNCA penalices por errores ortográficos o fonéticos del micrófono al transcribir el nombre de su empresa.`}
       3. ORIGEN DEL CONTACTO (pilar3OrigenContacto): Que el agente diga de dónde sacaron sus datos y contacto (referido por alguien, dejó sus datos para informes en internet, o se conocieron en un desayuno/evento).
       4. EXPLICAR DE QUÉ SE TRATA LA ASESORÍA (pilar4ExplicacionAsesoria): Que explique el concepto de la asesoría que le quiere brindar (podría decirle que es una asesoría gratuita, que somos como médicos/doctores de las finanzas, que somos expertos financieros, que somos expertos en finanzas, o que hacemos un diagnóstico de salud financiera y variantes de este estilo). ¡ATENCIÓN! Si el asesor solo dice "quiero agendar una reunión para conocer tus necesidades y hacerte un plan" sin explicar que es una asesoría financiera / diagnóstico financiero / expertos en finanzas, marca pilar4ExplicacionAsesoria = false.
       5. TÉCNICA DE LOS 2 HORARIOS (pilar5DosHorarios): Que aplique la doble alternativa proponiendo dos opciones concretas con día y hora (ej. "¿miércoles a las 10:00 am o jueves a las 5:00 pm?"). Si solo dice días sin hora ("¿lunes o viernes?") o pregunta abierto ("¿cuándo puedes?"), marca pilar5DosHorarios = false.
@@ -209,7 +226,11 @@ export async function POST(req: Request) {
     const EvaluationSchema = z.object({
       pilaresProspeccion: z.object({
         pilar1NombreAsesor: z.boolean().describe('Verdadero si el agente se presentó con su nombre.'),
-        pilar2NombreEmpresa: z.boolean().describe('Verdadero si el agente presentó a la empresa (Grupo AACOM, AACOM Seguros, AACOMSoft o variante fonética).'),
+        pilar2NombreEmpresa: z.boolean().describe(
+          isPrimaryAacomAgency
+            ? `Verdadero si el agente presentó a la empresa (${displayFirmName}, Grupo AACOM, AACOM Seguros o variante fonética).`
+            : `Verdadero si el agente presentó a su empresa, promotoría o despacho (por ejemplo "${displayFirmName}", variante fonética del micrófono, o el nombre de su firma comercial).`
+        ),
         pilar3OrigenContacto: z.boolean().describe('Verdadero si el agente dijo de dónde sacaron sus datos/contacto.'),
         pilar4ExplicacionAsesoria: z.boolean().describe('Verdadero si explicó de qué se trata la asesoría financiera (asesoría gratuita, médicos de las finanzas, expertos financieros, diagnóstico de salud financiera). Falso si solo pidió cita sin explicar qué es la asesoría.'),
         pilar5DosHorarios: z.boolean().describe('Verdadero si aplicó la técnica de los 2 horarios con día y hora específicos.')
@@ -232,11 +253,15 @@ export async function POST(req: Request) {
     });
 
 
+    const whiteLabelCoachRule = isPrimaryAacomAgency
+      ? ''
+      : `\nREGLA ESTRICTA DE MARCA BLANCA: El asesor pertenece a "${displayFirmName}". En "aciertos", "errores" y "coachTip", refiérete únicamente a "${displayFirmName}" o genéricamente a "tu empresa / tu despacho / tu promotoría". TIENES ESTRICTAMENTE PROHIBIDO mencionar a "AACOM", "Grupo AACOM", "AACOM Seguros" o cualquier otra promotoría ajena.\n`;
+
     const promptText = `Eres un Master Coach de Ventas de Seguros evaluando una simulación de rol entre un Asesor y un Prospecto.
 Evalúa la siguiente transcripción basándote estrictamente en esta rúbrica:
 
 ${evalInstructions}
-
+${whiteLabelCoachRule}
 <transcripcion>
 ${transcriptText}
 </transcripcion>
@@ -446,8 +471,21 @@ ${badgesText}
         }
         if (!p.pilar2NombreEmpresa) {
           score = Math.max(0, score - 10);
-          if (!errores.some((e: string) => e.toLowerCase().includes('empresa') || e.toLowerCase().includes('aacom') || e.toLowerCase().includes('acom'))) {
-            errores.push('Omitiste presentar a la empresa (Grupo AACOM / AACOM Seguros / AACOMSoft).');
+          const firmLower = displayFirmName.toLowerCase();
+          if (
+            !errores.some((e: string) => {
+              const lower = e.toLowerCase();
+              return (
+                lower.includes('empresa') ||
+                lower.includes('despacho') ||
+                lower.includes('promotor') ||
+                (!firmLower.startsWith('tu ') && firmLower.length > 2 && lower.includes(firmLower)) ||
+                (isPrimaryAacomAgency && (lower.includes('aacom') || lower.includes('acom')))
+              );
+            })
+          ) {
+            const firmHint = displayFirmName.startsWith('tu ') ? '' : ` (${displayFirmName})`;
+            errores.push(`Omitiste presentar a tu empresa o despacho${firmHint}.`);
           }
         }
         if (!p.pilar3OrigenContacto) {
@@ -491,6 +529,12 @@ ${badgesText}
 
     if (!appointmentClosed && score > 78) {
       score = 72;
+    }
+
+    if (!isPrimaryAacomAgency) {
+      aciertos = aciertos.map((a: string) => sanitizeExternalCoachText(a, displayFirmName, false));
+      errores = errores.map((e: string) => sanitizeExternalCoachText(e, displayFirmName, false));
+      coachTip = sanitizeExternalCoachText(coachTip, displayFirmName, false);
     }
 
     // Insignias deterministas automáticas por mérito comprobable (si no hubo falta fatal):

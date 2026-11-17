@@ -18,7 +18,7 @@ export async function enhanceScenarioPromptWithGemini(params: {
 
   // En los 3 módulos principales usamos directamente el System Prompt procedural determinista
   // de scenarios.ts porque contiene las reglas exactas de apertura, cláusula suprema anti-inversión de rol,
-  // anclaje de identidad, reconocimiento de variantes (Grupo AACOM / AACOM Seguros / AACOMSoft / Acom),
+  // anclaje de identidad, reconocimiento flexible del nombre de la empresa/promotoría del asesor,
   // límite de objeciones y trampas de auditoría sin riesgo de alteración ni latencia adicional.
   if (moduleId === 'prospeccion' || moduleId === 'adn' || moduleId === 'objeciones') {
     return scenario.systemPrompt;
@@ -36,7 +36,7 @@ export async function enhanceScenarioPromptWithGemini(params: {
     const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000));
 
     const generationPromise = (async () => {
-      const metaInstruction = `Eres el Director de Simulación de ${agencyName} (Grupo AACOM / AACOM Seguros / AACOMSoft).
+      const metaInstruction = `Eres el Director de Simulación Comercial de ${agencyName || 'la firma patrimonial'}.
 Revisa el siguiente System Prompt y asegúrate de conservar intactos todos sus números financieros, etapa familiar y reglas, mejorando únicamente la fluidez conversacional mexicana:
 
 ${scenario.systemPrompt}

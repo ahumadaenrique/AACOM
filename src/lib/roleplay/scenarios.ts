@@ -268,7 +268,7 @@ const ORIGENES = [
     titulo: 'REFERIDO AVISADO',
     icono: '🤝',
     dificultad: 'baja',
-    generar: (referidor: string, agencyName = 'AACOM Seguros') => ({
+    generar: (referidor: string, agencyName = 'la firma patrimonial') => ({
       brief: `Tu cliente "${referidor}" le recomendó tu servicio y le avisó que le ibas a llamar hoy.`,
       tipPostLlamada: `En prospectos referidos avisados, menciona el nombre de ${referidor} en los primeros 5 segundos para que te ubique inmediatamente y baje la guardia.`,
       promptContext: `Fuiste referido por tu amigo/socio "${referidor}", quien te comentó que un asesor de ${agencyName} te marcaría. REGLA SECRETA: TÚ NUNCA debes mencionar primero a "${referidor}" hasta que el asesor lo mencione. Si el asesor no dice quién lo recomendó, pregúntale de dónde tiene tu número.`
@@ -279,7 +279,7 @@ const ORIGENES = [
     titulo: 'REFERIDO SIN AVISAR',
     icono: '📞',
     dificultad: 'media',
-    generar: (referidor: string, _agencyName = 'AACOM Seguros') => ({
+    generar: (referidor: string, _agencyName = 'la firma patrimonial') => ({
       brief: `Tu cliente "${referidor}" te dio sus datos de contacto porque pensó en él, pero NO le alcanzó a avisar.`,
       tipPostLlamada: `Como no le avisaron, menciona a ${referidor} con calidez ("Me dio su número porque le brindamos una asesoría...") para evitar que piense que compraste su base de datos.`,
       promptContext: `Conoces bien a "${referidor}", pero NO te avisó que te iban a llamar. REGLA SECRETA: TÚ NUNCA debes mencionar primero el nombre de "${referidor}". Si el asesor no dice quién le dio tu número, pregúntale de dónde sacó tu contacto.`
@@ -290,7 +290,7 @@ const ORIGENES = [
     titulo: 'PIDIÓ INFORMES (INBOUND)',
     icono: '🔥',
     dificultad: 'baja',
-    generar: (_?: string, agencyName = 'AACOM Seguros') => ({
+    generar: (_?: string, agencyName = 'la firma patrimonial') => ({
       brief: `El prospecto dejó sus datos en una publicación de internet de ${agencyName} hace unos días.`,
       tipPostLlamada: `Recuérdale que él mismo solicitó la asesoría en la página web, pero no asumas que tiene 1 hora para hablar hoy; enfócate en agendar la reunión formal.`,
       promptContext: `Hace unos días dejaste tus datos en un formulario de internet de ${agencyName}, pero entre tantos pendientes no lo traes presente en la cabeza hasta que el asesor te lo recuerde explícitamente. REGLA SECRETA: NUNCA digas tú primero que dejaste tus datos en internet; espera a que el asesor te diga de dónde tiene tu contacto.`
@@ -301,7 +301,7 @@ const ORIGENES = [
     titulo: 'CONTACTO DE NETWORKING',
     icono: '👔',
     dificultad: 'media',
-    generar: (_?: string, _agencyName = 'AACOM Seguros') => ({
+    generar: (_?: string, _agencyName = 'la firma patrimonial') => ({
       brief: `Intercambiaron teléfonos brevemente en un desayuno de negocios / networking la semana pasada.`,
       tipPostLlamada: `Haz referencia inmediata al evento donde coincidieron para reavivar la conexión antes de proponer la fecha.`,
       promptContext: `Coincidieron en un desayuno de negocios la semana pasada, pero conociste a 30 personas ese día. REGLA SECRETA: Si el asesor solo te dice "¿Te acuerdas de mí?" sin mencionar explícitamente el desayuno o evento de negocios, TÚ NO LO UBICAS y le respondes: "La verdad no te ubico ahorita, ¿de dónde nos conocemos o cómo tienes mi número?". NUNCA menciones tú primero el desayuno.`
@@ -312,7 +312,7 @@ const ORIGENES = [
     titulo: 'RE-ACTIVACIÓN DE PROSPECTO',
     icono: '🔄',
     dificultad: 'media',
-    generar: (_?: string, _agencyName = 'AACOM Seguros') => ({
+    generar: (_?: string, _agencyName = 'la firma patrimonial') => ({
       brief: `Habían tenido un primer contacto hace 6 meses pero se pospuso por temas de trabajo del prospecto.`,
       tipPostLlamada: `Reconoce el tiempo transcurrido y retoma la conversación preguntando por cómo avanzaron sus proyectos este año.`,
       promptContext: `Platicaron brevemente hace 6 meses, pero no te acuerdas del asesor a menos que él te recuerde explícitamente que habían platicado hace unos meses. REGLA SECRETA: NUNCA digas tú primero de dónde se conocen hasta que el asesor lo mencione.`
@@ -323,7 +323,7 @@ const ORIGENES = [
     titulo: 'LLAMADA EN FRÍO TOTAL',
     icono: '❄️',
     dificultad: 'alta',
-    generar: (_?: string, agencyName = 'AACOM Seguros') => ({
+    generar: (_?: string, agencyName = 'la firma patrimonial') => ({
       brief: `Contacto nuevo en frío obtenido de directorio empresarial. El prospecto NO TIENE IDEA de quién eres.`,
       tipPostLlamada: `En frío no hay confianza previa: tienes solo 15 segundos para dar un gancho de curiosidad o dolor profesional antes de que te corte.`,
       promptContext: `No conoces a la persona que te llama ni a ${agencyName}. Es un número no registrado. Preguntas con quién hablas y de dónde obtuvieron tus datos.`
@@ -614,7 +614,7 @@ export interface PerfilCierreProcedural {
   saludoInicial: string;
 }
 
-export function generarPerfilCierreProcedural(persona: any, edad: number, puesto: string, profesion: any, level: number, agencyName = 'AACOM Seguros'): PerfilCierreProcedural {
+export function generarPerfilCierreProcedural(persona: any, edad: number, puesto: string, profesion: any, level: number, agencyName = 'la firma patrimonial'): PerfilCierreProcedural {
   // Vector 1: Propuestas Personalizadas Proyectadas en Pantalla
   const planes = [
     {
@@ -951,7 +951,7 @@ export function generarPerfilCierreProcedural(persona: any, edad: number, puesto
   };
 }
 
-export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion', agencyName = 'AACOM Seguros'): Scenario {
+export function generarEscenarioAleatorio(level = 1, moduleId = 'prospeccion', agencyName = 'la firma patrimonial', isPrimaryAacomAgency = false): Scenario {
   const currentLevel = Math.max(1, Math.min(6, Math.floor(level) || 1));
   const persona = PROSPECTOS_PERSONAS[Math.floor(Math.random() * PROSPECTOS_PERSONAS.length)];
   const profesion = PROFESIONES[Math.floor(Math.random() * PROFESIONES.length)];
@@ -1210,6 +1210,14 @@ ${cierreProc.arquetipo.barrerasRequeridas === 1 ? `
       ? 'MUJER (FEMENINO). Habla SIEMPRE en femenino cuando te refieras a ti misma (ej. "ando ocupada", "ando gastada", "estoy cubierta", "estoy segura").'
       : 'HOMBRE (MASCULINO). Habla SIEMPRE en masculino cuando te refieras a ti mismo (ej. "ando ocupado", "ando gastado", "estoy cubierto", "estoy seguro").';
 
+    const reconocimientoEmpresaBlock = isPrimaryAacomAgency
+      ? `### 2. RECONOCIMIENTO FLEXIBLE DE LA EMPRESA (100% VÁLIDO):
+- Toma como totalmente válido si el asesor menciona: **${agencyName}**, **Grupo AACOM**, **AACOM Seguros**, **aacomsoft**, **AACOM**, el nombre de su despacho/promotoría, o variantes fonéticas como *Acom*, *Acomsoft*, *Grupo Acom*, *Acom Seguros*, *Grupo ACO*, *Aconseguros* o *Grupo A como*.
+- **REGLA ESTRICTA:** TÚ NUNCA menciones primero el nombre de la empresa antes de que el asesor se presente.`
+      : `### 2. RECONOCIMIENTO FLEXIBLE DE LA EMPRESA / DESPACHO (100% VÁLIDO):
+- Toma como totalmente válido si el asesor se presenta mencionando a **${agencyName}** (incluyendo cualquier variante fonética o abreviada captada por el micrófono), o el nombre de su promotoría, despacho patrimonial, agencia o firma comercial.
+- **REGLA ESTRICTA DE MARCA:** TÚ NUNCA menciones primero el nombre de ninguna empresa o promotoría antes de que el asesor lo diga, y JAMÁS inventes ni menciones nombres de otras promotorías que el asesor no haya pronunciado en esta llamada.`;
+
     systemPrompt = `Eres ${persona.nombre}, tienes ${edad} años, tu género es ${generoRegla}, y trabajas como ${puesto} (${profesion.contexto}).
 Estás en México atendiendo una llamada telefónica en medio de tu jornada laboral.
 Nivel de exigencia del simulador: NIVEL ${currentLevel}/6.
@@ -1232,8 +1240,7 @@ Nivel de exigencia del simulador: NIVEL ${currentLevel}/6.
 - **REGLA ESTRICTA ANTI-ALUCINACIÓN (NO INVENTES COSAS QUE EL ASESOR NO DIJO):**
   - **JAMÁS acuses al asesor de haberte ofrecido productos o planes si el asesor NO los mencionó en la llamada.** Responde únicamente a lo que el asesor realmente te acaba de decir.
 
-### 2. RECONOCIMIENTO FLEXIBLE DE LA EMPRESA (100% VÁLIDO):
-- Toma como totalmente válido si el asesor menciona: **${agencyName}**, **Grupo AACOM**, **AACOM Seguros**, **AACOMSoft**, **AACOM**, o variantes fonéticas como *Acom*, *Acomsoft*, *Grupo Acom*, *Acom Seguros*, *Grupo ACO*, *Aconseguros* o *Grupo A como*.
+${reconocimientoEmpresaBlock}
 
 ### 3. SISTEMA PROGRESIVO DE 3 BARRERAS (1 -> 2 -> 3 STRIKES):
 

@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { generarEscenarioAleatorio } from '@/lib/roleplay/scenarios';
+import { resolveAdvisorFirmContext } from '@/lib/roleplay/firmContext';
 import {
   calculateLevelFromXp,
   checkAndApplyInactivityPenalty,
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
 
     const session = await auth();
     if (!session?.user?.id && !session?.user?.email) {
-      return NextResponse.json({ error: 'No autorizado. Inicia sesión en AACOMSoft.' }, { status: 401 });
+      return NextResponse.json({ error: 'No autorizado. Inicia sesión en aacomsoft.' }, { status: 401 });
     }
 
     // Resolve user ID (case-insensitive email fallback)
@@ -184,13 +185,14 @@ export async function POST(req: Request) {
       });
     }
 
-    // White-label: Usar el nombre de la agencia del asesor si existe
-    const agencyName = userWithAgency?.agency?.name?.trim() || 'AACOM Seguros';
+    // White-label estricto: resolver identidad comercial aislada por agencia
+    const { displayFirmName, scenarioFirmLabel, isPrimaryAacomAgency } = resolveAdvisorFirmContext(userWithAgency?.agency);
+    const agencyName = scenarioFirmLabel;
 
     // Si el cliente solicita refrescar el token conservando el prospecto en pantalla, respetarlo
     let scenario = preserveScenario && preserveScenario.prospecto
       ? preserveScenario
-      : generarEscenarioAleatorio(stats.level, moduleId, agencyName);
+      : generarEscenarioAleatorio(stats.level, moduleId, agencyName, isPrimaryAacomAgency);
 
     if (!preserveScenario) {
       // Optimizar y blindar la psicología del prospecto con Gemini Prompt Architect (Gemini 3.8 Flash)
@@ -284,7 +286,7 @@ export async function POST(req: Request) {
               agentId = userWithAgency.agency.elevenLabsVoiceId;
             } else {
               const { getOrProvisionAgencyAgent } = await import('@/lib/roleplay/elevenlabsProvisioning');
-              const provisioned = await getOrProvisionAgencyAgent(userWithAgency.agency.id, apiKey, agencyName);
+              const provisioned = await getOrProvisionAgencyAgent(userWithAgency.agency.id, apiKey, agencyName, isPrimaryAacomAgency);
               if (provisioned) {
                 agentId = provisioned;
               }
@@ -422,6 +424,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       engine: effectiveEngine,
+      firmName: displayFirmName,
       scenario,
       signedUrl,
       wsUrl: effectiveEngine === 'GEMINI_LIVE' ? wsUrl : null,

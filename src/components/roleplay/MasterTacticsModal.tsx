@@ -7,9 +7,10 @@ interface MasterTacticsModalProps {
   isOpen: boolean;
   onClose: () => void;
   moduleId?: 'prospeccion' | 'adn' | 'objeciones';
+  firmName?: string;
 }
 
-export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }: MasterTacticsModalProps) {
+export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion', firmName }: MasterTacticsModalProps) {
   if (!isOpen) return null;
 
   const isADN = moduleId === 'adn';
@@ -233,7 +234,7 @@ export function MasterTacticsModal({ isOpen, onClose, moduleId = 'prospeccion' }
                     <CheckCircle2 className="h-4 w-4" /> 1. Nombre, Empresa y Origen
                   </div>
                   <p className="text-xs text-slate-300">
-                    Preséntate con tu nombre, menciona a la empresa (<strong>Grupo AACOM</strong>, <strong>AACOM Seguros</strong> o <strong>AACOMSoft</strong>) y di claramente <strong>de dónde sacaste sus datos/contacto</strong> (referido, desayuno o solicitud de informes).
+                    Preséntate con tu nombre, menciona a tu empresa o despacho{firmName && !firmName.startsWith('tu ') && firmName !== 'la firma patrimonial' ? <> (<strong>{firmName}</strong>)</> : null} y di claramente <strong>de dónde sacaste sus datos/contacto</strong> (referido, desayuno o solicitud de informes).
                   </p>
                 </div>
 

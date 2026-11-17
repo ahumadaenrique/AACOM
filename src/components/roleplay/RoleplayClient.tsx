@@ -145,6 +145,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [wsUrl, setWsUrl] = useState<string | null>(null);
   const [voiceName, setVoiceName] = useState<string | null>(null);
+  const [firmName, setFirmName] = useState<string>('');
   const [engine, setEngine] = useState<'GEMINI_LIVE' | 'ELEVENLABS'>('GEMINI_LIVE');
   const [stats, setStats] = useState<any>(null);
   const [loadingScenario, setLoadingScenario] = useState(true);
@@ -410,6 +411,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
       setSignedUrl(data.signedUrl);
       setWsUrl(data.wsUrl);
       setVoiceName(data.voiceName);
+      if (typeof data.firmName === 'string') setFirmName(data.firmName);
       sessionUrlConsumedRef.current = false;
       sessionUrlCreatedAtRef.current = Date.now();
       userHungUpRef.current = false;
@@ -1885,6 +1887,7 @@ export function RoleplayClient({ user, isAdmin, moduleId = 'prospeccion' }: Role
         isOpen={isTacticsOpen}
         onClose={() => setIsTacticsOpen(false)}
         moduleId={moduleId}
+        firmName={firmName}
       />
 
       <EvaluatingModal

@@ -38,10 +38,10 @@ export async function validateElevenLabsKey(apiKey: string): Promise<ElevenLabsK
 
 /**
  * Garantiza que la cuenta de ElevenLabs de la agencia tenga un agente Conversational AI
- * listo y configurado ("AACOMSoft Academia PRO").
+ * listo y configurado ("aacomsoft Academia PRO").
  * Si no existe, lo crea automáticamente vía API de ElevenLabs con cero intervención manual.
  */
-export async function getOrProvisionAgencyAgent(agencyId: string, apiKey: string, agencyName = 'AACOM Seguros'): Promise<string | null> {
+export async function getOrProvisionAgencyAgent(agencyId: string, apiKey: string, agencyName = 'la firma patrimonial', isPrimaryAacomAgency = false): Promise<string | null> {
   try {
     const cleanKey = apiKey.trim();
 
@@ -55,9 +55,12 @@ export async function getOrProvisionAgencyAgent(agencyId: string, apiKey: string
     if (listResp.ok) {
       const data = await listResp.json();
       const agents = data.agents || [];
-      const existing = agents.find((a: any) => 
-        a.name === `${agencyName} Academia PRO` || a.name === 'AACOM Academia PRO' || a.name === 'AACOM Simulador PRO' || a.name?.includes('Academia PRO')
-      );
+      const existing =
+        agents.find((a: any) => a.name === `${agencyName} Academia PRO`) ||
+        (isPrimaryAacomAgency
+          ? agents.find((a: any) => a.name === 'AACOM Academia PRO' || a.name === 'AACOM Simulador PRO')
+          : undefined) ||
+        agents.find((a: any) => a.name?.includes('Academia PRO'));
 
       if (existing?.agent_id) {
         await prisma.agency.update({

@@ -1,4 +1,4 @@
-// MOTOR DE GAMIFICACIÓN, NIVELES, PENALIZACIONES Y BENEFICIOS DE AACOMSoft
+// MOTOR DE GAMIFICACIÓN, NIVELES, PENALIZACIONES Y BENEFICIOS DE aacomsoft
 
 export interface LevelInfo {
   level: number;
@@ -23,7 +23,7 @@ export const BADGES_CATALOG = [
   { id: 'maestro_objecion', name: 'Escudo Blindado', desc: 'Superó objeciones complejas con maestría', icon: '🛡️' },
   { id: 'experto_frio', name: 'Cazador Glacial', desc: 'Cerró cita en llamada en frío total', icon: '❄️' },
   { id: 'dia_perfecto', name: 'Racha Imparable', desc: 'Alcanzó el tope diario de 500 XP', icon: '⚡' },
-  { id: 'lobo_aacom', name: 'Lobo de AACOMSoft', desc: 'Alcanzó el Nivel 5 de élite', icon: '👑' }
+  { id: 'lobo_aacom', name: 'Lobo de Élite', desc: 'Alcanzó el Nivel 5 de élite', icon: '👑' }
 ];
 
 export const DEFAULT_BENEFITS: Record<number, string[]> = {
