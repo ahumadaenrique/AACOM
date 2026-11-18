@@ -48,9 +48,16 @@ import {
   Zap,
   Bell,
   FileText,
+  ChevronLeft,
+  ChevronsLeft,
+  ChevronsRight,
+  Loader2,
 } from "lucide-react";
 import {
   getProject200DashboardData,
+  getProject200CrmContactsPage,
+  getAdminProject200ContactsPage,
+  getProject200ContactLogs,
   bulkImportProject200Contacts,
   createProject200Contact,
   updateProject200Contact,
@@ -179,6 +186,137 @@ function buildGoogleCalendarUrl(contact: any, agentName: string) {
   return `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${title}&dates=${fmt(start)}/${fmt(end)}&details=${details}`;
 }
 
+function FastPaginationFooter({
+  page,
+  totalPages,
+  totalCount,
+  pageSize,
+  loading = false,
+  onPageChange,
+}: {
+  page: number;
+  totalPages: number;
+  totalCount: number;
+  pageSize: number;
+  loading?: boolean;
+  onPageChange: (nextPage: number) => void;
+}) {
+  const startIdx = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
+  const endIdx = Math.min(totalCount, page * pageSize);
+
+  const pageNumbers = useMemo(() => {
+    if (totalPages <= 7) {
+      return Array.from({ length: totalPages }, (_, i) => i + 1);
+    }
+    const items: Array<number | "..."> = [1];
+    const start = Math.max(2, page - 1);
+    const end = Math.min(totalPages - 1, page + 1);
+    if (start > 2) items.push("...");
+    for (let p = start; p <= end; p++) items.push(p);
+    if (end < totalPages - 1) items.push("...");
+    items.push(totalPages);
+    return items;
+  }, [page, totalPages]);
+
+  return (
+    <div className="px-4 py-3 bg-slate-50/90 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="flex items-center gap-2 text-xs font-semibold text-slate-600">
+        {loading && <Loader2 className="h-3.5 w-3.5 animate-spin text-indigo-600 shrink-0" />}
+        <span>
+          Mostrando{" "}
+          <strong className="text-slate-900">
+            {startIdx}–{endIdx}
+          </strong>{" "}
+          de <strong className="text-slate-900">{totalCount}</strong> contactos{" "}
+          <span className="text-slate-400">({pageSize} por página)</span>
+        </span>
+      </div>
+
+      <div className="flex flex-wrap items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => onPageChange(1)}
+          disabled={loading || page <= 1}
+          className="h-8 px-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center transition"
+          title="Primera página"
+        >
+          <ChevronsLeft className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => onPageChange(Math.max(1, page - 1))}
+          disabled={loading || page <= 1}
+          className="h-8 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none inline-flex items-center gap-1 text-xs font-bold transition"
+          title="Página anterior"
+        >
+          <ChevronLeft className="h-3.5 w-3.5" />
+          <span className="hidden sm:inline">Anterior</span>
+        </button>
+
+        <div className="flex items-center gap-1">
+          {pageNumbers.map((item, idx) =>
+            item === "..." ? (
+              <span key={`ellipsis-${idx}`} className="px-1.5 text-xs font-bold text-slate-400 select-none">
+                …
+              </span>
+            ) : (
+              <button
+                key={item}
+                type="button"
+                disabled={loading}
+                onClick={() => onPageChange(item)}
+                className={`h-8 min-w-[32px] px-2 rounded-lg text-xs font-black transition ${
+                  item === page
+                    ? "bg-indigo-600 text-white shadow-xs"
+                    : "border border-slate-200 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"
+                }`}
+              >
+                {item}
+              </button>
+            )
+          )}
+        </div>
+
+        <button
+          type="button"
+          onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+          disabled={loading || page >= totalPages}
+          className="h-8 px-2.5 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none inline-flex items-center gap-1 text-xs font-bold transition"
+          title="Página siguiente"
+        >
+          <span className="hidden sm:inline">Siguiente</span>
+          <ChevronRight className="h-3.5 w-3.5" />
+        </button>
+        <button
+          type="button"
+          onClick={() => onPageChange(totalPages)}
+          disabled={loading || page >= totalPages}
+          className="h-8 px-2 rounded-lg border border-slate-200 bg-white text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:pointer-events-none inline-flex items-center justify-center transition"
+          title="Última página"
+        >
+          <ChevronsRight className="h-3.5 w-3.5" />
+        </button>
+
+        {totalPages > 1 && (
+          <select
+            aria-label="Saltar a página"
+            value={page}
+            disabled={loading}
+            onChange={(e) => onPageChange(Number(e.target.value))}
+            className="h-8 ml-1 rounded-lg border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700 focus:border-indigo-500 focus:outline-none"
+          >
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+              <option key={p} value={p}>
+                Pág. {p} / {totalPages}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Proyecto200Client({
   currentUser,
   initialData,
@@ -271,12 +409,30 @@ export default function Proyecto200Client({
     "ALL" | "TODAY" | "WEEK" | "UPCOMING"
   >("ALL");
 
-  // Estado Filtros CRM
+  // Estado Filtros & Paginación 50-en-50 CRM
+  const CRM_PAGE_SIZE = 50;
+  const crmTableTopRef = useRef<HTMLDivElement | null>(null);
+  const crmReqIdRef = useRef(0);
+  const crmPageRef = useRef(1);
+  const crmMountedRef = useRef(false);
+  const prevCrmFilterKeyRef = useRef("ALL|ALL|ALL|");
   const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState<string>("");
   const [filterClassification, setFilterClassification] =
     useState<string>("ALL");
   const [filterProbability, setFilterProbability] = useState<string>("ALL");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
+  const [crmPage, setCrmPage] = useState<number>(1);
+  const [crmPageContacts, setCrmPageContacts] = useState<any[]>(() =>
+    (initialData?.contacts || []).slice(0, 50)
+  );
+  const [crmTotalCount, setCrmTotalCount] = useState<number>(
+    () => (initialData?.contacts || []).length
+  );
+  const [crmTotalPages, setCrmTotalPages] = useState<number>(() =>
+    Math.max(1, Math.ceil(((initialData?.contacts || []).length || 0) / 50))
+  );
+  const [loadingCrmPage, setLoadingCrmPage] = useState<boolean>(false);
 
   // Modal Nuevo / Editar Contacto o Importar Referido de Encuesta
   const [contactModalOpen, setContactModalOpen] = useState<boolean>(false);
@@ -334,9 +490,26 @@ export default function Proyecto200Client({
   const [adminAgendaTimeframe, setAdminAgendaTimeframe] = useState<
     "ALL" | "TODAY" | "WEEK" | "UPCOMING"
   >("ALL");
+  const adminContactsTableTopRef = useRef<HTMLDivElement | null>(null);
+  const adminContactsReqIdRef = useRef(0);
+  const adminContactsPageRef = useRef(1);
+  const adminContactsMountedRef = useRef(false);
+  const prevAdminFilterKeyRef = useRef("ALL|ALL|ALL|ALL|");
   const [adminSearch, setAdminSearch] = useState<string>("");
+  const [debouncedAdminSearch, setDebouncedAdminSearch] = useState<string>("");
   const [adminFilterClass, setAdminFilterClass] = useState<string>("ALL");
   const [adminFilterStatus, setAdminFilterStatus] = useState<string>("ALL");
+  const [adminContactsPage, setAdminContactsPage] = useState<number>(1);
+  const [adminPageContacts, setAdminPageContacts] = useState<any[]>(() =>
+    (initialAdminData?.allContacts || []).slice(0, 50)
+  );
+  const [adminContactsTotalCount, setAdminContactsTotalCount] = useState<number>(
+    () => (initialAdminData?.allContacts || []).length
+  );
+  const [adminContactsTotalPages, setAdminContactsTotalPages] = useState<number>(() =>
+    Math.max(1, Math.ceil(((initialAdminData?.allContacts || []).length || 0) / 50))
+  );
+  const [loadingAdminContactsPage, setLoadingAdminContactsPage] = useState<boolean>(false);
   const [adminSubView, setAdminSubView] = useState<
     "agentes" | "agenda" | "contactos" | "bitacora"
   >("agentes");
@@ -362,6 +535,141 @@ export default function Proyecto200Client({
     }, 5500);
   };
 
+  const fetchCrmPage = async (targetPage: number, opts?: { silent?: boolean }) => {
+    const reqId = ++crmReqIdRef.current;
+    if (!opts?.silent) setLoadingCrmPage(true);
+    try {
+      const res = await getProject200CrmContactsPage({
+        page: targetPage,
+        pageSize: CRM_PAGE_SIZE,
+        search: debouncedSearchQuery,
+        classification: filterClassification,
+        closingProbability: filterProbability,
+        status: filterStatus,
+      });
+      if (reqId !== crmReqIdRef.current) return;
+      if (res?.success) {
+        setCrmPageContacts(res.contacts || []);
+        setCrmTotalCount(res.totalCount ?? 0);
+        setCrmTotalPages(res.totalPages ?? 1);
+        if (res.page && res.page !== crmPageRef.current) {
+          crmPageRef.current = res.page;
+          setCrmPage(res.page);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching CRM page:", err);
+    } finally {
+      if (reqId === crmReqIdRef.current && !opts?.silent) {
+        setLoadingCrmPage(false);
+      }
+    }
+  };
+
+  const fetchAdminContactsPage = async (targetPage: number, opts?: { silent?: boolean }) => {
+    if (!isAdmin) return;
+    const reqId = ++adminContactsReqIdRef.current;
+    if (!opts?.silent) setLoadingAdminContactsPage(true);
+    try {
+      const res = await getAdminProject200ContactsPage({
+        page: targetPage,
+        pageSize: CRM_PAGE_SIZE,
+        agentId: adminSelectedAgentId,
+        supervisorId: adminSupervisorFilter,
+        classification: adminFilterClass,
+        status: adminFilterStatus,
+        search: debouncedAdminSearch,
+      });
+      if (reqId !== adminContactsReqIdRef.current) return;
+      if (res?.success) {
+        setAdminPageContacts(res.contacts || []);
+        setAdminContactsTotalCount(res.totalCount ?? 0);
+        setAdminContactsTotalPages(res.totalPages ?? 1);
+        if (res.page && res.page !== adminContactsPageRef.current) {
+          adminContactsPageRef.current = res.page;
+          setAdminContactsPage(res.page);
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching admin contacts page:", err);
+    } finally {
+      if (reqId === adminContactsReqIdRef.current && !opts?.silent) {
+        setLoadingAdminContactsPage(false);
+      }
+    }
+  };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedAdminSearch(adminSearch);
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [adminSearch]);
+
+  useEffect(() => {
+    crmPageRef.current = crmPage;
+  }, [crmPage]);
+
+  useEffect(() => {
+    adminContactsPageRef.current = adminContactsPage;
+  }, [adminContactsPage]);
+
+  useEffect(() => {
+    const filterKey = `${filterClassification}|${filterProbability}|${filterStatus}|${debouncedSearchQuery}`;
+    const filtersChanged = prevCrmFilterKeyRef.current !== filterKey;
+    prevCrmFilterKeyRef.current = filterKey;
+
+    if (!crmMountedRef.current) {
+      crmMountedRef.current = true;
+      return;
+    }
+
+    if (filtersChanged && crmPage !== 1) {
+      setCrmPage(1);
+      return;
+    }
+
+    fetchCrmPage(crmPage);
+  }, [crmPage, filterClassification, filterProbability, filterStatus, debouncedSearchQuery]);
+
+  useEffect(() => {
+    if (!isAdmin || activeTab !== "admin" || adminSubView !== "contactos") return;
+    const filterKey = `${adminSelectedAgentId}|${adminSupervisorFilter}|${adminFilterClass}|${adminFilterStatus}|${debouncedAdminSearch}`;
+    const filtersChanged = prevAdminFilterKeyRef.current !== filterKey;
+    prevAdminFilterKeyRef.current = filterKey;
+
+    if (!adminContactsMountedRef.current && adminContactsPage === 1 && !filtersChanged && hiddenAgentIds.length === 0) {
+      adminContactsMountedRef.current = true;
+      return;
+    }
+    adminContactsMountedRef.current = true;
+
+    if (filtersChanged && adminContactsPage !== 1) {
+      setAdminContactsPage(1);
+      return;
+    }
+
+    fetchAdminContactsPage(adminContactsPage);
+  }, [
+    isAdmin,
+    activeTab,
+    adminSubView,
+    adminContactsPage,
+    adminSelectedAgentId,
+    adminSupervisorFilter,
+    adminFilterClass,
+    adminFilterStatus,
+    debouncedAdminSearch,
+    hiddenAgentIds,
+  ]);
+
   const refreshAllData = async () => {
     setIsRefreshing(true);
     try {
@@ -381,6 +689,10 @@ export default function Proyecto200Client({
           setHiddenAgentIds(adm.hiddenAgentIds);
         }
       }
+      await Promise.all([
+        fetchCrmPage(crmPageRef.current, { silent: true }),
+        isAdmin ? fetchAdminContactsPage(adminContactsPageRef.current, { silent: true }) : Promise.resolve(),
+      ]);
     } catch (err) {
       console.error("Error refreshing Proyecto 200:", err);
     } finally {
@@ -488,41 +800,6 @@ export default function Proyecto200Client({
     const rem = (secs % 60).toString().padStart(2, "0");
     return `${mins}:${rem}`;
   };
-
-  // Filtrado de contactos en el CRM
-  const filteredCrmContacts = useMemo(() => {
-    return contacts.filter((c) => {
-      if (
-        filterClassification !== "ALL" &&
-        c.classification !== filterClassification
-      ) {
-        return false;
-      }
-      if (
-        filterProbability !== "ALL" &&
-        c.closingProbability !== filterProbability
-      ) {
-        return false;
-      }
-      if (filterStatus !== "ALL" && c.status !== filterStatus) {
-        return false;
-      }
-      if (searchQuery.trim()) {
-        const q = searchQuery.toLowerCase();
-        const matchName = (c.fullName || "").toLowerCase().includes(q);
-        const matchPhone = (c.phone || "").includes(q);
-        const matchRel = (c.relationship || "").toLowerCase().includes(q);
-        if (!matchName && !matchPhone && !matchRel) return false;
-      }
-      return true;
-    });
-  }, [
-    contacts,
-    filterClassification,
-    filterProbability,
-    filterStatus,
-    searchQuery,
-  ]);
 
   // Descargar Plantilla Oficial Excel (.xlsx) o CSV (.csv)
   const handleDownloadTemplate = (format: "xlsx" | "csv" = "xlsx") => {
@@ -1494,6 +1771,18 @@ export default function Proyecto200Client({
       setDrawerScheduledDate(computePresetDateString("15D"));
     }
     setDrawerScheduledTime("10:00");
+
+    if ((contact._count?.logs ?? 0) > (contact.logs?.length ?? 0)) {
+      getProject200ContactLogs(contact.id)
+        .then((res) => {
+          if (res?.success && Array.isArray(res.logs)) {
+            setHistoryContact((prev: any) =>
+              prev && prev.id === contact.id ? { ...prev, logs: res.logs } : prev
+            );
+          }
+        })
+        .catch(() => {});
+    }
   };
 
   // Guardar nota, recordatorio o cita directamente desde el Expediente 360° en el CRM
@@ -2490,7 +2779,7 @@ export default function Proyecto200Client({
                           }
                           className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-black shrink-0 transition"
                         >
-                          📋 Ver Bitácora ({currentPilotoContact.logs?.length || 0})
+                          📋 Ver Bitácora ({currentPilotoContact._count?.logs ?? currentPilotoContact.logs?.length ?? 0})
                         </button>
                       </div>
                     )}
@@ -2540,7 +2829,7 @@ export default function Proyecto200Client({
                             className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-900 border border-slate-300 transition"
                           >
                             <History className="h-3 w-3" /> Bitácora 360° (
-                            {currentPilotoContact.logs?.length || 0})
+                            {currentPilotoContact._count?.logs ?? currentPilotoContact.logs?.length ?? 0})
                           </button>
                         </div>
 
@@ -3592,7 +3881,13 @@ export default function Proyecto200Client({
           </div>
 
           {/* Tabla Viva CRM */}
-          <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+          <div ref={crmTableTopRef} className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden relative">
+            {loadingCrmPage && (
+              <div className="px-4 py-2 bg-indigo-50/90 border-b border-indigo-100 flex items-center gap-2 text-xs font-bold text-indigo-700">
+                <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                <span>Cargando página {crmPage} (50 por página)...</span>
+              </div>
+            )}
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -3610,7 +3905,7 @@ export default function Proyecto200Client({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 text-sm">
-                  {filteredCrmContacts.length === 0 ? (
+                  {crmPageContacts.length === 0 ? (
                     <tr>
                       <td
                         colSpan={8}
@@ -3620,7 +3915,7 @@ export default function Proyecto200Client({
                       </td>
                     </tr>
                   ) : (
-                    filteredCrmContacts.map((contact) => (
+                    crmPageContacts.map((contact) => (
                       <tr
                         key={contact.id}
                         className="hover:bg-slate-50/80 transition"
@@ -3645,7 +3940,7 @@ export default function Proyecto200Client({
                                 {contact.fullName}
                               </span>
                               <span className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-700 text-[10px] font-black">
-                                📋 {contact.logs?.length || 0}
+                                📋 {contact._count?.logs ?? contact.logs?.length ?? 0}
                               </span>
                             </div>
                             <div className="text-xs text-slate-500 font-mono flex items-center gap-2 mt-0.5">
@@ -3669,6 +3964,8 @@ export default function Proyecto200Client({
                           <div className="text-[11px] text-slate-400">
                             {contact.source === "ENCUESTA_SATISFACCION"
                               ? "⭐ Encuesta Satisfacción"
+                              : contact.source === "REFERIDO_25_PUNTOS"
+                              ? "🎯 Referido (25 Puntos)"
                               : contact.source === "EXCEL"
                               ? "📥 Plantilla Excel"
                               : "✍️ Registro Directo"}
@@ -3861,6 +4158,17 @@ export default function Proyecto200Client({
                 </tbody>
               </table>
             </div>
+            <FastPaginationFooter
+              page={crmPage}
+              totalPages={crmTotalPages}
+              totalCount={crmTotalCount}
+              pageSize={CRM_PAGE_SIZE}
+              loading={loadingCrmPage}
+              onPageChange={(nextPage) => {
+                setCrmPage(nextPage);
+                crmTableTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+            />
           </div>
         </div>
       )}
@@ -4370,7 +4678,11 @@ export default function Proyecto200Client({
                       : "bg-white/10 text-white hover:bg-white/20"
                   }`}
                 >
-                  Detalle de Contactos ({filteredAdminContacts.length})
+                  Detalle de Contactos (
+                  {adminSubView === "contactos"
+                    ? adminContactsTotalCount
+                    : filteredAdminContacts.length}
+                  )
                 </button>
                 <button
                   type="button"
@@ -4643,18 +4955,19 @@ export default function Proyecto200Client({
                       ? `🟠 En Reserva (<10 días) · Urgente +${100 - qualifiedCount} ref.`
                       : `🔴 ¡Peligro de Paro! Solo ${qualifiedCount} calificados`;
 
-                    // Porcentajes sobre la meta de 200 para la barra de composición de contactos + referidos
+                    // Porcentajes sobre la meta de 200 (o inventario real si supera 200) para la barra de composición
+                    const barDenom = Math.max(200, ag.totalContacts || 0);
                     const baseBarPct = Math.min(
                       100,
-                      Math.round((baseCount / 200) * 100)
+                      Math.round((baseCount / barDenom) * 100)
                     );
                     const refBarPct = Math.min(
                       100 - baseBarPct,
-                      Math.round((referralsCount / 200) * 100)
+                      Math.round((referralsCount / barDenom) * 100)
                     );
                     const disqBarPct = Math.min(
                       100 - baseBarPct - refBarPct,
-                      Math.round((disqualifiedCount / 200) * 100)
+                      Math.round((disqualifiedCount / barDenom) * 100)
                     );
 
                     const totalLoggedTouches =
@@ -4680,7 +4993,7 @@ export default function Proyecto200Client({
                               </h4>
                               {ag.hasReached200 && (
                                 <span className="px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-black">
-                                  200/200
+                                  {ag.totalContacts}/200
                                 </span>
                               )}
                             </div>
@@ -5147,7 +5460,7 @@ export default function Proyecto200Client({
                             >
                               <History className="h-3.5 w-3.5" /> Abrir
                               Expediente 360° / Nota Coaching (
-                              {c.logs?.length || 0})
+                              {c._count?.logs ?? c.logs?.length ?? 0})
                             </button>
                           </div>
                         </div>
@@ -5218,7 +5531,13 @@ export default function Proyecto200Client({
                 </div>
               </div>
 
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+              <div ref={adminContactsTableTopRef} className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+                {loadingAdminContactsPage && (
+                  <div className="px-4 py-2 bg-indigo-50/90 border-b border-indigo-100 flex items-center gap-2 text-xs font-bold text-indigo-700">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
+                    <span>Cargando página {adminContactsPage} (50 por página)...</span>
+                  </div>
+                )}
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse">
                     <thead>
@@ -5234,7 +5553,7 @@ export default function Proyecto200Client({
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 text-sm">
-                      {filteredAdminContacts.length === 0 ? (
+                      {adminPageContacts.length === 0 ? (
                         <tr>
                           <td
                             colSpan={6}
@@ -5244,7 +5563,7 @@ export default function Proyecto200Client({
                           </td>
                         </tr>
                       ) : (
-                        filteredAdminContacts.map((c: any) => (
+                        adminPageContacts.map((c: any) => (
                           <tr
                             key={c.id}
                             className="hover:bg-slate-50/80 transition"
@@ -5266,7 +5585,7 @@ export default function Proyecto200Client({
                                     {c.fullName}
                                   </span>
                                   <span className="px-1.5 py-0.5 rounded bg-indigo-50 text-indigo-700 text-[10px] font-black">
-                                    📋 {c.logs?.length || 0}
+                                    📋 {c._count?.logs ?? c.logs?.length ?? 0}
                                   </span>
                                 </div>
                                 <div className="text-xs text-slate-500 font-mono">
@@ -5346,6 +5665,17 @@ export default function Proyecto200Client({
                     </tbody>
                   </table>
                 </div>
+                <FastPaginationFooter
+                  page={adminContactsPage}
+                  totalPages={adminContactsTotalPages}
+                  totalCount={adminContactsTotalCount}
+                  pageSize={CRM_PAGE_SIZE}
+                  loading={loadingAdminContactsPage}
+                  onPageChange={(nextPage) => {
+                    setAdminContactsPage(nextPage);
+                    adminContactsTableTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }}
+                />
               </div>
             </div>
           )}

@@ -247,9 +247,12 @@ export async function getProject200DashboardData() {
       prisma.project200Contact.findMany({
         where: { userId: user.id },
         include: {
+          _count: {
+            select: { logs: true },
+          },
           logs: {
             orderBy: { createdAt: "desc" },
-            take: 50,
+            take: 5,
           },
         },
         orderBy: [
@@ -327,6 +330,7 @@ export async function getProject200DashboardData() {
       (c) =>
         c.classification !== "DESCALIFICADO" &&
         (c.source === "ENCUESTA_SATISFACCION" ||
+          c.source === "REFERIDO_25_PUNTOS" ||
           c.source === "REFERIDO_DIRECTO" ||
           c.classification === "REFERIDOR" ||
           (c.relationship || "").toLowerCase().includes("referid"))
@@ -1286,9 +1290,12 @@ export async function getAdminProject200Analytics() {
           user: {
             select: { id: true, name: true, email: true },
           },
+          _count: {
+            select: { logs: true },
+          },
           logs: {
             orderBy: { createdAt: "desc" },
-            take: 30,
+            take: 5,
           },
         },
         orderBy: [{ priorityScore: "desc" }, { updatedAt: "desc" }],
@@ -1484,6 +1491,7 @@ export async function getAdminProject200Analytics() {
         const isReferralOrigin =
           c.classification !== "DESCALIFICADO" &&
           (c.source === "ENCUESTA_SATISFACCION" ||
+            c.source === "REFERIDO_25_PUNTOS" ||
             c.source === "REFERIDO_DIRECTO" ||
             c.classification === "REFERIDOR" ||
             (c.relationship || "").toLowerCase().includes("referid"));
@@ -1661,6 +1669,257 @@ export async function toggleProject200AgentTracking(
     return {
       success: false,
       error: error.message || "Error al actualizar visibilidad del agente.",
+    };
+  }
+}
+
+export async function getProject200CrmContactsPage(params: {
+  page?: number;
+  pageSize?: number;
+  search?: string;
+  classification?: string;
+  closingProbability?: string;
+  status?: string;
+}) {
+  try {
+    const user = await getAuthenticatedUser();
+    const pageSize = Math.min(100, Math.max(10, Number(params?.pageSize) || 50));
+
+    const where: any = { userId: user.id };
+    if (params?.classification && params.classification !== "ALL") {
+      where.classification = params.classification;
+    }
+    if (params?.closingProbability && params.closingProbability !== "ALL") {
+      where.closingProbability = params.closingProbability;
+    }
+    if (params?.status && params.status !== "ALL") {
+      where.status = params.status;
+    }
+
+    const q = String(params?.search || "").trim();
+    if (q) {
+      where.OR = [
+        { fullName: { contains: q, mode: "insensitive" } },
+        { phone: { contains: q, mode: "insensitive" } },
+        { relationship: { contains: q, mode: "insensitive" } },
+        { notes: { contains: q, mode: "insensitive" } },
+      ];
+    }
+
+    const totalCount = await prisma.project200Contact.count({ where });
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const safePage = Math.min(Math.max(1, Math.floor(Number(params?.page) || 1)), totalPages);
+
+    const contacts = await prisma.project200Contact.findMany({
+      where,
+      include: {
+        _count: {
+          select: { logs: true },
+        },
+        logs: {
+          orderBy: { createdAt: "desc" },
+          take: 5,
+        },
+      },
+      orderBy: [{ priorityScore: "desc" }, { createdAt: "desc" }],
+      skip: (safePage - 1) * pageSize,
+      take: pageSize,
+    });
+
+    return {
+      success: true,
+      contacts,
+      totalCount,
+      page: safePage,
+      pageSize,
+      totalPages,
+    };
+  } catch (error: any) {
+    console.error("Error in getProject200CrmContactsPage:", error);
+    return {
+      success: false,
+      error: error.message || "Error al paginar contactos del CRM.",
+      contacts: [],
+      totalCount: 0,
+      page: 1,
+      pageSize: 50,
+      totalPages: 1,
+    };
+  }
+}
+
+export async function getAdminProject200ContactsPage(params: {
+  page?: number;
+  pageSize?: number;
+  agentId?: string;
+  supervisorId?: string;
+  classification?: string;
+  status?: string;
+  search?: string;
+}) {
+  try {
+    const user = await getAuthenticatedUser();
+    const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+    if (!isAdmin) {
+      return {
+        success: false,
+        error: "Acceso restringido a administradores de promotoría.",
+        contacts: [],
+        totalCount: 0,
+        page: 1,
+        pageSize: 50,
+        totalPages: 1,
+      };
+    }
+
+    const effectiveAgencyId = user.agencyId || "aacom";
+    const pageSize = Math.min(100, Math.max(10, Number(params?.pageSize) || 50));
+    const hiddenSettingKey = `proyecto200_hidden_agents_${effectiveAgencyId}`;
+
+    const [hiddenSetting, agencyAgents] = await Promise.all([
+      prisma.setting.findUnique({ where: { key: hiddenSettingKey } }),
+      prisma.user.findMany({
+        where: {
+          agencyId: effectiveAgencyId,
+          active: true,
+          role: { in: ["AGENTE", "ADMIN", "SUPER_ADMIN"] },
+        },
+        select: { id: true, reportsToId: true },
+      }),
+    ]);
+
+    let hiddenAgentIds: string[] = [];
+    if (hiddenSetting?.value) {
+      try {
+        const parsed = JSON.parse(hiddenSetting.value);
+        if (Array.isArray(parsed)) {
+          hiddenAgentIds = parsed.map((id) => String(id));
+        }
+      } catch {
+        hiddenAgentIds = [];
+      }
+    }
+
+    const where: any = { agencyId: effectiveAgencyId };
+
+    if (params?.agentId && params.agentId !== "ALL") {
+      where.userId = params.agentId;
+    } else {
+      let eligibleIds = agencyAgents
+        .filter((ag) => !hiddenAgentIds.includes(ag.id))
+        .filter((ag) => {
+          if (params?.supervisorId && params.supervisorId !== "ALL") {
+            return ag.id === params.supervisorId || ag.reportsToId === params.supervisorId;
+          }
+          return true;
+        })
+        .map((ag) => ag.id);
+
+      if (params?.supervisorId && params.supervisorId !== "ALL") {
+        where.userId = { in: eligibleIds };
+      } else if (hiddenAgentIds.length > 0) {
+        where.userId = { notIn: hiddenAgentIds };
+      }
+    }
+
+    if (params?.classification && params.classification !== "ALL") {
+      where.classification = params.classification;
+    }
+    if (params?.status && params.status !== "ALL") {
+      where.status = params.status;
+    }
+
+    const q = String(params?.search || "").trim();
+    if (q) {
+      where.OR = [
+        { fullName: { contains: q, mode: "insensitive" } },
+        { phone: { contains: q, mode: "insensitive" } },
+        { relationship: { contains: q, mode: "insensitive" } },
+        { notes: { contains: q, mode: "insensitive" } },
+        { user: { name: { contains: q, mode: "insensitive" } } },
+        { user: { email: { contains: q, mode: "insensitive" } } },
+      ];
+    }
+
+    const totalCount = await prisma.project200Contact.count({ where });
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+    const safePage = Math.min(Math.max(1, Math.floor(Number(params?.page) || 1)), totalPages);
+
+    const contacts = await prisma.project200Contact.findMany({
+      where,
+      include: {
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+        _count: {
+          select: { logs: true },
+        },
+        logs: {
+          orderBy: { createdAt: "desc" },
+          take: 5,
+        },
+      },
+      orderBy: [{ priorityScore: "desc" }, { updatedAt: "desc" }],
+      skip: (safePage - 1) * pageSize,
+      take: pageSize,
+    });
+
+    return {
+      success: true,
+      contacts,
+      totalCount,
+      page: safePage,
+      pageSize,
+      totalPages,
+    };
+  } catch (error: any) {
+    console.error("Error in getAdminProject200ContactsPage:", error);
+    return {
+      success: false,
+      error: error.message || "Error al paginar detalle de contactos.",
+      contacts: [],
+      totalCount: 0,
+      page: 1,
+      pageSize: 50,
+      totalPages: 1,
+    };
+  }
+}
+
+export async function getProject200ContactLogs(contactId: string) {
+  try {
+    const user = await getAuthenticatedUser();
+    const effectiveAgencyId = user.agencyId || "aacom";
+    const isAdmin = user.role === "ADMIN" || user.role === "SUPER_ADMIN";
+
+    const contact = await prisma.project200Contact.findUnique({
+      where: { id: contactId },
+      select: { id: true, userId: true, agencyId: true },
+    });
+
+    if (!contact) {
+      return { success: false, error: "Contacto no encontrado.", logs: [] };
+    }
+
+    const isOwner = contact.userId === user.id;
+    const isAgencyAdmin = isAdmin && (contact.agencyId || "aacom") === effectiveAgencyId;
+    if (!isOwner && !isAgencyAdmin) {
+      return { success: false, error: "No tienes permiso para ver esta bitácora.", logs: [] };
+    }
+
+    const logs = await prisma.project200Log.findMany({
+      where: { contactId },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+
+    return { success: true, logs };
+  } catch (error: any) {
+    console.error("Error in getProject200ContactLogs:", error);
+    return {
+      success: false,
+      error: error.message || "Error al cargar la bitácora del contacto.",
+      logs: [],
     };
   }
 }
