@@ -61,7 +61,7 @@ model Agency {
   allowReferidores      Boolean              @default(false)
   allowRoleplaySimulator Boolean?            @default(false)
   allowAcademyModule    Boolean              @default(true)
-  allowProyecto200Module Boolean             @default(false)
+  allowProyecto200Module Boolean             @default(true)
   allowCorporateEmailModule Boolean          @default(false)
   shareAacomAcademyVideos Boolean            @default(false)
   maxAdmins             Int                  @default(2)
@@ -507,6 +507,7 @@ model ActivityLog {
   activityName String
   points       Int
   prospectName String?
+  detailsJson  Json?
   dateStr      String
   createdAt    DateTime @default(now())
   agencyId     String?
@@ -1025,20 +1026,22 @@ model SatisfactionSurvey {
 }
 
 model SurveyReferral {
-  id        String             @id @default(cuid())
-  surveyId  String
-  userId    String
-  agencyId  String?
-  fullName  String
-  phone     String
-  notes     String?
-  status    String             @default("NO_CONTACTADO")
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
+  id                  String              @id @default(cuid())
+  surveyId            String?
+  userId              String
+  agencyId            String?
+  fullName            String
+  phone               String
+  notes               String?
+  status              String              @default("NO_CONTACTADO")
+  source              String              @default("ENCUESTA_SATISFACCION")
+  project200ContactId String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
 
-  survey    SatisfactionSurvey @relation(fields: [surveyId], references: [id], onDelete: Cascade)
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  agency    Agency?            @relation(fields: [agencyId], references: [id], onDelete: SetNull)
+  survey    SatisfactionSurvey? @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agency    Agency?             @relation(fields: [agencyId], references: [id], onDelete: SetNull)
 
   @@index([surveyId])
   @@index([userId])

@@ -292,6 +292,7 @@ export async function getProject200DashboardData() {
 
     const pendingSurveyReferrals = surveyReferrals.filter(
       (sr) =>
+        !sr.project200ContactId &&
         !linkedReferralIds.has(sr.id) &&
         !existingPhones.has(normalizePhone(sr.phone))
     );
@@ -760,7 +761,7 @@ export async function createProject200Contact(input: {
       await prisma.surveyReferral
         .update({
           where: { id: input.surveyReferralId },
-          data: { status: "EN_PROYECTO_200" },
+          data: { project200ContactId: newContact.id },
         })
         .catch(() => {});
     }

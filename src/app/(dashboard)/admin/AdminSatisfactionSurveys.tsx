@@ -537,8 +537,21 @@ export default function AdminSatisfactionSurveys() {
                               </div>
                             </td>
                             <td className="py-3 px-4 text-xs font-semibold text-slate-600 dark:text-zinc-400">
-                              <div>{ref.survey?.intervieweeName || "Entrevista"}</div>
-                              <div className="text-[10px] text-slate-400">
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                {ref.source === "ACTIVIDAD_25_PUNTOS" ? (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800">
+                                    🎯 Actividad 25 Puntos
+                                  </span>
+                                ) : (
+                                  <span>{ref.survey?.intervieweeName || "Entrevista"}</span>
+                                )}
+                                {ref.inProject200 && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-950/40 dark:text-orange-300 dark:border-orange-800">
+                                    🔥 En Proyecto 200
+                                  </span>
+                                )}
+                              </div>
+                              <div className="text-[10px] text-slate-400 mt-0.5">
                                 {new Date(ref.createdAt).toLocaleDateString("es-MX", {
                                   day: "2-digit",
                                   month: "short",

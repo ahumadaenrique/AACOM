@@ -1325,6 +1325,20 @@ async function injectColumns() {
         END IF;
       END $$;
     `);
+
+    await client.query(`
+      ALTER TABLE "ActivityLog" ADD COLUMN IF NOT EXISTS "detailsJson" JSONB;
+      ALTER TABLE "SurveyReferral" ALTER COLUMN "surveyId" DROP NOT NULL;
+      ALTER TABLE "SurveyReferral" ADD COLUMN IF NOT EXISTS "source" TEXT NOT NULL DEFAULT 'ENCUESTA_SATISFACCION';
+      ALTER TABLE "SurveyReferral" ADD COLUMN IF NOT EXISTS "project200ContactId" TEXT;
+      ALTER TABLE "Agency" ALTER COLUMN "allowProyecto200Module" SET DEFAULT true;
+    `);
+    const p200MandatoryRes = await client.query(`SELECT "value" FROM "Setting" WHERE "key" = 'proyecto_200_all_agencies_mandatory_v2';`);
+    if (p200MandatoryRes.rows.length === 0) {
+      await client.query(`UPDATE "Agency" SET "allowProyecto200Module" = true;`);
+      await client.query(`INSERT INTO "Setting" ("key", "value") VALUES ('proyecto_200_all_agencies_mandatory_v2', 'true') ON CONFLICT ("key") DO UPDATE SET "value" = 'true';`);
+      console.log('Enabled allowProyecto200Module = true for all agencies.');
+    }
   } catch (error) {
     console.warn("⚠️  inject_columns: Could not connect to DB or columns may already exist. Continuing build...");
     console.warn(error.message || error);

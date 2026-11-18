@@ -4,7 +4,18 @@ import { appendToSheet } from "@/lib/google-sheets";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { auth } from "@/auth";
-import { SALES_ACTIVITIES } from "@/lib/constants";
+import {
+    ACTIVITY_CATALOG_SETTING_PREFIX,
+    ISSUED_POLICY_RAMOS,
+    SALES_ACTIVITIES,
+    getDefaultSalesActivities,
+    validateCustomActivityCatalog,
+    type ActivityLogDetails,
+    type SalesActivityItem,
+} from "@/lib/constants";
+import { getAgencyActivityCatalogById, getAgencyEditorCatalogById } from "@/lib/activityCatalogServer";
+import { normalizePhone10, syncReferralToProject200AndUnifiedBase } from "@/lib/referralSync";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import webpush from "web-push";
@@ -1668,7 +1679,19 @@ export async function acceptTermsAndConditions(email: string) {
     }
 }
 
-export async function saveActivityLogEntry(activityId: string, prospectName?: string) {
+export async function saveActivityLogEntry(
+    activityId: string,
+    prospectName?: string,
+    extra?: {
+        firstName?: string;
+        lastName?: string;
+        phone?: string;
+        notes?: string;
+        contractor?: string;
+        ramo?: string;
+        indicativePremium?: number;
+    }
+) {
     const session = await auth();
 
     if (!session?.user?.email) {
@@ -1685,14 +1708,98 @@ export async function saveActivityLogEntry(activityId: string, prospectName?: st
         return { success: false, message: "Usuario no encontrado" };
     }
 
-    const activity = SALES_ACTIVITIES.find(a => a.id === activityId);
+    const impersonateId = user.role === "SUPER_ADMIN" ? cookies().get("impersonateAgencyId")?.value : undefined;
+    const effectiveAgencyId = ((impersonateId || (session?.user as any)?.agencyId || user?.agencyId || "aacom") as string);
+    const agencyCatalog = await getAgencyActivityCatalogById(effectiveAgencyId);
+
+    const activity = agencyCatalog.find(a => a.id === activityId);
     if (!activity) {
-        return { success: false, message: "Actividad no vÃ¡lida" };
+        return { success: false, message: "Actividad no válida o deshabilitada en tu promotoría." };
     }
 
-    // Validation: prospectName is mandatory for 'Cita agendada' (ID '2') or 'Cita Efectiva' (ID '3')
-    if ((activityId === '2' || activityId === '3') && !prospectName?.trim()) {
-        return { success: false, message: "El nombre del prospecto es obligatorio para citas iniciales/efectivas." };
+    let finalProspectName: string | null = prospectName?.trim() || null;
+    let detailsJson: Prisma.InputJsonValue | undefined;
+    let sentToProject200 = false;
+
+    if (activity.captureType === "PROSPECT_NAME") {
+        if (!finalProspectName) {
+            return { success: false, message: "El nombre del prospecto es obligatorio para citas iniciales/efectivas." };
+        }
+    } else if (activity.captureType === "FULL_NAME") {
+        const firstName = String(extra?.firstName || "").trim();
+        const lastName = String(extra?.lastName || "").trim();
+        if (!firstName || !lastName) {
+            return { success: false, message: "El nombre y apellido de la persona que visitaste son obligatorios." };
+        }
+        finalProspectName = `${firstName} ${lastName}`;
+        const details: ActivityLogDetails = {
+            kind: "CLOSING_APPOINTMENT",
+            firstName,
+            lastName,
+            fullName: finalProspectName,
+        };
+        detailsJson = details as unknown as Prisma.InputJsonValue;
+    } else if (activity.captureType === "REFERRAL_P200") {
+        const firstName = String(extra?.firstName || "").trim();
+        const lastName = String(extra?.lastName || "").trim();
+        const cleanPhone = normalizePhone10(extra?.phone);
+        const notes = String(extra?.notes || "").trim();
+
+        if (!firstName || !lastName) {
+            return { success: false, message: "El nombre y apellido del referido son obligatorios." };
+        }
+        if (cleanPhone.length !== 10) {
+            return { success: false, message: "El teléfono del referido es obligatorio y debe tener 10 dígitos válidos." };
+        }
+        if (!notes) {
+            return { success: false, message: "Los comentarios / información del referido son obligatorios." };
+        }
+
+        finalProspectName = `${firstName} ${lastName}`;
+        const syncRes = await syncReferralToProject200AndUnifiedBase({
+            userId: user.id,
+            agencyId: effectiveAgencyId,
+            fullName: finalProspectName,
+            phone: cleanPhone,
+            notes,
+            source: "REFERIDO_25_PUNTOS",
+        });
+        sentToProject200 = true;
+
+        const details: ActivityLogDetails = {
+            kind: "REFERRAL",
+            firstName,
+            lastName,
+            fullName: finalProspectName,
+            phone: cleanPhone,
+            notes,
+            project200ContactId: syncRes.contactId,
+        };
+        detailsJson = details as unknown as Prisma.InputJsonValue;
+    } else if (activity.captureType === "ISSUED_POLICY") {
+        const contractor = String(extra?.contractor || prospectName || "").trim();
+        const ramo = String(extra?.ramo || "").trim();
+        const indicativePremium = Number(extra?.indicativePremium) || 0;
+
+        if (!contractor) {
+            return { success: false, message: "El nombre del contratante es obligatorio." };
+        }
+        if (!ramo || !ISSUED_POLICY_RAMOS.includes(ramo as any)) {
+            return { success: false, message: "Selecciona un ramo válido para la póliza emitida." };
+        }
+        if (indicativePremium <= 0) {
+            return { success: false, message: "La prima aproximada debe ser mayor a $0." };
+        }
+
+        finalProspectName = contractor;
+        const details: ActivityLogDetails = {
+            kind: "ISSUED_POLICY",
+            contractor,
+            ramo,
+            indicativePremium,
+            isIndicativeOnly: true,
+        };
+        detailsJson = details as unknown as Prisma.InputJsonValue;
     }
 
     // Calculate Mexico City date YYYY-MM-DD
@@ -1702,11 +1809,12 @@ export async function saveActivityLogEntry(activityId: string, prospectName?: st
         const log = await prisma.activityLog.create({
             data: {
                 userId: user.id,
-                agencyId: ((session?.user?.agencyId || user?.agencyId) as string),
+                agencyId: effectiveAgencyId,
                 activityId,
                 activityName: activity.name,
                 points: activity.value,
-                prospectName: prospectName?.trim() || null,
+                prospectName: finalProspectName,
+                ...(detailsJson ? { detailsJson } : {}),
                 dateStr,
             }
         });
@@ -1714,7 +1822,18 @@ export async function saveActivityLogEntry(activityId: string, prospectName?: st
         revalidatePath('/activity');
         revalidatePath('/admin');
         revalidatePath('/');
-        return { success: true, message: `Actividad registrada: +${activity.value} pts`, log };
+        if (sentToProject200) {
+            revalidatePath('/proyecto-200');
+            revalidatePath('/encuesta-satisfaccion');
+        }
+        return {
+            success: true,
+            message: sentToProject200
+                ? `Actividad registrada (+${activity.value} pts) y referido enviado a Proyecto 200`
+                : `Actividad registrada: +${activity.value} pts`,
+            sentToProject200,
+            log,
+        };
     } catch (error: any) {
         console.error("Error saving activity log:", error);
         return { success: false, message: error.message || "Error al registrar la actividad" };
@@ -1765,7 +1884,7 @@ export async function getDailyActivitySummary() {
     const session = await auth();
 
     if (!session?.user?.email) {
-        return { success: false, message: "No autenticado", logs: [], totalPoints: 0, remainingPoints: 25 };
+        return { success: false, message: "No autenticado", logs: [], activities: getDefaultSalesActivities(), totalPoints: 0, remainingPoints: 25 };
     }
 
     try {
@@ -1774,8 +1893,12 @@ export async function getDailyActivitySummary() {
         });
 
         if (!user) {
-            return { success: false, message: "Usuario no encontrado", logs: [], totalPoints: 0, remainingPoints: 25 };
+            return { success: false, message: "Usuario no encontrado", logs: [], activities: getDefaultSalesActivities(), totalPoints: 0, remainingPoints: 25 };
         }
+
+        const impersonateId = user.role === "SUPER_ADMIN" ? cookies().get("impersonateAgencyId")?.value : undefined;
+        const effectiveAgencyId = ((impersonateId || (session?.user as any)?.agencyId || user?.agencyId || "aacom") as string);
+        const activities = await getAgencyActivityCatalogById(effectiveAgencyId);
 
         const dateStr = new Date().toLocaleDateString('en-CA', { timeZone: 'America/Mexico_City' });
 
@@ -1810,19 +1933,21 @@ export async function getDailyActivitySummary() {
             return acc;
         }, {} as Record<string, number>);
 
+        const targetPoints = user.role === "REFERIDOR" ? 15 : 25;
         const totalPoints = logs.reduce((acc, log) => acc + log.points, 0);
-        const remainingPoints = Math.max(0, 25 - totalPoints);
+        const remainingPoints = Math.max(0, targetPoints - totalPoints);
 
         return {
             success: true,
             logs,
             plannedGoals,
+            activities,
             totalPoints,
             remainingPoints,
         };
     } catch (error: any) {
         console.error("Error fetching daily summary:", error);
-        return { success: false, message: error.message, logs: [], plannedGoals: {}, totalPoints: 0, remainingPoints: 25 };
+        return { success: false, message: error.message, logs: [], plannedGoals: {}, activities: getDefaultSalesActivities(), totalPoints: 0, remainingPoints: 25 };
     }
 }
 
@@ -1841,12 +1966,16 @@ export async function saveDailyPlan(plan: Record<string, number>) {
             return { success: false, message: "Usuario no encontrado" };
         }
 
+        const impersonateId = user.role === "SUPER_ADMIN" ? cookies().get("impersonateAgencyId")?.value : undefined;
+        const effectiveAgencyId = ((impersonateId || (session?.user as any)?.agencyId || user?.agencyId || "aacom") as string);
+        const editorCatalog = await getAgencyEditorCatalogById(effectiveAgencyId);
+
         const cdmxDateStr = new Date().toLocaleDateString("en-CA", { timeZone: "America/Mexico_City" });
         const date = new Date(`${cdmxDateStr}T00:00:00.000Z`);
 
-        // Guardar cada plan usando el catálogo oficial SALES_ACTIVITIES
+        // Guardar cada plan usando el catálogo de la agencia (o default para históricos)
         for (const [activityId, plannedCount] of Object.entries(plan)) {
-            const def = SALES_ACTIVITIES.find((a) => a.id === activityId);
+            const def = editorCatalog.find((a) => a.id === activityId) || SALES_ACTIVITIES.find((a) => a.id === activityId);
             if (!def) continue;
 
             await prisma.activity.upsert({
@@ -1872,11 +2001,11 @@ export async function saveDailyPlan(plan: Record<string, number>) {
                 where: uniqueQuery,
                 update: {
                     planned: plannedCount,
-                    agencyId: user.agencyId,
+                    agencyId: effectiveAgencyId,
                 },
                 create: {
                     userId: user.id,
-                    agencyId: user.agencyId,
+                    agencyId: effectiveAgencyId,
                     activityId,
                     date,
                     planned: plannedCount,
@@ -1889,6 +2018,132 @@ export async function saveDailyPlan(plan: Record<string, number>) {
     } catch (error: any) {
         console.error("Error saving daily plan:", error);
         return { success: false, message: error.message };
+    }
+}
+
+export async function getAgencyActivityCatalogAction(): Promise<{
+    success: boolean;
+    items: SalesActivityItem[];
+    activeItems: SalesActivityItem[];
+    message?: string;
+}> {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, items: getDefaultSalesActivities(), activeItems: getDefaultSalesActivities(), message: "No autenticado" };
+    }
+
+    try {
+        const user = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: { id: true, role: true, agencyId: true }
+        });
+        if (!user) {
+            return { success: false, items: getDefaultSalesActivities(), activeItems: getDefaultSalesActivities(), message: "Usuario no encontrado" };
+        }
+
+        const impersonateId = user.role === "SUPER_ADMIN" ? cookies().get("impersonateAgencyId")?.value : undefined;
+        const effectiveAgencyId = ((impersonateId || (session?.user as any)?.agencyId || user?.agencyId || "aacom") as string);
+        const items = await getAgencyEditorCatalogById(effectiveAgencyId);
+        return {
+            success: true,
+            items,
+            activeItems: items.filter((i) => i.active !== false),
+        };
+    } catch (error: any) {
+        console.error("Error loading agency activity catalog:", error);
+        return { success: false, items: getDefaultSalesActivities(), activeItems: getDefaultSalesActivities(), message: error?.message };
+    }
+}
+
+export async function saveAgencyActivityCatalogAction(items: SalesActivityItem[]): Promise<{
+    success: boolean;
+    items?: SalesActivityItem[];
+    message?: string;
+}> {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, message: "No autenticado" };
+    }
+
+    enforceDemoSafety(session);
+
+    try {
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: { id: true, role: true, agencyId: true }
+        });
+        if (!currentUser || (currentUser.role !== "ADMIN" && currentUser.role !== "SUPER_ADMIN")) {
+            return { success: false, message: "Permisos insuficientes. Solo administradores de la promotoría pueden editar el catálogo." };
+        }
+
+        const validation = validateCustomActivityCatalog(items);
+        if (!validation.ok) {
+            return { success: false, message: validation.message };
+        }
+
+        const impersonateId = currentUser.role === "SUPER_ADMIN" ? cookies().get("impersonateAgencyId")?.value : undefined;
+        const effectiveAgencyId = ((impersonateId || (session?.user as any)?.agencyId || currentUser?.agencyId || "aacom") as string);
+        const key = `${ACTIVITY_CATALOG_SETTING_PREFIX}${effectiveAgencyId}`;
+
+        await prisma.setting.upsert({
+            where: { key },
+            update: { value: JSON.stringify(validation.normalized) },
+            create: { key, value: JSON.stringify(validation.normalized) },
+        });
+
+        revalidatePath("/activity");
+        revalidatePath("/admin");
+
+        return {
+            success: true,
+            items: validation.normalized,
+            message: "Catálogo de 25 puntos actualizado correctamente para tu promotoría.",
+        };
+    } catch (error: any) {
+        console.error("Error saving agency activity catalog:", error);
+        return { success: false, message: error?.message || "Error al guardar catálogo de actividades." };
+    }
+}
+
+export async function resetAgencyActivityCatalogAction(): Promise<{
+    success: boolean;
+    items: SalesActivityItem[];
+    message?: string;
+}> {
+    const session = await auth();
+    if (!session?.user?.email) {
+        return { success: false, items: getDefaultSalesActivities(), message: "No autenticado" };
+    }
+
+    enforceDemoSafety(session);
+
+    try {
+        const currentUser = await prisma.user.findUnique({
+            where: { email: session.user.email },
+            select: { id: true, role: true, agencyId: true }
+        });
+        if (!currentUser || (currentUser.role !== "ADMIN" && currentUser.role !== "SUPER_ADMIN")) {
+            return { success: false, items: getDefaultSalesActivities(), message: "Permisos insuficientes." };
+        }
+
+        const impersonateId = currentUser.role === "SUPER_ADMIN" ? cookies().get("impersonateAgencyId")?.value : undefined;
+        const effectiveAgencyId = ((impersonateId || (session?.user as any)?.agencyId || currentUser?.agencyId || "aacom") as string);
+        const key = `${ACTIVITY_CATALOG_SETTING_PREFIX}${effectiveAgencyId}`;
+
+        await prisma.setting.deleteMany({ where: { key } });
+
+        revalidatePath("/activity");
+        revalidatePath("/admin");
+
+        const defaults = getDefaultSalesActivities();
+        return {
+            success: true,
+            items: defaults,
+            message: "Se restauró la Actividad sugerida de 25 puntos correctamente.",
+        };
+    } catch (error: any) {
+        console.error("Error resetting agency activity catalog:", error);
+        return { success: false, items: getDefaultSalesActivities(), message: error?.message || "Error al restaurar catálogo." };
     }
 }
 
@@ -1984,7 +2239,7 @@ export async function getAgencyModulesConfig(): Promise<{
             config,
             allowReferidores: agency?.allowReferidores ?? false,
             allowTipsModule: agency?.allowTipsModule ?? true,
-            allowProyecto200Module: agency?.allowProyecto200Module ?? (agencyId === 'aacom' || agency?.slug === 'aacom'),
+            allowProyecto200Module: true,
             allowCorporateEmailModule: agency?.allowCorporateEmailModule ?? (agencyId === 'aacom' || agency?.slug === 'aacom')
         };
     } catch (error) {
@@ -2621,7 +2876,9 @@ export async function getAdminActivityReport(userId?: string, startDate?: string
             return { success: false, message: "Permisos insuficientes", logs: [], dailyPlans: [] };
         }
 
-        const effectiveAgencyId = ((session?.user?.agencyId || currentUser?.agencyId) as string);
+        const impersonateId = currentUser.role === 'SUPER_ADMIN' ? cookies().get('impersonateAgencyId')?.value : undefined;
+        const effectiveAgencyId = ((impersonateId || (session?.user as any)?.agencyId || currentUser?.agencyId || 'aacom') as string);
+        const editorCatalog = await getAgencyEditorCatalogById(effectiveAgencyId);
 
         const agencyUsers = await prisma.user.findMany({
             where: { agencyId: effectiveAgencyId },
@@ -2724,7 +2981,7 @@ export async function getAdminActivityReport(userId?: string, startDate?: string
         for (const rec of rawDailyPlans) {
             const dateStr = rec.date.toISOString().split("T")[0];
             const key = `${rec.userId}_${dateStr}`;
-            const act = SALES_ACTIVITIES.find((a) => a.id === rec.activityId);
+            const act = editorCatalog.find((a) => a.id === rec.activityId) || SALES_ACTIVITIES.find((a) => a.id === rec.activityId);
             if (!act || rec.planned <= 0) continue;
 
             const uObj = userMap.get(rec.userId);

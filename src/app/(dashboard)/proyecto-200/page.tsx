@@ -44,9 +44,7 @@ export default async function Proyecto200Page(props: {
   }
 
   const isSuperAdmin = dbUser.role === "SUPER_ADMIN";
-  const allowProyecto200Module =
-    dbUser.agency?.allowProyecto200Module ??
-    (dbUser.agencyId === "aacom" || dbUser.agency?.slug === "aacom");
+  const allowProyecto200Module: boolean = true;
 
   if (!isSuperAdmin && !allowProyecto200Module) {
     redirect("/");

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { SALES_ACTIVITIES } from "@/lib/constants";
+import { getAgencyActivityCatalogById } from "@/lib/activityCatalogServer";
 import { resolvePeriodDateRange } from "@/lib/ramosCatalog";
 import { computeAgencyCarteraProduction } from "@/lib/carteraProductionEngine";
 
@@ -338,9 +339,13 @@ export async function GET(req: NextRequest) {
         }
       >();
 
+      const agencyActivities = await getAgencyActivityCatalogById(agency.id);
+
       for (const rec of rawDailyPlans) {
         const dateStr = rec.date.toISOString().split("T")[0];
-        const act = SALES_ACTIVITIES.find((a) => a.id === rec.activityId);
+        const act =
+          agencyActivities.find((a) => a.id === rec.activityId) ||
+          SALES_ACTIVITIES.find((a) => a.id === rec.activityId);
         if (!act || rec.planned <= 0) continue;
 
         const key = `${rec.userId}_${dateStr}`;
@@ -432,7 +437,7 @@ export async function GET(req: NextRequest) {
         resource: "activity",
         agency: { id: agency.id, name: agency.name, slug: agency.slug },
         filters: { startDate, endDate, limit },
-        catalogActivities: SALES_ACTIVITIES,
+        catalogActivities: agencyActivities,
         totals: {
           totalPlannedPoints: dailyPlans.reduce((s, p) => s + p.plannedPoints, 0),
           totalRealPoints: allRangeLogsForRollup.reduce((s, l) => s + l.points, 0),
@@ -1373,10 +1378,13 @@ export async function GET(req: NextRequest) {
       }),
     ]);
 
+    const overviewAgencyActivities = await getAgencyActivityCatalogById(agency.id);
     let todayPlannedPoints = 0;
     const todayPlannedUsers = new Set<string>();
     for (const rec of todayPlansRaw) {
-      const act = SALES_ACTIVITIES.find((a) => a.id === rec.activityId);
+      const act =
+        overviewAgencyActivities.find((a) => a.id === rec.activityId) ||
+        SALES_ACTIVITIES.find((a) => a.id === rec.activityId);
       if (!act) continue;
       todayPlannedUsers.add(rec.userId);
       todayPlannedPoints += rec.planned * act.value;

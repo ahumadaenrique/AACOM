@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useTransition } from "react";
+import Link from "next/link";
 import {
   Card,
   CardContent,
@@ -24,6 +25,8 @@ import {
   updateReferralStatus,
   deleteSurveyReferral,
   deleteSatisfactionSurvey,
+  sendSurveyReferralToProject200,
+  sendMultipleReferralsToProject200,
 } from "@/app/actions/satisfactionSurveys";
 import {
   REFERRAL_STATUSES,
@@ -51,6 +54,8 @@ import {
   DollarSign,
   AlertCircle,
   Copy,
+  Flame,
+  Loader2,
 } from "lucide-react";
 
 interface Props {
@@ -134,6 +139,9 @@ export default function EncuestaSatisfaccionClient({ currentUser }: Props) {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [copiedQuestion, setCopiedQuestion] = useState<string | null>(null);
+  const [savedReferralIdsForBanner, setSavedReferralIdsForBanner] = useState<string[]>([]);
+  const [sendingIds, setSendingIds] = useState<Record<string, boolean>>({});
+  const [sendingBatch, setSendingBatch] = useState(false);
 
   const fetchHistory = async () => {
     setLoadingHistory(true);
@@ -211,9 +219,10 @@ export default function EncuestaSatisfaccionClient({ currentUser }: Props) {
       });
 
       if (res.success) {
+        setSavedReferralIdsForBanner(Array.isArray((res as any).savedReferralIds) ? (res as any).savedReferralIds : []);
         setFeedbackMessage({
           type: "success",
-          text: `¡Encuesta guardada con éxito! Se registraron ${res.totalReferralsSaved} referidos en tu embudo de seguimiento.`,
+          text: `¡Encuesta guardada con éxito! Se registraron ${res.totalReferralsSaved} referidos en tu base unificada de seguimiento.`,
         });
         // Reset form
         setIntervieweeName("");
@@ -277,6 +286,45 @@ export default function EncuestaSatisfaccionClient({ currentUser }: Props) {
       fetchHistory();
     } else {
       alert("Error al eliminar: " + res.message);
+    }
+  };
+
+  const handleSendReferralToP200 = async (referralId: string) => {
+    setSendingIds((prev) => ({ ...prev, [referralId]: true }));
+    try {
+      const res = await sendSurveyReferralToProject200(referralId);
+      if (res.success) {
+        setFeedbackMessage({
+          type: "success",
+          text: res.message || "Referido pasado automáticamente a Proyecto 200.",
+        });
+        setSavedReferralIdsForBanner((prev) => prev.filter((id) => id !== referralId));
+        await fetchHistory();
+      } else {
+        setFeedbackMessage({
+          type: "error",
+          text: res.message || "No se pudo transferir el referido a Proyecto 200.",
+        });
+      }
+    } finally {
+      setSendingIds((prev) => ({ ...prev, [referralId]: false }));
+    }
+  };
+
+  const handleSendManyToP200 = async (ids?: string[]) => {
+    setSendingBatch(true);
+    try {
+      const res = await sendMultipleReferralsToProject200(ids);
+      setFeedbackMessage({
+        type: res.success ? "success" : "error",
+        text: res.message || "Proceso completado.",
+      });
+      if (res.success) {
+        setSavedReferralIdsForBanner([]);
+        await fetchHistory();
+      }
+    } finally {
+      setSendingBatch(false);
     }
   };
 
@@ -373,17 +421,36 @@ export default function EncuestaSatisfaccionClient({ currentUser }: Props) {
               : "bg-red-50 dark:bg-red-950/30 border-red-300 dark:border-red-800 text-red-900 dark:text-red-200"
           }`}
         >
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             {feedbackMessage.type === "success" ? (
               <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
             ) : (
               <AlertCircle className="h-5 w-5 text-red-600 shrink-0" />
             )}
             <p className="text-sm font-semibold">{feedbackMessage.text}</p>
+            {feedbackMessage.type === "success" && savedReferralIdsForBanner.length > 0 && (
+              <Button
+                type="button"
+                size="sm"
+                onClick={() => handleSendManyToP200(savedReferralIdsForBanner)}
+                disabled={sendingBatch}
+                className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-black gap-1.5 shadow-sm"
+              >
+                {sendingBatch ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Flame className="h-3.5 w-3.5" />
+                )}
+                Pasar estos {savedReferralIdsForBanner.length} a Proyecto 200
+              </Button>
+            )}
           </div>
           <button
-            onClick={() => setFeedbackMessage(null)}
-            className="text-xs font-bold underline opacity-70 hover:opacity-100"
+            onClick={() => {
+              setFeedbackMessage(null);
+              setSavedReferralIdsForBanner([]);
+            }}
+            className="text-xs font-bold underline opacity-70 hover:opacity-100 shrink-0"
           >
             Cerrar
           </button>
@@ -985,14 +1052,36 @@ export default function EncuestaSatisfaccionClient({ currentUser }: Props) {
           {/* Tabla de Referidos */}
           <Card className="border border-slate-200 dark:border-zinc-800 shadow-sm bg-white dark:bg-zinc-950 overflow-hidden">
             <CardHeader className="py-4 border-b border-slate-200 dark:border-zinc-800 bg-slate-50/50 dark:bg-zinc-900/40">
-              <div className="flex items-center justify-between">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <CardTitle className="text-base font-black text-slate-800 dark:text-zinc-100 flex items-center gap-2">
                   <Users className="h-4 w-4 text-emerald-600" />
-                  Lista de Referidos ({filteredReferrals.length})
+                  Base Unificada de Referidos ({filteredReferrals.length})
                 </CardTitle>
-                <span className="text-xs font-bold text-slate-500">
-                  Cambia el estatus en tiempo real en la columna Estado
-                </span>
+                <div className="flex items-center gap-2 flex-wrap">
+                  {referralsHistory.some((r) => !r.inProject200) && (
+                    <Button
+                      type="button"
+                      size="sm"
+                      onClick={() =>
+                        handleSendManyToP200(
+                          referralsHistory.filter((r) => !r.inProject200).map((r) => r.id)
+                        )
+                      }
+                      disabled={sendingBatch}
+                      className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-black gap-1.5 shadow-sm"
+                    >
+                      {sendingBatch ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Flame className="h-3.5 w-3.5" />
+                      )}
+                      Pasar pendientes a Proyecto 200 ({referralsHistory.filter((r) => !r.inProject200).length})
+                    </Button>
+                  )}
+                  <span className="text-xs font-bold text-slate-500">
+                    Cambia el estatus en tiempo real en la columna Estado
+                  </span>
+                </div>
               </div>
             </CardHeader>
             <CardContent className="p-0">
@@ -1013,9 +1102,10 @@ export default function EncuestaSatisfaccionClient({ currentUser }: Props) {
                       <tr>
                         <th className="py-3 px-4">Contacto</th>
                         <th className="py-3 px-4">Teléfono & Acciones</th>
-                        <th className="py-3 px-4">Referido por</th>
+                        <th className="py-3 px-4">Origen / Referido por</th>
                         <th className="py-3 px-4">Notas / Observaciones</th>
                         <th className="py-3 px-4">Estado del Embudo</th>
+                        <th className="py-3 px-4">Proyecto 200</th>
                         <th className="py-3 px-4 text-center">Acción</th>
                       </tr>
                     </thead>
@@ -1064,8 +1154,16 @@ export default function EncuestaSatisfaccionClient({ currentUser }: Props) {
                               </div>
                             </td>
                             <td className="py-3 px-4 text-xs font-semibold text-slate-600 dark:text-zinc-400">
-                              <div>{ref.survey?.intervieweeName || "Encuesta"}</div>
-                              <div className="text-[10px] text-slate-400">
+                              <div>
+                                {ref.source === "ACTIVIDAD_25_PUNTOS" ? (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black bg-teal-50 text-teal-700 border border-teal-200 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800">
+                                    🎯 Actividad 25 Puntos
+                                  </span>
+                                ) : (
+                                  <span>📋 {ref.survey?.intervieweeName || "Encuesta"}</span>
+                                )}
+                              </div>
+                              <div className="text-[10px] text-slate-400 mt-0.5">
                                 {new Date(ref.createdAt).toLocaleDateString("es-MX", {
                                   day: "2-digit",
                                   month: "short",
@@ -1090,6 +1188,31 @@ export default function EncuestaSatisfaccionClient({ currentUser }: Props) {
                                   </option>
                                 ))}
                               </select>
+                            </td>
+                            <td className="py-3 px-4">
+                              {ref.inProject200 ? (
+                                <Link
+                                  href="/proyecto-200"
+                                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-black bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 hover:bg-emerald-100 whitespace-nowrap"
+                                >
+                                  <Check className="h-3 w-3" /> En Proyecto 200
+                                </Link>
+                              ) : (
+                                <Button
+                                  type="button"
+                                  size="sm"
+                                  onClick={() => handleSendReferralToP200(ref.id)}
+                                  disabled={Boolean(sendingIds[ref.id])}
+                                  className="h-7 px-2.5 bg-orange-500 hover:bg-orange-600 text-white text-[11px] font-black gap-1 whitespace-nowrap"
+                                >
+                                  {sendingIds[ref.id] ? (
+                                    <Loader2 className="h-3 w-3 animate-spin" />
+                                  ) : (
+                                    <Flame className="h-3 w-3" />
+                                  )}
+                                  Pasar a Proyecto 200
+                                </Button>
+                              )}
                             </td>
                             <td className="py-3 px-4 text-center">
                               <Button

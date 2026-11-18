@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { twilioClient, normalizePhoneForTwilio } from "@/lib/twilio";
 import { SALES_ACTIVITIES } from "@/lib/constants";
+import { getAgencyActivityCatalogById } from "@/lib/activityCatalogServer";
 
 export const dynamic = "force-dynamic";
 
@@ -112,6 +113,7 @@ export async function GET(request: Request) {
             });
 
             // Precompute the report variables per agent
+            const agencyActivities = await getAgencyActivityCatalogById(agency.id);
             const agentReports = new Map<string, { userName: string; totalPts: number; msgText: string }>();
 
             for (const user of users) {
@@ -121,7 +123,7 @@ export async function GET(request: Request) {
                 for (const record of user.dailyRecords) {
                     const pts = record.planned || 0;
                     if (pts > 0) {
-                        const act = SALES_ACTIVITIES.find(a => a.id === record.activityId);
+                        const act = agencyActivities.find(a => a.id === record.activityId) || SALES_ACTIVITIES.find(a => a.id === record.activityId);
                         if (act) {
                             totalPts += pts * act.value;
                             details.push(`${pts} ${act.name.toLowerCase()}`);

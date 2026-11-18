@@ -379,12 +379,12 @@ export function AgenciesTable({ agencies }: { agencies: any[] }) {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleToggleProyecto200(agency.id, agency.allowProyecto200Module ?? (agency.id === "aacom" || agency.slug === "aacom"))}
+                        onClick={() => handleToggleProyecto200(agency.id, agency.allowProyecto200Module ?? true)}
                         disabled={togglingProyecto200Id === agency.id}
-                        className={`text-xs h-7 px-2 border ${(agency.allowProyecto200Module ?? (agency.id === "aacom" || agency.slug === "aacom")) ? 'border-orange-300 text-orange-700 bg-orange-50 hover:bg-orange-100 font-bold' : 'border-slate-200 text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
-                        title={(agency.allowProyecto200Module ?? (agency.id === "aacom" || agency.slug === "aacom")) ? "Módulo Proyecto 200 HABILITADO (Click para Ocultar/Desactivar)" : "Módulo Proyecto 200 OCULTO/DESACTIVADO (Click para Habilitar)"}
+                        className={`text-xs h-7 px-2 border ${(agency.allowProyecto200Module ?? true) ? 'border-orange-300 text-orange-700 bg-orange-50 hover:bg-orange-100 font-bold' : 'border-slate-200 text-slate-400 bg-slate-50 hover:bg-slate-100'}`}
+                        title={(agency.allowProyecto200Module ?? true) ? "Módulo Proyecto 200 HABILITADO (Click para Ocultar/Desactivar)" : "Módulo Proyecto 200 OCULTO/DESACTIVADO (Click para Habilitar)"}
                       >
-                        <Flame className={`h-3.5 w-3.5 ${(agency.allowProyecto200Module ?? (agency.id === "aacom" || agency.slug === "aacom")) ? 'text-orange-600' : 'text-slate-400'}`} />
+                        <Flame className={`h-3.5 w-3.5 ${(agency.allowProyecto200Module ?? true) ? 'text-orange-600' : 'text-slate-400'}`} />
                       </Button>
 
                                             {/* Academia de Videos (Mini YouTube) */}

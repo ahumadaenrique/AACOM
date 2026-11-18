@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { SurveyReferralInput, CreateSurveyInput, REFERRAL_STATUSES } from "@/lib/satisfactionConstants";
+import { normalizePhone10, syncReferralToProject200AndUnifiedBase } from "@/lib/referralSync";
 export type { SurveyReferralInput, CreateSurveyInput };
 
 export async function createSatisfactionSurvey(input: CreateSurveyInput) {
@@ -38,7 +39,7 @@ export async function createSatisfactionSurvey(input: CreateSurveyInput) {
       .filter(r => r.fullName.length > 0 || r.phone.length > 0);
 
     // Save survey and referrals in transaction
-    const createdSurvey = await prisma.$transaction(async (tx) => {
+    const txResult = await prisma.$transaction(async (tx) => {
       const survey = await tx.satisfactionSurvey.create({
         data: {
           userId: user.id,
@@ -53,21 +54,27 @@ export async function createSatisfactionSurvey(input: CreateSurveyInput) {
         },
       });
 
+      const createdReferralIds: string[] = [];
       if (validReferrals.length > 0) {
-        await tx.surveyReferral.createMany({
-          data: validReferrals.map((ref) => ({
-            surveyId: survey.id,
-            userId: user.id,
-            agencyId: user.agencyId,
-            fullName: ref.fullName || "Sin nombre",
-            phone: ref.phone || "Sin teléfono",
-            notes: ref.notes,
-            status: "NO_CONTACTADO",
-          })),
-        });
+        for (const ref of validReferrals) {
+          const createdRef = await tx.surveyReferral.create({
+            data: {
+              surveyId: survey.id,
+              userId: user.id,
+              agencyId: user.agencyId,
+              fullName: ref.fullName || "Sin nombre",
+              phone: ref.phone || "Sin teléfono",
+              notes: ref.notes,
+              status: "NO_CONTACTADO",
+              source: "ENCUESTA_SATISFACCION",
+            },
+            select: { id: true },
+          });
+          createdReferralIds.push(createdRef.id);
+        }
       }
 
-      return survey;
+      return { survey, createdReferralIds };
     });
 
     revalidatePath("/encuesta-satisfaccion");
@@ -75,7 +82,8 @@ export async function createSatisfactionSurvey(input: CreateSurveyInput) {
 
     return {
       success: true,
-      surveyId: createdSurvey.id,
+      surveyId: txResult.survey.id,
+      savedReferralIds: txResult.createdReferralIds,
       totalReferralsSaved: validReferrals.length,
     };
   } catch (error: any) {
@@ -100,7 +108,7 @@ export async function getAgentSurveysAndReferrals() {
       return { success: false, message: "Usuario no encontrado", surveys: [], referrals: [], stats: null };
     }
 
-    const [surveys, referrals] = await Promise.all([
+    const [surveys, referrals, p200Contacts] = await Promise.all([
       prisma.satisfactionSurvey.findMany({
         where: { userId: user.id },
         orderBy: { createdAt: "desc" },
@@ -122,7 +130,25 @@ export async function getAgentSurveysAndReferrals() {
           },
         },
       }),
+      prisma.project200Contact.findMany({
+        where: { userId: user.id },
+        select: { id: true, phone: true, surveyReferralId: true },
+      }),
     ]);
+
+    const p200IdSet = new Set(p200Contacts.map((c) => c.id));
+    const linkedSurveyIds = new Set(p200Contacts.map((c) => c.surveyReferralId).filter(Boolean) as string[]);
+    const p200Phones = new Set(p200Contacts.map((c) => normalizePhone10(c.phone)).filter((p) => p.length === 10));
+
+    const enrichedReferrals = referrals.map((r) => {
+      const normPhone = normalizePhone10(r.phone);
+      const inProject200 = Boolean(
+        (r.project200ContactId && p200IdSet.has(r.project200ContactId)) ||
+          linkedSurveyIds.has(r.id) ||
+          (normPhone.length === 10 && p200Phones.has(normPhone))
+      );
+      return { ...r, inProject200 };
+    });
 
     const statusCounts: Record<string, number> = {
       NO_CONTACTADO: 0,
@@ -132,7 +158,7 @@ export async function getAgentSurveysAndReferrals() {
       CERRADO_PAGADO: 0,
     };
 
-    referrals.forEach((r) => {
+    enrichedReferrals.forEach((r) => {
       if (statusCounts[r.status] !== undefined) {
         statusCounts[r.status]++;
       } else {
@@ -140,18 +166,19 @@ export async function getAgentSurveysAndReferrals() {
       }
     });
 
+    const surveyOnlyReferralsCount = enrichedReferrals.filter((r) => r.source !== "ACTIVIDAD_25_PUNTOS").length;
     const stats = {
       totalSurveys: surveys.length,
-      totalReferrals: referrals.length,
-      averageReferrals: surveys.length > 0 ? (referrals.length / surveys.length).toFixed(1) : "0",
+      totalReferrals: enrichedReferrals.length,
+      averageReferrals: surveys.length > 0 ? (surveyOnlyReferralsCount / surveys.length).toFixed(1) : "0",
       statusCounts,
-      closedRate: referrals.length > 0 ? Math.round((statusCounts.CERRADO_PAGADO / referrals.length) * 100) : 0,
+      closedRate: enrichedReferrals.length > 0 ? Math.round((statusCounts.CERRADO_PAGADO / enrichedReferrals.length) * 100) : 0,
     };
 
     return {
       success: true,
       surveys,
-      referrals,
+      referrals: enrichedReferrals,
       stats,
     };
   } catch (error: any) {
@@ -332,7 +359,7 @@ export async function getAdminSatisfactionData(filterAgencyId?: string) {
     const whereScope = { agencyId: effectiveAgencyId };
 
     // Parallel queries
-    const [surveys, referrals, agencies, usersInScope] = await Promise.all([
+    const [surveys, referrals, agencies, usersInScope, p200Contacts] = await Promise.all([
       prisma.satisfactionSurvey.findMany({
         where: whereScope,
         orderBy: { createdAt: "desc" },
@@ -371,7 +398,32 @@ export async function getAdminSatisfactionData(filterAgencyId?: string) {
           agency: { select: { id: true, name: true } },
         },
       }),
+      prisma.project200Contact.findMany({
+        where: whereScope,
+        select: { id: true, userId: true, phone: true, surveyReferralId: true },
+      }),
     ]);
+
+    const p200IdSet = new Set(p200Contacts.map((c) => c.id));
+    const linkedSurveyIds = new Set(p200Contacts.map((c) => c.surveyReferralId).filter(Boolean) as string[]);
+    const p200UserPhoneKeys = new Set(
+      p200Contacts
+        .map((c) => {
+          const p = normalizePhone10(c.phone);
+          return p.length === 10 ? `${c.userId}:${p}` : "";
+        })
+        .filter(Boolean)
+    );
+
+    const enrichedReferrals = referrals.map((r) => {
+      const p = normalizePhone10(r.phone);
+      const inProject200 = Boolean(
+        (r.project200ContactId && p200IdSet.has(r.project200ContactId)) ||
+          linkedSurveyIds.has(r.id) ||
+          (p.length === 10 && p200UserPhoneKeys.has(`${r.userId}:${p}`))
+      );
+      return { ...r, inProject200 };
+    });
 
     // Calculate Global Stats
     const totalSurveys = surveys.length;
@@ -486,6 +538,8 @@ export async function getAdminSatisfactionData(filterAgencyId?: string) {
     // Sort agents by total referrals descending, then surveys
     agentStats.sort((a, b) => b.referralsCount - a.referralsCount || b.surveysCount - a.surveysCount);
 
+    const surveyOnlyReferralsCount = enrichedReferrals.filter((r) => r.source !== "ACTIVIDAD_25_PUNTOS").length;
+
     return {
       success: true,
       currentUserRole: user.role,
@@ -496,15 +550,160 @@ export async function getAdminSatisfactionData(filterAgencyId?: string) {
         totalReferrals,
         statusCounts,
         qAverages,
-        avgReferralsPerSurvey: totalSurveys > 0 ? (totalReferrals / totalSurveys).toFixed(1) : "0",
+        avgReferralsPerSurvey: totalSurveys > 0 ? (surveyOnlyReferralsCount / totalSurveys).toFixed(1) : "0",
         globalConversionRate: totalReferrals > 0 ? Math.round((statusCounts.CERRADO_PAGADO / totalReferrals) * 100) : 0,
       },
       agentStats,
       surveys,
-      referrals,
+      referrals: enrichedReferrals,
     };
   } catch (error: any) {
     console.error("Error fetching admin satisfaction data:", error);
     return { success: false, message: error?.message || "Error al cargar datos de administración" };
+  }
+}
+
+export async function sendSurveyReferralToProject200(referralId: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.email) {
+      return { success: false, message: "No autenticado" };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, role: true, agencyId: true },
+    });
+    if (!user) {
+      return { success: false, message: "Usuario no encontrado" };
+    }
+
+    const existing = await prisma.surveyReferral.findUnique({
+      where: { id: referralId },
+      include: {
+        survey: { select: { intervieweeName: true } },
+      },
+    });
+    if (!existing) {
+      return { success: false, message: "Referido no encontrado" };
+    }
+
+    const isOwner = existing.userId === user.id;
+    const isSuperAdmin = user.role === "SUPER_ADMIN";
+    const isAdminSameAgency = user.role === "ADMIN" && user.agencyId === existing.agencyId;
+    if (!isOwner && !isSuperAdmin && !isAdminSameAgency) {
+      return { success: false, message: "No tienes permiso para transferir este referido." };
+    }
+
+    const cleanPhone = normalizePhone10(existing.phone);
+    if (cleanPhone.length !== 10) {
+      return {
+        success: false,
+        message: `El referido "${existing.fullName}" no tiene un teléfono válido de 10 dígitos.`,
+      };
+    }
+
+    const syncRes = await syncReferralToProject200AndUnifiedBase({
+      userId: existing.userId,
+      agencyId: existing.agencyId,
+      fullName: existing.fullName,
+      phone: cleanPhone,
+      notes: existing.notes,
+      referredByName: existing.survey?.intervieweeName || null,
+      source: existing.source === "ACTIVIDAD_25_PUNTOS" ? "REFERIDO_25_PUNTOS" : "ENCUESTA_SATISFACCION",
+      existingSurveyReferralId: existing.id,
+    });
+
+    revalidatePath("/encuesta-satisfaccion");
+    revalidatePath("/proyecto-200");
+    revalidatePath("/admin");
+
+    return {
+      success: true,
+      contactId: syncRes.contactId,
+      alreadyExisted: syncRes.alreadyExisted,
+      message: syncRes.alreadyExisted
+        ? `"${existing.fullName}" ya estaba vinculado en Proyecto 200.`
+        : `"${existing.fullName}" pasó automáticamente a Proyecto 200.`,
+    };
+  } catch (error: any) {
+    console.error("Error sending survey referral to Project 200:", error);
+    return { success: false, message: error?.message || "Error al pasar referido a Proyecto 200" };
+  }
+}
+
+export async function sendMultipleReferralsToProject200(referralIds?: string[]) {
+  try {
+    const session = await auth();
+    if (!session?.user?.email) {
+      return { success: false, message: "No autenticado", sentCount: 0, skippedCount: 0 };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { id: true, role: true, agencyId: true },
+    });
+    if (!user) {
+      return { success: false, message: "Usuario no encontrado", sentCount: 0, skippedCount: 0 };
+    }
+
+    const candidates = await prisma.surveyReferral.findMany({
+      where: {
+        userId: user.id,
+        ...(referralIds && referralIds.length > 0 ? { id: { in: referralIds } } : {}),
+      },
+      include: {
+        survey: { select: { intervieweeName: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    let sentCount = 0;
+    let skippedCount = 0;
+
+    for (const ref of candidates) {
+      const cleanPhone = normalizePhone10(ref.phone);
+      if (cleanPhone.length !== 10) {
+        skippedCount++;
+        continue;
+      }
+      const res = await syncReferralToProject200AndUnifiedBase({
+        userId: ref.userId,
+        agencyId: ref.agencyId,
+        fullName: ref.fullName,
+        phone: cleanPhone,
+        notes: ref.notes,
+        referredByName: ref.survey?.intervieweeName || null,
+        source: ref.source === "ACTIVIDAD_25_PUNTOS" ? "REFERIDO_25_PUNTOS" : "ENCUESTA_SATISFACCION",
+        existingSurveyReferralId: ref.id,
+      });
+      if (!res.alreadyExisted) {
+        sentCount++;
+      }
+    }
+
+    revalidatePath("/encuesta-satisfaccion");
+    revalidatePath("/proyecto-200");
+    revalidatePath("/admin");
+
+    return {
+      success: true,
+      sentCount,
+      skippedCount,
+      message:
+        sentCount > 0
+          ? `Se enviaron ${sentCount} referido(s) automáticamente a Proyecto 200.${skippedCount > 0 ? ` (${skippedCount} omitidos por teléfono incompleto)` : ""}`
+          : skippedCount > 0
+          ? `No se pudieron enviar ${skippedCount} referido(s) porque no tienen teléfono de 10 dígitos.`
+          : "Todos los referidos válidos ya están en Proyecto 200.",
+    };
+  } catch (error: any) {
+    console.error("Error batch sending referrals to Project 200:", error);
+    return {
+      success: false,
+      message: error?.message || "Error al pasar referidos a Proyecto 200",
+      sentCount: 0,
+      skippedCount: 0,
+    };
   }
 }

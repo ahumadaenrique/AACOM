@@ -160,7 +160,7 @@ export default async function DashboardLayout({
     const isSoloAgent = (agency as any)?.accountType === 'SOLO_AGENT';
     const allowReferidores = agency?.allowReferidores ?? false;
     const allowTipsModule = agency?.allowTipsModule ?? true;
-    const allowProyecto200Module = agency?.allowProyecto200Module ?? (agency?.id === "aacom" || agency?.slug === "aacom");
+    const allowProyecto200Module: boolean = true;
     const allowCorporateEmailModule = agency?.allowCorporateEmailModule ?? (agency?.id === "aacom" || agency?.slug === "aacom");
 
     const effectiveAgencyIdForModules = agency?.id || resolvedAgencyId || "aacom";

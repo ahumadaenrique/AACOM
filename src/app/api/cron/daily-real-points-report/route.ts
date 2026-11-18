@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { twilioClient, normalizePhoneForTwilio } from "@/lib/twilio";
 import { SALES_ACTIVITIES } from "@/lib/constants";
+import { getAgencyActivityCatalogById } from "@/lib/activityCatalogServer";
 
 export const dynamic = "force-dynamic";
 
@@ -102,6 +103,7 @@ export async function GET(request: Request) {
             });
 
             // Precompute the 6:00 PM Real Points report per agent
+            const agencyActivities = await getAgencyActivityCatalogById(agency.id);
             const agentReports = new Map<string, { userName: string; totalRealPts: number; msgText: string }>();
 
             for (const user of users) {
@@ -122,7 +124,7 @@ export async function GET(request: Request) {
                     for (const record of user.dailyRecords) {
                         const realCount = record.real || 0;
                         if (realCount > 0) {
-                            const act = SALES_ACTIVITIES.find(a => a.id === record.activityId);
+                            const act = agencyActivities.find(a => a.id === record.activityId) || SALES_ACTIVITIES.find(a => a.id === record.activityId);
                             if (act) {
                                 totalRealPts += realCount * act.value;
                                 details.push(`${realCount} ${act.name.toLowerCase()}`);

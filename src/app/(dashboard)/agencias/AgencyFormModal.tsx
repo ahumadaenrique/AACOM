@@ -201,7 +201,7 @@ export function AgencyFormModal({ children, agency }: { children: React.ReactNod
                 <Label htmlFor="allowProyecto200Module" className="text-base font-semibold text-orange-900">Permitir Módulo Proyecto 200</Label>
                 <p className="text-xs text-orange-700">Activa u oculta por completo el CRM y Piloto Automático de Proyecto 200 para esta promotoría.</p>
               </div>
-              <Switch id="allowProyecto200Module" name="allowProyecto200Module" defaultChecked={agency ? (agency.allowProyecto200Module ?? (agency.id === "aacom" || agency.slug === "aacom")) : false} />
+              <Switch id="allowProyecto200Module" name="allowProyecto200Module" defaultChecked={agency ? (agency.allowProyecto200Module ?? true) : true} />
             </div>
 
             <div className="flex items-center justify-between p-3 border border-sky-200 rounded-lg bg-sky-50/40">

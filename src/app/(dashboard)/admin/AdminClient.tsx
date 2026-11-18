@@ -70,6 +70,7 @@ import AdminCotizadorSettings from './AdminCotizadorSettings'
 import AdminModulesSettings from './AdminModulesSettings'
 import AdminMarketCgManager from './AdminMarketCgManager'
 import AdminWhatsAppSettings from './AdminWhatsAppSettings'
+import AdminActivityCatalogConfig from './AdminActivityCatalogConfig'
 
 export default function AdminClient({ initialBootstrap }: { initialBootstrap?: any }) {
 
@@ -3081,6 +3082,9 @@ export default function AdminClient({ initialBootstrap }: { initialBootstrap?: a
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4 space-y-4">
+              {/* Custom Agency 25-Points Activity Catalog Configurator */}
+              <AdminActivityCatalogConfig onCatalogUpdated={() => fetchActivityLogsList()} />
+
               {/* Filters Area */}
               <div className="flex flex-col md:flex-row gap-4 items-center bg-slate-50/40 dark:bg-zinc-900/30 p-4 rounded-xl border border-slate-100">
                 <div className="w-full md:w-56 space-y-1">
@@ -3328,6 +3332,7 @@ export default function AdminClient({ initialBootstrap }: { initialBootstrap?: a
                     case "5": return "👥";
                     case "6": return "📝";
                     case "7": return "🏆";
+                    case "8": return "✨";
                     default: return "•";
                   }
                 };
@@ -3633,6 +3638,59 @@ export default function AdminClient({ initialBootstrap }: { initialBootstrap?: a
                   })()
                 )}
 
+                {/* Indicative Issued & Paid Policies Summary (Non-Accounting Follow-Up) */}
+                {(() => {
+                  const indicativePolicies = activityLogs.filter(
+                    (l) => (l.detailsJson as any)?.kind === "ISSUED_POLICY"
+                  );
+                  if (indicativePolicies.length === 0) return null;
+                  const totalIndicativePremium = indicativePolicies.reduce(
+                    (sum, l) => sum + (Number((l.detailsJson as any)?.indicativePremium) || 0),
+                    0
+                  );
+                  return (
+                    <div className="p-4 rounded-2xl border border-purple-200/80 dark:border-purple-900/40 bg-purple-50/40 dark:bg-purple-950/10 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div>
+                          <h4 className="text-xs font-black uppercase tracking-wider text-purple-900 dark:text-purple-300">
+                            📝 Pólizas Emitidas y Pagadas Reportadas ({indicativePolicies.length}) — Solo Indicativo
+                          </h4>
+                          <p className="text-[11px] text-purple-700/80 dark:text-purple-400">
+                            Seguimiento informativo de cierres reportados en 25 Puntos. No contabiliza para Ranking ni Producción oficial.
+                          </p>
+                        </div>
+                        <span className="text-xs font-black px-3 py-1 rounded-full bg-white dark:bg-zinc-900 border border-purple-200 text-purple-800 dark:text-purple-300 shrink-0">
+                          Total indicativo: ${totalIndicativePremium.toLocaleString("es-MX")} MXN
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2.5 max-h-60 overflow-y-auto pr-1">
+                        {indicativePolicies.map((pol) => {
+                          const d = pol.detailsJson as any;
+                          return (
+                            <div
+                              key={pol.id}
+                              className="p-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-purple-100 dark:border-purple-900/40 text-xs space-y-1 shadow-2xs"
+                            >
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="font-black text-slate-800 dark:text-zinc-100 truncate">
+                                  {d.contractor || pol.prospectName}
+                                </span>
+                                <span className="text-[10px] font-black text-emerald-700 bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 rounded shrink-0">
+                                  ${Number(d.indicativePremium || 0).toLocaleString("es-MX")}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between text-[10px] text-slate-500 gap-2">
+                                <span className="font-bold text-purple-700 dark:text-purple-400">{d.ramo}</span>
+                                <span>{pol.user?.name || "Asesor"} · {pol.dateStr}</span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })()}
+
                 {/* 2. Three-Tier Collapsible Activity Logs List (Agent -> Date -> Details) */}
                 <div className="space-y-4">
                   {loadingActivityLogs ? (
@@ -3929,6 +3987,7 @@ export default function AdminClient({ initialBootstrap }: { initialBootstrap?: a
                                                             case "5": return <span className="text-indigo-500 font-extrabold text-[10px]" title="Referido">👥</span>
                                                             case "6": return <span className="text-purple-500 font-extrabold text-[10px]" title="Emitida">📝</span>
                                                             case "7": return <span className="text-teal-500 font-extrabold text-[10px]" title="RDA">🏆</span>
+                                                            case "8": return <span className="text-pink-500 font-extrabold text-[10px]" title="Personalizada">✨</span>
                                                             default: return <span className="text-slate-500 font-extrabold text-[10px]">➕</span>
                                                           }
                                                         })()}
@@ -3942,13 +4001,47 @@ export default function AdminClient({ initialBootstrap }: { initialBootstrap?: a
                                                             {new Date(log.createdAt).toLocaleTimeString("es-MX", { timeZone: 'America/Mexico_City',  hour: "2-digit", minute: "2-digit" })}
                                                           </span>
                                                         </div>
-                                                        {log.prospectName ? (
-                                                          <span className="text-teal-600 dark:text-teal-400 font-extrabold text-[10px] block">
-                                                            👤 Prospecto: {log.prospectName}
-                                                          </span>
-                                                        ) : (
-                                                          <span className="text-slate-400 italic text-[10px] block">Sin prospecto registrado</span>
-                                                        )}
+                                                        {(() => {
+                                                          const d = (log as any).detailsJson;
+                                                          if (d?.kind === "CLOSING_APPOINTMENT") {
+                                                            return (
+                                                              <span className="text-emerald-700 dark:text-emerald-400 font-extrabold text-[10px] block">
+                                                                👤 Persona visitada: {d.fullName || `${d.firstName} ${d.lastName}`}
+                                                              </span>
+                                                            );
+                                                          }
+                                                          if (d?.kind === "REFERRAL") {
+                                                            return (
+                                                              <div className="space-y-0.5">
+                                                                <span className="text-indigo-700 dark:text-indigo-400 font-extrabold text-[10px] block">
+                                                                  👥 Referido: {d.fullName || log.prospectName} · 📞 {d.phone} · 🔥 En Proyecto 200
+                                                                </span>
+                                                                {d.notes && (
+                                                                  <span className="text-[10px] text-slate-500 italic block">
+                                                                    «{d.notes}»
+                                                                  </span>
+                                                                )}
+                                                              </div>
+                                                            );
+                                                          }
+                                                          if (d?.kind === "ISSUED_POLICY") {
+                                                            return (
+                                                              <span className="text-purple-700 dark:text-purple-400 font-extrabold text-[10px] block">
+                                                                📝 Contratante: {d.contractor} · Ramo: {d.ramo} · Prima aprox: ${Number(d.indicativePremium || 0).toLocaleString("es-MX")} MXN (Solo indicativo)
+                                                              </span>
+                                                            );
+                                                          }
+                                                          if (log.prospectName) {
+                                                            return (
+                                                              <span className="text-teal-600 dark:text-teal-400 font-extrabold text-[10px] block">
+                                                                👤 Prospecto: {log.prospectName}
+                                                              </span>
+                                                            );
+                                                          }
+                                                          return (
+                                                            <span className="text-slate-400 italic text-[10px] block">Sin prospecto registrado</span>
+                                                          );
+                                                        })()}
                                                       </div>
                                                     </div>
 

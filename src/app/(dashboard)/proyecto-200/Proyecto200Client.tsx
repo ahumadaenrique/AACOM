@@ -60,6 +60,7 @@ import {
   getAdminProject200Analytics,
   toggleProject200AgentTracking,
 } from "./actions";
+import { sendSurveyReferralToProject200 } from "@/app/actions/satisfactionSurveys";
 
 interface Proyecto200ClientProps {
   currentUser: {
@@ -294,6 +295,7 @@ export default function Proyecto200Client({
     string | undefined
   >(undefined);
   const [savingContact, setSavingContact] = useState<boolean>(false);
+  const [quickSendingRefId, setQuickSendingRefId] = useState<string | null>(null);
 
   // Modal de Descalificación Obligatoria desde la tabla CRM
   const [crmDisqualifyContact, setCrmDisqualifyContact] = useState<any | null>(
@@ -2147,24 +2149,47 @@ export default function Proyecto200Client({
                     {ref.survey?.intervieweeName || "Encuesta de Satisfacción"}
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    openNewContactModal({
-                      fullName: ref.fullName,
-                      phone: ref.phone,
-                      relationship: `Referido por ${
-                        ref.survey?.intervieweeName || "Cliente"
-                      }`,
-                      notes: ref.notes || "Obtenido en Encuesta de Satisfacción",
-                      source: "ENCUESTA_SATISFACCION",
-                      surveyReferralId: ref.id,
-                    })
-                  }
-                  className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shrink-0 transition shadow-xs"
-                >
-                  + Calificar e Integrar
-                </button>
+                <div className="flex flex-col gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    disabled={quickSendingRefId === ref.id}
+                    onClick={async () => {
+                      setQuickSendingRefId(ref.id);
+                      try {
+                        const res = await sendSurveyReferralToProject200(ref.id);
+                        if (res.success) {
+                          showToast("success", res.message || "Referido integrado automáticamente.");
+                          await refreshAllData();
+                        } else {
+                          showToast("error", res.message || "No se pudo integrar el referido.");
+                        }
+                      } finally {
+                        setQuickSendingRefId(null);
+                      }
+                    }}
+                    className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white text-[11px] font-black shrink-0 transition shadow-xs"
+                  >
+                    {quickSendingRefId === ref.id ? "Pasando..." : "⚡ Pasar Automático"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      openNewContactModal({
+                        fullName: ref.fullName,
+                        phone: ref.phone,
+                        relationship: `Referido por ${
+                          ref.survey?.intervieweeName || "Cliente"
+                        }`,
+                        notes: ref.notes || "Obtenido en Encuesta de Satisfacción",
+                        source: "ENCUESTA_SATISFACCION",
+                        surveyReferralId: ref.id,
+                      })
+                    }
+                    className="px-3 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold shrink-0 transition shadow-xs"
+                  >
+                    + Calificar e Integrar
+                  </button>
+                </div>
               </div>
             ))}
           </div>
