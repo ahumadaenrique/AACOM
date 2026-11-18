@@ -79,6 +79,7 @@ model Agency {
   quoterEnableVPL              Boolean              @default(true)
   quoterEnableVPLPPR           Boolean              @default(true)
   quoterEnableUniversal        Boolean              @default(true)
+  quoterEnableUniversalPPR     Boolean              @default(true)
   quoterShowAccumulatedPremium Boolean              @default(false)
 
   // Configuraciones Add-on TIPS (Taller Integral de Planeación y Seguridad)

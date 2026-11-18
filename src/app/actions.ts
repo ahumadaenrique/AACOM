@@ -509,6 +509,7 @@ export async function getAdminBootstrapData() {
                         quoterEnableVPL: true,
                         quoterEnableVPLPPR: true,
                         quoterEnableUniversal: true,
+                        quoterEnableUniversalPPR: true,
                         quoterShowAccumulatedPremium: true
                     }
                 }
@@ -542,6 +543,7 @@ export async function getAdminBootstrapData() {
                         quoterEnableVPL: true,
                         quoterEnableVPLPPR: true,
                         quoterEnableUniversal: true,
+                        quoterEnableUniversalPPR: true,
                         quoterShowAccumulatedPremium: true
                     }
                 })
@@ -3148,7 +3150,7 @@ export async function getCurrentUser() {
     try {
         const user = await prisma.user.findUnique({
             where: { email: session.user.email },
-            select: { id: true, name: true, email: true, role: true, agencyId: true, agency: { select: { id: true, slug: true, purchasedSeats: true, quoterLifeCompany: true, quoterEnableVPL: true, quoterEnableVPLPPR: true, quoterEnableUniversal: true, quoterShowAccumulatedPremium: true } } }
+            select: { id: true, name: true, email: true, role: true, agencyId: true, agency: { select: { id: true, slug: true, purchasedSeats: true, quoterLifeCompany: true, quoterEnableVPL: true, quoterEnableVPLPPR: true, quoterEnableUniversal: true, quoterEnableUniversalPPR: true, quoterShowAccumulatedPremium: true } } }
         });
         if (!user) {
             return { success: false, message: "Usuario no encontrado" };
@@ -3158,7 +3160,7 @@ export async function getCurrentUser() {
         if (effectiveAgencyId && effectiveAgencyId !== user.agencyId) {
             const impersonatedAgency = await prisma.agency.findUnique({
                 where: { id: effectiveAgencyId },
-                select: { id: true, slug: true, purchasedSeats: true, quoterLifeCompany: true, quoterEnableVPL: true, quoterEnableVPLPPR: true, quoterEnableUniversal: true, quoterShowAccumulatedPremium: true }
+                select: { id: true, slug: true, purchasedSeats: true, quoterLifeCompany: true, quoterEnableVPL: true, quoterEnableVPLPPR: true, quoterEnableUniversal: true, quoterEnableUniversalPPR: true, quoterShowAccumulatedPremium: true }
             });
             if (impersonatedAgency) {
                 return {

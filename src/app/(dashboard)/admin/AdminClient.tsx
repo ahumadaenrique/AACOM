@@ -5001,13 +5001,16 @@ export default function AdminClient({ initialBootstrap }: { initialBootstrap?: a
                   {(() => {
                     const parsedCoverages = selectedQuote.coberturas ? JSON.parse(selectedQuote.coberturas) : { itp: false, epp: false, ma: false }
                     const parsedRows = JSON.parse(selectedQuote.projectionData)
+                    const isUniversalQuote =
+                      selectedQuote.producto === "Insignia Life Universal" ||
+                      selectedQuote.producto === "Insignia Life Universal PPR"
                     
                     // Recompute ppr calculations inside Modal Scope
-                    const benefitFiscalTotal = selectedQuote.producto === "VPL PPR" 
+                    const benefitFiscalTotal = selectedQuote.producto.includes("PPR")
                       ? selectedQuote.totalPrima * ((selectedQuote.isr || 35) / 100)
                       : 0
                     
-                    const benefitFiscalAnual = selectedQuote.producto === "VPL PPR"
+                    const benefitFiscalAnual = selectedQuote.producto.includes("PPR")
                       ? selectedQuote.primaAnual * ((selectedQuote.isr || 35) / 100)
                       : 0
 
@@ -5106,6 +5109,12 @@ export default function AdminClient({ initialBootstrap }: { initialBootstrap?: a
                                   <span className="text-slate-500 font-medium">Producto</span>
                                   <span className="font-bold text-slate-800">{selectedQuote.producto}</span>
                                 </div>
+                                {parsedCoverages.formaDePagoCotizada && (
+                                  <div className="flex justify-between border-b pb-1">
+                                    <span className="text-slate-500 font-medium">Forma de Pago</span>
+                                    <span className="font-bold text-slate-800">{parsedCoverages.formaDePagoCotizada}</span>
+                                  </div>
+                                )}
                                 <div className="flex justify-between border-b pb-1">
                                   <span className="text-slate-500 font-medium">Duración de Pagos</span>
                                   <span className="font-bold text-slate-800">
@@ -5276,14 +5285,28 @@ export default function AdminClient({ initialBootstrap }: { initialBootstrap?: a
                                 <TableRow>
                                   <TableHead className="font-bold text-white text-center py-2">Año</TableHead>
                                   <TableHead className="font-bold text-white text-center py-2">Edad</TableHead>
-                                  <TableHead className="font-bold text-white text-center py-2">Valor UDI</TableHead>
-                                  <TableHead className="font-bold text-white text-center py-2">Prima UDIS</TableHead>
-                                  <TableHead className="font-bold text-white text-center py-2">Prima Pesos</TableHead>
-                                  <TableHead className="font-bold text-white text-center py-2">SA UDIS</TableHead>
-                                  <TableHead className="font-bold text-white text-center py-2">SA Pesos</TableHead>
-                                  <TableHead className="font-bold text-white text-center py-2">Ahorro UDIS</TableHead>
-                                  <TableHead className="font-bold text-white text-center py-2">Ahorro Pesos</TableHead>
-                                  <TableHead className="font-bold text-white text-center py-2">Rendimiento</TableHead>
+                                  {isUniversalQuote ? (
+                                    <>
+                                      <TableHead className="font-bold text-white text-center py-2">Protección</TableHead>
+                                      <TableHead className="font-bold text-white text-center py-2">Prima de Protección</TableHead>
+                                      <TableHead className="font-bold text-white text-center py-2">Prima de Ahorro</TableHead>
+                                      <TableHead className="font-bold text-white text-center py-2">Prima Total</TableHead>
+                                      <TableHead className="font-bold text-white text-center py-2">Aportación Acumulada</TableHead>
+                                      <TableHead className="font-bold text-white text-center py-2">Fondo Disponible</TableHead>
+                                      <TableHead className="font-bold text-white text-center py-2">Recuperación</TableHead>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <TableHead className="font-bold text-white text-center py-2">Valor UDI</TableHead>
+                                      <TableHead className="font-bold text-white text-center py-2">Prima UDIS</TableHead>
+                                      <TableHead className="font-bold text-white text-center py-2">Prima Pesos</TableHead>
+                                      <TableHead className="font-bold text-white text-center py-2">SA UDIS</TableHead>
+                                      <TableHead className="font-bold text-white text-center py-2">SA Pesos</TableHead>
+                                      <TableHead className="font-bold text-white text-center py-2">Ahorro UDIS</TableHead>
+                                      <TableHead className="font-bold text-white text-center py-2">Ahorro Pesos</TableHead>
+                                      <TableHead className="font-bold text-white text-center py-2">Rendimiento</TableHead>
+                                    </>
+                                  )}
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
@@ -5315,28 +5338,56 @@ export default function AdminClient({ initialBootstrap }: { initialBootstrap?: a
                                     <TableRow key={idx} className={`border-b ${rowStyle}`}>
                                       <TableCell className={cellClass("text-center py-1.5 font-medium", "text-slate-800")}>{row.anio}</TableCell>
                                       <TableCell className={cellClass("text-center py-1.5", "text-slate-800")}>{row.edad}</TableCell>
-                                      <TableCell className={cellClass("text-center py-1.5", "text-slate-600")}>{row.udiValue.toFixed(4)}</TableCell>
-                                      <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-slate-800")}>
-                                        {row.primaUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                                      </TableCell>
-                                      <TableCell className={cellClass("text-center py-1.5 font-medium", "text-slate-800")}>
-                                        ${row.primaPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                                      </TableCell>
-                                      <TableCell className={cellClass("text-center py-1.5", "text-slate-800")}>
-                                        {row.saUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                                      </TableCell>
-                                      <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-slate-800")}>
-                                        ${row.saPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                                      </TableCell>
-                                      <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-teal-700")}>
-                                        {row.ahorroUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                                      </TableCell>
-                                      <TableCell className={cellClass("text-center py-1.5 font-bold", "text-emerald-600")}>
-                                        ${row.valoresPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
-                                      </TableCell>
-                                      <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-slate-700")}>
-                                        {(row.rendimiento * 100).toFixed(1)}%
-                                      </TableCell>
+                                      {isUniversalQuote ? (
+                                        <>
+                                          <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-slate-800")}>
+                                            ${row.saPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                          </TableCell>
+                                          <TableCell className={cellClass("text-center py-1.5 font-medium", "text-slate-800")}>
+                                            ${row.primaProteccionPesos?.toLocaleString("es-MX", { maximumFractionDigits: 0 }) || "0"}
+                                          </TableCell>
+                                          <TableCell className={cellClass("text-center py-1.5 font-medium", "text-slate-800")}>
+                                            ${row.primaAhorroPesos?.toLocaleString("es-MX", { maximumFractionDigits: 0 }) || "0"}
+                                          </TableCell>
+                                          <TableCell className={cellClass("text-center py-1.5 font-bold", "text-slate-800")}>
+                                            ${row.primaPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                          </TableCell>
+                                          <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-slate-700")}>
+                                            ${row.valoresPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                          </TableCell>
+                                          <TableCell className={cellClass("text-center py-1.5 font-bold", "text-emerald-600")}>
+                                            ${row.fondoDisponiblePesos?.toLocaleString("es-MX", { maximumFractionDigits: 0 }) || "0"}
+                                          </TableCell>
+                                          <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-teal-700")}>
+                                            {row.recuperacionSobreFondo ? `${(row.recuperacionSobreFondo * 100).toFixed(1)}%` : "0%"}
+                                          </TableCell>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <TableCell className={cellClass("text-center py-1.5", "text-slate-600")}>{row.udiValue.toFixed(4)}</TableCell>
+                                          <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-slate-800")}>
+                                            {row.primaUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                          </TableCell>
+                                          <TableCell className={cellClass("text-center py-1.5 font-medium", "text-slate-800")}>
+                                            ${row.primaPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                          </TableCell>
+                                          <TableCell className={cellClass("text-center py-1.5", "text-slate-800")}>
+                                            {row.saUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                          </TableCell>
+                                          <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-slate-800")}>
+                                            ${row.saPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                          </TableCell>
+                                          <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-teal-700")}>
+                                            {row.ahorroUdis.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                          </TableCell>
+                                          <TableCell className={cellClass("text-center py-1.5 font-bold", "text-emerald-600")}>
+                                            ${row.valoresPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
+                                          </TableCell>
+                                          <TableCell className={cellClass("text-center py-1.5 font-semibold", "text-slate-700")}>
+                                            {(row.rendimiento * 100).toFixed(1)}%
+                                          </TableCell>
+                                        </>
+                                      )}
                                     </TableRow>
                                   )
                                 })}
@@ -5377,15 +5428,25 @@ export default function AdminClient({ initialBootstrap }: { initialBootstrap?: a
                                 )}
                                 {parsedCoverages.epp && (
                                   <TableRow className="border-b">
-                                    <TableCell className="font-bold py-1.5">Exención de Pago de Primas por ITP (EPP)</TableCell>
+                                    <TableCell className="font-bold py-1.5">
+                                      {isUniversalQuote ? "Beneficio de Exención de cobro de seguro (BECS)" : "Exención de Pago de Primas por ITP (EPP)"}
+                                    </TableCell>
                                     <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-teal-50 text-teal-700 text-[9px] font-semibold">Adicional</span></TableCell>
                                     <TableCell className="text-center py-1.5 font-semibold">Exención de Aportaciones</TableCell>
                                     <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold">Amparada</span></TableCell>
                                   </TableRow>
                                 )}
                                 {parsedCoverages.ma && (
-                                  <TableRow>
+                                  <TableRow className={parsedCoverages.mapo ? "border-b" : ""}>
                                     <TableCell className="font-bold py-1.5">Muerte Accidental (MA)</TableCell>
+                                    <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-teal-50 text-teal-700 text-[9px] font-semibold">Adicional</span></TableCell>
+                                    <TableCell className="text-center py-1.5 font-semibold">${saY1.toLocaleString("es-MX", {maximumFractionDigits:0})} MXN</TableCell>
+                                    <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold">Amparada</span></TableCell>
+                                  </TableRow>
+                                )}
+                                {parsedCoverages.mapo && (
+                                  <TableRow>
+                                    <TableCell className="font-bold py-1.5">Muerte Accidental con Pérdidas Orgánicas (MAPO)</TableCell>
                                     <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-teal-50 text-teal-700 text-[9px] font-semibold">Adicional</span></TableCell>
                                     <TableCell className="text-center py-1.5 font-semibold">${saY1.toLocaleString("es-MX", {maximumFractionDigits:0})} MXN</TableCell>
                                     <TableCell className="text-center py-1.5"><span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold">Amparada</span></TableCell>

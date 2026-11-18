@@ -30,7 +30,9 @@ export default async function PrintCotizacionPage({ params }: { params: { id: st
   const accumulatedPremiumPesos = cotizacion.totalPrima
   const annualPremium = cotizacion.primaAnual
   const isr = cotizacion.isr || 35
-  const isPPR = cotizacion.producto === "VPL PPR"
+  const isPPR = cotizacion.producto.includes("PPR")
+  const isUniversal = cotizacion.producto === "Insignia Life Universal" || cotizacion.producto === "Insignia Life Universal PPR"
+  const parsedCov = cotizacion.coberturas ? JSON.parse(cotizacion.coberturas) : {}
 
   const summaryMetrics = {
     totalPrimasPesos: accumulatedPremiumPesos,
@@ -55,11 +57,16 @@ export default async function PrintCotizacionPage({ params }: { params: { id: st
       telefono: cotizacion.telefono,
       edadCliente: 35,
       producto: cotizacion.producto,
-      duracion: cotizacion.duracion || "15",
-      formaDePagoCotizada: cotizacion.producto === "Insignia Life Universal" ? "Anual" : "Meses sin intereses",
+      duracion: cotizacion.duracion || (cotizacion.producto === "Insignia Life Universal PPR" ? "EA65" : "15"),
+      formaDePagoCotizada: parsedCov.formaDePagoCotizada || (isUniversal ? "Anual" : "Meses sin intereses"),
       valorUdi: cotizacion.valorUdi || 8.25,
       inflacionUdi: cotizacion.inflacionUdi || 5.0,
-      coberturas: cotizacion.coberturas ? JSON.parse(cotizacion.coberturas) : { itp: false, epp: false, ma: false, mapo: false },
+      coberturas: {
+        itp: Boolean(parsedCov.itp),
+        epp: Boolean(parsedCov.epp),
+        ma: Boolean(parsedCov.ma),
+        mapo: Boolean(parsedCov.mapo)
+      },
       isr: isr
     },
     calculatedData: parsedData,

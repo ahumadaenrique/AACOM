@@ -76,6 +76,28 @@ interface ColumnMapping {
   primaAhorro: number
 }
 
+const isUniversalProduct = (producto?: string | null) =>
+  producto === "Insignia Life Universal" || producto === "Insignia Life Universal PPR"
+
+const isPprProduct = (producto?: string | null) =>
+  Boolean(producto && producto.includes("PPR"))
+
+const getDefaultProductConfig = (quoterSettings: any) => {
+  if (quoterSettings?.quoterEnableVPL !== false) {
+    return { producto: "VPL", duracion: "15", formaDePagoCotizada: "Anual" }
+  }
+  if (quoterSettings?.quoterEnableVPLPPR !== false) {
+    return { producto: "VPL PPR", duracion: "15", formaDePagoCotizada: "Anual" }
+  }
+  if (quoterSettings?.quoterEnableUniversal !== false) {
+    return { producto: "Insignia Life Universal", duracion: "20", formaDePagoCotizada: "Anual" }
+  }
+  if (quoterSettings?.quoterEnableUniversalPPR !== false) {
+    return { producto: "Insignia Life Universal PPR", duracion: "EA65", formaDePagoCotizada: "Anual" }
+  }
+  return { producto: "VPL", duracion: "15", formaDePagoCotizada: "Anual" }
+}
+
 export default function CotizadorPage({ 
   agencyName = "Tu Agencia", 
   agencyLogo = "/logo.png",
@@ -120,14 +142,15 @@ export default function CotizadorPage({
   
   // Step 1: Form Data - default ISR to 35%
   // Coberturas: MAA & MAB deleted (Correction 6)
+  const defaultProductConfig = getDefaultProductConfig(quoterSettings)
   const [formData, setFormData] = useState<FormData>(printData?.formData || {
     cliente: "",
     agente: currentUserName || "",
     telefono: "",
     edadCliente: 35,
-    producto: "VPL",
-    duracion: "15",
-    formaDePagoCotizada: "Anual",
+    producto: defaultProductConfig.producto,
+    duracion: defaultProductConfig.duracion,
+    formaDePagoCotizada: defaultProductConfig.formaDePagoCotizada,
     valorUdi: 8.25, // default
     inflacionUdi: 5.0,
     coberturas: {
@@ -216,13 +239,27 @@ export default function CotizadorPage({
           : name === "edadCliente" ? parseInt(value) || 0 : value
       }
       
-      // Auto-correct duracion if product changes
-      if (name === "producto" && value === "Insignia Life Universal") {
-        if (updated.duracion !== "20" && updated.duracion !== "EA65") {
-          updated.duracion = "20"
-        }
-        if (!["Anual", "Semestral", "Trimestral", "Mensual"].includes(updated.formaDePagoCotizada)) {
-          updated.formaDePagoCotizada = "Anual"
+      // Auto-correct duracion and formaDePagoCotizada if product changes
+      if (name === "producto") {
+        if (value === "Insignia Life Universal") {
+          if (updated.duracion !== "20" && updated.duracion !== "EA65") {
+            updated.duracion = "20"
+          }
+          if (!["Anual", "Semestral", "Trimestral", "Mensual"].includes(updated.formaDePagoCotizada)) {
+            updated.formaDePagoCotizada = "Anual"
+          }
+        } else if (value === "Insignia Life Universal PPR") {
+          updated.duracion = "EA65"
+          if (!["Anual", "Mensual"].includes(updated.formaDePagoCotizada)) {
+            updated.formaDePagoCotizada = "Anual"
+          }
+        } else {
+          if (!["5", "10", "15", "20", "25", "EA65"].includes(updated.duracion)) {
+            updated.duracion = "15"
+          }
+          if (!["Meses sin intereses", "Anual"].includes(updated.formaDePagoCotizada)) {
+            updated.formaDePagoCotizada = "Anual"
+          }
         }
       }
       return updated
@@ -287,6 +324,8 @@ export default function CotizadorPage({
 
         // Apply visual heuristic to auto-map columns
         const newMapping = { anios: -1, edad: -1, prima: -1, sa: -1, valores: -1, fondoDisponible: -1, recuperacion: -1, primaProteccion: -1, primaAhorro: -1 }
+        const isFiscalHeader = (h: string) =>
+          h.includes("fiscal") || h.includes("isr") || h.includes("impuesto") || h.includes("sat")
         
         headers.forEach((header, index) => {
           const lower = header.toLowerCase()
@@ -300,6 +339,7 @@ export default function CotizadorPage({
           } else if (lower.includes("prima de ahorro")) {
             if (newMapping.primaAhorro === -1) newMapping.primaAhorro = index
           } else if (
+            !isFiscalHeader(lower) &&
             (lower.includes("prima total") || lower.includes("anual por forma de pago") || lower.includes("prima anual") || lower.includes("prima") || lower.includes("aport") || lower.includes("anual")) &&
             !lower.includes("deducible") &&
             !lower.includes("acumulada") &&
@@ -308,13 +348,23 @@ export default function CotizadorPage({
             !lower.includes("ahorro")
           ) {
             if (newMapping.prima === -1) newMapping.prima = index
-          } else if (lower.includes("proteccion") || lower.includes("protección") || lower.includes("suma") || lower.includes("aseg") || lower.includes("sa") || lower.includes("fallecimiento")) {
+          } else if (
+            isUniversalProduct(formData.producto) &&
+            !isFiscalHeader(lower) &&
+            (lower.includes("aport") || lower.includes("prima")) &&
+            lower.includes("acumulad")
+          ) {
+            if (newMapping.valores === -1) newMapping.valores = index
+          } else if (
+            !isFiscalHeader(lower) &&
+            (lower.includes("proteccion") || lower.includes("protección") || lower.includes("suma") || lower.includes("aseg") || lower.includes("sa") || lower.includes("fallecimiento"))
+          ) {
             if (newMapping.sa === -1) newMapping.sa = index
-          } else if (lower.includes("fondo") || lower.includes("disponible")) {
+          } else if (!isFiscalHeader(lower) && (lower.includes("fondo") || lower.includes("disponible"))) {
             if (newMapping.fondoDisponible === -1) newMapping.fondoDisponible = index
-          } else if (lower.includes("recuperacion") || lower.includes("recuperación") || lower.includes("sobre fondo")) {
+          } else if (!isFiscalHeader(lower) && (lower.includes("recuperacion") || lower.includes("recuperación") || lower.includes("sobre fondo"))) {
             if (newMapping.recuperacion === -1) newMapping.recuperacion = index
-          } else if (lower.includes("valor") || lower.includes("garant") || lower.includes("rescate") || lower.includes("efect") || lower.includes("ahorro")) {
+          } else if (!isFiscalHeader(lower) && (lower.includes("valor") || lower.includes("garant") || lower.includes("rescate") || lower.includes("efect") || lower.includes("ahorro"))) {
             if (newMapping.valores === -1) newMapping.valores = index
           }
         })
@@ -323,7 +373,7 @@ export default function CotizadorPage({
         if (newMapping.prima === -1) {
           headers.forEach((header, index) => {
             const lower = header.toLowerCase()
-            if (lower.includes("prima") && !lower.includes("acumulada") && !lower.includes("protección") && !lower.includes("proteccion") && !lower.includes("ahorro")) {
+            if (!isFiscalHeader(lower) && lower.includes("prima") && !lower.includes("acumulada") && !lower.includes("protección") && !lower.includes("proteccion") && !lower.includes("ahorro")) {
               if (newMapping.prima === -1) newMapping.prima = index
             }
           })
@@ -459,7 +509,7 @@ export default function CotizadorPage({
     const ahorroAtTargetUdis = targetRow ? targetRow.ahorroUdis : 0
     
     let rendimientoAtTarget = targetRow ? targetRow.rendimiento * 100 : 0
-    if (formData.producto === "Insignia Life Universal" && targetRow) {
+    if (isUniversalProduct(formData.producto) && targetRow) {
       // Si la columna H se mapeó, usarla directo. Si la celda trae decimales < 2 (ej. 1.15), multiplicamos por 100.
       let recVal = targetRow.recuperacionSobreFondo
       if (recVal > 0 && recVal <= 5) recVal = recVal * 100
@@ -490,10 +540,10 @@ export default function CotizadorPage({
 
     // Beneficio fiscal is calculated on accumulated total
     const annualPremium = results[0]?.primaPesos || 0
-    const benefitFiscalAnual = (formData.producto === "VPL PPR")
+    const benefitFiscalAnual = isPprProduct(formData.producto)
       ? annualPremium * (formData.isr / 100)
       : 0
-    const benefitFiscalTotal = (formData.producto === "VPL PPR")
+    const benefitFiscalTotal = isPprProduct(formData.producto)
       ? accumulatedPremiumPesos * (formData.isr / 100)
       : 0
 
@@ -526,7 +576,10 @@ export default function CotizadorPage({
         inflacionUdi: formData.inflacionUdi,
         duracion: formData.duracion,
         isr: formData.isr,
-        coberturas: JSON.stringify(formData.coberturas),
+        coberturas: JSON.stringify({
+          ...formData.coberturas,
+          formaDePagoCotizada: formData.formaDePagoCotizada
+        }),
         projectionData: JSON.stringify(results)
       })
 
@@ -623,14 +676,15 @@ export default function CotizadorPage({
 
   // Reset cotizador to step 1 and clean up state fields
   const handleResetAndNewQuote = () => {
+    const defaultConfig = getDefaultProductConfig(quoterSettings)
     setFormData({
       cliente: "",
       agente: "", // Reset back to placeholder
       telefono: "",
       edadCliente: 35,
-      producto: "VPL",
-      duracion: "15",
-      formaDePagoCotizada: "Anual",
+      producto: defaultConfig.producto,
+      duracion: defaultConfig.duracion,
+      formaDePagoCotizada: defaultConfig.formaDePagoCotizada,
       valorUdi: formData.valorUdi, // Keep initial default UDI value
       inflacionUdi: 5.0, // Default 5%
       coberturas: {
@@ -734,18 +788,24 @@ export default function CotizadorPage({
   }
 
   const loadHistoryRecord = (record: any) => {
+    const parsedCov = record.coberturas ? JSON.parse(record.coberturas) : {}
     setFormData({
       cliente: record.cliente,
       agente: record.agente,
       telefono: record.telefono,
       producto: record.producto,
-      duracion: record.duracion || "15",
+      duracion: record.duracion || (record.producto === "Insignia Life Universal PPR" ? "EA65" : "15"),
       valorUdi: record.valorUdi || 8.25,
       inflacionUdi: record.inflacionUdi || 5.0,
       isr: record.isr || 35,
-      coberturas: record.coberturas ? JSON.parse(record.coberturas) : { itp: false, epp: false, ma: false, mapo: false },
+      coberturas: {
+        itp: Boolean(parsedCov.itp),
+        epp: Boolean(parsedCov.epp),
+        ma: Boolean(parsedCov.ma),
+        mapo: Boolean(parsedCov.mapo)
+      },
       edadCliente: 35,
-      formaDePagoCotizada: record.producto === "Insignia Life Universal" ? "Anual" : "Meses sin intereses"
+      formaDePagoCotizada: parsedCov.formaDePagoCotizada || (isUniversalProduct(record.producto) ? "Anual" : "Meses sin intereses")
     })
     
     if (record.projectionData) {
@@ -763,8 +823,8 @@ export default function CotizadorPage({
         totalPrimasPesos: accumulatedPremiumPesos,
         totalAhorroPesos: ahorroAt65Pesos,
         totalAhorroUdis: ahorroAt65Udis,
-        beneficioFiscalAnual: record.producto === "VPL PPR" ? annualPremium * ((record.isr||35) / 100) : 0,
-        beneficioFiscalTotal: record.producto === "VPL PPR" ? accumulatedPremiumPesos * ((record.isr||35) / 100) : 0,
+        beneficioFiscalAnual: isPprProduct(record.producto) ? annualPremium * ((record.isr||35) / 100) : 0,
+        beneficioFiscalTotal: isPprProduct(record.producto) ? accumulatedPremiumPesos * ((record.isr||35) / 100) : 0,
         rendimientoFinal65: rendimientoAt65
       })
       
@@ -1091,6 +1151,9 @@ export default function CotizadorPage({
                   {quoterSettings?.quoterEnableUniversal !== false && (
                     <option value="Insignia Life Universal">Insignia Life Universal</option>
                   )}
+                  {quoterSettings?.quoterEnableUniversalPPR !== false && (
+                    <option value="Insignia Life Universal PPR">Insignia Life Universal PPR</option>
+                  )}
                 </select>
               </div>
 
@@ -1107,6 +1170,11 @@ export default function CotizadorPage({
                       <option value="Anual">Anual</option>
                       <option value="Semestral">Semestral</option>
                       <option value="Trimestral">Trimestral</option>
+                      <option value="Mensual">Mensual</option>
+                    </>
+                  ) : formData.producto === "Insignia Life Universal PPR" ? (
+                    <>
+                      <option value="Anual">Anual</option>
                       <option value="Mensual">Mensual</option>
                     </>
                   ) : (
@@ -1126,7 +1194,9 @@ export default function CotizadorPage({
                   onChange={handleInputChange}
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 >
-                  {formData.producto === "Insignia Life Universal" ? (
+                  {formData.producto === "Insignia Life Universal PPR" ? (
+                    <option value="EA65">Edad Alcanzada 65</option>
+                  ) : formData.producto === "Insignia Life Universal" ? (
                     <>
                       <option value="20">20 Años</option>
                       <option value="EA65">Edad Alcanzada 65</option>
@@ -1174,7 +1244,7 @@ export default function CotizadorPage({
                 />
               </div>
 
-              {formData.producto === "VPL PPR" && (
+              {isPprProduct(formData.producto) && (
                 <div className="space-y-2 animate-in fade-in slide-in-from-top-1 duration-200">
                   <label className="text-sm font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
                     Tasa de Impuestos / ISR (%)
@@ -1203,7 +1273,7 @@ export default function CotizadorPage({
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 {[
                   { key: "itp", label: "Invalidez Total y Permanente (ITP)", code: "ITP" },
-                  { key: "epp", label: formData.producto === "Insignia Life Universal" ? "Beneficio de Exención de cobro de seguro (BECS)" : "Exención de Pago Primas por ITP (EPP)", code: formData.producto === "Insignia Life Universal" ? "BECS" : "EPP" },
+                  { key: "epp", label: isUniversalProduct(formData.producto) ? "Beneficio de Exención de cobro de seguro (BECS)" : "Exención de Pago Primas por ITP (EPP)", code: isUniversalProduct(formData.producto) ? "BECS" : "EPP" },
                   { key: "ma", label: "Muerte Accidental (MA)", code: "MA" },
                   { key: "mapo", label: "Muerte Accidental con Pérdidas Orgánicas (MAPO)", code: "MAPO" }
                 ].map((cov) => (
@@ -1370,10 +1440,10 @@ export default function CotizadorPage({
               {[
                 { key: "anios", label: "Años Póliza", desc: "Progreso anual", icon: TrendingUp },
                 { key: "edad", label: "Edad", desc: "Edad del cliente", icon: HelpCircle },
-                { key: "prima", label: formData.producto === "Insignia Life Universal" ? "Prima Total ($)" : "Prima Anual ($)", desc: "Aportación anual", icon: PiggyBank },
-                { key: "sa", label: formData.producto === "Insignia Life Universal" ? "Protección ($)" : "Suma Asegurada ($)", desc: "Cobertura", icon: Percent },
-                { key: "valores", label: formData.producto === "Insignia Life Universal" ? "Aportación Acumulada" : "Valores Garantizados", desc: "Rescate / Ahorro", icon: Check },
-                ...(formData.producto === "Insignia Life Universal" ? [
+                { key: "prima", label: isUniversalProduct(formData.producto) ? "Prima Total ($)" : "Prima Anual ($)", desc: "Aportación anual", icon: PiggyBank },
+                { key: "sa", label: isUniversalProduct(formData.producto) ? "Protección ($)" : "Suma Asegurada ($)", desc: "Cobertura", icon: Percent },
+                { key: "valores", label: isUniversalProduct(formData.producto) ? "Aportación Acumulada" : "Valores Garantizados", desc: "Rescate / Ahorro", icon: Check },
+                ...(isUniversalProduct(formData.producto) ? [
                   { key: "primaProteccion", label: "Prima Protec.", desc: "Costo protección", icon: CheckSquare },
                   { key: "primaAhorro", label: "Prima Ahorro", desc: "Destinado a ahorro", icon: CheckSquare },
                   { key: "fondoDisponible", label: "Fondo Disponible", desc: "Fondo proyectado", icon: CheckSquare },
@@ -1498,10 +1568,10 @@ export default function CotizadorPage({
                 onClick={() => {
                   const missingCols: string[] = []
                   if (mapping.anios === -1) missingCols.push("Años Póliza")
-                  if (mapping.prima === -1) missingCols.push(formData.producto === "Insignia Life Universal" ? "Prima Total ($)" : "Prima Anual ($)")
-                  if (mapping.sa === -1) missingCols.push(formData.producto === "Insignia Life Universal" ? "Protección ($)" : "Suma Asegurada ($)")
-                  if (mapping.valores === -1) missingCols.push(formData.producto === "Insignia Life Universal" ? "Aportación Acumulada" : "Valores Garantizados")
-                  if (formData.producto === "Insignia Life Universal") {
+                  if (mapping.prima === -1) missingCols.push(isUniversalProduct(formData.producto) ? "Prima Total ($)" : "Prima Anual ($)")
+                  if (mapping.sa === -1) missingCols.push(isUniversalProduct(formData.producto) ? "Protección ($)" : "Suma Asegurada ($)")
+                  if (mapping.valores === -1) missingCols.push(isUniversalProduct(formData.producto) ? "Aportación Acumulada" : "Valores Garantizados")
+                  if (isUniversalProduct(formData.producto)) {
                     if (mapping.primaProteccion === -1) missingCols.push("Prima Protec.")
                     if (mapping.primaAhorro === -1) missingCols.push("Prima Ahorro")
                     if (mapping.fondoDisponible === -1) missingCols.push("Fondo Disponible")
@@ -1887,7 +1957,7 @@ export default function CotizadorPage({
                     <TableRow className="bg-[#87D1B5] hover:bg-[#87D1B5]">
                       <TableHead className="font-black text-white text-center py-2.5">Año</TableHead>
                       <TableHead className="font-black text-white text-center py-2.5">Edad</TableHead>
-                      {formData.producto === "Insignia Life Universal" ? (
+                      {isUniversalProduct(formData.producto) ? (
                         <>
                           <TableHead className="font-black text-white text-center py-2.5">Protección</TableHead>
                           <TableHead className="font-black text-white text-center py-2.5">Prima de Protección</TableHead>
@@ -1952,7 +2022,7 @@ export default function CotizadorPage({
                         >
                           <TableCell className={cellClass("text-center py-2 font-medium", "text-slate-800")}>{row.anio}</TableCell>
                           <TableCell className={cellClass("text-center py-2", "text-slate-800")}>{row.edad}</TableCell>
-                          {formData.producto === "Insignia Life Universal" ? (
+                          {isUniversalProduct(formData.producto) ? (
                             <>
                               <TableCell className={cellClass("text-center py-2 font-semibold", "text-slate-800")}>
                                 ${row.saPesos.toLocaleString("es-MX", { maximumFractionDigits: 0 })}
@@ -2076,7 +2146,7 @@ export default function CotizadorPage({
                     {formData.coberturas.epp && (
                       <TableRow className="hover:bg-slate-50 dark:hover:bg-zinc-800 border-b">
                         <TableCell className="font-bold py-2 text-slate-800 dark:text-slate-200">
-                          {formData.producto === "Insignia Life Universal" ? "Beneficio de Exención de cobro de seguro (BECS)" : "Exención de Pago de Primas por ITP (EPP)"}
+                          {isUniversalProduct(formData.producto) ? "Beneficio de Exención de cobro de seguro (BECS)" : "Exención de Pago de Primas por ITP (EPP)"}
                         </TableCell>
                         <TableCell className="text-center py-2">
                           <span className="px-2 py-0.5 rounded bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 text-[10px] font-semibold border border-teal-200/50 dark:border-teal-900/50">

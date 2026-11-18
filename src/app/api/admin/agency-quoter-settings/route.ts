@@ -31,6 +31,7 @@ export async function POST(req: Request) {
       quoterEnableVPL,
       quoterEnableVPLPPR,
       quoterEnableUniversal,
+      quoterEnableUniversalPPR,
       quoterShowAccumulatedPremium
     } = body
 
@@ -41,6 +42,7 @@ export async function POST(req: Request) {
         quoterEnableVPL,
         quoterEnableVPLPPR,
         quoterEnableUniversal,
+        quoterEnableUniversalPPR,
         quoterShowAccumulatedPremium
       }
     })

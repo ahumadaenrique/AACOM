@@ -10,6 +10,7 @@ export default function AdminCotizadorSettings({ agencyId, initialSettings }: { 
     quoterEnableVPL: initialSettings?.quoterEnableVPL ?? true,
     quoterEnableVPLPPR: initialSettings?.quoterEnableVPLPPR ?? true,
     quoterEnableUniversal: initialSettings?.quoterEnableUniversal ?? true,
+    quoterEnableUniversalPPR: initialSettings?.quoterEnableUniversalPPR ?? true,
     quoterShowAccumulatedPremium: initialSettings?.quoterShowAccumulatedPremium ?? false
   })
 
@@ -77,6 +78,15 @@ export default function AdminCotizadorSettings({ agencyId, initialSettings }: { 
                 onChange={(e) => setSettings({...settings, quoterEnableUniversal: e.target.checked})}
               />
               <span className="text-slate-700">Insignia Life Universal</span>
+            </label>
+            <label className="flex items-center space-x-3 cursor-pointer">
+              <input 
+                type="checkbox" 
+                className="w-5 h-5 text-emerald-600 rounded border-slate-300 focus:ring-emerald-500"
+                checked={settings.quoterEnableUniversalPPR}
+                onChange={(e) => setSettings({...settings, quoterEnableUniversalPPR: e.target.checked})}
+              />
+              <span className="text-slate-700">Insignia Life Universal PPR</span>
             </label>
           </div>
         </div>
