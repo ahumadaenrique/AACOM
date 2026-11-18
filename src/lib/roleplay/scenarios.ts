@@ -1296,7 +1296,7 @@ Evalúa con justicia lo que te acaba de contestar el asesor:
       brief: (moduleId === 'adn' && adnBrief) ? adnBrief : (moduleId === 'objeciones' && cierreBrief) ? cierreBrief : ctx.brief,
       tipPostLlamada: (moduleId === 'objeciones') ? 'Aísla la cortina de humo, rebate la objeción raíz con Boomerang o Costo Diario, y remata con Cierre Asumido con doble alternativa.' : ctx.tipPostLlamada
     },
-    referidor: origenBase.tipo === 'referido_avisado' ? referidor : null,
+    referidor: (origenBase.tipo === 'referido_avisado' || origenBase.tipo === 'referido_tibio') ? referidor : null,
     firstMessage,
     systemPrompt,
     difficultyLevel: currentLevel

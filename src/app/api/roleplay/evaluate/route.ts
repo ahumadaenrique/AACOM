@@ -432,7 +432,7 @@ ${badgesText}
       // 2. Verificar determinísticamente en la voz del ASESOR si dijo el origen del contacto (no vale si solo dijo "¿te acuerdas de mí?" y el prospecto lo completó)
       const referidorName = (scenario?.referidor || '').toLowerCase().split(' ').filter((w: string) => w.length > 3);
       const mentionedReferidor = referidorName.some((w: string) => advisorLower.includes(w));
-      const mentionedOriginKeywords = /\b(pas[oó]\s+tu\s+contacto|dio\s+tu\s+contacto|comparti[oó]\s+tu\s+contacto|recomend[oó]|habl[oó]\s+de\s+ti|desayuno|evento|conferencia|networking|dejaste\s+tus\s+datos|pediste\s+informes|solicitaste\s+informes|formulario|p[aá]gina|redes\s+sociales|internet|platicamos\s+hace)\b/i.test(advisorText);
+      const mentionedOriginKeywords = /\b((?:pas[oó]|dio|comparti[oó])\s+(?:tu\s+contacto|tus\s+datos(?:\s+de\s+contacto)?|tu\s+n[uú]mero|tu\s+tel[eé]fono)|recomend[oó]|habl[oó]\s+de\s+ti|desayuno|evento|conferencia|networking|dejaste\s+tus\s+datos|pediste\s+informes|solicitaste\s+informes|formulario|p[aá]gina|redes\s+sociales|internet|platicamos\s+hace|directorio\s+empresarial)\b/i.test(advisorText);
       if (!mentionedReferidor && !mentionedOriginKeywords && scenario?.origen?.tipo !== 'frio_total') {
         p.pilar3OrigenContacto = false;
       }
