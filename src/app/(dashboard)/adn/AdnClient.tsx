@@ -194,12 +194,246 @@ export function evaluatePilar5Hormiga({
   };
 }
 
+function safeParseAdnJson<T>(raw: unknown, fallback: T): T {
+  if (!raw) return fallback
+  if (typeof raw !== 'string') return raw as T
+  try {
+    return JSON.parse(raw) as T
+  } catch {
+    return fallback
+  }
+}
+
+export interface ComputeAdnFinancialsInput {
+  modalidad?: string | null;
+  ingresosNetos: number;
+  ahorroActual: number;
+  clienteEdad: number;
+  hijos: Hijo[];
+  hasSeguroAhorro: boolean;
+  ahorroAporte: number;
+  ahorroFrecuencia?: string | null;
+  hasPpr: boolean;
+  pprAporte: number;
+  pprFrecuencia?: string | null;
+  pprAniosPlazo?: string | null;
+  hasGmm: boolean;
+  gastosDet: GastosDetallados;
+  gastosRes: GastosResumidos;
+  gastosBasicosTotales: number;
+}
+
+export function computeAdnFinancials(input: ComputeAdnFinancialsInput) {
+  let vivienda = 0
+  let transporte = 0
+  let educacion = 0
+  let deudas = 0
+  let entretenimiento = 0
+  let alimentacion = 0
+  let cuidadoPersonal = 0
+  let ahorro = 0
+  let mascotas = 0
+
+  if (input.hasSeguroAhorro && input.ahorroAporte) {
+    const aporte = Number(input.ahorroAporte) || 0
+    ahorro += input.ahorroFrecuencia === 'MENSUAL' ? aporte : aporte / 12
+  }
+  if (input.hasPpr && input.pprAporte) {
+    const aporte = Number(input.pprAporte) || 0
+    ahorro += input.pprFrecuencia === 'MENSUAL' ? aporte : aporte / 12
+  }
+
+  let extraManualAhorro = 0
+  if (input.modalidad === 'DETALLADO') {
+    const g = { ...initialGastosDetallados, ...(input.gastosDet || {}) }
+    vivienda =
+      (Number(g.renta) || 0) + (Number(g.hipoteca) || 0) + (Number(g.mantenimiento) || 0) +
+      (Number(g.luz) || 0) + (Number(g.gas) || 0) + (Number(g.agua) || 0) +
+      (Number(g.telefono) || 0) + (Number(g.internet) || 0) + (Number(g.streamings) || 0) +
+      (Number(g.celular) || 0) + (Number(g.otrosServicios) || 0) +
+      ((Number(g.predial) || 0) / 12) + ((Number(g.seguroCasa) || 0) / 12)
+
+    transporte =
+      (Number(g.mensualidadAuto) || 0) + ((Number(g.tenencia) || 0) / 12) +
+      ((Number(g.verificacion) || 0) / 12) + ((Number(g.mantenimientoAuto) || 0) / 12) +
+      ((Number(g.seguroAuto) || 0) / 12) + (Number(g.gasolina) || 0) +
+      (Number(g.transportePublico) || 0) + (Number(g.uber) || 0) +
+      (Number(g.estacionamientos) || 0) + (Number(g.peajes) || 0)
+
+    educacion =
+      (Number(g.escuelaHijos) || 0) + (Number(g.escuelaPropia) || 0) +
+      (Number(g.utiles) || 0) + (Number(g.materiales) || 0) + (Number(g.libros) || 0)
+    deudas = (Number(g.prestamos) || 0) + (Number(g.creditos) || 0)
+    entretenimiento =
+      (Number(g.hobbies) || 0) + (Number(g.finDeSemana) || 0) + (Number(g.vacaciones) || 0) +
+      (Number(g.cineTeatro) || 0) + (Number(g.comidasEsparcimiento) || 0) +
+      (Number(g.baresRecreacion) || 0) + (Number(g.cafecitos) || 0) +
+      (Number(g.clubSocial) || 0) + (Number(g.amazonCompras) || 0)
+    alimentacion = (Number(g.supermercado) || 0) + (Number(g.mercado) || 0) + (Number(g.accesoriosCasa) || 0)
+    cuidadoPersonal =
+      (Number(g.estetica) || 0) + (Number(g.accesoriosBelleza) || 0) +
+      (Number(g.medicamentos) || 0) + (Number(g.checkups) || 0) +
+      (Number(g.ropaZapatos) || 0) + (Number(g.gimnasio) || 0) +
+      ((Number(g.seguroVida) || 0) / 12) + ((Number(g.seguroGmm) || 0) / 12)
+    extraManualAhorro = Number(g.inversiones) || 0
+    ahorro += extraManualAhorro
+    mascotas =
+      (Number(g.comidaMascota) || 0) + (Number(g.saludMascota) || 0) +
+      (Number(g.vacunasMascota) || 0) + (Number(g.esteticaMascota) || 0) +
+      (Number(g.accesoriosMascota) || 0)
+  } else if (input.modalidad === 'RESUMIDO') {
+    const r = { ...initialGastosResumidos, ...(input.gastosRes || {}) }
+    vivienda = Number(r.vivienda) || 0
+    transporte = (Number(r.transporte) || 0) + ((Number(r.seguroAuto) || 0) / 12)
+    educacion = Number(r.educacion) || 0
+    deudas = Number(r.deudas) || 0
+    entretenimiento = Number(r.entretenimiento) || 0
+    alimentacion = Number(r.alimentacion) || 0
+    cuidadoPersonal =
+      (Number(r.cuidadoPersonal) || 0) + ((Number(r.seguroVida) || 0) / 12) +
+      ((Number(r.seguroGmm) || 0) / 12) + ((Number(r.otrosSeguros) || 0) / 12)
+    extraManualAhorro = Number(r.ahorro) || 0
+    ahorro += extraManualAhorro
+    mascotas = Number(r.mascotas) || 0
+  } else {
+    // BASICO
+    const gTot = Number(input.gastosBasicosTotales) || 0
+    vivienda = gTot * 0.4
+    transporte = gTot * 0.15
+    educacion = gTot * 0.1
+    deudas = gTot * 0.1
+    entretenimiento = gTot * 0.1
+    alimentacion = gTot * 0.1
+    cuidadoPersonal = gTot * 0.05
+  }
+
+  const totalGastos =
+    vivienda + transporte + educacion + deudas + entretenimiento +
+    alimentacion + cuidadoPersonal + extraManualAhorro + mascotas
+  const necesidades = vivienda + transporte + educacion + deudas + alimentacion + cuidadoPersonal + mascotas
+  const deseos = entretenimiento
+  const netIncome = Number(input.ingresosNetos) || 0
+  const remanente = Math.max(0, netIncome - totalGastos)
+
+  const totalsByRamo = {
+    vivienda,
+    transporte,
+    educacion,
+    deudas,
+    entretenimiento,
+    alimentacion,
+    cuidadoPersonal,
+    ahorro,
+    mascotas,
+    totalGastos,
+    necesidades,
+    deseos,
+    remanente
+  }
+
+  const safeIncome = netIncome || 1
+  const warrenMetrics = {
+    pctNecesidades: Math.round((necesidades / safeIncome) * 100),
+    pctDeseos: Math.round((deseos / safeIncome) * 100),
+    pctAhorro: Math.round((ahorro / safeIncome) * 100),
+    recNecesidades: Math.round(safeIncome * 0.5),
+    recDeseos: Math.round(safeIncome * 0.2),
+    recAhorro: Math.round(safeIncome * 0.3)
+  }
+
+  let pprSufficiency: {
+    retirementGoal: number;
+    plazoAnios: number;
+    projectedAccumulation: number;
+    brechaRetiro: number;
+    isSufficient: boolean;
+    adicionalMensualSugerido: number;
+  } | null = null
+
+  if (input.hasPpr && input.pprAporte) {
+    const retirementGoal = netIncome * 12 * 20
+    const aporteMensual = input.pprFrecuencia === 'MENSUAL' ? Number(input.pprAporte) : Number(input.pprAporte) / 12
+    const aporteAnual = aporteMensual * 12
+    const edadActual = Number(input.clienteEdad || 0)
+    const plazoAnios =
+      input.pprAniosPlazo === '65'
+        ? Math.max(0, 65 - edadActual)
+        : Number(input.pprAniosPlazo || 10)
+
+    let projectedAccumulation = 0
+    let tempAporte = aporteAnual
+    for (let i = 0; i < plazoAnios; i++) {
+      projectedAccumulation = (projectedAccumulation + tempAporte) * 1.05
+      tempAporte = tempAporte * 1.05
+    }
+
+    const edadFinDePago = edadActual + plazoAnios
+    const aniosDeMaduracion = Math.max(0, 65 - edadFinDePago)
+    if (aniosDeMaduracion > 0) {
+      projectedAccumulation = projectedAccumulation * Math.pow(1.05, aniosDeMaduracion)
+    }
+
+    const brechaRetiro = Math.max(0, retirementGoal - projectedAccumulation)
+    const isSufficient = projectedAccumulation >= retirementGoal
+    const aniosTotalesParaRetiro = Math.max(1, 65 - edadActual)
+    const adicionalMensualSugerido = (brechaRetiro / Math.max(1, aniosTotalesParaRetiro)) / 12
+
+    pprSufficiency = {
+      retirementGoal,
+      plazoAnios,
+      projectedAccumulation,
+      brechaRetiro,
+      isSufficient,
+      adicionalMensualSugerido
+    }
+  }
+
+  const currentAhorro = Number(input.ahorroActual) || 0
+  const idealMonths = input.hasGmm ? 1 : 3
+  const fondoIdeal = netIncome * idealMonths
+  const hasEmergencyFundOk = currentAhorro >= fondoIdeal
+  const p3_fondo_gap = Math.max(0, fondoIdeal - currentAhorro)
+  const tieneHijosChicos = (input.hijos || []).some((h) => Number(h.edad) >= 0 && Number(h.edad) <= 9)
+
+  const p5Result = evaluatePilar5Hormiga({
+    modalidad: input.modalidad,
+    income: netIncome,
+    totalGastos,
+    remanente,
+    parsedGastos: input.modalidad === 'DETALLADO' ? input.gastosDet : (input.modalidad === 'RESUMIDO' ? input.gastosRes : {})
+  })
+
+  const prioridades = {
+    p1_retiro: !input.hasPpr,
+    p2_gmm: !input.hasGmm,
+    p3_fondo: {
+      idealMonths,
+      fondoIdeal,
+      gap: p3_fondo_gap,
+      isOk: hasEmergencyFundOk
+    },
+    p4_educacion: tieneHijosChicos && !input.hasSeguroAhorro,
+    p5_hormiga: p5Result.isAlert,
+    p5: p5Result,
+    tieneHijosChicos
+  }
+
+  return { totalsByRamo, warrenMetrics, pprSufficiency, prioridades }
+}
+
 interface AdnDiagnosticProps {
   printMode?: boolean;
   printData?: any;
+  agencyName?: string;
+  agencyLogo?: string;
 }
 
-export default function AdnPage({ printMode = false, printData = null }: AdnDiagnosticProps) {
+export default function AdnPage({
+  printMode = false,
+  printData = null,
+  agencyName = "aacomsoft",
+  agencyLogo = "/logo.png"
+}: AdnDiagnosticProps) {
   const router = useRouter()
   const [modalidad, setModalidad] = useState<'DETALLADO' | 'RESUMIDO' | 'BASICO' | null>(printData?.modalidad || null)
   const [step, setStep] = useState(printMode ? 4 : 0) // Step 0 is Mode Selection
@@ -207,7 +441,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
   const [isDownloadingPdf, setIsDownloadingPdf] = useState(false)
   const [currentDiagnosticId, setCurrentDiagnosticId] = useState<string | null>(printData?.id || null)
 
-  const [viewMode, setViewMode] = useState<'MENU' | 'WIZARD' | 'HISTORIAL'>('MENU')
+  const [viewMode, setViewMode] = useState<'MENU' | 'WIZARD' | 'HISTORIAL'>(printMode ? 'WIZARD' : 'MENU')
   const [savedAdns, setSavedAdns] = useState<any[]>([])
   
   const [loadingSaved, setLoadingSaved] = useState(false)
@@ -354,14 +588,14 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
   const [conyugeNombre, setConyugeNombre] = useState(printData?.conyugeNombre || '')
   const [conyugeEdad, setConyugeEdad] = useState<number | ''>(printData?.conyugeEdad || '')
   const [situacionLaboral, setSituacionLaboral] = useState(printData?.situacionLaboral || 'Empleado')
-  const [hijos, setHijos] = useState<Hijo[]>(printData?.hijosData ? (typeof printData.hijosData === 'string' ? JSON.parse(printData.hijosData) : printData.hijosData) : [])
+  const [hijos, setHijos] = useState<Hijo[]>(safeParseAdnJson<Hijo[]>(printData?.hijosData, []))
   const [nuevoHijoNombre, setNuevoHijoNombre] = useState('')
   const [nuevoHijoEdad, setNuevoHijoEdad] = useState<number | ''>('')
 
   // Salud y Hábitos
   const [estatura, setEstatura] = useState(printData?.estatura || '')
   const [peso, setPeso] = useState(printData?.peso || '')
-  const [fumador, setFumador] = useState(printData?.fumador === 'SI')
+  const [fumador, setFumador] = useState(Boolean(printData?.fumador) && printData?.fumador !== 'NO')
   const [padecimientos, setPadecimientos] = useState(printData?.padecimientos || '')
 
   // Step 2: Seguros Existentes
@@ -390,16 +624,21 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
   const [tarjetasLimite, setTarjetasLimite] = useState(printData?.tarjetasLimite || '')
 
   // Egresos por modalidad
+  const parsedPrintGastos = safeParseAdnJson<any>(printData?.gastosData, null)
   const [gastosDet, setGastosDet] = useState<GastosDetallados>(
-    printData?.gastosData && printData.modalidad === 'DETALLADO' ? 
-    (typeof printData.gastosData === 'string' ? JSON.parse(printData.gastosData) : printData.gastosData) : initialGastosDetallados
+    parsedPrintGastos && printData?.modalidad === 'DETALLADO'
+      ? { ...initialGastosDetallados, ...parsedPrintGastos }
+      : initialGastosDetallados
   )
   const [gastosRes, setGastosRes] = useState<GastosResumidos>(
-    printData?.gastosData && printData.modalidad === 'RESUMIDO' ? 
-    (typeof printData.gastosData === 'string' ? JSON.parse(printData.gastosData) : printData.gastosData) : initialGastosResumidos
+    parsedPrintGastos && printData?.modalidad === 'RESUMIDO'
+      ? { ...initialGastosResumidos, ...parsedPrintGastos }
+      : initialGastosResumidos
   )
   const [gastosBasicosTotales, setGastosBasicosTotales] = useState<number | ''>(
-    printData?.totalGastos && printData.modalidad === 'BASICO' ? printData.totalGastos : ''
+    printData?.modalidad === 'BASICO'
+      ? (parsedPrintGastos?.totalBasico ?? printData?.totalGastos ?? '')
+      : ''
   )
   const [evidenciaBase64, setEvidenciaBase64] = useState<string | null>(null)
 
@@ -476,207 +715,57 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
     reader.readAsDataURL(file)
   }
 
-  // --- Sumas y Cálculos Financieros Desglosados por Ramo (AJUSTE 6) ---
-  const totalsByRamo = useMemo(() => {
-    let vivienda = 0
-    let transporte = 0
-    let educacion = 0
-    let deudas = 0
-    let entretenimiento = 0
-    let alimentacion = 0
-    let cuidadoPersonal = 0
-    let ahorro = 0
-    let mascotas = 0
-
-    // Sumar aportes de seguros que son tipo Ahorro / PPR
-    if (hasSeguroAhorro && ahorroAporte) {
-      const aporte = Number(ahorroAporte)
-      ahorro += ahorroFrecuencia === 'MENSUAL' ? aporte : aporte / 12
-    }
-    if (hasPpr && pprAporte) {
-      const aporte = Number(pprAporte)
-      ahorro += pprFrecuencia === 'MENSUAL' ? aporte : aporte / 12
-    }
-
-    if (modalidad === 'DETALLADO') {
-      const g = gastosDet
-      
-      // AJUSTE 2 & 3: Mensualización (/12) de gastos anuales (Predial, Tenencia, Verificación, Mantenimiento Auto, Seguro Auto)
-      vivienda = g.renta + g.hipoteca + g.mantenimiento + g.luz + g.gas + g.agua + g.telefono + g.internet + g.streamings + g.celular + g.otrosServicios + (g.predial / 12) + (g.seguroCasa / 12)
-      
-      transporte = g.mensualidadAuto + (g.tenencia / 12) + (g.verificacion / 12) + (g.mantenimientoAuto / 12) + (g.seguroAuto / 12) + g.gasolina + g.transportePublico + g.uber + g.estacionamientos + g.peajes
-      
-      educacion = g.escuelaHijos + g.escuelaPropia + g.utiles + g.materiales + g.libros
-      deudas = g.prestamos + g.creditos
-      entretenimiento = g.hobbies + g.finDeSemana + g.vacaciones + g.cineTeatro + g.comidasEsparcimiento + g.baresRecreacion + g.cafecitos + g.clubSocial + g.amazonCompras
-      alimentacion = g.supermercado + g.mercado + g.accesoriosCasa
-      cuidadoPersonal = g.estetica + g.accesoriosBelleza + g.medicamentos + g.checkups + g.ropaZapatos + g.gimnasio + (g.seguroVida / 12) + (g.seguroGmm / 12)
-      ahorro += g.inversiones // fondoEmergencia eliminado de la lista detallada
-      mascotas = g.comidaMascota + g.saludMascota + g.vacunasMascota + g.esteticaMascota + g.accesoriosMascota
-
-    } else if (modalidad === 'RESUMIDO') {
-      const r = gastosRes
-      vivienda = r.vivienda || 0
-      transporte = (r.transporte || 0) + ((r.seguroAuto || 0) / 12)
-      educacion = r.educacion || 0
-      deudas = r.deudas || 0
-      entretenimiento = r.entretenimiento || 0
-      alimentacion = r.alimentacion || 0
-      cuidadoPersonal = (r.cuidadoPersonal || 0) + ((r.seguroVida || 0) / 12) + ((r.seguroGmm || 0) / 12) + ((r.otrosSeguros || 0) / 12)
-      ahorro += r.ahorro || 0
-      mascotas = r.mascotas || 0
-    } else {
-      // BASICO
-      const gTot = Number(gastosBasicosTotales) || 0
-      vivienda = gTot * 0.4
-      transporte = gTot * 0.15
-      educacion = gTot * 0.1
-      deudas = gTot * 0.1
-      entretenimiento = gTot * 0.1
-      alimentacion = gTot * 0.1
-      cuidadoPersonal = gTot * 0.05
-    }
-
-    const totalGastos = vivienda + transporte + educacion + deudas + entretenimiento + alimentacion + cuidadoPersonal + (modalidad === 'DETALLADO' ? gastosDet.inversiones : (modalidad === 'RESUMIDO' ? gastosRes.ahorro : 0)) + mascotas
-    const necesidades = vivienda + transporte + educacion + deudas + alimentacion + cuidadoPersonal + mascotas
-    const deseos = entretenimiento
-    const netIncome = Number(ingresosNetos) || 0
-    const remanente = Math.max(0, netIncome - totalGastos)
-
-    return {
-      vivienda,
-      transporte,
-      educacion,
-      deudas,
-      entretenimiento,
-      alimentacion,
-      cuidadoPersonal,
-      ahorro,
-      mascotas,
-      totalGastos,
-      necesidades,
-      deseos,
-      remanente
-    }
-  }, [modalidad, gastosDet, gastosRes, gastosBasicosTotales, ingresosNetos, ahorroActual, hasSeguroAhorro, ahorroAporte, ahorroFrecuencia, hasPpr, pprAporte, pprFrecuencia])
-
-  // --- Elizabeth Warren 50-30-20 Calculations ---
-  const warrenMetrics = useMemo(() => {
-    const netIncome = Number(ingresosNetos) || 1
-    
-    const pctNecesidades = Math.round((totalsByRamo.necesidades / netIncome) * 100)
-    const pctDeseos = Math.round((totalsByRamo.deseos / netIncome) * 100)
-    const pctAhorro = Math.round((totalsByRamo.ahorro / netIncome) * 100)
-
-    const recNecesidades = Math.round(netIncome * 0.5)
-    const recDeseos = Math.round(netIncome * 0.2)
-    const recAhorro = Math.round(netIncome * 0.3)
-
-    return {
-      pctNecesidades,
-      pctDeseos,
-      pctAhorro,
-      recNecesidades,
-      recDeseos,
-      recAhorro
-    }
-  }, [totalsByRamo, ingresosNetos])
-
-  // --- AJUSTE 5: Cálculo de Suficiencia Financiera del PPR ---
-  const pprSufficiency = useMemo(() => {
-    if (!hasPpr || !pprAporte) return null
-
-    const netIncome = Number(ingresosNetos) || 0
-    const retirementGoal = netIncome * 12 * 20 // 20 años de ingresos netos mensuales
-
-    // Calcular aportación anual
-    const aporteMensual = pprFrecuencia === 'MENSUAL' ? Number(pprAporte) : Number(pprAporte) / 12
-    const aporteAnual = aporteMensual * 12
-
-    // Plazo en años
-    let plazoAnios = 0
-    if (pprAniosPlazo === '65') {
-      plazoAnios = Math.max(0, 65 - Number(clienteEdad || 0))
-    } else {
-      plazoAnios = Number(pprAniosPlazo)
-    }
-
-    // Proyección acumulada inflacionada con tasa del 5% anual
-    let projectedAccumulation = 0
-    let tempAporte = aporteAnual
-    for (let i = 0; i < plazoAnios; i++) {
-      projectedAccumulation = (projectedAccumulation + tempAporte) * 1.05
-      tempAporte = tempAporte * 1.05
-    }
-
-    // Fase 2: Maduración pasiva (Interés compuesto sin aportaciones adicionales hasta los 65 años)
-    const edadActual = Number(clienteEdad || 0)
-    const edadFinDePago = edadActual + plazoAnios
-    const aniosDeMaduracion = Math.max(0, 65 - edadFinDePago)
-    
-    if (aniosDeMaduracion > 0) {
-      projectedAccumulation = projectedAccumulation * Math.pow(1.05, aniosDeMaduracion)
-    }
-
-    const brechaRetiro = Math.max(0, retirementGoal - projectedAccumulation)
-    const isSufficient = projectedAccumulation >= retirementGoal
-
-    // Sugerencia de aportación mensual adicional para cubrir brecha
-    // Asumimos que tiene hasta los 65 años para juntarlo de alguna forma
-    const aniosTotalesParaRetiro = Math.max(1, 65 - edadActual)
-    const adicionalMensualSugerido = (brechaRetiro / Math.max(1, aniosTotalesParaRetiro)) / 12
-
-    return {
-      retirementGoal,
-      plazoAnios,
-      projectedAccumulation,
-      brechaRetiro,
-      isSufficient,
-      adicionalMensualSugerido
-    }
-  }, [hasPpr, pprAporte, pprFrecuencia, pprAniosPlazo, clienteEdad, ingresosNetos])
-
-  // --- Semáforo de Prioridades ---
-  const prioridades = useMemo(() => {
-    const p1_retiro = !hasPpr
-    const p2_gmm = !hasGmm
-    
-    // Prioridad 3: Fondo de emergencia
-    const income = Number(ingresosNetos) || 0
-    const currentAhorro = Number(ahorroActual) || 0
-    const idealMonths = hasGmm ? 1 : 3
-    const fondoIdeal = income * idealMonths
-    const hasEmergencyFundOk = currentAhorro >= fondoIdeal
-    const p3_fondo_gap = Math.max(0, fondoIdeal - currentAhorro)
-
-    // Prioridad 4: Seguro Educación Hijos (entre 0 y 9 años)
-    const tieneHijosChicos = hijos.some(h => h.edad >= 0 && h.edad <= 9)
-    const p4_educacion = tieneHijosChicos && !hasSeguroAhorro
-
-    // Prioridad 5: Gastos Hormiga y Optimización de Finanzas Básicas
-    const p5Result = evaluatePilar5Hormiga({
+  // --- Sumas y Cálculos Financieros Unificados ---
+  const liveFinancials = useMemo(() => {
+    return computeAdnFinancials({
       modalidad,
-      income,
-      totalGastos: totalsByRamo.totalGastos,
-      remanente: totalsByRamo.remanente,
-      parsedGastos: modalidad === 'DETALLADO' ? gastosDet : (modalidad === 'RESUMIDO' ? gastosRes : {})
+      ingresosNetos: Number(ingresosNetos) || 0,
+      ahorroActual: Number(ahorroActual) || 0,
+      clienteEdad: Number(clienteEdad) || 0,
+      hijos,
+      hasSeguroAhorro,
+      ahorroAporte: Number(ahorroAporte) || 0,
+      ahorroFrecuencia,
+      hasPpr,
+      pprAporte: Number(pprAporte) || 0,
+      pprFrecuencia,
+      pprAniosPlazo,
+      hasGmm,
+      gastosDet,
+      gastosRes,
+      gastosBasicosTotales: Number(gastosBasicosTotales) || 0
     })
+  }, [
+    modalidad, ingresosNetos, ahorroActual, clienteEdad, hijos,
+    hasSeguroAhorro, ahorroAporte, ahorroFrecuencia,
+    hasPpr, pprAporte, pprFrecuencia, pprAniosPlazo, hasGmm,
+    gastosDet, gastosRes, gastosBasicosTotales
+  ])
 
-    return {
-      p1_retiro,
-      p2_gmm,
-      p3_fondo: {
-        idealMonths,
-        fondoIdeal,
-        gap: p3_fondo_gap,
-        isOk: hasEmergencyFundOk
-      },
-      p4_educacion,
-      p5_hormiga: p5Result.isAlert,
-      p5: p5Result,
-      tieneHijosChicos
-    }
-  }, [hasPpr, hasGmm, ingresosNetos, ahorroActual, hijos, hasSeguroAhorro, modalidad, gastosDet, gastosRes, totalsByRamo])
+  const { totalsByRamo, warrenMetrics, pprSufficiency, prioridades } = liveFinancials
+
+  const getFinancialsForAdnRecord = (adn: any) => {
+    const parsedGastos = safeParseAdnJson<any>(adn?.gastosData, {})
+    const parsedHijos = safeParseAdnJson<Hijo[]>(adn?.hijosData, [])
+    return computeAdnFinancials({
+      modalidad: adn?.modalidad,
+      ingresosNetos: Number(adn?.ingresosNetos) || 0,
+      ahorroActual: Number(adn?.ahorroActual) || 0,
+      clienteEdad: Number(adn?.clienteEdad) || 0,
+      hijos: parsedHijos,
+      hasSeguroAhorro: Boolean(adn?.hasSeguroAhorro),
+      ahorroAporte: Number(adn?.ahorroAporte) || 0,
+      ahorroFrecuencia: adn?.ahorroFrecuencia,
+      hasPpr: Boolean(adn?.hasPpr),
+      pprAporte: Number(adn?.pprAporte) || 0,
+      pprFrecuencia: adn?.pprFrecuencia,
+      pprAniosPlazo: adn?.pprAniosPlazo,
+      hasGmm: Boolean(adn?.hasGmm),
+      gastosDet: adn?.modalidad === 'DETALLADO' ? { ...initialGastosDetallados, ...parsedGastos } : initialGastosDetallados,
+      gastosRes: adn?.modalidad === 'RESUMIDO' ? { ...initialGastosResumidos, ...parsedGastos } : initialGastosResumidos,
+      gastosBasicosTotales: adn?.modalidad === 'BASICO' ? (Number(parsedGastos?.totalBasico ?? adn?.totalGastos) || 0) : 0
+    })
+  }
 
   // --- Recharts data ---
   const pieData = [
@@ -870,11 +959,12 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
     }
   }
 
-  const handlePrint = async () => {
+  const handlePrint = async (overrideDiagnosticId?: string) => {
     if (isDownloadingPdf) return
+    const targetId = overrideDiagnosticId || currentDiagnosticId
     setIsDownloadingPdf(true)
     try {
-      if (!currentDiagnosticId) {
+      if (!targetId) {
         alert("Aún no se ha guardado el diagnóstico. Por favor recarga o haz uno nuevo.")
         return
       }
@@ -882,7 +972,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
       const res = await fetch("/api/generate-pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ quoteId: currentDiagnosticId, type: 'adn' })
+        body: JSON.stringify({ quoteId: targetId, type: 'adn' })
       })
 
       if (!res.ok) {
@@ -895,7 +985,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement("a")
       a.href = url
-      a.download = `Diagnostico_ADN_${currentDiagnosticId}.pdf`
+      a.download = `Diagnostico_ADN_${targetId}.pdf`
       document.body.appendChild(a)
       a.click()
       a.remove()
@@ -2181,7 +2271,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                 </button>
               ) : (
                 <button 
-                  onClick={handlePrint}
+                  onClick={() => handlePrint()}
                   className="flex items-center gap-1.5 bg-teal-600 hover:bg-teal-700 text-white p-2.5 px-4 rounded-xl text-xs font-black shadow transition-all"
                 >
                   <Download className="h-4 w-4" /> Descargar Diagnóstico (PDF)
@@ -2421,7 +2511,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                       
                       {pprSufficiency.brechaRetiro > 0 && (
                         <div className="bg-red-50/50 p-2.5 rounded-xl border border-red-200/50 text-[11px] text-red-800 font-bold mt-2">
-                          ⚠️ Tu PPR actual acumulará ${pprSufficiency.projectedAccumulation.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos, pero tu meta de retiro para vivir 20 años de jubilación es de ${pprSufficiency.retirementGoal.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos. Tienes un faltante de **${pprSufficiency.brechaRetiro.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos**. Te sugerimos incrementar sustancialmente tu aportación para lograr tu meta de retiro.
+                          ⚠️ Tu PPR actual acumulará ${pprSufficiency.projectedAccumulation.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos, pero tu meta de retiro para vivir 20 años de jubilación es de ${pprSufficiency.retirementGoal.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos. Tienes un faltante de <strong>${pprSufficiency.brechaRetiro.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos</strong>. Te sugerimos incrementar sustancialmente tu aportación para lograr tu meta de retiro.
                         </div>
                       )}
                     </div>
@@ -2455,7 +2545,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                     <span className="text-[9px] font-extrabold uppercase tracking-widest block text-slate-400">Prioridad 3</span>
                     <h4 className="font-extrabold text-sm text-slate-800">Fondo de Emergencia Inmediato</h4>
                     <p className="text-xs text-slate-600">
-                      ⚠️ REQUIERE ATENCIÓN: Tu fondo sugerido es de $${prioridades.p3_fondo.fondoIdeal.toLocaleString('es-MX', { maximumFractionDigits: 0 })} (${prioridades.p3_fondo.idealMonths} meses). Tu brecha faltante es de $${prioridades.p3_fondo.gap.toLocaleString('es-MX', { maximumFractionDigits: 0 })}.
+                      ⚠️ REQUIERE ATENCIÓN: Tu fondo sugerido es de ${prioridades.p3_fondo.fondoIdeal.toLocaleString('es-MX', { maximumFractionDigits: 0 })} ({prioridades.p3_fondo.idealMonths} meses). Tu brecha faltante es de ${prioridades.p3_fondo.gap.toLocaleString('es-MX', { maximumFractionDigits: 0 })}.
                     </p>
                   </div>
                 </div>
@@ -2516,337 +2606,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
             </div>
           </div>
 
-          {/* ======================================================== */}
-          {/* PRINT CONTAINER START (PERFECTLY FORMATTED PRINT DOCUMENT) */}
-          {/* ======================================================== */}
-          <div id="printable-report" className="hidden print:block bg-white text-black p-8 max-w-5xl mx-auto space-y-8 font-sans">
-            
-            {/* Elegant Cover Page Header */}
-            <div className="border-b-4 border-teal-600 pb-5 flex flex-col sm:flex-row justify-between items-center gap-4">
-              <div className="flex items-center gap-3">
-                <img src="/logo.png" alt="Logotipo de la Agencia" className="h-14 w-auto object-contain" />
-                <div>
-                  <h2 className="text-2xl font-black text-slate-800 uppercase tracking-widest">ADN DIGITAL</h2>
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Diagnóstico Financiero y Blindaje Patrimonial</span>
-                </div>
-              </div>
-              <div className="text-right text-xs text-slate-500">
-                <span className="block font-bold">SYSGPYA</span>
-                <span className="block">Fecha: {new Date().toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}</span>
-              </div>
-            </div>
 
-            {/* General Client Details */}
-            <div className="bg-slate-50 border p-5 rounded-2xl grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div>
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Cliente</span>
-                <span className="text-sm font-extrabold text-slate-800 block mt-0.5">{clienteNombre}</span>
-              </div>
-              <div>
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Edad</span>
-                <span className="text-sm font-extrabold text-slate-800 block mt-0.5">{clienteEdad} años</span>
-              </div>
-              <div>
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Cónyuge</span>
-                <span className="text-sm font-extrabold text-slate-800 block mt-0.5">{conyugeNombre ? `${conyugeNombre} (${conyugeEdad} años)` : 'No registrado'}</span>
-              </div>
-              <div>
-                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Situación Laboral</span>
-                <span className="text-sm font-extrabold text-slate-800 block mt-0.5">{situacionLaboral}</span>
-              </div>
-            </div>
-
-            {/* Seguro de Vida Suma Asegurada if has GMM / Vida (AJUSTE 1) */}
-            {(hasSeguroVida || hasGmm) && (
-              <div className="border border-slate-200 p-4 rounded-xl grid grid-cols-2 gap-4">
-                {hasSeguroVida && (
-                  <div>
-                    <span className="text-[9px] font-black text-slate-500 uppercase block tracking-wider">Seguro de Vida Vigente</span>
-                    <span className="text-sm font-black text-slate-800 mt-0.5 block">Suma Asegurada: ${Number(vidaSumaAsegurada).toLocaleString('es-MX')} pesos</span>
-                  </div>
-                )}
-                {hasGmm && (
-                  <div>
-                    <span className="text-[9px] font-black text-slate-500 uppercase block tracking-wider">Seguro de Gastos Médicos Mayores</span>
-                    <span className="text-sm font-black text-slate-800 mt-0.5 block">Estatus: Activo / Amparado</span>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* Family Structure if has kids */}
-            {hijos.length > 0 && (
-              <div className="border border-slate-200 p-4 rounded-xl space-y-2">
-                <span className="text-[10px] font-black text-slate-700 uppercase tracking-wider block">Estructura de Protección Familiar (Hijos)</span>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {hijos.map((h, i) => (
-                    <div key={i} className="border-l-2 border-teal-500 pl-3">
-                      <span className="text-xs font-bold text-slate-800 block">{h.nombre}</span>
-                      <span className="text-[10px] text-slate-500 block">{h.edad} años de edad</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Financial Health Analysis and Elizabeth Warren 50-30-20 */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest border-b pb-2 flex items-center gap-1.5">
-                <Percent className="h-4.5 w-4.5 text-teal-600" /> 1. Análisis de Salud Financiera (Regla 50-30-20)
-              </h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Visual metrics list */}
-                <div className="border rounded-2xl p-5 space-y-4">
-                  <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Desglose de Ingresos y Egresos</h4>
-                  
-                  <div className="space-y-3">
-                    <div className="flex justify-between border-b pb-1.5 text-xs">
-                      <span className="font-bold text-slate-600">Ingresos Mensuales Netos:</span>
-                      <span className="font-black text-slate-800">${(Number(ingresosNetos) || 0).toLocaleString('es-MX')} MXN</span>
-                    </div>
-                    <div className="flex justify-between border-b pb-1.5 text-xs">
-                      <span className="font-bold text-slate-600">Gastos Fijos (Necesidades):</span>
-                      <span className="font-black text-slate-800">${totalsByRamo.necesidades.toLocaleString('es-MX')} MXN ({warrenMetrics.pctNecesidades}%)</span>
-                    </div>
-                    <div className="flex justify-between border-b pb-1.5 text-xs">
-                      <span className="font-bold text-slate-600">Ahorro y Patrimonio:</span>
-                      <span className="font-black text-emerald-600">${totalsByRamo.ahorro.toLocaleString('es-MX')} MXN ({warrenMetrics.pctAhorro}%)</span>
-                    </div>
-                    <div className="flex justify-between border-b pb-1.5 text-xs">
-                      <span className="font-bold text-slate-600">Deseos y Gustos:</span>
-                      <span className="font-black text-amber-600">${totalsByRamo.deseos.toLocaleString('es-MX')} MXN ({warrenMetrics.pctDeseos}%)</span>
-                    </div>
-                    <div className="flex justify-between pt-1 text-xs">
-                      <span className="font-black text-teal-800">Flujo de Caja Libre (Remanente):</span>
-                      <span className="font-black text-teal-700">${totalsByRamo.remanente.toLocaleString('es-MX')} MXN</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Warren 50-30-20 Comparison table */}
-                <div className="border rounded-2xl p-5 space-y-4 flex flex-col justify-between">
-                  <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Distribución vs Elizabeth Warren</h4>
-                  
-                  <div className="space-y-3.5">
-                    {/* Necesidades */}
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs font-bold text-slate-600">
-                        <span>Necesidades (Fijo)</span>
-                        <span>{warrenMetrics.pctNecesidades}% / 50%</span>
-                      </div>
-                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div className="bg-blue-500 h-full" style={{ width: `${Math.min(100, (totalsByRamo.necesidades / (Number(ingresosNetos) || 1)) * 100)}%` }} />
-                      </div>
-                    </div>
-
-                    {/* Ahorro */}
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs font-bold text-slate-600">
-                        <span>Ahorro / Seguros</span>
-                        <span>{warrenMetrics.pctAhorro}% / 30%</span>
-                      </div>
-                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div className="bg-emerald-500 h-full" style={{ width: `${Math.min(100, (totalsByRamo.ahorro / (Number(ingresosNetos) || 1)) * 100)}%` }} />
-                      </div>
-                    </div>
-
-                    {/* Deseos */}
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs font-bold text-slate-600">
-                        <span>Gustos y Deseos</span>
-                        <span>{warrenMetrics.pctDeseos}% / 20%</span>
-                      </div>
-                      <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div className="bg-amber-500 h-full" style={{ width: `${Math.min(100, (totalsByRamo.deseos / (Number(ingresosNetos) || 1)) * 100)}%` }} />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* AJUSTE 6: Desglose en PDF de subtotales por Ramo Principal */}
-            <div className="space-y-3 break-inside-avoid">
-              <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest border-b pb-2">Resumen de Gastos por Ramo Principal</h4>
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-slate-100 text-slate-700 uppercase font-bold border-b">
-                    <th className="py-2 px-3">Ramo de Gasto</th>
-                    <th className="py-2 px-3 text-center">Gasto Mensualizado</th>
-                    <th className="py-2 px-3 text-center">Porcentaje del Ingreso</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  <tr>
-                    <td className="py-2 px-3 font-semibold">Vivienda y Servicios (Predial incluido)</td>
-                    <td className="py-2 px-3 text-center">${totalsByRamo.vivienda.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.vivienda / (Number(ingresosNetos) || 1)) * 100)}%</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3 font-semibold">Transporte y Auto (anuales mensualizados)</td>
-                    <td className="py-2 px-3 text-center">${totalsByRamo.transporte.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.transporte / (Number(ingresosNetos) || 1)) * 100)}%</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3 font-semibold">Educación</td>
-                    <td className="py-2 px-3 text-center">${totalsByRamo.educacion.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.educacion / (Number(ingresosNetos) || 1)) * 100)}%</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3 font-semibold">Deudas y Créditos</td>
-                    <td className="py-2 px-3 text-center">${totalsByRamo.deudas.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.deudas / (Number(ingresosNetos) || 1)) * 100)}%</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3 font-semibold">Diversión y Entretenimiento (Deseos)</td>
-                    <td className="py-2 px-3 text-center">${totalsByRamo.entretenimiento.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.entretenimiento / (Number(ingresosNetos) || 1)) * 100)}%</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3 font-semibold">Alimentación y Despensa</td>
-                    <td className="py-2 px-3 text-center">${totalsByRamo.alimentacion.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.alimentacion / (Number(ingresosNetos) || 1)) * 100)}%</td>
-                  </tr>
-                  <tr>
-                    <td className="py-2 px-3 font-semibold">Cuidado Personal y Salud</td>
-                    <td className="py-2 px-3 text-center">${totalsByRamo.cuidadoPersonal.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.cuidadoPersonal / (Number(ingresosNetos) || 1)) * 100)}%</td>
-                  </tr>
-                  {totalsByRamo.mascotas > 0 && (
-                    <tr>
-                      <td className="py-2 px-3 font-semibold">Mascotas</td>
-                      <td className="py-2 px-3 text-center">${totalsByRamo.mascotas.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                      <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((totalsByRamo.mascotas / (Number(ingresosNetos) || 1)) * 100)}%</td>
-                    </tr>
-                  )}
-                  <tr className="bg-slate-50 font-black">
-                    <td className="py-2 px-3">Ahorro y Construcción Patrimonial (Seguros + Fondo)</td>
-                    <td className="py-2 px-3 text-center">${totalsByRamo.ahorro.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                    <td className="py-2 px-3 text-center text-teal-700">{Math.round((totalsByRamo.ahorro / (Number(ingresosNetos) || 1)) * 100)}%</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            {/* Shield and Protection Diagnostico (The 5 pillars detailed) */}
-            <div className="space-y-4 break-before-page break-inside-avoid">
-              <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest border-b pb-2 flex items-center gap-1.5">
-                <Shield className="h-4.5 w-4.5 text-teal-600" /> 2. Pilares de Protección y Prioridades Recomendadas
-              </h3>
-
-              <div className="space-y-4">
-                {/* Pilar 1: Retiro con brecha de suficiencia (AJUSTE 5) */}
-                <div className="border p-4 rounded-xl space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className={`h-2.5 w-2.5 rounded-full ${prioridades.p1_retiro ? 'bg-red-500' : pprSufficiency && !pprSufficiency.isSufficient ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                    <span className="text-xs font-black text-slate-800">PILAR 1: PLAN PERSONAL DE RETIRO (PPR)</span>
-                  </div>
-                  
-                  {prioridades.p1_retiro ? (
-                    <p className="text-xs text-slate-600 leading-relaxed pl-4">
-                      ⚠️ CRÍTICO: No cuentas con plan de retiro. Construir tu fondo de retiro es la prioridad #1 en tu blindaje patrimonial para evitar que dependas de terceros en tu vejez. Contratar una póliza de retiro con aportaciones mensuales deducibles te dará un beneficio fiscal inmediato y blindará tu futuro ante la inflación.
-                    </p>
-                  ) : pprSufficiency && (
-                    <div className="text-xs text-slate-600 pl-4 space-y-2">
-                      <p>
-                        El cliente ya cuenta con un plan de PPR contratado a <strong>{pprAniosPlazo === '65' ? 'Edad 65' : `${pprAniosPlazo} Años`}</strong> de aportaciones.
-                      </p>
-                      
-                      <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border text-center font-semibold text-[10px]">
-                        <div>
-                          <span>Meta Retiro (20 Años)</span>
-                          <span className="block text-slate-800 font-extrabold mt-0.5">${pprSufficiency.retirementGoal.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos</span>
-                        </div>
-                        <div>
-                          <span>Ahorro PPR Proyectado</span>
-                          <span className="block text-teal-700 font-extrabold mt-0.5">${pprSufficiency.projectedAccumulation.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos</span>
-                        </div>
-                        <div>
-                          <span>Brecha Faltante</span>
-                          <span className={`block font-extrabold mt-0.5 ${pprSufficiency.brechaRetiro > 0 ? 'text-red-600 animate-pulse' : 'text-emerald-600'}`}>
-                            ${pprSufficiency.brechaRetiro.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos
-                          </span>
-                        </div>
-                      </div>
-
-                      {pprSufficiency.brechaRetiro > 0 && (
-                        <div className="bg-red-50 p-2 rounded-xl text-[10px] text-red-800 font-bold border border-red-200 mt-2">
-                          ⚠️ FALTANTE DETECTADO: El PPR actual acumulará ${pprSufficiency.projectedAccumulation.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos, arrojando una brecha de **${pprSufficiency.brechaRetiro.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos** por debajo de la meta de retiro ideal. Recomendamos incrementar sustancialmente tu aportación para lograr tu meta de retiro.
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Pilar 2: GMM */}
-                <div className="border p-4 rounded-xl space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className={`h-2.5 w-2.5 rounded-full ${prioridades.p2_gmm ? 'bg-red-500' : 'bg-emerald-500'}`} />
-                    <span className="text-xs font-black text-slate-800">PILAR 2: SEGURO DE GASTOS MÉDICOS MAYORES (GMM)</span>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed pl-4">
-                    {prioridades.p2_gmm
-                      ? '⚠️ CRÍTICO: No tienes seguro de GMM. Un accidente o enfermedad grave representa un choque financiero devastador que puede consumir por completo tu prioridad #1 de ahorro. Un seguro de GMM blinda tu patrimonio contra siniestros hospitalarios costosos.'
-                      : '✅ CUBIERTO: Tu salud y economía familiar están blindadas ante hospitalizaciones y siniestros médicos graves.'}
-                  </p>
-                </div>
-
-                {/* Pilar 3: Fondo de Emergencia (mencionado solo si no es suficiente) */}
-                {!prioridades.p3_fondo.isOk && (
-                  <div className="border p-4 rounded-xl space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                      <span className="text-xs font-black text-slate-800">PILAR 3: FONDO DE EMERGENCIA INMEDIATO</span>
-                    </div>
-                    <p className="text-xs text-slate-600 leading-relaxed pl-4">
-                      ⚠️ INSUFICIENTE: Tu fondo de emergencia sugerido es de $${prioridades.p3_fondo.fondoIdeal.toLocaleString('es-MX', { maximumFractionDigits: 0 })} pesos (equivalente a ${prioridades.p3_fondo.idealMonths} meses de tus ingresos netos). Tu ahorro actual es de $${(Number(ahorroActual) || 0).toLocaleString('es-MX')} pesos, por lo que requieres construir una reserva adicional de $${prioridades.p3_fondo.gap.toLocaleString('es-MX', { maximumFractionDigits: 0 })} pesos para emergencias.
-                    </p>
-                  </div>
-                )}
-
-                {/* Pilar 4: Seguro Educativo */}
-                {prioridades.tieneHijosChicos && (
-                  <div className="border p-4 rounded-xl space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`h-2.5 w-2.5 rounded-full ${prioridades.p4_educacion ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                      <span className="text-xs font-black text-slate-800">PILAR 4: SEGURO DE EDUCACIÓN UNIVERSITARIA</span>
-                    </div>
-                    <p className="text-xs text-slate-600 leading-relaxed pl-4">
-                      {prioridades.p4_educacion 
-                        ? '⚠️ ADVERTENCIA: Tienes hijos en edad temprana (0 a 9 años) y no cuentas con plan de ahorro educativo. La universidad es un gasto predecible a largo plazo. Iniciar un plan de ahorro educativo garantizado ahora reduce drásticamente el costo mensual y asegura su futuro profesional pase lo que pase.'
-                        : '✅ CUBIERTO: Ya cuentas con un plan para educación universitaria estructurado para garantizar el futuro de tus hijos.'}
-                    </p>
-                  </div>
-                )}
-
-                {/* Pilar 5: Gastos Hormiga */}
-                <div className="border p-4 rounded-xl space-y-2">
-                  <div className="flex items-center gap-2">
-                    <span className={`h-2.5 w-2.5 rounded-full ${prioridades.p5.isAlert ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                    <span className="text-xs font-black text-slate-800">PILAR 5: {prioridades.p5.title.toUpperCase()}</span>
-                    <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${prioridades.p5.isAlert ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                      {prioridades.p5.badge}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-600 leading-relaxed pl-4">
-                    {prioridades.p5.message}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Report Signature & Footer */}
-            <div className="border-t pt-8 flex flex-col md:flex-row justify-between items-center text-[10px] text-slate-400 gap-4 mt-8">
-              <span>* Diagnóstico financiero ilustrativo.</span>
-              <div className="flex items-center gap-1.5 opacity-50 grayscale mt-2">
-                <img src="/logo.png" alt="SYSGPYA" className="h-5 w-auto object-contain" />
-                <span>SYSGPYA cotizador</span>
-              </div>
-            </div>
-
-          </div>
-          {/* PRINT CONTAINER END */}
 
         </div>
       )}
@@ -2899,7 +2659,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
             {/* Modal Header */}
             <div className="bg-slate-100 dark:bg-zinc-900 border-b p-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <img src="/logo.png" alt="Logo" className="h-7 w-auto object-contain" />
+                <img src={agencyLogo} alt={agencyName} className="h-7 w-auto object-contain" />
                 <div className="h-5 w-px bg-slate-300"></div>
                 <div>
                   <h3 className="text-sm font-black text-slate-800 dark:text-slate-100">
@@ -2911,12 +2671,19 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => handlePrint(selectedSavedAdn.id)}
+                  disabled={isDownloadingPdf}
+                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold h-8 px-3.5 rounded-lg text-xs flex items-center gap-1.5 shadow disabled:opacity-50"
+                >
+                  <Download className="h-3.5 w-3.5" /> {isDownloadingPdf ? 'Generando...' : 'Descargar PDF'}
+                </button>
                 <button 
                   onClick={() => window.print()} 
-                  className="bg-teal-600 hover:bg-teal-700 text-white font-bold h-8 px-4 rounded-lg text-xs flex items-center gap-1.5 shadow"
+                  className="border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 font-bold h-8 px-3.5 rounded-lg text-xs flex items-center gap-1.5"
                 >
-                  <Download className="h-4 w-4" /> Imprimir Diagnóstico
+                  Imprimir
                 </button>
                 <button 
                   onClick={() => setSelectedSavedAdn(null)} 
@@ -2951,8 +2718,8 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                     </div>
                   </div>
                   <div className="text-right flex flex-col items-end">
-                    <img src="/logo.png" alt="Logo" className="h-8 w-auto object-contain mb-1" />
-                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wide">SYSGPYA cotizador</span>
+                    <img src={agencyLogo} alt={agencyName} className="h-8 w-auto object-contain mb-1" />
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-wide">{agencyName}</span>
                     <span className="text-[9px] text-slate-400"><strong>Agente:</strong> {selectedSavedAdn.user?.name || selectedSavedAdn.user?.email || "Sin Agente"}</span>
                   </div>
                 </div>
@@ -2994,132 +2761,53 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                 </div>
 
                 {/* Hijos list */}
-                {selectedSavedAdn.hijosData && JSON.parse(selectedSavedAdn.hijosData).length > 0 && (
-                  <div className="border border-slate-200 p-3.5 rounded-xl space-y-1.5">
-                    <span className="text-[9px] font-black text-slate-600 uppercase block tracking-wider">Estructura de Protección Familiar (Hijos)</span>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {JSON.parse(selectedSavedAdn.hijosData).map((h: any, i: number) => (
-                        <div key={i} className="border-l-2 border-teal-500 pl-2">
-                          <span className="text-xs font-bold text-slate-800 block">{h.nombre}</span>
-                          <span className="text-[9px] text-slate-500 block">{h.edad} años</span>
-                        </div>
-                      ))}
+                {(() => {
+                  const modalHijos = safeParseAdnJson<Hijo[]>(selectedSavedAdn.hijosData, [])
+                  if (modalHijos.length === 0) return null
+                  return (
+                    <div className="border border-slate-200 p-3.5 rounded-xl space-y-1.5">
+                      <span className="text-[9px] font-black text-slate-600 uppercase block tracking-wider">Estructura de Protección Familiar (Hijos)</span>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {modalHijos.map((h, i) => (
+                          <div key={i} className="border-l-2 border-teal-500 pl-2">
+                            <span className="text-xs font-bold text-slate-800 block">{h.nombre}</span>
+                            <span className="text-[9px] text-slate-500 block">{h.edad} años</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )
+                })()}
 
                 {/* Calculations metrics */}
                 {(() => {
-                  const parsedGastos = JSON.parse(selectedSavedAdn.gastosData)
-                  const income = selectedSavedAdn.ingresosNetos || 0
-                  const totalEgresos = selectedSavedAdn.totalGastos || 0
-                  
-                  let necesidades = 0
-                  let deseos = 0
-                  let ahorro = 0
-
-                  // Sumar aportes de seguros que son tipo Ahorro / PPR
-                  if (selectedSavedAdn.hasSeguroAhorro && selectedSavedAdn.ahorroAporte) {
-                    const aporte = selectedSavedAdn.ahorroAporte
-                    ahorro += selectedSavedAdn.ahorroFrecuencia === 'MENSUAL' ? aporte : aporte / 12
-                  }
-                  if (selectedSavedAdn.hasPpr && selectedSavedAdn.pprAporte) {
-                    const aporte = selectedSavedAdn.pprAporte
-                    ahorro += selectedSavedAdn.pprFrecuencia === 'MENSUAL' ? aporte : aporte / 12
-                  }
-
-                  let catVivienda = 0
-                  let catTransporte = 0
-                  let catEducacion = 0
-                  let catDeudas = 0
-                  let catEntretenimiento = 0
-                  let catAlimentacion = 0
-                  let catCuidadoPersonal = 0
-                  let catAhorro = ahorro
-                  let catMascotas = 0
-
-                  if (selectedSavedAdn.modalidad === 'DETALLADO') {
-                    const g = parsedGastos
-                    catVivienda = (g.renta || 0) + (g.hipoteca || 0) + (g.mantenimiento || 0) + (g.luz || 0) + (g.gas || 0) + (g.agua || 0) + (g.telefono || 0) + (g.internet || 0) + (g.streamings || 0) + (g.celular || 0) + (g.otrosServicios || 0) + ((g.predial || 0) / 12) + ((g.seguroCasa || 0) / 12)
-                    catTransporte = (g.mensualidadAuto || 0) + ((g.tenencia || 0) / 12) + ((g.verificacion || 0) / 12) + ((g.mantenimientoAuto || 0) / 12) + ((g.seguroAuto || 0) / 12) + (g.gasolina || 0) + (g.transportePublico || 0) + (g.uber || 0) + (g.estacionamientos || 0) + (g.peajes || 0)
-                    catEducacion = (g.escuelaHijos || 0) + (g.escuelaPropia || 0) + (g.utiles || 0) + (g.materiales || 0) + (g.libros || 0)
-                    catDeudas = (g.prestamos || 0) + (g.creditos || 0)
-                    catAlimentacion = (g.supermercado || 0) + (g.mercado || 0) + (g.accesoriosCasa || 0)
-                    catCuidadoPersonal = (g.estetica || 0) + (g.accesoriosBelleza || 0) + (g.medicamentos || 0) + (g.checkups || 0) + (g.ropaZapatos || 0) + (g.gimnasio || 0) + ((g.seguroVida || 0) / 12) + ((g.seguroGmm || 0) / 12)
-                    catMascotas = (g.comidaMascota || 0) + (g.saludMascota || 0) + (g.vacunasMascota || 0) + (g.esteticaMascota || 0) + (g.accesoriosMascota || 0)
-                    catEntretenimiento = (g.hobbies || 0) + (g.finDeSemana || 0) + (g.vacaciones || 0) + (g.cineTeatro || 0) + (g.comidasEsparcimiento || 0) + (g.baresRecreacion || 0) + (g.cafecitos || 0) + (g.clubSocial || 0) + (g.amazonCompras || 0)
-                    catAhorro += (g.inversiones || 0)
-
-                    necesidades = catVivienda + catTransporte + catEducacion + catDeudas + catAlimentacion + catCuidadoPersonal + catMascotas
-                    deseos = catEntretenimiento
-                  } else if (selectedSavedAdn.modalidad === 'RESUMIDO') {
-                    const r = parsedGastos
-                    catVivienda = r.vivienda || 0
-                    catTransporte = (r.transporte || 0) + ((r.seguroAuto || 0) / 12)
-                    catEducacion = r.educacion || 0
-                    catDeudas = r.deudas || 0
-                    catAlimentacion = r.alimentacion || 0
-                    catCuidadoPersonal = (r.cuidadoPersonal || 0) + ((r.seguroVida || 0) / 12) + ((r.seguroGmm || 0) / 12) + ((r.otrosSeguros || 0) / 12)
-                    catMascotas = r.mascotas || 0
-                    catEntretenimiento = r.entretenimiento || 0
-                    catAhorro += r.ahorro || 0
-
-                    necesidades = catVivienda + catTransporte + catEducacion + catDeudas + catAlimentacion + catCuidadoPersonal + catMascotas
-                    deseos = catEntretenimiento
-                  } else {
-                    necesidades = totalEgresos * 0.7
-                    deseos = totalEgresos * 0.3
-                    
-                    catVivienda = totalEgresos * 0.4
-                    catTransporte = totalEgresos * 0.15
-                    catEducacion = totalEgresos * 0.1
-                    catDeudas = totalEgresos * 0.1
-                    catEntretenimiento = totalEgresos * 0.1
-                    catAlimentacion = totalEgresos * 0.1
-                    catCuidadoPersonal = totalEgresos * 0.05
-                  }
-
-                  const pctNecesidades = Math.round((necesidades / (income || 1)) * 100)
-                  const pctDeseos = Math.round((deseos / (income || 1)) * 100)
-                  const pctAhorro = Math.round((ahorro / (income || 1)) * 100)
-
-                  const p1_retiro = !selectedSavedAdn.hasPpr
-                  const p2_gmm = !selectedSavedAdn.hasGmm
-                  const idealMonths = selectedSavedAdn.hasGmm ? 1 : 3
-                  const fondoIdeal = income * idealMonths
-                  const p3_fondo_isOk = (selectedSavedAdn.ahorroActual || 0) >= fondoIdeal
-                  const p3_fondo_gap = Math.max(0, fondoIdeal - (selectedSavedAdn.ahorroActual || 0))
-
-                  const tieneHijosChicos = selectedSavedAdn.hijosData && JSON.parse(selectedSavedAdn.hijosData).some((h: any) => h.edad >= 0 && h.edad <= 9)
-                  const p4_educacion = tieneHijosChicos && !selectedSavedAdn.hasSeguroAhorro
-
-                  const p5ResultModal = evaluatePilar5Hormiga({
-                    modalidad: selectedSavedAdn.modalidad,
-                    income,
-                    totalGastos: totalEgresos,
-                    remanente: Math.max(0, income - totalEgresos),
-                    parsedGastos
-                  })
-
-                  // PPR Plazo and Suficiencia Math Logic
-                  const retirementGoal = income * 12 * 20
-                  const pprAporteMensual = selectedSavedAdn.pprFrecuencia === 'MENSUAL' ? Number(selectedSavedAdn.pprAporte || 0) : Number(selectedSavedAdn.pprAporte || 0) / 12
-                  const pprAporteAnual = pprAporteMensual * 12
-                  let plazoAnios = 0
-                  if (selectedSavedAdn.pprAniosPlazo === '65') {
-                    plazoAnios = Math.max(0, 65 - Number(selectedSavedAdn.clienteEdad || 0))
-                  } else {
-                    plazoAnios = Number(selectedSavedAdn.pprAniosPlazo || 10)
-                  }
-                  // Proyección acumulada inflacionada con tasa del 4% anual
-                  let projectedPprAccumulation = 0
-                  let tempAporte = pprAporteAnual
-                  for (let i = 0; i < plazoAnios; i++) {
-                    projectedPprAccumulation = (projectedPprAccumulation + tempAporte) * 1.04
-                    tempAporte = tempAporte * 1.04
-                  }
-                  const brechaRetiro = Math.max(0, retirementGoal - projectedPprAccumulation)
-                  const isPprSufficient = projectedPprAccumulation >= retirementGoal
+                  const income = Number(selectedSavedAdn.ingresosNetos) || 0
+                  const modalFinancials = getFinancialsForAdnRecord(selectedSavedAdn)
+                  const {
+                    vivienda: catVivienda,
+                    transporte: catTransporte,
+                    educacion: catEducacion,
+                    deudas: catDeudas,
+                    entretenimiento: catEntretenimiento,
+                    alimentacion: catAlimentacion,
+                    cuidadoPersonal: catCuidadoPersonal,
+                    ahorro: catAhorro,
+                    mascotas: catMascotas,
+                    necesidades,
+                    deseos,
+                    ahorro,
+                    remanente
+                  } = modalFinancials.totalsByRamo
+                  const { pctNecesidades, pctDeseos, pctAhorro } = modalFinancials.warrenMetrics
+                  const {
+                    p1_retiro,
+                    p2_gmm,
+                    p3_fondo,
+                    p4_educacion,
+                    p5: p5ResultModal,
+                    tieneHijosChicos
+                  } = modalFinancials.prioridades
+                  const pprSuffModal = modalFinancials.pprSufficiency
 
                   return (
                     <>
@@ -3180,19 +2868,19 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                             </div>
                             <div className="flex justify-between border-b pb-1">
                               <span className="font-semibold text-slate-500">Gastos Necesidades (Fijos):</span>
-                              <span className="font-bold text-slate-800">${necesidades.toLocaleString('es-MX')} MXN ({pctNecesidades}%)</span>
+                              <span className="font-bold text-slate-800">${necesidades.toLocaleString('es-MX', {maximumFractionDigits:0})} MXN ({pctNecesidades}%)</span>
                             </div>
                             <div className="flex justify-between border-b pb-1">
                               <span className="font-semibold text-slate-500">Ahorro y Patrimonio:</span>
-                              <span className="font-bold text-emerald-600">${ahorro.toLocaleString('es-MX')} MXN ({pctAhorro}%)</span>
+                              <span className="font-bold text-emerald-600">${ahorro.toLocaleString('es-MX', {maximumFractionDigits:0})} MXN ({pctAhorro}%)</span>
                             </div>
                             <div className="flex justify-between border-b pb-1">
                               <span className="font-semibold text-slate-500">Deseos y Esparcimiento:</span>
-                              <span className="font-bold text-amber-600">${deseos.toLocaleString('es-MX')} MXN ({pctDeseos}%)</span>
+                              <span className="font-bold text-amber-600">${deseos.toLocaleString('es-MX', {maximumFractionDigits:0})} MXN ({pctDeseos}%)</span>
                             </div>
                             <div className="flex justify-between pt-1">
                               <span className="font-bold text-teal-800">Remanente de Caja:</span>
-                              <span className="font-bold text-teal-700">${Math.max(0, income - totalEgresos).toLocaleString('es-MX')} MXN</span>
+                              <span className="font-bold text-teal-700">${remanente.toLocaleString('es-MX', {maximumFractionDigits:0})} MXN</span>
                             </div>
                           </div>
                         </div>
@@ -3203,9 +2891,9 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                           <div className="h-48 w-full mt-2">
                             <ResponsiveContainer width="100%" height="100%">
                               <BarChart data={[
-                                { name: 'Necesidades', Recomendado: Math.round((income || 1) * 0.5), Real: necesidades },
-                                { name: 'Ahorro', Recomendado: Math.round((income || 1) * 0.3), Real: ahorro },
-                                { name: 'Deseos', Recomendado: Math.round((income || 1) * 0.2), Real: deseos }
+                                { name: 'Necesidades', Recomendado: modalFinancials.warrenMetrics.recNecesidades, Real: necesidades },
+                                { name: 'Ahorro', Recomendado: modalFinancials.warrenMetrics.recAhorro, Real: ahorro },
+                                { name: 'Deseos', Recomendado: modalFinancials.warrenMetrics.recDeseos, Real: deseos }
                               ]} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <XAxis dataKey="name" stroke="#888888" fontSize={9} tickLine={false} axisLine={false} />
                                 <YAxis stroke="#888888" fontSize={9} tickLine={false} axisLine={false} tickFormatter={(val) => `$${(val/1000).toFixed(0)}k`} />
@@ -3238,7 +2926,7 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                                 <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catVivienda / (income || 1)) * 100)}%</td>
                               </tr>
                               <tr className="hover:bg-slate-50/50">
-                                <td className="py-1.5 px-3 text-center font-semibold">Transporte y Auto (anuales mensualizados)</td>
+                                <td className="py-1.5 px-3 font-semibold">Transporte y Auto (anuales mensualizados)</td>
                                 <td className="py-1.5 px-3 text-center">${catTransporte.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
                                 <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catTransporte / (income || 1)) * 100)}%</td>
                               </tr>
@@ -3293,28 +2981,29 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                         <div className="space-y-3">
                           {/* Pilar 1: Retiro / PPR */}
                           <div className="border p-3 rounded-lg flex items-start gap-3 bg-white">
-                            <span className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${p1_retiro ? 'bg-red-500 animate-pulse' : (!isPprSufficient ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500')}`} />
+                            <span className={`h-2 w-2 rounded-full mt-1.5 shrink-0 ${p1_retiro ? 'bg-red-500 animate-pulse' : (pprSuffModal && !pprSuffModal.isSufficient ? 'bg-amber-500 animate-pulse' : 'bg-emerald-500')}`} />
                             <div className="text-xs w-full">
                               <span className="font-extrabold text-[9px] tracking-wider text-slate-400 block uppercase">Pilar 1: Plan Personal para Retiro (PPR)</span>
-                              <p className="text-slate-600 mt-0.5">
-                                {p1_retiro 
-                                  ? '⚠️ Alerta: El cliente no cuenta con plan para retiro. Es crítico iniciar un ahorro deducible bajo el Art. 151 LISR para construir su independencia a edad de retiro.'
-                                  : <>
-                                      <span className="font-bold text-slate-700">✅ Registrado: </span> El cliente aporta <strong>${selectedSavedAdn.pprAporte?.toLocaleString('es-MX')}</strong> ({selectedSavedAdn.pprFrecuencia === 'MENSUAL' ? 'Mensual' : 'Anual'}) a un plazo contratado de <strong>{selectedSavedAdn.pprAniosPlazo === '65' ? 'Hasta edad 65' : `${selectedSavedAdn.pprAniosPlazo} años`}</strong>.
-                                      <span className="block mt-2 pt-2 border-t border-slate-100 text-slate-700">
-                                        <strong>Meta de Retiro (20 años de ingresos):</strong> ${retirementGoal.toLocaleString('es-MX')} pesos.
-                                        <br />
-                                        <strong>Acumulación PPR Proyectada:</strong> ${projectedPprAccumulation.toLocaleString('es-MX')} pesos.
+                              <div className="text-slate-600 mt-0.5">
+                                {p1_retiro ? (
+                                  '⚠️ Alerta: El cliente no cuenta con plan para retiro. Es crítico iniciar un ahorro deducible bajo el Art. 151 LISR para construir su independencia a edad de retiro.'
+                                ) : pprSuffModal && (
+                                  <>
+                                    <span className="font-bold text-slate-700">✅ Registrado: </span> El cliente aporta <strong>${selectedSavedAdn.pprAporte?.toLocaleString('es-MX')}</strong> ({selectedSavedAdn.pprFrecuencia === 'MENSUAL' ? 'Mensual' : 'Anual'}) a un plazo contratado de <strong>{selectedSavedAdn.pprAniosPlazo === '65' ? 'Hasta edad 65' : `${selectedSavedAdn.pprAniosPlazo} años`}</strong>.
+                                    <span className="block mt-2 pt-2 border-t border-slate-100 text-slate-700">
+                                      <strong>Meta de Retiro (20 años de ingresos):</strong> ${pprSuffModal.retirementGoal.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos.
+                                      <br />
+                                      <strong>Acumulación PPR Proyectada:</strong> ${pprSuffModal.projectedAccumulation.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos.
+                                    </span>
+                                    {!pprSuffModal.isSufficient && (
+                                      <span className="block mt-2 bg-red-50 text-red-800 p-2 rounded-md font-semibold border border-red-100">
+                                        ⚠️ Brecha Financiera Detectada: Faltan <strong>${pprSuffModal.brechaRetiro.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos</strong> para alcanzar la meta. 
+                                        Se sugiere incrementar sustancialmente su aportación para lograr su meta de retiro.
                                       </span>
-                                      {!isPprSufficient && (
-                                        <span className="block mt-2 bg-red-50 text-red-800 p-2 rounded-md font-semibold border border-red-100">
-                                          ⚠️ Brecha Financiera Detectada: Faltan <strong>${brechaRetiro.toLocaleString('es-MX')} pesos</strong> para alcanzar la meta. 
-                                          Se sugiere incrementar sustancialmente su aportación para lograr su meta de retiro.
-                                        </span>
-                                      )}
-                                    </>
-                                }
-                              </p>
+                                    )}
+                                  </>
+                                )}
+                              </div>
                             </div>
                           </div>
 
@@ -3332,13 +3021,13 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                           </div>
 
                           {/* Pilar 3: Fondo de Emergencia */}
-                          {!p3_fondo_isOk && (
+                          {!p3_fondo.isOk && (
                             <div className="border p-3 rounded-lg flex items-start gap-3 bg-white">
                               <span className="h-2 w-2 rounded-full mt-1.5 shrink-0 bg-red-500" />
                               <div className="text-xs">
                                 <span className="font-extrabold text-[9px] tracking-wider text-slate-400 block uppercase">Pilar 3: Fondo de Emergencia</span>
                                 <p className="text-slate-600 mt-0.5">
-                                  ⚠️ Insuficiente: Fondo de emergencia óptimo sugerido: ${fondoIdeal.toLocaleString('es-MX')} (equivalente a {idealMonths} meses). Cuenta actualmente con ${(selectedSavedAdn.ahorroActual || 0).toLocaleString('es-MX')} pesos (Faltante: ${p3_fondo_gap.toLocaleString('es-MX')} pesos).
+                                  ⚠️ Insuficiente: Fondo de emergencia óptimo sugerido: ${p3_fondo.fondoIdeal.toLocaleString('es-MX', {maximumFractionDigits:0})} (equivalente a {p3_fondo.idealMonths} meses). Cuenta actualmente con ${(selectedSavedAdn.ahorroActual || 0).toLocaleString('es-MX', {maximumFractionDigits:0})} pesos (Faltante: ${p3_fondo.gap.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos).
                                 </p>
                               </div>
                             </div>
@@ -3384,8 +3073,8 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
                 <div className="border-t pt-4 flex flex-row justify-between items-center text-[9px] text-slate-400 gap-2">
                   <span>* Reporte de diagnóstico patrimonial ilustrativo.</span>
                   <div className="flex items-center gap-1.5 opacity-50 grayscale mt-2">
-                    <img src="/logo.png" alt="SYSGPYA" className="w-auto object-contain" style={{ height: '18px' }} />
-                    <span>SYSGPYA cotizador</span>
+                    <img src={agencyLogo} alt={agencyName} className="w-auto object-contain" style={{ height: '18px' }} />
+                    <span>{agencyName} • ADN Digital</span>
                   </div>
                 </div>
 
@@ -3407,435 +3096,383 @@ export default function AdnPage({ printMode = false, printData = null }: AdnDiag
         </div>
       )}
 
-      {/* --- ELÉGANT REPORT IMPRIMIBLE PDF (HIDDEN IN SCREEN) --- */}
-      <div id="printable-report" className="hidden print:block bg-white text-black p-8 max-w-5xl mx-auto space-y-8 font-sans">
-        
-        {/* Cover Page Header */}
-        <div className="border-b-4 border-teal-600 pb-5 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="Logo" className="h-14 w-auto object-contain" />
-            <div>
-              <h2 className="text-2xl font-black text-slate-800 uppercase tracking-widest">ADN DIGITAL</h2>
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Diagnóstico Patrimonial Digital</span>
-            </div>
-          </div>
-          <div className="text-right text-xs text-slate-500">
-            <span className="block font-bold">SYSGPYA</span>
-            <span className="block">Fecha: {new Date().toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })}</span>
-          </div>
-        </div>
+      {/* --- REPORT IMPRIMIBLE PDF UNIFICADO (HIDDEN IN SCREEN) --- */}
+      {(step === 4 || Boolean(selectedSavedAdn)) && (() => {
+        const reportAdn = selectedSavedAdn || {
+          modalidad,
+          clienteNombre,
+          clienteEdad,
+          conyugeNombre,
+          conyugeEdad,
+          situacionLaboral,
+          ingresosNetos: Number(ingresosNetos) || 0,
+          totalGastos: totalsByRamo.totalGastos,
+          ahorroActual: Number(ahorroActual) || 0,
+          hasSeguroAhorro,
+          ahorroAporte,
+          ahorroFrecuencia,
+          hasPpr,
+          pprAporte,
+          pprFrecuencia,
+          pprAniosPlazo,
+          hasSeguroVida,
+          vidaSumaAsegurada,
+          hasGmm,
+          hijosData: hijos,
+          createdAt: printData?.createdAt || null
+        }
+        const reportHijos: Hijo[] = selectedSavedAdn ? safeParseAdnJson<Hijo[]>(selectedSavedAdn.hijosData, []) : hijos
+        const reportFinancials = selectedSavedAdn ? getFinancialsForAdnRecord(selectedSavedAdn) : liveFinancials
+        const {
+          vivienda: catVivienda,
+          transporte: catTransporte,
+          educacion: catEducacion,
+          deudas: catDeudas,
+          entretenimiento: catEntretenimiento,
+          alimentacion: catAlimentacion,
+          cuidadoPersonal: catCuidadoPersonal,
+          ahorro: catAhorro,
+          mascotas: catMascotas,
+          necesidades,
+          deseos,
+          ahorro,
+          remanente
+        } = reportFinancials.totalsByRamo
+        const { pctNecesidades, pctDeseos, pctAhorro } = reportFinancials.warrenMetrics
+        const {
+          p1_retiro,
+          p2_gmm,
+          p3_fondo,
+          p4_educacion,
+          p5: p5ResultPrint,
+          tieneHijosChicos
+        } = reportFinancials.prioridades
+        const pprSuffPrint = reportFinancials.pprSufficiency
+        const income = Number(reportAdn.ingresosNetos) || 0
+        const reportDateLabel = new Date(reportAdn.createdAt || Date.now()).toLocaleDateString("es-MX", { timeZone: 'America/Mexico_City' })
 
-        {/* General Client Details */}
-        <div className="bg-slate-50 border p-5 rounded-2xl grid grid-cols-2 sm:grid-cols-4 gap-4">
-          <div>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Cliente</span>
-            <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedSavedAdn ? selectedSavedAdn.clienteNombre : clienteNombre}</span>
-          </div>
-          <div>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Edad</span>
-            <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedSavedAdn ? selectedSavedAdn.clienteEdad : clienteEdad} años</span>
-          </div>
-          <div>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Cónyuge</span>
-            <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedSavedAdn ? (selectedSavedAdn.conyugeNombre ? `${selectedSavedAdn.conyugeNombre} (${selectedSavedAdn.conyugeEdad} años)` : 'No registrado') : (conyugeNombre ? `${conyugeNombre} (${conyugeEdad} años)` : 'No registrado')}</span>
-          </div>
-          <div>
-            <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Situación Laboral</span>
-            <span className="text-xs font-bold text-slate-800 block mt-0.5">{selectedSavedAdn ? selectedSavedAdn.situacionLaboral : situacionLaboral}</span>
-          </div>
-        </div>
-
-        {/* Saved ADN Hijos List print */}
-        {(selectedSavedAdn ? (selectedSavedAdn.hijosData && JSON.parse(selectedSavedAdn.hijosData).length > 0) : hijos.length > 0) && (
-          <div className="border p-4 rounded-xl space-y-2">
-            <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Estructura de Protección Familiar (Hijos)</span>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              {(selectedSavedAdn ? JSON.parse(selectedSavedAdn.hijosData) : hijos).map((h: any, i: number) => (
-                <div key={i} className="border-l-2 border-teal-500 pl-2">
-                  <span className="text-xs font-bold text-slate-800 block">{h.nombre}</span>
-                  <span className="text-[10px] text-slate-500 block">{h.edad} años</span>
+        return (
+          <div id="printable-report" className="hidden print:block bg-white text-black p-8 max-w-5xl mx-auto space-y-8 font-sans">
+            {/* Cover Page Header */}
+            <div className="border-b-4 border-teal-600 pb-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+              <div className="flex items-center gap-3">
+                <img src={agencyLogo} alt={agencyName} className="h-14 w-auto object-contain" />
+                <div>
+                  <h2 className="text-2xl font-black text-slate-800 uppercase tracking-widest">ADN DIGITAL</h2>
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider block">Diagnóstico Financiero y Blindaje Patrimonial</span>
                 </div>
-              ))}
+              </div>
+              <div className="text-right text-xs text-slate-500">
+                <span className="block font-bold">{agencyName}</span>
+                <span className="block">Fecha: {reportDateLabel}</span>
+              </div>
             </div>
-          </div>
-        )}
 
-        {/* Calculations and analysis printable report */}
-        {(() => {
-          const currentAdn = selectedSavedAdn || {
-            ingresosNetos: ingresosNetos || 0,
-            totalGastos: totalsByRamo.totalGastos,
-            ahorroActual: ahorroActual || 0,
-            hasSeguroAhorro,
-            ahorroAporte,
-            ahorroFrecuencia,
-            hasPpr,
-            pprAporte,
-            pprFrecuencia,
-            pprAniosPlazo,
-            clienteEdad,
-            hasGmm,
-            hijosData: JSON.stringify(hijos)
-          }
-          const parsedGastos = selectedSavedAdn ? JSON.parse(selectedSavedAdn.gastosData) : gastosDet
-          const income = currentAdn.ingresosNetos || 0
-          const totalEgresos = currentAdn.totalGastos || 0
-          
-          let necesidades = 0
-          let deseos = 0
-          let ahorro = 0 // AJUSTE 1: Fondo de emergencia no se computa como ahorro
+            {/* General Client Details */}
+            <div className="bg-slate-50 border p-5 rounded-2xl grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div>
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Cliente</span>
+                <span className="text-sm font-extrabold text-slate-800 block mt-0.5">{reportAdn.clienteNombre}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Edad</span>
+                <span className="text-sm font-extrabold text-slate-800 block mt-0.5">{reportAdn.clienteEdad} años</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Cónyuge</span>
+                <span className="text-sm font-extrabold text-slate-800 block mt-0.5">{reportAdn.conyugeNombre ? `${reportAdn.conyugeNombre} (${reportAdn.conyugeEdad} años)` : 'No registrado'}</span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Situación Laboral</span>
+                <span className="text-sm font-extrabold text-slate-800 block mt-0.5">{reportAdn.situacionLaboral}</span>
+              </div>
+            </div>
 
-          // Sumar aportes de seguros que son tipo Ahorro / PPR
-          if (currentAdn.hasSeguroAhorro && currentAdn.ahorroAporte) {
-            const aporte = Number(currentAdn.ahorroAporte)
-            ahorro += currentAdn.ahorroFrecuencia === 'MENSUAL' ? aporte : aporte / 12
-          }
-          if (currentAdn.hasPpr && currentAdn.pprAporte) {
-            const aporte = Number(currentAdn.pprAporte)
-            ahorro += currentAdn.pprFrecuencia === 'MENSUAL' ? aporte : aporte / 12
-          }
+            {/* Seguro de Vida / GMM */}
+            {(reportAdn.hasSeguroVida || reportAdn.hasGmm) && (
+              <div className="border border-slate-200 p-4 rounded-xl grid grid-cols-2 gap-4">
+                {reportAdn.hasSeguroVida && (
+                  <div>
+                    <span className="text-[9px] font-black text-slate-500 uppercase block tracking-wider">Seguro de Vida Vigente</span>
+                    <span className="text-sm font-black text-slate-800 mt-0.5 block">
+                      {reportAdn.vidaSumaAsegurada
+                        ? `Suma Asegurada: $${Number(reportAdn.vidaSumaAsegurada).toLocaleString('es-MX')} pesos`
+                        : 'Estatus: Activo / Amparado'}
+                    </span>
+                  </div>
+                )}
+                {reportAdn.hasGmm && (
+                  <div>
+                    <span className="text-[9px] font-black text-slate-500 uppercase block tracking-wider">Seguro de Gastos Médicos Mayores</span>
+                    <span className="text-sm font-black text-slate-800 mt-0.5 block">Estatus: Activo / Amparado</span>
+                  </div>
+                )}
+              </div>
+            )}
 
-          let catVivienda = 0
-          let catTransporte = 0
-          let catEducacion = 0
-          let catDeudas = 0
-          let catEntretenimiento = 0
-          let catAlimentacion = 0
-          let catCuidadoPersonal = 0
-          let catAhorro = ahorro
-          let catMascotas = 0
+            {/* Hijos List print */}
+            {reportHijos.length > 0 && (
+              <div className="border border-slate-200 p-4 rounded-xl space-y-2">
+                <span className="text-[10px] font-extrabold text-slate-700 uppercase tracking-wider block">Estructura de Protección Familiar (Hijos)</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {reportHijos.map((h, i) => (
+                    <div key={i} className="border-l-2 border-teal-500 pl-3">
+                      <span className="text-xs font-bold text-slate-800 block">{h.nombre}</span>
+                      <span className="text-[10px] text-slate-500 block">{h.edad} años de edad</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-          if (selectedSavedAdn ? (selectedSavedAdn.modalidad === 'DETALLADO') : (modalidad === 'DETALLADO')) {
-            const g = parsedGastos
-            catVivienda = (g.renta || 0) + (g.hipoteca || 0) + (g.mantenimiento || 0) + (g.luz || 0) + (g.gas || 0) + (g.agua || 0) + (g.telefono || 0) + (g.internet || 0) + (g.streamings || 0) + (g.celular || 0) + (g.otrosServicios || 0) + ((g.predial || 0) / 12) + ((g.seguroCasa || 0) / 12)
-            catTransporte = (g.mensualidadAuto || 0) + ((g.tenencia || 0) / 12) + ((g.verificacion || 0) / 12) + ((g.mantenimientoAuto || 0) / 12) + ((g.seguroAuto || 0) / 12) + (g.gasolina || 0) + (g.transportePublico || 0) + (g.uber || 0) + (g.estacionamientos || 0) + (g.peajes || 0)
-            catEducacion = (g.escuelaHijos || 0) + (g.escuelaPropia || 0) + (g.utiles || 0) + (g.materiales || 0) + (g.libros || 0)
-            catDeudas = (g.prestamos || 0) + (g.creditos || 0)
-            catAlimentacion = (g.supermercado || 0) + (g.mercado || 0) + (g.accesoriosCasa || 0)
-            catCuidadoPersonal = (g.estetica || 0) + (g.accesoriosBelleza || 0) + (g.medicamentos || 0) + (g.checkups || 0) + (g.ropaZapatos || 0) + (g.gimnasio || 0) + ((g.seguroVida || 0) / 12) + ((g.seguroGmm || 0) / 12)
-            catMascotas = (g.comidaMascota || 0) + (g.saludMascota || 0) + (g.vacunasMascota || 0) + (g.esteticaMascota || 0) + (g.accesoriosMascota || 0)
-            catEntretenimiento = (g.hobbies || 0) + (g.finDeSemana || 0) + (g.vacaciones || 0) + (g.cineTeatro || 0) + (g.comidasEsparcimiento || 0) + (g.baresRecreacion || 0) + (g.cafecitos || 0) + (g.clubSocial || 0) + (g.amazonCompras || 0)
-            catAhorro += (g.inversiones || 0)
+            {/* Financial Health Analysis and Elizabeth Warren 50-30-20 */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest border-b pb-2 flex items-center gap-1.5">
+                <Percent className="h-4.5 w-4.5 text-teal-600" /> 1. Análisis de Salud Financiera (Regla 50-30-20)
+              </h3>
 
-            necesidades = catVivienda + catTransporte + catEducacion + catDeudas + catAlimentacion + catCuidadoPersonal + catMascotas
-            deseos = catEntretenimiento
-          } else if (selectedSavedAdn ? (selectedSavedAdn.modalidad === 'RESUMIDO') : (modalidad === 'RESUMIDO')) {
-            const r = parsedGastos
-            catVivienda = r.vivienda || 0
-            catTransporte = (r.transporte || 0) + ((r.seguroAuto || 0) / 12)
-            catEducacion = r.educacion || 0
-            catDeudas = r.deudas || 0
-            catAlimentacion = r.alimentacion || 0
-            catCuidadoPersonal = (r.cuidadoPersonal || 0) + ((r.seguroVida || 0) / 12) + ((r.seguroGmm || 0) / 12) + ((r.otrosSeguros || 0) / 12)
-            catMascotas = r.mascotas || 0
-            catEntretenimiento = r.entretenimiento || 0
-            catAhorro += r.ahorro || 0
-
-            necesidades = catVivienda + catTransporte + catEducacion + catDeudas + catAlimentacion + catCuidadoPersonal + catMascotas
-            deseos = catEntretenimiento
-          } else {
-            necesidades = totalEgresos * 0.7
-            deseos = totalEgresos * 0.3
-            
-            catVivienda = totalEgresos * 0.4
-            catTransporte = totalEgresos * 0.15
-            catEducacion = totalEgresos * 0.1
-            catDeudas = totalEgresos * 0.1
-            catEntretenimiento = totalEgresos * 0.1
-            catAlimentacion = totalEgresos * 0.1
-            catCuidadoPersonal = totalEgresos * 0.05
-          }
-
-          const pctNecesidades = Math.round((necesidades / (income || 1)) * 100)
-          const pctDeseos = Math.round((deseos / (income || 1)) * 100)
-          const pctAhorro = Math.round((ahorro / (income || 1)) * 100)
-
-          const p1_retiro = !currentAdn.hasPpr
-          const p2_gmm = !currentAdn.hasGmm
-          const idealMonths = currentAdn.hasGmm ? 1 : 3
-          const fondoIdeal = income * idealMonths
-          const p3_fondo_isOk = (currentAdn.ahorroActual || 0) >= fondoIdeal
-          const p3_fondo_gap = Math.max(0, fondoIdeal - (currentAdn.ahorroActual || 0))
-
-          const tieneHijosChicos = currentAdn.hijosData && JSON.parse(currentAdn.hijosData).some((h: any) => h.edad >= 0 && h.edad <= 9)
-          const p4_educacion = tieneHijosChicos && !currentAdn.hasSeguroAhorro
-
-          const p5ResultPrint = evaluatePilar5Hormiga({
-            modalidad: currentAdn.modalidad,
-            income,
-            totalGastos: totalEgresos,
-            remanente: Math.max(0, income - totalEgresos),
-            parsedGastos
-          })
-
-          // PPR Plazo and Suficiencia Math
-          const retirementGoal = income * 12 * 20
-          const pprAporteMensual = currentAdn.pprFrecuencia === 'MENSUAL' ? Number(currentAdn.pprAporte || 0) : Number(currentAdn.pprAporte || 0) / 12
-          const pprAporteAnual = pprAporteMensual * 12
-          let plazoAnios = 0
-          if (currentAdn.pprAniosPlazo === '65') {
-            plazoAnios = Math.max(0, 65 - Number(currentAdn.clienteEdad || 0))
-          } else {
-            plazoAnios = Number(currentAdn.pprAniosPlazo || 10)
-          }
-          // Proyección acumulada inflacionada con tasa del 4% anual
-          let projectedPprAccumulation = 0
-          let tempAporte = pprAporteAnual
-          for (let i = 0; i < plazoAnios; i++) {
-            projectedPprAccumulation = (projectedPprAccumulation + tempAporte) * 1.04
-            tempAporte = tempAporte * 1.04
-          }
-          const brechaRetiro = Math.max(0, retirementGoal - projectedPprAccumulation)
-          const isPprSufficient = projectedPprAccumulation >= retirementGoal
-
-          return (
-            <>
-              {/* Financial 50-30-20 Summary */}
               <div className="grid grid-cols-2 gap-6">
-                <div className="border p-4 rounded-xl space-y-2">
-                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Presupuesto Mensual</span>
-                  <table className="w-full text-left text-xs border-collapse">
-                    <tbody className="divide-y divide-slate-100 text-slate-700">
-                      <tr>
-                        <td className="py-1 font-semibold text-slate-500">Ingresos Netos:</td>
-                        <td className="py-1 font-extrabold text-right text-slate-800">${income.toLocaleString('es-MX')}</td>
-                      </tr>
-                      <tr>
-                        <td className="py-1 font-semibold text-slate-500">Gastos Fijos (Necesidades):</td>
-                        <td className="py-1 font-bold text-right text-slate-800">${necesidades.toLocaleString('es-MX')} ({pctNecesidades}%)</td>
-                      </tr>
-                      <tr>
-                        <td className="py-1 font-semibold text-slate-500">Ahorro y Previsión:</td>
-                        <td className="py-1 font-bold text-right text-emerald-600">${ahorro.toLocaleString('es-MX')} ({pctAhorro}%)</td>
-                      </tr>
-                      <tr>
-                        <td className="py-1 font-semibold text-slate-500">Diversión (Deseos):</td>
-                        <td className="py-1 font-bold text-right text-amber-600">${deseos.toLocaleString('es-MX')} ({pctDeseos}%)</td>
-                      </tr>
-                      <tr className="bg-slate-50">
-                        <td className="py-1.5 font-bold text-teal-800">Remanente de Flujo:</td>
-                        <td className="py-1.5 font-extrabold text-right text-teal-700">${Math.max(0, income - totalEgresos).toLocaleString('es-MX')}</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="border p-4 rounded-xl space-y-4 bg-slate-50/20">
-                  <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Distribución Real vs Warren 50-30-20</span>
-                  
+                <div className="border rounded-2xl p-5 space-y-4">
+                  <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Desglose de Ingresos y Egresos</h4>
                   <div className="space-y-3">
-                    <div className="space-y-0.5">
-                      <div className="flex justify-between text-[10px] font-bold text-slate-600">
-                        <span>Necesidades Fijas (Óptimo: 50%)</span>
-                        <span>{pctNecesidades}%</span>
+                    <div className="flex justify-between border-b pb-1.5 text-xs">
+                      <span className="font-bold text-slate-600">Ingresos Mensuales Netos:</span>
+                      <span className="font-black text-slate-800">${income.toLocaleString('es-MX', { maximumFractionDigits: 0 })} MXN</span>
+                    </div>
+                    <div className="flex justify-between border-b pb-1.5 text-xs">
+                      <span className="font-bold text-slate-600">Gastos Fijos (Necesidades):</span>
+                      <span className="font-black text-slate-800">${necesidades.toLocaleString('es-MX', { maximumFractionDigits: 0 })} MXN ({pctNecesidades}%)</span>
+                    </div>
+                    <div className="flex justify-between border-b pb-1.5 text-xs">
+                      <span className="font-bold text-slate-600">Ahorro y Patrimonio:</span>
+                      <span className="font-black text-emerald-600">${ahorro.toLocaleString('es-MX', { maximumFractionDigits: 0 })} MXN ({pctAhorro}%)</span>
+                    </div>
+                    <div className="flex justify-between border-b pb-1.5 text-xs">
+                      <span className="font-bold text-slate-600">Deseos y Gustos:</span>
+                      <span className="font-black text-amber-600">${deseos.toLocaleString('es-MX', { maximumFractionDigits: 0 })} MXN ({pctDeseos}%)</span>
+                    </div>
+                    <div className="flex justify-between pt-1 text-xs">
+                      <span className="font-black text-teal-800">Flujo de Caja Libre (Remanente):</span>
+                      <span className="font-black text-teal-700">${remanente.toLocaleString('es-MX', { maximumFractionDigits: 0 })} MXN</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border rounded-2xl p-5 space-y-4 flex flex-col justify-between">
+                  <h4 className="text-xs font-black text-slate-700 uppercase tracking-wider">Distribución vs Elizabeth Warren</h4>
+                  <div className="space-y-3.5">
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs font-bold text-slate-600">
+                        <span>Necesidades (Fijo)</span>
+                        <span>{pctNecesidades}% / 50%</span>
                       </div>
                       <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div className="bg-blue-500 h-full" style={{ width: `${Math.min(100, pctNecesidades)}%` }} />
+                        <div className="bg-blue-500 h-full" style={{ width: `${Math.min(100, (necesidades / (income || 1)) * 100)}%` }} />
                       </div>
                     </div>
 
-                    <div className="space-y-0.5">
-                      <div className="flex justify-between text-[10px] font-bold text-slate-600">
-                        <span>Ahorro / Patrimonio (Óptimo: 30%)</span>
-                        <span>{pctAhorro}%</span>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs font-bold text-slate-600">
+                        <span>Ahorro / Seguros</span>
+                        <span>{pctAhorro}% / 30%</span>
                       </div>
                       <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div className="bg-emerald-500 h-full" style={{ width: `${Math.min(100, pctAhorro)}%` }} />
+                        <div className="bg-emerald-500 h-full" style={{ width: `${Math.min(100, (ahorro / (income || 1)) * 100)}%` }} />
                       </div>
                     </div>
 
-                    <div className="space-y-0.5">
-                      <div className="flex justify-between text-[10px] font-bold text-slate-600">
-                        <span>Deseos / Gustos (Óptimo: 20%)</span>
-                        <span>{pctDeseos}%</span>
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-xs font-bold text-slate-600">
+                        <span>Gustos y Deseos</span>
+                        <span>{pctDeseos}% / 20%</span>
                       </div>
                       <div className="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
-                        <div className="bg-amber-500 h-full" style={{ width: `${Math.min(100, pctDeseos)}%` }} />
+                        <div className="bg-amber-500 h-full" style={{ width: `${Math.min(100, (deseos / (income || 1)) * 100)}%` }} />
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Printable desglose por ramos */}
-              <div className="border p-4 rounded-xl space-y-2">
-                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Gastos Mensuales Consolidados por Ramo</span>
-                <table className="w-full text-left text-[11px] border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 text-slate-700 uppercase tracking-wider font-bold border-b text-[10px]">
-                      <th className="py-2 px-3">Ramo de Gasto</th>
-                      <th className="py-2 px-3 text-center">Gasto Mensual</th>
-                      <th className="py-2 px-3 text-center">Porcentaje del Ingreso</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 text-slate-800">
+            {/* Resumen de Gastos por Ramo Principal */}
+            <div className="space-y-3 break-inside-avoid">
+              <h4 className="text-xs font-black text-slate-800 uppercase tracking-widest border-b pb-2">Resumen de Gastos por Ramo Principal</h4>
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 uppercase font-bold border-b">
+                    <th className="py-2 px-3">Ramo de Gasto</th>
+                    <th className="py-2 px-3 text-center">Gasto Mensualizado</th>
+                    <th className="py-2 px-3 text-center">Porcentaje del Ingreso</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Vivienda y Servicios (Predial incluido)</td>
+                    <td className="py-2 px-3 text-center">${catVivienda.toLocaleString('es-MX', { maximumFractionDigits: 0 })}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((catVivienda / (income || 1)) * 100)}%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Transporte y Auto (anuales mensualizados)</td>
+                    <td className="py-2 px-3 text-center">${catTransporte.toLocaleString('es-MX', { maximumFractionDigits: 0 })}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((catTransporte / (income || 1)) * 100)}%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Educación</td>
+                    <td className="py-2 px-3 text-center">${catEducacion.toLocaleString('es-MX', { maximumFractionDigits: 0 })}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((catEducacion / (income || 1)) * 100)}%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Deudas y Créditos</td>
+                    <td className="py-2 px-3 text-center">${catDeudas.toLocaleString('es-MX', { maximumFractionDigits: 0 })}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((catDeudas / (income || 1)) * 100)}%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Diversión y Entretenimiento (Deseos)</td>
+                    <td className="py-2 px-3 text-center">${catEntretenimiento.toLocaleString('es-MX', { maximumFractionDigits: 0 })}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((catEntretenimiento / (income || 1)) * 100)}%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Alimentación y Despensa</td>
+                    <td className="py-2 px-3 text-center">${catAlimentacion.toLocaleString('es-MX', { maximumFractionDigits: 0 })}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((catAlimentacion / (income || 1)) * 100)}%</td>
+                  </tr>
+                  <tr>
+                    <td className="py-2 px-3 font-semibold">Cuidado Personal y Salud</td>
+                    <td className="py-2 px-3 text-center">${catCuidadoPersonal.toLocaleString('es-MX', { maximumFractionDigits: 0 })}</td>
+                    <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((catCuidadoPersonal / (income || 1)) * 100)}%</td>
+                  </tr>
+                  {catMascotas > 0 && (
                     <tr>
-                      <td className="py-1.5 px-3 font-semibold">Vivienda y Servicios (incluye Predial)</td>
-                      <td className="py-1.5 px-3 text-center">${catVivienda.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                      <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catVivienda / (income || 1)) * 100)}%</td>
+                      <td className="py-2 px-3 font-semibold">Mascotas</td>
+                      <td className="py-2 px-3 text-center">${catMascotas.toLocaleString('es-MX', { maximumFractionDigits: 0 })}</td>
+                      <td className="py-2 px-3 text-center font-bold text-teal-700">{Math.round((catMascotas / (income || 1)) * 100)}%</td>
                     </tr>
-                    <tr>
-                      <td className="py-1.5 px-3 font-semibold">Transporte y Auto (anuales mensualizados)</td>
-                      <td className="py-1.5 px-3 text-center">${catTransporte.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                      <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catTransporte / (income || 1)) * 100)}%</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 px-3 font-semibold">Educación</td>
-                      <td className="py-1.5 px-3 text-center">${catEducacion.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                      <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catEducacion / (income || 1)) * 100)}%</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 px-3 font-semibold">Deudas y Créditos</td>
-                      <td className="py-1.5 px-3 text-center">${catDeudas.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                      <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catDeudas / (income || 1)) * 100)}%</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 px-3 font-semibold">Diversión y Entretenimiento (Deseos)</td>
-                      <td className="py-1.5 px-3 text-center">${catEntretenimiento.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                      <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catEntretenimiento / (income || 1)) * 100)}%</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 px-3 font-semibold">Alimentación y Despensa</td>
-                      <td className="py-1.5 px-3 text-center">${catAlimentacion.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                      <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catAlimentacion / (income || 1)) * 100)}%</td>
-                    </tr>
-                    <tr>
-                      <td className="py-1.5 px-3 font-semibold">Cuidado Personal y Salud</td>
-                      <td className="py-1.5 px-3 text-center">${catCuidadoPersonal.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                      <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catCuidadoPersonal / (income || 1)) * 100)}%</td>
-                    </tr>
-                    {catMascotas > 0 && (
-                      <tr>
-                        <td className="py-1.5 px-3 font-semibold">Mascotas</td>
-                        <td className="py-1.5 px-3 text-center">${catMascotas.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                        <td className="py-1.5 px-3 text-center font-bold text-teal-600">{Math.round((catMascotas / (income || 1)) * 100)}%</td>
-                      </tr>
-                    )}
-                    <tr className="bg-slate-50 font-black">
-                      <td className="py-2 px-3">Ahorro e Inversiones Totales</td>
-                      <td className="py-2 px-3 text-center">${catAhorro.toLocaleString('es-MX', {maximumFractionDigits:0})}</td>
-                      <td className="py-2 px-3 text-center text-teal-700">{Math.round((catAhorro / (income || 1)) * 100)}%</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                  )}
+                  <tr className="bg-slate-50 font-black">
+                    <td className="py-2 px-3">Ahorro y Construcción Patrimonial (Seguros + Fondo)</td>
+                    <td className="py-2 px-3 text-center">${catAhorro.toLocaleString('es-MX', { maximumFractionDigits: 0 })}</td>
+                    <td className="py-2 px-3 text-center text-teal-700">{Math.round((catAhorro / (income || 1)) * 100)}%</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
 
-              {/* Checklist Semáforo in PDF */}
-              <div className="space-y-4">
-                <span className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider block">Diagnóstico de Prioridades y Blindaje Recomendado</span>
-                
-                <div className="space-y-3">
-                  {/* Pilar 1: Retiro */}
-                  <div className="border p-4 rounded-xl space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`h-2.5 w-2.5 rounded-full ${p1_retiro ? 'bg-red-500' : 'bg-emerald-500'}`} />
-                      <span className="text-xs font-black text-slate-800">PILAR 1: PLAN PERSONAL PARA RETIRO (PPR)</span>
-                    </div>
-                    {p1_retiro ? (
-                      <p className="text-xs text-slate-600 leading-relaxed pl-4">
-                        ⚠️ CRÍTICO: No cuentas con plan de retiro. Construir tu fondo de retiro es la prioridad #1 en tu blindaje patrimonial para evitar que dependas de terceros en tu vejez. Contratar una póliza de retiro con aportaciones mensuales deducibles te dará un beneficio fiscal inmediato y blindará tu futuro ante la inflación.
+            {/* Checklist Semáforo in PDF */}
+            <div className="space-y-4 break-before-page break-inside-avoid">
+              <h3 className="text-sm font-black text-slate-800 uppercase tracking-widest border-b pb-2 flex items-center gap-1.5">
+                <Shield className="h-4.5 w-4.5 text-teal-600" /> 2. Pilares de Protección y Prioridades Recomendadas
+              </h3>
+
+              <div className="space-y-3">
+                {/* Pilar 1: Retiro */}
+                <div className="border p-4 rounded-xl space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`h-2.5 w-2.5 rounded-full ${p1_retiro ? 'bg-red-500' : pprSuffPrint && !pprSuffPrint.isSufficient ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                    <span className="text-xs font-black text-slate-800">PILAR 1: PLAN PERSONAL DE RETIRO (PPR)</span>
+                  </div>
+                  {p1_retiro ? (
+                    <p className="text-xs text-slate-600 leading-relaxed pl-4">
+                      ⚠️ CRÍTICO: No cuentas con plan de retiro. Construir tu fondo de retiro es la prioridad #1 en tu blindaje patrimonial para evitar que dependas de terceros en tu vejez. Contratar una póliza de retiro con aportaciones mensuales deducibles te dará un beneficio fiscal inmediato y blindará tu futuro ante la inflación.
+                    </p>
+                  ) : pprSuffPrint && (
+                    <div className="text-xs text-slate-600 pl-4 space-y-2">
+                      <p>
+                        El cliente ya cuenta con un plan de PPR contratado a <strong>{reportAdn.pprAniosPlazo === '65' ? 'Edad 65' : `${reportAdn.pprAniosPlazo} Años`}</strong> de aportaciones.
                       </p>
-                    ) : (
-                      <div className="text-xs text-slate-600 pl-4 space-y-2">
-                        <p>
-                          El cliente ya cuenta con un plan de PPR contratado a <strong>{currentAdn.pprAniosPlazo === '65' ? 'Edad 65' : `${currentAdn.pprAniosPlazo} Años`}</strong> de aportaciones.
-                        </p>
-                        
-                        <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border text-center font-semibold text-[10px]">
-                          <div>
-                            <span>Meta Retiro (20 Años)</span>
-                            <span className="block text-slate-800 font-extrabold mt-0.5">${retirementGoal.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos</span>
-                          </div>
-                          <div>
-                            <span>Ahorro PPR Proyectado</span>
-                            <span className="block text-teal-700 font-extrabold mt-0.5">${projectedPprAccumulation.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos</span>
-                          </div>
-                          <div>
-                            <span>Brecha Faltante</span>
-                            <span className={`block font-extrabold mt-0.5 ${brechaRetiro > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
-                              ${brechaRetiro.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos
-                            </span>
-                          </div>
+                      <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2.5 rounded-xl border text-center font-semibold text-[10px]">
+                        <div>
+                          <span>Meta Retiro (20 Años)</span>
+                          <span className="block text-slate-800 font-extrabold mt-0.5">${pprSuffPrint.retirementGoal.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos</span>
                         </div>
-
-                        {brechaRetiro > 0 && (
-                          <div className="bg-red-50 p-2 rounded-xl text-[10px] text-red-800 font-bold border border-red-200 mt-2">
-                            ⚠️ FALTANTE DETECTADO: El PPR actual acumulará ${projectedPprAccumulation.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos, arrojando una brecha de **${brechaRetiro.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos** por debajo de la meta de retiro ideal. Recomendamos incrementar sustancialmente tu aportación para lograr tu meta de retiro.
-                          </div>
-                        )}
+                        <div>
+                          <span>Ahorro PPR Proyectado</span>
+                          <span className="block text-teal-700 font-extrabold mt-0.5">${pprSuffPrint.projectedAccumulation.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos</span>
+                        </div>
+                        <div>
+                          <span>Brecha Faltante</span>
+                          <span className={`block font-extrabold mt-0.5 ${pprSuffPrint.brechaRetiro > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
+                            ${pprSuffPrint.brechaRetiro.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos
+                          </span>
+                        </div>
                       </div>
-                    )}
-                  </div>
-
-                  {/* Pilar 2: GMM */}
-                  <div className="border p-4 rounded-xl space-y-2">
-                    <div className="flex items-center gap-2">
-                      <span className={`h-2.5 w-2.5 rounded-full ${p2_gmm ? 'bg-red-500' : 'bg-emerald-500'}`} />
-                      <span className="text-xs font-black text-slate-800">PILAR 2: SEGURO DE GASTOS MÉDICOS MAYORES (GMM)</span>
-                    </div>
-                    <p className="text-xs text-slate-600 leading-relaxed pl-4">
-                      {p2_gmm
-                        ? '⚠️ CRÍTICO: No tienes seguro de GMM. Un accidente o enfermedad grave representa un choque financiero devastador que puede consumir por completo tu prioridad #1 de ahorro. Un seguro de GMM blinda tu patrimonio contra siniestros hospitalarios costosos.'
-                        : '✅ CUBIERTO: Tu salud y economía familiar están blindadas ante hospitalizaciones y siniestros médicos graves.'}
-                    </p>
-                  </div>
-
-                  {/* Pilar 3: Fondo de Emergencia (mencionado solo si no es suficiente) */}
-                  {!p3_fondo_isOk && (
-                    <div className="border p-4 rounded-xl space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                        <span className="text-xs font-black text-slate-800">PILAR 3: FONDO DE EMERGENCIA INMEDIATO</span>
-                      </div>
-                      <p className="text-xs text-slate-600 leading-relaxed pl-4">
-                        ⚠️ INSUFICIENTE: Tu fondo de emergencia sugerido es de $${fondoIdeal.toLocaleString('es-MX', { maximumFractionDigits: 0 })} pesos (equivalente a {idealMonths} meses de tus ingresos netos). Tu ahorro actual es de $${(Number(currentAdn.ahorroActual) || 0).toLocaleString('es-MX')} pesos, por lo que requieres construir una reserva adicional de $${p3_fondo_gap.toLocaleString('es-MX', { maximumFractionDigits: 0 })} pesos para emergencias.
-                      </p>
+                      {pprSuffPrint.brechaRetiro > 0 && (
+                        <div className="bg-red-50 p-2 rounded-xl text-[10px] text-red-800 font-bold border border-red-200 mt-2">
+                          ⚠️ FALTANTE DETECTADO: El PPR actual acumulará ${pprSuffPrint.projectedAccumulation.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos, arrojando una brecha de <strong>${pprSuffPrint.brechaRetiro.toLocaleString('es-MX', {maximumFractionDigits:0})} pesos</strong> por debajo de la meta de retiro ideal. Recomendamos incrementar sustancialmente tu aportación para lograr tu meta de retiro.
+                        </div>
+                      )}
                     </div>
                   )}
+                </div>
 
-                  {/* Pilar 4: Seguro Educativo */}
-                  {tieneHijosChicos && (
-                    <div className="border p-4 rounded-xl space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className={`h-2.5 w-2.5 rounded-full ${p4_educacion ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                        <span className="text-xs font-black text-slate-800">PILAR 4: SEGURO DE EDUCACIÓN UNIVERSITARIA</span>
-                      </div>
-                      <p className="text-xs text-slate-600 leading-relaxed pl-4">
-                        {p4_educacion 
-                          ? '⚠️ ADVERTENCIA: Tienes hijos en edad temprana (0 a 9 años) y no cuentas con plan de ahorro educativo. La universidad es un gasto predecible a largo plazo. Iniciar un plan de ahorro educativo garantizado ahora reduce drásticamente el costo mensual y asegura su futuro profesional pase lo que pase.'
-                          : '✅ CUBIERTO: Ya cuentas con un plan para educación universitaria estructurado para garantizar el futuro de tus hijos.'}
-                      </p>
-                    </div>
-                  )}
+                {/* Pilar 2: GMM */}
+                <div className="border p-4 rounded-xl space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`h-2.5 w-2.5 rounded-full ${p2_gmm ? 'bg-red-500' : 'bg-emerald-500'}`} />
+                    <span className="text-xs font-black text-slate-800">PILAR 2: SEGURO DE GASTOS MÉDICOS MAYORES (GMM)</span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed pl-4">
+                    {p2_gmm
+                      ? '⚠️ CRÍTICO: No tienes seguro de GMM. Un accidente o enfermedad grave representa un choque financiero devastador que puede consumir por completo tu prioridad #1 de ahorro. Un seguro de GMM blinda tu patrimonio contra siniestros hospitalarios costosos.'
+                      : '✅ CUBIERTO: Tu salud y economía familiar están blindadas ante hospitalizaciones y siniestros médicos graves.'}
+                  </p>
+                </div>
 
-                  {/* Pilar 5: Gastos Hormiga */}
+                {/* Pilar 3: Fondo de Emergencia */}
+                {!p3_fondo.isOk && (
                   <div className="border p-4 rounded-xl space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className={`h-2.5 w-2.5 rounded-full ${p5ResultPrint.isAlert ? 'bg-amber-500' : 'bg-emerald-500'}`} />
-                      <span className="text-xs font-black text-slate-800">PILAR 5: {p5ResultPrint.title.toUpperCase()}</span>
-                      <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${p5ResultPrint.isAlert ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                        {p5ResultPrint.badge}
-                      </span>
+                      <span className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                      <span className="text-xs font-black text-slate-800">PILAR 3: FONDO DE EMERGENCIA INMEDIATO</span>
                     </div>
                     <p className="text-xs text-slate-600 leading-relaxed pl-4">
-                      {p5ResultPrint.message}
+                      ⚠️ INSUFICIENTE: Tu fondo de emergencia sugerido es de ${p3_fondo.fondoIdeal.toLocaleString('es-MX', { maximumFractionDigits: 0 })} pesos (equivalente a {p3_fondo.idealMonths} meses de tus ingresos netos). Tu ahorro actual es de ${(Number(reportAdn.ahorroActual) || 0).toLocaleString('es-MX', { maximumFractionDigits: 0 })} pesos, por lo que requieres construir una reserva adicional de ${p3_fondo.gap.toLocaleString('es-MX', { maximumFractionDigits: 0 })} pesos para emergencias.
                     </p>
                   </div>
+                )}
+
+                {/* Pilar 4: Seguro Educativo */}
+                {tieneHijosChicos && (
+                  <div className="border p-4 rounded-xl space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className={`h-2.5 w-2.5 rounded-full ${p4_educacion ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                      <span className="text-xs font-black text-slate-800">PILAR 4: SEGURO DE EDUCACIÓN UNIVERSITARIA</span>
+                    </div>
+                    <p className="text-xs text-slate-600 leading-relaxed pl-4">
+                      {p4_educacion
+                        ? '⚠️ ADVERTENCIA: Tienes hijos en edad temprana (0 a 9 años) y no cuentas con plan de ahorro educativo. La universidad es un gasto predecible a largo plazo. Iniciar un plan de ahorro educativo garantizado ahora reduce drásticamente el costo mensual y asegura su futuro profesional pase lo que pase.'
+                        : '✅ CUBIERTO: Ya cuentas con un plan para educación universitaria estructurado para garantizar el futuro de tus hijos.'}
+                    </p>
+                  </div>
+                )}
+
+                {/* Pilar 5: Gastos Hormiga */}
+                <div className="border p-4 rounded-xl space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className={`h-2.5 w-2.5 rounded-full ${p5ResultPrint.isAlert ? 'bg-amber-500' : 'bg-emerald-500'}`} />
+                    <span className="text-xs font-black text-slate-800">PILAR 5: {p5ResultPrint.title.toUpperCase()}</span>
+                    <span className={`text-[8px] font-black uppercase px-1.5 py-0.5 rounded ${p5ResultPrint.isAlert ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                      {p5ResultPrint.badge}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600 leading-relaxed pl-4">
+                    {p5ResultPrint.message}
+                  </p>
                 </div>
               </div>
-            </>
-          )
-        })()}
+            </div>
 
-        {/* Print footer signature */}
-        <div className="border-t pt-4 flex flex-row justify-between items-center text-[9px] text-slate-400 gap-2">
-          <span>* Reporte de diagnóstico patrimonial ilustrativo.</span>
-          <div className="flex items-center gap-1.5 opacity-50 grayscale mt-2">
-            <img src="/logo.png" alt="SYSGPYA" className="w-auto object-contain" style={{ height: '18px' }} />
-            <span>SYSGPYA cotizador</span>
+            {/* Print footer signature */}
+            <div className="border-t pt-4 flex flex-row justify-between items-center text-[9px] text-slate-400 gap-2">
+              <span>* Reporte de diagnóstico patrimonial ilustrativo.</span>
+              <div className="flex items-center gap-1.5 opacity-60 mt-2">
+                <img src={agencyLogo} alt={agencyName} className="w-auto object-contain" style={{ height: '18px' }} />
+                <span>{agencyName} • ADN Digital</span>
+              </div>
+            </div>
           </div>
-        </div>
-        </div>
+        )
+      })()}
         {/* Geo Help Modal */}
         {showGeoHelpModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300">

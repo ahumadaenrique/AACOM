@@ -54,12 +54,13 @@ export async function POST(req: Request) {
 
     // The response is a binary PDF
     const pdfBuffer = await response.arrayBuffer()
+    const filenamePrefix = type === "adn" ? "Diagnostico_ADN" : "Cotizacion"
 
     return new NextResponse(pdfBuffer, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="Cotizacion_${quoteId}.pdf"`
+        "Content-Disposition": `attachment; filename="${filenamePrefix}_${quoteId}.pdf"`
       }
     })
   } catch (error) {
