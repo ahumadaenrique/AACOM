@@ -85,20 +85,38 @@ interface AIEvaluationItem {
   whatsappHook: string
 }
 
-// Decode basic HTML entities and strip HTML tags from RSS descriptions
-function cleanHtmlText(raw: string | null | undefined): string {
-  if (!raw) return ''
-  return raw
-    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
+function decodeHtmlEntities(input: string): string {
+  return input
     .replace(/&amp;/gi, '&')
+    .replace(/&nbsp;|&#160;/gi, ' ')
     .replace(/&quot;/gi, '"')
-    .replace(/&#39;|&apos;/gi, "'")
+    .replace(/&#39;|&apos;|&#x27;/gi, "'")
     .replace(/&lt;/gi, '<')
     .replace(/&gt;/gi, '>')
+    .replace(/&#(\d+);/g, (_, dec) => {
+      const code = Number(dec)
+      return Number.isFinite(code) ? String.fromCharCode(code) : ''
+    })
+}
+
+function normalizeText(str: string): string {
+  return str
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9\s]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
+}
+
+// Decode HTML entities first (twice for double-encoded RSS like &amp;nbsp; / &amp;lt;), then strip HTML tags
+function cleanHtmlText(raw: string | null | undefined): string {
+  if (!raw) return ''
+  let text = raw.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+  text = decodeHtmlEntities(decodeHtmlEntities(text))
+  text = text.replace(/<[^>]+>/g, ' ')
+  text = decodeHtmlEntities(text)
+  return text.replace(/\s+/g, ' ').trim()
 }
 
 // Parse Google News RSS XML into structured articles without external XML dependencies
@@ -140,9 +158,12 @@ function parseRssItems(xml: string, defaultCategory: ProfessionalCategory): RawC
     }
 
     let description = cleanHtmlText(rawDesc)
+    const normTitle = normalizeText(title)
+    const normDesc = normalizeText(description)
     if (
       !description ||
       calculateTitleSimilarity(title, description) >= 0.65 ||
+      (normTitle.length >= 15 && normDesc.startsWith(normTitle)) ||
       description.length < 45
     ) {
       description = ''
@@ -559,13 +580,13 @@ export async function GET(request: Request) {
     const recentArticles = await prisma.newsArticle.findMany({
       orderBy: { publishedAt: 'desc' },
       take: 50,
-      select: { id: true, title: true, advisorImpact: true }
+      select: { id: true, title: true, description: true, advisorImpact: true }
     })
 
     const dedupedCandidates = uniqueCandidates.filter(cand => {
       const existing = recentArticles.find(recent => calculateTitleSimilarity(cand.title, recent.title) >= 0.65)
       if (!existing) return true
-      return !existing.advisorImpact?.includes('🎯 Ramo:')
+      return !existing.advisorImpact?.includes('🎯 Ramo:') || /<[a-z][^>]*>/i.test(existing.description || '')
     })
 
     // 5. Curate up to 12 balanced candidates per run

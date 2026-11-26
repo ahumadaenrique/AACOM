@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     getMonthlyAdnRankings,
+    getRankingCampaignAd,
     saveAgencyRankingConfig,
     type RankingMetricMode,
     type AgencyRankingConfig
@@ -138,8 +139,11 @@ export default function RankingPage() {
     const [savedFeedback, setSavedFeedback] = useState<string>("");
     const [loading, setLoading] = useState(true);
     const [selectedAd, setSelectedAd] = useState<RankingAd | null>(null);
+    const requestSeqRef = useRef(0);
 
     const loadRankings = async (opts?: {
+        month?: number;
+        year?: number;
         overrideMetric?: RankingMetricMode;
         periodMode?: PeriodMode;
         subPeriod?: number;
@@ -149,29 +153,48 @@ export default function RankingPage() {
         allowedSubRamos?: CanonicalSubRamoKey[];
         requireAdminApproval?: boolean;
     }) => {
+        const reqId = ++requestSeqRef.current;
         try {
             setLoading(true);
-            const res = await getMonthlyAdnRankings(
-                selectedMonth,
-                selectedYear,
-                opts?.overrideMetric,
-                opts
-                    ? {
-                        periodMode: opts.periodMode,
-                        subPeriod: opts.subPeriod,
-                        customStartDate: opts.customStartDate,
-                        customEndDate: opts.customEndDate,
-                        businessScope: opts.businessScope,
-                        allowedSubRamos: opts.allowedSubRamos,
-                        requireAdminApproval: opts.requireAdminApproval,
-                    }
-                    : selectedSubPeriod !== undefined
-                        ? { subPeriod: selectedSubPeriod }
-                        : undefined
+            const targetMonth = opts?.month !== undefined ? opts.month : selectedMonth;
+            const targetYear = opts?.year !== undefined ? opts.year : selectedYear;
+            const targetSubPeriod = opts?.subPeriod !== undefined ? opts.subPeriod : selectedSubPeriod;
+
+            const hasAdvancedOpts = Boolean(
+                opts && (
+                    opts.periodMode !== undefined ||
+                    opts.customStartDate !== undefined ||
+                    opts.customEndDate !== undefined ||
+                    opts.businessScope !== undefined ||
+                    opts.allowedSubRamos !== undefined ||
+                    opts.requireAdminApproval !== undefined
+                )
             );
+
+            const extraFilter = hasAdvancedOpts
+                ? {
+                    periodMode: opts?.periodMode,
+                    subPeriod: targetSubPeriod,
+                    customStartDate: opts?.customStartDate,
+                    customEndDate: opts?.customEndDate,
+                    businessScope: opts?.businessScope,
+                    allowedSubRamos: opts?.allowedSubRamos,
+                    requireAdminApproval: opts?.requireAdminApproval,
+                    skipBanner: true,
+                }
+                : targetSubPeriod !== undefined
+                    ? { subPeriod: targetSubPeriod, skipBanner: true }
+                    : { skipBanner: true };
+
+            const res = await getMonthlyAdnRankings(
+                targetMonth,
+                targetYear,
+                opts?.overrideMetric,
+                extraFilter
+            );
+            if (reqId !== requestSeqRef.current) return;
             if (res.success) {
                 setRankings(res.rankings as any);
-                setCampaignAd(res.rankingAd as any);
                 if (res.agencyName) setAgencyName(res.agencyName);
                 if (res.rankingMetric) setRankingMetric(res.rankingMetric as RankingMetricMode);
                 if (res.rankingConfig) {
@@ -190,15 +213,24 @@ export default function RankingPage() {
                 if (res.isAdmin !== undefined) setIsAdmin(Boolean(res.isAdmin));
             }
         } catch (err) {
+            if (reqId !== requestSeqRef.current) return;
             console.error("Error loading rankings:", err);
         } finally {
-            setLoading(false);
+            if (reqId === requestSeqRef.current) {
+                setLoading(false);
+            }
         }
     };
 
     useEffect(() => {
         loadRankings();
-    }, [selectedMonth, selectedYear, selectedSubPeriod]);
+        getRankingCampaignAd()
+            .then((res) => {
+                if (res.success) setCampaignAd(res.rankingAd as any);
+            })
+            .catch(() => {});
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleSaveConfigPatch = async (patch: Partial<AgencyRankingConfig>, nextSubPeriod?: number) => {
         if (savingMetric) return;
@@ -217,6 +249,8 @@ export default function RankingPage() {
                         : selectedSubPeriod);
                 if (patch.periodMode) setSelectedSubPeriod(resolvedSub);
                 await loadRankings({
+                    month: selectedMonth,
+                    year: selectedYear,
                     overrideMetric: updated.metric,
                     periodMode: updated.periodMode,
                     subPeriod: resolvedSub,
@@ -613,6 +647,7 @@ export default function RankingPage() {
                                     const m = Number(e.target.value);
                                     setSelectedMonth(m);
                                     setSelectedSubPeriod(m + 1);
+                                    loadRankings({ month: m, year: selectedYear, subPeriod: m + 1 });
                                 }}
                                 className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary dark:text-primary text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider outline-none focus:ring-2 focus:ring-primary transition-all cursor-pointer"
                             >
@@ -625,7 +660,11 @@ export default function RankingPage() {
                         {rankingConfig.periodMode === "BIMESTRAL" && (
                             <select
                                 value={selectedSubPeriod || getDefaultSubPeriodForMonth("BIMESTRAL", selectedMonth + 1)}
-                                onChange={(e) => setSelectedSubPeriod(Number(e.target.value))}
+                                onChange={(e) => {
+                                    const sp = Number(e.target.value);
+                                    setSelectedSubPeriod(sp);
+                                    loadRankings({ month: selectedMonth, year: selectedYear, subPeriod: sp });
+                                }}
                                 className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider outline-none cursor-pointer"
                             >
                                 <option value={1}>Bimestre 1 (Ene–Feb)</option>
@@ -640,7 +679,11 @@ export default function RankingPage() {
                         {rankingConfig.periodMode === "TRIMESTRAL" && (
                             <select
                                 value={selectedSubPeriod || getDefaultSubPeriodForMonth("TRIMESTRAL", selectedMonth + 1)}
-                                onChange={(e) => setSelectedSubPeriod(Number(e.target.value))}
+                                onChange={(e) => {
+                                    const sp = Number(e.target.value);
+                                    setSelectedSubPeriod(sp);
+                                    loadRankings({ month: selectedMonth, year: selectedYear, subPeriod: sp });
+                                }}
                                 className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider outline-none cursor-pointer"
                             >
                                 <option value={1}>Trimestre 1 (Ene–Mar)</option>
@@ -653,7 +696,11 @@ export default function RankingPage() {
                         {rankingConfig.periodMode === "SEMESTRAL" && (
                             <select
                                 value={selectedSubPeriod || getDefaultSubPeriodForMonth("SEMESTRAL", selectedMonth + 1)}
-                                onChange={(e) => setSelectedSubPeriod(Number(e.target.value))}
+                                onChange={(e) => {
+                                    const sp = Number(e.target.value);
+                                    setSelectedSubPeriod(sp);
+                                    loadRankings({ month: selectedMonth, year: selectedYear, subPeriod: sp });
+                                }}
                                 className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary text-xs font-black px-3 py-1.5 rounded-full uppercase tracking-wider outline-none cursor-pointer"
                             >
                                 <option value={1}>Semestre 1 (Ene–Jun)</option>
@@ -664,7 +711,11 @@ export default function RankingPage() {
                         {rankingConfig.periodMode !== "CUSTOM" ? (
                             <select 
                                 value={selectedYear} 
-                                onChange={(e) => setSelectedYear(Number(e.target.value))}
+                                onChange={(e) => {
+                                    const y = Number(e.target.value);
+                                    setSelectedYear(y);
+                                    loadRankings({ month: selectedMonth, year: y, subPeriod: selectedSubPeriod });
+                                }}
                                 className="bg-primary/10 dark:bg-primary/5 border border-primary/20 dark:border-primary/90 text-primary dark:text-primary text-xs font-black px-3 py-1.5 rounded-full outline-none focus:ring-2 focus:ring-primary transition-all cursor-pointer"
                             >
                                 {years.map(y => (

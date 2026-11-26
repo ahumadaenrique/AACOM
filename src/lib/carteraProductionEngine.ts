@@ -26,6 +26,8 @@ export interface CarteraProductionParams {
   onlyAdminApproved?: boolean;
   filterAgentId?: string;
   filterCompanyKey?: string;
+  includeLedger?: boolean;
+  onlyMetrics?: "PE" | "PPC" | "BOTH";
 }
 
 export interface AgentProductionEntry {
@@ -137,6 +139,62 @@ function getAnniversaryYmdInYear(effYmd: string, targetYear: number): string | n
   return `${targetYear}-${month}-${String(dayNum).padStart(2, "0")}`;
 }
 
+type EngineReceiptRow = {
+  id?: string;
+  receiptNumber?: number;
+  totalInstallments?: number;
+  policyYear: number;
+  dueDate: Date;
+  amount: number;
+  paidAmount: number | null;
+  computableAmount: number | null;
+  status: string;
+  paidAt: Date | null;
+  paymentNotes?: string | null;
+  adminApproved: boolean;
+  agentAllocationsJson: unknown;
+};
+
+type EnginePolicyRow = {
+  id: string;
+  userId: string;
+  sharedWithUserId: string | null;
+  sharedPercentage: number | null;
+  status: string;
+  subStatus: string | null;
+  ramo: string | null;
+  subRamo: string | null;
+  vidaObjetivo: string | null;
+  product: string | null;
+  observations: string | null;
+  contractor: string | null;
+  insuranceCompany: string | null;
+  tipoVigencia: string | null;
+  effectiveDate: Date | null;
+  annualPremium: number | null;
+  isRenewalCapture: boolean;
+  adminApproved: boolean;
+  sharedWithUser: {
+    agencyId: string | null;
+    name?: string | null;
+    email?: string;
+  } | null;
+  receipts?: EngineReceiptRow[];
+  clientId?: string | null;
+  policyNumber?: string;
+  insured?: string | null;
+  paymentMethod?: string | null;
+  currency?: string | null;
+  client?: { id: string; name: string } | null;
+  user?: {
+    id: string;
+    name: string | null;
+    email: string;
+    agencyId: string | null;
+    active: boolean;
+  } | null;
+};
+
 export async function computeAgencyCarteraProduction(
   params: CarteraProductionParams
 ): Promise<CarteraProductionResult> {
@@ -152,6 +210,8 @@ export async function computeAgencyCarteraProduction(
     onlyAdminApproved = false,
     filterAgentId,
     filterCompanyKey,
+    includeLedger = true,
+    onlyMetrics = "BOTH",
   } = params;
 
   if (!agencyId || agencyId === "ALL") {
@@ -166,40 +226,134 @@ export async function computeAgencyCarteraProduction(
   const allowedSet =
     allowedSubRamos && allowedSubRamos.length > 0 ? new Set(allowedSubRamos) : null;
 
-  const policies = await prisma.policy.findMany({
-    where: {
+  let policies: EnginePolicyRow[];
+
+  if (includeLedger) {
+    policies = await prisma.policy.findMany({
+      where: {
+        isArchived: false,
+        deletedAt: null,
+        OR: [
+          { agencyId },
+          { agencyId: null, user: { agencyId } },
+        ],
+      },
+      include: {
+        client: { select: { id: true, name: true } },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            agencyId: true,
+            active: true,
+          },
+        },
+        sharedWithUser: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            agencyId: true,
+            active: true,
+          },
+        },
+        receipts: {
+          orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
+        },
+      },
+    });
+  } else {
+    const rangeStartBuf = new Date(`${startYmd}T00:00:00.000Z`);
+    rangeStartBuf.setUTCDate(rangeStartBuf.getUTCDate() - 2);
+    const rangeEndBuf = new Date(`${endYmd}T23:59:59.999Z`);
+    rangeEndBuf.setUTCDate(rangeEndBuf.getUTCDate() + 2);
+
+    const paidReceiptWindowWhere = {
+      status: "PAGADO",
+      ...(onlyAdminApproved ? { adminApproved: true } : {}),
+      OR: [
+        { paidAt: { gte: rangeStartBuf, lte: rangeEndBuf } },
+        { paidAt: null, dueDate: { gte: rangeStartBuf, lte: rangeEndBuf } },
+      ],
+    };
+
+    const policyWhere: Record<string, any> = {
       isArchived: false,
       deletedAt: null,
       OR: [
         { agencyId },
         { agencyId: null, user: { agencyId } },
       ],
-    },
-    include: {
-      client: { select: { id: true, name: true } },
-      user: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          agencyId: true,
-          active: true,
-        },
-      },
+      ...(onlyAdminApproved ? { adminApproved: true } : {}),
+      ...(onlyMetrics === "PPC" ? { receipts: { some: paidReceiptWindowWhere } } : {}),
+      ...(onlyMetrics === "PE"
+        ? {
+            status: { not: "CANCELADA" },
+            effectiveDate: { not: null, lte: rangeEndBuf },
+            AND: [
+              {
+                OR: [
+                  { effectiveDate: { gte: rangeStartBuf } },
+                  { tipoVigencia: "ANUAL_RENOVABLE" },
+                ],
+              },
+            ],
+          }
+        : {}),
+    };
+
+    const baseSelect = {
+      id: true,
+      userId: true,
+      sharedWithUserId: true,
+      sharedPercentage: true,
+      status: true,
+      subStatus: true,
+      ramo: true,
+      subRamo: true,
+      vidaObjetivo: true,
+      product: true,
+      observations: true,
+      contractor: true,
+      insuranceCompany: true,
+      tipoVigencia: true,
+      effectiveDate: true,
+      annualPremium: true,
+      isRenewalCapture: true,
+      adminApproved: true,
       sharedWithUser: {
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          agencyId: true,
-          active: true,
-        },
+        select: { agencyId: true },
       },
-      receipts: {
-        orderBy: [{ policyYear: "asc" }, { receiptNumber: "asc" }],
-      },
-    },
-  });
+    };
+
+    policies =
+      onlyMetrics === "PE"
+        ? await prisma.policy.findMany({
+            where: policyWhere,
+            select: baseSelect,
+          })
+        : await prisma.policy.findMany({
+            where: policyWhere,
+            select: {
+              ...baseSelect,
+              receipts: {
+                where: paidReceiptWindowWhere,
+                select: {
+                  status: true,
+                  paidAt: true,
+                  dueDate: true,
+                  policyYear: true,
+                  amount: true,
+                  paidAmount: true,
+                  computableAmount: true,
+                  adminApproved: true,
+                  agentAllocationsJson: true,
+                },
+              },
+            },
+          });
+  }
 
   const byAgent = new Map<string, AgentProductionEntry>();
   const companyMap = new Map<
@@ -558,62 +712,66 @@ export async function computeAgencyCarteraProduction(
       aEntry.byCompany[compKey].count += peWeight > 0 ? peWeight : 1;
     }
 
-    ledgerRows.push({
-      policyId: p.id,
-      clientId: p.clientId || null,
-      policyNumber: p.policyNumber,
-      clientName: p.contractor || p.insured || p.client?.name || "Sin Cliente",
-      insuranceCompany: p.insuranceCompany || "Sin Aseguradora",
-      canonicalCompany: canonComp,
-      companyKey: compKey,
-      product: p.product || null,
-      ramoInfo,
-      paymentMethod: p.paymentMethod || null,
-      currency: p.currency || "MXN",
-      annualPremium: policyAnnualMXN,
-      effectiveDate: effYmd,
-      peInPeriod: weightedPeTotal,
-      ppcInPeriod: Number(weightedPpcTotal.toFixed(2)),
-      paidReceiptsInPeriod: policyPaidReceiptsInPeriod,
-      isEmittedInPeriod: peQualifies && rawPeForPolicy > 0,
-      isRenewalCapture: isPolicyMarkedRenewal,
-      adminApproved: p.adminApproved !== false,
-      status: p.status,
-      subStatus: p.subStatus || null,
-      ownerAgentId: p.userId,
-      ownerAgentName: p.user?.name || p.user?.email || "Agente",
-      sharedWithUserId: hasValidCoAgent ? p.sharedWithUserId || null : null,
-      sharedWithAgentName: hasValidCoAgent
-        ? p.sharedWithUser?.name || p.sharedWithUser?.email || null
-        : null,
-      sharedPercentage: hasValidCoAgent ? Number(p.sharedPercentage) || 0 : 0,
-      observations: p.observations || null,
-      receipts: (p.receipts || []).map((r) => ({
-        id: r.id,
-        receiptNumber: r.receiptNumber,
-        totalInstallments: r.totalInstallments,
-        policyYear: r.policyYear,
-        dueDate: toYmdKey(r.dueDate),
-        amount: Number(r.amount) || 0,
-        paidAmount: r.paidAmount !== null && r.paidAmount !== undefined ? Number(r.paidAmount) : null,
-        computableAmount:
-          (r as any).computableAmount !== null && (r as any).computableAmount !== undefined
-            ? Number((r as any).computableAmount)
-            : null,
-        status: r.status,
-        paidAt: toYmdKey(r.paidAt),
-        paymentNotes: r.paymentNotes || null,
-        adminApproved: r.adminApproved !== false,
-      })),
-    });
+    if (includeLedger) {
+      ledgerRows.push({
+        policyId: p.id,
+        clientId: p.clientId || null,
+        policyNumber: p.policyNumber || "",
+        clientName: p.contractor || p.insured || p.client?.name || "Sin Cliente",
+        insuranceCompany: p.insuranceCompany || "Sin Aseguradora",
+        canonicalCompany: canonComp,
+        companyKey: compKey,
+        product: p.product || null,
+        ramoInfo,
+        paymentMethod: p.paymentMethod || null,
+        currency: p.currency || "MXN",
+        annualPremium: policyAnnualMXN,
+        effectiveDate: effYmd,
+        peInPeriod: weightedPeTotal,
+        ppcInPeriod: Number(weightedPpcTotal.toFixed(2)),
+        paidReceiptsInPeriod: policyPaidReceiptsInPeriod,
+        isEmittedInPeriod: peQualifies && rawPeForPolicy > 0,
+        isRenewalCapture: isPolicyMarkedRenewal,
+        adminApproved: p.adminApproved !== false,
+        status: p.status,
+        subStatus: p.subStatus || null,
+        ownerAgentId: p.userId,
+        ownerAgentName: p.user?.name || p.user?.email || "Agente",
+        sharedWithUserId: hasValidCoAgent ? p.sharedWithUserId || null : null,
+        sharedWithAgentName: hasValidCoAgent
+          ? p.sharedWithUser?.name || p.sharedWithUser?.email || null
+          : null,
+        sharedPercentage: hasValidCoAgent ? Number(p.sharedPercentage) || 0 : 0,
+        observations: p.observations || null,
+        receipts: (p.receipts || []).map((r) => ({
+          id: r.id || "",
+          receiptNumber: r.receiptNumber ?? 1,
+          totalInstallments: r.totalInstallments ?? 1,
+          policyYear: r.policyYear,
+          dueDate: toYmdKey(r.dueDate),
+          amount: Number(r.amount) || 0,
+          paidAmount: r.paidAmount !== null && r.paidAmount !== undefined ? Number(r.paidAmount) : null,
+          computableAmount:
+            (r as any).computableAmount !== null && (r as any).computableAmount !== undefined
+              ? Number((r as any).computableAmount)
+              : null,
+          status: r.status,
+          paidAt: toYmdKey(r.paidAt),
+          paymentNotes: r.paymentNotes || null,
+          adminApproved: r.adminApproved !== false,
+        })),
+      });
+    }
   }
 
-  ledgerRows.sort((a, b) => {
-    const dateA = a.effectiveDate || "";
-    const dateB = b.effectiveDate || "";
-    if (dateB !== dateA) return dateB.localeCompare(dateA);
-    return b.peInPeriod + b.ppcInPeriod - (a.peInPeriod + a.ppcInPeriod);
-  });
+  if (includeLedger) {
+    ledgerRows.sort((a, b) => {
+      const dateA = a.effectiveDate || "";
+      const dateB = b.effectiveDate || "";
+      if (dateB !== dateA) return dateB.localeCompare(dateA);
+      return b.peInPeriod + b.ppcInPeriod - (a.peInPeriod + a.ppcInPeriod);
+    });
+  }
 
   return {
     totals: {

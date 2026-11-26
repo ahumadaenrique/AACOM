@@ -38,6 +38,45 @@ const CATEGORIES = [
   "Insurtech e Innovación"
 ]
 
+function sanitizeArticleSummary(description: string | null | undefined, title: string): string | null {
+  if (!description) return null
+  const decode = (s: string) =>
+    s
+      .replace(/&amp;/gi, '&')
+      .replace(/&nbsp;|&#160;/gi, ' ')
+      .replace(/&quot;/gi, '"')
+      .replace(/&#39;|&apos;|&#x27;/gi, "'")
+      .replace(/&lt;/gi, '<')
+      .replace(/&gt;/gi, '>')
+      .replace(/&#(\d+);/g, (_, dec) => {
+        const code = Number(dec)
+        return Number.isFinite(code) ? String.fromCharCode(code) : ''
+      })
+
+  let cleaned = decode(decode(description))
+  cleaned = cleaned.replace(/<[^>]+>/g, ' ')
+  cleaned = decode(cleaned).replace(/\s+/g, ' ').trim()
+
+  if (!cleaned || cleaned.length < 20) return null
+
+  const norm = (s: string) =>
+    s
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+
+  const normTitle = norm(title)
+  const normCleaned = norm(cleaned)
+  if (normTitle.length >= 15 && normCleaned.startsWith(normTitle)) {
+    return null
+  }
+
+  return cleaned
+}
+
 function parseAdvisorImpact(raw?: string | null): ParsedAdvisorImpact {
   if (!raw) {
     return {
@@ -287,12 +326,13 @@ export default function NewslettersClient({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
               {filteredArticles.map((art) => {
                 const parsedImpact = parseAdvisorImpact(art.advisorImpact)
+                const cleanDescription = sanitizeArticleSummary(art.description, art.title)
                 const waShareText = parsedImpact.whatsappHook
                   ? `${parsedImpact.whatsappHook}\n\n📰 ${art.url}`
                   : `Hola, te comparto esta nota de ${art.sourceName || 'hoy'}: "${art.title}".\n\n📰 ${art.url}`
 
                 return (
-                  <article key={art.id} className="group flex flex-col justify-between border-b border-zinc-200 dark:border-zinc-800 pb-8 last:border-0 md:last:border-b">
+                  <article key={art.id} className="group min-w-0 overflow-hidden flex flex-col justify-between border-b border-zinc-200 dark:border-zinc-800 pb-8 last:border-0 md:last:border-b">
                     
                     {/* Article header metadata */}
                     <div className="flex items-center justify-between text-[10px] font-mono tracking-wider uppercase text-zinc-500 dark:text-zinc-400 mb-2">
@@ -305,15 +345,15 @@ export default function NewslettersClient({
                     {/* Title */}
                     <h3 className="whitepaper-title text-xl md:text-2xl font-bold leading-tight text-zinc-950 dark:text-white group-hover:text-zinc-700 dark:group-hover:text-zinc-300 transition-colors mb-3">
                       <a href={art.url} target="_blank" rel="noopener noreferrer" className="flex items-start gap-2">
-                        <span>{art.title}</span>
+                        <span className="min-w-0 break-words">{art.title}</span>
                         <ExternalLink className="w-3.5 h-3.5 mt-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity text-zinc-400" />
                       </a>
                     </h3>
 
                     {/* Description / Summary */}
-                    {art.description && (
-                      <p className="font-sans text-[13.5px] leading-relaxed text-zinc-600 dark:text-zinc-400 mb-4">
-                        {art.description}
+                    {cleanDescription && (
+                      <p className="font-sans text-[13.5px] leading-relaxed text-zinc-600 dark:text-zinc-400 mb-4 break-words">
+                        {cleanDescription}
                       </p>
                     )}
 
